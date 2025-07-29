@@ -22,7 +22,11 @@ defmodule Voile.Catalog.Collection do
     belongs_to :mst_creator, Creator, foreign_key: :creator_id
     belongs_to :node, Node, foreign_key: :unit_id
     has_many :collection_fields, CollectionField, on_replace: :delete
-    has_many :items, Item, on_delete: :delete_all, foreign_key: :collection_id
+
+    has_many :items, Item,
+      on_delete: :delete_all,
+      on_replace: :delete,
+      foreign_key: :collection_id
 
     timestamps(type: :utc_datetime)
   end

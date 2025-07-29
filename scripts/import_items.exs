@@ -8,6 +8,7 @@ NimbleCSV.define(
 )
 
 import Ecto.Query
+import Voile.Utils.ItemHelper
 alias Ecto.UUID
 alias Voile.Repo
 alias Voile.Catalog.Item
@@ -36,6 +37,11 @@ biblio_map =
 IO.puts("🔗 Built biblio_id → collection_id map (#{map_size(biblio_map)} entries)")
 
 # 4️⃣ Stream & import items.csv
+# Track index for each biblio_id
+biblio_index_agent = Agent.start_link(fn -> %{} end)
+# Track time_identifier for each biblio_id
+biblio_time_agent = Agent.start_link(fn -> %{} end)
+
 stream =
   File.stream!("scripts/item.csv")
   |> CSVParser.parse_stream()
@@ -71,11 +77,30 @@ stream =
       {:ok, coll_id} ->
         {:ok, collection_id} = UUID.dump(coll_id)
 
+        # Get and increment index for this biblio_id
+        biblio_id_int = parse_int.(biblio_id)
+        index = Agent.get_and_update(biblio_index_agent, fn state ->
+          current_index = Map.get(state, biblio_id_int, 0) + 1
+          {current_index, Map.put(state, biblio_id_int, current_index)}
+        end)
+
+        # Get or create time_identifier for this biblio_id
+        time_identifier = Agent.get_and_update(biblio_time_agent, fn state ->
+          case Map.get(state, biblio_id_int) do
+            nil ->
+              new_time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+              {new_time_identifier, Map.put(state, biblio_id_int, new_time_identifier)}
+            existing_time_identifier ->
+              {existing_time_identifier, state}
+          end
+        end)
+
         {:ok,
          %{
            id: id,
            collection_id: collection_id,
-           item_code: if(item_code == "", do: nil, else: item_code),
+           unit_id: 20,
+           item_code: if(item_code == "", do: generate_item_code("Kandaga", "Book", collection_id, time_identifier, index), else: item_code),
            inventory_code: if(inventory_code == "", do: nil, else: inventory_code),
            location: if(site == "", do: nil, else: site),
            status: "active",
@@ -117,6 +142,10 @@ total_inserted =
   else
     total_inserted
   end
+
+# Clean up the Agent
+Agent.stop(biblio_index_agent)
+Agent.stop(biblio_time_agent)
 
 # Print summary
 IO.puts("✅ All done migrating items.")
