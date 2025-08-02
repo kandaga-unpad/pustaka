@@ -17,7 +17,7 @@ defmodule Voile.CatalogFixtures do
         thumbnail: "some thumbnail",
         title: "some title"
       })
-      |> Voile.Catalog.create_collection()
+      |> Voile.Schema.Catalog.create_collection()
 
     collection
   end
@@ -37,7 +37,7 @@ defmodule Voile.CatalogFixtures do
         location: "some location",
         status: "some status"
       })
-      |> Voile.Catalog.create_item()
+      |> Voile.Schema.Catalog.create_item()
 
     item
   end
@@ -55,7 +55,7 @@ defmodule Voile.CatalogFixtures do
         required: true,
         sort_order: 42
       })
-      |> Voile.Catalog.create_collection_field()
+      |> Voile.Schema.Catalog.create_collection_field()
 
     collection_field
   end
@@ -70,7 +70,7 @@ defmodule Voile.CatalogFixtures do
         locale: "some locale",
         value: "some value"
       })
-      |> Voile.Catalog.create_item_field_value()
+      |> Voile.Schema.Catalog.create_item_field_value()
 
     item_field_value
   end

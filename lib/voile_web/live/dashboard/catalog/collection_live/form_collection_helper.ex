@@ -3,7 +3,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   import Voile.Utils.ItemHelper
 
-  alias Voile.Catalog
+  alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
 
@@ -111,7 +112,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       |> Map.put("items", updated_items)
       |> Map.put("collection_fields", existing_fields)
 
-    changeset = Voile.Catalog.Collection.changeset(socket.assigns.collection, new_params)
+    changeset = Collection.changeset(socket.assigns.collection, new_params)
 
     assign(socket,
       form: to_form(changeset, action: :validate),
@@ -132,7 +133,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         # Update form params with selected creator_id
         updated_params = Map.put(current_params, "creator_id", selected.id |> to_string())
         # Create updated changeset
-        changeset = Voile.Catalog.change_collection(socket.assigns.collection, updated_params)
+        changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
 
         socket
         |> assign(:creator_input, selected.creator_name)

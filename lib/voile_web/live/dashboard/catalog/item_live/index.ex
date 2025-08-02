@@ -1,8 +1,8 @@
 defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Catalog
-  alias Voile.Catalog.Item
+  alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.Item
 
   @impl true
   def mount(_params, _session, socket) do

@@ -1,4 +1,4 @@
-defmodule Voile.Catalog.Collection do
+defmodule Voile.Schema.Catalog.Collection do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,8 +6,8 @@ defmodule Voile.Catalog.Collection do
   alias Voile.Schema.Metadata.ResourceTemplate
   alias Voile.Schema.Master.Creator
   alias Voile.Schema.System.Node
-  alias Voile.Catalog.CollectionField
-  alias Voile.Catalog.Item
+  alias Voile.Schema.Catalog.CollectionField
+  alias Voile.Schema.Catalog.Item
 
   @primary_key {:id, :binary_id, autogenerate: false}
   schema "collections" do

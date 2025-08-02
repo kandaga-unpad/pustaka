@@ -1,7 +1,7 @@
 defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   use VoileWeb, :live_component
 
-  alias Voile.Catalog
+  alias Voile.Schema.Catalog
   alias Ecto.Changeset
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper

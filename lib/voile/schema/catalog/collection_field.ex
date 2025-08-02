@@ -1,8 +1,8 @@
-defmodule Voile.Catalog.CollectionField do
+defmodule Voile.Schema.Catalog.CollectionField do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Voile.Catalog.Collection
+  alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Metadata.Property
 
   @primary_key {:id, :binary_id, autogenerate: true}

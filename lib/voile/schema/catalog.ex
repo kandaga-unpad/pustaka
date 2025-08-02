@@ -1,4 +1,4 @@
-defmodule Voile.Catalog do
+defmodule Voile.Schema.Catalog do
   @moduledoc """
   The Catalog context.
   """
@@ -6,7 +6,7 @@ defmodule Voile.Catalog do
   import Ecto.Query, warn: false
   alias Voile.Repo
 
-  alias Voile.Catalog.Collection
+  alias Voile.Schema.Catalog.Collection
 
   @doc """
   Returns the list of collections.
@@ -186,7 +186,7 @@ defmodule Voile.Catalog do
     |> Repo.update()
   end
 
-  alias Voile.Catalog.Item
+  alias Voile.Schema.Catalog.Item
 
   @doc """
   Returns the list of items.
@@ -307,7 +307,7 @@ defmodule Voile.Catalog do
     Item.changeset(item, attrs)
   end
 
-  alias Voile.Catalog.CollectionField
+  alias Voile.Schema.Catalog.CollectionField
 
   @doc """
   Returns the list of collection_fields.
@@ -403,7 +403,7 @@ defmodule Voile.Catalog do
     CollectionField.changeset(collection_field, attrs)
   end
 
-  alias Voile.Catalog.ItemFieldValue
+  alias Voile.Schema.Catalog.ItemFieldValue
 
   @doc """
   Returns the list of item_field_values.

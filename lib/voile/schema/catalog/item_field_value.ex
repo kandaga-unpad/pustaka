@@ -1,9 +1,9 @@
-defmodule Voile.Catalog.ItemFieldValue do
+defmodule Voile.Schema.Catalog.ItemFieldValue do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Voile.Catalog.Item
-  alias Voile.Catalog.CollectionField
+  alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.Catalog.CollectionField
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_field_values" do

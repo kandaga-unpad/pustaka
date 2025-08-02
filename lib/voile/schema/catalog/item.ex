@@ -1,9 +1,9 @@
-defmodule Voile.Catalog.Item do
+defmodule Voile.Schema.Catalog.Item do
   use Ecto.Schema
   import Ecto.Changeset
 
   alias Voile.Schema.System.Node
-  alias Voile.Catalog.Collection
+  alias Voile.Schema.Catalog.Collection
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do

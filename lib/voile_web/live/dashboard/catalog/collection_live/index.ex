@@ -2,8 +2,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Repo
-  alias Voile.Catalog
-  alias Voile.Catalog.Collection
+  alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
   alias Voile.Schema.System

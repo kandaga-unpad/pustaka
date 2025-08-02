@@ -1,7 +1,7 @@
 defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   use VoileWeb, :live_component
 
-  alias Voile.Catalog
+  alias Voile.Schema.Catalog
 
   @impl true
   def render(assigns) do
