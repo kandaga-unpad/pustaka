@@ -8,7 +8,7 @@ NimbleCSV.define(
 )
 
 alias Voile.Repo
-alias Voile.Catalog.{Collection, CollectionField}
+alias Voile.Schema.Catalog.{Collection, CollectionField}
 
 property_map = %{
   "title" => %{id: 182, local_name: "title", label: "Title", type_value: "text"},

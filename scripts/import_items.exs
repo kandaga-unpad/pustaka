@@ -11,7 +11,7 @@ import Ecto.Query
 import Voile.Utils.ItemHelper
 alias Ecto.UUID
 alias Voile.Repo
-alias Voile.Catalog.Item
+alias Voile.Schema.Catalog.Item
 
 # Helpers
 parse_int = fn
