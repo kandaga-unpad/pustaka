@@ -29,7 +29,5 @@ defmodule Voile.Schema.Metadata.Property do
     |> cast(attrs, [:label, :local_name, :information, :type_value, :vocabulary_id, :owner_id])
     |> validate_required([:label, :local_name, :type_value, :vocabulary_id, :owner_id])
     |> validate_inclusion(:type_value, @input_types)
-    |> unique_constraint(:label)
-    |> unique_constraint(:local_name)
   end
 end

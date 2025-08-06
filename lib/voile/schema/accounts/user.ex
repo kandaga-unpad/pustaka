@@ -15,6 +15,7 @@ defmodule Voile.Schema.Accounts.User do
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
+    field :authenticated_at, :utc_datetime, virtual: true
     field :user_type, :string
     field :user_image, :string
     field :social_media, :map, type: :jsonb

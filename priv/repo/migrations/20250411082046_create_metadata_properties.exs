@@ -15,7 +15,5 @@ defmodule Voile.Repo.Migrations.CreateMetadataProperties do
 
     create index(:metadata_properties, [:owner_id])
     create index(:metadata_properties, [:vocabulary_id])
-    create unique_index(:metadata_properties, [:vocabulary_id, :label])
-    create unique_index(:metadata_properties, [:vocabulary_id, :local_name])
   end
 end

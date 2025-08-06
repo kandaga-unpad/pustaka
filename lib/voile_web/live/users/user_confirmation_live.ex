@@ -5,20 +5,22 @@ defmodule VoileWeb.UserConfirmationLive do
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">Confirm Account</.header>
-
-      <.simple_form for={@form} id="confirmation_form" phx-submit="confirm_account">
-        <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
-        <:actions>
-          <.button phx-disable-with="Confirming..." class="w-full">Confirm my account</.button>
-        </:actions>
-      </.simple_form>
-
-      <p class="text-center mt-4">
-        <.link href={~p"/register"}>Register</.link> | <.link href={~p"/login"}>Log in</.link>
-      </p>
-    </div>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
+      <div class="mx-auto max-w-sm">
+        <.header>Confirm Account</.header>
+        
+        <.simple_form for={@form} id="confirmation_form" phx-submit="confirm_account">
+          <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+          <:actions>
+            <.button phx-disable-with="Confirming..." class="w-full">Confirm my account</.button>
+          </:actions>
+        </.simple_form>
+        
+        <p class="text-center mt-4">
+          <.link href={~p"/register"}>Register</.link> | <.link href={~p"/login"}>Log in</.link>
+        </p>
+      </div>
+    </Layouts.app>
     """
   end
 

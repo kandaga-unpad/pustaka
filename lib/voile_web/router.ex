@@ -11,7 +11,7 @@ defmodule VoileWeb.Router do
     plug :put_root_layout, html: {VoileWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :fetch_current_user
+    plug :fetch_current_scope_for_user
     plug VoileWeb.Plugs.GetCurrentPath
     plug VoileWeb.Utils.SideBarMenuMaster
   end
@@ -52,15 +52,12 @@ defmodule VoileWeb.Router do
   ## Authentication routes
 
   scope "/", VoileWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
+    pipe_through [:browser]
 
-    live_session :redirect_if_user_is_authenticated,
-      on_mount: [{VoileWeb.UserAuth, :redirect_if_user_is_authenticated}] do
-      live "/register", UserRegistrationLive, :new
-      live "/login", UserLoginLive, :new
-      live "/users/reset_password", UserForgotPasswordLive, :new
-      live "/users/reset_password/:token", UserResetPasswordLive, :edit
-    end
+    live "/register", UserRegistrationLive, :new
+    live "/login", UserLoginLive, :new
+    live "/users/reset_password", UserForgotPasswordLive, :new
+    live "/users/reset_password/:token", UserResetPasswordLive, :edit
 
     post "/users/log_in", UserSessionController, :create
   end

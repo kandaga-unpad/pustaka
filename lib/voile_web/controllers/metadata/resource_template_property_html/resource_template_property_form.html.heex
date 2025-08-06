@@ -1,10 +1,5 @@
 <.simple_form :let={f} for={@changeset} action={@action}>
-  <.error :if={@changeset.action}>
-    Oops, something went wrong! Please check the errors below.
-  </.error>
   <.input field={f[:override_label]} type="text" label="Override label" />
   <.input field={f[:position]} type="number" label="Position" />
-  <:actions>
-    <.button>Save Resource template property</.button>
-  </:actions>
+  <:actions><.button>Save Resource template property</.button></:actions>
 </.simple_form>

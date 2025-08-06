@@ -3,16 +3,28 @@ defmodule VoileWeb.CoreComponents do
   Provides core UI components.
 
   At first glance, this module may seem daunting, but its goal is to provide
-  core building blocks for your application, such as modals, tables, and
-  forms. The components consist mostly of markup and are well-documented
+  core building blocks for your application, such as tables, forms, and
+  inputs. The components consist mostly of markup and are well-documented
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
-  The default components use Tailwind CSS, a utility-first CSS framework.
-  See the [Tailwind CSS documentation](https://tailwindcss.com) to learn
-  how to customize them or feel free to swap in another framework altogether.
+  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
+  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
+  and themes. Here are useful references:
 
-  Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
+    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
+      started and see the available components.
+
+    * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
+      we build on. You will use it for layout, sizing, flexbox, grid, and
+      spacing.
+
+    * [Heroicons](https://heroicons.com) - see `icon/1` for usage.
+
+    * [Phoenix.Component](https://hexdocs.pm/phoenix_live_view/Phoenix.Component.html) -
+      the component system used by Phoenix. Some components, such as `<.link>`
+      and `<.form>`, are defined there.
+
   """
   use Phoenix.Component
   use Gettext, backend: VoileWeb.Gettext
@@ -115,23 +127,26 @@ defmodule VoileWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class={[
-        "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
-      ]}
+      class="toast toast-top toast-end z-50"
       {@rest}
     >
-      <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" /> {@title}
-      </p>
-      
-      <p class="mt-2 text-sm leading-5">{msg}</p>
-      
-      <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
-        <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
-      </button>
+      <div class={[
+        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
+        @kind == :info && "alert-info",
+        @kind == :error && "alert-error"
+      ]}>
+        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
+        <div>
+          <p :if={@title} class="font-semibold">{@title}</p>
+          
+          <p>{msg}</p>
+        </div>
+         <div class="flex-1" />
+        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
+          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
+        </button>
+      </div>
     </div>
     """
   end
@@ -215,33 +230,40 @@ defmodule VoileWeb.CoreComponents do
   end
 
   @doc """
-  Renders a button.
+  Renders a button with navigation support.
 
   ## Examples
 
       <.button>Send!</.button>
-      <.button phx-click="go" class="ml-2">Send!</.button>
+      <.button phx-click="go" variant="primary">Send!</.button>
+      <.button navigate={~p"/"}>Home</.button>
   """
-  attr :type, :string, default: nil
-  attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(disabled form name value)
-
+  attr :rest, :global, include: ~w(href navigate patch method download name value disabled)
+  attr :class, :string
+  attr :variant, :string, values: ~w(primary)
   slot :inner_block, required: true
 
-  def button(assigns) do
-    ~H"""
-    <button
-      type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 primary-btn",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
-        @class
-      ]}
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </button>
-    """
+  def button(%{rest: rest} = assigns) do
+    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+
+    assigns =
+      assign_new(assigns, :class, fn ->
+        ["btn", Map.fetch!(variants, assigns[:variant])]
+      end)
+
+    if rest[:href] || rest[:navigate] || rest[:patch] do
+      ~H"""
+      <.link class={@class} {@rest}>
+        {render_slot(@inner_block)}
+      </.link>
+      """
+    else
+      ~H"""
+      <button class={@class} {@rest}>
+        {render_slot(@inner_block)}
+      </button>
+      """
+    end
   end
 
   @doc """
@@ -289,6 +311,8 @@ defmodule VoileWeb.CoreComponents do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :class, :string, default: nil, doc: "the input class to use over defaults"
+  attr :error_class, :string, default: nil, doc: "the input error class to use over defaults"
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
@@ -312,18 +336,20 @@ defmodule VoileWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="my-4">
+    <div class="fieldset my-4">
       <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
-        <input
-          type="checkbox"
-          id={@id}
-          name={@name}
-          value="true"
-          checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
-          {@rest}
-        /> {@label}
+        <span class="label">
+          <input
+            type="checkbox"
+            id={@id}
+            name={@name}
+            value="true"
+            checked={@checked}
+            class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+            {@rest}
+          /> {@label}
+        </span>
       </label>
       
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -333,21 +359,20 @@ defmodule VoileWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="my-4">
-      <.label for={@id}>
-        {@label} <span :if={@required_value} class="text-red-500">*</span> :
-      </.label>
-      
-      <select
-        id={@id}
-        name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
-        multiple={@multiple}
-        {@rest}
-      >
-        <option :if={@prompt} value="">{@prompt}</option>
-         {Phoenix.HTML.Form.options_for_select(@options, @value)}
-      </select>
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
+        <select
+          id={@id}
+          name={@name}
+          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          multiple={@multiple}
+          {@rest}
+        >
+          <option :if={@prompt} value="">{@prompt}</option>
+           {Phoenix.HTML.Form.options_for_select(@options, @value)}
+        </select>
+      </label>
       
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -356,18 +381,19 @@ defmodule VoileWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="my-4">
-      <.label for={@id}>{@label} <span :if={@required_value} class="text-red-500">*</span> :</.label>
-       <textarea
-        id={@id}
-        name={@name}
-        class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
-        ]}
-        {@rest}
-      >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span> <textarea
+          id={@id}
+          name={@name}
+          class={[
+            @class || "w-full textarea",
+            @errors != [] && (@error_class || "textarea-error")
+          ]}
+          {@rest}
+        >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+      </label>
+      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -376,23 +402,22 @@ defmodule VoileWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="my-4">
-      <.label :if={@type != "hidden"} for={@id}>
-        {@label} <span :if={@required_value} class="text-red-500 text-xs">*</span> :
-      </.label>
+    <div class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
+        <input
+          type={@type}
+          name={@name}
+          id={@id}
+          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+          class={[
+            @class || "w-full input",
+            @errors != [] && (@error_class || "input-error")
+          ]}
+          {@rest}
+        />
+      </label>
       
-      <input
-        type={@type}
-        name={@name}
-        id={@id}
-        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-        class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
-        ]}
-        {@rest}
-      />
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -412,17 +437,11 @@ defmodule VoileWeb.CoreComponents do
     """
   end
 
-  @doc """
-  Generates a generic error message.
-  """
-  slot :inner_block, required: true
-
-  def error(assigns) do
+  # Helper used by inputs to generate form errors
+  defp error(assigns) do
     ~H"""
-    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" /> {render_slot(
-        @inner_block
-      )}
+    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+      <.icon name="hero-exclamation-circle" class="size-5" /> {render_slot(@inner_block)}
     </p>
     """
   end
@@ -430,21 +449,19 @@ defmodule VoileWeb.CoreComponents do
   @doc """
   Renders a header with title.
   """
-  attr :class, :string, default: nil
-
   slot :inner_block, required: true
   slot :subtitle
   slot :actions
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
+    <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-lg font-semibold leading-8">
           {render_slot(@inner_block)}
         </h1>
         
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="text-sm text-base-content/70">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -454,7 +471,7 @@ defmodule VoileWeb.CoreComponents do
     """
   end
 
-  @doc ~S"""
+  @doc """
   Renders a table with generic styling.
 
   ## Examples
@@ -486,52 +503,37 @@ defmodule VoileWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
-      <table class="w-[40rem] mt-11 sm:w-full">
-        <thead class="text-sm text-left leading-6 text-zinc-500">
-          <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">{col[:label]}</th>
-            
-            <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only">{gettext("Actions")}</span>
-            </th>
-          </tr>
-        </thead>
-        
-        <tbody
-          id={@id}
-          phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
-        >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
-            <td
-              :for={{col, i} <- Enum.with_index(@col)}
-              phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
-            >
-              <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
-                <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
-                  {render_slot(col, @row_item.(row))}
-                </span>
-              </div>
-            </td>
-            
-            <td :if={@action != []} class="relative w-14 p-0">
-              <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
-                <span
-                  :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-                >
-                  {render_slot(action, @row_item.(row))}
-                </span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th :for={col <- @col}>{col[:label]}</th>
+          
+          <th :if={@action != []}>
+            <span class="sr-only">{gettext("Actions")}</span>
+          </th>
+        </tr>
+      </thead>
+      
+      <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
+        <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
+          <td
+            :for={col <- @col}
+            phx-click={@row_click && @row_click.(row)}
+            class={@row_click && "hover:cursor-pointer"}
+          >
+            {render_slot(col, @row_item.(row))}
+          </td>
+          
+          <td :if={@action != []} class="w-0 font-semibold">
+            <div class="flex gap-4">
+              <%= for action <- @action do %>
+                {render_slot(action, @row_item.(row))}
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     """
   end
 
@@ -551,15 +553,15 @@ defmodule VoileWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <div class="mt-14 w-full">
-      <dl class="-my-4 divide-y divide-zinc-100">
-        <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500">{item.title}</dt>
+    <ul class="list">
+      <li :for={item <- @item} class="list-row">
+        <div class="list-col-grow">
+          <div class="font-bold">{item.title}</div>
           
-          <dd class="text-zinc-700">{render_slot(item)}</dd>
+          <div>{render_slot(item)}</div>
         </div>
-      </dl>
-    </div>
+      </li>
+    </ul>
     """
   end
 

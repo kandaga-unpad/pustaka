@@ -46,3 +46,6 @@ npm-debug.log
 # Except Thumbnail sample
 !/priv/static/uploads/thumbnail/upload.txt
 !/priv/static/uploads/media/upload.txt
+
+# Language Server
+.elixir_ls/

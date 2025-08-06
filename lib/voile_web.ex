@@ -39,8 +39,7 @@ defmodule VoileWeb do
   def controller do
     quote do
       use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: VoileWeb.Layouts]
+        formats: [:html, :json]
 
       use Gettext, backend: VoileWeb.Gettext
 
@@ -117,6 +116,7 @@ defmodule VoileWeb do
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
+      alias VoileWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

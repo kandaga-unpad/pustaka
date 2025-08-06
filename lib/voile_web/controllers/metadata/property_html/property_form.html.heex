@@ -1,8 +1,5 @@
 <.simple_form :let={f} for={@changeset} action={@action}>
-  <.error :if={@changeset.action}>
-    Oops, something went wrong! Please check the errors below.
-  </.error>
-   <.input field={f[:owner_id]} type="hidden" value={@current_user.id} />
+  <.input field={f[:owner_id]} type="hidden" value={@current_user.id} />
   <.input field={f[:label]} type="text" label="Label" />
   <.input field={f[:local_name]} type="text" label="Local name" />
   <.input
@@ -33,7 +30,5 @@
       Enum.map(List.wrap(@vocabulary_list), fn vocabulary -> {vocabulary.label, vocabulary.id} end)
     }
   />
-  <:actions>
-    <.button>Save Property</.button>
-  </:actions>
+  <:actions><.button>Save Property</.button></:actions>
 </.simple_form>

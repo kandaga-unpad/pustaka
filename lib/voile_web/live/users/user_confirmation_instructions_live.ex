@@ -1,29 +1,36 @@
 defmodule VoileWeb.UserConfirmationInstructionsLive do
   use VoileWeb, :live_view
 
+  on_mount {VoileWeb.UserAuth, :require_sudo_mode}
+
   alias Voile.Schema.Accounts
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        No confirmation instructions received?
-        <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
-      </.header>
-
-      <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
-        <.input field={@form[:email]} type="email" placeholder="Email" required />
-        <:actions>
-          <.button phx-disable-with="Sending..." class="w-full">
-            Resend confirmation instructions
-          </.button>
-        </:actions>
-      </.simple_form>
-
-      <p class="text-center mt-4">
-        <.link href={~p"/register"}>Register</.link> | <.link href={~p"/users/log_in"}>Log in</.link>
-      </p>
-    </div>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
+      <div class="mx-auto max-w-sm">
+        <div class="text-center">
+          <.header>
+            No confirmation instructions received?
+            <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
+          </.header>
+        </div>
+        
+        <.simple_form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
+          <.input field={@form[:email]} type="email" placeholder="Email" required />
+          <:actions>
+            <.button phx-disable-with="Sending..." class="w-full">
+              Resend confirmation instructions
+            </.button>
+          </:actions>
+        </.simple_form>
+        
+        <p class="text-center mt-4">
+          <.link href={~p"/register"}>Register</.link>
+          | <.link href={~p"/users/log_in"}>Log in</.link>
+        </p>
+      </div>
+    </Layouts.app>
     """
   end
 

@@ -10,6 +10,7 @@ defmodule Voile.Schema.Accounts.UserToken do
   # since someone with access to the email may take over the account.
   @reset_password_validity_in_days 1
   @confirm_validity_in_days 7
+  @magic_link_validity_in_minutes 15
   @change_email_validity_in_days 7
   @session_validity_in_days 60
 
@@ -17,6 +18,7 @@ defmodule Voile.Schema.Accounts.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
+    field :authenticated_at, :utc_datetime
     belongs_to :user, Voile.Schema.Accounts.User, type: :binary_id
 
     timestamps(type: :utc_datetime, updated_at: false)
@@ -43,7 +45,8 @@ defmodule Voile.Schema.Accounts.UserToken do
   """
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    {token, %UserToken{token: token, context: "session", user_id: user.id}}
+    dt = user.authenticated_at || DateTime.utc_now(:second)
+    {token, %UserToken{token: token, context: "session", user_id: user.id, authenticated_at: dt}}
   end
 
   @doc """
@@ -92,6 +95,34 @@ defmodule Voile.Schema.Accounts.UserToken do
        sent_to: sent_to,
        user_id: user.id
      }}
+  end
+
+  @doc """
+  Checks if the token is valid and returns its underlying lookup query.
+
+  If found, the query returns a tuple of the form `{user, token}`.
+
+  The given token is valid if it matches its hashed counterpart in the
+  database. This function also checks if the token is being used within
+  15 minutes. The context of a magic link token is always "login".
+  """
+  def verify_magic_link_token_query(token) do
+    case Base.url_decode64(token, padding: false) do
+      {:ok, decoded_token} ->
+        hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+
+        query =
+          from token in by_token_and_context_query(hashed_token, "login"),
+            join: user in assoc(token, :user),
+            where: token.inserted_at > ago(^@magic_link_validity_in_minutes, "minute"),
+            where: token.sent_to == user.email,
+            select: {user, token}
+
+        {:ok, query}
+
+      :error ->
+        :error
+    end
   end
 
   @doc """
