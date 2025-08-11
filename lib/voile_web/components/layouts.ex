@@ -75,7 +75,7 @@ defmodule VoileWeb.Layouts do
                 <.icon name="hero-calendar-days" />
               </.button>
             </.link>
-            <%= if @current_user do %>
+            <%= if @current_scope do %>
               <.link navigate="/manage">
                 <.button class="default-btn">{@current_scope.username}</.button>
               </.link>

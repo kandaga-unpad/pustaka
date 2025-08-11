@@ -7,9 +7,9 @@
     <.live_title default="Voile" suffix=" · the Magic Library">
       {assigns[:page_title]}
     </.live_title>
-     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
     
     <script>
@@ -36,7 +36,5 @@
     </script>
   </head>
   
-  <body class="bg-white anti-aliased w-full">
-    {@inner_content}
-  </body>
+  <body class="bg-white anti-aliased w-full">{@inner_content}</body>
 </html>

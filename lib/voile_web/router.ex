@@ -54,12 +54,18 @@ defmodule VoileWeb.Router do
   scope "/", VoileWeb do
     pipe_through [:browser]
 
-    live "/register", UserRegistrationLive, :new
-    live "/login", UserLoginLive, :new
-    live "/users/reset_password", UserForgotPasswordLive, :new
-    live "/users/reset_password/:token", UserResetPasswordLive, :edit
+    live_session :current_user,
+      on_mount: [{VoileWeb.UserAuth, :mount_current_scope}] do
+      live "/register", UserRegistrationLive, :new
+      live "/login", UserLoginLive, :new
+      live "/users/reset_password", UserForgotPasswordLive, :new
+      live "/users/reset_password/:token", UserResetPasswordLive, :edit
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+    end
 
     post "/users/log_in", UserSessionController, :create
+    delete "/users/log_out", UserSessionController, :delete
   end
 
   scope "/", VoileWeb do
@@ -134,18 +140,6 @@ defmodule VoileWeb.Router do
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
         end
       end
-    end
-  end
-
-  scope "/", VoileWeb do
-    pipe_through [:browser]
-
-    delete "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{VoileWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
   end
 
