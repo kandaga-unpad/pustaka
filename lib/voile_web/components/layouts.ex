@@ -27,7 +27,6 @@ defmodule VoileWeb.Layouts do
 
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :current_user, :map, default: nil
 
   attr :current_scope, :map,
     default: nil,
@@ -78,7 +77,7 @@ defmodule VoileWeb.Layouts do
             </.link>
             <%= if @current_user do %>
               <.link navigate="/manage">
-                <.button class="default-btn">{@current_user.username}</.button>
+                <.button class="default-btn">{@current_scope.username}</.button>
               </.link>
             <% else %>
               <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>

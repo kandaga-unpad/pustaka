@@ -3,7 +3,7 @@ defmodule VoileWeb.UserLoginLive do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="max-w-7xl mx-auto flex flex-col items-center">
         <.header>
           Log in to account
