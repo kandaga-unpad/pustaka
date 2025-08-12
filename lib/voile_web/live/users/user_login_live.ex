@@ -28,7 +28,7 @@ defmodule VoileWeb.UserLoginLive do
             </:actions>
             
             <:actions>
-              <.button phx-disable-with="Logging in..." class="w-full">
+              <.button phx-disable-with="Logging in..." class="default-btn w-full">
                 Log in <span aria-hidden="true">→</span>
               </.button>
             </:actions>
@@ -36,7 +36,7 @@ defmodule VoileWeb.UserLoginLive do
           
           <div>
             <%= if @current_scope === nil do %>
-              <.button phx-click="google_auth">Login with Google</.button>
+              <.button phx-click="google_auth" class="default-btn">Login with Google</.button>
             <% else %>
               <.button disabled>Logout</.button>
             <% end %>

@@ -70,18 +70,16 @@ defmodule VoileWeb.Layouts do
           <div class="flex lg:hidden"><.button><.icon name="hero-bars-3" /></.button></div>
           
           <div class="hidden lg:block">
-            <.link navigate="/manage">
-              <.button class="bg-zinc-700 hover:bg-zinc-600">
-                <.icon name="hero-calendar-days" />
-              </.button>
-            </.link>
-            <%= if @current_scope do %>
-              <.link navigate="/manage">
-                <.button class="default-btn">{@current_scope.username}</.button>
-              </.link>
-            <% else %>
-              <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>
-            <% end %>
+            <div class="flex items-center justify-center gap-2">
+              <Layouts.theme_toggle />
+              <%= if @current_scope do %>
+                <.link navigate="/manage">
+                  <.button class="default-btn">{@current_scope.username}</.button>
+                </.link>
+              <% else %>
+                <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>

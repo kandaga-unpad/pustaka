@@ -91,9 +91,7 @@ defmodule VoileWeb.CoreComponents do
                 </button>
               </div>
               
-              <div id={"#{@id}-content"}>
-                {render_slot(@inner_block)}
-              </div>
+              <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
         </div>
@@ -253,15 +251,11 @@ defmodule VoileWeb.CoreComponents do
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </.link>
+      <.link class={@class} {@rest}>{render_slot(@inner_block)}</.link>
       """
     else
       ~H"""
-      <button class={@class} {@rest}>
-        {render_slot(@inner_block)}
-      </button>
+      <button class={@class} {@rest}>{render_slot(@inner_block)}</button>
       """
     end
   end
@@ -351,7 +345,6 @@ defmodule VoileWeb.CoreComponents do
           /> {@label}
         </span>
       </label>
-      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -373,7 +366,6 @@ defmodule VoileWeb.CoreComponents do
            {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
-      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -393,7 +385,6 @@ defmodule VoileWeb.CoreComponents do
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
-      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -417,7 +408,6 @@ defmodule VoileWeb.CoreComponents do
           {@rest}
         />
       </label>
-      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -455,15 +445,14 @@ defmodule VoileWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
+    <header class={[
+      @actions != [] && "flex items-center justify-between gap-6",
+      "pb-4 text-center mt-10 mb-5"
+    ]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
-          {render_slot(@inner_block)}
-        </h1>
+        <h5 class="font-semibold leading-8">{render_slot(@inner_block)}</h5>
         
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
-          {render_slot(@subtitle)}
-        </p>
+        <p :if={@subtitle != []} class="text-sm text-base-content/70">{render_slot(@subtitle)}</p>
       </div>
       
       <div class="flex-none">{render_slot(@actions)}</div>
@@ -508,9 +497,7 @@ defmodule VoileWeb.CoreComponents do
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
           
-          <th :if={@action != []}>
-            <span class="sr-only">{gettext("Actions")}</span>
-          </th>
+          <th :if={@action != []}><span class="sr-only">{gettext("Actions")}</span></th>
         </tr>
       </thead>
       
