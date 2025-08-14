@@ -62,7 +62,7 @@ defmodule Voile.Schema.Accounts.UserToken do
       from token in by_token_and_context_query(token, "session"),
         join: user in assoc(token, :user),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
-        select: user
+        select: {%{user | authenticated_at: token.authenticated_at}, token.inserted_at}
 
     {:ok, query}
   end

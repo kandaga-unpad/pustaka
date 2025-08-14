@@ -38,7 +38,13 @@ defmodule VoileWeb.UserLoginLive do
             <%= if @current_scope === nil do %>
               <.button phx-click="google_auth" class="default-btn">Login with Google</.button>
             <% else %>
-              <.button disabled>Logout</.button>
+              <.link
+                href="/users/log_out"
+                method="delete"
+                class="default-menu bg-red-400 hover:bg-red-500 text-white"
+              >
+                Log out
+              </.link>
             <% end %>
           </div>
         </div>

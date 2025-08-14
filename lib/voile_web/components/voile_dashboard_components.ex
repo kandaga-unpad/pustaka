@@ -4,6 +4,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   use Gettext, backend: VoileWeb.Gettext
 
   alias Phoenix.LiveView.JS
+  alias VoileWeb.Layouts
 
   import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1]
 
@@ -37,16 +38,13 @@ defmodule VoileWeb.VoileDashboardComponents do
     ~H"""
     <div class="w-full bg-white flex items-center my-5 p-5 rounded-lg gap-6">
       <div class="nav-bar-logo">
-        <.link patch="/manage#">
-          <img src="/images/v.png" class="w-10 h-8" alt="Voile Logo" />
-        </.link>
+        <.link patch="/manage#"><img src="/images/v.png" class="w-24 h-12" alt="Voile Logo" /></.link>
       </div>
       
       <div class="w-full text-blue-500 flex gap-4">
         <.link patch="/manage" class={["default-menu", @active_nav == "/manage" && "active-menu"]}>
           Dashboard
         </.link>
-        
         <%= for menu <- @list_menu do %>
           <.link
             patch={menu.url}
@@ -57,7 +55,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         <% end %>
       </div>
       
-      <div class="w-full max-w-36">
+      <div class="w-full flex justify-end gap-3">
+        <Layouts.theme_toggle />
         <.link href="/" class="default-menu bg-red-400 hover:bg-red-500 text-white">Exit</.link>
         <.link
           href="/users/log_out"
@@ -80,9 +79,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   def side_bar_dashboard(assigns) do
     ~H"""
     <section class="bg-white rounded-xl p-5 max-w-64 w-full h-full mr-5">
-      <div class="flex flex-col gap-2">
-        {render_slot(@inner_block)}
-      </div>
+      <div class="flex flex-col gap-2">{render_slot(@inner_block)}</div>
     </section>
     """
   end
@@ -110,7 +107,6 @@ defmodule VoileWeb.VoileDashboardComponents do
           >
             Collections
           </.link>
-          
           <.link
             patch="/manage/catalog/items"
             class={[
@@ -124,9 +120,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         </div>
       </div>
       
-      <div>
-        <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
-      </div>
+      <div><.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" /></div>
     </div>
     """
   end
@@ -140,7 +134,6 @@ defmodule VoileWeb.VoileDashboardComponents do
       <.link navigate="/manage/settings/">
         <h3 class="text-lg font-semibold mb-4">Settings</h3>
       </.link>
-      
       <ul class="space-y-2">
         <li>
           <.link patch="/manage/settings/user_profile" class="text-blue-600 hover:underline">
@@ -218,9 +211,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                 </button>
               </div>
               
-              <div id={"#{@id}-content"}>
-                {render_slot(@inner_block)}
-              </div>
+              <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
         </div>
@@ -242,7 +233,6 @@ defmodule VoileWeb.VoileDashboardComponents do
       
       <div class="flex justify-end gap-2 mt-4">
         <.button phx-click={JS.exec("data-cancel", to: "#delete-modal")}>Cancel</.button>
-        
         <.button phx-click={JS.exec("data-confirm", to: "#delete-modal")}>Delete</.button>
       </div>
     </.modal>
@@ -264,9 +254,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             Prev
           </.link>
         <% else %>
-          <.button phx-click={@event} {build_phx_values(assigns, @page - 1)}>
-            Prev
-          </.button>
+          <.button phx-click={@event} {build_phx_values(assigns, @page - 1)}>Prev</.button>
         <% end %>
       <% else %>
         <.button class="disabled-btn" disabled>Prev</.button>
@@ -298,9 +286,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             Next
           </.link>
         <% else %>
-          <.button phx-click={@event} {build_phx_values(assigns, @page + 1)}>
-            Next
-          </.button>
+          <.button phx-click={@event} {build_phx_values(assigns, @page + 1)}>Next</.button>
         <% end %>
       <% else %>
         <.button class="disabled-btn" disabled>Next</.button>

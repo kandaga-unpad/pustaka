@@ -73,7 +73,7 @@ defmodule VoileWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [
-        {VoileWeb.UserAuth, :ensure_authenticated},
+        {VoileWeb.UserAuth, :require_authenticated},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu}
       ] do

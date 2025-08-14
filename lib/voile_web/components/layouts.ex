@@ -36,15 +36,15 @@ defmodule VoileWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="bg-violet-200 px-3 py-1 text-sm font-semibold">
+    <div class="bg-violet-200 dark:bg-gray-500 px-3 py-1 text-sm font-semibold">
       <p>If you need information about [Redacted]</p>
     </div>
 
     <header
-      class="px-4 sm:px-6 lg:px-8 bg-white/90 backdrop-blur-sm z-10 w-full"
+      class="px-4 sm:px-6 lg:px-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm z-10 w-full"
       id="navigationHeader"
     >
-      <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
+      <div class="flex items-center justify-between py-3 text-sm">
         <div class="flex items-center gap-2">
           <a href="/" class="flex items-center gap-2">
             <img src={~p"/images/v.png"} width="36" />
@@ -52,7 +52,7 @@ defmodule VoileWeb.Layouts do
           </a>
         </div>
         
-        <div class="hidden lg:flex items-center gap-10 font-semibold leading-6 text-zinc-900">
+        <div class="hidden lg:flex items-center gap-10 font-semibold leading-6">
           <div><.link href="/">Beranda</.link></div>
           
           <div><.link href="/about">Tentang</.link></div>
@@ -74,7 +74,7 @@ defmodule VoileWeb.Layouts do
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <.link navigate="/manage">
-                  <.button class="default-btn">{@current_scope.username}</.button>
+                  <.button class="default-btn">{@current_scope.user.username}</.button>
                 </.link>
               <% else %>
                 <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>

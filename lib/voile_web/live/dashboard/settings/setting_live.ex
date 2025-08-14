@@ -9,19 +9,17 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.header>
-        <h4>Settings</h4>
-        
-        <:subtitle>Manage the system</:subtitle>
-      </.header>
+    <.header>
+      <h4>Settings</h4>
       
-      <div class="flex gap-4">
-        <div class="w-full max-w-64"><.dashboard_settings_sidebar /></div>
-        
-        <div class="w-full bg-white p-4 rounded-lg">Content goes here.</div>
-      </div>
-    </Layouts.app>
+      <:subtitle>Manage the system</:subtitle>
+    </.header>
+
+    <div class="flex gap-4">
+      <div class="w-full max-w-64"><.dashboard_settings_sidebar /></div>
+      
+      <div class="w-full bg-white p-4 rounded-lg">Content goes here.</div>
+    </div>
     """
   end
 end

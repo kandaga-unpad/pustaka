@@ -1,11 +1,11 @@
-<main class="w-full min-h-screen h-full flex flex-col bg-violet-50">
+<main class="w-full min-h-screen h-full flex flex-col bg-violet-50 dark:bg-gray-800">
   <section class="voile-gradient text-white py-24 px-5">
     <div class="max-w-7xl mx-auto">
       <h3>Voile Dashboard</h3>
       
-      <%= if @current_user do %>
+      <%= if @current_scope.user do %>
         <div>
-          <p>Hello, {@current_user.username}!</p>
+          <p>Hello, {@current_scope.user.username}!</p>
         </div>
       <% else %>
         <div>
@@ -16,9 +16,7 @@
   </section>
   
   <section class="w-full h-full flex flex-col max-w-7xl mx-auto">
-    <div>
-      <.flash_group flash={@flash} />
-    </div>
+    <div><.flash_group flash={@flash} /></div>
     
     <div class="-mt-24">
       <div class="max-w-7xl mx-auto flex gap-2 items-end justify-end w-full text-white">
@@ -31,7 +29,6 @@
         >
           Master
         </.link>
-        
         <.link
           navigate="/manage/metaresource"
           class={[
@@ -92,14 +89,10 @@
               <% end %>
             </div>
             
-            <div class="default-card">
-              {@inner_content}
-            </div>
+            <div class="default-card">{@inner_content}</div>
           </div>
         <% else %>
-          <div class="w-full mx-4 md:mx-0">
-            {@inner_content}
-          </div>
+          <div class="w-full mx-4 md:mx-0">{@inner_content}</div>
         <% end %>
       </div>
     </section>

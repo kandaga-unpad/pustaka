@@ -3,7 +3,6 @@ defmodule VoileWeb.VoileComponents do
   use Phoenix.LiveComponent
 
   alias Phoenix.LiveView.JS
-  # import KandaGLAMWeb.Gettext
 
   @doc """
   Main Search Component for GLAM (Gallery, Library, Archive, Museum)
@@ -28,7 +27,6 @@ defmodule VoileWeb.VoileComponents do
         >
           Search
         </button>
-        
         <button
           id="tab2"
           tabindex="2"
@@ -37,7 +35,6 @@ defmodule VoileWeb.VoileComponents do
         >
           Gallery
         </button>
-        
         <button
           id="tab3"
           tabindex="3"
@@ -46,7 +43,6 @@ defmodule VoileWeb.VoileComponents do
         >
           Library
         </button>
-        
         <button
           id="tab4"
           tabindex="4"
@@ -55,7 +51,6 @@ defmodule VoileWeb.VoileComponents do
         >
           Archive
         </button>
-        
         <button
           id="tab5"
           tabindex="5"
@@ -66,79 +61,81 @@ defmodule VoileWeb.VoileComponents do
         </button>
       </div>
       
-      <div class="tab-blocks">
-        <div id="quick-search" class="tab-content">
-          <input
-            type="text"
-            placeholder="Search what you need here..."
-            name="quick-search"
-            class="input-main-search"
-          />
+      <div class="bg-violet-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg flex gap-2">
+        <div class="w-full">
+          <div id="quick-search" class="tab-content block">
+            <input
+              type="text"
+              placeholder="Search what you need here..."
+              name="quick-search"
+              class="input-main-search"
+            />
+          </div>
+          
+          <div id="gallery-search" class="tab-content hidden">
+            <input
+              type="text"
+              placeholder="Feeling blue ? find something interesting on our Gallery..."
+              name="gallery-search"
+              class="input-main-search"
+            />
+          </div>
+          
+          <div id="library-search" class="tab-content hidden">
+            <input
+              type="text"
+              placeholder="Search more and read more from our books..."
+              name="library-search"
+              class="input-main-search"
+            />
+          </div>
+          
+          <div id="archive-search" class="tab-content hidden">
+            <input
+              type="text"
+              placeholder="Checkout our historical archive document..."
+              name="archive-search"
+              class="input-main-search"
+            />
+          </div>
+          
+          <div id="museum-search" class="tab-content hidden">
+            <input
+              type="text"
+              placeholder="Bringing memories comeback, search in museum..."
+              name="museum-search"
+              class="input-main-search"
+            />
+          </div>
         </div>
         
-        <div id="gallery-search" class="tab-content hidden">
-          <input
-            type="text"
-            placeholder="Feeling blue ? find something interesting on our Gallery..."
-            name="gallery-search"
-            class="input-main-search"
-          />
-        </div>
-        
-        <div id="library-search" class="tab-content hidden">
-          <input
-            type="text"
-            placeholder="Search more and read more from our books..."
-            name="library-search"
-            class="input-main-search"
-          />
-        </div>
-        
-        <div id="archive-search" class="tab-content hidden">
-          <input
-            type="text"
-            placeholder="Checkout our historical archive document..."
-            name="archive-search"
-            class="input-main-search"
-          />
-        </div>
-        
-        <div id="museum-search" class="tab-content hidden">
-          <input
-            type="text"
-            placeholder="Bringing memories comeback, search in museum..."
-            name="museum-search"
-            class="input-main-search"
-          />
-        </div>
-        
-        <button class="default-btn">
-          Search
-        </button>
+        <div><button class="default-btn">Search</button></div>
       </div>
     </div>
     """
   end
 
-  ## JS Commands
+  ## JS Commands (with fade transitions)
   def show_active_content(js \\ %JS{}, to) do
     js
-    |> JS.add_class("hidden",
-      to: "div.tab-content",
-      transition: {"ease-out", "opacity-0", "opacity-100"},
-      time: 100
+    |> JS.hide(
+      to: ".tab-content",
+      transition:
+        {"transition-all transform ease-in duration-50", "opacity-100 translate-y-0",
+         "opacity-0 translate-y-1"}
     )
-    |> JS.remove_class(
-      "hidden",
+    |> JS.show(
       to: to,
-      transition: {"ease-out", "opacity-0", "opacity-100"},
-      time: 100
+      transition:
+        {"transition-all transform ease-out duration-150", "opacity-0 translate-y-1",
+         "opacity-100 translate-y-0"},
+      display: "block"
     )
   end
 
   def set_active_tab(js \\ %JS{}, tab) do
     js
-    |> JS.remove_class("active-tab-item", to: "button.active-tab-item")
+    |> JS.remove_class("active-tab-item", to: ".search-tab-item")
     |> JS.add_class("active-tab-item", to: tab)
   end
 end

@@ -110,3 +110,15 @@ function handleScroll() {
 window.onscroll = function () {
   handleScroll();
 };
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("click", function (e) {
+    if (
+      e.target.classList.contains("search-tab-item") &&
+      e.target.classList.contains("active-tab-item")
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+});
