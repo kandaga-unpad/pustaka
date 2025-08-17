@@ -18,9 +18,20 @@ defmodule Voile.Repo.Migrations.CreateCollections do
       timestamps(type: :utc_datetime)
     end
 
+    create index(:collections, [:title])
     create index(:collections, [:type_id])
     create index(:collections, [:template_id])
     create index(:collections, [:creator_id])
     create index(:collections, [:unit_id])
+
+    alter table(:collections) do
+      add :parent_id, references(:collections, type: :binary_id, on_delete: :nilify_all)
+      add :sort_order, :integer
+      add :collection_type, :string
+    end
+
+    create index(:collections, [:parent_id])
+    create index(:collections, [:sort_order])
+    create index(:collections, [:collection_type])
   end
 end

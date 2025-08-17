@@ -36,13 +36,18 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def nav_bar(assigns) do
     ~H"""
-    <div class="w-full bg-white flex items-center my-5 p-5 rounded-lg gap-6">
+    <div class="w-full bg-white dark:bg-gray-700 flex items-center my-5 p-5 rounded-lg gap-6">
       <div class="nav-bar-logo">
-        <.link patch="/manage#"><img src="/images/v.png" class="w-24 h-12" alt="Voile Logo" /></.link>
+        <.link patch="/manage#">
+          <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
+        </.link>
       </div>
       
       <div class="w-full text-blue-500 flex gap-4">
-        <.link patch="/manage" class={["default-menu", @active_nav == "/manage" && "active-menu"]}>
+        <.link
+          patch="/manage"
+          class={["default-menu", @active_nav == "/manage" && "active-menu"]}
+        >
           Dashboard
         </.link>
         <%= for menu <- @list_menu do %>
@@ -78,7 +83,7 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def side_bar_dashboard(assigns) do
     ~H"""
-    <section class="bg-white rounded-xl p-5 max-w-64 w-full h-full mr-5">
+    <section class="bg-white dark:bg-gray-700 rounded-xl p-5 max-w-64 w-full h-full mr-5">
       <div class="flex flex-col gap-2">{render_slot(@inner_block)}</div>
     </section>
     """
@@ -88,7 +93,7 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def dashboard_menu_bar(assigns) do
     ~H"""
-    <div class="bg-white rounded-xl p-5 w-full h-full flex items-center justify-between">
+    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full h-full flex items-center justify-between">
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
           <h5>Halo, Admin!</h5>

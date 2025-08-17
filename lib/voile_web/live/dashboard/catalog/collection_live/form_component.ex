@@ -29,9 +29,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             This action cannot be undone. Please confirm your action.
           </p>
           
-          <p class="text-sm italic font-semibold text-red-500">
-            You will delete this property :
-          </p>
+          <p class="text-sm italic font-semibold text-red-500">You will delete this property :</p>
           
           <div class="my-4">
             <h6 class="text-brand">
@@ -56,7 +54,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             >
               Delete
             </.button>
-            
             <.button
               class="w-full"
               phx-click={hide_modal("col_field_delete_confirmation")}
@@ -70,9 +67,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       
       <.modal id="item_delete_confirmation">
         <div class="text-center">
-          <h5>
-            Are you sure want to delete this item data?
-          </h5>
+          <h5>Are you sure want to delete this item data?</h5>
           
           <p class="text-sm text-gray-500">
             This action cannot be undone. Please confirm your action.
@@ -81,9 +76,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <div class="my-4">
             <p class="text-xs">with value :</p>
             
-            <h6 class="text-brand">
-              {(@chosen_item_field && @chosen_item_field.item_code) || ""}
-            </h6>
+            <h6 class="text-brand">{(@chosen_item_field && @chosen_item_field.item_code) || ""}</h6>
           </div>
         </div>
         
@@ -96,7 +89,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           >
             Delete
           </.button>
-          
           <.button
             class="w-full"
             phx-click={hide_modal("item_delete_confirmation")}
@@ -173,14 +165,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             >
               Create {@creator_input}
             </.button>
-            
             <%= for {_msg, _opts} <- Keyword.get_values(@form.errors, :creator_id) do %>
               <p class="text-red-500 text-sm mt-2">Please choose Creator or click Create!</p>
             <% end %>
           <% end %>
           
           <%= if @collection.creator_id != nil do %>
-            <.button type="button" phx-click="delete_creator" phx-target={@myself}>
+            <.button type="button" phx-click="delete_creator" phx-target={@myself} class="warning-btn">
               Delete Author
             </.button>
           <% end %>
@@ -216,7 +207,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           /> <.input field={@form[:thumbnail]} type="text" label="Thumbnail" disabled="true" />
           <input
             name={@form[:creator_id].name}
-            value={@form[:creator_id].value || @current_user.id}
+            value={@form[:creator_id].value || @current_scope.user.id}
             type="hidden"
             disabled
           />
@@ -337,8 +328,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         clip-rule="evenodd"
                       >
                       </path>
-                    </svg>
-                     <span class="text-sm font-medium">Thumbnail uploaded</span>
+                    </svg> <span class="text-sm font-medium">Thumbnail uploaded</span>
                   </div>
                   
                   <.button
@@ -676,7 +666,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 Save
               </.button>
             <% else %>
-              <.button type="button" phx-click="next_step" phx-target={@myself} class="w-full">
+              <.button
+                type="button"
+                phx-click="next_step"
+                phx-target={@myself}
+                class="primary-btn w-full"
+              >
                 Next &rightarrow;
               </.button>
             <% end %>

@@ -122,3 +122,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+
+function applySystemTheme() {
+  const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute(
+    "data-theme",
+    isDark ? "dark" : "light"
+  );
+  document.documentElement.classList.toggle("dark", isDark);
+}
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", () => {
+    if (localStorage.getItem("theme") === "system") {
+      applySystemTheme();
+    }
+  });
+
+window.addEventListener("phx:set-theme", (e) => {
+  let pref = e.target.dataset.phxTheme;
+  localStorage.setItem("theme", pref);
+  document.documentElement.setAttribute("data-theme-pref", pref);
+
+  if (pref === "system") {
+    applySystemTheme();
+  } else {
+    document.documentElement.setAttribute("data-theme", pref);
+    document.documentElement.classList.toggle("dark", pref === "dark");
+  }
+});
+
+(function initTheme() {
+  let pref = localStorage.getItem("theme") || "system";
+  document.documentElement.setAttribute("data-theme-pref", pref);
+
+  if (pref === "system") {
+    applySystemTheme();
+  } else {
+    document.documentElement.setAttribute("data-theme", pref);
+    document.documentElement.classList.toggle("dark", pref === "dark");
+  }
+})();

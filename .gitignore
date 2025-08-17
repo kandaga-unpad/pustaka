@@ -47,5 +47,8 @@ npm-debug.log
 !/priv/static/uploads/thumbnail/upload.txt
 !/priv/static/uploads/media/upload.txt
 
+# Scripts Source
+/scripts/*.csv
+
 # Language Server
 .elixir_ls/

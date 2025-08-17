@@ -14,7 +14,7 @@
    curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
    Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
 @plugin "../vendor/daisyui" {
-  themes: false;
+  themes: light --default, dark --prefersdark;
 }
 
 /* daisyUI theme plugin. You can update this file by fetching the latest version with:
@@ -249,7 +249,7 @@
   }
 
   .default-menu {
-    @apply px-3 py-2 rounded-lg transition-all hover:bg-violet-100;
+    @apply px-3 py-2 rounded-lg transition-all dark:text-violet-200 hover:bg-violet-100 dark:hover:text-violet-500;
   }
 
   .active-menu {
@@ -265,11 +265,11 @@
   }
 
   .voile-card {
-    @apply flex flex-col items-center rounded-lg bg-violet-100 shadow-lg p-12 text-justify;
+    @apply flex flex-col items-center rounded-lg bg-violet-100 dark:bg-gray-600 shadow-lg p-12 text-justify;
   }
 
   .default-card {
-    @apply bg-white w-full rounded-xl p-5;
+    @apply bg-white dark:bg-gray-800 w-full rounded-xl p-5;
   }
 
   .sidebar-size {

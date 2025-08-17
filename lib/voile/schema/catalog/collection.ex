@@ -9,7 +9,7 @@ defmodule Voile.Schema.Catalog.Collection do
   alias Voile.Schema.Catalog.CollectionField
   alias Voile.Schema.Catalog.Item
 
-  @primary_key {:id, :binary_id, autogenerate: false}
+  @primary_key {:id, :binary_id, autogenerate: true}
   schema "collections" do
     field :status, :string
     field :description, :string
@@ -17,10 +17,16 @@ defmodule Voile.Schema.Catalog.Collection do
     field :thumbnail, :string
     field :access_level, :string
     field :old_biblio_id, :integer
+    field :collection_type, :string
+    field :sort_order, :integer
+
+    belongs_to :parent, __MODULE__
     belongs_to :resource_class, ResourceClass, foreign_key: :type_id
     belongs_to :resource_template, ResourceTemplate, foreign_key: :template_id
     belongs_to :mst_creator, Creator, foreign_key: :creator_id
     belongs_to :node, Node, foreign_key: :unit_id
+
+    has_many :children, __MODULE__, foreign_key: :parent_id
     has_many :collection_fields, CollectionField, on_replace: :delete
 
     has_many :items, Item,
@@ -54,7 +60,6 @@ defmodule Voile.Schema.Catalog.Collection do
     |> validate_required([:title, :description, :status, :access_level, :thumbnail, :creator_id],
       message: "This field is required"
     )
-    |> unique_constraint(:title)
     |> validate_inclusion(:status, @statuses, message: "Status tidak valid")
     |> validate_inclusion(:access_level, @access_levels, message: "Access level tidak valid")
   end

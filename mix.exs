@@ -95,6 +95,7 @@ defmodule Voile.MixProject do
       ],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "ecto.importscript": ["run scripts/import_biblio.exs", "run scripts/import_items.exs"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind voile", "esbuild voile"],
       "assets.deploy": [

@@ -1,6 +1,6 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} />
-  <div class="bg-white p-4 rounded-xl shadow-md">
+  <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">Kembali</.back>
     
     <.header>
@@ -70,7 +70,7 @@
         collection_type={@collection_type}
         collection_properties={@collection_properties}
         node_list={@node_location}
-        current_user={@current_user}
+        current_scope={@current_scope}
         time_identifier={@time_identifier}
         patch={~p"/manage/catalog/collections"}
       />
