@@ -62,7 +62,7 @@ defmodule VoileWeb.VoileComponents do
       </div>
       
       <div class="bg-violet-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg flex gap-2">
-        <div class="w-full">
+        <div class="w-full tab-container">
           <div id="quick-search" class="tab-content block">
             <input
               type="text"
@@ -120,16 +120,11 @@ defmodule VoileWeb.VoileComponents do
     js
     |> JS.hide(
       to: ".tab-content",
-      transition:
-        {"transition-all transform ease-in duration-50", "opacity-100 translate-y-0",
-         "opacity-0 translate-y-1"}
+      transition: {"transition-opacity ease-in duration-150", "opacity-100", "opacity-0"}
     )
     |> JS.show(
       to: to,
-      transition:
-        {"transition-all transform ease-out duration-150", "opacity-0 translate-y-1",
-         "opacity-100 translate-y-0"},
-      display: "block"
+      transition: {"transition-opacity ease-out duration-200", "opacity-0", "opacity-100"}
     )
   end
 

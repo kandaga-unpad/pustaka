@@ -160,7 +160,7 @@
   }
 
   a {
-    @apply text-violet-500;
+    @apply text-violet-500 dark:text-violet-200;
   }
 }
 
@@ -188,8 +188,12 @@
     @apply flex items-center justify-between;
   }
 
+  .tab-container {
+    @apply relative min-h-[3.5rem];
+  }
+
   .tab-content {
-    @apply w-full;
+    @apply absolute top-0 left-0 w-full;
   }
 
   .tab-option {

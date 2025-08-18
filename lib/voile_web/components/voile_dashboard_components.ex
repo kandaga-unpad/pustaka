@@ -139,15 +139,21 @@ defmodule VoileWeb.VoileDashboardComponents do
       <.link navigate="/manage/settings/">
         <h3 class="text-lg font-semibold mb-4">Settings</h3>
       </.link>
-      <ul class="space-y-2">
+      <ul class="space-y-6">
         <li>
-          <.link patch="/manage/settings/user_profile" class="text-blue-600 hover:underline">
+          <.link
+            patch="/manage/settings/user_profile"
+            class="text-blue-600 dark:text-blue-200 hover:underline"
+          >
             User Profile
           </.link>
         </li>
         
         <li>
-          <.link patch="/manage/settings/other_settings" class="text-blue-600 hover:underline">
+          <.link
+            patch="/manage/settings/other_settings"
+            class="text-blue-600 dark:text-blue-200 hover:underline"
+          >
             Other Settings
           </.link>
         </li>

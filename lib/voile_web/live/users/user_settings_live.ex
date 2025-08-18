@@ -15,7 +15,7 @@ defmodule VoileWeb.UserSettingsLive do
       <div class="w-full max-w-64"><.dashboard_settings_sidebar /></div>
       
       <div class="w-full space-y-12 divide-y">
-        <div class="bg-white rounded-lg p-4">
+        <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.simple_form
             for={@email_form}
             id="email_form"
@@ -36,7 +36,7 @@ defmodule VoileWeb.UserSettingsLive do
           </.simple_form>
         </div>
         
-        <div class="bg-white rounded-lg p-4">
+        <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.simple_form
             for={@password_form}
             id="password_form"

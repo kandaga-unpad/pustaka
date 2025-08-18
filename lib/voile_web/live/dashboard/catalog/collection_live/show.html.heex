@@ -1,6 +1,6 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} />
-  <div class="bg-white p-4 rounded-xl shadow-md">
+  <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate={~p"/manage/catalog/collections"}>Back to collections</.back>
     
     <.header>
@@ -44,9 +44,7 @@
     </div>
     
     <div class="my-10">
-      <h6>
-        Metadata
-      </h6>
+      <h6>Metadata</h6>
       
       <div>
         <div class="overflow-x-auto">
@@ -70,9 +68,7 @@
                     {field.label}
                   </td>
                   
-                  <td class="p-4 text-sm text-gray-500">
-                    {field.value}
-                  </td>
+                  <td class="p-4 text-sm text-gray-500">{field.value}</td>
                 </tr>
               <% end %>
             </tbody>
