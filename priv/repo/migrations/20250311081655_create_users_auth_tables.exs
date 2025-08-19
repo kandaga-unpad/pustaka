@@ -36,7 +36,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     create unique_index(:user_roles, [:name])
 
     alter table(:users) do
-      add :user_role_id, references(:user_roles, on_delete: :nilify_all)
+      add :user_role_id, references(:user_roles), null: false
     end
 
     create table(:users_tokens) do

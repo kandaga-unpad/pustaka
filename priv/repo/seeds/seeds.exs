@@ -188,25 +188,132 @@ end
 # Populate the User Roles
 user_roles = [
   %{
-    name: "system_administrator",
-    description: "Full system control and configuration",
-    access_level: 100,
-    permissions: %{}
+    name: "Admin Node",
+    description: "Full administrative access to node operations",
+    permissions: %{
+      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
+    }
   },
   %{
-    name: "head_librarian",
-    description: "Manage collections and user accounts",
-    access_level: 90,
-    permissions: %{}
+    name: "Koordinator Koleksi",
+    description: "Collection coordinator with management access",
+    permissions: %{
+      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
+    }
   },
   %{
-    name: "librarian",
-    description: "Manage collections and assist users",
-    access_level: 80,
-    permissions: %{}
+    name: "Pustakawan (Koordinator)",
+    description: "Lead librarian with coordination responsibilities",
+    permissions: %{
+      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
+    }
   },
   %{
-    name: "curators"
+    name: "Pustakawan Sirkulasi",
+    description: "Circulation librarian",
+    permissions: %{
+      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
+    }
+  },
+  %{
+    name: "Pustakawan Pengolahan (Buku)",
+    description: "Book processing librarian",
+    permissions: %{
+      "books" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "cataloging" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Pustakawan Referensi",
+    description: "Reference librarian",
+    permissions: %{
+      "reference" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
+    }
+  },
+  %{
+    name: "Pustakawan Sistem (TI)",
+    description: "IT systems librarian",
+    permissions: %{
+      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "users" => %{"create" => false, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Administrator Dev",
+    description: "Development administrator",
+    permissions: %{
+      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
+    }
+  },
+  %{
+    name: "Pustakawan Pengolahan (ETD)",
+    description: "Electronic thesis and dissertation processing librarian",
+    permissions: %{
+      "etd" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "cataloging" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Pustakawan (General)",
+    description: "General librarian",
+    permissions: %{
+      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false},
+      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Pustakawan Koleksi Populer",
+    description: "Popular collection librarian",
+    permissions: %{
+      "popular_collections" => %{
+        "create" => true,
+        "read" => true,
+        "update" => true,
+        "delete" => false
+      },
+      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Arsiparis (Koordinator)",
+    description: "Head archivist",
+    permissions: %{
+      "archives" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
+    }
+  },
+  %{
+    name: "Arsiparis",
+    description: "Archivist",
+    permissions: %{
+      "archives" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Kurator Museum",
+    description: "Museum curator",
+    permissions: %{
+      "museum" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "exhibitions" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
+  },
+  %{
+    name: "Kurator Galeri",
+    description: "Gallery curator",
+    permissions: %{
+      "gallery" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
+      "exhibitions" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
+    }
   }
 ]
 

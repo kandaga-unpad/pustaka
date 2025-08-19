@@ -483,31 +483,146 @@ defmodule Voile.Schema.Accounts do
     end)
   end
 
+  @doc """
+  Returns the list of user roles.
+  """
   def list_user_roles do
     Repo.all(UserRole)
   end
 
-  def get_user_role!(id) do
-    Repo.get!(UserRole, id)
+  @doc """
+  Gets a single user role.
+  """
+  def get_user_role!(id), do: Repo.get!(UserRole, id)
+
+  @doc """
+  Gets a user role by name.
+  """
+  def get_user_role_by_name(name) when is_binary(name) do
+    Repo.get_by(UserRole, name: name)
   end
 
+  @doc """
+  Creates a user role.
+  """
   def create_user_role(attrs \\ %{}) do
     %UserRole{}
     |> UserRole.changeset(attrs)
     |> Repo.insert()
   end
 
+  @doc """
+  Updates a user role.
+  """
   def update_user_role(%UserRole{} = user_role, attrs) do
     user_role
     |> UserRole.changeset(attrs)
     |> Repo.update()
   end
 
+  @doc """
+  Deletes a user role.
+  """
   def delete_user_role(%UserRole{} = user_role) do
     Repo.delete(user_role)
   end
 
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking user role changes.
+  """
   def change_user_role(%UserRole{} = user_role, attrs \\ %{}) do
     UserRole.changeset(user_role, attrs)
+  end
+
+  ## Permission functions
+
+  @doc """
+  Checks if a user has permission for a specific resource and action.
+  """
+  def has_permission?(%User{user_role: %UserRole{permissions: permissions}}, resource, action) do
+    case get_in(permissions, [resource, action]) do
+      true -> true
+      _ -> false
+    end
+  end
+
+  def has_permission?(%User{user_role: nil}, _resource, _action), do: false
+  def has_permission?(nil, _resource, _action), do: false
+
+  @doc """
+  Checks if a user can perform any CRUD operation on a resource.
+  """
+  def can_access_resource?(%User{} = user, resource) do
+    has_permission?(user, resource, "create") ||
+      has_permission?(user, resource, "read") ||
+      has_permission?(user, resource, "update") ||
+      has_permission?(user, resource, "delete")
+  end
+
+  @doc """
+  Gets all available resources from all roles.
+  """
+  def get_available_resources do
+    list_user_roles()
+    |> Enum.flat_map(fn role -> Map.keys(role.permissions) end)
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  @doc """
+  Gets user statistics.
+  """
+  def get_user_statistics do
+    total_users = Repo.aggregate(User, :count, :id)
+
+    confirmed_users =
+      from(u in User, where: not is_nil(u.confirmed_at))
+      |> Repo.aggregate(:count, :id)
+
+    users_by_role =
+      from(u in User,
+        join: r in UserRole,
+        on: u.user_role_id == r.id,
+        group_by: r.name,
+        select: {r.name, count(u.id)}
+      )
+      |> Repo.all()
+      |> Enum.into(%{})
+
+    %{
+      total_users: total_users,
+      confirmed_users: confirmed_users,
+      unconfirmed_users: total_users - confirmed_users,
+      users_by_role: users_by_role
+    }
+  end
+
+  @doc """
+  Searches users by username, email, or fullname.
+  """
+  def search_users(query_string) when is_binary(query_string) do
+    search_term = "%#{query_string}%"
+
+    from(u in User,
+      where:
+        ilike(u.username, ^search_term) or
+          ilike(u.email, ^search_term) or
+          ilike(u.fullname, ^search_term),
+      preload: [:user_role]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets users by role.
+  """
+  def get_users_by_role(role_name) when is_binary(role_name) do
+    from(u in User,
+      join: r in UserRole,
+      on: u.user_role_id == r.id,
+      where: r.name == ^role_name,
+      preload: [:user_role]
+    )
+    |> Repo.all()
   end
 end
