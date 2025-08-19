@@ -229,6 +229,22 @@ ImageDownloader.ensure_upload_dir()
 
 # Function to get all CSV files to process
 defmodule CSVProcessor do
+  @moduledoc """
+  A module for processing CSV files.
+
+  1. Auto-detect pattern (default)
+    iex > elixir import_biblio.exs
+  2. Single file
+    iex > elixir import_biblio.exs --file scripts/biblio_1.csv
+  3. Custom pattern
+    iex > elixir import_biblio.exs --pattern "data/biblio_*.csv"
+    iex > elixir import_biblio.exs --pattern "/path/to/exports/biblio_[1-9].csv"
+  4. Directory processing
+    iex > elixir import_biblio.exs --dir data/exports/
+    # Processes all CSV files in the directory
+  5. Multiple specific files
+    iex > elixir import_biblio.exs scripts/biblio_1.csv scripts/biblio_2.csv
+  """
   def get_csv_files do
     case System.argv() do
       [] ->

@@ -44,6 +44,43 @@ config :voile, VoileWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :voile, Voile.Mailer, adapter: Swoosh.Adapters.Local
 
+# Configure Upload Directory for Attachments
+config :voile,
+  attachment_upload_dir: "priv/static/uploads/attachments",
+  # 100MB
+  attachment_max_file_size: 100 * 1024 * 1024,
+  attachment_allowed_file_types: [
+    # Images
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+    # Documents
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain",
+    "text/csv",
+    # Videos
+    "video/mp4",
+    "video/quicktime",
+    "video/x-msvideo",
+    # Audio
+    "audio/mpeg",
+    "audio/wav",
+    "audio/ogg",
+    # Archives
+    "application/zip",
+    "application/x-rar-compressed",
+    "application/x-7z-compressed",
+    # Software
+    "application/octet-stream",
+    "application/x-executable"
+  ]
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

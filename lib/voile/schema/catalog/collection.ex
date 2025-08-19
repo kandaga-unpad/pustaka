@@ -8,6 +8,7 @@ defmodule Voile.Schema.Catalog.Collection do
   alias Voile.Schema.System.Node
   alias Voile.Schema.Catalog.CollectionField
   alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.Catalog.Attachment
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "collections" do
@@ -34,6 +35,11 @@ defmodule Voile.Schema.Catalog.Collection do
       on_replace: :delete,
       foreign_key: :collection_id
 
+    has_many :attachments, Attachment,
+      where: [attachable_type: "collection"],
+      foreign_key: :attachable_id,
+      on_delete: :delete_all
+
     timestamps(type: :utc_datetime)
   end
 
@@ -57,6 +63,7 @@ defmodule Voile.Schema.Catalog.Collection do
     ])
     |> cast_assoc(:collection_fields, with: &CollectionField.changeset/2, required: false)
     |> cast_assoc(:items, with: &Item.changeset/2, required: false)
+    |> cast_assoc(:attachments, with: &Attachment.changeset/2, required: false)
     |> validate_required([:title, :description, :status, :access_level, :thumbnail, :creator_id],
       message: "This field is required"
     )
@@ -67,5 +74,21 @@ defmodule Voile.Schema.Catalog.Collection do
   def remove_thumbnail_changeset(collection) do
     collection
     |> cast(%{thumbnail: nil}, [:thumbnail])
+  end
+
+  @doc """
+  Get attachments for this collection filtered by file type
+  """
+  def attachments_by_type(collection, file_type) do
+    collection.attachments
+    |> Enum.filter(&(&1.file_type == file_type))
+  end
+
+  @doc """
+  Get primary attachment for this collection
+  """
+  def primary_attachment(collection) do
+    collection.attachments
+    |> Enum.find(&(&1.is_primary == true))
   end
 end

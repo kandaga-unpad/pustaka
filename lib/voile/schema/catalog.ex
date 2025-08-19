@@ -5,8 +5,7 @@ defmodule Voile.Schema.Catalog do
 
   import Ecto.Query, warn: false
   alias Voile.Repo
-
-  alias Voile.Schema.Catalog.Collection
+  alias Voile.Schema.Catalog.{Collection, Item, CollectionField, ItemFieldValue, Attachment}
 
   @doc """
   Returns the list of collections.
@@ -186,8 +185,6 @@ defmodule Voile.Schema.Catalog do
     |> Repo.update()
   end
 
-  alias Voile.Schema.Catalog.Item
-
   @doc """
   Returns the list of items.
 
@@ -307,8 +304,6 @@ defmodule Voile.Schema.Catalog do
     Item.changeset(item, attrs)
   end
 
-  alias Voile.Schema.Catalog.CollectionField
-
   @doc """
   Returns the list of collection_fields.
 
@@ -403,8 +398,6 @@ defmodule Voile.Schema.Catalog do
     CollectionField.changeset(collection_field, attrs)
   end
 
-  alias Voile.Schema.Catalog.ItemFieldValue
-
   @doc """
   Returns the list of item_field_values.
 
@@ -497,5 +490,282 @@ defmodule Voile.Schema.Catalog do
   """
   def change_item_field_value(%ItemFieldValue{} = item_field_value, attrs \\ %{}) do
     ItemFieldValue.changeset(item_field_value, attrs)
+  end
+
+  @upload_dir Application.compile_env(
+                :voile,
+                :attachment_upload_dir,
+                "priv/static/uploads/attachments"
+              )
+  # 100MB default
+  @max_file_size Application.compile_env(:voile, :attachment_max_file_size, 100 * 1024 * 1024)
+
+  @doc """
+  Create attachment for a given entity (Collection or Item)
+  """
+  def create_attachment(entity, file_params) when is_map(file_params) do
+    with {:ok, saved_file} <- save_file(file_params),
+         {:ok, attachment} <- create_attachment_record(entity, file_params, saved_file) do
+      {:ok, attachment}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Create multiple attachments for an entity
+  """
+  def create_attachments(entity, files_params) when is_list(files_params) do
+    results = Enum.map(files_params, &create_attachment(entity, &1))
+
+    case Enum.split_with(results, &match?({:ok, _}, &1)) do
+      {successes, []} ->
+        attachments = Enum.map(successes, fn {:ok, attachment} -> attachment end)
+        {:ok, attachments}
+
+      {_, errors} ->
+        {:error, errors}
+    end
+  end
+
+  @doc """
+  Get all attachments for an entity
+  """
+  def list_attachments(%Collection{id: id}) do
+    Attachment
+    |> Attachment.for_entity(id, "collection")
+    |> Repo.all()
+  end
+
+  def list_attachments(%Item{id: id}) do
+    Attachment
+    |> Attachment.for_entity(id, "item")
+    |> Repo.all()
+  end
+
+  @doc """
+  Get attachments filtered by file type
+  """
+  def list_attachments_by_type(entity, file_type) do
+    entity
+    |> list_attachments()
+    |> Enum.filter(&(&1.file_type == file_type))
+  end
+
+  @doc """
+  Get primary attachment for an entity
+  """
+  def get_primary_attachment(%Collection{id: id}) do
+    Attachment
+    |> Attachment.primary_for_entity(id, "collection")
+    |> Repo.one()
+  end
+
+  def get_primary_attachment(%Item{id: id}) do
+    Attachment
+    |> Attachment.primary_for_entity(id, "item")
+    |> Repo.one()
+  end
+
+  @doc """
+  Update attachment
+  """
+  def update_attachment(%Attachment{} = attachment, attrs) do
+    attachment
+    |> Attachment.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Delete attachment and its file
+  """
+  def delete_attachment(%Attachment{} = attachment) do
+    # Delete file from filesystem
+    File.rm(attachment.file_path)
+
+    # Delete record from database
+    Repo.delete(attachment)
+  end
+
+  @doc """
+  Set attachment as primary (unsets other primary attachments for the same entity)
+  """
+  def set_primary_attachment(%Attachment{} = attachment) do
+    Repo.transaction(fn ->
+      # Unset all primary attachments for this entity
+      from(a in Attachment,
+        where:
+          a.attachable_id == ^attachment.attachable_id and
+            a.attachable_type == ^attachment.attachable_type and
+            a.id != ^attachment.id
+      )
+      |> Repo.update_all(set: [is_primary: false])
+
+      # Set this attachment as primary
+      attachment
+      |> Attachment.changeset(%{is_primary: true})
+      |> Repo.update()
+    end)
+  end
+
+  @doc """
+  Reorder attachments for an entity
+  """
+  def reorder_attachments(entity, attachment_ids) when is_list(attachment_ids) do
+    entity_type = get_entity_type(entity)
+    entity_id = entity.id
+
+    Repo.transaction(fn ->
+      attachment_ids
+      |> Enum.with_index()
+      |> Enum.each(fn {attachment_id, index} ->
+        from(a in Attachment,
+          where:
+            a.id == ^attachment_id and
+              a.attachable_id == ^entity_id and
+              a.attachable_type == ^entity_type
+        )
+        |> Repo.update_all(set: [sort_order: index])
+      end)
+    end)
+  end
+
+  @doc """
+  Get file path for serving
+  """
+  def get_file_url(%Attachment{} = attachment) do
+    "/uploads/#{Path.basename(attachment.file_path)}"
+  end
+
+  # Private functions
+
+  defp create_attachment_record(entity, file_params, saved_file) do
+    entity_type = get_entity_type(entity)
+    entity_id = entity.id
+
+    attrs = %{
+      file_name: saved_file.filename,
+      original_name: file_params["filename"] || file_params[:filename],
+      file_path: saved_file.path,
+      file_size: saved_file.size,
+      mime_type: file_params["content_type"] || file_params[:content_type],
+      file_type:
+        Attachment.determine_file_type(file_params["content_type"] || file_params[:content_type]),
+      description: file_params["description"] || file_params[:description],
+      sort_order: file_params["sort_order"] || file_params[:sort_order] || 0,
+      is_primary: file_params["is_primary"] || file_params[:is_primary] || false,
+      metadata: build_metadata(file_params, saved_file),
+      attachable_id: entity_id,
+      attachable_type: entity_type
+    }
+
+    %Attachment{}
+    |> Attachment.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp save_file(%Plug.Upload{} = upload) do
+    # Get file size using File.stat!/1
+    file_size = File.stat!(upload.path).size
+
+    with :ok <- validate_file_size(file_size) do
+      filename = generate_filename(upload.filename)
+      upload_path = Path.join([@upload_dir, filename])
+
+      # Ensure upload directory exists
+      File.mkdir_p!(Path.dirname(upload_path))
+
+      case File.cp(upload.path, upload_path) do
+        :ok ->
+          {:ok,
+           %{
+             filename: filename,
+             path: upload_path,
+             size: file_size
+           }}
+
+        {:error, reason} ->
+          {:error, "Failed to save file: #{reason}"}
+      end
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp save_file(file_params) when is_map(file_params) do
+    # Handle different file parameter formats
+    cond do
+      Map.has_key?(file_params, :path) && Map.has_key?(file_params, :filename) ->
+        # File already saved, just return the info
+        {:ok,
+         %{
+           filename: file_params.filename,
+           path: file_params.path,
+           size: File.stat!(file_params.path).size
+         }}
+
+      true ->
+        {:error, "Invalid file parameters"}
+    end
+  end
+
+  defp generate_filename(original_filename) do
+    timestamp = DateTime.utc_now() |> DateTime.to_unix(:microsecond)
+    extension = Path.extname(original_filename)
+    random_string = :crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower)
+
+    "#{timestamp}_#{random_string}#{extension}"
+  end
+
+  defp validate_file_size(size) do
+    if size > @max_file_size do
+      {:error, "File size exceeds maximum allowed size of #{@max_file_size} bytes"}
+    else
+      :ok
+    end
+  end
+
+  defp get_entity_type(%Collection{}), do: "collection"
+  defp get_entity_type(%Item{}), do: "item"
+
+  defp build_metadata(file_params, saved_file) do
+    base_metadata = %{
+      upload_date: DateTime.utc_now(),
+      original_size: saved_file.size
+    }
+
+    # Add any additional metadata from file_params
+    custom_metadata = file_params["metadata"] || file_params[:metadata] || %{}
+
+    Map.merge(base_metadata, custom_metadata)
+  end
+
+  @doc """
+  Get attachment statistics for an entity
+  """
+  def get_attachment_stats(entity) do
+    attachments = list_attachments(entity)
+
+    %{
+      total_count: length(attachments),
+      total_size: Enum.sum(Enum.map(attachments, & &1.file_size)),
+      by_type:
+        Enum.group_by(attachments, & &1.file_type)
+        |> Enum.map(fn {type, items} -> {type, length(items)} end)
+        |> Enum.into(%{})
+    }
+  end
+
+  @doc """
+  Search attachments by filename or description
+  """
+  def search_attachments(entity, query) when is_binary(query) do
+    entity
+    |> list_attachments()
+    |> Enum.filter(fn attachment ->
+      String.contains?(String.downcase(attachment.file_name), String.downcase(query)) ||
+        (attachment.description &&
+           String.contains?(String.downcase(attachment.description), String.downcase(query)))
+    end)
   end
 end

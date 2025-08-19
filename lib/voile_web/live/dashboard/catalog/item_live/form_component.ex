@@ -25,7 +25,17 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         <.input field={@form[:location]} type="text" label="Location" />
         <.input field={@form[:status]} type="text" label="Status" />
         <.input field={@form[:condition]} type="text" label="Condition" />
-        <.input field={@form[:availability]} type="text" label="Availability" />
+        <.input
+          field={@form[:availability]}
+          type="select"
+          options={[
+            {"Available", "available"},
+            {"Loaned", "loaned"},
+            {"Reserved", "reserved"},
+            {"Maintenance", "maintenance"}
+          ]}
+          label="Availability"
+        />
         <:actions>
           <.button phx-disable-with="Saving...">Save Item</.button>
         </:actions>

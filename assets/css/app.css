@@ -273,7 +273,7 @@
   }
 
   .default-card {
-    @apply bg-white dark:bg-gray-800 w-full rounded-xl p-5;
+    @apply bg-white dark:bg-gray-700 w-full rounded-xl p-5;
   }
 
   .sidebar-size {
@@ -281,15 +281,15 @@
   }
 
   .pagination {
-    @apply flex items-center justify-center gap-5 w-full;
+    @apply flex items-center justify-center gap-5 w-full my-5;
   }
 
   .pagination-btn {
-    @apply btn bg-violet-100 text-violet-600 p-1 rounded-lg transition-all duration-300 ease-in-out;
+    @apply btn bg-violet-100 text-violet-600 py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
   }
 
   .active-pagination {
-    @apply btn bg-violet-500 text-white p-1 rounded-lg transition-all duration-300 ease-in-out;
+    @apply btn bg-violet-500 text-white py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
   }
 }
 

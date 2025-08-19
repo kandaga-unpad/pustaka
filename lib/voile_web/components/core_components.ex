@@ -451,10 +451,10 @@ defmodule VoileWeb.CoreComponents do
     ~H"""
     <header class={[
       @actions != [] && "flex items-center justify-between gap-6",
-      "pb-4 text-center mt-10 mb-5"
+      "pb-4 mt-10 mb-5"
     ]}>
       <div>
-        <h5 class="font-semibold leading-8">{render_slot(@inner_block)}</h5>
+        <h5 class="font-semibold">{render_slot(@inner_block)}</h5>
         
         <p :if={@subtitle != []} class="text-sm text-base-content/70">{render_slot(@subtitle)}</p>
       </div>
