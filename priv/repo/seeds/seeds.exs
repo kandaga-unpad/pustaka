@@ -188,6 +188,18 @@ end
 # Populate the User Roles
 user_roles = [
   %{
+    name: "Super Administrator Dev",
+    description: "Super Administrator",
+    permissions: %{
+      "collection" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "item" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "media" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
+    }
+  },
+  %{
     name: "Admin Node",
     description: "Full administrative access to node operations",
     permissions: %{
@@ -244,15 +256,6 @@ user_roles = [
     permissions: %{
       "system" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
       "users" => %{"create" => false, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Administrator Dev",
-    description: "Development administrator",
-    permissions: %{
-      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
     }
   },
   %{
