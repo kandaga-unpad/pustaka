@@ -117,6 +117,15 @@ defmodule VoileWeb.Router do
             live "/:id", Dashboard.Master.CreatorLive.Show, :show
             live "/:id/show/edit", Dashboard.Master.CreatorLive.Show, :edit
           end
+
+          scope "/publishers" do
+            live "/", Dashboard.Master.PublisherLive.Index, :index
+            live "/new", Dashboard.Master.PublisherLive.Index, :new
+            live "/:id/edit", Dashboard.Master.PublisherLive.Index, :edit
+
+            live "/:id", Dashboard.Master.PublisherLive.Show, :show
+            live "/:id/show/edit", Dashboard.Master.PublisherLive.Show, :edit
+          end
         end
 
         scope "/metaresource" do

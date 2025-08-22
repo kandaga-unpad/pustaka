@@ -6,7 +6,7 @@
 <.property_form
   changeset={@changeset}
   vocabulary_list={@vocabulary_list}
-  current_user={@current_user}
+  current_user={@current_scope.user}
   action={~p"/manage/metaresource/metadata_properties/#{@property}"}
 />
 <.back navigate={~p"/manage/metaresource/metadata_properties"}>Back to metadata_properties</.back>

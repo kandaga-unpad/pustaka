@@ -162,7 +162,7 @@ defmodule Mapper do
       status: "published",
       access_level: "public",
       old_biblio_id: String.to_integer(biblio_id),
-      type_id: nil,
+      type_id: 40,
       template_id: nil,
       creator_id: nil,
       unit_id: unit_id,

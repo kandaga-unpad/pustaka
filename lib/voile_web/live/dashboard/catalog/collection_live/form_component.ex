@@ -315,7 +315,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     alt="Collection thumbnail"
                     class="w-96 object-cover rounded-xl shadow-md"
                   />
-                  <div class="absolute w-96 inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-xl transition-all duration-300 flex items-center justify-center">
+                  <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 rounded-xl transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                   </div>
                 </div>
                 

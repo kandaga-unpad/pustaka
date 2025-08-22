@@ -41,6 +41,7 @@ npm-debug.log
 
 # Private Assets
 /priv/static/uploads/thumbnail/*
+/priv/static/uploads/old_thumbnail/*
 /priv/static/uploads/media/*
 
 # Except Thumbnail sample

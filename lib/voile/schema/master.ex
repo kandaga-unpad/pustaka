@@ -542,6 +542,26 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Returns the list of mst_publisher with pagination
+  """
+  def list_mst_publishers_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from p in Publishers,
+        order_by: [desc: p.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    publishers = Repo.all(query)
+
+    total_count = Repo.aggregate(Publishers, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {publishers, total_pages}
+  end
+
+  @doc """
   Gets a single publishers.
 
   Raises `Ecto.NoResultsError` if the Publishers does not exist.

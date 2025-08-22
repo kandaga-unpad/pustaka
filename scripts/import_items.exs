@@ -178,16 +178,24 @@ defmodule ItemCSVProcessor do
       # Process in larger chunks for progress
       |> Stream.chunk_every(1000)
       |> Enum.with_index(1)
-      |> Enum.reduce({0, 0, [], []}, fn {chunk, chunk_index} ->
+      |> Enum.reduce({0, 0, [], []}, fn {chunk, chunk_index},
+                                        {acc_inserted, acc_skipped, acc_skipped_ids, acc_batch} ->
         # Process chunk
-        result = process_chunk(chunk)
+        {chunk_inserted, chunk_skipped, chunk_skipped_ids, chunk_batch} =
+          process_chunk(chunk, acc_batch)
 
         # Progress indicator
         if rem(chunk_index, 5) == 0 do
           IO.write(".")
         end
 
-        result
+        # Return accumulated values
+        {
+          acc_inserted + chunk_inserted,
+          acc_skipped + chunk_skipped,
+          acc_skipped_ids ++ chunk_skipped_ids,
+          chunk_batch
+        }
       end)
 
     # Insert remaining batch
@@ -203,7 +211,7 @@ defmodule ItemCSVProcessor do
       end
 
     # New line after progress dots
-    IO.puts()
+    IO.puts("Next Line")
 
     %{
       inserted: final_inserted,
@@ -300,17 +308,17 @@ defmodule ItemCSVProcessor do
     end
   end
 
-  defp process_chunk(chunk) do
-    Enum.reduce(chunk, {0, 0, [], []}, fn
+  # Fixed process_chunk function to accept and return the batch from previous chunks
+  defp process_chunk(chunk, incoming_batch \\ []) do
+    Enum.reduce(chunk, {0, 0, [], incoming_batch}, fn
       {:ok, item}, {inserted, skipped, skipped_ids, batch} when length(batch) < 499 ->
         {inserted, skipped, skipped_ids, [item | batch]}
 
       {:ok, item}, {inserted, skipped, skipped_ids, batch} ->
-        Repo.insert_all(Item.__schema__(:source), Enum.reverse([item | batch]),
-          on_conflict: :nothing
-        )
+        batch_to_insert = Enum.reverse([item | batch])
+        Repo.insert_all(Item.__schema__(:source), batch_to_insert, on_conflict: :nothing)
 
-        {inserted + length(batch) + 1, skipped, skipped_ids, []}
+        {inserted + length(batch_to_insert), skipped, skipped_ids, []}
 
       {:error, {:missing_biblio_id, biblio_id}}, {inserted, skipped, skipped_ids, batch} ->
         {inserted, skipped + 1, [biblio_id | skipped_ids], batch}
