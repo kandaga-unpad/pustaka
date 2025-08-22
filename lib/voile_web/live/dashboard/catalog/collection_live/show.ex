@@ -21,7 +21,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:collection_properties, collection_properties)
       |> assign(:creator, creator)
       |> assign(:node_location, node_location)
-      |> assign(:step, 1)
+      |> assign(:step, 3)
       |> assign(:show_add_collection_field, true)
       |> assign(:time_identifier, time_identifier)
 

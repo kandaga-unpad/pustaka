@@ -29,7 +29,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:node_location, node_location)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
-      |> assign(:step, 1)
+      |> assign(:step, 3)
       |> assign(:show_add_collection_field, true)
       |> assign(:time_identifier, time_identifier)
 

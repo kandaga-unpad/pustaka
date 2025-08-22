@@ -7,8 +7,10 @@ NimbleCSV.define(
   escape_pattern: ~r/\\./
 )
 
+import Ecto.Query
 alias Voile.Repo
 alias Voile.Schema.Catalog.{Collection, CollectionField}
+alias Voile.Schema.Master.Creator
 
 property_map = %{
   "title" => %{id: 182, local_name: "title", label: "Title", type_value: "text"},
@@ -103,6 +105,263 @@ defmodule ImageDownloader do
   def download_and_save_image(_), do: {:ok, nil}
 end
 
+defmodule AuthorLoader do
+  @moduledoc """
+  Module for loading and processing author data from CSV files.
+  """
+
+  def load_authors_for_unit(unit_id) do
+    # Try different possible paths
+    possible_paths = [
+      "scripts/",
+      "",
+      "./"
+    ]
+
+    {mst_author_file, biblio_author_file} =
+      possible_paths
+      |> Enum.find_value(fn path ->
+        mst_file = Path.join(path, "mst_author_#{unit_id}.csv")
+        biblio_file = Path.join(path, "biblio_author_#{unit_id}.csv")
+
+        if File.exists?(mst_file) and File.exists?(biblio_file) do
+          {mst_file, biblio_file}
+        end
+      end) || {"mst_author_#{unit_id}.csv", "biblio_author_#{unit_id}.csv"}
+
+    IO.puts("🔍 Looking for author files:")
+    IO.puts("  - #{mst_author_file} (exists: #{File.exists?(mst_author_file)})")
+    IO.puts("  - #{biblio_author_file} (exists: #{File.exists?(biblio_author_file)})")
+
+    case {File.exists?(mst_author_file), File.exists?(biblio_author_file)} do
+      {true, true} ->
+        IO.puts("📚 Loading author data for unit #{unit_id}...")
+
+        # Load master authors
+        authors = load_master_authors(mst_author_file)
+        IO.puts("📖 Loaded #{map_size(authors)} master authors")
+
+        # Load biblio-author relations
+        biblio_authors = load_biblio_authors(biblio_author_file)
+        IO.puts("🔗 Loaded #{map_size(biblio_authors)} biblio-author relations")
+
+        # Insert creators and get mapping
+        creator_mapping = insert_creators(authors)
+        IO.puts("🗂️ Created mapping for #{map_size(creator_mapping)} authors to creators")
+
+        {:ok, {authors, biblio_authors, creator_mapping}}
+
+      {false, false} ->
+        IO.puts("⚠️ No author files found for unit #{unit_id}")
+        {:ok, {%{}, %{}, %{}}}
+
+      {true, false} ->
+        IO.puts("⚠️ Missing biblio_author file for unit #{unit_id}")
+        {:ok, {%{}, %{}, %{}}}
+
+      {false, true} ->
+        IO.puts("⚠️ Missing mst_author file for unit #{unit_id}")
+        {:ok, {%{}, %{}, %{}}}
+    end
+  end
+
+  defp load_master_authors(file_path) do
+    IO.puts("📂 Reading master authors from: #{file_path}")
+
+    authors =
+      File.stream!(file_path)
+      |> CSVParser.parse_stream()
+      |> Enum.with_index(1)
+      |> Enum.reduce(%{}, fn {[
+                                author_id,
+                                author_name,
+                                author_year,
+                                authority_type,
+                                _auth_list,
+                                _input_date,
+                                _last_update
+                              ], line_num},
+                             acc ->
+        author_id_int = String.to_integer(author_id)
+
+        # Determine creator type based on authority_type and name patterns
+        creator_type = determine_creator_type(author_name, authority_type)
+
+        if line_num <= 3 do
+          IO.puts(
+            "  📋 Line #{line_num}: ID=#{author_id_int}, Name=#{author_name}, Type=#{creator_type}"
+          )
+        end
+
+        Map.put(acc, author_id_int, %{
+          name: String.trim(author_name, "\""),
+          year: author_year,
+          authority_type: authority_type,
+          type: creator_type
+        })
+      end)
+
+    IO.puts("📊 Total authors loaded: #{map_size(authors)}")
+    authors
+  end
+
+  defp load_biblio_authors(file_path) do
+    IO.puts("📂 Reading biblio-author relations from: #{file_path}")
+
+    biblio_authors =
+      File.stream!(file_path)
+      |> CSVParser.parse_stream()
+      |> Enum.with_index(1)
+      |> Enum.reduce(%{}, fn {[biblio_id, author_id, level], line_num}, acc ->
+        biblio_id_int = String.to_integer(biblio_id)
+        author_id_int = String.to_integer(author_id)
+        level_int = String.to_integer(level)
+
+        if line_num <= 3 do
+          IO.puts(
+            "  📋 Line #{line_num}: Biblio=#{biblio_id_int}, Author=#{author_id_int}, Level=#{level_int}"
+          )
+        end
+
+        # Group authors by biblio_id, sorted by level (primary author first)
+        current_authors = Map.get(acc, biblio_id_int, [])
+
+        updated_authors =
+          [{author_id_int, level_int} | current_authors]
+          # Sort by level
+          |> Enum.sort_by(&elem(&1, 1))
+
+        Map.put(acc, biblio_id_int, updated_authors)
+      end)
+
+    IO.puts("📊 Total biblio-author relations loaded: #{map_size(biblio_authors)}")
+    biblio_authors
+  end
+
+  defp determine_creator_type(name, authority_type) do
+    cond do
+      # Check for organizational keywords
+      Regex.match?(
+        ~r/(department|universitas|institut|sekolah|dinas|kementerian|direktorat|badan|lembaga|yayasan|foundation|corp|inc|ltd|company)/i,
+        name
+      ) ->
+        "Organization"
+
+      # Check for conference/event keywords
+      Regex.match?(~r/(conference|symposium|seminar|workshop|congress|meeting)/i, name) ->
+        "Conference"
+
+      # Check for group keywords
+      Regex.match?(~r/(team|group|committee|board|panel)/i, name) ->
+        "Group"
+
+      # If authority_type indicates organization
+      authority_type in ["c", "o", "org"] ->
+        "Organization"
+
+      # Default to Person
+      true ->
+        "Person"
+    end
+  end
+
+  defp insert_creators(authors) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    creators_data =
+      authors
+      |> Enum.map(fn {_author_id, author_data} ->
+        %{
+          creator_name: author_data.name,
+          type: author_data.type,
+          creator_contact: nil,
+          affiliation: nil,
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+      # Remove duplicates by name
+      |> Enum.uniq_by(& &1.creator_name)
+
+    # Insert creators and get their IDs
+    case creators_data do
+      [] ->
+        %{}
+
+      _ ->
+        IO.puts("👤 Inserting #{length(creators_data)} unique creators in batches...")
+
+        # Insert in batches to avoid PostgreSQL parameter limit
+        # Each record has ~6 fields, so batch size of 5000 = ~30,000 parameters (well under 65,535 limit)
+        batch_size = 5000
+
+        all_inserted_creators =
+          creators_data
+          |> Enum.chunk_every(batch_size)
+          |> Enum.with_index(1)
+          |> Enum.flat_map(fn {batch, batch_num} ->
+            IO.puts("  📦 Batch #{batch_num}: Inserting #{length(batch)} creators...")
+
+            {count, inserted_creators} =
+              Repo.insert_all(
+                Creator.__schema__(:source),
+                batch,
+                on_conflict: :nothing,
+                returning: [:id, :creator_name]
+              )
+
+            IO.puts("  ✅ Batch #{batch_num}: Inserted #{count} new creators")
+            inserted_creators
+          end)
+
+        IO.puts("👤 Total creators processed: #{length(all_inserted_creators)}")
+
+        # Create mapping from creator name to ID
+        name_to_creator_id =
+          all_inserted_creators
+          |> Enum.into(%{}, fn creator -> {creator.creator_name, creator.id} end)
+
+        # Get existing creators that weren't inserted due to conflict
+        total_expected = length(creators_data)
+        total_inserted = length(all_inserted_creators)
+
+        if total_inserted < total_expected do
+          IO.puts("🔍 Looking up #{total_expected - total_inserted} existing creators...")
+
+          existing_names =
+            Enum.map(creators_data, & &1.creator_name) -- Map.keys(name_to_creator_id)
+
+          # Also batch the lookup for existing creators
+          existing_creators =
+            existing_names
+            # Smaller batches for WHERE IN queries
+            |> Enum.chunk_every(1000)
+            |> Enum.flat_map(fn name_batch ->
+              from(c in Creator,
+                where: c.creator_name in ^name_batch,
+                select: [:id, :creator_name]
+              )
+              |> Repo.all()
+            end)
+
+          existing_mapping =
+            existing_creators
+            |> Enum.into(%{}, fn creator -> {creator.creator_name, creator.id} end)
+
+          name_to_creator_id = Map.merge(name_to_creator_id, existing_mapping)
+          IO.puts("📋 Found #{length(existing_creators)} existing creators")
+        end
+
+        # Convert from author_id -> creator_id mapping
+        authors
+        |> Enum.into(%{}, fn {author_id, author_data} ->
+          creator_id = Map.get(name_to_creator_id, author_data.name)
+          {author_id, creator_id}
+        end)
+    end
+  end
+end
+
 defmodule Mapper do
   alias Ecto.UUID
 
@@ -139,12 +398,17 @@ defmodule Mapper do
           _uid
         ],
         property_map,
-        unit_id \\ nil
+        unit_id,
+        {_authors, biblio_authors, creator_mapping}
       ) do
     raw_uuid = UUID.generate()
     {:ok, id} = UUID.dump(raw_uuid)
 
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    biblio_id_int = String.to_integer(biblio_id)
+
+    # Get primary creator for this biblio
+    creator_id = get_primary_creator(biblio_id_int, biblio_authors, creator_mapping)
 
     thumbnail_path =
       case ImageDownloader.download_and_save_image(image) do
@@ -161,10 +425,11 @@ defmodule Mapper do
       thumbnail: thumbnail_path,
       status: "published",
       access_level: "public",
-      old_biblio_id: String.to_integer(biblio_id),
+      old_biblio_id: biblio_id_int,
       type_id: 40,
       template_id: nil,
-      creator_id: nil,
+      # Now properly set from author data
+      creator_id: creator_id,
       unit_id: unit_id,
       inserted_at: now,
       updated_at: now
@@ -222,6 +487,24 @@ defmodule Mapper do
 
     {coll, fields}
   end
+
+  defp get_primary_creator(biblio_id, biblio_authors, creator_mapping) do
+    case Map.get(biblio_authors, biblio_id) do
+      nil ->
+        IO.puts("🔍 No authors found for biblio_id #{biblio_id}")
+        nil
+
+      [] ->
+        IO.puts("🔍 Empty authors list for biblio_id #{biblio_id}")
+        nil
+
+      [{author_id, _level} | _rest] ->
+        # Get the primary author (first in sorted list by level)
+        creator_id = Map.get(creator_mapping, author_id)
+        IO.puts("🔍 Biblio #{biblio_id} -> Author #{author_id} -> Creator #{creator_id || "nil"}")
+        creator_id
+    end
+  end
 end
 
 # Ensure the upload directory exists
@@ -237,7 +520,7 @@ defmodule CSVProcessor do
   2. Single file
     iex > elixir import_biblio.exs --file scripts/biblio_1.csv
   3. Custom pattern
-    iex > elixir import_biblio.exs --pattern "data/biblio_*.csv"
+    iex > elixir import_biblio.exs --pattern "scripts/biblio_*_*.csv"
     iex > elixir import_biblio.exs --pattern "/path/to/exports/biblio_[1-9].csv"
   4. Directory processing
     iex > elixir import_biblio.exs --dir data/exports/
@@ -248,13 +531,23 @@ defmodule CSVProcessor do
   def get_csv_files do
     case System.argv() do
       [] ->
-        # No arguments - look for biblio_*.csv pattern in scripts/ directory
-        pattern = "scripts/biblio_*.csv"
+        # No arguments - look for biblio_*_*.csv pattern in scripts/ directory
+        pattern = "scripts/biblio_*_*.csv"
         files = Path.wildcard(pattern) |> Enum.sort()
 
         if Enum.empty?(files) do
-          IO.puts("📁 No biblio_*.csv files found, using default: scripts/biblio.csv")
-          ["scripts/biblio.csv"]
+          # Fallback to old pattern
+          pattern = "scripts/biblio_*.csv"
+          files = Path.wildcard(pattern) |> Enum.sort()
+
+          if Enum.empty?(files) do
+            IO.puts("📁 No biblio CSV files found, using default: scripts/biblio.csv")
+            ["scripts/biblio.csv"]
+          else
+            IO.puts("📁 Found #{length(files)} CSV files:")
+            Enum.each(files, &IO.puts("  - #{&1}"))
+            files
+          end
         else
           IO.puts("📁 Found #{length(files)} CSV files:")
           Enum.each(files, &IO.puts("  - #{&1}"))
@@ -263,6 +556,16 @@ defmodule CSVProcessor do
 
       [single_file] ->
         # Single file provided
+        if File.exists?(single_file) do
+          IO.puts("📁 Using single CSV file: #{single_file}")
+          [single_file]
+        else
+          IO.puts("❌ File not found: #{single_file}")
+          exit(:file_not_found)
+        end
+
+      ["--file", single_file] ->
+        # Single file provided with --file flag
         if File.exists?(single_file) do
           IO.puts("📁 Using single CSV file: #{single_file}")
           [single_file]
@@ -344,9 +647,12 @@ defmodule CSVProcessor do
     unit_id = extract_unit_id_from_filename(csv_path)
     IO.puts("📋 Using unit_id: #{unit_id || "nil"} for file: #{csv_path}")
 
+    # Load author data for this unit
+    {:ok, author_data} = AuthorLoader.load_authors_for_unit(unit_id)
+
     File.stream!(csv_path)
     |> CSVParser.parse_stream()
-    |> Stream.map(&Mapper.to_maps(&1, property_map))
+    |> Stream.map(&Mapper.to_maps(&1, property_map, unit_id, author_data))
     # Smaller chunks for better memory management
     |> Stream.chunk_every(100)
     |> Stream.with_index(1)
@@ -398,7 +704,8 @@ defmodule CSVProcessor do
   end
 
   defp extract_unit_id_from_filename(csv_path) do
-    case Regex.run(~r/biblio_(\d+)\.csv$/, csv_path) do
+    # Updated regex to match both patterns: biblio_20.csv and biblio_something_20.csv
+    case Regex.run(~r/biblio_.*?(\d+)\.csv$/, csv_path) do
       [_full_match, number_str] ->
         case Integer.parse(number_str) do
           {number, ""} -> number
@@ -414,11 +721,5 @@ end
 # Normal Processing
 csv_files = CSVProcessor.get_csv_files()
 CSVProcessor.process_csv_files(csv_files, property_map)
-
-# Add this for concurrent file processing (be careful with DB connections)
-# Task.async_stream(csv_files, fn csv_path ->
-#  process_single_file(csv_path, property_map)
-# end, max_concurrency: 3)
-# |> Stream.run()
 
 IO.puts("✅ Done!")

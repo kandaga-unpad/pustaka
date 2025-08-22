@@ -544,7 +544,7 @@ defmodule VoileWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="list">
+    <ul class="list w-full">
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>

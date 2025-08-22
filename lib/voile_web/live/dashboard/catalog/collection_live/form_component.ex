@@ -142,13 +142,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             autocomplete="off"
           />
           <%= if @creator_input != "" and @creator_suggestions != [] and @form[:creator_id] != nil and @collection.creator_id == nil do %>
-            <ul class="absolute z-10 bg-white border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
+            <ul class="absolute z-10 bg-white dark:bg-gray-800 border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
               <%= for creator <- @creator_suggestions do %>
                 <li
                   phx-click="select_creator"
                   phx-value-id={creator.id}
                   phx-target={@myself}
-                  class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   {creator.creator_name}
                 </li>
@@ -442,11 +442,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% else %>
                 <div>
                   <.inputs_for :let={col_field} field={@form[:collection_fields]}>
-                    <h6 class="bg-brand-5 px-4 py-1 rounded-t-xl text-white">
+                    <h6 class="bg-violet-500 px-4 py-1 rounded-t-xl text-white">
                       {col_field[:label].value}
                     </h6>
                     
-                    <div class="flex flex-col w-full bg-gray-100 p-4 rounded-b-xl mb-4">
+                    <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
                       <p class="text-gray-500 italic mb-4">{col_field[:information].value}</p>
                       
                       <input
@@ -556,7 +556,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% else %>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
                 <.inputs_for :let={item_field} field={@form[:items]}>
-                  <div class="bg-brand-2 rounded-lg p-5">
+                  <div class="bg-gray-600 rounded-lg p-5">
                     <div class="w-full flex items-center gap-3 mt-2">
                       <%= if item_field[:id].value != nil do %>
                         <.button
@@ -583,7 +583,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         </.button>
                       <% end %>
                     </div>
-                     {item_field.index}
+                    
                     <.input
                       field={item_field[:item_code]}
                       type="text"
@@ -656,7 +656,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <:actions>
           <div class="mt-12 w-full flex justify-between items-center gap-5">
             <%= if @step > 1 do %>
-              <.button type="button" phx-click="prev_step" phx-target={@myself} class="w-full">
+              <.button
+                type="button"
+                phx-click="prev_step"
+                phx-target={@myself}
+                class="primary-btn w-full"
+              >
                 &leftarrow; Back
               </.button>
             <% end %>
