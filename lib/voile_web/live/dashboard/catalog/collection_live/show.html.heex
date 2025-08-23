@@ -4,8 +4,8 @@
     <.back navigate={~p"/manage/catalog/collections"}>Back to collections</.back>
     
     <.header>
-      Koleksi <span class="text-orange-600 font-bold">{@collection.title}</span>
-      <:subtitle>This is a collection record from your database.</:subtitle>
+      Collection : <span class="text-orange-600 font-bold">{@collection.title}</span>
+      <:subtitle>Collection ID : {@collection.id}</:subtitle>
       
       <:actions>
         <.link
@@ -27,15 +27,15 @@
       </div>
       
       <.list>
-        <:item title="Title">{@collection.title}</:item>
+        <:item title="Title">{@collection.title || "-"}</:item>
         
         <:item title="Creator">
           {(@collection.mst_creator && @collection.mst_creator.creator_name) || "No creator"}
         </:item>
         
-        <:item title="Description">{@collection.description}</:item>
+        <:item title="Description">{@collection.description || "-"}</:item>
         
-        <:item title="Status">{@collection.status}</:item>
+        <:item title="Status">{@collection.status || "-"}</:item>
         
         <:item title="Thumbnail">
           <.link
@@ -47,7 +47,7 @@
           </.link>
         </:item>
         
-        <:item title="Access Level">{@collection.access_level}</:item>
+        <:item title="Access Level">{@collection.access_level || "-"}</:item>
       </.list>
     </div>
     

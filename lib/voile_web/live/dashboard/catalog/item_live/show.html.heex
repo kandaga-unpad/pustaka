@@ -13,19 +13,19 @@
     </.header>
     
     <.list>
-      <:item title="Item code">{@item.item_code}</:item>
+      <:item title="Item code">{@item.item_code || "-"}</:item>
       
-      <:item title="Collection">{@item.collection.title}</:item>
+      <:item title="Collection">{@item.collection.title || "-"}</:item>
       
-      <:item title="Inventory code">{@item.inventory_code}</:item>
+      <:item title="Inventory code">{@item.inventory_code || "-"}</:item>
       
-      <:item title="Location">{@item.location}</:item>
+      <:item title="Location">{@item.location || "-"}</:item>
       
-      <:item title="Status">{@item.status}</:item>
+      <:item title="Status">{@item.status || "-"}</:item>
       
-      <:item title="Condition">{@item.condition}</:item>
+      <:item title="Condition">{@item.condition || "-"}</:item>
       
-      <:item title="Availability">{@item.availability}</:item>
+      <:item title="Availability">{@item.availability || "-"}</:item>
     </.list>
     
     <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>

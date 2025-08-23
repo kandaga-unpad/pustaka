@@ -61,6 +61,13 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Gets all users.
+  """
+  def list_users() do
+    Repo.all(from u in User, preload: [:user_role], order_by: [desc: u.inserted_at])
+  end
+
+  @doc """
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -75,6 +82,13 @@ defmodule Voile.Schema.Accounts do
 
   """
   def get_user!(id), do: Repo.get!(User, id)
+
+  @doc """
+  Delete a single user.
+  """
+  def delete_user(%User{} = user) do
+    Repo.delete(user)
+  end
 
   ## User registration
 

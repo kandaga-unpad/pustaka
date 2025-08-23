@@ -19,12 +19,6 @@
         fn {_id, collection} -> JS.navigate(~p"/manage/catalog/collections/#{collection}") end
       }
     >
-      <:col :let={{_id, collection}} label="Title">{collection.title}</:col>
-      
-      <:col :let={{_id, collection}} label="Description">{collection.description}</:col>
-      
-      <:col :let={{_id, collection}} label="Status">{collection.status}</:col>
-      
       <:col :let={{_id, collection}} label="Thumbnail">
         <%= if collection.thumbnail do %>
           <img src={collection.thumbnail} class="w-16 h-16 object-cover" alt="Thumbnail" />
@@ -33,7 +27,15 @@
         <% end %>
       </:col>
       
-      <:col :let={{_id, collection}} label="Access">{collection.access_level}</:col>
+      <:col :let={{_id, collection}} label="Title">{collection.title || "-"}</:col>
+      
+      <:col :let={{_id, collection}} label="Author">
+        {(collection.mst_creator && collection.mst_creator.creator_name) || "-"}
+      </:col>
+      
+      <:col :let={{_id, collection}} label="Status">{collection.status || "-"}</:col>
+      
+      <:col :let={{_id, collection}} label="Access">{collection.access_level || "-"}</:col>
       
       <:action :let={{_id, collection}}>
         <div class="sr-only">

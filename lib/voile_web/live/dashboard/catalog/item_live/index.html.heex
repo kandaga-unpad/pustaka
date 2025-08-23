@@ -15,17 +15,17 @@
       rows={@streams.items}
       row_click={fn {_id, item} -> JS.navigate(~p"/manage/catalog/items/#{item}") end}
     >
-      <:col :let={{_id, item}} label="Item code">{item.item_code}</:col>
+      <:col :let={{_id, item}} label="Item code">{item.item_code || "-"}</:col>
       
-      <:col :let={{_id, item}} label="Inventory code">{item.inventory_code}</:col>
+      <:col :let={{_id, item}} label="Inventory code">{item.inventory_code || "-"}</:col>
       
-      <:col :let={{_id, item}} label="Location">{item.location}</:col>
+      <:col :let={{_id, item}} label="Location">{item.location || "-"}</:col>
       
-      <:col :let={{_id, item}} label="Status">{item.status}</:col>
+      <:col :let={{_id, item}} label="Status">{item.status || "-"}</:col>
       
-      <:col :let={{_id, item}} label="Condition">{item.condition}</:col>
+      <:col :let={{_id, item}} label="Condition">{item.condition || "-"}</:col>
       
-      <:col :let={{_id, item}} label="Availability">{item.availability}</:col>
+      <:col :let={{_id, item}} label="Availability">{item.availability || "-"}</:col>
       
       <:action :let={{_id, item}}>
         <div class="sr-only">
@@ -43,7 +43,7 @@
         </.link>
       </:action>
     </.table>
-    
+     <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <.modal
       :if={@live_action in [:new, :edit]}
       id="item-modal"
