@@ -35,6 +35,15 @@ defmodule Voile.Schema.Accounts.User do
     timestamps(type: :utc_datetime)
   end
 
+  @user_types [
+    "Administrator",
+    "Staff",
+    "Member (Organization)",
+    "Member (Paid)",
+    "Member (Affirmation)",
+    "Guest"
+  ]
+
   def changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [
@@ -63,6 +72,7 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_username(opts)
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_inclusion(:user_type, @user_types)
   end
 
   @doc """
@@ -90,9 +100,35 @@ defmodule Voile.Schema.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :username, :password])
+    |> cast(attrs, [
+      :username,
+      :identifier,
+      :email,
+      :fullname,
+      :user_type,
+      :user_role_id,
+      :password,
+      :confirmed_at,
+      :user_type,
+      :user_image,
+      :groups,
+      :node_id,
+      :twitter,
+      :facebook,
+      :linkedin,
+      :instagram,
+      :website,
+      :last_login,
+      :last_login_ip
+    ])
+    |> validate_inclusion(:user_type, @user_types)
     |> validate_email(opts)
     |> validate_password(opts)
+  end
+
+  def login_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:last_login, :last_login_ip])
   end
 
   defp validate_email(changeset, opts) do

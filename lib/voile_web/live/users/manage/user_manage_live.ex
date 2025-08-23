@@ -4,119 +4,122 @@ defmodule VoileWeb.Users.ManageLive do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
   alias VoileWeb.Helpers.AuthHelper
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def render(assigns) do
     ~H"""
-    <.header>
-      Users Management
-      <:subtitle>Manage system users and their roles</:subtitle>
+    <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <.header>
+        Users Management
+        <:subtitle>Manage system users and their roles</:subtitle>
+        
+        <:actions>
+          <%= if AuthHelper.can?(@current_scope.user, "users", "create") do %>
+            <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
+          <% end %>
+        </:actions>
+      </.header>
       
-      <:actions>
-        <%= if VoileWeb.Helpers.AuthHelper.can?(@current_scope.user, "users", "create") do %>
-          <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
-        <% end %>
-      </:actions>
-    </.header>
-
-    <div class="mb-6">
-      <.simple_form for={%{}} as={:search} phx-change="search" class="flex gap-4">
-        <.input name="query" placeholder="Search users..." value="" />
-      </.simple_form>
-    </div>
-
-    <.table
-      id="users"
-      rows={@streams.users}
-      row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
-    >
-      <:col :let={{_id, user}} label="Avatar">
-        <%= if user.user_image do %>
-          <img
-            class="h-10 w-10 rounded-full"
-            src={user.user_image}
-            alt={user.fullname || user.username}
-          />
-        <% else %>
-          <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-            <span class="text-sm font-medium text-gray-700">
-              {String.first(user.fullname || user.username) |> String.upcase()}
+      <div class="mb-6">
+        <.simple_form for={%{}} as={:search} phx-change="search" class="flex gap-4">
+          <.input name="query" placeholder="Search users..." value="" />
+        </.simple_form>
+      </div>
+      
+      <.table
+        id="users"
+        rows={@streams.users}
+        row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
+      >
+        <:col :let={{_id, user}} label="Avatar">
+          <%= if user.user_image do %>
+            <img
+              class="h-10 w-10 rounded-full"
+              src={user.user_image}
+              alt={user.fullname || user.username}
+            />
+          <% else %>
+            <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+              <span class="text-sm font-medium text-gray-700">
+                {String.first(user.fullname || user.username) |> String.upcase()}
+              </span>
+            </div>
+          <% end %>
+        </:col>
+        
+        <:col :let={{_id, user}} label="Username">{user.username}</:col>
+        
+        <:col :let={{_id, user}} label="Email">{user.email}</:col>
+        
+        <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
+        
+        <:col :let={{_id, user}} label="Role">
+          <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{VoileWeb.Helpers.AuthHelper.role_badge_class(user.user_role && user.user_role.name || nil)}"}>
+            {(user.user_role && user.user_role.name) || "-"}
+          </span>
+        </:col>
+        
+        <:col :let={{_id, user}} label="Status">
+          <%= if user.confirmed_at do %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              Active
             </span>
-          </div>
-        <% end %>
-      </:col>
-      
-      <:col :let={{_id, user}} label="Username">{user.username}</:col>
-      
-      <:col :let={{_id, user}} label="Email">{user.email}</:col>
-      
-      <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
-      
-      <:col :let={{_id, user}} label="Role">
-        <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{VoileWeb.Helpers.AuthHelper.role_badge_class(user.user_role.name)}"}>
-          {user.user_role.name}
-        </span>
-      </:col>
-      
-      <:col :let={{_id, user}} label="Status">
-        <%= if user.confirmed_at do %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            Active
-          </span>
-        <% else %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            Pending
-          </span>
-        <% end %>
-      </:col>
-      
-      <:col :let={{_id, user}} label="Last Login">
-        <%= if user.last_login do %>
-          {Calendar.strftime(user.last_login, "%Y-%m-%d %H:%M")}
-        <% else %>
-          <span class="text-gray-400">Never</span>
-        <% end %>
-      </:col>
-      
-      <:action :let={{_id, user}}>
-        <%= if VoileWeb.Helpers.AuthHelper.can?(@current_scope.user, "users", "read") do %>
-          <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
-        <% end %>
-      </:action>
-      
-      <:action :let={{_id, user}}>
-        <%= if VoileWeb.Helpers.AuthHelper.can?(@current_scope.user, "users", "update") do %>
-          <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
-        <% end %>
-      </:action>
-      
-      <:action :let={{id, user}}>
-        <%= if VoileWeb.Helpers.AuthHelper.can?(@current_scope.user, "users", "delete") do %>
-          <.link
-            phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
-          >
-            Delete
-          </.link>
-        <% end %>
-      </:action>
-    </.table>
-
-    <.modal
-      :if={@live_action in [:new, :edit]}
-      id="user-modal"
-      show
-      on_cancel={JS.patch(~p"/manage/settings/users")}
-    >
-      <.live_component
-        module={VoileWeb.UserLive.FormComponent}
-        id={@user.id || :new}
-        title={@page_title}
-        action={@live_action}
-        user={@user}
-        patch={~p"/manage/settings/users"}
-      />
-    </.modal>
+          <% else %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              Pending
+            </span>
+          <% end %>
+        </:col>
+        
+        <:col :let={{_id, user}} label="Last Login">
+          <%= if user.last_login do %>
+            {FormatIndonesiaTime.format_utc_to_jakarta(user.last_login)}
+          <% else %>
+            <span class="text-gray-400">Never</span>
+          <% end %>
+        </:col>
+        
+        <:action :let={{_id, user}}>
+          <%= if AuthHelper.can?(@current_scope.user, "users", "read") do %>
+            <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
+          <% end %>
+        </:action>
+        
+        <:action :let={{_id, user}}>
+          <%= if AuthHelper.can?(@current_scope.user, "users", "update") do %>
+            <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
+          <% end %>
+        </:action>
+        
+        <:action :let={{id, user}}>
+          <%= if AuthHelper.can?(@current_scope.user, "users", "delete") do %>
+            <.link
+              phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.link>
+          <% end %>
+        </:action>
+      </.table>
+       <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+      <.modal
+        :if={@live_action in [:new, :edit]}
+        id="user-modal"
+        show
+        on_cancel={JS.patch(~p"/manage/settings/users")}
+      >
+        <.live_component
+          module={VoileWeb.Users.ManageLive.FormComponent}
+          id={@user.id || :new}
+          title={@page_title}
+          action={@live_action}
+          user={@user}
+          patch={~p"/manage/settings/users"}
+        />
+      </.modal>
+    </div>
     """
   end
 
@@ -124,16 +127,27 @@ defmodule VoileWeb.Users.ManageLive do
   def mount(_params, _session, socket) do
     current_user = socket.assigns.current_scope.user
 
-    dbg(current_user)
+    socket =
+      socket
+      |> assign(page: 1, per_page: 10, total_pages: 1)
 
-    # Check if user has permission to access users
     if AuthHelper.can_access?(current_user, "users") do
-      {:ok, stream(socket, :users, Accounts.list_users())}
+      {users, total_pages} =
+        Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+
+      socket =
+        socket
+        |> stream(:users, users)
+        |> assign(total_pages: total_pages)
+
+      {:ok, socket}
     else
-      {:ok,
-       socket
-       |> put_flash(:error, "You don't have permission to access user management.")
-       |> redirect(to: ~p"/manage")}
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access user management.")
+        |> redirect(to: ~p"/manage")
+
+      {:ok, socket}
     end
   end
 
@@ -143,7 +157,7 @@ defmodule VoileWeb.Users.ManageLive do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    current_user = socket.assigns[:current_user]
+    current_user = socket.assigns.current_scope.user
 
     if AuthHelper.can?(current_user, "users", "update") do
       socket
@@ -152,12 +166,12 @@ defmodule VoileWeb.Users.ManageLive do
     else
       socket
       |> put_flash(:error, "You don't have permission to edit users.")
-      |> push_patch(to: ~p"/manage/settings")
+      |> push_navigate(to: ~p"/manage/settings/users")
     end
   end
 
   defp apply_action(socket, :new, _params) do
-    current_user = socket.assigns[:current_user]
+    current_user = socket.assigns.current_scope.user
 
     if AuthHelper.can?(current_user, "users", "create") do
       socket
@@ -166,7 +180,7 @@ defmodule VoileWeb.Users.ManageLive do
     else
       socket
       |> put_flash(:error, "You don't have permission to create users.")
-      |> push_patch(to: ~p"/manage/settings")
+      |> push_navigate(to: ~p"/manage/settings/users")
     end
   end
 
@@ -177,13 +191,13 @@ defmodule VoileWeb.Users.ManageLive do
   end
 
   @impl true
-  def handle_info({VoileWeb.UserLive.FormComponent, {:saved, user}}, socket) do
+  def handle_info({VoileWeb.Users.ManageLive.FormComponent, {:saved, user}}, socket) do
     {:noreply, stream_insert(socket, :users, user)}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    current_user = socket.assigns[:current_user]
+    current_user = socket.assigns.current_scope.user
 
     if AuthHelper.can?(current_user, "users", "delete") do
       user = Accounts.get_user!(id)
@@ -199,7 +213,52 @@ defmodule VoileWeb.Users.ManageLive do
 
   @impl true
   def handle_event("search", %{"search" => %{"query" => query}}, socket) do
-    users = if query == "", do: Accounts.list_users(), else: Accounts.search_users(query)
-    {:noreply, stream(socket, :users, users, reset: true)}
+    page = socket.assigns[:page] || 1
+    per_page = socket.assigns[:per_page] || 10
+
+    {users, total_pages} =
+      if query == "",
+        do: Accounts.list_users_paginated(page, per_page),
+        else: {Accounts.search_users(query), socket.assigns[:total_pages] || 1}
+
+    socket =
+      socket
+      |> stream(:users, users, reset: true)
+      |> assign(:total_pages, total_pages)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("search", %{"query" => query}, socket) do
+    page = socket.assigns[:page] || 1
+    per_page = socket.assigns[:per_page] || 10
+
+    {users, total_pages} =
+      if query == "",
+        do: Accounts.list_users_paginated(page, per_page),
+        else: {Accounts.search_users(query), socket.assigns[:total_pages] || 1}
+
+    socket =
+      socket
+      |> stream(:users, users, reset: true)
+      |> assign(:total_pages, total_pages)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    per_page = 10
+
+    {users, total_pages} = Accounts.list_users_paginated(page, per_page)
+
+    socket =
+      socket
+      |> stream(:users, users, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+
+    {:noreply, socket}
   end
 end

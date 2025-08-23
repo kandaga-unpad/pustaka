@@ -47,12 +47,24 @@ defmodule Voile.Schema.Accounts do
   @doc """
   Get a user by email or register it it's doesn't exist.
   """
-  def get_user_by_email_or_register(email) when is_binary(email) do
-    case Repo.get_by(User, email: email) do
+  def get_user_by_email_or_register(user) when is_map(user) do
+    case Repo.get_by(User, email: user["email"]) do
       nil ->
         pw = :crypto.strong_rand_bytes(30) |> Base.encode64(padding: false)
-        username = String.split(email, "@") |> hd
-        {:ok, user} = register_user(%{email: email, username: username, password: pw})
+        username = String.split(user["email"], "@") |> hd
+        profile_picture = user["picture"] || "/images/default_profile.png"
+        fullname = "#{user["given_name"]} #{user["family_name"]}"
+
+        {:ok, user} =
+          register_user(%{
+            email: user["email"],
+            username: username,
+            fullname: fullname,
+            password: pw,
+            user_image: profile_picture,
+            confirmed_at: if(user["email_verified"], do: DateTime.utc_now(), else: nil)
+          })
+
         user
 
       user ->
@@ -68,6 +80,36 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Gets all users with paginated results
+  """
+  def list_users_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from u in User,
+        preload: [:user_role],
+        order_by: [desc: u.inserted_at],
+        limit: ^per_page,
+        offset: ^offset
+
+    users = Repo.all(query)
+
+    total_count = Repo.aggregate(User, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+    {users, total_pages}
+  end
+
+  @doc """
+  Gets a single user.
+
+  Raises `Ecto.NoResultsError` if the User does not exist.
+
+      limit: ^per_page,
+      offset: ^offset
+    )
+  end
+
+  @doc \"""
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -81,7 +123,11 @@ defmodule Voile.Schema.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id) do
+    User
+    |> Repo.get!(id)
+    |> Repo.preload(:user_role)
+  end
 
   @doc """
   Create a new User.
@@ -112,6 +158,12 @@ defmodule Voile.Schema.Accounts do
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_user_login(%User{} = user, attrs) do
+    user
+    |> User.login_changeset(attrs)
     |> Repo.update()
   end
 

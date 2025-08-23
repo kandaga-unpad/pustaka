@@ -35,6 +35,15 @@ defmodule VoileWeb.UserAuth do
   def log_in_user(conn, user, params \\ %{}) do
     user_return_to = get_session(conn, :user_return_to)
 
+    # Update last_login and last_login_ip
+    ip =
+      case Tuple.to_list(conn.remote_ip) do
+        [a, b, c, d] -> Enum.join([a, b, c, d], ".")
+        _ -> nil
+      end
+
+    Accounts.update_user_login(user, %{last_login: DateTime.utc_now(), last_login_ip: ip})
+
     conn
     |> create_or_extend_session(user, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
@@ -232,6 +241,63 @@ defmodule VoileWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_authenticated_and_verified_member, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
+
+      if user.authenticated_at && is_struct(user.authenticated_at, DateTime) do
+        {:cont, socket}
+      else
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You must be verified to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+        {:halt, socket}
+      end
+    end
+  end
+
+  def on_mount(:require_authenticated_and_verified_staff_user, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
+
+      dbg(user)
+
+      case user.user_type do
+        "Administrator" ->
+          {:cont, socket}
+
+        "Staff" ->
+          {:cont, socket}
+
+        _ ->
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              "You must be an Admin or Staff to access this page."
+            )
+            |> maybe_store_return_to()
+            |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+          {:halt, socket}
+      end
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You must be logged in to access this page.")
+        |> maybe_store_return_to()
+        |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+      {:halt, socket}
+    end
+  end
+
   def on_mount(:require_sudo_mode, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
@@ -253,6 +319,8 @@ defmodule VoileWeb.UserAuth do
         if user_token = session["user_token"] do
           Accounts.get_user_by_session_token(user_token)
         end || {nil, nil}
+
+      user = Voile.Repo.preload(user, :user_role)
 
       Scope.for_user(user)
     end)

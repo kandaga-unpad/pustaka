@@ -46,7 +46,9 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         </div>
         
         <fieldset class="border border-gray-300 rounded-lg p-4">
-          <legend class="text-sm font-medium text-gray-900 px-2">Social Media</legend>
+          <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+            Social Media
+          </legend>
           
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
             <.input field={@form[:twitter]} type="text" label="Twitter" placeholder="@username" />
@@ -71,7 +73,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             type="text"
             label="Groups (comma-separated)"
             placeholder="group1, group2, group3"
-          /> <.input field={@form[:user_image]} type="url" label="Profile Image URL" />
+          />
         </div>
         
         <:actions><.button phx-disable-with="Saving...">Save User</.button></:actions>

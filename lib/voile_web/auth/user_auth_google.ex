@@ -52,7 +52,7 @@ defmodule VoileWeb.UserAuthGoogle do
         # Authorization successful
         IO.inspect({user, token}, label: "User and Token")
 
-        user_record = Voile.Schema.Accounts.get_user_by_email_or_register(user["email"])
+        user_record = Voile.Schema.Accounts.get_user_by_email_or_register(user)
 
         conn
         |> VoileWeb.UserAuth.log_in_user(user_record)

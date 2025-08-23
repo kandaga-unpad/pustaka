@@ -71,9 +71,9 @@ defmodule VoileWeb.Router do
   scope "/", VoileWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :require_authenticated_user,
+    live_session :require_authenticated_user_and_verified_staff_user,
       on_mount: [
-        {VoileWeb.UserAuth, :require_authenticated},
+        {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu}
       ] do
