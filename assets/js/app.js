@@ -164,3 +164,38 @@ window.addEventListener("phx:set-theme", (e) => {
     document.documentElement.classList.toggle("dark", pref === "dark");
   }
 })();
+
+// Role form resource management
+window.addEventListener("phx:page-loading-stop", () => {
+  // Add resource functionality
+  const addResourceBtn = document.querySelector('[phx-click="add_resource"]');
+  const newResourceInput = document.getElementById("new-resource");
+
+  if (addResourceBtn && newResourceInput) {
+    addResourceBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const resourceName = newResourceInput.value.trim();
+
+      if (resourceName) {
+        // Send the resource name to the LiveView component
+        const targetElement = e.target.closest("[phx-target]");
+        if (targetElement) {
+          const targetValue = targetElement.getAttribute("phx-target");
+          window.liveSocket.execJS(
+            targetElement,
+            `[[\"push\", {\"event\":\"add_resource_with_name\", \"value\":{\"resource\":\"${resourceName}\"}}]]`
+          );
+        }
+        newResourceInput.value = "";
+      }
+    });
+
+    // Allow Enter key to add resource
+    newResourceInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addResourceBtn.click();
+      }
+    });
+  }
+});

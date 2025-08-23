@@ -1,4 +1,4 @@
-defmodule VoileWeb.Users.UserManageLive do
+defmodule VoileWeb.Users.ManageLive do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Accounts
@@ -84,7 +84,7 @@ defmodule VoileWeb.Users.UserManageLive do
         <% end %>
       </:action>
       
-      <:action :let={{id, user}}>
+      <:action :let={{_id, user}}>
         <%= if VoileWeb.Helpers.AuthHelper.can?(@current_scope.user, "users", "update") do %>
           <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
         <% end %>

@@ -84,10 +84,35 @@ defmodule Voile.Schema.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Create a new User.
+  """
+  def create_user(attrs) do
+    %User{}
+    |> User.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
   Delete a single user.
   """
   def delete_user(%User{} = user) do
     Repo.delete(user)
+  end
+
+  @doc """
+  Changeset for user.
+  """
+  def change_user(%User{} = user, attrs \\ %{}) do
+    User.changeset(user, attrs)
+  end
+
+  @doc """
+  Update an existing user data.
+  """
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.changeset(attrs)
+    |> Repo.update()
   end
 
   ## User registration

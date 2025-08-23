@@ -145,7 +145,23 @@ defmodule VoileWeb.Router do
 
         scope "/settings" do
           live "/", Dashboard.Settings.SettingLive, :index
-          live "/users", Users.UserManageLive, :index
+
+          live "/user_dashboard", Users.Manage.Dashboard, :index
+
+          scope "/users" do
+            live "/", Users.ManageLive, :index
+            live "/new", Users.ManageLive, :new
+            live "/:id", Users.ManageLive.Show, :show
+            live "/:id/edit", Users.ManageLive, :edit
+          end
+
+          scope "/users/roles" do
+            live "/", Users.ManageLive.Role, :index
+            live "/new", Users.ManageLive.Role, :new
+            live "/:id", Users.ManageLive.Role.Show, :show
+            live "/:id/edit", Users.ManageLive.Role, :edit
+          end
+
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
         end
