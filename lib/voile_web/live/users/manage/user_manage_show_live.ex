@@ -123,7 +123,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
               
               <div class="font-medium">
                 <%= if @user.last_login do %>
-                  {FormatIndonesiaTime.format_full_indonesian_date(@user.last_login)}
+                  {FormatIndonesiaTime.format_utc_to_jakarta(@user.last_login)}
                 <% else %>
                   <span class="text-gray-400">Never</span>
                 <% end %>

@@ -151,10 +151,10 @@ defmodule VoileWeb.VoileDashboardComponents do
         
         <li>
           <.link
-            patch="/manage/settings/other_settings"
+            patch="/manage/settings/users"
             class="text-blue-600 dark:text-blue-200 hover:underline"
           >
-            Other Settings
+            User Management
           </.link>
         </li>
       </ul>

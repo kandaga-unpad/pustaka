@@ -9,7 +9,7 @@ defmodule VoileWeb.Users.ManageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+    <div>
       <.header>
         Users Management
         <:subtitle>Manage system users and their roles</:subtitle>
@@ -21,89 +21,86 @@ defmodule VoileWeb.Users.ManageLive do
         </:actions>
       </.header>
       
-      <div class="mb-6">
-        <.simple_form for={%{}} as={:search} phx-change="search" class="flex gap-4">
-          <.input name="query" placeholder="Search users..." value="" />
-        </.simple_form>
+      <div class="flex gap-4">
+        <div class="w-full max-w-64 "><.dashboard_settings_sidebar /></div>
+        
+        <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+          <div class="mb-6">
+            <.simple_form for={%{}} as={:search} phx-change="search" class="flex gap-4">
+              <.input name="query" placeholder="Search users..." value="" />
+            </.simple_form>
+          </div>
+          
+          <.table
+            id="users"
+            rows={@streams.users}
+            row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
+          >
+            <:col :let={{_id, user}} label="Avatar">
+              <%= if user.user_image do %>
+                <img
+                  class="h-10 w-10 rounded-full"
+                  src={user.user_image}
+                  alt={user.fullname || user.username}
+                />
+              <% else %>
+                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                  <span class="text-sm font-medium text-gray-700">
+                    {String.first(user.fullname || user.username) |> String.upcase()}
+                  </span>
+                </div>
+              <% end %>
+            </:col>
+            
+            <:col :let={{_id, user}} label="Username">{user.username}</:col>
+            
+            <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
+            
+            <:col :let={{_id, user}} label="Role">
+              <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{VoileWeb.Helpers.AuthHelper.role_badge_class(user.user_role && user.user_role.name || nil)}"}>
+                {(user.user_role && user.user_role.name) || "-"}
+              </span>
+            </:col>
+            
+            <:col :let={{_id, user}} label="Status">
+              <%= if user.confirmed_at do %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Active
+                </span>
+              <% else %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  Pending
+                </span>
+              <% end %>
+            </:col>
+            
+            <:action :let={{_id, user}}>
+              <%= if AuthHelper.can?(@current_scope.user, "users", "read") do %>
+                <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
+              <% end %>
+            </:action>
+            
+            <:action :let={{_id, user}}>
+              <%= if AuthHelper.can?(@current_scope.user, "users", "update") do %>
+                <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
+              <% end %>
+            </:action>
+            
+            <:action :let={{id, user}}>
+              <%= if AuthHelper.can?(@current_scope.user, "users", "delete") do %>
+                <.link
+                  phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
+                  data-confirm="Are you sure?"
+                >
+                  Delete
+                </.link>
+              <% end %>
+            </:action>
+          </.table>
+           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+        </div>
       </div>
       
-      <.table
-        id="users"
-        rows={@streams.users}
-        row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
-      >
-        <:col :let={{_id, user}} label="Avatar">
-          <%= if user.user_image do %>
-            <img
-              class="h-10 w-10 rounded-full"
-              src={user.user_image}
-              alt={user.fullname || user.username}
-            />
-          <% else %>
-            <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-              <span class="text-sm font-medium text-gray-700">
-                {String.first(user.fullname || user.username) |> String.upcase()}
-              </span>
-            </div>
-          <% end %>
-        </:col>
-        
-        <:col :let={{_id, user}} label="Username">{user.username}</:col>
-        
-        <:col :let={{_id, user}} label="Email">{user.email}</:col>
-        
-        <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
-        
-        <:col :let={{_id, user}} label="Role">
-          <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{VoileWeb.Helpers.AuthHelper.role_badge_class(user.user_role && user.user_role.name || nil)}"}>
-            {(user.user_role && user.user_role.name) || "-"}
-          </span>
-        </:col>
-        
-        <:col :let={{_id, user}} label="Status">
-          <%= if user.confirmed_at do %>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Active
-            </span>
-          <% else %>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              Pending
-            </span>
-          <% end %>
-        </:col>
-        
-        <:col :let={{_id, user}} label="Last Login">
-          <%= if user.last_login do %>
-            {FormatIndonesiaTime.format_utc_to_jakarta(user.last_login)}
-          <% else %>
-            <span class="text-gray-400">Never</span>
-          <% end %>
-        </:col>
-        
-        <:action :let={{_id, user}}>
-          <%= if AuthHelper.can?(@current_scope.user, "users", "read") do %>
-            <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
-          <% end %>
-        </:action>
-        
-        <:action :let={{_id, user}}>
-          <%= if AuthHelper.can?(@current_scope.user, "users", "update") do %>
-            <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
-          <% end %>
-        </:action>
-        
-        <:action :let={{id, user}}>
-          <%= if AuthHelper.can?(@current_scope.user, "users", "delete") do %>
-            <.link
-              phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
-              data-confirm="Are you sure?"
-            >
-              Delete
-            </.link>
-          <% end %>
-        </:action>
-      </.table>
-       <.pagination page={@page} total_pages={@total_pages} event="paginate" />
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"
