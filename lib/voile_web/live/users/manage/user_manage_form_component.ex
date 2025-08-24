@@ -20,7 +20,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         phx-submit="save"
       >
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <.input field={@form[:username]} type="text" label="Username" />
+          <.input field={@form[:username]} type="text" label="Username" disabled />
           <.input field={@form[:email]} type="email" label="Email" />
         </div>
         
@@ -41,8 +41,20 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         <% end %>
         
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <.input field={@form[:user_type]} type="text" label="User Type" />
-          <.input field={@form[:node_id]} type="number" label="Node ID" />
+          <.input
+            field={@form[:user_type_id]}
+            type="select"
+            label="User Type"
+            options={Enum.map(@user_type_options, &{&1.name, &1.id})}
+            prompt="Select a user type"
+          />
+          <.input
+            field={@form[:node_id]}
+            type="select"
+            options={Enum.map(@node_list, &{&1.name, &1.id})}
+            prompt="Select a node"
+            label="Node ID"
+          />
         </div>
         
         <fieldset class="border border-gray-300 rounded-lg p-4">
@@ -113,7 +125,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
   end
 
   defp save_user(socket, :edit, user_params) do
-    case Accounts.update_user(socket.assigns.user, user_params) do
+    case Accounts.update_profile_user(socket.assigns.user, user_params) do
       {:ok, user} ->
         notify_parent({:saved, user})
 
@@ -123,6 +135,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end
@@ -138,6 +151,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end

@@ -449,7 +449,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         {:noreply,
          socket
          |> put_flash(:info, "Collection created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_patch(
+           to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
+         )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

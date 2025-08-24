@@ -3,6 +3,8 @@ defmodule Voile.Schema.Accounts.User do
   import Ecto.Changeset
 
   alias Voile.Schema.Accounts.UserRole
+  alias Voile.Schema.Master.MemberType
+  alias Voile.Schema.System.Node
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Phoenix.Param, key: :id}
@@ -16,15 +18,15 @@ defmodule Voile.Schema.Accounts.User do
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
-    field :user_type, :string
     field :user_image, :string
     field :social_media, :map, type: :jsonb
     field :groups, {:array, :string}
-    field :node_id, :integer
     field :last_login, :utc_datetime
     field :last_login_ip, :string
 
     belongs_to :user_role, UserRole
+    belongs_to :user_type, MemberType
+    belongs_to :node, Node
 
     field :twitter, :string, virtual: true
     field :facebook, :string, virtual: true
@@ -39,7 +41,7 @@ defmodule Voile.Schema.Accounts.User do
     "Administrator",
     "Staff",
     "Member (Organization)",
-    "Member (Paid)",
+    "Member (Verified)",
     "Member (Affirmation)",
     "Guest"
   ]
@@ -124,6 +126,33 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_inclusion(:user_type, @user_types)
     |> validate_email(opts)
     |> validate_password(opts)
+  end
+
+  def update_profile_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [
+      :username,
+      :identifier,
+      :email,
+      :fullname,
+      :user_type,
+      :user_role_id,
+      :password,
+      :confirmed_at,
+      :user_type,
+      :user_image,
+      :groups,
+      :node_id,
+      :twitter,
+      :facebook,
+      :linkedin,
+      :instagram,
+      :website,
+      :last_login,
+      :last_login_ip
+    ])
+    |> validate_inclusion(:user_type, @user_types)
+    |> validate_email(opts)
   end
 
   def login_changeset(user, attrs) do

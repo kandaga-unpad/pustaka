@@ -266,13 +266,11 @@ defmodule VoileWeb.UserAuth do
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       user = socket.assigns.current_scope.user
 
-      dbg(user)
-
-      case user.user_type do
-        "Administrator" ->
+      case user.user_type_id do
+        1 ->
           {:cont, socket}
 
-        "Staff" ->
+        2 ->
           {:cont, socket}
 
         _ ->

@@ -92,7 +92,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
               <div>
                 <div class="text-gray-500 text-xs uppercase mb-1">User Type</div>
                 
-                <div class="font-medium">{@user.user_type}</div>
+                <div class="font-medium">{@user.user_type.name}</div>
               </div>
             <% end %>
             

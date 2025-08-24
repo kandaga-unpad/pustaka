@@ -87,8 +87,8 @@ defmodule Voile.Schema.Accounts do
 
     query =
       from u in User,
-        preload: [:user_role],
-        order_by: [desc: u.inserted_at],
+        preload: [:user_role, :user_type],
+        order_by: [asc: u.inserted_at],
         limit: ^per_page,
         offset: ^offset
 
@@ -126,7 +126,7 @@ defmodule Voile.Schema.Accounts do
   def get_user!(id) do
     User
     |> Repo.get!(id)
-    |> Repo.preload(:user_role)
+    |> Repo.preload([:user_role, :user_type])
   end
 
   @doc """
@@ -158,6 +158,12 @@ defmodule Voile.Schema.Accounts do
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_profile_user(%User{} = user, attrs) do
+    user
+    |> User.update_profile_changeset(attrs)
     |> Repo.update()
   end
 

@@ -43,10 +43,12 @@ npm-debug.log
 /priv/static/uploads/thumbnail/*
 /priv/static/uploads/old_thumbnail/*
 /priv/static/uploads/media/*
+/priv/static/uploads/attachments/*
 
 # Except Thumbnail sample
 !/priv/static/uploads/thumbnail/upload.txt
 !/priv/static/uploads/media/upload.txt
+!/priv/static/uploads/attachments/upload.txt
 
 # Scripts Source
 /scripts/*.csv

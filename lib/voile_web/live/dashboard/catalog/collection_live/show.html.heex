@@ -18,9 +18,12 @@
     </.header>
     
     <div class="flex gap-4 w-full">
-      <div class="flex items-center justify-center w-96 border border-1 border-gray-50">
+      <div class="flex items-start justify-center w-96">
         <%= if @collection.thumbnail do %>
-          <img src={@collection.thumbnail} class="object-cover w-full h-full" />
+          <img
+            src={@collection.thumbnail}
+            class="object-cover w-96 h-96 border border-1 border-gray-50"
+          />
         <% else %>
           <p>No thumbnail available</p>
         <% end %>

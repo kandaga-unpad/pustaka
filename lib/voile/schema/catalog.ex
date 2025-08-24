@@ -82,8 +82,8 @@ defmodule Voile.Schema.Catalog do
       :resource_template,
       :mst_creator,
       :node,
-      :collection_fields,
-      :items
+      :items,
+      collection_fields: [:metadata_properties]
     ])
   end
 
@@ -503,9 +503,18 @@ defmodule Voile.Schema.Catalog do
   @doc """
   Create attachment for a given entity (Collection or Item)
   """
-  def create_attachment(entity, file_params) when is_map(file_params) do
-    with {:ok, saved_file} <- save_file(file_params),
-         {:ok, attachment} <- create_attachment_record(entity, file_params, saved_file) do
+  def create_attachment(entity, %{upload: upload, description: description}) do
+    with {:ok, saved_file} <- save_file(upload),
+         {:ok, attachment} <-
+           create_attachment_record(
+             entity,
+             %{
+               filename: upload.filename,
+               content_type: upload.content_type,
+               description: description
+             },
+             saved_file
+           ) do
       {:ok, attachment}
     else
       {:error, reason} -> {:error, reason}
@@ -580,11 +589,23 @@ defmodule Voile.Schema.Catalog do
   Delete attachment and its file
   """
   def delete_attachment(%Attachment{} = attachment) do
-    # Delete file from filesystem
-    File.rm(attachment.file_path)
+    # Check if file exists before trying to delete it
+    if File.exists?(attachment.file_path) do
+      case File.rm(attachment.file_path) do
+        :ok ->
+          # File deleted successfully, now delete the database record
+          Repo.delete(attachment)
 
-    # Delete record from database
-    Repo.delete(attachment)
+        {:error, reason} ->
+          # Log the error but still try to delete the database record
+          IO.inspect("Failed to delete file #{attachment.file_path}: #{inspect(reason)}")
+          Repo.delete(attachment)
+      end
+    else
+      # File doesn't exist, just delete the database record
+      IO.inspect("File not found at path: #{attachment.file_path}")
+      Repo.delete(attachment)
+    end
   end
 
   @doc """
@@ -634,7 +655,7 @@ defmodule Voile.Schema.Catalog do
   Get file path for serving
   """
   def get_file_url(%Attachment{} = attachment) do
-    "/uploads/#{Path.basename(attachment.file_path)}"
+    "/uploads/attachments/#{Path.basename(attachment.file_path)}"
   end
 
   # Private functions
@@ -645,15 +666,14 @@ defmodule Voile.Schema.Catalog do
 
     attrs = %{
       file_name: saved_file.filename,
-      original_name: file_params["filename"] || file_params[:filename],
+      original_name: file_params[:filename],
       file_path: saved_file.path,
       file_size: saved_file.size,
-      mime_type: file_params["content_type"] || file_params[:content_type],
-      file_type:
-        Attachment.determine_file_type(file_params["content_type"] || file_params[:content_type]),
-      description: file_params["description"] || file_params[:description],
-      sort_order: file_params["sort_order"] || file_params[:sort_order] || 0,
-      is_primary: file_params["is_primary"] || file_params[:is_primary] || false,
+      mime_type: file_params[:content_type],
+      file_type: Attachment.determine_file_type(file_params[:content_type]),
+      description: file_params[:description] || "",
+      sort_order: 0,
+      is_primary: false,
       metadata: build_metadata(file_params, saved_file),
       attachable_id: entity_id,
       attachable_type: entity_type

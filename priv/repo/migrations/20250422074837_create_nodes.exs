@@ -10,5 +10,11 @@ defmodule Voile.Repo.Migrations.CreateNodes do
 
       timestamps(type: :utc_datetime)
     end
+
+    create unique_index(:nodes, [:name])
+
+    alter table(:users) do
+      add :node_id, references(:nodes, on_delete: :nilify_all, type: :bigint)
+    end
   end
 end

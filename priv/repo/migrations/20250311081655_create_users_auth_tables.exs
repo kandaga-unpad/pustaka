@@ -16,7 +16,6 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :user_image, :string
       add :social_media, :map, type: :jsonb
       add :groups, {:array, :string}
-      add :node_id, :integer
       add :last_login, :utc_datetime
       add :last_login_ip, :string
 

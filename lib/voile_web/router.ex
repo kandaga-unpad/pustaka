@@ -90,6 +90,7 @@ defmodule VoileWeb.Router do
 
             live "/:id", Dashboard.Catalog.CollectionLive.Show, :show
             live "/:id/show/edit", Dashboard.Catalog.CollectionLive.Show, :edit
+            live "/:id/attachments", Dashboard.Catalog.CollectionLive.Attachments, :attachments
           end
 
           scope "/items" do

@@ -104,6 +104,25 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <:subtitle>Use this form to manage collection records in your database.</:subtitle>
       </.header>
       
+      <div class="text-xs italic">
+        {if @action == :edit, do: "Edit Collection", else: "New Collection"} - Step {@step} of 3
+      </div>
+      
+      <div class="mb-12">
+        <%= case @step do %>
+          <% 1 -> %>
+            <p class="font-bold">Step 1: <span class="text-violet-400">Basic Information</span></p>
+          <% 2 -> %>
+            <p class="font-bold">
+              Step 2: <span class="text-violet-400">Additional Collection Fields</span>
+            </p>
+          <% 3 -> %>
+            <p class="font-bold">
+              Step 3: <span class="text-violet-400">Item Data and Attachments</span>
+            </p>
+        <% end %>
+      </div>
+      
       <.simple_form
         for={@form}
         id="collection-form-1"
@@ -363,10 +382,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         
         <%= if @step == 2 do %>
           <div class="flex items-start gap-5">
-            <div class="sticky top-0 w-full max-w-72">
+            <div class="sticky top-0 w-full h-full max-w-72">
               <h5>Collection Properties</h5>
               
-              <div class="w-full h-[512px] border border-1 border-violet-100 overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
+              <div class="w-full h-full max-h-screen border border-1 border-violet-100 overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
                 <p class="text-xs italic mb-4 max-w-48">
                   You can click each category below and pick any necessary property for your collection.
                 </p>
@@ -388,7 +407,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   <p class="text-red-500 text-sm mt-2">No property found.</p>
                 <% else %>
                   <%= for {id, props} <- @filtered_properties do %>
-                    <div>
+                    <div class="my-5">
                       <h6
                         class="mb-4 border border-1 border-violet-100 rounded-xl p-2 hover:text-brand cursor-pointer transition-all duration-1000"
                         phx-click={
@@ -423,7 +442,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                               phx-click="select_props"
                               phx-value-id={prop.id}
                               phx-target={@myself}
-                              class="btn text-left hover-btn ml-3"
+                              class="btn hover-btn py-5 ml-3"
                             >
                               {prop.label}
                             </button>
@@ -447,7 +466,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     </h6>
                     
                     <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
-                      <p class="text-gray-500 italic mb-4">{col_field[:information].value}</p>
+                      <p class="text-gray-500 dark:text-white italic pb-4">
+                        {col_field[:information].value ||
+                          col_field.data.metadata_properties.information}
+                      </p>
                       
                       <input
                         type="hidden"
@@ -479,7 +501,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         name={col_field[:type_value].name}
                         value={col_field[:type_value].value}
                       />
-                      <div class="grid grid-cols-5 items-start gap-2 -mt-6">
+                      <div class="grid grid-cols-5 items-start gap-2">
                         <.input
                           field={col_field[:value_lang]}
                           type="select"
@@ -556,7 +578,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% else %>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
                 <.inputs_for :let={item_field} field={@form[:items]}>
-                  <div class="bg-gray-600 rounded-lg p-5">
+                  <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-5">
                     <div class="w-full flex items-center gap-3 mt-2">
                       <%= if item_field[:id].value != nil do %>
                         <.button

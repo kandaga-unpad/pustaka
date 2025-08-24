@@ -4,7 +4,6 @@ defmodule VoileWeb.Users.ManageLive do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
   alias VoileWeb.Helpers.AuthHelper
-  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def render(assigns) do
@@ -112,6 +111,8 @@ defmodule VoileWeb.Users.ManageLive do
           id={@user.id || :new}
           title={@page_title}
           action={@live_action}
+          node_list={@node_list}
+          user_type_options={@user_type_options}
           user={@user}
           patch={~p"/manage/settings/users"}
         />
@@ -123,10 +124,14 @@ defmodule VoileWeb.Users.ManageLive do
   @impl true
   def mount(_params, _session, socket) do
     current_user = socket.assigns.current_scope.user
+    node_list = Voile.Schema.System.list_nodes()
+    user_type = Voile.Schema.Master.list_mst_member_types()
 
     socket =
       socket
       |> assign(page: 1, per_page: 10, total_pages: 1)
+      |> assign(:node_list, node_list)
+      |> assign(:user_type_options, user_type)
 
     if AuthHelper.can_access?(current_user, "users") do
       {users, total_pages} =
