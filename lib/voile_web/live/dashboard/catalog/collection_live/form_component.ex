@@ -20,10 +20,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       
       <.modal id="col_field_delete_confirmation">
         <div class="text-center">
-          <h5>
-            Are you sure want to delete {(@chosen_collection_field && @chosen_collection_field.label) ||
-              ""} ?
-          </h5>
+          <h5>Are you sure want to delete this field ?</h5>
           
           <p class="text-sm text-gray-500">
             This action cannot be undone. Please confirm your action.
@@ -38,24 +35,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             
             <p class="text-xs">with value :</p>
             
-            <h6 class="font-bold text-gray-500">
+            <h5 class="font-bold text-gray-500 dark:text-white">
               {(@chosen_collection_field && @chosen_collection_field.value) || ""}
-            </h6>
+            </h5>
+            
+            <p class="text-xs">from this collection :</p>
+            
+            <h6 class="text-orange-500">{@collection.title}</h6>
           </div>
           
           <div class="flex items-center w-full my-5 gap-5">
             <.button
-              class="w-full warning-btn"
+              class="w-full cancel-btn"
               phx-click={
                 JS.push("delete_existed_field") |> hide_modal("col_field_delete_confirmation")
               }
-              phx-value-id={@delete_confirmation_id}
+              phx-value-id={@delete_field_confirmation_id}
               phx-target={@myself}
             >
               Delete
             </.button>
             <.button
-              class="w-full"
+              class="w-full warning-btn"
               phx-click={hide_modal("col_field_delete_confirmation")}
               phx-target={@myself}
             >
@@ -70,27 +71,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <h5>Are you sure want to delete this item data?</h5>
           
           <p class="text-sm text-gray-500">
-            This action cannot be undone. Please confirm your action.
+            This action cannot be undone. Please confirm your action and make sure this item is not in use.
           </p>
           
           <div class="my-4">
-            <p class="text-xs">with value :</p>
+            <p class="text-xs">Item Code :</p>
             
             <h6 class="text-brand">{(@chosen_item_field && @chosen_item_field.item_code) || ""}</h6>
           </div>
+          
+          <p class="text-sm">will be deleted forever from this collection :</p>
+          
+          <h6 class="text-orange-500">{@collection.title}</h6>
         </div>
         
         <div class="flex items-center w-full my-5 gap-5">
           <.button
-            class="w-full warning-btn"
+            class="w-full cancel-btn"
             phx-click={JS.push("delete_existing_item") |> hide_modal("item_delete_confirmation")}
-            phx-value-id={@delete_confirmation_id}
+            phx-value-id={@delete_item_confirmation_id}
             phx-target={@myself}
           >
             Delete
           </.button>
           <.button
-            class="w-full"
+            class="w-full warning-btn"
             phx-click={hide_modal("item_delete_confirmation")}
             phx-target={@myself}
           >
@@ -190,7 +195,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <% end %>
           
           <%= if @collection.creator_id != nil do %>
-            <.button type="button" phx-click="delete_creator" phx-target={@myself} class="warning-btn">
+            <.button type="button" phx-click="delete_creator" phx-target={@myself} class="cancel-btn">
               Delete Author
             </.button>
           <% end %>
@@ -355,7 +360,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     phx-click="delete_thumbnail"
                     phx-value-thumbnail={@form[:thumbnail].value}
                     phx-target={@myself}
-                    class="warning-btn"
+                    class="cancel-btn"
                     phx-disable-with="Removing..."
                   >
                     <svg
@@ -525,12 +530,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           <.button
                             type="button"
                             phx-click={
-                              JS.push("delete_confirmation")
+                              JS.push("delete_field_confirmation")
                               |> show_modal("col_field_delete_confirmation")
                             }
                             phx-target={@myself}
                             phx-value-id={col_field[:id].value}
-                            class="warning-btn w-full"
+                            class="cancel-btn w-full"
                           >
                             <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Property
                           </.button>
@@ -584,14 +589,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         <.button
                           type="button"
                           phx-click={
-                            JS.push("delete_confirmation")
+                            JS.push("delete_item_confirmation")
                             |> show_modal("item_delete_confirmation")
                           }
                           phx-target={@myself}
                           phx-value-id={item_field[:id].value}
-                          class="warning-btn w-full"
+                          class="cancel-btn w-full"
                         >
-                          <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Property
+                          <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Item
                         </.button>
                       <% else %>
                         <.button
@@ -601,7 +606,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           phx-value-index={item_field.index}
                           class="warning-btn w-full"
                         >
-                          <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Field
+                          <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Item
                         </.button>
                       <% end %>
                     </div>
@@ -757,6 +762,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       |> Enum.into(%{}, fn {item, idx} ->
         {to_string(idx),
          %{
+           "id" => item.id,
            "item_code" => item.item_code,
            "inventory_code" => item.inventory_code,
            "location" => item.location,
@@ -778,7 +784,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:step3_params, nil)
      |> assign(:type_options, type_options)
      |> assign(:uploaded_files, [])
-     |> assign(:delete_confirmation_id, nil)
+     |> assign(:delete_field_confirmation_id, nil)
+     |> assign(:delete_item_confirmation_id, nil)
      |> assign(:chosen_collection_field, nil)
      |> assign(:chosen_item_field, nil)
      |> assign(:property_search, "")
@@ -932,8 +939,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     {:noreply, delete_existing_item(id, socket)}
   end
 
-  def handle_event("delete_confirmation", %{"id" => id}, socket) do
+  def handle_event("delete_field_confirmation", %{"id" => id}, socket) do
     {:noreply, confirm_field_deletion(id, socket)}
+  end
+
+  def handle_event("delete_item_confirmation", %{"id" => id}, socket) do
+    {:noreply, confirm_item_deletion(id, socket)}
   end
 
   def handle_event("search_properties", %{"value" => query}, socket) do

@@ -3,6 +3,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   import Voile.Utils.ItemHelper
 
+  alias Client.Storage
   alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Master
@@ -325,7 +326,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     chosen_collection_field = Catalog.get_collection_field!(id)
 
     socket
-    |> assign(:delete_confirmation_id, id)
+    |> assign(:delete_field_confirmation_id, id)
     |> assign(:chosen_collection_field, chosen_collection_field)
   end
 
@@ -333,8 +334,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     chosen_item = Catalog.get_item!(id)
 
     socket
-    |> assign(:delete_confirmation_id, id)
-    |> assign(:chosen_item, chosen_item)
+    |> assign(:delete_item_confirmation_id, id)
+    |> assign(:chosen_item_field, chosen_item)
   end
 
   def search_properties(query, socket) do
@@ -364,55 +365,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   def handle_thumbnail_progress(:thumbnail, entry, socket) do
     if entry.done? do
       # Delete old thumbnail if exists
-      dbg(socket.assigns.form.params["thumbnail"])
-
       if socket.assigns.form.params["thumbnail"] do
-        old_file = Path.basename(socket.assigns.form.params["thumbnail"])
-        old_path = Path.join([:code.priv_dir(:voile), "static", "uploads", "thumbnail", old_file])
-
-        if File.exists?(old_path) do
-          case File.rm(old_path) do
-            :ok ->
-              IO.puts("Successfully deleted old thumbnail: #{old_path}")
-
-            {:error, reason} ->
-              IO.puts("Could not delete old thumbnail #{old_path}: #{inspect(reason)}")
-              # Continue execution even if deletion fails
-          end
-        end
+        Storage.delete(socket.assigns.form.params["thumbnail"])
       end
 
-      [url] =
+      result =
         consume_uploaded_entries(socket, :thumbnail, fn %{path: path}, entry ->
-          ext = Path.extname(entry.client_name)
-          file_name = "#{System.system_time(:second)}-thumbnail-#{Ecto.UUID.generate()}#{ext}"
+          upload = %Plug.Upload{
+            path: path,
+            filename: entry.client_name,
+            content_type: entry.client_type
+          }
 
-          dest =
-            Path.join([
-              :code.priv_dir(:voile),
-              "static",
-              "uploads",
-              "thumbnail",
-              file_name
-            ])
-
-          case File.cp(path, dest) do
-            :ok ->
-              {:ok, "/uploads/thumbnail/#{Path.basename(dest)}"}
-
-            {:error, reason} ->
-              IO.puts("Failed to copy thumbnail file: #{inspect(reason)}")
-              {:error, "Failed to upload thumbnail"}
-          end
+          # Upload with thumbnail-specific options
+          Storage.upload(upload, folder: "thumbnails", generate_filename: true)
         end)
 
-      case url do
-        {:error, error_message} ->
-          {:noreply,
-           socket
-           |> put_flash(:error, error_message)}
-
-        url when is_binary(url) ->
+      case result do
+        [{:ok, url}] ->
           form_params = Map.put(socket.assigns.form.params || %{}, "thumbnail", url)
           changeset = Catalog.change_collection(socket.assigns.collection, form_params)
 
@@ -420,6 +390,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
            socket
            |> assign(:form, to_form(changeset))
            |> assign(:collection, Ecto.Changeset.apply_changes(changeset))}
+
+        [url] when is_binary(url) ->
+          form_params = Map.put(socket.assigns.form.params || %{}, "thumbnail", url)
+          changeset = Catalog.change_collection(socket.assigns.collection, form_params)
+
+          {:noreply,
+           socket
+           |> assign(:form, to_form(changeset))
+           |> assign(:collection, Ecto.Changeset.apply_changes(changeset))}
+
+        [{:error, error_message}] ->
+          {:noreply, put_flash(socket, :error, error_message)}
+
+        _ ->
+          {:noreply, put_flash(socket, :error, "Unexpected upload result: #{inspect(result)}")}
       end
     else
       {:noreply, socket}
@@ -502,24 +487,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   defp delete_thumbnail_file(""), do: :ok
 
   defp delete_thumbnail_file(thumbnail_path) do
-    file_path =
-      Path.join([
-        :code.priv_dir(:voile),
-        "static",
-        thumbnail_path
-      ])
-
-    if File.exists?(file_path) do
-      case File.rm(file_path) do
-        :ok ->
-          :ok
-
-        {:error, reason} ->
-          dbg("Failed to delete thumbnail file: #{reason}")
-      end
-    else
-      :ok
-    end
+    Storage.delete(thumbnail_path)
   end
 
   defp filter_properties(properties, query) when is_binary(query) and query != "" do

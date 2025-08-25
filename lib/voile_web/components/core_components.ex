@@ -547,9 +547,9 @@ defmodule VoileWeb.CoreComponents do
     <ul class="list w-full">
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
-          <div class="font-bold">{item.title}</div>
+          <div class="font-bold text-base">{item.title}</div>
           
-          <div>{render_slot(item)}</div>
+          <div class="font-semibold text-gray-500 dark:text-gray-400 italic">{render_slot(item)}</div>
         </div>
       </li>
     </ul>

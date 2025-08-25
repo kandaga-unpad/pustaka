@@ -39,7 +39,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             <!-- File Upload Area -->
             <div
               phx-drop-target={@uploads.attachments.ref}
-              class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
+              id="upload-area"
+              class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
+              phx-hook="DragUpload"
             >
               <div class="space-y-1 text-center flex flex-col items-center">
                 {collection_type_icon(@collection_type)}
@@ -640,10 +642,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
     assigns = %{extra_class: extra_class}
 
     ~H"""
-    <svg class={@extra_class} fill="currentColor" viewBox="0 0 20 20">
+    <svg class={@extra_class} fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
       <path
         fill-rule="evenodd"
-        d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0017 15V3z"
+        d="M19.5 3.75a.75.75 0 01.75.75v12.063a4.125 4.125 0 11-1.5-3.188V7.098l-9 2.25v8.465a4.125 4.125 0 11-1.5-3.188V6a.75.75 0 01.576-.73l10.5-2.25a.75.75 0 01.174-.02z"
         clip-rule="evenodd"
       />
     </svg>
@@ -746,10 +748,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
     assigns = %{}
 
     ~H"""
-    <svg class="h-8 w-8 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <svg class="h-8 w-8 text-yellow-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path
         fill-rule="evenodd"
-        d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0017 15V3z"
+        d="M19.5 3.75a.75.75 0 01.75.75v12.063a4.125 4.125 0 11-1.5-3.188V7.098l-9 2.25v8.465a4.125 4.125 0 11-1.5-3.188V6a.75.75 0 01.576-.73l10.5-2.25a.75.75 0 01.174-.02z"
         clip-rule="evenodd"
       />
     </svg>

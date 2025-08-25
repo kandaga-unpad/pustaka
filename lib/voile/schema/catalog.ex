@@ -48,7 +48,7 @@ defmodule Voile.Schema.Catalog do
           :collection_fields,
           :items
         ],
-        order_by: [desc: c.inserted_at],
+        order_by: [desc: c.inserted_at, desc: c.id],
         limit: ^per_page,
         offset: ^offset
 
@@ -82,7 +82,8 @@ defmodule Voile.Schema.Catalog do
       :resource_template,
       :mst_creator,
       :node,
-      :items,
+      :attachments,
+      items: [:node],
       collection_fields: [:metadata_properties]
     ])
   end
@@ -492,33 +493,50 @@ defmodule Voile.Schema.Catalog do
     ItemFieldValue.changeset(item_field_value, attrs)
   end
 
-  @upload_dir Application.compile_env(
-                :voile,
-                :attachment_upload_dir,
-                "priv/static/uploads/attachments"
-              )
-  # 100MB default
-  @max_file_size Application.compile_env(:voile, :attachment_max_file_size, 100 * 1024 * 1024)
-
   @doc """
-  Create attachment for a given entity (Collection or Item)
+  Create attachment for a given entity using the new storage system
+
+  Supports both legacy format (%{upload: upload, description: description})
+  and new format (%{file_url: file_url, filename: filename, content_type: content_type, description: description})
   """
-  def create_attachment(entity, %{upload: upload, description: description}) do
-    with {:ok, saved_file} <- save_file(upload),
-         {:ok, attachment} <-
-           create_attachment_record(
-             entity,
-             %{
-               filename: upload.filename,
-               content_type: upload.content_type,
-               description: description
-             },
-             saved_file
-           ) do
-      {:ok, attachment}
-    else
-      {:error, reason} -> {:error, reason}
+  def create_attachment(entity, %{upload: upload, description: description} = params) do
+    # Legacy format - upload the file first, then create record
+    case Client.Storage.upload(upload, folder: "attachments") do
+      {:ok, file_url} ->
+        file_size = Map.get(params, :file_size) || get_file_size_from_upload(upload)
+
+        create_attachment_record(entity, %{
+          file_url: file_url,
+          filename: upload.filename,
+          content_type: upload.content_type,
+          description: description,
+          file_size: file_size
+        })
+
+      {:error, reason} ->
+        {:error, reason}
     end
+  end
+
+  def create_attachment(
+        entity,
+        %{
+          file_url: file_url,
+          filename: filename,
+          content_type: content_type,
+          description: description
+        } = params
+      ) do
+    # New format - file already uploaded
+    file_size = Map.get(params, :file_size) || get_file_size_from_url(file_url)
+
+    create_attachment_record(entity, %{
+      file_url: file_url,
+      filename: filename,
+      content_type: content_type,
+      description: description,
+      file_size: file_size
+    })
   end
 
   @doc """
@@ -550,6 +568,13 @@ defmodule Voile.Schema.Catalog do
     Attachment
     |> Attachment.for_entity(id, "item")
     |> Repo.all()
+  end
+
+  @doc """
+  Get one attachments based on the id
+  """
+  def get_attachment!(id) do
+    Repo.get!(Attachment, id)
   end
 
   @doc """
@@ -586,25 +611,19 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
-  Delete attachment and its file
+  Delete attachment and its file using the storage system
   """
   def delete_attachment(%Attachment{} = attachment) do
-    # Check if file exists before trying to delete it
-    if File.exists?(attachment.file_path) do
-      case File.rm(attachment.file_path) do
-        :ok ->
-          # File deleted successfully, now delete the database record
-          Repo.delete(attachment)
+    # Delete file using storage system
+    case Client.Storage.delete(attachment.file_path) do
+      {:ok, _} ->
+        # File deleted successfully, now delete the database record
+        Repo.delete(attachment)
 
-        {:error, reason} ->
-          # Log the error but still try to delete the database record
-          IO.inspect("Failed to delete file #{attachment.file_path}: #{inspect(reason)}")
-          Repo.delete(attachment)
-      end
-    else
-      # File doesn't exist, just delete the database record
-      IO.inspect("File not found at path: #{attachment.file_path}")
-      Repo.delete(attachment)
+      {:error, reason} ->
+        # Log the error but still try to delete the database record
+        IO.inspect("Failed to delete file #{attachment.file_path}: #{inspect(reason)}")
+        Repo.delete(attachment)
     end
   end
 
@@ -660,21 +679,32 @@ defmodule Voile.Schema.Catalog do
 
   # Private functions
 
-  defp create_attachment_record(entity, file_params, saved_file) do
+  defp create_attachment_record(entity, %{
+         file_url: file_url,
+         filename: filename,
+         content_type: content_type,
+         description: description,
+         file_size: file_size
+       }) do
     entity_type = get_entity_type(entity)
     entity_id = entity.id
 
     attrs = %{
-      file_name: saved_file.filename,
-      original_name: file_params[:filename],
-      file_path: saved_file.path,
-      file_size: saved_file.size,
-      mime_type: file_params[:content_type],
-      file_type: Attachment.determine_file_type(file_params[:content_type]),
-      description: file_params[:description] || "",
+      # Extract filename from URL
+      file_name: Path.basename(file_url),
+      original_name: filename,
+      # Store the full URL/path
+      file_path: file_url,
+      file_size: file_size,
+      mime_type: content_type,
+      file_type: Attachment.determine_file_type(content_type),
+      description: description || "",
       sort_order: 0,
       is_primary: false,
-      metadata: build_metadata(file_params, saved_file),
+      metadata: %{
+        upload_date: DateTime.utc_now(),
+        original_size: file_size
+      },
       attachable_id: entity_id,
       attachable_type: entity_type
     }
@@ -684,81 +714,31 @@ defmodule Voile.Schema.Catalog do
     |> Repo.insert()
   end
 
-  defp save_file(%Plug.Upload{} = upload) do
-    # Get file size using File.stat!/1
-    file_size = File.stat!(upload.path).size
+  defp get_file_size_from_upload(%Plug.Upload{path: path}) do
+    case File.stat(path) do
+      {:ok, %{size: size}} -> size
+      {:error, _} -> 0
+    end
+  end
 
-    with :ok <- validate_file_size(file_size) do
-      filename = generate_filename(upload.filename)
-      upload_path = Path.join([@upload_dir, filename])
+  defp get_file_size_from_url(file_url) do
+    # For local files, try to get actual file size
+    if String.starts_with?(file_url, "/uploads") do
+      local_path = Path.join(["priv/static", file_url])
 
-      # Ensure upload directory exists
-      File.mkdir_p!(Path.dirname(upload_path))
-
-      case File.cp(upload.path, upload_path) do
-        :ok ->
-          {:ok,
-           %{
-             filename: filename,
-             path: upload_path,
-             size: file_size
-           }}
-
-        {:error, reason} ->
-          {:error, "Failed to save file: #{reason}"}
+      case File.stat(local_path) do
+        {:ok, %{size: size}} -> size
+        {:error, _} -> 0
       end
     else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  defp save_file(file_params) when is_map(file_params) do
-    # Handle different file parameter formats
-    cond do
-      Map.has_key?(file_params, :path) && Map.has_key?(file_params, :filename) ->
-        # File already saved, just return the info
-        {:ok,
-         %{
-           filename: file_params.filename,
-           path: file_params.path,
-           size: File.stat!(file_params.path).size
-         }}
-
-      true ->
-        {:error, "Invalid file parameters"}
-    end
-  end
-
-  defp generate_filename(original_filename) do
-    timestamp = DateTime.utc_now() |> DateTime.to_unix(:microsecond)
-    extension = Path.extname(original_filename)
-    random_string = :crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower)
-
-    "#{timestamp}_#{random_string}#{extension}"
-  end
-
-  defp validate_file_size(size) do
-    if size > @max_file_size do
-      {:error, "File size exceeds maximum allowed size of #{@max_file_size} bytes"}
-    else
-      :ok
+      # For S3 URLs, we can't easily get size, return 0
+      # You might want to store size during upload for S3 files
+      0
     end
   end
 
   defp get_entity_type(%Collection{}), do: "collection"
   defp get_entity_type(%Item{}), do: "item"
-
-  defp build_metadata(file_params, saved_file) do
-    base_metadata = %{
-      upload_date: DateTime.utc_now(),
-      original_size: saved_file.size
-    }
-
-    # Add any additional metadata from file_params
-    custom_metadata = file_params["metadata"] || file_params[:metadata] || %{}
-
-    Map.merge(base_metadata, custom_metadata)
-  end
 
   @doc """
   Get attachment statistics for an entity

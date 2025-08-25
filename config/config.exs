@@ -83,6 +83,14 @@ config :voile,
     "application/x-executable"
   ]
 
+config :voile,
+  s3_region: System.get_env("VOILE_S3_REGION") || "ap-southeast-1",
+  s3_access_key_id: System.get_env("VOILE_S3_ACCESS_KEY_ID"),
+  s3_secret_key_access: System.get_env("VOILE_S3_SECRET_ACCESS_KEY"),
+  s3_bucket_name: System.get_env("VOILE_S3_BUCKET_NAME"),
+  s3_public_url:
+    System.get_env("VOILE_S3_PUBLIC_URL") || "https://s3.ap-southeast-1.amazonaws.com"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

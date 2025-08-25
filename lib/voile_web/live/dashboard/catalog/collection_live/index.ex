@@ -29,7 +29,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:node_location, node_location)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
-      |> assign(:step, 3)
+      |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
       |> assign(:time_identifier, time_identifier)
 
@@ -42,8 +42,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    dbg(Catalog.get_collection!(id))
-
     socket
     |> assign(:page_title, "Edit Collection")
     |> assign(:collection, Catalog.get_collection!(id))

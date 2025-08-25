@@ -229,7 +229,7 @@
   }
 
   .warning-btn {
-    @apply bg-red-500 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-red-600;
+    @apply bg-yellow-500 text-zinc-900 py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-yellow-600;
   }
 
   .success-btn {
@@ -237,7 +237,7 @@
   }
 
   .cancel-btn {
-    @apply bg-yellow-500 text-zinc-900 py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-yellow-600;
+    @apply bg-red-500 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-red-600;
   }
 
   .hover-btn {
@@ -257,7 +257,7 @@
   }
 
   .active-menu {
-    @apply bg-gradient-to-br from-violet-400 via-violet-700 to-violet-400 rounded-lg text-white;
+    @apply bg-gradient-to-br from-violet-400 via-violet-700 to-violet-400 rounded-lg text-white dark:hover:text-violet-200;
   }
 
   .default-voile-menu {
@@ -290,6 +290,17 @@
 
   .active-pagination {
     @apply btn bg-violet-500 text-white py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
+  }
+
+  .upload-area.dragging {
+    @apply border-4 border-dashed border-violet-400 bg-violet-100 dark:bg-violet-500;
+  }
+
+  .item-card {
+    transition: all 0.3s ease;
+  }
+  .item-card:hover {
+    transform: translateY(-5px);
   }
 }
 

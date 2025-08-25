@@ -168,6 +168,8 @@ defmodule VoileWeb.Router do
         end
       end
     end
+
+    get "/attachments/:id/download", Collection.AttachmentController.Download, :download
   end
 
   scope "/auth/google", VoileWeb do
