@@ -107,7 +107,7 @@ defmodule Voile.Schema.Master.MemberType do
   defp validate_decimal_non_negative(changeset, field) do
     case get_field(changeset, field) do
       %Decimal{} = d ->
-        if Decimal.cmp(d, Decimal.new("0")) in [:gt, :eq] do
+        if Decimal.compare(d, Decimal.new("0")) in [:gt, :eq] do
           changeset
         else
           add_error(changeset, field, "must be greater than or equal to 0")
@@ -120,7 +120,7 @@ defmodule Voile.Schema.Master.MemberType do
         # cast might leave it as number; normalize to Decimal
         dec = Decimal.new(other)
 
-        if Decimal.cmp(dec, Decimal.new("0")) in [:gt, :eq] do
+        if Decimal.compare(dec, Decimal.new("0")) in [:gt, :eq] do
           changeset
         else
           add_error(changeset, field, "must be greater than or equal to 0")
@@ -202,7 +202,7 @@ defmodule Voile.Schema.Master.MemberType do
     {:ok, NaiveDateTime.add(from_naive, n * 24 * 60 * 60, :second)}
   end
 
-  def compute_next_renewal(%__MODULE__{recurrence_unit: unit} = mt, _from)
+  def compute_next_renewal(%__MODULE__{recurrence_unit: unit} = _mt, _from)
       when unit in ["months", "years"] do
     {:error, :use_timex_for_months_or_years}
   end

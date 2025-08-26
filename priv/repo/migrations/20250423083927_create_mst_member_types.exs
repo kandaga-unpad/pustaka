@@ -2,7 +2,8 @@ defmodule Voile.Repo.Migrations.CreateMstMemberTypes do
   use Ecto.Migration
 
   def change do
-    create table(:mst_member_types) do
+    create table(:mst_member_types, primary_key: false) do
+      add :id, :binary_id, primary_key: true
       add :name, :string, null: false
       add :slug, :string, null: false
       add :description, :text
@@ -42,5 +43,8 @@ defmodule Voile.Repo.Migrations.CreateMstMemberTypes do
 
       timestamps(type: :utc_datetime)
     end
+
+    create index(:mst_member_types, [:is_active])
+    create index(:mst_member_types, [:priority_level])
   end
 end

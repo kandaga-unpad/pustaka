@@ -8,12 +8,17 @@ defmodule Voile.Schema.Catalog.Item do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
-    field :status, :string
-    field :location, :string
     field :item_code, :string
     field :inventory_code, :string
+    field :location, :string
+    field :status, :string
     field :condition, :string
     field :availability, :string
+    field :price, :decimal
+    field :acquisition_date, :date
+    field :last_inventory_date, :date
+    field :last_circulated, :utc_datetime
+    field :rfid_tag, :string
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :node, Node, foreign_key: :unit_id
 
@@ -25,8 +30,8 @@ defmodule Voile.Schema.Catalog.Item do
     timestamps(type: :utc_datetime)
   end
 
-  @statuses ~w(active inactive lost damaged)
-  @conditions ~w(new good fair poor)
+  @statuses ~w(active inactive lost damaged discarded)
+  @conditions ~w(excellent good fair poor damaged)
   @availabilities ~w(available loaned reserved maintenance)
 
   @doc false
@@ -39,6 +44,12 @@ defmodule Voile.Schema.Catalog.Item do
       :status,
       :condition,
       :availability,
+      :price,
+      :acquisition_date,
+      :last_inventory_date,
+      :last_circulated,
+      :rfid_tag,
+      :location,
       :collection_id,
       :unit_id
     ])
