@@ -362,9 +362,75 @@ defmodule AuthorLoader do
   end
 end
 
+defmodule PublisherLoader do
+  @moduledoc """
+  Module for loading and processing publisher data from CSV files.
+  """
+
+  def load_publishers_for_unit(unit_id) do
+    # Try different possible paths
+    possible_paths = [
+      "scripts/",
+      "",
+      "./"
+    ]
+
+    mst_publisher_file =
+      possible_paths
+      |> Enum.find_value(fn path ->
+        file = Path.join(path, "mst_publisher_#{unit_id}.csv")
+        if File.exists?(file), do: file
+      end) || "mst_publisher_#{unit_id}.csv"
+
+    IO.puts("🔍 Looking for publisher file:")
+    IO.puts("  - #{mst_publisher_file} (exists: #{File.exists?(mst_publisher_file)})")
+
+    case File.exists?(mst_publisher_file) do
+      true ->
+        IO.puts("📚 Loading publisher data for unit #{unit_id}...")
+        publishers = load_master_publishers(mst_publisher_file)
+        IO.puts("📖 Loaded #{map_size(publishers)} publishers")
+        {:ok, publishers}
+
+      false ->
+        IO.puts("⚠️ No publisher file found for unit #{unit_id}")
+        {:ok, %{}}
+    end
+  end
+
+  defp load_master_publishers(file_path) do
+    IO.puts("📂 Reading publishers from: #{file_path}")
+
+    publishers =
+      File.stream!(file_path)
+      |> CSVParser.parse_stream()
+      # Skip header row
+      |> Stream.drop(1)
+      # Start from line 2 (after header)
+      |> Enum.with_index(2)
+      |> Enum.reduce(%{}, fn {[publisher_id, publisher_name, _input_date, _last_update], line_num},
+                             acc ->
+        publisher_id_int = String.to_integer(publisher_id)
+        clean_name = String.trim(publisher_name, "\"")
+
+        if line_num <= 5 do
+          IO.puts("  📋 Line #{line_num}: ID=#{publisher_id_int}, Name=#{clean_name}")
+        end
+
+        Map.put(acc, publisher_id_int, clean_name)
+      end)
+
+    IO.puts("📊 Total publishers loaded: #{map_size(publishers)}")
+    publishers
+  end
+end
+
 defmodule Mapper do
   alias Ecto.UUID
 
+  def to_maps(row, property_map, unit_id, author_data, publishers \\ %{})
+
+  # Handle the case where we have the expected number of columns
   def to_maps(
         [
           biblio_id,
@@ -396,11 +462,13 @@ defmodule Mapper do
           _input_date,
           _last_update,
           _uid
-        ],
+        ] = row,
         property_map,
         unit_id,
-        {_authors, biblio_authors, creator_mapping}
-      ) do
+        {_authors, biblio_authors, creator_mapping} = author_data,
+        publishers
+      )
+      when length(row) >= 28 do
     raw_uuid = UUID.generate()
     {:ok, id} = UUID.dump(raw_uuid)
 
@@ -417,6 +485,9 @@ defmodule Mapper do
         _ -> nil
       end
 
+    # Resolve publisher name from ID
+    publisher_name = get_publisher_name(publisher_id, publishers)
+
     # collection row
     coll = %{
       id: id,
@@ -428,7 +499,6 @@ defmodule Mapper do
       old_biblio_id: biblio_id_int,
       type_id: 40,
       template_id: nil,
-      # Now properly set from author data
       creator_id: creator_id,
       unit_id: unit_id,
       inserted_at: now,
@@ -436,11 +506,13 @@ defmodule Mapper do
     }
 
     # collect only the properties that actually have data
+    # Use publisher_name instead of publisher_id
     values = %{
       "sor" => sor,
       "edition" => edition,
       "isbn_issn" => isbn_issn,
-      "publisher_id" => publisher_id,
+      # This now contains the publisher name
+      "publisher_id" => publisher_name,
       "publish_year" => publish_year,
       "collation" => collation,
       "series_title" => series_title,
@@ -488,6 +560,21 @@ defmodule Mapper do
     {coll, fields}
   end
 
+  # Handle cases with insufficient columns (likely header rows or malformed data)
+  def to_maps(row, _property_map, _unit_id, _author_data, _publishers) when is_list(row) do
+    IO.puts(
+      "⚠️ Skipping row with insufficient columns (#{length(row)} columns): #{inspect(Enum.take(row, 5))}..."
+    )
+
+    {nil, []}
+  end
+
+  # Handle any other unexpected input
+  def to_maps(row, _property_map, _unit_id, _author_data, _publishers) do
+    IO.puts("⚠️ Skipping unexpected row format: #{inspect(row)}")
+    {nil, []}
+  end
+
   defp get_primary_creator(biblio_id, biblio_authors, creator_mapping) do
     case Map.get(biblio_authors, biblio_id) do
       nil ->
@@ -503,6 +590,33 @@ defmodule Mapper do
         creator_id = Map.get(creator_mapping, author_id)
         IO.puts("🔍 Biblio #{biblio_id} -> Author #{author_id} -> Creator #{creator_id || "nil"}")
         creator_id
+    end
+  end
+
+  defp get_publisher_name(publisher_id_str, publishers) do
+    case publisher_id_str do
+      id when id in [nil, "", "\"\""] ->
+        nil
+
+      id_str ->
+        try do
+          publisher_id_int = String.to_integer(id_str)
+
+          case Map.get(publishers, publisher_id_int) do
+            nil ->
+              IO.puts("⚠️ Publisher ID #{publisher_id_int} not found in publisher data")
+              # Return original ID if not found
+              id_str
+
+            name ->
+              name
+          end
+        rescue
+          ArgumentError ->
+            IO.puts("⚠️ Invalid publisher ID format: #{id_str}")
+            # Return original value if not a valid integer
+            id_str
+        end
     end
   end
 end
@@ -650,9 +764,25 @@ defmodule CSVProcessor do
     # Load author data for this unit
     {:ok, author_data} = AuthorLoader.load_authors_for_unit(unit_id)
 
+    # Load publisher data for this unit
+    {:ok, publishers} = PublisherLoader.load_publishers_for_unit(unit_id)
+
+    # Debug: Check first few rows of the CSV
+    IO.puts("🔍 Inspecting first 3 rows of CSV...")
+
     File.stream!(csv_path)
     |> CSVParser.parse_stream()
-    |> Stream.map(&Mapper.to_maps(&1, property_map, unit_id, author_data))
+    |> Enum.take(3)
+    |> Enum.with_index(1)
+    |> Enum.each(fn {row, index} ->
+      IO.puts("  Row #{index}: #{length(row)} columns - #{inspect(Enum.take(row, 5))}...")
+    end)
+
+    File.stream!(csv_path)
+    |> CSVParser.parse_stream()
+    |> Stream.map(&Mapper.to_maps(&1, property_map, unit_id, author_data, publishers))
+    # Filter out nil results (invalid rows)
+    |> Stream.filter(fn {coll, _fields} -> coll != nil end)
     # Smaller chunks for better memory management
     |> Stream.chunk_every(100)
     |> Stream.with_index(1)

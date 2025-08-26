@@ -10,7 +10,6 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-alias Voile.Repo
 alias Voile.Schema.Metadata
 
 # Populate the Vocabulary

@@ -2,24 +2,6 @@ alias Voile.Repo
 alias Voile.Schema.Accounts
 alias Voile.Schema.Master.MemberType
 
-hashed_pw =
-  "super_long_password"
-  |> Pbkdf2.hash_pwd_salt()
-
-first_admin = %Accounts.User{
-  email: "admin@voile.id",
-  fullname: "Admin User",
-  username: "admin",
-  password: "super_long_password",
-  user_role_id: 1,
-  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second),
-  hashed_password: hashed_pw
-}
-
-first_admin
-|> Accounts.change_user_registration()
-|> Repo.insert!()
-
 list_member_type = [
   %{
     name: "Administrator",
@@ -95,3 +77,21 @@ for member_type <- list_member_type do
     loan_grace_period: member_type.loan_grace_period
   })
 end
+
+hashed_pw =
+  "super_long_password"
+  |> Pbkdf2.hash_pwd_salt()
+
+first_admin = %Accounts.User{
+  email: "admin@voile.id",
+  fullname: "Admin User",
+  username: "admin",
+  password: "super_long_password",
+  user_role_id: 1,
+  user_type_id: 1,
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second),
+  hashed_password: hashed_pw
+}
+
+first_admin
+|> Repo.insert!()
