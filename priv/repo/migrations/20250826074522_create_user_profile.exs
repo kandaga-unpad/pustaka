@@ -10,7 +10,6 @@ defmodule Voile.Repo.Migrations.CreateUserProfile do
       add :birth_date, :date
       add :birth_place, :string
       add :gender, :string
-      add :address, :text
       add :registration_date, :date
       add :expiry_date, :date
       add :photo, :string

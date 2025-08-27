@@ -32,14 +32,14 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
       timestamps(type: :utc_datetime)
     end
 
-    create_index(:lib_fines, [:member_id])
-    create_index(:lib_fines, [:item_id])
-    create_index(:lib_fines, [:transaction_id])
-    create_index(:lib_fines, [:processed_by_id])
-    create_index(:lib_fines, [:fine_type])
-    create_index(:lib_fines, [:fine_status])
-    create_index(:lib_fines, [:fine_date])
-    create_index(:lib_fines, [:payment_date])
-    create_index(:lib_fines, [:waived])
+    create index(:lib_fines, [:member_id])
+    create index(:lib_fines, [:item_id])
+    create index(:lib_fines, [:transaction_id])
+    create index(:lib_fines, [:processed_by_id])
+    create index(:lib_fines, [:fine_type])
+    create index(:lib_fines, [:fine_status])
+    create index(:lib_fines, [:fine_date])
+    create index(:lib_fines, [:payment_date])
+    create index(:lib_fines, [:waived])
   end
 end
