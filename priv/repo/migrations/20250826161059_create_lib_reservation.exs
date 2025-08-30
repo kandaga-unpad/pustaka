@@ -2,6 +2,8 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
   use Ecto.Migration
 
   def change do
+    execute "CREATE TYPE reservation_status AS ENUM ('pending', 'available', 'picked_up', 'expired', 'cancelled');"
+
     create table(:lib_reservations, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :reservation_date, :utc_datetime, null: false

@@ -2,9 +2,13 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
   use Ecto.Migration
 
   def change do
+    execute "CREATE TYPE transaction_type AS ENUM ('loan', 'return', 'renewal', 'lost_item', 'damaged_item', 'cancel');"
+
+    execute "CREATE TYPE transaction_status AS ENUM ('active', 'returned', 'overdue', 'lost', 'damaged', 'canceled');"
+
     create table(:lib_transactions, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
-      add :transaction_type, :string
+      add :transaction_type, :transaction_type, null: false
       add :transaction_date, :utc_datetime
       add :due_date, :utc_datetime
       add :return_date, :utc_datetime

@@ -26,7 +26,6 @@ defmodule Voile.Schema.Library.Reservation do
   end
 
   @statuses ~w(pending available picked_up expired cancelled)
-  @cancellation_reasons ~w(member_request item_not_available timeout staff_cancelled)
 
   def changeset(reservation, attrs) do
     reservation
@@ -47,7 +46,6 @@ defmodule Voile.Schema.Library.Reservation do
     ])
     |> validate_required([:reservation_date, :status, :member_id])
     |> validate_inclusion(:status, @statuses)
-    |> validate_inclusion(:cancellation_reason, @cancellation_reasons)
     |> validate_number(:priority, greater_than: 0)
     |> check_constraint(:item_or_collection, name: :item_or_collection_check)
     |> foreign_key_constraint(:member_id)
