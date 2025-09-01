@@ -14,7 +14,7 @@ defmodule Voile.Repo.Migrations.CreateLibCirculationHistory do
       add :ip_address, :string
       add :user_agent, :text
 
-      add :member_id, references(:members, type: :binary_id)
+      add :member_id, references(:users, type: :binary_id)
       add :item_id, references(:items, type: :binary_id)
       add :transaction_id, references(:lib_transactions, type: :binary_id)
       add :reservation_id, references(:lib_reservations, type: :binary_id)

@@ -21,8 +21,7 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
       add :item_id, references(:items, on_delete: :nilify_all, type: :binary_id), null: false
       add :member_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false
 
-      add :processed_by_id, references(:users, on_delete: :nilify_all, type: :binary_id),
-        null: false
+      add :librarian_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false
 
       timestamps(type: :utc_datetime)
     end
@@ -31,7 +30,7 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
     create index(:lib_transactions, [:is_overdue])
     create index(:lib_transactions, [:item_id])
     create index(:lib_transactions, [:member_id])
-    create index(:lib_transactions, [:processed_by_id])
+    create index(:lib_transactions, [:librarian_id])
     create index(:lib_transactions, [:status])
     create index(:lib_transactions, [:transaction_type])
     create index(:lib_transactions, [:transaction_date])

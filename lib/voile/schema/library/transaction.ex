@@ -19,7 +19,7 @@ defmodule Voile.Schema.Library.Transaction do
 
     belongs_to :item, Item, type: :binary_id
     belongs_to :member, User, type: :binary_id
-    belongs_to :processed_by, User, foreign_key: :processed_by_id, type: :binary_id
+    belongs_to :librarian, User, foreign_key: :librarian_id, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
