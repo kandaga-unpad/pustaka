@@ -105,6 +105,40 @@ defmodule VoileWeb.Router do
 
         scope "/circulation" do
           live "/", Dashboard.Circulation.Index, :index
+
+          scope "/transactions" do
+            live "/", Dashboard.Circulation.Transaction.Index, :index
+            live "/checkout", Dashboard.Circulation.Transaction.Index, :checkout
+            live "/:id/return", Dashboard.Circulation.Transaction.Index, :return
+            live "/:id/renew", Dashboard.Circulation.Transaction.Index, :renew
+            live "/:id", Dashboard.Circulation.Transaction.Show, :show
+          end
+
+          scope "/reservations" do
+            live "/", Dashboard.Circulation.Reservation.Index, :index
+            live "/new", Dashboard.Circulation.Reservation.Index, :new
+            live "/:id", Dashboard.Circulation.Reservation.Show, :show
+          end
+
+          scope "/requisitions" do
+            live "/", Dashboard.Circulation.Requisition.Index, :index
+            live "/new", Dashboard.Circulation.Requisition.Index, :new
+            live "/:id", Dashboard.Circulation.Requisition.Show, :show
+            live "/:id/edit", Dashboard.Circulation.Requisition.Index, :edit
+          end
+
+          scope "/fines" do
+            live "/", Dashboard.Circulation.Fine.Index, :index
+            live "/new", Dashboard.Circulation.Fine.Index, :new
+            live "/:id", Dashboard.Circulation.Fine.Show, :show
+            live "/:id/payment", Dashboard.Circulation.Fine.Index, :payment
+            live "/:id/waive", Dashboard.Circulation.Fine.Index, :waive
+          end
+
+          scope "/circulation_history" do
+            live "/", Dashboard.Circulation.CirculationHistory.Index, :index
+            live "/:id", Dashboard.Circulation.CirculationHistory.Show, :show
+          end
         end
 
         scope "/master" do

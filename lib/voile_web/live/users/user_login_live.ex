@@ -54,12 +54,27 @@ defmodule VoileWeb.UserLoginLive do
   end
 
   def mount(_params, _session, socket) do
-    email =
-      Phoenix.Flash.get(socket.assigns.flash, :email) ||
-        get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
+    # Redirect already authenticated users to appropriate page
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
 
-    form = to_form(%{"email" => email}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+      redirect_path = determine_redirect_path(user)
+      {:ok, push_navigate(socket, to: redirect_path)}
+    else
+      email =
+        Phoenix.Flash.get(socket.assigns.flash, :email) ||
+          get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
+
+      form = to_form(%{"email" => email}, as: "user")
+      {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+    end
+  end
+
+  defp determine_redirect_path(user) do
+    case user.user_type do
+      %{slug: slug} when slug in ["administrator", "staff"] -> "/manage"
+      _ -> "/"
+    end
   end
 
   def handle_event("google_auth", _params, socket) do

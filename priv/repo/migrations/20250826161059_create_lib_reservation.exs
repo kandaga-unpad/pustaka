@@ -31,6 +31,7 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
     create index(:lib_reservations, [:reservation_date])
     create index(:lib_reservations, [:expiry_date])
     create index(:lib_reservations, [:priority])
+    create index(:lib_reservations, [:member_id, :status])
 
     create constraint(:lib_reservations, :item_or_collection_check,
              check: "item_id IS NOT NULL OR collection_id IS NOT NULL"

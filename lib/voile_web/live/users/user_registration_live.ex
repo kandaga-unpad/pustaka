@@ -42,14 +42,29 @@ defmodule VoileWeb.UserRegistrationLive do
   end
 
   def mount(_params, _session, socket) do
-    changeset = Accounts.change_user_registration(%User{})
+    # Redirect already authenticated users to appropriate page
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
 
-    socket =
-      socket
-      |> assign(trigger_submit: false, check_errors: false)
-      |> assign_form(changeset)
+      redirect_path = determine_redirect_path(user)
+      {:ok, push_navigate(socket, to: redirect_path)}
+    else
+      changeset = Accounts.change_user_registration(%User{})
 
-    {:ok, socket, temporary_assigns: [form: nil]}
+      socket =
+        socket
+        |> assign(trigger_submit: false, check_errors: false)
+        |> assign_form(changeset)
+
+      {:ok, socket, temporary_assigns: [form: nil]}
+    end
+  end
+
+  defp determine_redirect_path(user) do
+    case user.user_type do
+      %{slug: slug} when slug in ["administrator", "staff"] -> "/manage"
+      _ -> "/"
+    end
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do

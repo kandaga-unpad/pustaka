@@ -293,7 +293,7 @@ defmodule VoileWeb.CoreComponents do
   attr :id, :any, default: nil
   attr :name, :any
   attr :label, :string, default: nil
-  attr :value, :any
+  attr :value, :any, default: nil
   attr :required_value, :boolean, default: false
 
   attr :type, :string,

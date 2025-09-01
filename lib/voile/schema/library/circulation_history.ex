@@ -7,7 +7,7 @@ defmodule Voile.Schema.Library.CirculationHistory do
   alias Voile.Schema.Library.{Transaction, Reservation, Fine}
 
   @primary_key {:id, :binary_id, autogenerate: true}
-  schema "Lib_circulation_history" do
+  schema "lib_circulation_history" do
     field :event_type, :string
     field :event_date, :utc_datetime
     field :description, :string

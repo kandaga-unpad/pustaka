@@ -76,7 +76,7 @@ defmodule VoileWeb.UserAuth do
   def fetch_current_scope_for_user(conn, _opts) do
     with {token, conn} <- ensure_user_token(conn),
          {user, token_inserted_at} <- Accounts.get_user_by_session_token(token) do
-      user = Voile.Repo.preload(user, :user_role)
+      user = Voile.Repo.preload(user, [:user_role, :user_type])
 
       conn
       |> assign(:current_scope, Scope.for_user(user))
@@ -266,12 +266,21 @@ defmodule VoileWeb.UserAuth do
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       user = socket.assigns.current_scope.user
 
-      case user.user_type_id do
-        1 ->
+      case user.user_type do
+        %{slug: slug} when slug in ["administrator", "staff"] ->
           {:cont, socket}
 
-        2 ->
-          {:cont, socket}
+        nil ->
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              "You must have a valid member type to access this page."
+            )
+            |> maybe_store_return_to()
+            |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+          {:halt, socket}
 
         _ ->
           socket =
@@ -318,7 +327,7 @@ defmodule VoileWeb.UserAuth do
           Accounts.get_user_by_session_token(user_token)
         end || {nil, nil}
 
-      user = Voile.Repo.preload(user, :user_role)
+      user = Voile.Repo.preload(user, [:user_role, :user_type])
 
       Scope.for_user(user)
     end)

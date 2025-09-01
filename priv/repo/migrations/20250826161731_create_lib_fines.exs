@@ -41,5 +41,9 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
     create index(:lib_fines, [:fine_date])
     create index(:lib_fines, [:payment_date])
     create index(:lib_fines, [:waived])
+    create index(:lib_fines, [:member_id, :fine_status])
+
+    create constraint(:lib_fines, :balance_non_negative, check: "balance >= 0")
+    create constraint(:lib_fines, :paid_amount_non_negative, check: "paid_amount >= 0")
   end
 end

@@ -22,7 +22,7 @@ defmodule Voile.Schema.Library.Requisition do
     field :notes, :string
     field :staff_notes, :string
     field :due_date, :date
-    field :fullfilled_date, :utc_datetime
+    field :fulfilled_date, :utc_datetime
 
     belongs_to :requested_by, User, foreign_key: :requested_by_id, type: :binary_id
     belongs_to :assigned_to, User, foreign_key: :assigned_to_id, type: :binary_id

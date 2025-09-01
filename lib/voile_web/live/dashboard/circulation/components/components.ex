@@ -1,0 +1,174 @@
+defmodule VoileWeb.Dashboard.Circulation.Components do
+  @moduledoc """
+  Shared components for the circulation dashboard.
+  """
+  use VoileWeb, :live_component
+
+  import VoileWeb.Dashboard.Circulation.Helpers
+
+  @doc """
+  Renders a status badge with appropriate styling.
+  """
+  attr :status, :string, required: true
+
+  attr :type, :atom,
+    default: :general,
+    values: [:general, :transaction, :reservation, :requisition, :fine]
+
+  def status_badge(assigns) do
+    assigns = assign(assigns, :class, badge_class_for_type(assigns.type, assigns.status))
+
+    ~H"""
+    <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{@class}"}>
+      {String.capitalize(@status)}
+    </span>
+    """
+  end
+
+  @doc """
+  Renders a member info card.
+  """
+  attr :member, :map, required: true
+  attr :compact, :boolean, default: false
+
+  def member_card(assigns) do
+    ~H"""
+    <div class="flex items-center">
+      <div class="flex-shrink-0 h-10 w-10">
+        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+          <span class="text-sm font-medium text-gray-700">
+            {if @member, do: String.first(@member.full_name || "?"), else: "?"}
+          </span>
+        </div>
+      </div>
+      
+      <div class="ml-4">
+        <div class="text-sm font-medium text-gray-900">
+          {if @member, do: @member.full_name, else: "Unknown Member"}
+        </div>
+        
+        <%= unless @compact do %>
+          <div class="text-sm text-gray-500">ID: {@member.id}</div>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders an item info card.
+  """
+  attr :item, :map, required: true
+  attr :compact, :boolean, default: false
+
+  def item_card(assigns) do
+    ~H"""
+    <div>
+      <%= if @item do %>
+        <div class="text-sm font-medium text-gray-900">{@item.item_code}</div>
+        
+        <%= unless @compact do %>
+          <div class="text-sm text-gray-500">
+            {if @item.collection, do: @item.collection.title, else: "No collection"}
+          </div>
+        <% end %>
+      <% else %>
+        <div class="text-sm text-gray-500">Unknown Item</div>
+      <% end %>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a quick stats grid.
+  """
+  attr :stats, :list, required: true
+
+  def stats_grid(assigns) do
+    ~H"""
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <%= for stat <- @stats do %>
+        <div class={"bg-white rounded-lg shadow p-6 border-l-4 #{stat.border_color}"}>
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <.icon name={stat.icon} class={"w-8 h-8 #{stat.icon_color}"} />
+            </div>
+            
+            <div class="ml-4">
+              <h3 class="text-sm font-medium text-gray-500">{stat.label}</h3>
+              
+              <p class="text-2xl font-semibold text-gray-900">{stat.value}</p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a filter section.
+  """
+  attr :filters, :list, required: true
+  attr :current_filters, :map, default: %{}
+
+  def filter_section(assigns) do
+    ~H"""
+    <div class="bg-white shadow rounded-lg mb-6">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <%= for filter <- @filters do %>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{filter.label}</label>
+              <%= case filter.type do %>
+                <% :select -> %>
+                  <select
+                    phx-change={filter.event}
+                    name={filter.name}
+                    class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <%= for option <- filter.options do %>
+                      <option
+                        value={option.value}
+                        selected={Map.get(@current_filters, filter.name) == option.value}
+                      >
+                        {option.label}
+                      </option>
+                    <% end %>
+                  </select>
+                <% :text -> %>
+                  <form phx-change={filter.event} phx-submit={filter.event}>
+                    <input
+                      type="text"
+                      name={filter.name}
+                      value={Map.get(@current_filters, filter.name, "")}
+                      placeholder={filter.placeholder}
+                      class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </form>
+                <% :date -> %>
+                  <form phx-change={filter.event}>
+                    <input
+                      type="date"
+                      name={filter.name}
+                      value={Map.get(@current_filters, filter.name, "")}
+                      class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </form>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  # Private helper functions
+
+  defp badge_class_for_type(:transaction, status), do: transaction_type_badge_class(status)
+  defp badge_class_for_type(:reservation, status), do: reservation_status_badge_class(status)
+  defp badge_class_for_type(:requisition, status), do: requisition_status_badge_class(status)
+  defp badge_class_for_type(:fine, status), do: fine_status_badge_class(status)
+  defp badge_class_for_type(:general, status), do: status_badge_class(status)
+end

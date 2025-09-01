@@ -36,6 +36,13 @@ defmodule Voile.Schema.Library.Fine do
   @payment_methods ~w(cash credit_card debit_card bank_transfer online)
 
   def changeset(fine, attrs) do
+    # Set default values for Indonesian context
+    attrs =
+      attrs
+      |> set_default_fine_date()
+      |> set_default_fine_status()
+      |> set_default_amount_for_type()
+
     fine
     |> cast(attrs, [
       :fine_type,
@@ -69,6 +76,75 @@ defmodule Voile.Schema.Library.Fine do
     |> foreign_key_constraint(:item_id)
     |> foreign_key_constraint(:transaction_id)
   end
+
+  # Helper functions for setting defaults
+  defp set_default_fine_date(attrs) do
+    if attrs["fine_date"] || attrs[:fine_date] do
+      attrs
+    else
+      Map.put(attrs, "fine_date", DateTime.utc_now())
+    end
+  end
+
+  defp set_default_fine_status(attrs) do
+    if attrs["fine_status"] || attrs[:fine_status] do
+      attrs
+    else
+      Map.put(attrs, "fine_status", "pending")
+    end
+  end
+
+  # Set default amounts based on member type and Indonesian library standards (in IDR)
+  defp set_default_amount_for_type(attrs) do
+    if attrs["amount"] || attrs[:amount] do
+      attrs
+    else
+      fine_type = attrs["fine_type"] || attrs[:fine_type]
+      member_id = attrs["member_id"] || attrs[:member_id]
+
+      default_amount =
+        case fine_type do
+          "overdue" ->
+            # For overdue fines, try to use member type's fine_per_day, fallback to Rp 5,000
+            get_member_type_fine_per_day(member_id) || "5000"
+
+          # Rp 50,000 for lost items
+          "lost_item" ->
+            "50000"
+
+          # Rp 25,000 for damaged items
+          "damaged_item" ->
+            "25000"
+
+          # Rp 10,000 processing fee
+          "processing" ->
+            "10000"
+
+          _ ->
+            # For other types, try to use member type's daily fine as base, fallback to Rp 5,000
+            get_member_type_fine_per_day(member_id) || "5000"
+        end
+
+      Map.put(attrs, "amount", default_amount)
+    end
+  end
+
+  # Helper to get member type's fine_per_day setting
+  defp get_member_type_fine_per_day(member_id) when is_binary(member_id) do
+    try do
+      case Voile.Repo.get(User, member_id) |> Voile.Repo.preload([:user_type]) do
+        %User{user_type: %{fine_per_day: fine_per_day}} when not is_nil(fine_per_day) ->
+          Decimal.to_string(fine_per_day)
+
+        _ ->
+          nil
+      end
+    rescue
+      _ -> nil
+    end
+  end
+
+  defp get_member_type_fine_per_day(_), do: nil
 
   defp calculate_balance(changeset) do
     amount = get_field(changeset, :amount) || Decimal.new("0")

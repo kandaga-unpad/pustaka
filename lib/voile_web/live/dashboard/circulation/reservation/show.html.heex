@@ -1,0 +1,454 @@
+<div class="px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <.link navigate={~p"/manage/circulation"} class="text-gray-700 hover:text-gray-900">
+            <.icon name="hero-home" class="w-4 h-4 mr-2" /> Circulation
+          </.link>
+        </li>
+        
+        <li>
+          <div class="flex items-center">
+            <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+            <.link
+              navigate={~p"/manage/circulation/reservations"}
+              class="ml-1 text-gray-700 hover:text-gray-900"
+            >
+              Reservations
+            </.link>
+          </div>
+        </li>
+        
+        <li aria-current="page">
+          <div class="flex items-center">
+            <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+            <span class="ml-1 text-gray-500">Details</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+    
+    <div class="sm:flex sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Reservation Details</h1>
+        
+        <p class="mt-2 text-sm text-gray-700">
+          Complete information about this reservation request
+        </p>
+      </div>
+      
+      <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
+        <%= if @reservation.status == "pending" do %>
+          <button
+            phx-click="fulfill"
+            phx-value-id={@reservation.id}
+            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md"
+            data-confirm="Are you sure you want to fulfill this reservation?"
+          >
+            <.icon name="hero-check" class="w-4 h-4 mr-2" /> Fulfill Reservation
+          </button>
+          <button
+            phx-click="notify"
+            phx-value-id={@reservation.id}
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md"
+          >
+            <.icon name="hero-bell" class="w-4 h-4 mr-2" /> Send Notification
+          </button>
+          <button
+            phx-click="cancel"
+            phx-value-id={@reservation.id}
+            class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md"
+            data-confirm="Are you sure you want to cancel this reservation?"
+          >
+            <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Cancel Reservation
+          </button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <!-- Reservation Info Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Main Reservation Details -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Reservation Information</h3>
+        </div>
+        
+        <div class="px-6 py-4 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              
+              <dd class="mt-1">
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@reservation.status)}"}>
+                  {String.capitalize(@reservation.status)}
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Priority</dt>
+              
+              <dd class="mt-1">
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{priority_badge_class(@reservation.priority)}"}>
+                  {String.capitalize(@reservation.priority)}
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Reservation Date</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900">
+                {format_datetime(@reservation.reservation_date)}
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Expected Fulfillment</dt>
+              
+              <dd class="mt-1">
+                <%= if @reservation.expected_fulfillment_date do %>
+                  <div class="text-sm text-gray-900">
+                    {format_datetime(@reservation.expected_fulfillment_date)}
+                  </div>
+                  
+                  <%= if @reservation.expected_fulfillment_date && DateTime.compare(@reservation.expected_fulfillment_date, DateTime.utc_now()) == :lt && @reservation.status == "pending" do %>
+                    <div class="text-xs text-amber-600 font-medium mt-1">
+                      {abs(
+                        DateTime.diff(
+                          DateTime.utc_now(),
+                          @reservation.expected_fulfillment_date,
+                          :day
+                        )
+                      )} days past expected date
+                    </div>
+                  <% end %>
+                <% else %>
+                  <span class="text-sm text-gray-500">Not estimated</span>
+                <% end %>
+              </dd>
+            </div>
+            
+            <%= if @reservation.fulfilled_date do %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Fulfilled Date</dt>
+                
+                <dd class="mt-1 text-sm text-gray-900">
+                  {format_datetime(@reservation.fulfilled_date)}
+                </dd>
+              </div>
+            <% end %>
+            
+            <%= if @reservation.cancelled_date do %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Cancelled Date</dt>
+                
+                <dd class="mt-1 text-sm text-red-600">
+                  {format_datetime(@reservation.cancelled_date)}
+                </dd>
+              </div>
+            <% end %>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Queue Position</dt>
+              
+              <dd class="mt-1">
+                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{if @reservation.queue_position <= 3, do: "bg-green-100 text-green-800", else: "bg-yellow-100 text-yellow-800"}"}>
+                  #{@reservation.queue_position || "N/A"}
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Notification Sent</dt>
+              
+              <dd class="mt-1">
+                <%= if @reservation.is_notified do %>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <.icon name="hero-check" class="w-3 h-3 mr-1" /> Yes
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> No
+                  </span>
+                <% end %>
+              </dd>
+            </div>
+          </div>
+          
+          <%= if @reservation.notes do %>
+            <div class="pt-4 border-t border-gray-200">
+              <dt class="text-sm font-medium text-gray-500">Notes</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900">{@reservation.notes}</dd>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <!-- Member & Item Info -->
+    <div class="space-y-6">
+      <!-- Member Information -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
+        </div>
+        
+        <div class="px-6 py-4">
+          <%= if @reservation.member do %>
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0 h-12 w-12">
+                <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-lg font-medium text-gray-700">
+                    {String.first(@reservation.member.full_name || "?")}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  {@reservation.member.full_name}
+                </p>
+                
+                <p class="text-sm text-gray-500">Member ID: {@reservation.member_id}</p>
+                
+                <p class="text-sm text-gray-500">Email: {@reservation.member.email}</p>
+                
+                <p class="text-sm text-gray-500">
+                  Phone: {@reservation.member.phone || "Not provided"}
+                </p>
+              </div>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-500">Member information not available</p>
+          <% end %>
+        </div>
+      </div>
+      <!-- Item Information -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Reserved Item</h3>
+        </div>
+        
+        <div class="px-6 py-4">
+          <%= if @reservation.item do %>
+            <div class="space-y-3">
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Item Code</dt>
+                
+                <dd class="mt-1 text-sm font-medium text-gray-900">
+                  {@reservation.item.item_code}
+                </dd>
+              </div>
+              
+              <%= if @reservation.item.collection do %>
+                <div>
+                  <dt class="text-xs font-medium text-gray-500 uppercase">Collection</dt>
+                  
+                  <dd class="mt-1 text-sm text-gray-900">{@reservation.item.collection.title}</dd>
+                </div>
+              <% end %>
+              
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Location</dt>
+                
+                <dd class="mt-1 text-sm text-gray-900">
+                  {@reservation.item.location || "Not specified"}
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Current Status</dt>
+                
+                <dd class="mt-1">
+                  <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@reservation.item.status)}"}>
+                    {String.capitalize(@reservation.item.status)}
+                  </span>
+                </dd>
+              </div>
+              
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Availability</dt>
+                
+                <dd class="mt-1">
+                  <%= if @reservation.item.status == "available" do %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <.icon name="hero-check" class="w-3 h-3 mr-1" /> Available Now
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <.icon name="hero-clock" class="w-3 h-3 mr-1" /> Currently Unavailable
+                    </span>
+                  <% end %>
+                </dd>
+              </div>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-500">Item information not available</p>
+          <% end %>
+        </div>
+      </div>
+      <!-- Librarian Information -->
+      <%= if @reservation.librarian do %>
+        <div class="bg-white shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
+          </div>
+          
+          <div class="px-6 py-4">
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div class="h-10 w-10 rounded-full bg-indigo-200 flex items-center justify-center">
+                  <span class="text-sm font-medium text-indigo-700">
+                    {String.first(@reservation.librarian.full_name || "?")}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">
+                  {@reservation.librarian.full_name}
+                </p>
+                
+                <p class="text-sm text-gray-500">Staff Member</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <!-- Reservation Timeline -->
+  <div class="bg-white shadow rounded-lg">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-medium text-gray-900">Reservation Timeline</h3>
+    </div>
+    
+    <div class="px-6 py-4">
+      <div class="flow-root">
+        <ul class="-mb-8">
+          <li>
+            <div class="relative pb-8">
+              <%= if @reservation.fulfilled_date || @reservation.cancelled_date do %>
+                <span
+                  class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                  aria-hidden="true"
+                >
+                </span>
+              <% end %>
+              
+              <div class="relative flex space-x-3">
+                <div>
+                  <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                    <.icon name="hero-bookmark" class="w-4 h-4 text-white" />
+                  </span>
+                </div>
+                
+                <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                  <div>
+                    <p class="text-sm text-gray-500">
+                      Reservation created
+                      <%= if @reservation.priority != "normal" do %>
+                        <span class={"ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full #{priority_badge_class(@reservation.priority)}"}>
+                          {String.capitalize(@reservation.priority)} Priority
+                        </span>
+                      <% end %>
+                    </p>
+                  </div>
+                  
+                  <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                    {format_datetime(@reservation.reservation_date)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+          
+          <%= if @reservation.is_notified do %>
+            <li>
+              <div class="relative pb-8">
+                <%= if @reservation.fulfilled_date || @reservation.cancelled_date do %>
+                  <span
+                    class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                    aria-hidden="true"
+                  >
+                  </span>
+                <% end %>
+                
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-bell" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Member notified</p>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@reservation.updated_at)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+          
+          <%= if @reservation.fulfilled_date do %>
+            <li>
+              <div class="relative">
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-check" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Reservation fulfilled</p>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@reservation.fulfilled_date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+          
+          <%= if @reservation.cancelled_date do %>
+            <li>
+              <div class="relative">
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-x-mark" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Reservation cancelled</p>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@reservation.cancelled_date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

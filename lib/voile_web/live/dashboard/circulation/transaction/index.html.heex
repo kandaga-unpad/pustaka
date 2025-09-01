@@ -1,0 +1,219 @@
+<div class="px-4 py-6">
+  <div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Library Transactions</h1>
+      
+      <p class="mt-2 text-sm text-gray-700">Manage book checkouts, returns, and renewals</p>
+    </div>
+    
+    <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
+      <.link
+        navigate={~p"/manage/circulation/transactions/checkout"}
+        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md"
+      >
+        <.icon name="hero-plus" class="w-4 h-4 mr-2" /> New Checkout
+      </.link>
+    </div>
+  </div>
+  <!-- Filters and Search -->
+  <div class="bg-white shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div class="flex space-x-4">
+          <select
+            phx-change="filter"
+            name="status"
+            class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all" selected={@filter_status == "all"}>All Status</option>
+            
+            <option value="active" selected={@filter_status == "active"}>Active</option>
+            
+            <option value="returned" selected={@filter_status == "returned"}>Returned</option>
+            
+            <option value="overdue" selected={@filter_status == "overdue"}>Overdue</option>
+          </select>
+        </div>
+        
+        <div class="mt-3 sm:mt-0">
+          <form phx-change="search" phx-submit="search">
+            <input
+              type="text"
+              name="query"
+              value={@search_query}
+              placeholder="Search transactions..."
+              class="block w-64 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Quick Stats -->
+    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-blue-600">-</div>
+        
+        <div class="text-xs text-gray-500 uppercase">Active</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-yellow-600">-</div>
+        
+        <div class="text-xs text-gray-500 uppercase">Overdue</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-green-600">-</div>
+        
+        <div class="text-xs text-gray-500 uppercase">Returned Today</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-purple-600">-</div>
+        
+        <div class="text-xs text-gray-500 uppercase">Renewals</div>
+      </div>
+    </div>
+  </div>
+  <!-- Transactions Table -->
+  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+    <.table id="transactions" rows={@streams.transactions}>
+      <:col :let={{_id, transaction}} label="Member">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 h-10 w-10">
+            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <span class="text-sm font-medium text-gray-700">
+                {if transaction.member,
+                  do: String.first(transaction.member.full_name || "?"),
+                  else: "?"}
+              </span>
+            </div>
+          </div>
+          
+          <div class="ml-4">
+            <div class="text-sm font-medium text-gray-900">
+              {if transaction.member, do: transaction.member.full_name, else: "Unknown Member"}
+            </div>
+            
+            <div class="text-sm text-gray-500">ID: {transaction.member_id}</div>
+          </div>
+        </div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Item">
+        <div>
+          <div class="text-sm font-medium text-gray-900">
+            {if transaction.item, do: transaction.item.item_code, else: "Unknown Item"}
+          </div>
+          
+          <div class="text-sm text-gray-500">
+            {if transaction.item && transaction.item.collection do
+              transaction.item.collection.title
+            else
+              "No collection"
+            end}
+          </div>
+        </div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Transaction Type">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{transaction_type_badge_class(transaction.transaction_type)}"}>
+          {String.capitalize(transaction.transaction_type)}
+        </span>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Status">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(transaction.status)}"}>
+          {String.capitalize(transaction.status)}
+        </span>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Due Date">
+        <div class="text-sm text-gray-900">
+          {if transaction.due_date do
+            format_date(transaction.due_date)
+          else
+            "-"
+          end}
+        </div>
+        
+        <%= if transaction.due_date && DateTime.compare(transaction.due_date, DateTime.utc_now()) == :lt && transaction.status == "active" do %>
+          <div class="text-xs text-red-500 font-medium">
+            {abs(DateTime.diff(DateTime.utc_now(), transaction.due_date, :day))} days overdue
+          </div>
+        <% end %>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Renewal Count">
+        <div class="text-sm text-gray-900">{transaction.renewal_count || 0}</div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Fine Amount">
+        <div class="text-sm text-gray-900">
+          ${Float.round(Decimal.to_float(transaction.fine_amount || Decimal.new(0)), 2)}
+        </div>
+      </:col>
+      
+      <:action :let={{_id, transaction}}>
+        <div class="flex space-x-2">
+          <%= if transaction.status == "active" do %>
+            <button
+              phx-click="return"
+              phx-value-id={transaction.id}
+              class="text-green-600 hover:text-green-900 text-sm font-medium"
+              data-confirm="Are you sure you want to return this item?"
+            >
+              Return
+            </button>
+            <button
+              phx-click="renew"
+              phx-value-id={transaction.id}
+              class="text-blue-600 hover:text-blue-900 text-sm font-medium"
+              data-confirm="Are you sure you want to renew this item?"
+            >
+              Renew
+            </button>
+          <% end %>
+          
+          <.link
+            navigate={~p"/manage/circulation/transactions/#{transaction.id}"}
+            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+          >
+            View
+          </.link>
+        </div>
+      </:action>
+    </.table>
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+      <.pagination page={@page} total_pages={@total_pages} />
+    </div>
+  </div>
+</div>
+<!-- Checkout Modal -->
+<.modal
+  :if={@live_action == :checkout}
+  id="checkout-modal"
+  show
+  on_cancel={JS.patch(~p"/manage/circulation/transactions")}
+>
+  <div class="space-y-4">
+    <h3 class="text-lg font-medium text-gray-900">New Checkout</h3>
+    
+    <.simple_form for={%{}} id="checkout-form" phx-submit="checkout">
+      <.input
+        name="member_id"
+        label="Member ID"
+        placeholder="Enter member ID or scan barcode"
+        required
+      />
+      <.input
+        name="item_id"
+        label="Item Code"
+        placeholder="Enter item code or scan barcode"
+        required
+      />
+      <:actions><.button type="submit" class="w-full">Check Out Item</.button></:actions>
+    </.simple_form>
+  </div>
+</.modal>

@@ -25,7 +25,7 @@ defmodule Voile.Schema.Accounts.User do
     field :last_login_ip, :string
 
     belongs_to :user_role, UserRole
-    belongs_to :user_type, MemberType
+    belongs_to :user_type, MemberType, type: :binary_id
     belongs_to :node, Node
 
     field :twitter, :string, virtual: true
@@ -37,15 +37,6 @@ defmodule Voile.Schema.Accounts.User do
     timestamps(type: :utc_datetime)
   end
 
-  @user_types [
-    "Administrator",
-    "Staff",
-    "Member (Organization)",
-    "Member (Verified)",
-    "Member (Affirmation)",
-    "Guest"
-  ]
-
   def changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [
@@ -53,11 +44,10 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_type,
       :user_role_id,
+      :user_type_id,
       :password,
       :confirmed_at,
-      :user_type,
       :user_image,
       :groups,
       :node_id,
@@ -74,7 +64,6 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_username(opts)
     |> validate_email(opts)
     |> validate_password(opts)
-    |> validate_inclusion(:user_type, @user_types)
   end
 
   @doc """
@@ -107,11 +96,10 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_type,
       :user_role_id,
+      :user_type_id,
       :password,
       :confirmed_at,
-      :user_type,
       :user_image,
       :groups,
       :node_id,
@@ -123,7 +111,6 @@ defmodule Voile.Schema.Accounts.User do
       :last_login,
       :last_login_ip
     ])
-    |> validate_inclusion(:user_type, @user_types)
     |> validate_email(opts)
     |> validate_password(opts)
   end
@@ -135,11 +122,10 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_type,
       :user_role_id,
+      :user_type_id,
       :password,
       :confirmed_at,
-      :user_type,
       :user_image,
       :groups,
       :node_id,
@@ -151,7 +137,6 @@ defmodule Voile.Schema.Accounts.User do
       :last_login,
       :last_login_ip
     ])
-    |> validate_inclusion(:user_type, @user_types)
     |> validate_email(opts)
   end
 

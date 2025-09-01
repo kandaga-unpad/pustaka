@@ -4,6 +4,8 @@ defmodule Voile.Schema.Master.MemberType do
 
   alias Decimal
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @derive {Phoenix.Param, key: :id}
   schema "mst_member_types" do
     field :name, :string
     field :slug, :string
@@ -15,10 +17,10 @@ defmodule Voile.Schema.Master.MemberType do
     field :max_reserves, :integer, default: 0
     field :max_concurrent_loans, :integer, default: 0
 
-    field :fine_per_day, :decimal, default: Decimal.new("0.0")
+    field :fine_per_day, :decimal, default: Decimal.new("5000")
     field :max_fine, :decimal
-    field :membership_fee, :decimal, default: Decimal.new("0.0")
-    field :currency, :string, default: "USD"
+    field :membership_fee, :decimal, default: Decimal.new("0")
+    field :currency, :string, default: "IDR"
 
     field :can_reserve, :boolean, default: true
     field :can_renew, :boolean, default: true

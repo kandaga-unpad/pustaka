@@ -29,7 +29,7 @@ defmodule Voile.Repo.Migrations.CreateLibRequisition do
         null: false
 
       add :assigned_to_id, references(:users, on_delete: :nilify_all, type: :binary_id)
-      add :unit_id, references(:nodes, on_delete: :nilify_all, type: :binary_id)
+      add :unit_id, references(:nodes, on_delete: :nilify_all)
 
       timestamps(type: :utc_datetime)
     end

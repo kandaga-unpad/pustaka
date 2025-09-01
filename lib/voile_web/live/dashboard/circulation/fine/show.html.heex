@@ -1,0 +1,552 @@
+<div class="px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <.link navigate={~p"/manage/circulation"} class="text-gray-700 hover:text-gray-900">
+            <.icon name="hero-home" class="w-4 h-4 mr-2" /> Circulation
+          </.link>
+        </li>
+        
+        <li>
+          <div class="flex items-center">
+            <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+            <.link
+              navigate={~p"/manage/circulation/fines"}
+              class="ml-1 text-gray-700 hover:text-gray-900"
+            >
+              Fines
+            </.link>
+          </div>
+        </li>
+        
+        <li aria-current="page">
+          <div class="flex items-center">
+            <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+            <span class="ml-1 text-gray-500">Details</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+    
+    <div class="sm:flex sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Fine Details</h1>
+        
+        <p class="mt-2 text-sm text-gray-700">Complete information about this fine</p>
+      </div>
+      
+      <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
+        <%= if @fine.status == "unpaid" do %>
+          <button
+            phx-click="pay"
+            phx-value-id={@fine.id}
+            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md"
+            data-confirm="Are you sure you want to mark this fine as fully paid?"
+          >
+            <.icon name="hero-currency-dollar" class="w-4 h-4 mr-2" /> Mark as Paid
+          </button>
+          <button
+            phx-click="waive"
+            phx-value-id={@fine.id}
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md"
+            data-confirm="Are you sure you want to waive this fine?"
+          >
+            <.icon name="hero-hand-raised" class="w-4 h-4 mr-2" /> Waive Fine
+          </button>
+        <% end %>
+        
+        <%= if @fine.status in ["unpaid", "partial"] do %>
+          <details class="dropdown">
+            <summary class="btn btn-outline btn-sm">
+              <.icon name="hero-ellipsis-horizontal" class="w-4 h-4" /> More Actions
+            </summary>
+            
+            <div class="dropdown-content bg-white rounded-lg shadow-lg border border-gray-200 mt-2 w-48">
+              <div class="p-4">
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Partial Payment</h4>
+                
+                <form phx-submit="partial_pay" class="space-y-3">
+                  <input type="hidden" name="_id" value={@fine.id} />
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max={Decimal.to_float(calculate_balance(@fine))}
+                    name="amount"
+                    placeholder="Amount"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    class="w-full inline-flex justify-center items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-md"
+                  >
+                    Record Payment
+                  </button>
+                </form>
+              </div>
+            </div>
+          </details>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <!-- Fine Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+            <.icon name="hero-currency-dollar" class="w-4 h-4 text-red-600" />
+          </div>
+        </div>
+        
+        <div class="ml-4">
+          <h3 class="text-sm font-medium text-gray-500">Fine Amount</h3>
+          
+          <p class="text-lg font-semibold text-gray-900">{format_currency(@fine.amount)}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <.icon name="hero-check-circle" class="w-4 h-4 text-green-600" />
+          </div>
+        </div>
+        
+        <div class="ml-4">
+          <h3 class="text-sm font-medium text-gray-500">Paid Amount</h3>
+          
+          <p class="text-lg font-semibold text-gray-900">{format_currency(@fine.paid_amount)}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+            <.icon name="hero-minus-circle" class="w-4 h-4 text-yellow-600" />
+          </div>
+        </div>
+        
+        <div class="ml-4">
+          <h3 class="text-sm font-medium text-gray-500">Balance Due</h3>
+          
+          <p class={"text-lg font-semibold #{if Decimal.equal?(calculate_balance(@fine), 0), do: "text-green-600", else: "text-red-600"}"}>
+            {format_currency(calculate_balance(@fine))}
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <.icon name="hero-calendar-days" class="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+        
+        <div class="ml-4">
+          <h3 class="text-sm font-medium text-gray-500">Days Outstanding</h3>
+          
+          <p class="text-lg font-semibold text-gray-900">
+            {DateTime.diff(DateTime.utc_now(), @fine.assessed_date, :day)}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Fine Info Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Main Fine Details -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Fine Information</h3>
+        </div>
+        
+        <div class="px-6 py-4 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Fine Type</dt>
+              
+              <dd class="mt-1">
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_type_badge_class(@fine.fine_type)}"}>
+                  {String.capitalize(@fine.fine_type)}
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              
+              <dd class="mt-1">
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_status_badge_class(@fine.status)}"}>
+                  {String.capitalize(@fine.status)}
+                </span>
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Assessment Date</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900">{format_datetime(@fine.assessed_date)}</dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Due Date</dt>
+              
+              <dd class="mt-1">
+                <%= if @fine.due_date do %>
+                  <div class="text-sm text-gray-900">{format_datetime(@fine.due_date)}</div>
+                  
+                  <%= if @fine.due_date && DateTime.compare(@fine.due_date, DateTime.utc_now()) == :lt && @fine.status in ["unpaid", "partial"] do %>
+                    <div class="text-xs text-red-500 font-medium mt-1">
+                      {abs(DateTime.diff(DateTime.utc_now(), @fine.due_date, :day))} days past due
+                    </div>
+                  <% end %>
+                <% else %>
+                  <span class="text-sm text-gray-500">No due date set</span>
+                <% end %>
+              </dd>
+            </div>
+            
+            <%= if @fine.payment_date do %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Payment Date</dt>
+                
+                <dd class="mt-1 text-sm text-green-600">{format_datetime(@fine.payment_date)}</dd>
+              </div>
+            <% end %>
+            
+            <%= if @fine.waived_date do %>
+              <div>
+                <dt class="text-sm font-medium text-gray-500">Waived Date</dt>
+                
+                <dd class="mt-1 text-sm text-blue-600">{format_datetime(@fine.waived_date)}</dd>
+              </div>
+            <% end %>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Payment Method</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900">
+                {@fine.payment_method || "Not specified"}
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500">Is Recurring</dt>
+              
+              <dd class="mt-1">
+                <%= if @fine.is_recurring do %>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <.icon name="hero-arrow-path" class="w-3 h-3 mr-1" /> Yes
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> No
+                  </span>
+                <% end %>
+              </dd>
+            </div>
+          </div>
+          
+          <%= if @fine.description do %>
+            <div class="pt-4 border-t border-gray-200">
+              <dt class="text-sm font-medium text-gray-500">Description</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{@fine.description}</dd>
+            </div>
+          <% end %>
+          
+          <%= if @fine.waived_reason do %>
+            <div class="pt-4 border-t border-blue-200 bg-blue-50 -mx-6 px-6 py-4">
+              <dt class="text-sm font-medium text-blue-700">Waiver Reason</dt>
+              
+              <dd class="mt-1 text-sm text-blue-800 whitespace-pre-wrap">
+                {@fine.waived_reason}
+              </dd>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <!-- Member & Transaction Info -->
+    <div class="space-y-6">
+      <!-- Member Information -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
+        </div>
+        
+        <div class="px-6 py-4">
+          <%= if @fine.member do %>
+            <div class="flex items-center space-x-4">
+              <div class="flex-shrink-0 h-12 w-12">
+                <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-lg font-medium text-gray-700">
+                    {String.first(@fine.member.full_name || "?")}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{@fine.member.full_name}</p>
+                
+                <p class="text-sm text-gray-500">Member ID: {@fine.member_id}</p>
+                
+                <p class="text-sm text-gray-500">Email: {@fine.member.email}</p>
+                
+                <p class="text-sm text-gray-500">Phone: {@fine.member.phone || "Not provided"}</p>
+              </div>
+            </div>
+            <!-- Member Fine Stats -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <div class="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <div class="text-xl font-bold text-red-600">$45.50</div>
+                  
+                  <div class="text-xs text-gray-500">Total Outstanding</div>
+                </div>
+                
+                <div>
+                  <div class="text-xl font-bold text-gray-900">3</div>
+                  
+                  <div class="text-xs text-gray-500">Active Fines</div>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-500">Member information not available</p>
+          <% end %>
+        </div>
+      </div>
+      <!-- Related Transaction -->
+      <%= if @fine.transaction do %>
+        <div class="bg-white shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Related Transaction</h3>
+          </div>
+          
+          <div class="px-6 py-4 space-y-3">
+            <div>
+              <dt class="text-xs font-medium text-gray-500 uppercase">Transaction ID</dt>
+              
+              <dd class="mt-1 text-sm font-medium text-gray-900">
+                <.link
+                  navigate={~p"/manage/circulation/transactions/#{@fine.transaction.id}"}
+                  class="text-blue-600 hover:text-blue-800"
+                >
+                  #{@fine.transaction.id}
+                </.link>
+              </dd>
+            </div>
+            
+            <%= if @fine.transaction.item do %>
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Item</dt>
+                
+                <dd class="mt-1 text-sm text-gray-900">{@fine.transaction.item.item_code}</dd>
+              </div>
+            <% end %>
+            
+            <div>
+              <dt class="text-xs font-medium text-gray-500 uppercase">Transaction Date</dt>
+              
+              <dd class="mt-1 text-sm text-gray-900">
+                {format_datetime(@fine.transaction.transaction_date)}
+              </dd>
+            </div>
+            
+            <%= if @fine.transaction.due_date do %>
+              <div>
+                <dt class="text-xs font-medium text-gray-500 uppercase">Due Date</dt>
+                
+                <dd class="mt-1 text-sm text-gray-900">
+                  {format_datetime(@fine.transaction.due_date)}
+                </dd>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      <!-- Processing Librarian -->
+      <%= if @fine.processing_librarian do %>
+        <div class="bg-white shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
+          </div>
+          
+          <div class="px-6 py-4">
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0 h-10 w-10">
+                <div class="h-10 w-10 rounded-full bg-indigo-200 flex items-center justify-center">
+                  <span class="text-sm font-medium text-indigo-700">
+                    {String.first(@fine.processing_librarian.full_name || "?")}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">
+                  {@fine.processing_librarian.full_name}
+                </p>
+                
+                <p class="text-sm text-gray-500">Staff Member</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <!-- Payment History -->
+  <div class="bg-white shadow rounded-lg">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-medium text-gray-900">Payment History</h3>
+    </div>
+    
+    <div class="px-6 py-4">
+      <div class="flow-root">
+        <ul class="-mb-8">
+          <!-- Assessment -->
+          <li>
+            <div class="relative pb-8">
+              <%= if @fine.payment_date || @fine.waived_date do %>
+                <span
+                  class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                  aria-hidden="true"
+                >
+                </span>
+              <% end %>
+              
+              <div class="relative flex space-x-3">
+                <div>
+                  <span class="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center ring-8 ring-white">
+                    <.icon name="hero-exclamation-triangle" class="w-4 h-4 text-white" />
+                  </span>
+                </div>
+                
+                <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                  <div>
+                    <p class="text-sm text-gray-500">
+                      Fine assessed - {String.capitalize(@fine.fine_type)}
+                    </p>
+                    
+                    <p class="text-sm font-medium text-gray-900">
+                      {format_currency(@fine.amount)}
+                    </p>
+                  </div>
+                  
+                  <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                    {format_datetime(@fine.assessed_date)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+          <!-- Partial Payments (if any) -->
+          <%= if @fine.status == "partial" && @fine.paid_amount && Decimal.compare(@fine.paid_amount, Decimal.new(0)) == :gt do %>
+            <li>
+              <div class="relative pb-8">
+                <%= if @fine.payment_date || @fine.waived_date do %>
+                  <span
+                    class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                    aria-hidden="true"
+                  >
+                  </span>
+                <% end %>
+                
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-currency-dollar" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Partial payment received</p>
+                      
+                      <p class="text-sm font-medium text-gray-900">
+                        {format_currency(@fine.paid_amount)}
+                      </p>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@fine.updated_at)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+          <!-- Full Payment -->
+          <%= if @fine.payment_date do %>
+            <li>
+              <div class="relative">
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-check" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Fine paid in full</p>
+                      
+                      <%= if @fine.payment_method do %>
+                        <p class="text-xs text-gray-400">Method: {@fine.payment_method}</p>
+                      <% end %>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@fine.payment_date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+          <!-- Waiver -->
+          <%= if @fine.waived_date do %>
+            <li>
+              <div class="relative">
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                      <.icon name="hero-hand-raised" class="w-4 h-4 text-white" />
+                    </span>
+                  </div>
+                  
+                  <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Fine waived</p>
+                      
+                      <%= if @fine.waived_reason do %>
+                        <p class="text-xs text-gray-400">{@fine.waived_reason}</p>
+                      <% end %>
+                    </div>
+                    
+                    <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                      {format_datetime(@fine.waived_date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

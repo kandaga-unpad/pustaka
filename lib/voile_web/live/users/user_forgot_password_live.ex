@@ -30,7 +30,22 @@ defmodule VoileWeb.UserForgotPasswordLive do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, form: to_form(%{}, as: "user"))}
+    # Redirect already authenticated users to appropriate page
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
+
+      redirect_path = determine_redirect_path(user)
+      {:ok, push_navigate(socket, to: redirect_path)}
+    else
+      {:ok, assign(socket, form: to_form(%{}, as: "user"))}
+    end
+  end
+
+  defp determine_redirect_path(user) do
+    case user.user_type do
+      %{slug: slug} when slug in ["administrator", "staff"] -> "/manage"
+      _ -> "/"
+    end
   end
 
   def handle_event("send_email", %{"user" => %{"email" => email}}, socket) do

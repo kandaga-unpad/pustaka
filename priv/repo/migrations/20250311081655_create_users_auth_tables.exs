@@ -22,7 +22,14 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:users, [:email, :username, :identifier])
+    create unique_index(:users, [:email])
+    create unique_index(:users, [:username])
+    # Uncomment if identifier should be unique
+    # create unique_index(:users, [:identifier])
+
+    # Performance indexes
+    create index(:users, [:confirmed_at])
+    create index(:users, [:last_login])
 
     create table(:user_roles) do
       add :name, :string, null: false
@@ -37,6 +44,9 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     alter table(:users) do
       add :user_role_id, references(:user_roles)
     end
+
+    # Add performance index for user_role_id
+    create index(:users, [:user_role_id])
 
     create table(:users_tokens) do
       add :user_id, references(:users, type: :uuid, on_delete: :delete_all), null: false

@@ -181,7 +181,10 @@ node_list = [
 ]
 
 for node <- node_list do
-  Voile.Schema.System.create_node(node)
+  case Voile.Repo.get_by(Voile.Schema.System.Node, name: node.name) do
+    nil -> Voile.Schema.System.create_node(node)
+    _existing -> IO.puts("Node #{node.name} already exists, skipping...")
+  end
 end
 
 # Populate the User Roles

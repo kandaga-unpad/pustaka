@@ -305,6 +305,96 @@ defmodule Voile.Schema.Catalog do
     Item.changeset(item, attrs)
   end
 
+  def list_available_items do
+    query =
+      from(i in Item,
+        where: i.availability == "available" and i.status == "active",
+        preload: [:collection, :node],
+        order_by: [desc: i.inserted_at, desc: i.id]
+      )
+
+    query
+    |> Repo.all()
+  end
+
+  def list_available_items_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from i in Item,
+        where: i.availability == "available" and i.status == "active",
+        preload: [:collection, :node],
+        order_by: [desc: i.inserted_at, desc: i.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    items = Repo.all(query)
+
+    total_count =
+      from(i in Item, where: i.availability == "available" and i.status == "active")
+      |> Repo.aggregate(:count, :id)
+
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {items, total_pages}
+  end
+
+  def item_available?(item_id) do
+    case Repo.get(Item, item_id) do
+      %Item{availability: "available", status: "active"} -> true
+      _ -> false
+    end
+  end
+
+  def search_items(query_string) when is_binary(query_string) do
+    search_term = "%#{query_string}%"
+
+    Item
+    |> join(:inner, [i], c in Collection, on: i.collection_id == c.id)
+    |> where(
+      [i, c],
+      ilike(c.title, ^search_term) or
+        ilike(i.description, ^search_term) or
+        ilike(i.item_code, ^search_term) or
+        ilike(i.inventory_code, ^search_term)
+    )
+    |> where([i], i.status == "active")
+    |> preload([:collection, :node])
+    |> Repo.all()
+  end
+
+  def search_items_paginated(query_string, page \\ 1, per_page \\ 10)
+      when is_binary(query_string) do
+    offset = (page - 1) * per_page
+    search_term = "%#{query_string}%"
+
+    base_query =
+      Item
+      |> join(:inner, [i], c in Collection, on: i.collection_id == c.id)
+      |> where(
+        [i, c],
+        ilike(c.title, ^search_term) or
+          ilike(i.description, ^search_term) or
+          ilike(i.item_code, ^search_term) or
+          ilike(i.inventory_code, ^search_term)
+      )
+      |> where([i], i.status == "active")
+
+    query =
+      from [i, c] in base_query,
+        preload: [:collection, :node],
+        order_by: [desc: i.inserted_at, desc: i.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    items = Repo.all(query)
+
+    total_count = Repo.aggregate(base_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {items, total_pages}
+  end
+
   @doc """
   Returns the list of collection_fields.
 

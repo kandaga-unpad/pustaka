@@ -16,5 +16,7 @@ defmodule Voile.Repo.Migrations.CreateNodes do
     alter table(:users) do
       add :node_id, references(:nodes, on_delete: :nilify_all, type: :bigint)
     end
+
+    create index(:users, [:node_id])
   end
 end

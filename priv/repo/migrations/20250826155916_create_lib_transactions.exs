@@ -34,5 +34,6 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
     create index(:lib_transactions, [:status])
     create index(:lib_transactions, [:transaction_type])
     create index(:lib_transactions, [:transaction_date])
+    create index(:lib_transactions, [:member_id, :status, :due_date])
   end
 end
