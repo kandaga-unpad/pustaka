@@ -1,0 +1,372 @@
+<div class="max-w-6xl mx-auto p-6">
+  <!-- Search Header -->
+  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Library Catalog</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">Find books, collections, and resources</p>
+      </div>
+      
+      <div class="flex gap-2">
+        <.link
+          href={~p"/search/advanced"}
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          Advanced Search
+        </.link>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Form -->
+  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
+    <form method="GET" action={~p"/search"} class="space-y-4">
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <input
+            type="text"
+            name="q"
+            value={@query}
+            placeholder="Search for books, authors, subjects..."
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            autocomplete="off"
+            id="search-input"
+          />
+          <div id="search-suggestions" class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg hidden"></div>
+        </div>
+        
+        <select
+          name="type"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        >
+          <option value="universal" selected={@search_type == "universal"}>All</option>
+          <option value="collections" selected={@search_type == "collections"}>Collections</option>
+          <option value="items" selected={@search_type == "items"}>Items</option>
+        </select>
+        
+        <button
+          type="submit"
+          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Search Results -->
+  <%= if @query != "" do %>
+    <div class="space-y-6">
+      <!-- Results Summary -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <%= if @search_type == "universal" do %>
+          <p class="text-gray-700 dark:text-gray-300">
+            Found <strong><%= @results.total_results %></strong> results for "<strong><%= @query %></strong>"
+            (<%= @results.collections.total %> collections, <%= @results.items.total %> items)
+          </p>
+        <% else %>
+          <p class="text-gray-700 dark:text-gray-300">
+            Found <strong><%= @results.total %></strong> 
+            <%= if @search_type == "collections", do: "collections", else: "items" %> 
+            for "<strong><%= @query %></strong>"
+          </p>
+        <% end %>
+      </div>
+
+      <!-- Universal Search Results -->
+      <%= if @search_type == "universal" do %>
+        <!-- Collections Section -->
+        <%= if length(@results.collections.results) > 0 do %>
+          <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-600">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                Collections (<%= @results.collections.total %>)
+              </h2>
+            </div>
+            <div class="divide-y divide-gray-200 dark:divide-gray-600">
+              <%= for collection <- @results.collections.results do %>
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 dark:text-white">
+                        <.link href={~p"/collections/#{collection.id}"} class="hover:text-blue-600 dark:hover:text-blue-400">
+                          <%= collection.title %>
+                        </.link>
+                      </h3>
+                      <%= if collection.description do %>
+                        <p class="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2"><%= collection.description %></p>
+                      <% end %>
+                      <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <%= if collection.mst_creator do %>
+                          <span>By: <%= collection.mst_creator.name %></span>
+                        <% end %>
+                        <span>Type: <%= String.capitalize(collection.collection_type || "Unknown") %></span>
+                        <span>Items: <%= length(collection.items || []) %></span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
+                        <%= String.capitalize(collection.status || "unknown") %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <%= if @results.collections.total > length(@results.collections.results) do %>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 text-center">
+                <.link 
+                  href={~p"/search?q=#{@query}&type=collections"}
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                >
+                  View all <%= @results.collections.total %> collections →
+                </.link>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Items Section -->
+        <%= if length(@results.items.results) > 0 do %>
+          <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-600">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                Items (<%= @results.items.total %>)
+              </h2>
+            </div>
+            <div class="divide-y divide-gray-200 dark:divide-gray-600">
+              <%= for item <- @results.items.results do %>
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 dark:text-white">
+                        <.link href={~p"/items/#{item.id}"} class="hover:text-blue-600 dark:hover:text-blue-400">
+                          <%= item.collection.title %>
+                        </.link>
+                      </h3>
+                      <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        <span>Code: <%= item.item_code %></span>
+                        <%= if item.inventory_code do %>
+                          <span>Inventory: <%= item.inventory_code %></span>
+                        <% end %>
+                        <span>Location: <%= item.location %></span>
+                      </div>
+                    </div>
+                    <div class="ml-4 text-right">
+                      <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
+                        <%= String.capitalize(item.availability || "unknown") %>
+                      </span>
+                      <div class="text-xs text-gray-500 mt-1">
+                        <%= String.capitalize(item.condition || "unknown") %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <%= if @results.items.total > length(@results.items.results) do %>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 text-center">
+                <.link 
+                  href={~p"/search?q=#{@query}&type=items"}
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                >
+                  View all <%= @results.items.total %> items →
+                </.link>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <!-- Single Type Results -->
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+          <%= if @search_type == "collections" do %>
+            <div class="divide-y divide-gray-200 dark:divide-gray-600">
+              <%= for collection <- @results.results do %>
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 dark:text-white">
+                        <.link href={~p"/collections/#{collection.id}"} class="hover:text-blue-600 dark:hover:text-blue-400">
+                          <%= collection.title %>
+                        </.link>
+                      </h3>
+                      <%= if collection.description do %>
+                        <p class="text-gray-600 dark:text-gray-300 mt-1"><%= collection.description %></p>
+                      <% end %>
+                      <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <%= if collection.mst_creator do %>
+                          <span>By: <%= collection.mst_creator.name %></span>
+                        <% end %>
+                        <span>Type: <%= String.capitalize(collection.collection_type || "Unknown") %></span>
+                        <span>Items: <%= length(collection.items || []) %></span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
+                        <%= String.capitalize(collection.status || "unknown") %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="divide-y divide-gray-200 dark:divide-gray-600">
+              <%= for item <- @results.results do %>
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 dark:text-white">
+                        <.link href={~p"/items/#{item.id}"} class="hover:text-blue-600 dark:hover:text-blue-400">
+                          <%= item.collection.title %>
+                        </.link>
+                      </h3>
+                      <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        <span>Code: <%= item.item_code %></span>
+                        <%= if item.inventory_code do %>
+                          <span>Inventory: <%= item.inventory_code %></span>
+                        <% end %>
+                        <span>Location: <%= item.location %></span>
+                      </div>
+                    </div>
+                    <div class="ml-4 text-right">
+                      <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
+                        <%= String.capitalize(item.availability || "unknown") %>
+                      </span>
+                      <div class="text-xs text-gray-500 mt-1">
+                        <%= String.capitalize(item.condition || "unknown") %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+          
+          <!-- Pagination -->
+          <%= if @results.total_pages > 1 do %>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
+              <div class="text-sm text-gray-700 dark:text-gray-300">
+                Showing page <%= @results.page %> of <%= @results.total_pages %>
+                (<%= @results.total %> total results)
+              </div>
+              <div class="flex gap-2">
+                <%= if @results.has_prev do %>
+                  <.link
+                    href={~p"/search?q=#{@query}&type=#{@search_type}&page=#{@results.page - 1}"}
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                  >
+                    Previous
+                  </.link>
+                <% end %>
+                <%= if @results.has_next do %>
+                  <.link
+                    href={~p"/search?q=#{@query}&type=#{@search_type}&page=#{@results.page + 1}"}
+                    class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Next
+                  </.link>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- No Results -->
+      <%= if (@search_type == "universal" and @results.total_results == 0) or 
+              (@search_type != "universal" and @results.total == 0) do %>
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-8 text-center">
+          <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">
+            We couldn't find anything matching "<strong><%= @query %></strong>".
+          </p>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <p>Try:</p>
+            <ul class="list-disc list-inside mt-2 space-y-1">
+              <li>Checking your spelling</li>
+              <li>Using different keywords</li>
+              <li>Using more general terms</li>
+              <li>Using the advanced search for more specific criteria</li>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  // Auto-complete functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const suggestionsDiv = document.getElementById('search-suggestions');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function(e) {
+      clearTimeout(debounceTimer);
+      const query = e.target.value.trim();
+      
+      if (query.length < 2) {
+        suggestionsDiv.classList.add('hidden');
+        return;
+      }
+
+      debounceTimer = setTimeout(() => {
+        fetch(`/search/suggestions?q=${encodeURIComponent(query)}`)
+          .then(response => response.json())
+          .then(data => {
+            displaySuggestions(data.suggestions);
+          })
+          .catch(error => {
+            console.error('Error fetching suggestions:', error);
+          });
+      }, 300);
+    });
+
+    function displaySuggestions(suggestions) {
+      if (suggestions.length === 0) {
+        suggestionsDiv.classList.add('hidden');
+        return;
+      }
+
+      const suggestionsHTML = suggestions.map(suggestion => `
+        <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer suggestion-item" 
+             data-title="${suggestion.title}" 
+             data-type="${suggestion.type}">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-900 dark:text-white">${suggestion.title}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">${suggestion.type}</span>
+          </div>
+        </div>
+      `).join('');
+
+      suggestionsDiv.innerHTML = suggestionsHTML;
+      suggestionsDiv.classList.remove('hidden');
+
+      // Add click handlers for suggestions
+      document.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', function() {
+          searchInput.value = this.dataset.title;
+          suggestionsDiv.classList.add('hidden');
+        });
+      });
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+        suggestionsDiv.classList.add('hidden');
+      }
+    });
+  });
+</script>

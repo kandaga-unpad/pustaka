@@ -25,6 +25,20 @@ defmodule VoileWeb.Router do
 
     get "/", PageController, :home
     get "/about", PageController, :about
+
+    # Search routes
+    get "/search", SearchController, :index
+    post "/search", SearchController, :index
+    get "/search/advanced", SearchController, :advanced
+    post "/search/advanced", SearchController, :advanced
+    get "/search/suggestions", SearchController, :suggestions
+    get "/api/search", SearchController, :api_search
+
+    # Search dashboard (admin only)
+    live "/search/dashboard", SearchDashboardLive, :index
+
+    # LiveView search (optional alternative)
+    live "/search/live", SearchLive, :index
   end
 
   # Other scopes may use custom stacks.

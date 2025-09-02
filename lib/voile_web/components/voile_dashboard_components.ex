@@ -7,6 +7,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   alias VoileWeb.Layouts
 
   import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1]
+  import VoileWeb.Components.SearchBar
 
   @doc """
   Navigation Bar Component for GLAM (Gallery, Library, Archive, Museum)
@@ -42,7 +43,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
         </.link>
       </div>
-      
+
       <div class="w-full text-blue-500 flex gap-4">
         <.link
           patch="/manage"
@@ -59,7 +60,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         <% end %>
       </div>
-      
+
       <div class="w-full flex justify-end gap-3">
         <Layouts.theme_toggle />
         <.link href="/" class="default-menu bg-red-400 hover:bg-red-500 text-white">Exit</.link>
@@ -97,10 +98,10 @@ defmodule VoileWeb.VoileDashboardComponents do
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
           <h5>Halo, Admin!</h5>
-          
+
           <p>Data Koleksi bisa kamu cek disini</p>
         </div>
-        
+
         <div class="flex gap-2">
           <.link
             patch="/manage/catalog/collections"
@@ -124,8 +125,93 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         </div>
       </div>
-      
+
       <div><.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" /></div>
+    </div>
+    """
+  end
+
+  @doc """
+  Dashboard search widget component
+  """
+  def dashboard_search_widget(assigns) do
+    ~H"""
+    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
+      <div class="flex items-center gap-3 mb-4">
+        <.icon name="hero-magnifying-glass" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Search</h3>
+      </div>
+
+      <.search_bar
+        placeholder="Search collections, items, authors..."
+        show_filters={true}
+        size="default"
+        class="w-full"
+      />
+
+      <div class="mt-4 flex gap-2">
+        <.link
+          href="/search/advanced"
+          class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+        >
+          Advanced Search →
+        </.link>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Search statistics widget for dashboard
+  """
+  def search_stats_widget(assigns) do
+    assigns = assign_new(assigns, :stats, fn -> %{
+      total_searches: 0,
+      popular_queries: [],
+      recent_activity: []
+    } end)
+
+    ~H"""
+    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
+      <div class="flex items-center gap-3 mb-4">
+        <.icon name="hero-chart-bar" class="w-6 h-6 text-green-600 dark:text-green-400" />
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Statistics</h3>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Total searches today -->
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600 dark:text-gray-300">Searches Today</span>
+          <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <%= @stats.total_searches %>
+          </span>
+        </div>
+
+        <!-- Popular queries -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Popular Queries</h4>
+          <div class="space-y-1">
+            <%= for {query, count} <- Enum.take(@stats.popular_queries, 3) do %>
+              <div class="flex justify-between text-xs">
+                <span class="text-gray-600 dark:text-gray-400 truncate"><%= query %></span>
+                <span class="text-gray-500 dark:text-gray-500"><%= count %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Activity</h4>
+          <div class="space-y-1">
+            <%= for activity <- Enum.take(@stats.recent_activity, 3) do %>
+              <div class="text-xs text-gray-600 dark:text-gray-400">
+                <%= activity %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end
@@ -148,7 +234,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             User Profile
           </.link>
         </li>
-        
+
         <li>
           <.link
             patch="/manage/settings/users"
@@ -225,7 +311,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -242,10 +328,10 @@ defmodule VoileWeb.VoileDashboardComponents do
     <.modal id={@id}>
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-semibold">Delete Confirmation</h3>
-        
+
         <p>Are you sure you want to delete this item?</p>
       </div>
-      
+
       <div class="flex justify-end gap-2 mt-4">
         <.button phx-click={JS.exec("data-cancel", to: "#delete-modal")}>Cancel</.button>
         <.button phx-click={JS.exec("data-confirm", to: "#delete-modal")}>Delete</.button>
@@ -274,7 +360,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       <% else %>
         <.button class="disabled-btn" disabled>Prev</.button>
       <% end %>
-      
+
       <%= for p <- pagination_range(@page, @total_pages) do %>
         <%= if is_integer(p) do %>
           <%= if p == @page do %>
@@ -294,7 +380,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <button class="disabled-btn" disabled>{p}</button>
         <% end %>
       <% end %>
-      
+
       <%= if @page < @total_pages do %>
         <%= if @path do %>
           <.link patch={"#{@path}?#{build_query_string(assigns, @page + 1)}"} class="primary-btn">
