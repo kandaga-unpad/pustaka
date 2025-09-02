@@ -10,6 +10,20 @@ config :voile, Voile.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+# Configure MySQL/MariaDB source for SLiMS data migration
+# Works with both MySQL and MariaDB databases using the same configuration
+# Uncomment and configure to use database connection instead of CSV files
+config :voile, :mysql_source,
+  hostname: "localhost",
+  # Default port for MySQL/MariaDB
+  port: 3306,
+  # Database username
+  username: "root",
+  # Database password
+  password: "",
+  # SLiMS database name
+  database: "slims_gold"
+
 # Configure OAuth with Assent
 config :assent,
   google: [

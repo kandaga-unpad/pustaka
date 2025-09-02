@@ -53,5 +53,11 @@ npm-debug.log
 # Scripts Source
 /scripts/*.csv
 
+# CSV Data - ignore numbered files but keep samples
+/scripts/csv_data/**/*_[0-9]*.csv
+/scripts/csv_data/**/*_master*.csv
+/scripts/csv_data/**/temp*.csv
+/scripts/csv_data/**/test*.csv
+
 # Language Server
 .elixir_ls/

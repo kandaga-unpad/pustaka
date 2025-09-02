@@ -7,7 +7,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     create table(:users, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
       add :username, :citext, null: false
-      add :identifier, :integer
+      add :identifier, :numeric
       add :email, :citext, null: false
       add :fullname, :string
       add :hashed_password, :string, null: false
@@ -30,6 +30,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     # Performance indexes
     create index(:users, [:confirmed_at])
     create index(:users, [:last_login])
+    create index(:users, [:identifier], where: "identifier IS NOT NULL")
 
     create table(:user_roles) do
       add :name, :string, null: false

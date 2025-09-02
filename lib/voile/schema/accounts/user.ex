@@ -10,7 +10,7 @@ defmodule Voile.Schema.Accounts.User do
   @derive {Phoenix.Param, key: :id}
   schema "users" do
     field :username, :string
-    field :identifier, :integer
+    field :identifier, :decimal
     field :email, :string
     field :fullname, :string
     field :password, :string, virtual: true, redact: true

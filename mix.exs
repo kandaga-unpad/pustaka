@@ -60,6 +60,7 @@ defmodule Voile.MixProject do
       {:html_sanitize_ex, "~> 1.4"},
       {:jason, "~> 1.2"},
       {:lazy_html, ">= 0.1.0", only: :test},
+      {:myxql, "~> 0.7.0"},
       {:nimble_csv, "~> 1.2"},
       {:pbkdf2_elixir, "~> 2.0"},
       {:phoenix, "~> 1.8.0"},
