@@ -1,7 +1,7 @@
 defmodule Voile.CatalogTest do
   use Voile.DataCase
 
-  alias Voile.Catalog
+  alias Voile.Schema.Catalog
 
   describe "collections" do
     alias Voile.Catalog.Collection
@@ -21,7 +21,13 @@ defmodule Voile.CatalogTest do
     end
 
     test "create_collection/1 with valid data creates a collection" do
-      valid_attrs = %{status: "some status", description: "some description", title: "some title", thumbnail: "some thumbnail", access_level: "some access_level"}
+      valid_attrs = %{
+        status: "some status",
+        description: "some description",
+        title: "some title",
+        thumbnail: "some thumbnail",
+        access_level: "some access_level"
+      }
 
       assert {:ok, %Collection{} = collection} = Catalog.create_collection(valid_attrs)
       assert collection.status == "some status"
@@ -37,9 +43,18 @@ defmodule Voile.CatalogTest do
 
     test "update_collection/2 with valid data updates the collection" do
       collection = collection_fixture()
-      update_attrs = %{status: "some updated status", description: "some updated description", title: "some updated title", thumbnail: "some updated thumbnail", access_level: "some updated access_level"}
 
-      assert {:ok, %Collection{} = collection} = Catalog.update_collection(collection, update_attrs)
+      update_attrs = %{
+        status: "some updated status",
+        description: "some updated description",
+        title: "some updated title",
+        thumbnail: "some updated thumbnail",
+        access_level: "some updated access_level"
+      }
+
+      assert {:ok, %Collection{} = collection} =
+               Catalog.update_collection(collection, update_attrs)
+
       assert collection.status == "some updated status"
       assert collection.description == "some updated description"
       assert collection.title == "some updated title"
@@ -70,7 +85,15 @@ defmodule Voile.CatalogTest do
 
     import Voile.CatalogFixtures
 
-    @invalid_attrs %{status: nil, location: nil, item_code: nil, inventory_code: nil, barcode: nil, condition: nil, availability: nil}
+    @invalid_attrs %{
+      status: nil,
+      location: nil,
+      item_code: nil,
+      inventory_code: nil,
+      barcode: nil,
+      condition: nil,
+      availability: nil
+    }
 
     test "list_items/0 returns all items" do
       item = item_fixture()
@@ -83,7 +106,15 @@ defmodule Voile.CatalogTest do
     end
 
     test "create_item/1 with valid data creates a item" do
-      valid_attrs = %{status: "some status", location: "some location", item_code: "some item_code", inventory_code: "some inventory_code", barcode: "some barcode", condition: "some condition", availability: "some availability"}
+      valid_attrs = %{
+        status: "some status",
+        location: "some location",
+        item_code: "some item_code",
+        inventory_code: "some inventory_code",
+        barcode: "some barcode",
+        condition: "some condition",
+        availability: "some availability"
+      }
 
       assert {:ok, %Item{} = item} = Catalog.create_item(valid_attrs)
       assert item.status == "some status"
@@ -101,7 +132,16 @@ defmodule Voile.CatalogTest do
 
     test "update_item/2 with valid data updates the item" do
       item = item_fixture()
-      update_attrs = %{status: "some updated status", location: "some updated location", item_code: "some updated item_code", inventory_code: "some updated inventory_code", barcode: "some updated barcode", condition: "some updated condition", availability: "some updated availability"}
+
+      update_attrs = %{
+        status: "some updated status",
+        location: "some updated location",
+        item_code: "some updated item_code",
+        inventory_code: "some updated inventory_code",
+        barcode: "some updated barcode",
+        condition: "some updated condition",
+        availability: "some updated availability"
+      }
 
       assert {:ok, %Item{} = item} = Catalog.update_item(item, update_attrs)
       assert item.status == "some updated status"
@@ -149,9 +189,17 @@ defmodule Voile.CatalogTest do
     end
 
     test "create_collection_field/1 with valid data creates a collection_field" do
-      valid_attrs = %{label: "some label", name: "some name", field_type: "some field_type", required: true, sort_order: 42}
+      valid_attrs = %{
+        label: "some label",
+        name: "some name",
+        field_type: "some field_type",
+        required: true,
+        sort_order: 42
+      }
 
-      assert {:ok, %CollectionField{} = collection_field} = Catalog.create_collection_field(valid_attrs)
+      assert {:ok, %CollectionField{} = collection_field} =
+               Catalog.create_collection_field(valid_attrs)
+
       assert collection_field.label == "some label"
       assert collection_field.name == "some name"
       assert collection_field.field_type == "some field_type"
@@ -165,9 +213,18 @@ defmodule Voile.CatalogTest do
 
     test "update_collection_field/2 with valid data updates the collection_field" do
       collection_field = collection_field_fixture()
-      update_attrs = %{label: "some updated label", name: "some updated name", field_type: "some updated field_type", required: false, sort_order: 43}
 
-      assert {:ok, %CollectionField{} = collection_field} = Catalog.update_collection_field(collection_field, update_attrs)
+      update_attrs = %{
+        label: "some updated label",
+        name: "some updated name",
+        field_type: "some updated field_type",
+        required: false,
+        sort_order: 43
+      }
+
+      assert {:ok, %CollectionField{} = collection_field} =
+               Catalog.update_collection_field(collection_field, update_attrs)
+
       assert collection_field.label == "some updated label"
       assert collection_field.name == "some updated name"
       assert collection_field.field_type == "some updated field_type"
@@ -177,14 +234,20 @@ defmodule Voile.CatalogTest do
 
     test "update_collection_field/2 with invalid data returns error changeset" do
       collection_field = collection_field_fixture()
-      assert {:error, %Ecto.Changeset{}} = Catalog.update_collection_field(collection_field, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Catalog.update_collection_field(collection_field, @invalid_attrs)
+
       assert collection_field == Catalog.get_collection_field!(collection_field.id)
     end
 
     test "delete_collection_field/1 deletes the collection_field" do
       collection_field = collection_field_fixture()
       assert {:ok, %CollectionField{}} = Catalog.delete_collection_field(collection_field)
-      assert_raise Ecto.NoResultsError, fn -> Catalog.get_collection_field!(collection_field.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Catalog.get_collection_field!(collection_field.id)
+      end
     end
 
     test "change_collection_field/1 returns a collection_field changeset" do
@@ -207,13 +270,17 @@ defmodule Voile.CatalogTest do
 
     test "get_collection_field_value!/1 returns the collection_field_value with given id" do
       collection_field_value = collection_field_value_fixture()
-      assert Catalog.get_collection_field_value!(collection_field_value.id) == collection_field_value
+
+      assert Catalog.get_collection_field_value!(collection_field_value.id) ==
+               collection_field_value
     end
 
     test "create_collection_field_value/1 with valid data creates a collection_field_value" do
       valid_attrs = %{value: "some value", locale: "some locale"}
 
-      assert {:ok, %CollectionFieldValue{} = collection_field_value} = Catalog.create_collection_field_value(valid_attrs)
+      assert {:ok, %CollectionFieldValue{} = collection_field_value} =
+               Catalog.create_collection_field_value(valid_attrs)
+
       assert collection_field_value.value == "some value"
       assert collection_field_value.locale == "some locale"
     end
@@ -226,21 +293,32 @@ defmodule Voile.CatalogTest do
       collection_field_value = collection_field_value_fixture()
       update_attrs = %{value: "some updated value", locale: "some updated locale"}
 
-      assert {:ok, %CollectionFieldValue{} = collection_field_value} = Catalog.update_collection_field_value(collection_field_value, update_attrs)
+      assert {:ok, %CollectionFieldValue{} = collection_field_value} =
+               Catalog.update_collection_field_value(collection_field_value, update_attrs)
+
       assert collection_field_value.value == "some updated value"
       assert collection_field_value.locale == "some updated locale"
     end
 
     test "update_collection_field_value/2 with invalid data returns error changeset" do
       collection_field_value = collection_field_value_fixture()
-      assert {:error, %Ecto.Changeset{}} = Catalog.update_collection_field_value(collection_field_value, @invalid_attrs)
-      assert collection_field_value == Catalog.get_collection_field_value!(collection_field_value.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Catalog.update_collection_field_value(collection_field_value, @invalid_attrs)
+
+      assert collection_field_value ==
+               Catalog.get_collection_field_value!(collection_field_value.id)
     end
 
     test "delete_collection_field_value/1 deletes the collection_field_value" do
       collection_field_value = collection_field_value_fixture()
-      assert {:ok, %CollectionFieldValue{}} = Catalog.delete_collection_field_value(collection_field_value)
-      assert_raise Ecto.NoResultsError, fn -> Catalog.get_collection_field_value!(collection_field_value.id) end
+
+      assert {:ok, %CollectionFieldValue{}} =
+               Catalog.delete_collection_field_value(collection_field_value)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Catalog.get_collection_field_value!(collection_field_value.id)
+      end
     end
 
     test "change_collection_field_value/1 returns a collection_field_value changeset" do
@@ -269,7 +347,9 @@ defmodule Voile.CatalogTest do
     test "create_item_field_value/1 with valid data creates a item_field_value" do
       valid_attrs = %{value: "some value", locale: "some locale"}
 
-      assert {:ok, %ItemFieldValue{} = item_field_value} = Catalog.create_item_field_value(valid_attrs)
+      assert {:ok, %ItemFieldValue{} = item_field_value} =
+               Catalog.create_item_field_value(valid_attrs)
+
       assert item_field_value.value == "some value"
       assert item_field_value.locale == "some locale"
     end
@@ -282,21 +362,29 @@ defmodule Voile.CatalogTest do
       item_field_value = item_field_value_fixture()
       update_attrs = %{value: "some updated value", locale: "some updated locale"}
 
-      assert {:ok, %ItemFieldValue{} = item_field_value} = Catalog.update_item_field_value(item_field_value, update_attrs)
+      assert {:ok, %ItemFieldValue{} = item_field_value} =
+               Catalog.update_item_field_value(item_field_value, update_attrs)
+
       assert item_field_value.value == "some updated value"
       assert item_field_value.locale == "some updated locale"
     end
 
     test "update_item_field_value/2 with invalid data returns error changeset" do
       item_field_value = item_field_value_fixture()
-      assert {:error, %Ecto.Changeset{}} = Catalog.update_item_field_value(item_field_value, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Catalog.update_item_field_value(item_field_value, @invalid_attrs)
+
       assert item_field_value == Catalog.get_item_field_value!(item_field_value.id)
     end
 
     test "delete_item_field_value/1 deletes the item_field_value" do
       item_field_value = item_field_value_fixture()
       assert {:ok, %ItemFieldValue{}} = Catalog.delete_item_field_value(item_field_value)
-      assert_raise Ecto.NoResultsError, fn -> Catalog.get_item_field_value!(item_field_value.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Catalog.get_item_field_value!(item_field_value.id)
+      end
     end
 
     test "change_item_field_value/1 returns a item_field_value changeset" do

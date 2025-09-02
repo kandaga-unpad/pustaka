@@ -1,10 +1,10 @@
 defmodule Voile.AccountsTest do
   use Voile.DataCase
 
-  alias Voile.Accounts
+  alias Voile.Schema.Accounts
 
   import Voile.AccountsFixtures
-  alias Voile.Accounts.{User, UserToken}
+  alias Voile.Schema.Accounts.{User, UserToken}
 
   describe "get_user_by_email/1" do
     test "does not return the user if the email does not exist" do

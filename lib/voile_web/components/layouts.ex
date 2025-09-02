@@ -35,6 +35,8 @@ defmodule VoileWeb.Layouts do
   slot :inner_block, required: true
 
   def app(assigns) do
+    assigns = assign_nav_items(assigns)
+
     ~H"""
     <div class="bg-violet-200 dark:bg-gray-500 px-3 py-1 text-sm font-semibold">
       <p>If you need information about [Redacted]</p>
@@ -52,19 +54,17 @@ defmodule VoileWeb.Layouts do
           </a>
         </div>
         
-        <div class="hidden lg:flex items-center gap-10 font-semibold leading-6">
-          <div><.link href="/">Beranda</.link></div>
-          
-          <div><.link href="/about">Tentang</.link></div>
-          
-          <div>
-            <p>Koleksi</p>
-          </div>
-          
-          <div>
-            <p>Kontak</p>
-          </div>
-        </div>
+        <nav class="hidden lg:flex items-center gap-10 font-semibold leading-6">
+          <%= for nav_item <- @nav_items do %>
+            <div>
+              <%= if nav_item.href do %>
+                <.link href={nav_item.href}>{nav_item.label}</.link>
+              <% else %>
+                <p>{nav_item.label}</p>
+              <% end %>
+            </div>
+          <% end %>
+        </nav>
         
         <div>
           <div class="flex lg:hidden"><.button><.icon name="hero-bars-3" /></.button></div>
@@ -133,5 +133,16 @@ defmodule VoileWeb.Layouts do
 
   def get_year() do
     DateTime.utc_now().year
+  end
+
+  defp assign_nav_items(assigns) do
+    nav_items = [
+      %{label: "Beranda", href: "/"},
+      %{label: "Tentang", href: "/about"},
+      %{label: "Koleksi", href: "/collections"},
+      %{label: "Eksemplar", href: "/items"}
+    ]
+
+    assign(assigns, :nav_items, nav_items)
   end
 end

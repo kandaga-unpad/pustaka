@@ -10,7 +10,7 @@ defmodule Voile.Schema.Library.Fine do
   schema "lib_fines" do
     field :fine_type, :string
     field :amount, :decimal
-    field :paid_amount, :decimal, default: 0.0
+    field :paid_amount, :decimal, default: 0
     field :balance, :decimal
     field :fine_date, :utc_datetime
     field :payment_date, :utc_datetime
@@ -148,7 +148,15 @@ defmodule Voile.Schema.Library.Fine do
 
   defp calculate_balance(changeset) do
     amount = get_field(changeset, :amount) || Decimal.new("0")
-    paid_amount = get_field(changeset, :paid_amount) || Decimal.new("0")
+
+    paid_amount =
+      case get_field(changeset, :paid_amount) do
+        nil -> Decimal.new("0")
+        val when is_float(val) -> Decimal.from_float(val)
+        val when is_integer(val) -> Decimal.new(val)
+        val -> val
+      end
+
     balance = Decimal.sub(amount, paid_amount)
     put_change(changeset, :balance, balance)
   end

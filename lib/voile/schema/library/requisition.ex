@@ -54,7 +54,7 @@ defmodule Voile.Schema.Library.Requisition do
       :notes,
       :staff_notes,
       :due_date,
-      :fullfilled_date,
+      :fulfilled_date,
       :requested_by_id,
       :assigned_to_id,
       :unit_id

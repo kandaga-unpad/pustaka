@@ -4,7 +4,6 @@ defmodule VoileWeb.Components.SearchBar do
   """
 
   use Phoenix.Component
-  import VoileWeb.CoreComponents
 
   @doc """
   Renders a search bar that can be embedded in the navigation or dashboard
@@ -15,7 +14,8 @@ defmodule VoileWeb.Components.SearchBar do
       <.search_bar size="large" show_filters />
   """
   attr :placeholder, :string, default: "Search library catalog..."
-  attr :size, :string, default: "default" # "small", "default", "large"
+  # "small", "default", "large"
+  attr :size, :string, default: "default"
   attr :show_filters, :boolean, default: false
   attr :value, :string, default: ""
   attr :class, :string, default: ""
@@ -32,26 +32,38 @@ defmodule VoileWeb.Components.SearchBar do
             placeholder={@placeholder}
             class={search_input_class(@size)}
           />
-
           <!-- Search Icon -->
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            <svg
+              class="h-5 w-5 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              >
+              </path>
             </svg>
           </div>
         </div>
-
+        
         <%= if @show_filters do %>
           <select
             name="type"
             class={select_class(@size)}
           >
             <option value="universal">All</option>
+            
             <option value="collections">Collections</option>
+            
             <option value="items">Items</option>
           </select>
         <% end %>
-
+        
         <button
           type="submit"
           class={button_class(@size)}

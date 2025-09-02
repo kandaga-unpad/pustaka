@@ -1,8 +1,7 @@
 defmodule VoileWeb.SearchController do
   use VoileWeb, :controller
 
-  alias Voile.Schema.Search
-  alias Voile.Schema.Accounts
+  alias Voile.Search.Collections, as: SearchCollections
   alias Voile.Utils.SearchHelper
   alias Voile.Analytics.SearchAnalytics
 
@@ -10,38 +9,37 @@ defmodule VoileWeb.SearchController do
   Handles search requests from the web interface
   """
   def index(conn, params) do
-    user_role = SearchHelper.get_user_role(conn)
-    query = SearchHelper.sanitize_query(Map.get(params, "q", ""))
-    search_type = Map.get(params, "type", "universal")
+    query = Map.get(params, "q", "")
+    glam_type = Map.get(params, "glam_type", "quick")
     page = Map.get(params, "page", "1") |> String.to_integer()
 
     # Record search analytics
     current_user = conn.assigns[:current_user]
+
     if String.trim(query) != "" do
       SearchAnalytics.record_search(query, current_user && current_user.id, %{
-        type: search_type,
+        glam_type: glam_type,
         source: "web_search"
       })
     end
 
-    results = if String.trim(query) != "" do
-      case search_type do
-        "collections" ->
-          Search.search_collections(query, user_role, %{page: page})
-        "items" ->
-          Search.search_items(query, user_role, %{page: page})
-        "universal" ->
-          Search.universal_search(query, user_role, %{page: page})
-      end
-    else
-      %{collections: %{results: [], total: 0}, items: %{results: [], total: 0}, total_results: 0}
-    end
+    # Use our new Search context
+    search_params = %{
+      "q" => query,
+      "glam_type" => glam_type,
+      "page" => Integer.to_string(page),
+      "status" => "published"
+    }
+
+    results = SearchCollections.search_collections(search_params)
 
     render(conn, :index, %{
-      results: results,
+      results: results.results,
+      total_count: results.total_count,
+      total_pages: results.total_pages,
+      current_page: results.current_page,
       query: query,
-      search_type: search_type,
-      page: page
+      glam_type: glam_type
     })
   end
 
@@ -49,7 +47,7 @@ defmodule VoileWeb.SearchController do
   Handles advanced search requests
   """
   def advanced(conn, %{"search" => search_params} = params) do
-    user_role = SearchHelper.get_user_role(conn)
+    _user_role = SearchHelper.get_user_role(conn)
     search_type = Map.get(params, "type", "both") |> String.to_atom()
     page = Map.get(params, "page", "1") |> String.to_integer()
 
@@ -58,13 +56,18 @@ defmodule VoileWeb.SearchController do
       search_params
       |> Enum.reduce(%{}, fn {key, value}, acc ->
         sanitized_value = SearchHelper.sanitize_query(value)
-        if sanitized_value != "", do: Map.put(acc, String.to_atom(key), sanitized_value), else: acc
+
+        if sanitized_value != "",
+          do: Map.put(acc, String.to_atom(key), sanitized_value),
+          else: acc
       end)
 
     # Record advanced search analytics
     current_user = conn.assigns[:current_user]
+
     if map_size(cleaned_params) > 0 do
       search_query = Enum.map(cleaned_params, fn {k, v} -> "#{k}:#{v}" end) |> Enum.join(" ")
+
       SearchAnalytics.record_search(search_query, current_user && current_user.id, %{
         type: "advanced_search",
         params: cleaned_params,
@@ -72,14 +75,25 @@ defmodule VoileWeb.SearchController do
       })
     end
 
-    results = if map_size(cleaned_params) > 0 do
-      Search.advanced_search(cleaned_params, user_role, %{
-        page: page,
-        type: search_type
-      })
-    else
-      %{collections: %{results: [], total: 0}, items: %{results: [], total: 0}, total_results: 0}
-    end
+    results =
+      if map_size(cleaned_params) > 0 do
+        # TODO: Implement advanced search with SearchCollections
+        # SearchCollections.advanced_search(cleaned_params, user_role, %{
+        #   page: page,
+        #   type: search_type
+        # })
+        %{
+          collections: %{results: [], total: 0},
+          items: %{results: [], total: 0},
+          total_results: 0
+        }
+      else
+        %{
+          collections: %{results: [], total: 0},
+          items: %{results: [], total: 0},
+          total_results: 0
+        }
+      end
 
     render(conn, :advanced, %{
       results: results,
@@ -89,9 +103,13 @@ defmodule VoileWeb.SearchController do
     })
   end
 
-  def advanced(conn, params) do
+  def advanced(conn, _params) do
     render(conn, :advanced, %{
-      results: %{collections: %{results: [], total: 0}, items: %{results: [], total: 0}, total_results: 0},
+      results: %{
+        collections: %{results: [], total: 0},
+        items: %{results: [], total: 0},
+        total_results: 0
+      },
       search_params: %{},
       search_type: "both",
       page: 1
@@ -102,13 +120,14 @@ defmodule VoileWeb.SearchController do
   API endpoint for AJAX search requests
   """
   def api_search(conn, params) do
-    user_role = SearchHelper.get_user_role(conn)
+    _user_role = SearchHelper.get_user_role(conn)
     query = SearchHelper.sanitize_query(Map.get(params, "q", ""))
     search_type = Map.get(params, "type", "universal")
     page = Map.get(params, "page", "1") |> String.to_integer()
 
     # Record API search analytics
     current_user = conn.assigns[:current_user]
+
     if String.trim(query) != "" do
       SearchAnalytics.record_search(query, current_user && current_user.id, %{
         type: search_type,
@@ -116,22 +135,39 @@ defmodule VoileWeb.SearchController do
       })
     end
 
-    results = if String.trim(query) != "" do
-      case search_type do
-        "collections" ->
-          Search.search_collections(query, user_role, %{page: page, per_page: 5})
-        "items" ->
-          Search.search_items(query, user_role, %{page: page, per_page: 10})
-        "universal" ->
-          Search.universal_search(query, user_role, %{
-            page: page,
-            collections_per_page: 3,
-            items_per_page: 7
-          })
+    results =
+      if String.trim(query) != "" do
+        case search_type do
+          "collections" ->
+            # TODO: Implement with SearchCollections
+            # SearchCollections.search_collections(query, user_role, %{page: page, per_page: 5})
+            %{results: [], total: 0, page: page, total_pages: 0}
+
+          "items" ->
+            # TODO: Implement items search
+            # SearchCollections.search_items(query, user_role, %{page: page, per_page: 10})
+            %{results: [], total: 0, page: page, total_pages: 0}
+
+          "universal" ->
+            # TODO: Implement universal search
+            # SearchCollections.universal_search(query, user_role, %{
+            #   page: page,
+            #   collections_per_page: 3,
+            #   items_per_page: 7
+            # })
+            %{
+              collections: %{results: [], total: 0},
+              items: %{results: [], total: 0},
+              total_results: 0
+            }
+        end
+      else
+        %{
+          collections: %{results: [], total: 0},
+          items: %{results: [], total: 0},
+          total_results: 0
+        }
       end
-    else
-      %{collections: %{results: [], total: 0}, items: %{results: [], total: 0}, total_results: 0}
-    end
 
     json(conn, %{
       success: true,
@@ -144,17 +180,41 @@ defmodule VoileWeb.SearchController do
   @doc """
   Quick search suggestions for autocomplete
   """
-  def suggestions(conn, %{"q" => query}) when byte_size(query) >= 2 do
-    user_role = SearchHelper.get_user_role(conn)
-    sanitized_query = SearchHelper.sanitize_query(query)
+  def suggestions(conn, %{"q" => query} = params) when byte_size(query) >= 2 do
+    glam_type = Map.get(params, "glam_type", "quick")
+    limit = Map.get(params, "limit", "8") |> String.to_integer()
 
-    suggestions = if String.trim(sanitized_query) != "" do
-      SearchHelper.fetch_suggestions(sanitized_query, user_role, 8)
-    else
-      []
-    end
+    suggestions =
+      if String.trim(query) != "" do
+        SearchCollections.get_search_suggestions(query, glam_type, limit)
+      else
+        []
+      end
 
-    json(conn, %{suggestions: suggestions})
+    # Serialize for JSON response
+    serialized_suggestions =
+      Enum.map(suggestions, fn collection ->
+        %{
+          id: collection.id,
+          title: collection.title,
+          description: collection.description,
+          thumbnail: collection.thumbnail,
+          status: collection.status,
+          resource_class:
+            collection.resource_class &&
+              %{
+                glam_type: collection.resource_class.glam_type
+              },
+          mst_creator:
+            collection.mst_creator &&
+              %{
+                name: collection.mst_creator.name
+              },
+          items_count: length(collection.items || [])
+        }
+      end)
+
+    json(conn, %{suggestions: serialized_suggestions})
   end
 
   def suggestions(conn, _params) do
@@ -200,7 +260,7 @@ defmodule VoileWeb.SearchController do
         collection_type: collection.collection_type,
         status: collection.status,
         access_level: collection.access_level,
-        creator: collection.mst_creator && collection.mst_creator.name,
+        creator: collection.mst_creator && collection.mst_creator.creator_name,
         items_count: length(collection.items || [])
       }
     end)

@@ -23,8 +23,9 @@ defmodule VoileWeb.Router do
   scope "/", VoileWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    get "/about", PageController, :about
+    # Convert home and about pages to LiveView for better UX
+    live "/", PageLive.Home, :index
+    live "/about", PageLive.About, :index
 
     # Search routes
     get "/search", SearchController, :index
@@ -34,11 +35,20 @@ defmodule VoileWeb.Router do
     get "/search/suggestions", SearchController, :suggestions
     get "/api/search", SearchController, :api_search
 
-    # Search dashboard (admin only)
-    live "/search/dashboard", SearchDashboardLive, :index
+    live_session :public_with_scope,
+      on_mount: [{VoileWeb.UserAuth, :mount_current_scope}] do
+      # Search dashboard (admin only)
+      live "/search/dashboard", SearchDashboardLive, :index
 
-    # LiveView search (optional alternative)
-    live "/search/live", SearchLive, :index
+      # LiveView search (optional alternative)
+      live "/search/live", SearchLive, :index
+
+      # Frontend member routes
+      live "/collections", Frontend.Collections.Index, :index
+      live "/collections/:id", Frontend.Collections.Show, :show
+      live "/items", Frontend.Items.Index, :index
+      live "/items/:id", Frontend.Items.Show, :show
+    end
   end
 
   # Other scopes may use custom stacks.

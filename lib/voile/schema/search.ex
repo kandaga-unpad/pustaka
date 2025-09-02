@@ -7,7 +7,6 @@ defmodule Voile.Schema.Search do
   import Ecto.Query, warn: false
   alias Voile.Repo
   alias Voile.Schema.Catalog.{Collection, Item, CollectionField, ItemFieldValue}
-  alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.Creator
 
   @doc """
@@ -100,7 +99,8 @@ defmodule Voile.Schema.Search do
   def advanced_search(search_params, user_role, opts) when is_map(search_params) do
     page = Map.get(opts, :page, 1)
     per_page = Map.get(opts, :per_page, 10)
-    search_type = Map.get(opts, :type, :both) # :collections, :items, or :both
+    # :collections, :items, or :both
+    search_type = Map.get(opts, :type, :both)
 
     case search_type do
       :collections ->
@@ -114,7 +114,9 @@ defmodule Voile.Schema.Search do
         |> paginate_results(page, per_page)
 
       :both ->
-        collections_result = advanced_search(search_params, user_role, Map.put(opts, :type, :collections))
+        collections_result =
+          advanced_search(search_params, user_role, Map.put(opts, :type, :collections))
+
         items_result = advanced_search(search_params, user_role, Map.put(opts, :type, :items))
 
         %{
@@ -132,13 +134,15 @@ defmodule Voile.Schema.Search do
 
     base_query =
       from c in Collection,
-        left_join: creator in Creator, on: c.creator_id == creator.id,
-        left_join: cf in CollectionField, on: c.id == cf.collection_id,
+        left_join: creator in Creator,
+        on: c.creator_id == creator.id,
+        left_join: cf in CollectionField,
+        on: c.id == cf.collection_id,
         where:
           ilike(c.title, ^search_term) or
-          ilike(c.description, ^search_term) or
-          ilike(creator.name, ^search_term) or
-          ilike(cf.value, ^search_term),
+            ilike(c.description, ^search_term) or
+            ilike(creator.creator_name, ^search_term) or
+            ilike(cf.value, ^search_term),
         distinct: c.id,
         preload: [
           :resource_class,
@@ -159,17 +163,20 @@ defmodule Voile.Schema.Search do
 
     base_query =
       from i in Item,
-        left_join: c in Collection, on: i.collection_id == c.id,
-        left_join: creator in Creator, on: c.creator_id == creator.id,
-        left_join: ifv in ItemFieldValue, on: i.id == ifv.item_id,
+        left_join: c in Collection,
+        on: i.collection_id == c.id,
+        left_join: creator in Creator,
+        on: c.creator_id == creator.id,
+        left_join: ifv in ItemFieldValue,
+        on: i.id == ifv.item_id,
         where:
           ilike(c.title, ^search_term) or
-          ilike(c.description, ^search_term) or
-          ilike(creator.name, ^search_term) or
-          ilike(i.item_code, ^search_term) or
-          ilike(i.inventory_code, ^search_term) or
-          ilike(i.location, ^search_term) or
-          ilike(ifv.value, ^search_term),
+            ilike(c.description, ^search_term) or
+            ilike(creator.creator_name, ^search_term) or
+            ilike(i.item_code, ^search_term) or
+            ilike(i.inventory_code, ^search_term) or
+            ilike(i.location, ^search_term) or
+            ilike(ifv.value, ^search_term),
         distinct: i.id,
         preload: [
           :collection,
@@ -185,8 +192,10 @@ defmodule Voile.Schema.Search do
   defp build_advanced_collection_query(search_params, user_role) do
     base_query =
       from c in Collection,
-        left_join: creator in Creator, on: c.creator_id == creator.id,
-        left_join: cf in CollectionField, on: c.id == cf.collection_id,
+        left_join: creator in Creator,
+        on: c.creator_id == creator.id,
+        left_join: cf in CollectionField,
+        on: c.id == cf.collection_id,
         distinct: c.id,
         preload: [
           :resource_class,
@@ -197,19 +206,20 @@ defmodule Voile.Schema.Search do
           :items
         ]
 
-    query = Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
-      search_term = "%#{String.trim(value)}%"
+    query =
+      Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
+        search_term = "%#{String.trim(value)}%"
 
-      case field do
-        :title -> where(acc_query, [c], ilike(c.title, ^search_term))
-        :description -> where(acc_query, [c], ilike(c.description, ^search_term))
-        :creator -> where(acc_query, [c, creator], ilike(creator.name, ^search_term))
-        :collection_type -> where(acc_query, [c], ilike(c.collection_type, ^search_term))
-        :status -> where(acc_query, [c], c.status == ^value)
-        :access_level -> where(acc_query, [c], c.access_level == ^value)
-        _ -> acc_query
-      end
-    end)
+        case field do
+          :title -> where(acc_query, [c], ilike(c.title, ^search_term))
+          :description -> where(acc_query, [c], ilike(c.description, ^search_term))
+          :creator -> where(acc_query, [c, creator], ilike(creator.creator_name, ^search_term))
+          :collection_type -> where(acc_query, [c], ilike(c.collection_type, ^search_term))
+          :status -> where(acc_query, [c], c.status == ^value)
+          :access_level -> where(acc_query, [c], c.access_level == ^value)
+          _ -> acc_query
+        end
+      end)
 
     apply_role_based_access(query, user_role, :collection)
   end
@@ -217,9 +227,12 @@ defmodule Voile.Schema.Search do
   defp build_advanced_item_query(search_params, user_role) do
     base_query =
       from i in Item,
-        left_join: c in Collection, on: i.collection_id == c.id,
-        left_join: creator in Creator, on: c.creator_id == creator.id,
-        left_join: ifv in ItemFieldValue, on: i.id == ifv.item_id,
+        left_join: c in Collection,
+        on: i.collection_id == c.id,
+        left_join: creator in Creator,
+        on: c.creator_id == creator.id,
+        left_join: ifv in ItemFieldValue,
+        on: i.id == ifv.item_id,
         distinct: i.id,
         preload: [
           :collection,
@@ -227,21 +240,22 @@ defmodule Voile.Schema.Search do
           :attachments
         ]
 
-    query = Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
-      search_term = "%#{String.trim(value)}%"
+    query =
+      Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
+        search_term = "%#{String.trim(value)}%"
 
-      case field do
-        :title -> where(acc_query, [i, c], ilike(c.title, ^search_term))
-        :item_code -> where(acc_query, [i], ilike(i.item_code, ^search_term))
-        :inventory_code -> where(acc_query, [i], ilike(i.inventory_code, ^search_term))
-        :location -> where(acc_query, [i], ilike(i.location, ^search_term))
-        :status -> where(acc_query, [i], i.status == ^value)
-        :condition -> where(acc_query, [i], i.condition == ^value)
-        :availability -> where(acc_query, [i], i.availability == ^value)
-        :creator -> where(acc_query, [i, c, creator], ilike(creator.name, ^search_term))
-        _ -> acc_query
-      end
-    end)
+        case field do
+          :title -> where(acc_query, [i, c], ilike(c.title, ^search_term))
+          :item_code -> where(acc_query, [i], ilike(i.item_code, ^search_term))
+          :inventory_code -> where(acc_query, [i], ilike(i.inventory_code, ^search_term))
+          :location -> where(acc_query, [i], ilike(i.location, ^search_term))
+          :status -> where(acc_query, [i], i.status == ^value)
+          :condition -> where(acc_query, [i], i.condition == ^value)
+          :availability -> where(acc_query, [i], i.availability == ^value)
+          :creator -> where(acc_query, [i, c, creator], ilike(creator.creator_name, ^search_term))
+          _ -> acc_query
+        end
+      end)
 
     apply_role_based_access(query, user_role, :item)
   end
@@ -258,9 +272,11 @@ defmodule Voile.Schema.Search do
 
   defp apply_role_based_access(query, "patron", :item) do
     # Patrons can only see available items from public collections
-    where(query, [i, c],
+    where(
+      query,
+      [i, c],
       i.availability in ["available", "reference"] and
-      c.access_level in ["public", "restricted"]
+        c.access_level in ["public", "restricted"]
     )
   end
 

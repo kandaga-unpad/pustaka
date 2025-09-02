@@ -13,8 +13,12 @@ defmodule Voile.AccountsFixtures do
   def valid_user_password, do: "hello world!"
 
   def valid_user_attributes(attrs \\ %{}) do
+    email = unique_user_email()
+    username = String.split(email, "@") |> hd()
+
     Enum.into(attrs, %{
-      email: unique_user_email(),
+      email: email,
+      username: username,
       password: valid_user_password()
     })
   end

@@ -5,7 +5,7 @@ defmodule VoileWeb.SearchHTML do
 
   use VoileWeb, :html
 
-  embed_templates "search_html/*"
+  embed_templates "*"
 
   @doc """
   Returns CSS classes for status badges
@@ -51,7 +51,9 @@ defmodule VoileWeb.SearchHTML do
   @doc """
   Truncates text to a specified length
   """
-  def truncate_text(text, length \\ 100) when is_binary(text) do
+  def truncate_text(text, length \\ 100)
+
+  def truncate_text(text, length) when is_binary(text) do
     if String.length(text) <= length do
       text
     else

@@ -6,7 +6,7 @@ defmodule Voile.Analytics.SearchAnalytics do
 
   import Ecto.Query, warn: false
   alias Voile.Repo
-  alias Voile.Accounts.User
+  alias Voile.Schema.Accounts.User
 
   @doc """
   Records a search query for analytics purposes
@@ -19,10 +19,13 @@ defmodule Voile.Analytics.SearchAnalytics do
     case :ets.whereis(table_name) do
       :undefined ->
         :ets.new(table_name, [:named_table, :public, :bag])
-      _ -> :ok
+
+      _ ->
+        :ok
     end
 
     timestamp = DateTime.utc_now()
+
     entry = {
       query,
       user_id,
@@ -37,7 +40,7 @@ defmodule Voile.Analytics.SearchAnalytics do
   @doc """
   Gets search statistics for dashboard display
   """
-  def get_search_stats(opts \\ []) do
+  def get_search_stats(_opts \\ []) do
     table_name = :search_analytics
 
     case :ets.whereis(table_name) do
@@ -50,7 +53,20 @@ defmodule Voile.Analytics.SearchAnalytics do
 
       _ ->
         now = DateTime.utc_now()
-        today_start = DateTime.beginning_of_day(now)
+
+        today_start = %DateTime{
+          year: now.year,
+          month: now.month,
+          day: now.day,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          microsecond: {0, 0},
+          time_zone: now.time_zone,
+          zone_abbr: now.zone_abbr,
+          utc_offset: now.utc_offset,
+          std_offset: now.std_offset
+        }
 
         # Get all entries from today
         all_entries = :ets.tab2list(table_name)
@@ -97,7 +113,8 @@ defmodule Voile.Analytics.SearchAnalytics do
     table_name = :search_analytics
 
     case :ets.whereis(table_name) do
-      :undefined -> []
+      :undefined ->
+        []
 
       _ ->
         cutoff = DateTime.utc_now() |> DateTime.add(-days_back, :day)
@@ -106,7 +123,7 @@ defmodule Voile.Analytics.SearchAnalytics do
         |> Enum.filter(fn {timestamp, _entry} ->
           DateTime.compare(timestamp, cutoff) in [:gt, :eq]
         end)
-        |> Enum.map(fn {_timestamp, {query, _user_id, _timestamp, _metadata}} -> query end)
+        |> Enum.map(fn {_timestamp, {query, _user_id, _entry_timestamp, _metadata}} -> query end)
         |> Enum.frequencies()
         |> Enum.sort_by(fn {_query, count} -> count end, :desc)
         |> Enum.take(limit)
@@ -120,7 +137,8 @@ defmodule Voile.Analytics.SearchAnalytics do
     table_name = :search_analytics
 
     case :ets.whereis(table_name) do
-      :undefined -> %{}
+      :undefined ->
+        %{}
 
       _ ->
         cutoff = DateTime.utc_now() |> DateTime.add(-days_back, :day)
@@ -144,13 +162,14 @@ defmodule Voile.Analytics.SearchAnalytics do
     table_name = :search_analytics
 
     case :ets.whereis(table_name) do
-      :undefined -> :ok
+      :undefined ->
+        :ok
 
       _ ->
         cutoff = DateTime.utc_now() |> DateTime.add(-days_to_keep, :day)
 
         :ets.tab2list(table_name)
-        |> Enum.each(fn {timestamp, entry} = record ->
+        |> Enum.each(fn {timestamp, _entry} = record ->
           if DateTime.compare(timestamp, cutoff) == :lt do
             :ets.delete_object(table_name, record)
           end

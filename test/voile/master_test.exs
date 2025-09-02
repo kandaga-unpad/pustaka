@@ -4,7 +4,7 @@ defmodule Voile.MasterTest do
   alias Voile.Master
 
   describe "mst_creator" do
-    alias Voile.Master.Creator
+    alias Voile.Schema.Master.Creator
 
     import Voile.MasterFixtures
 

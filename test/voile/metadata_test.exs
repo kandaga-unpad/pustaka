@@ -1,10 +1,10 @@
 defmodule Voile.MetadataTest do
   use Voile.DataCase
 
-  alias Voile.Metadata
+  alias Voile.Schema.Metadata
 
   describe "metadata_vocabularies" do
-    alias Voile.Metadata.Vocabulary
+    alias Voile.Schema.Metadata.Vocabulary
 
     import Voile.MetadataFixtures
 
@@ -21,7 +21,12 @@ defmodule Voile.MetadataTest do
     end
 
     test "create_vocabulary/1 with valid data creates a vocabulary" do
-      valid_attrs = %{label: "some label", prefix: "some prefix", namespace_url: "some namespace_url", information: "some information"}
+      valid_attrs = %{
+        label: "some label",
+        prefix: "some prefix",
+        namespace_url: "some namespace_url",
+        information: "some information"
+      }
 
       assert {:ok, %Vocabulary{} = vocabulary} = Metadata.create_vocabulary(valid_attrs)
       assert vocabulary.label == "some label"
@@ -36,9 +41,17 @@ defmodule Voile.MetadataTest do
 
     test "update_vocabulary/2 with valid data updates the vocabulary" do
       vocabulary = vocabulary_fixture()
-      update_attrs = %{label: "some updated label", prefix: "some updated prefix", namespace_url: "some updated namespace_url", information: "some updated information"}
 
-      assert {:ok, %Vocabulary{} = vocabulary} = Metadata.update_vocabulary(vocabulary, update_attrs)
+      update_attrs = %{
+        label: "some updated label",
+        prefix: "some updated prefix",
+        namespace_url: "some updated namespace_url",
+        information: "some updated information"
+      }
+
+      assert {:ok, %Vocabulary{} = vocabulary} =
+               Metadata.update_vocabulary(vocabulary, update_attrs)
+
       assert vocabulary.label == "some updated label"
       assert vocabulary.prefix == "some updated prefix"
       assert vocabulary.namespace_url == "some updated namespace_url"
@@ -81,9 +94,15 @@ defmodule Voile.MetadataTest do
     end
 
     test "create_resource_class/1 with valid data creates a resource_class" do
-      valid_attrs = %{label: "some label", local_name: "some local_name", information: "some information"}
+      valid_attrs = %{
+        label: "some label",
+        local_name: "some local_name",
+        information: "some information"
+      }
 
-      assert {:ok, %ResourceClass{} = resource_class} = Metadata.create_resource_class(valid_attrs)
+      assert {:ok, %ResourceClass{} = resource_class} =
+               Metadata.create_resource_class(valid_attrs)
+
       assert resource_class.label == "some label"
       assert resource_class.local_name == "some local_name"
       assert resource_class.information == "some information"
@@ -95,9 +114,16 @@ defmodule Voile.MetadataTest do
 
     test "update_resource_class/2 with valid data updates the resource_class" do
       resource_class = resource_class_fixture()
-      update_attrs = %{label: "some updated label", local_name: "some updated local_name", information: "some updated information"}
 
-      assert {:ok, %ResourceClass{} = resource_class} = Metadata.update_resource_class(resource_class, update_attrs)
+      update_attrs = %{
+        label: "some updated label",
+        local_name: "some updated local_name",
+        information: "some updated information"
+      }
+
+      assert {:ok, %ResourceClass{} = resource_class} =
+               Metadata.update_resource_class(resource_class, update_attrs)
+
       assert resource_class.label == "some updated label"
       assert resource_class.local_name == "some updated local_name"
       assert resource_class.information == "some updated information"
@@ -105,7 +131,10 @@ defmodule Voile.MetadataTest do
 
     test "update_resource_class/2 with invalid data returns error changeset" do
       resource_class = resource_class_fixture()
-      assert {:error, %Ecto.Changeset{}} = Metadata.update_resource_class(resource_class, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Metadata.update_resource_class(resource_class, @invalid_attrs)
+
       assert resource_class == Metadata.get_resource_class!(resource_class.id)
     end
 
@@ -141,7 +170,9 @@ defmodule Voile.MetadataTest do
     test "create_resource_template/1 with valid data creates a resource_template" do
       valid_attrs = %{label: "some label"}
 
-      assert {:ok, %ResourceTemplate{} = resource_template} = Metadata.create_resource_template(valid_attrs)
+      assert {:ok, %ResourceTemplate{} = resource_template} =
+               Metadata.create_resource_template(valid_attrs)
+
       assert resource_template.label == "some label"
     end
 
@@ -153,20 +184,28 @@ defmodule Voile.MetadataTest do
       resource_template = resource_template_fixture()
       update_attrs = %{label: "some updated label"}
 
-      assert {:ok, %ResourceTemplate{} = resource_template} = Metadata.update_resource_template(resource_template, update_attrs)
+      assert {:ok, %ResourceTemplate{} = resource_template} =
+               Metadata.update_resource_template(resource_template, update_attrs)
+
       assert resource_template.label == "some updated label"
     end
 
     test "update_resource_template/2 with invalid data returns error changeset" do
       resource_template = resource_template_fixture()
-      assert {:error, %Ecto.Changeset{}} = Metadata.update_resource_template(resource_template, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Metadata.update_resource_template(resource_template, @invalid_attrs)
+
       assert resource_template == Metadata.get_resource_template!(resource_template.id)
     end
 
     test "delete_resource_template/1 deletes the resource_template" do
       resource_template = resource_template_fixture()
       assert {:ok, %ResourceTemplate{}} = Metadata.delete_resource_template(resource_template)
-      assert_raise Ecto.NoResultsError, fn -> Metadata.get_resource_template!(resource_template.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Metadata.get_resource_template!(resource_template.id)
+      end
     end
 
     test "change_resource_template/1 returns a resource_template changeset" do
@@ -180,7 +219,14 @@ defmodule Voile.MetadataTest do
 
     import Voile.MetadataFixtures
 
-    @invalid_attrs %{position: nil, data_type: nil, alternate_label: nil, alternate_information: nil, is_required: nil, permission: nil}
+    @invalid_attrs %{
+      position: nil,
+      data_type: nil,
+      alternate_label: nil,
+      alternate_information: nil,
+      is_required: nil,
+      permission: nil
+    }
 
     test "list_resource_template_property/0 returns all resource_template_property" do
       resource_template_property = resource_template_property_fixture()
@@ -189,13 +235,24 @@ defmodule Voile.MetadataTest do
 
     test "get_resource_template_property!/1 returns the resource_template_property with given id" do
       resource_template_property = resource_template_property_fixture()
-      assert Metadata.get_resource_template_property!(resource_template_property.id) == resource_template_property
+
+      assert Metadata.get_resource_template_property!(resource_template_property.id) ==
+               resource_template_property
     end
 
     test "create_resource_template_property/1 with valid data creates a resource_template_property" do
-      valid_attrs = %{position: 42, data_type: ["option1", "option2"], alternate_label: "some alternate_label", alternate_information: "some alternate_information", is_required: true, permission: "some permission"}
+      valid_attrs = %{
+        position: 42,
+        data_type: ["option1", "option2"],
+        alternate_label: "some alternate_label",
+        alternate_information: "some alternate_information",
+        is_required: true,
+        permission: "some permission"
+      }
 
-      assert {:ok, %ResourceTemplateProperty{} = resource_template_property} = Metadata.create_resource_template_property(valid_attrs)
+      assert {:ok, %ResourceTemplateProperty{} = resource_template_property} =
+               Metadata.create_resource_template_property(valid_attrs)
+
       assert resource_template_property.position == 42
       assert resource_template_property.data_type == ["option1", "option2"]
       assert resource_template_property.alternate_label == "some alternate_label"
@@ -205,37 +262,68 @@ defmodule Voile.MetadataTest do
     end
 
     test "create_resource_template_property/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Metadata.create_resource_template_property(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} =
+               Metadata.create_resource_template_property(@invalid_attrs)
     end
 
     test "update_resource_template_property/2 with valid data updates the resource_template_property" do
       resource_template_property = resource_template_property_fixture()
-      update_attrs = %{position: 43, data_type: ["option1"], alternate_label: "some updated alternate_label", alternate_information: "some updated alternate_information", is_required: false, permission: "some updated permission"}
 
-      assert {:ok, %ResourceTemplateProperty{} = resource_template_property} = Metadata.update_resource_template_property(resource_template_property, update_attrs)
+      update_attrs = %{
+        position: 43,
+        data_type: ["option1"],
+        alternate_label: "some updated alternate_label",
+        alternate_information: "some updated alternate_information",
+        is_required: false,
+        permission: "some updated permission"
+      }
+
+      assert {:ok, %ResourceTemplateProperty{} = resource_template_property} =
+               Metadata.update_resource_template_property(
+                 resource_template_property,
+                 update_attrs
+               )
+
       assert resource_template_property.position == 43
       assert resource_template_property.data_type == ["option1"]
       assert resource_template_property.alternate_label == "some updated alternate_label"
-      assert resource_template_property.alternate_information == "some updated alternate_information"
+
+      assert resource_template_property.alternate_information ==
+               "some updated alternate_information"
+
       assert resource_template_property.is_required == false
       assert resource_template_property.permission == "some updated permission"
     end
 
     test "update_resource_template_property/2 with invalid data returns error changeset" do
       resource_template_property = resource_template_property_fixture()
-      assert {:error, %Ecto.Changeset{}} = Metadata.update_resource_template_property(resource_template_property, @invalid_attrs)
-      assert resource_template_property == Metadata.get_resource_template_property!(resource_template_property.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Metadata.update_resource_template_property(
+                 resource_template_property,
+                 @invalid_attrs
+               )
+
+      assert resource_template_property ==
+               Metadata.get_resource_template_property!(resource_template_property.id)
     end
 
     test "delete_resource_template_property/1 deletes the resource_template_property" do
       resource_template_property = resource_template_property_fixture()
-      assert {:ok, %ResourceTemplateProperty{}} = Metadata.delete_resource_template_property(resource_template_property)
-      assert_raise Ecto.NoResultsError, fn -> Metadata.get_resource_template_property!(resource_template_property.id) end
+
+      assert {:ok, %ResourceTemplateProperty{}} =
+               Metadata.delete_resource_template_property(resource_template_property)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Metadata.get_resource_template_property!(resource_template_property.id)
+      end
     end
 
     test "change_resource_template_property/1 returns a resource_template_property changeset" do
       resource_template_property = resource_template_property_fixture()
-      assert %Ecto.Changeset{} = Metadata.change_resource_template_property(resource_template_property)
+
+      assert %Ecto.Changeset{} =
+               Metadata.change_resource_template_property(resource_template_property)
     end
   end
 end

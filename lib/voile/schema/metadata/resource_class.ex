@@ -9,6 +9,7 @@ defmodule Voile.Schema.Metadata.ResourceClass do
     field :label, :string
     field :local_name, :string
     field :information, :string
+    field :glam_type, :string
     belongs_to :owner, User
     belongs_to :vocabulary, Vocabulary
 
@@ -18,7 +19,8 @@ defmodule Voile.Schema.Metadata.ResourceClass do
   @doc false
   def changeset(resource_class, attrs) do
     resource_class
-    |> cast(attrs, [:label, :local_name, :information])
-    |> validate_required([:label, :local_name, :information])
+    |> cast(attrs, [:label, :local_name, :information, :glam_type])
+    |> validate_required([:label, :local_name, :information, :glam_type])
+    |> validate_inclusion(:glam_type, ["Gallery", "Library", "Archive", "Museum"])
   end
 end

@@ -1,22 +1,23 @@
-<div class="max-w-6xl mx-auto p-6">
-  <!-- Search Header -->
-  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
-    <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Library Catalog</h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">Find books, collections, and resources</p>
-      </div>
-      
-      <div class="flex gap-2">
-        <.link
-          href={~p"/search/advanced"}
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Advanced Search
-        </.link>
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="max-w-6xl mx-auto p-6">
+    <!-- Search Header -->
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Library Catalog</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">Find books, collections, and resources</p>
+        </div>
+        
+        <div class="flex gap-2">
+          <.link
+            href={~p"/search/advanced"}
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Advanced Search
+          </.link>
+        </div>
       </div>
     </div>
-  </div>
 
   <!-- Search Form -->
   <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
@@ -370,3 +371,5 @@
     });
   });
 </script>
+
+</Layouts.app>

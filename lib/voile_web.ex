@@ -110,7 +110,6 @@ defmodule VoileWeb do
       import Phoenix.HTML
       # Core UI components
       import VoileWeb.CoreComponents
-      import VoileWeb.VoileComponents
       import VoileWeb.VoileDashboardComponents
 
       # Shortcut for generating JS commands

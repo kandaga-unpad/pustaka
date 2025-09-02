@@ -47,5 +47,13 @@ defmodule Voile.Schema.Library.CirculationHistory do
     ])
     |> validate_required([:event_type, :event_date, :member_id, :item_id, :processed_by_id])
     |> validate_inclusion(:event_type, @circulation_event_types)
+    |> foreign_key_constraint(:member_id, name: :lib_circulation_history_member_id_fkey)
+    |> foreign_key_constraint(:item_id, name: :lib_circulation_history_item_id_fkey)
+    |> foreign_key_constraint(:transaction_id, name: :lib_circulation_history_transaction_id_fkey)
+    |> foreign_key_constraint(:reservation_id, name: :lib_circulation_history_reservation_id_fkey)
+    |> foreign_key_constraint(:fine_id, name: :lib_circulation_history_fine_id_fkey)
+    |> foreign_key_constraint(:processed_by_id,
+      name: :lib_circulation_history_processed_by_id_fkey
+    )
   end
 end
