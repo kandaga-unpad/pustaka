@@ -32,9 +32,7 @@ defmodule VoileWeb.PageLive.About do
         </p>
         
         <div class="mt-8 space-y-4">
-          <.button phx-click={show_modal("about-modal")} class="bg-blue-600 hover:bg-blue-700">
-            Open Modal
-          </.button>
+          <.button phx-click={show_modal("about-modal")} class="primary-btn">Open Modal</.button>
           <div>
             <.link
               navigate={~p"/"}

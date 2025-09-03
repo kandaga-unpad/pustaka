@@ -20,9 +20,9 @@
     {trim_information(resource_class.information, 30)}
   </:col>
   
-  <:col :let={resource_class} label="Vocabulary">
-    {resource_class.vocabulary.label}
-  </:col>
+  <:col :let={resource_class} label="Vocabulary">{resource_class.vocabulary.label}</:col>
+  
+  <:col :let={resource_class} label="GLAM Type">{resource_class.glam_type}</:col>
   
   <:action :let={resource_class}>
     <div class="sr-only">

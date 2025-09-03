@@ -1,6 +1,21 @@
-<.simple_form :let={f} for={@changeset} action={@action}>
+<.form :let={f} for={@changeset} action={@action}>
   <.input field={f[:label]} type="text" label="Label" />
   <.input field={f[:local_name]} type="text" label="Local name" />
   <.input field={f[:information]} type="text" label="Information" />
-  <:actions><.button>Save Resource class</.button></:actions>
-</.simple_form>
+  <.input
+    field={f[:glam_type]}
+    type="select"
+    label="GLAM Type"
+    options={[
+      {"Library", "Library"},
+      {"Archive", "Archive"},
+      {"Museum", "Museum"},
+      {"Gallery", "Gallery"}
+    ]}
+    prompt="Select GLAM Type"
+  />
+  <footer>
+    <.button>Save Resource class</.button>
+    <.button :if={@return_to} href={@return_to}>Cancel</.button>
+  </footer>
+</.form>

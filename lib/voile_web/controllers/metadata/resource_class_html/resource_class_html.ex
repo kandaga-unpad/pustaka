@@ -8,6 +8,7 @@ defmodule VoileWeb.ResourceClassHTML do
   """
   attr :changeset, Ecto.Changeset, required: true
   attr :action, :string, required: true
+  attr :return_to, :string, default: nil
 
   def resource_class_form(assigns)
 

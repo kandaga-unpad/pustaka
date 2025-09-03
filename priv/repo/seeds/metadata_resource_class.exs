@@ -880,6 +880,7 @@ for resource <- resource_class do
     label: resource[:label],
     local_name: resource[:local_name],
     information: resource[:information],
+    glam_type: resource[:glam_type],
     vocabulary_id:
       case resource[:vocabulary_id] do
         1 -> vocabulary_1.id

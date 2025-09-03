@@ -10,6 +10,7 @@ defmodule VoileWeb.SearchController do
   """
   def index(conn, params) do
     query = Map.get(params, "q", "")
+    search_type = Map.get(params, "type", "universal")
     glam_type = Map.get(params, "glam_type", "quick")
     page = Map.get(params, "page", "1") |> String.to_integer()
 
@@ -19,6 +20,7 @@ defmodule VoileWeb.SearchController do
     if String.trim(query) != "" do
       SearchAnalytics.record_search(query, current_user && current_user.id, %{
         glam_type: glam_type,
+        search_type: search_type,
         source: "web_search"
       })
     end
@@ -27,18 +29,79 @@ defmodule VoileWeb.SearchController do
     search_params = %{
       "q" => query,
       "glam_type" => glam_type,
+      "type" => search_type,
       "page" => Integer.to_string(page),
       "status" => "published"
     }
 
-    results = SearchCollections.search_collections(search_params)
+    # Transform results based on search type to match template expectations
+    results =
+      if String.trim(query) != "" do
+        raw_results = SearchCollections.search_collections(search_params)
+
+        case search_type do
+          "universal" ->
+            # For universal search, provide nested structure expected by template
+            %{
+              total_results: raw_results.total_count,
+              collections: %{
+                results: raw_results.results,
+                total: raw_results.total_count
+              },
+              items: %{
+                results: [],
+                total: 0
+              }
+            }
+
+          "collections" ->
+            # For collection-only search, provide flat structure
+            %{
+              results: raw_results.results,
+              total: raw_results.total_count,
+              page: raw_results.current_page,
+              total_pages: raw_results.total_pages,
+              has_prev: raw_results.current_page > 1,
+              has_next: raw_results.current_page < raw_results.total_pages
+            }
+
+          "items" ->
+            # For item-only search, provide flat structure (currently empty)
+            %{
+              results: [],
+              total: 0,
+              page: page,
+              total_pages: 0,
+              has_prev: false,
+              has_next: false
+            }
+        end
+      else
+        # Empty results for empty query
+        case search_type do
+          "universal" ->
+            %{
+              total_results: 0,
+              collections: %{results: [], total: 0},
+              items: %{results: [], total: 0}
+            }
+
+          _ ->
+            %{
+              results: [],
+              total: 0,
+              page: page,
+              total_pages: 0,
+              has_prev: false,
+              has_next: false
+            }
+        end
+      end
 
     render(conn, :index, %{
-      results: results.results,
-      total_count: results.total_count,
-      total_pages: results.total_pages,
-      current_page: results.current_page,
+      results: results,
       query: query,
+      search_type: search_type,
       glam_type: glam_type
     })
   end
@@ -49,6 +112,7 @@ defmodule VoileWeb.SearchController do
   def advanced(conn, %{"search" => search_params} = params) do
     _user_role = SearchHelper.get_user_role(conn)
     search_type = Map.get(params, "type", "both") |> String.to_atom()
+    glam_type = Map.get(params, "glam_type", "quick")
     page = Map.get(params, "page", "1") |> String.to_integer()
 
     # Clean and sanitize search parameters
@@ -99,11 +163,14 @@ defmodule VoileWeb.SearchController do
       results: results,
       search_params: search_params,
       search_type: Atom.to_string(search_type),
+      glam_type: glam_type,
       page: page
     })
   end
 
   def advanced(conn, _params) do
+    glam_type = Map.get(conn.params, "glam_type", "quick")
+
     render(conn, :advanced, %{
       results: %{
         collections: %{results: [], total: 0},
@@ -112,6 +179,7 @@ defmodule VoileWeb.SearchController do
       },
       search_params: %{},
       search_type: "both",
+      glam_type: glam_type,
       page: 1
     })
   end
@@ -208,7 +276,7 @@ defmodule VoileWeb.SearchController do
           mst_creator:
             collection.mst_creator &&
               %{
-                name: collection.mst_creator.name
+                creator_name: collection.mst_creator.creator_name
               },
           items_count: length(collection.items || [])
         }

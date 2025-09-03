@@ -6,7 +6,9 @@
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Advanced Search</h1>
           
-          <p class="text-gray-600 dark:text-gray-300 mt-1">Search with specific criteria</p>
+          <p class="text-gray-600 dark:text-gray-300 mt-1">
+            Search {String.downcase(search_page_description(@glam_type))} with specific criteria
+          </p>
         </div>
         
         <.link
@@ -401,7 +403,7 @@
                       
                       <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <%= if collection.mst_creator do %>
-                          <span>By: {collection.mst_creator.name}</span>
+                          <span>By: {collection.mst_creator.creator_name}</span>
                         <% end %>
                         
                         <span>
@@ -493,7 +495,7 @@
                         
                         <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <%= if collection.mst_creator do %>
-                            <span>By: {collection.mst_creator.name}</span>
+                            <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
                           
                           <span>

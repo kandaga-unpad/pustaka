@@ -3,6 +3,9 @@
   <:subtitle>Use this form to manage resource_class records in your database.</:subtitle>
 </.header>
 
-<.resource_class_form changeset={@changeset} action={~p"/manage/metaresource/resource_class"} />
-
+<.resource_class_form
+  changeset={@changeset}
+  action={~p"/manage/metaresource/resource_class"}
+  return_to={~p"/manage/metaresource/resource_class"}
+/>
 <.back navigate={~p"/manage/metaresource/resource_class"}>Back to resource_class</.back>

@@ -76,4 +76,30 @@ defmodule VoileWeb.SearchHTML do
   end
 
   def highlight_search_term(text, _search_term), do: text || ""
+
+  @doc """
+  Returns dynamic page title based on GLAM type
+  """
+  def search_page_title(glam_type) do
+    case glam_type do
+      "Library" -> "Search Library Collection"
+      "Gallery" -> "Search Gallery Collection"
+      "Archive" -> "Search Archive Collection"
+      "Museum" -> "Search Museum Collection"
+      _ -> "Search Collections"
+    end
+  end
+
+  @doc """
+  Returns dynamic page description based on GLAM type
+  """
+  def search_page_description(glam_type) do
+    case glam_type do
+      "Library" -> "Find books, journals, articles, and published materials"
+      "Gallery" -> "Discover visual arts, photographs, and artistic collections"
+      "Archive" -> "Explore historical documents, records, and institutional materials"
+      "Museum" -> "Browse artifacts, specimens, and cultural objects"
+      _ -> "Find collections and resources across all categories"
+    end
+  end
 end
