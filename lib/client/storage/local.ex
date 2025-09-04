@@ -16,11 +16,24 @@ defmodule Client.Storage.Local do
         opts
       ) do
     folder = Keyword.get(opts, :folder, "files")
+    unit_id = Keyword.get(opts, :unit_id, nil)
     generate_filename = Keyword.get(opts, :generate_filename, true)
     preserve_extension = Keyword.get(opts, :preserve_extension, true)
 
-    # Create upload directory
-    upload_dir = Path.join([@base_upload_path, folder])
+    # Create upload directory with optional unit_id sharding
+    upload_dir =
+      if unit_id do
+        Path.join([@base_upload_path, folder, to_string(unit_id)])
+      else
+        # For non-unit files, use hash-based sharding to avoid single large directory
+        hash =
+          :crypto.hash(:md5, original_filename <> to_string(System.system_time()))
+          |> Base.encode16()
+          |> String.slice(0, 2)
+
+        Path.join([@base_upload_path, folder, hash])
+      end
+
     File.mkdir_p!(upload_dir)
 
     # Generate filename
@@ -35,7 +48,16 @@ defmodule Client.Storage.Local do
 
     case File.cp(tmp_path, destination_path) do
       :ok ->
-        url = Path.join([@base_url_path, folder, filename])
+        # Build URL path including shard directory
+        url_path_parts =
+          if unit_id do
+            [@base_url_path, folder, to_string(unit_id), filename]
+          else
+            hash = Path.basename(Path.dirname(destination_path))
+            [@base_url_path, folder, hash, filename]
+          end
+
+        url = Path.join(url_path_parts)
         {:ok, url}
 
       {:error, reason} ->

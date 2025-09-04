@@ -377,8 +377,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
             content_type: entry.client_type
           }
 
-          # Upload with thumbnail-specific options
-          Storage.upload(upload, folder: "thumbnails", generate_filename: true)
+          # Upload with thumbnail-specific options including unit_id for organization
+          collection = socket.assigns.collection
+          unit_id = collection.unit_id || socket.assigns.form.params["unit_id"]
+
+          Storage.upload(upload,
+            folder: "thumbnails",
+            generate_filename: true,
+            unit_id: unit_id
+          )
         end)
 
       case result do

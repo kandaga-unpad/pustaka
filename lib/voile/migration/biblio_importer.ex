@@ -11,7 +11,6 @@ defmodule Voile.Migration.BiblioImporter do
   import Voile.Migration.Common
   import Ecto.Query
 
-  alias Ecto.UUID
   alias Voile.Repo
   alias Voile.Schema.Catalog.{Collection, CollectionField}
   alias Voile.Schema.Master.Creator
@@ -176,7 +175,7 @@ defmodule Voile.Migration.BiblioImporter do
     # Cache existing creators for faster lookups
     creators =
       Repo.all(Creator)
-      |> Enum.into(%{}, fn creator -> {creator.name, creator.id} end)
+      |> Enum.into(%{}, fn creator -> {creator.creator_name, creator.id} end)
 
     # Cache existing collections to avoid duplicates
     existing_collections =
@@ -219,11 +218,20 @@ defmodule Voile.Migration.BiblioImporter do
       |> CSVParser.parse_stream()
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_biblio_data(row, unit_id, skip_images, unit_author_mappings,
-          unit_publisher_mappings, unit_author_data, cache), line_num}
+        {prepare_biblio_data(
+           row,
+           unit_id,
+           skip_images,
+           unit_author_mappings,
+           unit_publisher_mappings,
+           unit_author_data,
+           cache
+         ), line_num}
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status == :ok end)
-      |> Stream.map(fn {{:ok, {collection, fields}}, line_num} -> {collection, fields, line_num} end)
+      |> Stream.map(fn {{:ok, {collection, fields}}, line_num} ->
+        {collection, fields, line_num}
+      end)
       |> Stream.chunk_every(batch_size)
       |> Stream.each(fn batch ->
         process_biblio_batch(batch, stats_ref)
@@ -231,7 +239,9 @@ defmodule Voile.Migration.BiblioImporter do
       |> Stream.run()
 
       # Return final stats
-      [{:collections_inserted, collections_inserted}] = :ets.lookup(stats_ref, :collections_inserted)
+      [{:collections_inserted, collections_inserted}] =
+        :ets.lookup(stats_ref, :collections_inserted)
+
       [{:fields_inserted, fields_inserted}] = :ets.lookup(stats_ref, :fields_inserted)
       [{:errors, errors}] = :ets.lookup(stats_ref, :errors)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
@@ -260,8 +270,12 @@ defmodule Voile.Migration.BiblioImporter do
     collections_inserted =
       if length(collections) > 0 do
         try do
-          {count, _} = Repo.insert_all(Collection, Enum.reverse(collections),
-            on_conflict: :nothing, returning: false)
+          {count, _} =
+            Repo.insert_all(Collection, Enum.reverse(collections),
+              on_conflict: :nothing,
+              returning: false
+            )
+
           :ets.update_counter(stats_ref, :collections_inserted, count)
           count
         rescue
@@ -277,8 +291,9 @@ defmodule Voile.Migration.BiblioImporter do
     # Batch insert fields
     if length(all_fields) > 0 and collections_inserted > 0 do
       try do
-        {fields_count, _} = Repo.insert_all(CollectionField, all_fields,
-          on_conflict: :nothing, returning: false)
+        {fields_count, _} =
+          Repo.insert_all(CollectionField, all_fields, on_conflict: :nothing, returning: false)
+
         :ets.update_counter(stats_ref, :fields_inserted, fields_count)
       rescue
         e ->
@@ -296,7 +311,7 @@ defmodule Voile.Migration.BiblioImporter do
   # Prepare bibliography data using cached mappings (optimized version)
   defp prepare_biblio_data(
          row,
-         _unit_id,
+         unit_id,
          skip_images,
          unit_author_mappings,
          unit_publisher_mappings,
@@ -306,6 +321,7 @@ defmodule Voile.Migration.BiblioImporter do
     case row do
       [
         biblio_id,
+        _gmd_id,
         title,
         _sor,
         _edition,
@@ -315,8 +331,9 @@ defmodule Voile.Migration.BiblioImporter do
         _collation,
         _series_title,
         _call_number,
+        _language_id,
         _source,
-        _publish_place,
+        _publish_place_id,
         _classification,
         notes,
         image,
@@ -326,31 +343,33 @@ defmodule Voile.Migration.BiblioImporter do
         _labels,
         _frequency_id,
         _spec_detail_info,
-        _content_type,
-        _gmd_id,
-        _media_type,
-        _carrier_type,
+        _content_type_id,
+        _media_type_id,
+        _carrier_type_id,
         _input_date,
         _last_update,
         _uid | _rest
       ]
-      when length(row) >= 28 ->
-
+      when length(row) >= 29 ->
         biblio_id_int = parse_int(biblio_id)
 
         # Check if already exists using cache
         if MapSet.member?(cache.existing_collections, biblio_id_int) do
           {:skip, "Collection with biblio_id #{biblio_id_int} already exists"}
         else
-          now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
 
           # Generate UUID for collection
-          raw_uuid = UUID.generate()
-          {:ok, id} = UUID.dump(raw_uuid)
+          id = Ecto.UUID.generate()
 
           # Get primary creator using cached data
-          creator_id = get_primary_creator_id_cached(biblio_id_int, unit_author_data,
-            unit_author_mappings, cache.creators)
+          creator_id =
+            get_primary_creator_id_cached(
+              biblio_id_int,
+              unit_author_data,
+              unit_author_mappings,
+              cache.creators
+            )
 
           # Get publisher name using cached mappings
           publisher_name = get_publisher_name_cached(publisher_id, unit_publisher_mappings)
@@ -360,8 +379,13 @@ defmodule Voile.Migration.BiblioImporter do
             if skip_images do
               nil
             else
+              # Debug: Print what we got in the image column
+              if image && String.trim(image) != "" do
+                IO.puts("🖼️ Processing image: '#{image}' for biblio_id: #{biblio_id}")
+              end
+
               # Store image URL for batch processing later, or process immediately for small batches
-              case download_image_optimized(image) do
+              case download_image_optimized(image, unit_id) do
                 {:ok, path} -> path
                 _ -> nil
               end
@@ -398,6 +422,7 @@ defmodule Voile.Migration.BiblioImporter do
   defp build_collection_fields_optimized(collection_id, row, publisher_name, now) do
     [
       _biblio_id,
+      _gmd_id,
       title,
       sor,
       edition,
@@ -408,8 +433,9 @@ defmodule Voile.Migration.BiblioImporter do
       collation,
       series_title,
       call_number,
+      _language_id,
       _source,
-      _publish_place,
+      _publish_place_id,
       classification,
       notes,
       _image | _rest
@@ -434,18 +460,21 @@ defmodule Voile.Migration.BiblioImporter do
       case Map.get(field_values, field_name) do
         value when value != nil and value != "" ->
           trimmed_value = String.trim(value)
+
           if trimmed_value != "" do
             field = %{
               collection_id: collection_id,
-              collection_property_id: property.id,
+              property_id: property.id,
               value: trimmed_value,
               inserted_at: now,
               updated_at: now
             }
+
             [field | acc]
           else
             acc
           end
+
         _ ->
           acc
       end
@@ -453,7 +482,12 @@ defmodule Voile.Migration.BiblioImporter do
   end
 
   # Cached version of creator lookup
-  defp get_primary_creator_id_cached(biblio_id, unit_author_data, unit_author_mappings, creators_cache) do
+  defp get_primary_creator_id_cached(
+         biblio_id,
+         unit_author_data,
+         unit_author_mappings,
+         creators_cache
+       ) do
     case get_primary_creator_name(biblio_id, unit_author_data, unit_author_mappings) do
       nil -> nil
       creator_name -> Map.get(creators_cache, creator_name)
@@ -469,24 +503,29 @@ defmodule Voile.Migration.BiblioImporter do
   end
 
   # Optimized image download with better error handling
-  defp download_image_optimized(image_url) when image_url in [nil, ""], do: {:error, "No image URL"}
+  defp download_image_optimized(image_url, _unit_id) when image_url in [nil, ""],
+    do: {:error, "No image URL"}
 
-  defp download_image_optimized(image_url) do
+  defp download_image_optimized(image_url, unit_id) do
     # For now, defer to original implementation but could be optimized further
     # with connection pooling, parallel downloads, etc.
-    download_image(image_url)
+    download_image(image_url, unit_id)
   end
 
   # Helper function to get primary creator name from cached data
   defp get_primary_creator_name(biblio_id, unit_author_data, unit_author_mappings) do
     case Map.get(unit_author_data, biblio_id) do
-      nil -> nil
+      nil ->
+        nil
+
       authors when is_list(authors) ->
         case List.first(authors) do
           nil -> nil
           author_id -> Map.get(unit_author_mappings, author_id)
         end
-      author_id -> Map.get(unit_author_mappings, author_id)
+
+      author_id ->
+        Map.get(unit_author_mappings, author_id)
     end
   end
 
@@ -563,7 +602,7 @@ defmodule Voile.Migration.BiblioImporter do
 
   defp process_biblio_row(
          row,
-         _unit_id,
+         unit_id,
          skip_images,
          author_mappings,
          publisher_mappings,
@@ -572,6 +611,7 @@ defmodule Voile.Migration.BiblioImporter do
     case row do
       [
         biblio_id,
+        _gmd_id,
         title,
         _sor,
         _edition,
@@ -581,8 +621,9 @@ defmodule Voile.Migration.BiblioImporter do
         _collation,
         _series_title,
         _call_number,
+        _language_id,
         _source,
-        _publish_place,
+        _publish_place_id,
         _classification,
         notes,
         image,
@@ -592,21 +633,19 @@ defmodule Voile.Migration.BiblioImporter do
         _labels,
         _frequency_id,
         _spec_detail_info,
-        _content_type,
-        _gmd_id,
-        _media_type,
-        _carrier_type,
+        _content_type_id,
+        _media_type_id,
+        _carrier_type_id,
         _input_date,
         _last_update,
         _uid | _rest
       ]
-      when length(row) >= 28 ->
-        now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      when length(row) >= 29 ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
         biblio_id_int = parse_int(biblio_id)
 
         # Generate UUID for collection
-        raw_uuid = UUID.generate()
-        {:ok, id} = UUID.dump(raw_uuid)
+        id = Ecto.UUID.generate()
 
         # Get primary creator
         creator_id = get_primary_creator_id(biblio_id_int, unit_author_data, author_mappings)
@@ -619,7 +658,12 @@ defmodule Voile.Migration.BiblioImporter do
           if skip_images do
             nil
           else
-            case download_image(image) do
+            # Debug: Print what we got in the image column
+            if image && String.trim(image) != "" do
+              IO.puts("🖼️ Processing image: '#{image}' for biblio_id: #{biblio_id}")
+            end
+
+            case download_image(image, unit_id) do
               {:ok, path} -> path
             end
           end
@@ -654,6 +698,7 @@ defmodule Voile.Migration.BiblioImporter do
   defp build_collection_fields(collection_id, row, publisher_name, now) do
     [
       _biblio_id,
+      _gmd_id,
       title,
       sor,
       edition,
@@ -664,8 +709,9 @@ defmodule Voile.Migration.BiblioImporter do
       collation,
       series_title,
       call_number,
+      _language_id,
       _source,
-      _publish_place,
+      _publish_place_id,
       classification,
       notes,
       _image | _rest
@@ -691,7 +737,7 @@ defmodule Voile.Migration.BiblioImporter do
       if value && String.trim(value) != "" do
         field = %{
           collection_id: collection_id,
-          collection_property_id: property.id,
+          property_id: property.id,
           value: String.trim(value),
           inserted_at: now,
           updated_at: now
@@ -732,13 +778,21 @@ defmodule Voile.Migration.BiblioImporter do
 
   defp load_unit_author_data(unit_id) do
     # Load biblio-author relations for specific unit
-    biblio_author_file = Path.join("scripts/csv_data/mst", "biblio_author_#{unit_id}.csv")
+    # First try the biblio directory (primary location)
+    biblio_author_file = Path.join("scripts/csv_data/biblio", "biblio_author_#{unit_id}.csv")
 
     if File.exists?(biblio_author_file) do
       load_biblio_author_relations(biblio_author_file)
     else
-      IO.puts("⚠️ No biblio-author file found for unit #{unit_id}")
-      %{}
+      # Fallback to mst directory (legacy location)
+      biblio_author_file_mst = Path.join("scripts/csv_data/mst", "biblio_author_#{unit_id}.csv")
+
+      if File.exists?(biblio_author_file_mst) do
+        load_biblio_author_relations(biblio_author_file_mst)
+      else
+        IO.puts("⚠️ No biblio-author file found for unit #{unit_id}")
+        %{}
+      end
     end
   end
 
@@ -839,11 +893,118 @@ defmodule Voile.Migration.BiblioImporter do
     File.mkdir_p!(upload_dir)
   end
 
-  defp download_image(image_path) when image_path in [nil, "", "\"\""], do: {:ok, nil}
+  defp download_image(image_path, _unit_id) when image_path in [nil, "", "\"\""], do: {:ok, nil}
 
-  defp download_image(_image_path) do
-    # Simplified image download - you may want to implement the full download logic
-    # from the original script if needed
-    {:ok, nil}
+  defp download_image(image_path, unit_id) do
+    # Clean up the image path
+    cleaned_path = String.trim(image_path)
+
+    if cleaned_path == "" do
+      {:ok, nil}
+    else
+      try do
+        # Generate unique filename using biblio_id-based approach for better organization
+        file_extension = Path.extname(cleaned_path) |> String.downcase()
+
+        # Default to .jpg if no extension
+        file_extension = if file_extension == "", do: ".jpg", else: file_extension
+
+        # Extract original filename for better organization (remove directory path)
+        original_filename = Path.basename(cleaned_path, Path.extname(cleaned_path))
+
+        # Create hash-based filename for uniqueness and collision avoidance
+        content_hash =
+          :crypto.hash(:sha256, cleaned_path) |> Base.encode16() |> String.slice(0, 16)
+
+        filename = "#{original_filename}_#{content_hash}#{file_extension}"
+
+        # Create unit-based directory structure instead of hash-based
+        upload_base_dir =
+          Path.join([:code.priv_dir(:voile), "static", "uploads", "old_thumbnail"])
+
+        upload_dir =
+          if unit_id do
+            Path.join(upload_base_dir, to_string(unit_id))
+          else
+            # Fallback to hash-based if no unit_id
+            shard = String.slice(content_hash, 0, 2)
+            Path.join(upload_base_dir, shard)
+          end
+
+        # Ensure the unit directory exists
+        File.mkdir_p!(upload_dir)
+
+        file_path = Path.join(upload_dir, filename)
+
+        # Try to download the image
+        case download_from_url(cleaned_path, file_path) do
+          :ok ->
+            # Return relative path for storage in database (includes unit_id directory)
+            relative_path =
+              if unit_id do
+                Path.join(["uploads", "old_thumbnail", to_string(unit_id), filename])
+              else
+                shard = String.slice(content_hash, 0, 2)
+                Path.join(["uploads", "old_thumbnail", shard, filename])
+              end
+
+            {:ok, relative_path}
+
+          {:error, reason} ->
+            IO.puts("⚠️ Failed to download image from #{cleaned_path}: #{reason}")
+            {:ok, nil}
+        end
+      rescue
+        e ->
+          IO.puts("⚠️ Exception downloading image from #{cleaned_path}: #{Exception.message(e)}")
+          {:ok, nil}
+      end
+    end
+  end
+
+  # Download image from URL or copy from local path
+  defp download_from_url(url_or_path, destination) do
+    cond do
+      # Handle HTTP/HTTPS URLs
+      String.starts_with?(url_or_path, "http://") or String.starts_with?(url_or_path, "https://") ->
+        download_from_http(url_or_path, destination)
+
+      # Handle local file paths (relative to some base directory)
+      File.exists?(url_or_path) ->
+        case File.cp(url_or_path, destination) do
+          :ok -> :ok
+          {:error, reason} -> {:error, "Failed to copy local file: #{reason}"}
+        end
+
+      # Try to resolve relative paths (common in SLiMS) - construct full URL
+      true ->
+        # Construct the full URL for UNPAD library images
+        base_url = "https://lib.unpad.ac.id/images/docs/"
+        full_url = base_url <> url_or_path
+
+        IO.puts("📁 Trying to download from: #{full_url}")
+        download_from_http(full_url, destination)
+    end
+  end
+
+  # Download image from HTTP URL
+  defp download_from_http(url, destination) do
+    # Use Req for HTTP downloads
+    case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 30_000) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        case File.write(destination, body) do
+          :ok -> :ok
+          {:error, reason} -> {:error, "Failed to write file: #{reason}"}
+        end
+
+      {:ok, %Req.Response{status: status_code}} ->
+        {:error, "HTTP #{status_code}"}
+
+      {:error, reason} ->
+        {:error, "HTTP request failed: #{inspect(reason)}"}
+    end
+  rescue
+    e ->
+      {:error, "Exception during HTTP download: #{Exception.message(e)}"}
   end
 end

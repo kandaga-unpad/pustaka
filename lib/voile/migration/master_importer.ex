@@ -76,17 +76,20 @@ defmodule Voile.Migration.MasterImporter do
       stats =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, seen_names: cache.existing_creator_names}, fn {file, index}, acc ->
-          IO.puts("🔄 Processing creator file #{index}/#{length(files)}: #{Path.basename(file)}")
+        |> Enum.reduce(
+          %{inserted: 0, skipped: 0, seen_names: cache.existing_creator_names},
+          fn {file, index}, acc ->
+            IO.puts("🔄 Processing creator file #{index}/#{length(files)}: #{Path.basename(file)}")
 
-          file_stats = process_creator_file_optimized(file, batch_size, acc.seen_names)
+            file_stats = process_creator_file_optimized(file, batch_size, acc.seen_names)
 
-          %{
-            inserted: acc.inserted + file_stats.inserted,
-            skipped: acc.skipped + file_stats.skipped,
-            seen_names: MapSet.union(acc.seen_names, file_stats.seen_names)
-          }
-        end)
+            %{
+              inserted: acc.inserted + file_stats.inserted,
+              skipped: acc.skipped + file_stats.skipped,
+              seen_names: MapSet.union(acc.seen_names, file_stats.seen_names)
+            }
+          end
+        )
 
       IO.puts("✅ Creators import completed:")
       IO.puts("  - Inserted: #{stats.inserted}")
@@ -109,17 +112,22 @@ defmodule Voile.Migration.MasterImporter do
       stats =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, seen_names: cache.existing_publisher_names}, fn {file, index}, acc ->
-          IO.puts("🔄 Processing publisher file #{index}/#{length(files)}: #{Path.basename(file)}")
+        |> Enum.reduce(
+          %{inserted: 0, skipped: 0, seen_names: cache.existing_publisher_names},
+          fn {file, index}, acc ->
+            IO.puts(
+              "🔄 Processing publisher file #{index}/#{length(files)}: #{Path.basename(file)}"
+            )
 
-          file_stats = process_publisher_file_optimized(file, batch_size, acc.seen_names)
+            file_stats = process_publisher_file_optimized(file, batch_size, acc.seen_names)
 
-          %{
-            inserted: acc.inserted + file_stats.inserted,
-            skipped: acc.skipped + file_stats.skipped,
-            seen_names: MapSet.union(acc.seen_names, file_stats.seen_names)
-          }
-        end)
+            %{
+              inserted: acc.inserted + file_stats.inserted,
+              skipped: acc.skipped + file_stats.skipped,
+              seen_names: MapSet.union(acc.seen_names, file_stats.seen_names)
+            }
+          end
+        )
 
       IO.puts("✅ Publishers import completed:")
       IO.puts("  - Inserted: #{stats.inserted}")
@@ -133,7 +141,7 @@ defmodule Voile.Migration.MasterImporter do
   defp process_creator_file_optimized(file_path, batch_size, existing_names) do
     IO.puts("📂 Processing creator file: #{Path.basename(file_path)}")
 
-    now = NaiveDateTime.utc_now()
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     stats_ref = :ets.new(:creator_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
@@ -143,7 +151,8 @@ defmodule Voile.Migration.MasterImporter do
     try do
       File.stream!(file_path)
       |> CSVParser.parse_stream()
-      |> Stream.drop(1) # Skip header
+      # Skip header
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         {prepare_creator_data(row, now, stats_ref), line_num}
@@ -171,7 +180,7 @@ defmodule Voile.Migration.MasterImporter do
   defp process_publisher_file_optimized(file_path, batch_size, existing_names) do
     IO.puts("📂 Processing publisher file: #{Path.basename(file_path)}")
 
-    now = NaiveDateTime.utc_now()
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     stats_ref = :ets.new(:publisher_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
@@ -181,7 +190,8 @@ defmodule Voile.Migration.MasterImporter do
     try do
       File.stream!(file_path)
       |> CSVParser.parse_stream()
-      |> Stream.drop(1) # Skip header
+      # Skip header
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         {prepare_publisher_data(row, now, stats_ref), line_num}
@@ -213,8 +223,8 @@ defmodule Voile.Migration.MasterImporter do
 
     if length(creators_data) > 0 do
       try do
-        {count, _} = Repo.insert_all(Creator, creators_data,
-          on_conflict: :nothing, returning: false)
+        {count, _} =
+          Repo.insert_all(Creator, creators_data, on_conflict: :nothing, returning: false)
 
         :ets.update_counter(stats_ref, :inserted, count)
 
@@ -238,8 +248,8 @@ defmodule Voile.Migration.MasterImporter do
 
     if length(publishers_data) > 0 do
       try do
-        {count, _} = Repo.insert_all(Publishers, publishers_data,
-          on_conflict: :nothing, returning: false)
+        {count, _} =
+          Repo.insert_all(Publishers, publishers_data, on_conflict: :nothing, returning: false)
 
         :ets.update_counter(stats_ref, :inserted, count)
 
@@ -256,7 +266,11 @@ defmodule Voile.Migration.MasterImporter do
   end
 
   # Prepare creator data using cached seen names
-  defp prepare_creator_data([_author_id, author_name, _author_year, authority_type | _rest], now, stats_ref) do
+  defp prepare_creator_data(
+         [_author_id, author_name, _author_year, authority_type | _rest],
+         now,
+         stats_ref
+       ) do
     name = safe_string_trim(author_name)
 
     if name && name != "" do
@@ -332,6 +346,7 @@ defmodule Voile.Migration.MasterImporter do
     :ets.update_counter(stats_ref, :skipped, 1)
     {:skip, "invalid row format"}
   end
+
   defp get_existing_creator_names do
     from(c in Creator, select: c.creator_name)
     |> Repo.all()

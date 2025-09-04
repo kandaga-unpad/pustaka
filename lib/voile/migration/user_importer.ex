@@ -226,7 +226,7 @@ defmodule Voile.Migration.UserImporter do
       # Batch insert valid users - skip changeset creation for performance
       try do
         # Use Repo.insert_all for better performance
-        now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         insert_data =
           valid_users
@@ -313,8 +313,8 @@ defmodule Voile.Migration.UserImporter do
           node_id: cache.node && cache.node.id,
           # Auto-confirm imported users
           confirmed_at: DateTime.utc_now(),
-          inserted_at: parse_datetime(input_date) || NaiveDateTime.utc_now(),
-          updated_at: parse_datetime(last_update) || NaiveDateTime.utc_now()
+          inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
+          updated_at: parse_datetime(last_update) || DateTime.utc_now()
         }
 
         {:ok, attrs}
@@ -377,8 +377,8 @@ defmodule Voile.Migration.UserImporter do
           node_id: node && node.id,
           # Auto-confirm imported users
           confirmed_at: DateTime.utc_now(),
-          inserted_at: parse_datetime(input_date) || NaiveDateTime.utc_now(),
-          updated_at: parse_datetime(last_update) || NaiveDateTime.utc_now()
+          inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
+          updated_at: parse_datetime(last_update) || DateTime.utc_now()
         }
 
         changeset =

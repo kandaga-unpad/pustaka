@@ -123,13 +123,16 @@ defmodule Voile.Migration.MemberImporter do
     try do
       File.stream!(file_path)
       |> CSVParser.parse_stream()
-      |> Stream.drop(1) # Skip header
+      # Skip header
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         {prepare_member_data(row, node_id, cache), line_num}
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status == :ok end)
-      |> Stream.map(fn {{:ok, {user_data, profile_data}}, line_num} -> {user_data, profile_data, line_num} end)
+      |> Stream.map(fn {{:ok, {user_data, profile_data}}, line_num} ->
+        {user_data, profile_data, line_num}
+      end)
       |> Stream.chunk_every(batch_size)
       |> Stream.each(fn batch ->
         process_member_batch(batch, stats_ref)
@@ -151,7 +154,8 @@ defmodule Voile.Migration.MemberImporter do
   defp process_member_batch(batch, stats_ref) do
     {users_data, profiles_data, _line_nums} =
       batch
-      |> Enum.reduce({[], [], []}, fn {user_data, profile_data, line_num}, {users, profiles, lines} ->
+      |> Enum.reduce({[], [], []}, fn {user_data, profile_data, line_num},
+                                      {users, profiles, lines} ->
         {[user_data | users], [profile_data | profiles], [line_num | lines]}
       end)
 
@@ -164,8 +168,11 @@ defmodule Voile.Migration.MemberImporter do
             users_data
             |> Enum.map(&hash_password_for_insert/1)
 
-          {count, inserted_users} = Repo.insert_all(User, Enum.reverse(users_with_hashed_passwords),
-            on_conflict: :nothing, returning: [:id])
+          {count, inserted_users} =
+            Repo.insert_all(User, Enum.reverse(users_with_hashed_passwords),
+              on_conflict: :nothing,
+              returning: [:id]
+            )
 
           # Update user profiles with correct user_ids
           if count > 0 and length(profiles_data) > 0 do
@@ -177,8 +184,11 @@ defmodule Voile.Migration.MemberImporter do
               end)
 
             # Batch insert profiles
-            {_profile_count, _} = Repo.insert_all(UserProfile, profiles_with_user_ids,
-              on_conflict: :nothing, returning: false)
+            {_profile_count, _} =
+              Repo.insert_all(UserProfile, profiles_with_user_ids,
+                on_conflict: :nothing,
+                returning: false
+              )
           end
 
           :ets.update_counter(stats_ref, :inserted, count)
@@ -251,7 +261,7 @@ defmodule Voile.Migration.MemberImporter do
         member_type = get_member_type_cached(member_type_id, cache.member_types)
         node = get_node_cached(node_id, cache.nodes)
 
-        now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         # Create user record data
         user_attrs = %{
@@ -271,7 +281,8 @@ defmodule Voile.Migration.MemberImporter do
 
         # Create user profile record data (user_id will be set later)
         profile_attrs = %{
-          user_id: nil, # Will be set after user insert
+          # Will be set after user insert
+          user_id: nil,
           gender: map_gender(gender),
           birth_date: parse_date(birth_date),
           phone_number: safe_string_trim(member_phone),
@@ -330,7 +341,9 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   defp ensure_unique_email_cached(email, member_id, existing_emails) do
-    base_email = if email in [nil, ""], do: "member_#{member_id}@library.local", else: String.trim(email)
+    base_email =
+      if email in [nil, ""], do: "member_#{member_id}@library.local", else: String.trim(email)
+
     ensure_unique_email_in_cache(base_email, existing_emails)
   end
 

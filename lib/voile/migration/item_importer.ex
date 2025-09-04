@@ -9,7 +9,6 @@ defmodule Voile.Migration.ItemImporter do
   import Ecto.Query
   import Voile.Migration.Common
 
-  alias Ecto.UUID
   alias Voile.Repo
   alias Voile.Schema.Catalog.{Collection, Item}
 
@@ -35,7 +34,8 @@ defmodule Voile.Migration.ItemImporter do
       stats =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, skipped_biblio_ids: []}, fn {file, index}, acc ->
+        |> Enum.reduce(%{inserted: 0, skipped: 0, skipped_biblio_ids: []}, fn {file, index},
+                                                                              acc ->
           IO.puts("\n🔄 Processing item file #{index}/#{length(files)}: #{Path.basename(file)}")
 
           file_stats = process_item_file_optimized(file, batch_size, cache)
@@ -146,8 +146,7 @@ defmodule Voile.Migration.ItemImporter do
         |> Enum.map(fn {{:ok, item_data}, _line_num} -> item_data end)
 
       try do
-        {count, _} = Repo.insert_all(Item, items_data,
-          on_conflict: :nothing, returning: false)
+        {count, _} = Repo.insert_all(Item, items_data, on_conflict: :nothing, returning: false)
 
         :ets.update_counter(stats_ref, :inserted, count)
 
@@ -205,12 +204,12 @@ defmodule Voile.Migration.ItemImporter do
          biblio_map,
          state_ref
        ) do
-    raw_uuid = UUID.generate()
-    {:ok, id} = UUID.dump(raw_uuid)
+    id = Ecto.UUID.generate()
 
     case Map.fetch(biblio_map, parse_int(biblio_id)) do
       {:ok, coll_id} ->
-        {:ok, collection_id} = UUID.dump(coll_id)
+        # coll_id should already be binary
+        collection_id = coll_id
         biblio_id_int = parse_int(biblio_id)
 
         # Get and increment index for this biblio_id using ETS
@@ -220,6 +219,7 @@ defmodule Voile.Migration.ItemImporter do
               new_index = current_index + 1
               :ets.insert(state_ref, {{:biblio_index, biblio_id_int}, new_index})
               new_index
+
             [] ->
               :ets.insert(state_ref, {{:biblio_index, biblio_id_int}, 1})
               1
@@ -230,6 +230,7 @@ defmodule Voile.Migration.ItemImporter do
           case :ets.lookup(state_ref, {:biblio_time, biblio_id_int}) do
             [{_key, existing_time}] ->
               existing_time
+
             [] ->
               new_time = System.system_time(:second)
               :ets.insert(state_ref, {{:biblio_time, biblio_id_int}, new_time})
@@ -247,8 +248,8 @@ defmodule Voile.Migration.ItemImporter do
            site: safe_string_trim(site),
            status: "available",
            condition: "good",
-           inserted_at: parse_datetime(input_date) || NaiveDateTime.utc_now(),
-           updated_at: parse_datetime(last_update) || NaiveDateTime.utc_now()
+           inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
+           updated_at: parse_datetime(last_update) || DateTime.utc_now()
          }}
 
       :error ->

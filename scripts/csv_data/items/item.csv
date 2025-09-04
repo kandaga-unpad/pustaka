@@ -1,6 +1,1 @@
 item_id,biblio_id,call_number,coll_type_id,item_code,inventory_code,received_date,supplier_id,order_no,location_id,order_date,item_status_id,site,source,invoice,price,price_currency,invoice_date,input_date,last_update,uid
-1,1,,1,01300298,,2017-03-09,0,"",SL,2017-03-09,0,"",1,"",0,,2017-03-09,0000-00-00 00:00:00,2017-03-09 04:56:59,
-2,2,,1,0130216,,2017-03-09,0,"",SL,2017-03-09,0,"",1,"",0,,2017-03-09,0000-00-00 00:00:00,2017-03-09 04:58:11,
-99,37,,,0115132,,,,,SL,,0,,0,,,,,0000-00-00 00:00:00,,
-100,37,,,0115133,,,,,SL,,0,,0,,,,,0000-00-00 00:00:00,,
-101,37,,,0115134,,,,,SL,,0,,0,,,,,0000-00-00 00:00:00,,
