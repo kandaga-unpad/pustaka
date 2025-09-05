@@ -16,7 +16,7 @@ defmodule VoileWeb.UserSettingsLive do
       
       <div class="w-full space-y-12 divide-y">
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
-          <.simple_form
+          <.form
             for={@email_form}
             id="email_form"
             phx-submit="update_email"
@@ -31,13 +31,12 @@ defmodule VoileWeb.UserSettingsLive do
               label="Current password"
               value={@email_form_current_password}
               required
-            />
-            <:actions><.button phx-disable-with="Changing...">Change Email</.button></:actions>
-          </.simple_form>
+            /> <.button phx-disable-with="Changing...">Change Email</.button>
+          </.form>
         </div>
         
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
-          <.simple_form
+          <.form
             for={@password_form}
             id="password_form"
             action={~p"/users/log_in?_action=password_updated"}
@@ -66,9 +65,8 @@ defmodule VoileWeb.UserSettingsLive do
               id="current_password_for_password"
               value={@current_password}
               required
-            />
-            <:actions><.button phx-disable-with="Changing...">Change Password</.button></:actions>
-          </.simple_form>
+            /> <.button phx-disable-with="Changing...">Change Password</.button>
+          </.form>
         </div>
       </div>
     </div>

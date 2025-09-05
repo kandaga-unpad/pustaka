@@ -1,5 +1,5 @@
-<.simple_form :let={f} for={@changeset} action={@action}>
+<.form :let={f} for={@changeset} action={@action}>
   <.input field={f[:label]} type="text" label="Label" />
   <.input field={f[:description]} type="textarea" label="Description" />
-  <:actions><.button>Save Resource template</.button></:actions>
-</.simple_form>
+  <.button>Save Resource template</.button>
+</.form>

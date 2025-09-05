@@ -12,7 +12,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
         <:subtitle>Configure role permissions for different resources.</:subtitle>
       </.header>
       
-      <.simple_form
+      <.form
         for={@form}
         id="user_role-form"
         phx-target={@myself}
@@ -101,9 +101,8 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
             </div>
           <% end %>
         </div>
-        
-        <:actions><.button phx-disable-with="Saving...">Save Role</.button></:actions>
-      </.simple_form>
+         <.button phx-disable-with="Saving...">Save Role</.button>
+      </.form>
     </div>
     """
   end

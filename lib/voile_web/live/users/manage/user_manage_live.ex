@@ -25,9 +25,9 @@ defmodule VoileWeb.Users.ManageLive do
         
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
-            <.simple_form for={%{}} as={:search} phx-change="search" class="flex gap-4">
+            <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
               <.input name="query" placeholder="Search users..." value="" />
-            </.simple_form>
+            </.form>
           </div>
           
           <.table

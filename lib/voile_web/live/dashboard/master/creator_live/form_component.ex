@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
       
-      <.simple_form
+      <.form
         for={@form}
         id="item-form"
         phx-target={@myself}
@@ -24,10 +24,8 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
         <.input field={@form[:creator_contact]} type="text" label="Contact" />
         <.input field={@form[:type]} type="text" label="Type" />
         <.input field={@form[:affiliation]} type="text" label="Affiliation" />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Item</.button>
-        </:actions>
-      </.simple_form>
+        <.button phx-disable-with="Saving...">Save Item</.button>
+      </.form>
     </div>
     """
   end

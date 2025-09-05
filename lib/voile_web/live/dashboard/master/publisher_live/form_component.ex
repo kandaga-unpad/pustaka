@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
         <:subtitle>Use this form to manage publishers records in your database.</:subtitle>
       </.header>
       
-      <.simple_form
+      <.form
         for={@form}
         id="publishers-form"
         phx-target={@myself}
@@ -23,8 +23,8 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
         <.input field={@form[:address]} type="textarea" label="Address" />
         <.input field={@form[:city]} type="text" label="City" />
         <.input field={@form[:contact]} type="text" label="Contact" />
-        <:actions><.button phx-disable-with="Saving...">Save Publisher</.button></:actions>
-      </.simple_form>
+        <.button phx-disable-with="Saving...">Save Publisher</.button>
+      </.form>
     </div>
     """
   end

@@ -219,7 +219,7 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Reservation</h3>
     
-    <.simple_form for={%{}} id="reservation-form" phx-submit="create_reservation">
+    <.form for={%{}} id="reservation-form" phx-submit="create_reservation">
       <.input
         name="member_id"
         label="Member ID"
@@ -231,8 +231,7 @@
         label="Item Code"
         placeholder="Enter item code to reserve"
         required
-      />
-      <:actions><.button type="submit" class="w-full">Create Reservation</.button></:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full">Create Reservation</.button>
+    </.form>
   </div>
 </.modal>

@@ -200,7 +200,7 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Checkout</h3>
     
-    <.simple_form for={%{}} id="checkout-form" phx-submit="checkout">
+    <.form for={%{}} id="checkout-form" phx-submit="checkout">
       <.input
         name="member_id"
         label="Member ID"
@@ -212,8 +212,7 @@
         label="Item Code"
         placeholder="Enter item code or scan barcode"
         required
-      />
-      <:actions><.button type="submit" class="w-full">Check Out Item</.button></:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full">Check Out Item</.button>
+    </.form>
   </div>
 </.modal>

@@ -9,7 +9,7 @@ defmodule VoileWeb.UserResetPasswordLive do
       <div class="mx-auto max-w-sm">
         <.header>Reset Password</.header>
         
-        <.simple_form
+        <.form
           for={@form}
           id="reset_password_form"
           phx-submit="reset_password"
@@ -21,11 +21,8 @@ defmodule VoileWeb.UserResetPasswordLive do
             type="password"
             label="Confirm new password"
             required
-          />
-          <:actions>
-            <.button phx-disable-with="Resetting..." class="w-full">Reset Password</.button>
-          </:actions>
-        </.simple_form>
+          /> <.button phx-disable-with="Resetting..." class="w-full">Reset Password</.button>
+        </.form>
         
         <p class="text-center text-sm mt-4">
           <.link href={~p"/register"}>Register</.link>

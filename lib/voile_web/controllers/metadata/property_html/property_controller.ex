@@ -62,6 +62,8 @@ defmodule VoileWeb.PropertyController do
     vocabulary_list = Metadata.list_metadata_vocabularies()
     changeset = Metadata.change_property(property)
 
+    dbg(changeset)
+
     conn
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:property, property)

@@ -128,7 +128,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <% end %>
       </div>
       
-      <.simple_form
+      <.form
         for={@form}
         id="collection-form-1"
         phx-target={@myself}
@@ -680,36 +680,34 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </div>
         <% end %>
         
-        <:actions>
-          <div class="mt-12 w-full flex justify-between items-center gap-5">
-            <%= if @step > 1 do %>
-              <.button
-                type="button"
-                phx-click="prev_step"
-                phx-target={@myself}
-                class="primary-btn w-full"
-              >
-                &leftarrow; Back
-              </.button>
-            <% end %>
-            
-            <%= if @step == 3 do %>
-              <.button type="submit" phx-disable-with="Saving..." class="success-btn w-full">
-                Save
-              </.button>
-            <% else %>
-              <.button
-                type="button"
-                phx-click="next_step"
-                phx-target={@myself}
-                class="primary-btn w-full"
-              >
-                Next &rightarrow;
-              </.button>
-            <% end %>
-          </div>
-        </:actions>
-      </.simple_form>
+        <div class="mt-12 w-full flex justify-between items-center gap-5">
+          <%= if @step > 1 do %>
+            <.button
+              type="button"
+              phx-click="prev_step"
+              phx-target={@myself}
+              class="primary-btn w-full"
+            >
+              &leftarrow; Back
+            </.button>
+          <% end %>
+          
+          <%= if @step == 3 do %>
+            <.button type="submit" phx-disable-with="Saving..." class="success-btn w-full">
+              Save
+            </.button>
+          <% else %>
+            <.button
+              type="button"
+              phx-click="next_step"
+              phx-target={@myself}
+              class="primary-btn w-full"
+            >
+              Next &rightarrow;
+            </.button>
+          <% end %>
+        </div>
+      </.form>
     </div>
     """
   end

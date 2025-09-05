@@ -12,7 +12,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         <:subtitle>Use this form to manage user records in your database.</:subtitle>
       </.header>
       
-      <.simple_form
+      <.form
         for={@form}
         id="user-form"
         phx-target={@myself}
@@ -87,9 +87,8 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             placeholder="group1, group2, group3"
           />
         </div>
-        
-        <:actions><.button phx-disable-with="Saving...">Save User</.button></:actions>
-      </.simple_form>
+         <.button phx-disable-with="Saving...">Save User</.button>
+      </.form>
     </div>
     """
   end

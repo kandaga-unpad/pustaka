@@ -272,7 +272,7 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Requisition</h3>
     
-    <.simple_form for={%{}} id="requisition-form" phx-submit="create_requisition">
+    <.form for={%{}} id="requisition-form" phx-submit="create_requisition">
       <.input
         name="request_type"
         type="select"
@@ -343,8 +343,7 @@
         label="Justification"
         placeholder="Explain why this request is needed"
         rows="3"
-      />
-      <:actions><.button type="submit" class="w-full">Create Requisition</.button></:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full">Create Requisition</.button>
+    </.form>
   </div>
 </.modal>

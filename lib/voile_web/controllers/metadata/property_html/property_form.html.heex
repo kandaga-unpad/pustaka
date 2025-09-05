@@ -1,4 +1,4 @@
-<.simple_form :let={f} for={@changeset} action={@action}>
+<.form :let={f} for={@changeset} action={@action}>
   <.input field={f[:owner_id]} type="hidden" value={@current_user.id} />
   <.input field={f[:label]} type="text" label="Label" />
   <.input field={f[:local_name]} type="text" label="Local name" />
@@ -30,5 +30,5 @@
       Enum.map(List.wrap(@vocabulary_list), fn vocabulary -> {vocabulary.label, vocabulary.id} end)
     }
   />
-  <:actions><.button>Save Property</.button></:actions>
-</.simple_form>
+  <footer><.button>Save Property</.button></footer>
+</.form>

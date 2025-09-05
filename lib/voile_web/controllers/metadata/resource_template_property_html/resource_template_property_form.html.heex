@@ -1,5 +1,5 @@
-<.simple_form :let={f} for={@changeset} action={@action}>
+<.form :let={f} for={@changeset} action={@action}>
   <.input field={f[:override_label]} type="text" label="Override label" />
   <.input field={f[:position]} type="number" label="Position" />
-  <:actions><.button>Save Resource template property</.button></:actions>
-</.simple_form>
+  <.button>Save Resource template property</.button>
+</.form>

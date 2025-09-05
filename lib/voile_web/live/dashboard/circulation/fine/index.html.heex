@@ -240,7 +240,7 @@
       </div>
     </div>
     
-    <.simple_form for={%{}} id="payment-form" phx-submit="process_payment" phx-value-id={@fine.id}>
+    <.form for={%{}} id="payment-form" phx-submit="process_payment" phx-value-id={@fine.id}>
       <.input
         name="amount"
         type="number"
@@ -262,9 +262,8 @@
           {"Online Payment", "online"}
         ]}
         required
-      />
-      <:actions><.button type="submit" class="w-full">Process Payment</.button></:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full">Process Payment</.button>
+    </.form>
   </div>
 </.modal>
 <!-- Waive Modal -->
@@ -298,7 +297,7 @@
       </div>
     </div>
     
-    <.simple_form for={%{}} id="waive-form" phx-submit="waive_fine" phx-value-id={@fine.id}>
+    <.form for={%{}} id="waive-form" phx-submit="waive_fine" phx-value-id={@fine.id}>
       <.input
         name="reason"
         type="textarea"
@@ -306,11 +305,8 @@
         placeholder="Explain why this fine is being waived..."
         rows="3"
         required
-      />
-      <:actions>
-        <.button type="submit" class="w-full bg-blue-600 hover:bg-blue-700">Waive Fine</.button>
-      </:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full bg-blue-600 hover:bg-blue-700">Waive Fine</.button>
+    </.form>
   </div>
 </.modal>
 <!-- New Fine Modal -->
@@ -323,7 +319,7 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Fine</h3>
     
-    <.simple_form for={%{}} id="fine-form" phx-submit="create_fine">
+    <.form for={%{}} id="fine-form" phx-submit="create_fine">
       <.input
         name="member_id"
         label="Member ID"
@@ -361,8 +357,7 @@
         label="Description"
         placeholder="Describe the reason for the fine"
         rows="3"
-      />
-      <:actions><.button type="submit" class="w-full">Create Fine</.button></:actions>
-    </.simple_form>
+      /> <.button type="submit" class="w-full">Create Fine</.button>
+    </.form>
   </div>
 </.modal>

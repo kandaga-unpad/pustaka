@@ -11,8 +11,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-
-      <.simple_form
+      
+      <.form
         for={@form}
         id="item-form"
         phx-target={@myself}
@@ -35,11 +35,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             {"Maintenance", "maintenance"}
           ]}
           label="Availability"
-        />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Item</.button>
-        </:actions>
-      </.simple_form>
+        /> <.button phx-disable-with="Saving...">Save Item</.button>
+      </.form>
     </div>
     """
   end

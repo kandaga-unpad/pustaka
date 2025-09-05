@@ -1,7 +1,7 @@
-<.simple_form :let={f} for={@changeset} action={@action}>
+<.form :let={f} for={@changeset} action={@action}>
   <.input field={f[:label]} type="text" label="Label" />
   <.input field={f[:prefix]} type="text" label="Prefix" />
   <.input field={f[:namespace_url]} type="text" label="Namespace url" />
   <.input field={f[:information]} type="text" label="Information" />
-  <:actions><.button>Save Vocabulary</.button></:actions>
-</.simple_form>
+  <.button>Save Vocabulary</.button>
+</.form>
