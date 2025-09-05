@@ -14,8 +14,9 @@ defmodule Voile.Migration.FineImporter do
 
   alias Voile.Repo
   alias Voile.Schema.Library.{Fine, Transaction}
-  alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.Catalog.{Item, Collection}
   alias Voile.Schema.Accounts.User
+  alias Voile.Schema.Master.Creator
 
   def import_all(batch_size \\ 500) do
     IO.puts("💰 Starting fines data import...")
@@ -58,24 +59,16 @@ defmodule Voile.Migration.FineImporter do
   defp process_fines_file(file_path, batch_size, node_id) do
     stats = %{inserted: 0, skipped: 0, errors: 0}
 
-    # Get default system user for processed_by (created during user import)
-    system_user = get_or_create_system_user()
-
-    # Track seen member_ids to prevent duplicates within the same file
-    seen_member_ids = MapSet.new()
-
     case File.stream!(file_path, [:trim_bom]) do
       stream ->
-        {final_stats, _} =
+        final_stats =
           stream
           |> CSVParser.parse_stream(skip_headers: false)
-          # Skip header row
           |> Stream.drop(1)
-          # Start from line 2 (after header)
-          |> Stream.with_index(2)
+          |> Stream.with_index(1)
           |> Stream.chunk_every(batch_size)
-          |> Enum.reduce({stats, seen_member_ids}, fn chunk, {acc_stats, acc_seen} ->
-            process_fines_batch(chunk, system_user.id, node_id, acc_stats, acc_seen)
+          |> Enum.reduce(stats, fn chunk, acc_stats ->
+            process_fines_batch(chunk, node_id, acc_stats)
           end)
 
         final_stats
@@ -86,35 +79,26 @@ defmodule Voile.Migration.FineImporter do
       %{inserted: 0, skipped: 0, errors: 1}
   end
 
-  defp process_fines_batch(chunk, processed_by_id, node_id, stats, seen_member_ids) do
-    # First, filter and parse rows, checking for duplicate member_ids
-    {fines_attrs, updated_seen, duplicate_count} =
+  defp process_fines_batch(chunk, node_id, stats) do
+    # Parse rows and collect valid fine attributes
+    fines_attrs =
       chunk
-      |> Enum.reduce({[], seen_member_ids, 0}, fn {row, line_num},
-                                                  {acc_attrs, acc_seen, dup_count} ->
-        case parse_fine_row(row, line_num, processed_by_id, node_id) do
+      |> Enum.reduce([], fn {row, line_num}, acc_attrs ->
+        case parse_fine_row(row, line_num, node_id) do
           {:ok, attrs} ->
-            member_id = attrs.member_id
-
-            if MapSet.member?(acc_seen, member_id) do
-              IO.puts("⚠️ Skipping duplicate member_id #{member_id} at line #{line_num}")
-              {acc_attrs, acc_seen, dup_count + 1}
-            else
-              {[attrs | acc_attrs], MapSet.put(acc_seen, member_id), dup_count}
-            end
+            [attrs | acc_attrs]
 
           {:error, _msg} ->
-            {acc_attrs, acc_seen, dup_count}
+            acc_attrs
         end
       end)
 
-    # Count total errors including duplicates and parse errors
-    error_count = length(chunk) - length(fines_attrs) - duplicate_count
+    # Count parsing errors
+    error_count = length(chunk) - length(fines_attrs)
 
     case fines_attrs do
       [] ->
-        {%{stats | errors: stats.errors + error_count, skipped: stats.skipped + duplicate_count},
-         updated_seen}
+        %{stats | errors: stats.errors + error_count}
 
       valid_fines ->
         try do
@@ -127,24 +111,24 @@ defmodule Voile.Migration.FineImporter do
 
           skipped_count = length(valid_fines) - inserted_count
 
-          {%{
-             inserted: stats.inserted + inserted_count,
-             skipped: stats.skipped + skipped_count + duplicate_count,
-             errors: stats.errors + error_count
-           }, updated_seen}
+          %{
+            inserted: stats.inserted + inserted_count,
+            skipped: stats.skipped + skipped_count,
+            errors: stats.errors + error_count
+          }
         rescue
           e ->
             IO.puts("❌ Error inserting fines batch: #{inspect(e)}")
 
-            {%{
-               stats
-               | errors: stats.errors + length(valid_fines) + error_count + duplicate_count
-             }, updated_seen}
+            %{
+              stats
+              | errors: stats.errors + length(valid_fines) + error_count
+            }
         end
     end
   end
 
-  defp parse_fine_row(row, line_num, processed_by_id, node_id) do
+  defp parse_fine_row(row, line_num, node_id) do
     try do
       [fines_id, fines_date, member_id, debet, credit, description] = row
 
@@ -152,11 +136,11 @@ defmodule Voile.Migration.FineImporter do
       if member_id in ["", nil] or fines_date in ["", nil] do
         {:error, "Missing essential data at line #{line_num}"}
       else
-        # Find member by ID
+        # Find member by ID - skip record if member not found
         member = find_member_by_id(member_id)
 
         if is_nil(member) do
-          {:error, "Member not found for ID: #{member_id} at line #{line_num}"}
+          {:error, "Member with ID #{member_id} not found at line #{line_num}"}
         else
           # Parse amounts
           debet_amount = parse_amount(debet)
@@ -169,8 +153,9 @@ defmodule Voile.Migration.FineImporter do
           if Decimal.compare(net_amount, 0) != :gt do
             {:error, "Invalid or zero fine amount at line #{line_num}"}
           else
-            # Extract item code from description if available
-            item = extract_and_find_item_from_description(description)
+            # Extract item code from description if available - use fallback if not found
+            item =
+              extract_and_find_item_from_description(description) || get_or_create_default_item()
 
             # Try to find related transaction
             transaction = find_related_transaction(member.id, item && item.id, fines_date)
@@ -197,7 +182,8 @@ defmodule Voile.Migration.FineImporter do
               member_id: member.id,
               item_id: item && item.id,
               transaction_id: transaction && transaction.id,
-              processed_by_id: processed_by_id,
+              # Using the same member as processed_by for historical data
+              processed_by_id: member.id,
               waived_by_id: nil,
               inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
               updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -213,7 +199,8 @@ defmodule Voile.Migration.FineImporter do
     end
   end
 
-  defp parse_amount(amount_str) when amount_str in ["", nil], do: Decimal.new("0")
+  defp parse_amount(nil), do: Decimal.new("0")
+  defp parse_amount(""), do: Decimal.new("0")
 
   defp parse_amount(amount_str) do
     case Decimal.parse(amount_str) do
@@ -250,7 +237,8 @@ defmodule Voile.Migration.FineImporter do
   defp determine_payment_method("partial_paid"), do: "cash"
   defp determine_payment_method(_), do: nil
 
-  defp extract_and_find_item_from_description(description) when description in ["", nil], do: nil
+  defp extract_and_find_item_from_description(nil), do: nil
+  defp extract_and_find_item_from_description(""), do: nil
 
   defp extract_and_find_item_from_description(description) do
     # Try to extract item code from description like "Overdue fines for item 01001970500082"
@@ -264,29 +252,19 @@ defmodule Voile.Migration.FineImporter do
   end
 
   defp find_item_by_code(item_code) do
-    from(i in Item, where: i.barcode == ^item_code)
+    from(i in Item, where: i.item_code == ^item_code)
     |> Repo.one()
   end
 
   defp find_member_by_id(member_id) do
-    # Try to find by legacy member ID first, then by actual ID
-    user =
-      from(u in User,
-        join: up in assoc(u, :user_profile),
-        where: up.legacy_member_id == ^member_id
-      )
-      |> Repo.one()
+    # Find user by identifier field which matches member_id from CSV
+    # Convert string member_id to Decimal to match the schema type
+    case Decimal.cast(member_id) do
+      {:ok, decimal_id} ->
+        Repo.get_by(User, identifier: decimal_id)
 
-    case user do
-      nil ->
-        # Try to find by actual user ID if it's a valid UUID
-        case Ecto.UUID.cast(member_id) do
-          {:ok, uuid} -> Repo.get(User, uuid)
-          :error -> nil
-        end
-
-      user ->
-        user
+      :error ->
+        nil
     end
   end
 
@@ -361,8 +339,9 @@ defmodule Voile.Migration.FineImporter do
     "LEGACY-#{fines_id}-N#{node_id || 0}"
   end
 
-  defp parse_datetime_with_default(date_str) when date_str in ["", nil, "0000-00-00 00:00:00"],
-    do: nil
+  defp parse_datetime_with_default(nil), do: nil
+  defp parse_datetime_with_default(""), do: nil
+  defp parse_datetime_with_default("0000-00-00 00:00:00"), do: nil
 
   defp parse_datetime_with_default(date_str) do
     case parse_datetime(date_str) do
@@ -371,22 +350,80 @@ defmodule Voile.Migration.FineImporter do
     end
   end
 
-  defp get_or_create_system_user do
-    case Repo.get_by(User, email: "system@library.local") do
+  defp get_or_create_default_item do
+    # Try to find existing default item first
+    case Repo.get_by(Item, item_code: "MISSING_ITEM_DEFAULT") do
       nil ->
-        # Create system user if it doesn't exist
-        {:ok, system_user} =
-          %User{}
-          |> User.registration_changeset(%{
-            email: "system@library.local",
-            password: "system-generated-#{:rand.uniform(999_999)}"
+        # Create default collection first if it doesn't exist
+        collection = get_or_create_default_collection()
+
+        # Create default item
+        {:ok, item} =
+          %Item{}
+          |> Item.changeset(%{
+            item_code: "MISSING_ITEM_DEFAULT",
+            inventory_code: "MISSING_ITEM_DEFAULT",
+            location: "Unknown Location",
+            status: "active",
+            condition: "fair",
+            availability: "available",
+            collection_id: collection.id
           })
           |> Repo.insert()
 
-        system_user
+        item
 
-      user ->
-        user
+      item ->
+        item
+    end
+  end
+
+  defp get_or_create_default_collection do
+    # Try to find existing default collection first
+    case Repo.get_by(Collection, title: "Missing Items Collection") do
+      nil ->
+        # Get or create the default creator first
+        creator = get_or_create_default_creator()
+
+        # Create default collection
+        {:ok, collection} =
+          %Collection{}
+          |> Collection.changeset(%{
+            title: "Missing Items Collection",
+            description: "Default collection for items that could not be found during import",
+            status: "published",
+            access_level: "public",
+            thumbnail: "heroicons:solid:folder",
+            creator_id: creator.id
+          })
+          |> Repo.insert()
+
+        collection
+
+      collection ->
+        collection
+    end
+  end
+
+  defp get_or_create_default_creator do
+    # Try to find existing default creator first
+    case Repo.get_by(Creator, creator_name: "Unknown Creator") do
+      nil ->
+        # Create default creator
+        {:ok, creator} =
+          %Creator{}
+          |> Creator.changeset(%{
+            creator_name: "Unknown Creator",
+            creator_contact: "unknown@voile.app",
+            affiliation: "Unknown",
+            type: "Organization"
+          })
+          |> Repo.insert()
+
+        creator
+
+      creator ->
+        creator
     end
   end
 end

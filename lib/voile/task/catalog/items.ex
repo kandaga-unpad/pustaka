@@ -80,7 +80,7 @@ defmodule Voile.Task.Catalog.Items do
     from(i in Voile.Schema.Catalog.Item)
     |> join(:inner, [i], c in assoc(i, :collection))
     |> where([i, c], c.access_level in ["public", "restricted"])
-    |> where([i, c], i.status in ["active"])
+    |> where([i, c], i.status == "active")
     |> filter_by_availability(filters.availability)
     |> filter_by_condition(filters.condition)
     |> filter_by_location(filters.location)

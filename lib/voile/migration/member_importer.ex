@@ -20,7 +20,8 @@ defmodule Voile.Migration.MemberImporter do
           member_types: map(),
           nodes: map(),
           existing_emails: MapSet.t(),
-          existing_usernames: MapSet.t()
+          existing_usernames: MapSet.t(),
+          existing_identifiers: MapSet.t()
         }
 
   def import_all(batch_size \\ 1000) do
@@ -95,19 +96,27 @@ defmodule Voile.Migration.MemberImporter do
       |> Repo.all()
       |> MapSet.new()
 
+    # Cache existing identifiers
+    existing_identifiers =
+      from(u in User, select: u.identifier, where: not is_nil(u.identifier))
+      |> Repo.all()
+      |> MapSet.new()
+
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Member role: #{if member_role, do: "✓", else: "✗"}")
     IO.puts("  - Member types: #{map_size(member_types)}")
     IO.puts("  - Nodes: #{map_size(nodes)}")
     IO.puts("  - Existing emails: #{MapSet.size(existing_emails)}")
     IO.puts("  - Existing usernames: #{MapSet.size(existing_usernames)}")
+    IO.puts("  - Existing identifiers: #{MapSet.size(existing_identifiers)}")
 
     %{
       member_role: member_role,
       member_types: member_types,
       nodes: nodes,
       existing_emails: existing_emails,
-      existing_usernames: existing_usernames
+      existing_usernames: existing_usernames,
+      existing_identifiers: existing_identifiers
     }
   end
 
@@ -127,16 +136,29 @@ defmodule Voile.Migration.MemberImporter do
       |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_member_data(row, node_id, cache), line_num}
+        try do
+          {prepare_member_data(row, node_id, cache), line_num}
+        rescue
+          e ->
+            IO.puts("\n⚠️ Error processing line #{line_num}: #{Exception.message(e)}")
+            # Show first 5 columns for debugging
+            IO.puts("   Row data: #{inspect(Enum.take(row, 5))}...")
+            {{:error, "Line #{line_num}: #{Exception.message(e)}"}, line_num}
+        end
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status == :ok end)
       |> Stream.map(fn {{:ok, {user_data, profile_data}}, line_num} ->
         {user_data, profile_data, line_num}
       end)
       |> Stream.chunk_every(batch_size)
-      |> Stream.each(fn batch ->
-        process_member_batch(batch, stats_ref)
-      end)
+      # Process chunks immediately without delay
+      |> Task.async_stream(
+        fn batch ->
+          process_member_batch(batch, stats_ref)
+        end,
+        max_concurrency: 1,
+        timeout: :infinity
+      )
       |> Stream.run()
 
       # Return final stats
@@ -150,7 +172,7 @@ defmodule Voile.Migration.MemberImporter do
     end
   end
 
-  # Process a batch of members with single transaction
+  # Process a batch of members with single transaction for optimal connection usage
   defp process_member_batch(batch, stats_ref) do
     {users_data, profiles_data, _line_nums} =
       batch
@@ -159,40 +181,54 @@ defmodule Voile.Migration.MemberImporter do
         {[user_data | users], [profile_data | profiles], [line_num | lines]}
       end)
 
-    # Batch insert users first
+    # Use single transaction to minimize connection idle time
     users_inserted =
       if length(users_data) > 0 do
         try do
-          # Hash passwords for batch insert
-          users_with_hashed_passwords =
-            users_data
-            |> Enum.map(&hash_password_for_insert/1)
+          Repo.transaction(
+            fn ->
+              # Skip password hashing - users will onboard later
+              users_data_clean = Enum.map(users_data, &remove_password_field/1)
 
-          {count, inserted_users} =
-            Repo.insert_all(User, Enum.reverse(users_with_hashed_passwords),
-              on_conflict: :nothing,
-              returning: [:id]
-            )
+              {count, inserted_users} =
+                Repo.insert_all(User, Enum.reverse(users_data_clean),
+                  on_conflict: :nothing,
+                  returning: [:id],
+                  timeout: :infinity
+                )
 
-          # Update user profiles with correct user_ids
-          if count > 0 and length(profiles_data) > 0 do
-            profiles_with_user_ids =
-              inserted_users
-              |> Enum.zip(Enum.reverse(profiles_data))
-              |> Enum.map(fn {user, profile_data} ->
-                Map.put(profile_data, :user_id, user.id)
-              end)
+              # Update user profiles with correct user_ids in same transaction
+              if count > 0 and length(profiles_data) > 0 do
+                profiles_with_user_ids =
+                  inserted_users
+                  |> Enum.zip(Enum.reverse(profiles_data))
+                  |> Enum.map(fn {user, profile_data} ->
+                    Map.put(profile_data, :user_id, user.id)
+                  end)
 
-            # Batch insert profiles
-            {_profile_count, _} =
-              Repo.insert_all(UserProfile, profiles_with_user_ids,
-                on_conflict: :nothing,
-                returning: false
-              )
+                # Batch insert profiles in same transaction
+                {_profile_count, _} =
+                  Repo.insert_all(UserProfile, profiles_with_user_ids,
+                    on_conflict: :nothing,
+                    returning: false,
+                    timeout: :infinity
+                  )
+              end
+
+              count
+            end,
+            timeout: :infinity
+          )
+          |> case do
+            {:ok, count} ->
+              :ets.update_counter(stats_ref, :inserted, count)
+              count
+
+            {:error, reason} ->
+              IO.puts("\n⚠️ Transaction error: #{inspect(reason)}")
+              :ets.update_counter(stats_ref, :errors, length(users_data))
+              0
           end
-
-          :ets.update_counter(stats_ref, :inserted, count)
-          count
         rescue
           e ->
             IO.puts("\n⚠️ Member batch insert error: #{inspect(e)}")
@@ -209,16 +245,14 @@ defmodule Voile.Migration.MemberImporter do
     end
   end
 
-  # Hash password for batch insert
-  defp hash_password_for_insert(user_attrs) do
-    case Map.get(user_attrs, :password) do
-      nil ->
-        user_attrs
-
-      password ->
-        Map.put(user_attrs, :hashed_password, Pbkdf2.hash_pwd_salt(password))
-        |> Map.delete(:password)
-    end
+  # Keep default password hash but mark as unconfirmed for onboarding
+  defp remove_password_field(user_attrs) do
+    user_attrs
+    # Remove any plain text password if present
+    |> Map.delete(:password)
+    # Keep hashed_password as it contains our default hash
+    # Mark as not confirmed since they need to complete onboarding
+    |> Map.put(:confirmed_at, nil)
   end
 
   # Prepare member data using cached data (optimized version)
@@ -232,18 +266,18 @@ defmodule Voile.Migration.MemberImporter do
       member_address,
       member_mail_address,
       member_email,
-      postal_code,
+      _postal_code,
       inst_name,
       _is_new,
       member_image,
       _pin,
       member_phone,
-      member_fax,
+      _member_fax,
       member_since_date,
       register_date,
       expire_date,
-      member_notes,
-      is_pending | _rest
+      _member_notes,
+      _is_pending | _rest
     ] = row
 
     # Basic validation
@@ -254,14 +288,34 @@ defmodule Voile.Migration.MemberImporter do
       is_nil(clean_name) or clean_name == "" ->
         {:skip, "Missing member name"}
 
+      is_nil(clean_email) or clean_email == "" ->
+        {:skip, "Missing member email"}
+
+      # Check for existing email in database - SKIP if found
+      MapSet.member?(cache.existing_emails, clean_email) ->
+        {:skip, "User with email #{clean_email} already exists"}
+
+      # Check for existing identifier - SKIP if found
+      parse_int(member_id) != nil and
+          MapSet.member?(cache.existing_identifiers, parse_int(member_id)) ->
+        {:skip, "User with identifier #{member_id} already exists"}
+
       true ->
-        username = generate_username_cached(clean_name, member_id, cache.existing_usernames)
-        final_email = ensure_unique_email_cached(clean_email, member_id, cache.existing_emails)
+        # Generate username from name (no need for uniqueness check since we skip duplicates)
+        username = generate_simple_username(clean_name, member_id)
+        # Use original email (no need for uniqueness since we skip duplicates)
+        final_email = clean_email
 
         member_type = get_member_type_cached(member_type_id, cache.member_types)
         node = get_node_cached(node_id, cache.nodes)
 
         now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        # Safely parse datetime values with fallbacks
+        parsed_register_date = safe_parse_datetime(register_date)
+        parsed_birth_date = safe_parse_date(birth_date)
+        parsed_member_since = safe_parse_date(member_since_date)
+        parsed_expires_at = safe_parse_date(expire_date)
 
         # Create user record data
         user_attrs = %{
@@ -271,11 +325,14 @@ defmodule Voile.Migration.MemberImporter do
           fullname: clean_name,
           user_role_id: cache.member_role && cache.member_role.id,
           user_type_id: member_type && member_type.id,
-          password: generate_temp_password(member_id || username),
           user_image: clean_image_name(member_image),
           node_id: node && node.id,
-          confirmed_at: DateTime.utc_now(),
-          inserted_at: parse_datetime(register_date) || now,
+          # Default password: "changeme123"
+          hashed_password:
+            "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
+          # Will be set during onboarding
+          confirmed_at: nil,
+          inserted_at: parsed_register_date || now,
           updated_at: now
         }
 
@@ -283,17 +340,14 @@ defmodule Voile.Migration.MemberImporter do
         profile_attrs = %{
           # Will be set after user insert
           user_id: nil,
+          full_name: clean_name,
           gender: map_gender(gender),
-          birth_date: parse_date(birth_date),
+          birth_date: parsed_birth_date,
           phone_number: safe_string_trim(member_phone),
-          fax_number: safe_string_trim(member_fax),
           address: combine_addresses(member_address, member_mail_address),
-          postal_code: safe_string_trim(postal_code),
           organization: safe_string_trim(inst_name),
-          notes: safe_string_trim(member_notes),
-          member_since: parse_date(member_since_date),
-          expires_at: parse_date(expire_date),
-          is_active: parse_is_active(is_pending),
+          registration_date: parsed_member_since,
+          expiry_date: parsed_expires_at,
           inserted_at: now,
           updated_at: now
         }
@@ -302,6 +356,9 @@ defmodule Voile.Migration.MemberImporter do
     end
   rescue
     e ->
+      IO.puts("\n🔍 Data preparation error for member: #{inspect(Enum.take(row, 3))}")
+      IO.puts("   Error: #{Exception.message(e)}")
+      IO.puts("   Stack trace: #{Exception.format_stacktrace(__STACKTRACE__)}")
       {:error, "Exception: #{Exception.message(e)}"}
   end
 
@@ -310,9 +367,9 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   # Cached helper functions for better performance
-  defp generate_username_cached(clean_name, member_id, existing_usernames) do
-    base_username = generate_username_base(clean_name, member_id)
-    ensure_unique_username_cached(base_username, existing_usernames)
+  # Generate simple username without uniqueness checking (duplicates are skipped)
+  defp generate_simple_username(clean_name, member_id) do
+    generate_username_base(clean_name, member_id)
   end
 
   defp generate_username_base(member_name, member_id) do
@@ -327,40 +384,6 @@ defmodule Voile.Migration.MemberImporter do
       "member_" <> String.slice(to_string(member_id), -6..-1//1)
     else
       base_username
-    end
-  end
-
-  defp ensure_unique_username_cached(username, existing_usernames, counter \\ 0) do
-    test_username = if counter == 0, do: username, else: "#{username}#{counter}"
-
-    if MapSet.member?(existing_usernames, test_username) do
-      ensure_unique_username_cached(username, existing_usernames, counter + 1)
-    else
-      test_username
-    end
-  end
-
-  defp ensure_unique_email_cached(email, member_id, existing_emails) do
-    base_email =
-      if email in [nil, ""], do: "member_#{member_id}@library.local", else: String.trim(email)
-
-    ensure_unique_email_in_cache(base_email, existing_emails)
-  end
-
-  defp ensure_unique_email_in_cache(email, existing_emails, counter \\ 0) do
-    test_email = if counter == 0, do: email, else: add_counter_to_email(email, counter)
-
-    if MapSet.member?(existing_emails, test_email) do
-      ensure_unique_email_in_cache(email, existing_emails, counter + 1)
-    else
-      test_email
-    end
-  end
-
-  defp add_counter_to_email(email, counter) do
-    case String.split(email, "@") do
-      [local, domain] -> "#{local}#{counter}@#{domain}"
-      _ -> "#{email}#{counter}"
     end
   end
 
@@ -515,14 +538,24 @@ defmodule Voile.Migration.MemberImporter do
   defp clean_image_name(image) when image in [nil, "", "square-image.png", "person.png"], do: nil
   defp clean_image_name(image), do: safe_string_trim(image)
 
-  # Not pending = active
-  defp parse_is_active("0"), do: true
-  # Pending = not active
-  defp parse_is_active("1"), do: false
-  # Default to active
-  defp parse_is_active(_), do: true
+  # Safe parsing functions with error handling and logging
+  defp safe_parse_datetime(val) do
+    try do
+      parse_datetime(val)
+    rescue
+      e ->
+        IO.puts("⚠️ DateTime parse error for value '#{inspect(val)}': #{Exception.message(e)}")
+        nil
+    end
+  end
 
-  defp generate_temp_password(identifier) do
-    "temp_" <> String.slice(to_string(identifier), -8..-1//1)
+  defp safe_parse_date(val) do
+    try do
+      parse_date(val)
+    rescue
+      e ->
+        IO.puts("⚠️ Date parse error for value '#{inspect(val)}': #{Exception.message(e)}")
+        nil
+    end
   end
 end

@@ -67,7 +67,7 @@ defmodule Voile.Task.Catalog.Collection do
     query =
       from i in Voile.Schema.Catalog.Item,
         where: i.collection_id == ^collection_id,
-        where: i.status in ["active", "available"],
+        where: i.status == "active",
         preload: [:node],
         order_by: [asc: i.item_code],
         limit: ^per_page,
@@ -79,7 +79,7 @@ defmodule Voile.Task.Catalog.Collection do
     total_count =
       from(i in Voile.Schema.Catalog.Item,
         where: i.collection_id == ^collection_id,
-        where: i.status in ["active", "available"]
+        where: i.status == "active"
       )
       |> Repo.aggregate(:count, :id)
 

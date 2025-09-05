@@ -84,6 +84,9 @@ defmodule Voile.Migration.ItemImporter do
 
   # Optimized file processing using streams and batching
   defp process_item_file_optimized(file_path, batch_size, cache) do
+    unit_id = extract_unit_id_from_filename(file_path)
+    IO.puts("📋 Processing unit ID: #{unit_id || "unknown"}")
+
     file_size = File.stat!(file_path).size
     IO.puts("📊 File size: #{Float.round(file_size / 1024 / 1024, 2)} MB")
 
@@ -100,9 +103,10 @@ defmodule Voile.Migration.ItemImporter do
     try do
       File.stream!(file_path)
       |> CSVParser.parse_stream()
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_item_data(row, cache.biblio_map, state_ref), line_num}
+        {prepare_item_data(row, cache.biblio_map, state_ref, unit_id), line_num}
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status in [:ok, :error] end)
       |> Stream.chunk_every(batch_size)
@@ -191,7 +195,7 @@ defmodule Voile.Migration.ItemImporter do
            _location_id,
            _order_date,
            _item_status_id,
-           site,
+           _site,
            _source,
            _invoice,
            _price,
@@ -202,7 +206,8 @@ defmodule Voile.Migration.ItemImporter do
            _uid
          ],
          biblio_map,
-         state_ref
+         state_ref,
+         unit_id
        ) do
     id = Ecto.UUID.generate()
 
@@ -237,6 +242,8 @@ defmodule Voile.Migration.ItemImporter do
               new_time
           end
 
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
         {:ok,
          %{
            id: id,
@@ -245,11 +252,13 @@ defmodule Voile.Migration.ItemImporter do
              safe_string_trim(item_code) ||
                generate_item_code(biblio_id_int, index, time_identifier),
            inventory_code: safe_string_trim(inventory_code),
-           site: safe_string_trim(site),
-           status: "available",
+           location: "Library Storage",
+           status: "active",
            condition: "good",
-           inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
-           updated_at: parse_datetime(last_update) || DateTime.utc_now()
+           availability: "available",
+           unit_id: unit_id,
+           inserted_at: parse_datetime(input_date) || now,
+           updated_at: parse_datetime(last_update) || now
          }}
 
       :error ->
@@ -257,7 +266,7 @@ defmodule Voile.Migration.ItemImporter do
     end
   end
 
-  defp prepare_item_data(_invalid_row, _biblio_map, _state_ref) do
+  defp prepare_item_data(_invalid_row, _biblio_map, _state_ref, _unit_id) do
     {:error, {:invalid_row, "insufficient columns"}}
   end
 

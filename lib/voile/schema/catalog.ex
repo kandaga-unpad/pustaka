@@ -157,9 +157,141 @@ defmodule Voile.Schema.Catalog do
       :mst_creator,
       :node,
       :collection_fields,
-      :items
+      :items,
+      :parent,
+      :children
     ])
     |> Collection.changeset(attrs)
+  end
+
+  @doc """
+  Get collections organized in a hierarchical tree structure.
+
+  ## Examples
+
+      iex> list_collections_tree()
+      [%Collection{children: [%Collection{}, ...]}, ...]
+
+  """
+  def list_collections_tree do
+    # Use a more efficient approach - get all collections and build the tree in memory
+    all_collections =
+      Repo.all(
+        from c in Collection,
+          preload: [:mst_creator, :resource_class],
+          order_by: [asc: c.sort_order, asc: c.title]
+      )
+
+    # Build a map of parent_id -> children for quick lookup
+    children_map =
+      all_collections
+      |> Enum.group_by(& &1.parent_id)
+
+    # Get root collections and attach their children
+    children_map[nil]
+    |> Kernel.||([])
+    |> Enum.map(&attach_children(&1, children_map, MapSet.new()))
+  end
+
+  defp attach_children(collection, children_map, visited) do
+    # Prevent circular references
+    if MapSet.member?(visited, collection.id) do
+      %{collection | children: []}
+    else
+      updated_visited = MapSet.put(visited, collection.id)
+
+      children =
+        children_map[collection.id]
+        |> Kernel.||([])
+        |> Enum.map(&attach_children(&1, children_map, updated_visited))
+
+      %{collection | children: children}
+    end
+  end
+
+  @doc """
+  Get root collections (collections without parents).
+
+  ## Examples
+
+      iex> list_root_collections()
+      [%Collection{}, ...]
+
+  """
+  def list_root_collections do
+    Repo.all(
+      from c in Collection,
+        where: is_nil(c.parent_id),
+        preload: [:mst_creator, :resource_class],
+        order_by: [asc: c.sort_order, asc: c.title]
+    )
+  end
+
+  @doc """
+  Get child collections for a given parent collection.
+
+  ## Examples
+
+      iex> list_children_collections(parent_id)
+      [%Collection{}, ...]
+
+  """
+  def list_children_collections(parent_id) do
+    Repo.all(
+      from c in Collection,
+        where: c.parent_id == ^parent_id,
+        preload: [:mst_creator, :resource_class],
+        order_by: [asc: c.sort_order, asc: c.title]
+    )
+  end
+
+  @doc """
+  Get collections suitable for being parents (excludes the given collection itself and its descendants).
+
+  ## Examples
+
+      iex> list_potential_parent_collections(collection_id)
+      [%Collection{}, ...]
+
+  """
+  def list_potential_parent_collections(collection_id \\ nil) do
+    query =
+      from c in Collection,
+        preload: [:mst_creator, :resource_class],
+        order_by: [asc: c.title]
+
+    query =
+      if collection_id do
+        from c in query, where: c.id != ^collection_id
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Get the full path/breadcrumb for a collection.
+
+  ## Examples
+
+      iex> get_collection_path(collection)
+      [%Collection{title: "Harry Potter Series"}, %Collection{title: "Harry Potter 1"}]
+
+  """
+  def get_collection_path(collection) do
+    get_collection_path_recursive(collection, [])
+  end
+
+  defp get_collection_path_recursive(collection, acc) do
+    acc = [collection | acc]
+
+    if collection.parent_id do
+      parent = get_collection!(collection.parent_id) |> Repo.preload(:parent)
+      get_collection_path_recursive(parent, acc)
+    else
+      acc
+    end
   end
 
   @doc """
@@ -216,7 +348,10 @@ defmodule Voile.Schema.Catalog do
   def get_item!(id) do
     Item
     |> Repo.get!(id)
-    |> Repo.preload([:collection, :node])
+    |> Repo.preload([
+      :node,
+      collection: [:mst_creator]
+    ])
   end
 
   def list_items_paginated(page \\ 1, per_page \\ 10) do

@@ -14,24 +14,31 @@ The Voile migration system supports two data sources:
 ### CSV Migration (Default)
 
 1. **Prepare CSV files** in the following structure:
+
    ```
    scripts/csv_data/
    ├── biblio/       # Bibliography data
    │   ├── biblio.csv
+   │   ├── biblio_8.csv
    │   ├── biblio_20.csv
+   │   ├── biblio_author_8.csv
+   │   ├── biblio_author_20.csv
    │   └── ...
-   ├── items/        # Item/copy data  
+   ├── items/        # Item/copy data
    │   ├── item.csv
+   │   ├── item_8.csv
    │   ├── item_20.csv
    │   └── ...
    ├── member/       # Member data
    │   ├── member.csv
+   │   ├── member_8.csv
    │   ├── member_20.csv
    │   └── ...
    ├── mst/          # Master data
+   │   ├── mst_author_8.csv
+   │   ├── mst_publisher_8.csv
    │   ├── mst_author_20.csv
    │   ├── mst_publisher_20.csv
-   │   ├── biblio_author_20.csv
    │   └── ...
    └── user/         # Staff user data
        ├── user.csv
@@ -39,6 +46,7 @@ The Voile migration system supports two data sources:
    ```
 
 2. **Run migration**:
+
    ```bash
    # Import all data types
    mix voile.migrate
@@ -54,6 +62,7 @@ The Voile migration system supports two data sources:
 ### MySQL/MariaDB Migration
 
 1. **Configure database** in `config/dev.exs`:
+
    ```elixir
    config :voile, :mysql_source,
      hostname: "localhost",
@@ -66,11 +75,13 @@ The Voile migration system supports two data sources:
    **Note**: Both MySQL and MariaDB are fully supported using the same configuration.
 
 2. **Install MySQL dependency**:
+
    ```bash
    mix deps.get
    ```
 
 3. **Run migration**:
+
    ```bash
    # Import all data from MySQL/MariaDB
    mix voile.migrate --source mysql
@@ -139,7 +150,7 @@ The system imports data in dependency order:
 
 1. **Masters** (authors, publishers) - No dependencies
 2. **Bibliography** (collections) - Depends on masters
-3. **Items** (physical copies) - Depends on bibliography  
+3. **Items** (physical copies) - Depends on bibliography
 4. **Users** (staff accounts) - No dependencies
 5. **Members** (library members) - No dependencies
 
@@ -165,18 +176,23 @@ config :voile, :mysql_source,
 ## 📊 Expected Data Formats
 
 ### Bibliography Data (biblio table/CSV)
+
 - `biblio_id`, `title`, `sor`, `edition`, `isbn_issn`, `publisher_id`, etc.
 
 ### Item Data (item table/CSV)
+
 - `item_id`, `biblio_id`, `call_number`, `item_code`, etc.
 
 ### Member Data (member table/CSV)
+
 - `member_id`, `member_name`, `gender`, `birth_date`, etc.
 
 ### User Data (user table/CSV)
+
 - `user_id`, `username`, `realname`, `user_type`, etc.
 
 ### Master Data
+
 - **Authors**: `author_id`, `author_name`, `author_type`, etc.
 - **Publishers**: `publisher_id`, `publisher_name`, etc.
 - **Relationships**: `biblio_id`, `author_id`, `level`
@@ -190,6 +206,7 @@ mix voile.migrate --validate
 ```
 
 This checks:
+
 - Data counts and integrity
 - Required relationships
 - Data consistency
@@ -198,11 +215,13 @@ This checks:
 ## 🚨 Troubleshooting
 
 ### CSV Issues
+
 - **Missing files**: Ensure CSV files exist in correct directories
 - **Invalid format**: Check CSV headers match expected format
 - **Encoding**: Ensure CSV files use UTF-8 encoding
 
-### MySQL/MariaDB Issues  
+### MySQL/MariaDB Issues
+
 - **Connection failed**: Check database credentials and network connectivity
 - **Table not found**: Ensure SLiMS database schema is complete
 - **Permission denied**: Verify database user has SELECT permissions
@@ -210,6 +229,7 @@ This checks:
 - **Version compatibility**: Both MySQL 5.7+ and MariaDB 10.0+ are supported
 
 ### Common Errors
+
 - **Dependency errors**: Run masters before other data types
 - **Memory issues**: Reduce batch size: `--batch-size 100`
 - **Timeout**: Process data in smaller chunks using `--only` option
@@ -217,15 +237,17 @@ This checks:
 ## 🔄 Migration Strategies
 
 ### Full Migration (Recommended)
+
 ```bash
 # CSV source
 mix voile.migrate
 
-# MySQL/MariaDB source  
+# MySQL/MariaDB source
 mix voile.migrate --source mysql
 ```
 
 ### Incremental Migration
+
 ```bash
 # Step 1: Master data
 mix voile.migrate --only masters
@@ -245,6 +267,7 @@ mix voile.migrate --validate
 ```
 
 ### Performance Migration
+
 ```bash
 # Large datasets - skip images, increase batch size
 mix voile.migrate --skip-images --batch-size 1000
@@ -265,6 +288,7 @@ mix voile.migrate --source mysql --batch-size 2000
 ## 🤝 Support
 
 For issues or questions:
+
 1. Check console output for detailed error messages
 2. Run validation to identify specific problems: `mix voile.migrate --validate`
 3. Review this guide for configuration examples

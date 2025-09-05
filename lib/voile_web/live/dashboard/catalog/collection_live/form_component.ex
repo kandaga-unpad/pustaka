@@ -146,6 +146,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt="Select Collection Type"
             required_value={true}
           />
+          <!-- Hierarchical Fields -->
+          <.input
+            field={@form[:parent_id]}
+            label="Parent Collection (Optional)"
+            type="select"
+            options={
+              Enum.map(@potential_parents, fn pc ->
+                {"#{pc.title} (#{pc.mst_creator && pc.mst_creator.creator_name})", pc.id}
+              end)
+            }
+            prompt="None - This will be a root collection"
+          />
+          <.input
+            field={@form[:collection_type]}
+            label="Collection Type"
+            type="select"
+            options={Voile.Schema.Catalog.Collection.collection_type_options()}
+            prompt="Select collection type"
+          />
+          <.input
+            field={@form[:sort_order]}
+            label="Sort Order"
+            type="number"
+            placeholder="1"
+          />
           <.input
             field={@form[:unit_id]}
             label="Collection Location"
@@ -718,6 +743,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       assigns.collection_type
       |> Enum.map(fn type -> {type.label, type.id} end)
 
+    # Get potential parent collections (excluding current collection)
+    potential_parents = Voile.Schema.Catalog.list_potential_parent_collections(collection.id)
+
     {original_collection, _changeset} =
       case assigns.action do
         :edit ->
@@ -775,6 +803,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:original_collection, original_collection)
+     |> assign(:potential_parents, potential_parents)
      |> assign(:creator_input, nil)
      |> assign(:creator_list, assigns.creator_list)
      |> assign(:creator_suggestions, [])
@@ -808,7 +837,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
              "type_id" => collection.type_id || nil,
              "unit_id" => collection.unit_id || nil,
              "creator_id" => collection.creator_id || nil,
-             "thumbnail" => collection.thumbnail || ""
+             "thumbnail" => collection.thumbnail || "",
+             "parent_id" => collection.parent_id || nil,
+             "collection_type" => collection.collection_type || nil,
+             "sort_order" => collection.sort_order || 1
            }
          )
 

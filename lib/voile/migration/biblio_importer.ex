@@ -183,18 +183,29 @@ defmodule Voile.Migration.BiblioImporter do
       |> Repo.all()
       |> MapSet.new()
 
+    # Cache the Bibliographic Resource type ID
+    bibliographic_resource_type_id = get_bibliographic_resource_type_id()
+
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Author mappings: #{map_size(author_mappings)} units")
     IO.puts("  - Publisher mappings: #{map_size(publisher_mappings)} units")
     IO.puts("  - Creators: #{map_size(creators)}")
     IO.puts("  - Existing collections: #{MapSet.size(existing_collections)}")
 
+    IO.puts("  - Bibliographic Resource type ID: #{bibliographic_resource_type_id}")
+
     %{
       author_mappings: author_mappings,
       publisher_mappings: publisher_mappings,
       creators: creators,
-      existing_collections: existing_collections
+      existing_collections: existing_collections,
+      bibliographic_resource_type_id: bibliographic_resource_type_id
     }
+  end
+
+  # All biblio records are books (type_id: 40)
+  defp get_bibliographic_resource_type_id do
+    40
   end
 
   # Optimized file processing using streams and batching
@@ -215,7 +226,8 @@ defmodule Voile.Migration.BiblioImporter do
 
     try do
       File.stream!(file_path)
-      |> CSVParser.parse_stream()
+      |> CSVParser.parse_stream(skip_headers: false)
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         {prepare_biblio_data(
@@ -398,8 +410,12 @@ defmodule Voile.Migration.BiblioImporter do
             description: safe_string_trim(notes),
             thumbnail: thumbnail_path,
             status: "published",
+            access_level: "public",
             old_biblio_id: biblio_id_int,
             creator_id: creator_id,
+            # Use the cached Bibliographic Resource type ID
+            type_id: cache.bibliographic_resource_type_id,
+            unit_id: unit_id,
             inserted_at: now,
             updated_at: now
           }
@@ -519,13 +535,19 @@ defmodule Voile.Migration.BiblioImporter do
         nil
 
       authors when is_list(authors) ->
+        # Authors is a list of {author_id, level} tuples sorted by level
         case List.first(authors) do
           nil -> nil
-          author_id -> Map.get(unit_author_mappings, author_id)
+          {author_id, _level} -> Map.get(unit_author_mappings, author_id)
         end
 
-      author_id ->
+      # Handle case where it's a single author_id (shouldn't happen with current data structure)
+      author_id when is_integer(author_id) ->
         Map.get(unit_author_mappings, author_id)
+
+      # Handle any other format
+      _ ->
+        nil
     end
   end
 
@@ -549,7 +571,8 @@ defmodule Voile.Migration.BiblioImporter do
 
     {final_collections, final_fields, final_errors} =
       File.stream!(file_path)
-      |> CSVParser.parse_stream()
+      |> CSVParser.parse_stream(skip_headers: false)
+      |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Enum.reduce({collections, fields, errors}, fn {row, line_num}, {colls, flds, errs} ->
         case process_biblio_row(
@@ -675,8 +698,12 @@ defmodule Voile.Migration.BiblioImporter do
           description: safe_string_trim(notes),
           thumbnail: thumbnail_path,
           status: "published",
+          access_level: "public",
           old_biblio_id: biblio_id_int,
           creator_id: creator_id,
+          # All biblio records are books (type_id: 40)
+          type_id: 40,
+          unit_id: unit_id,
           inserted_at: now,
           updated_at: now
         }
@@ -939,16 +966,16 @@ defmodule Voile.Migration.BiblioImporter do
         # Try to download the image
         case download_from_url(cleaned_path, file_path) do
           :ok ->
-            # Return relative path for storage in database (includes unit_id directory)
-            relative_path =
+            # Return absolute path for storage in database (includes unit_id directory)
+            absolute_path =
               if unit_id do
-                Path.join(["uploads", "old_thumbnail", to_string(unit_id), filename])
+                "/" <> Path.join(["uploads", "old_thumbnail", to_string(unit_id), filename])
               else
                 shard = String.slice(content_hash, 0, 2)
-                Path.join(["uploads", "old_thumbnail", shard, filename])
+                "/" <> Path.join(["uploads", "old_thumbnail", shard, filename])
               end
 
-            {:ok, relative_path}
+            {:ok, absolute_path}
 
           {:error, reason} ->
             IO.puts("⚠️ Failed to download image from #{cleaned_path}: #{reason}")

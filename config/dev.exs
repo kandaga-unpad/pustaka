@@ -8,7 +8,14 @@ config :voile, Voile.Repo,
   database: "voile_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  # Optimize for migration workloads
+  queue_target: 50,
+  queue_interval: 1000,
+  # Reduce idle timeout to prevent long idle connections
+  pool_timeout: 15000,
+  # Increase checkout timeout for large batch operations
+  timeout: 60000
 
 # Configure MySQL/MariaDB source for SLiMS data migration
 # Works with both MySQL and MariaDB databases using the same configuration

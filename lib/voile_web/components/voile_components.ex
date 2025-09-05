@@ -227,7 +227,7 @@ defmodule VoileWeb.VoileComponents do
                   <%= if collection.mst_creator do %>
                     <div class="flex items-center gap-1">
                       <.icon name="hero-user" class="w-3 h-3" />
-                      <span>{collection.mst_creator.name}</span>
+                      <span>{collection.mst_creator.creator_name}</span>
                     </div>
                   <% end %>
                   
@@ -410,7 +410,7 @@ defmodule VoileWeb.VoileComponents do
                 <% end %>
                 
                 <%= if collection.mst_creator do %>
-                  <span>• {collection.mst_creator.name}</span>
+                  <span>• {collection.mst_creator.creator_name}</span>
                 <% end %>
                 
                 <%= if length(collection.items || []) > 0 do %>
@@ -510,7 +510,8 @@ defmodule VoileWeb.VoileComponents do
         <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
           <%= if @collection.mst_creator do %>
             <div class="flex items-center gap-1">
-              <.icon name="hero-user" class="w-3 h-3" /> <span>{@collection.mst_creator.name}</span>
+              <.icon name="hero-user" class="w-3 h-3" />
+              <span>{@collection.mst_creator.creator_name}</span>
             </div>
           <% end %>
           
@@ -978,7 +979,8 @@ defmodule VoileWeb.VoileComponents do
           <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
             <%= if @collection.mst_creator do %>
               <div class="flex items-center gap-1">
-                <.icon name="hero-user" class="w-3 h-3" /> <span>{@collection.mst_creator.name}</span>
+                <.icon name="hero-user" class="w-3 h-3" />
+                <span>{@collection.mst_creator.creator_name}</span>
               </div>
             <% end %>
             

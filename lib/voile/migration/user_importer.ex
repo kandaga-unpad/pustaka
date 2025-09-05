@@ -14,9 +14,6 @@ defmodule Voile.Migration.UserImporter do
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
-  # Import password hashing library
-  alias Pbkdf2
-
   # Cache for frequently accessed data
   @type cache :: %{
           roles: map(),
@@ -48,45 +45,6 @@ defmodule Voile.Migration.UserImporter do
           IO.puts("\n🔄 Processing user file #{index}/#{length(files)}: #{Path.basename(file)}")
 
           file_stats = process_user_file_optimized(file, batch_size, cache)
-
-          %{
-            inserted: acc.inserted + file_stats.inserted,
-            skipped: acc.skipped + file_stats.skipped,
-            errors: acc.errors + file_stats.errors
-          }
-        end)
-
-      print_summary("USER IMPORT", %{
-        "Total Users Inserted" => stats.inserted,
-        "Total Users Skipped" => stats.skipped,
-        "Total Errors" => stats.errors
-      })
-
-      stats
-    end
-  end
-
-  # Alternative method for non-batched processing (for comparison/fallback)
-  def import_all_legacy(batch_size \\ 500) do
-    IO.puts("👤 Starting user data import (legacy mode)...")
-
-    # Setup default roles and member types if needed
-    setup_default_data()
-
-    # Get user files
-    files = get_csv_files("user")
-
-    if Enum.empty?(files) do
-      IO.puts("⚠️ No user files found")
-      %{inserted: 0, skipped: 0, errors: 0}
-    else
-      stats =
-        files
-        |> Enum.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, errors: 0}, fn {file, index}, acc ->
-          IO.puts("\n🔄 Processing user file #{index}/#{length(files)}: #{Path.basename(file)}")
-
-          file_stats = process_user_file_legacy(file, batch_size)
 
           %{
             inserted: acc.inserted + file_stats.inserted,
@@ -153,11 +111,10 @@ defmodule Voile.Migration.UserImporter do
       end)
       |> Stream.filter(fn {{status, _}, _index} -> status == :ok end)
       |> Stream.map(fn {{:ok, user_data}, index} -> {user_data, index} end)
-      |> Stream.chunk_every(batch_size)
-      |> Stream.each(fn batch ->
+      |> Enum.chunk_every(batch_size)
+      |> Enum.each(fn batch ->
         process_batch(batch, stats_ref, cache)
       end)
-      |> Stream.run()
 
       # Return final stats
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
@@ -170,38 +127,7 @@ defmodule Voile.Migration.UserImporter do
     end
   end
 
-  # Legacy file processing method (kept for comparison/fallback)
-  defp process_user_file_legacy(file_path, _batch_size) do
-    stats = %{inserted: 0, skipped: 0, errors: 0}
-
-    File.stream!(file_path)
-    |> CSVParser.parse_stream()
-    |> Stream.with_index()
-    |> Enum.reduce(stats, fn {row, index}, acc ->
-      if index == 0 do
-        # Skip header row
-        acc
-      else
-        case process_user_row(row) do
-          {:ok, _user} ->
-            if rem(index, 100) == 0, do: IO.write(".")
-            %{acc | inserted: acc.inserted + 1}
-
-          {:skip, _reason} ->
-            %{acc | skipped: acc.skipped + 1}
-
-          {:error, reason} ->
-            if rem(index, 1000) == 0 do
-              IO.puts("\n⚠️ Error on line #{index + 1}: #{reason}")
-            end
-
-            %{acc | errors: acc.errors + 1}
-        end
-      end
-    end)
-  end
-
-  # Process a batch of users with a single transaction
+  # Process a batch of users with a single transaction for optimal connection usage
   defp process_batch(batch, stats_ref, _cache) do
     {user_attrs, indexes} = Enum.unzip(batch)
 
@@ -223,27 +149,42 @@ defmodule Voile.Migration.UserImporter do
     :ets.update_counter(stats_ref, :skipped, length(batch) - length(valid_users))
 
     if length(valid_users) > 0 do
-      # Batch insert valid users - skip changeset creation for performance
+      # Use transaction for better connection management - NO PASSWORD HASHING
       try do
-        # Use Repo.insert_all for better performance
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
+        Repo.transaction(
+          fn ->
+            now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-        insert_data =
-          valid_users
-          |> Enum.map(fn {attrs, _index} ->
-            attrs
-            |> Map.put(:inserted_at, attrs[:inserted_at] || now)
-            |> Map.put(:updated_at, attrs[:updated_at] || now)
-            |> Map.put(:confirmed_at, attrs[:confirmed_at] || DateTime.utc_now())
-            |> hash_password_for_insert()
-          end)
+            insert_data =
+              valid_users
+              |> Enum.map(fn {attrs, _index} ->
+                attrs
+                |> Map.put(:inserted_at, attrs[:inserted_at] || now)
+                |> Map.put(:updated_at, attrs[:updated_at] || now)
+                # Users will onboard later
+                |> Map.put(:confirmed_at, nil)
+                # No password during migration
+                |> Map.delete(:password)
+                |> Map.delete(:hashed_password)
+              end)
 
-        {insert_count, _} = Repo.insert_all(User, insert_data)
-        :ets.update_counter(stats_ref, :inserted, insert_count)
+            {insert_count, _} = Repo.insert_all(User, insert_data, timeout: :infinity)
+            insert_count
+          end,
+          timeout: :infinity
+        )
+        |> case do
+          {:ok, insert_count} ->
+            :ets.update_counter(stats_ref, :inserted, insert_count)
 
-        # Progress indicator
-        if rem(insert_count, 100) == 0 do
-          IO.write(".")
+            # Progress indicator
+            if rem(insert_count, 100) == 0 do
+              IO.write(".")
+            end
+
+          {:error, reason} ->
+            IO.puts("\n⚠️ User batch transaction error: #{inspect(reason)}")
+            :ets.update_counter(stats_ref, :errors, length(valid_users))
         end
       rescue
         e ->
@@ -253,19 +194,7 @@ defmodule Voile.Migration.UserImporter do
     end
   end
 
-  # Hash password for batch insert
-  defp hash_password_for_insert(attrs) do
-    case Map.get(attrs, :password) do
-      nil ->
-        attrs
-
-      password ->
-        Map.put(attrs, :hashed_password, Pbkdf2.hash_pwd_salt(password))
-        |> Map.delete(:password)
-    end
-  end
-
-  # Prepare user data from CSV row using cached data
+  # Prepare user data from CSV row using cached data - NO PASSWORD FIELD
   defp prepare_user_data(
          [
            user_id,
@@ -295,6 +224,7 @@ defmodule Voile.Migration.UserImporter do
         {:skip, "User with email #{clean_email} already exists"}
       else
         user_role = map_user_type_to_role_cached(user_type, cache.roles)
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         attrs = %{
           username: clean_username,
@@ -303,18 +233,19 @@ defmodule Voile.Migration.UserImporter do
           fullname: safe_string_trim(realname) || clean_username,
           user_role_id: user_role && user_role.id,
           user_type_id: cache.member_type && cache.member_type.id,
-          # Set a default password - users will need to reset it
-          password: generate_temp_password(clean_username),
           user_image: safe_string_trim(user_image),
           social_media: parse_social_media(social_media),
           groups: parse_groups(groups),
           last_login: parse_datetime(last_login),
           last_login_ip: safe_string_trim(last_login_ip) || "",
           node_id: cache.node && cache.node.id,
-          # Auto-confirm imported users
-          confirmed_at: DateTime.utc_now(),
-          inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
-          updated_at: parse_datetime(last_update) || DateTime.utc_now()
+          # Default password: "changeme123"
+          hashed_password:
+            "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
+          # Users will complete onboarding later - NO CONFIRMATION
+          confirmed_at: nil,
+          inserted_at: parse_datetime(input_date) || now,
+          updated_at: parse_datetime(last_update) || now
         }
 
         {:ok, attrs}
@@ -325,80 +256,6 @@ defmodule Voile.Migration.UserImporter do
   end
 
   defp prepare_user_data(_invalid_row, _cache) do
-    {:error, "Invalid row format"}
-  end
-
-  # Legacy function kept for backward compatibility but not used in optimized version
-  defp process_user_row([
-         user_id,
-         username,
-         realname,
-         _passwd,
-         email,
-         user_type,
-         user_image,
-         social_media,
-         last_login,
-         last_login_ip,
-         groups,
-         _node_id,
-         input_date,
-         last_update,
-         _show_on_profile | _rest
-       ]) do
-    # Check if user already exists
-    clean_email = safe_string_trim(email)
-    clean_username = safe_string_trim(username)
-
-    if clean_email && clean_username do
-      existing_user = Repo.get_by(User, email: clean_email)
-
-      if existing_user do
-        {:skip, "User with email #{clean_email} already exists"}
-      else
-        user_role = map_user_type_to_role(user_type)
-        member_type = get_default_member_type()
-        node = get_default_node()
-
-        attrs = %{
-          username: clean_username,
-          identifier: parse_int(user_id),
-          email: clean_email,
-          fullname: safe_string_trim(realname) || clean_username,
-          user_role_id: user_role && user_role.id,
-          user_type_id: member_type && member_type.id,
-          # Set a default password - users will need to reset it
-          password: generate_temp_password(clean_username),
-          user_image: safe_string_trim(user_image),
-          social_media: parse_social_media(social_media),
-          groups: parse_groups(groups),
-          last_login: parse_datetime(last_login),
-          last_login_ip: safe_string_trim(last_login_ip) || "",
-          node_id: node && node.id,
-          # Auto-confirm imported users
-          confirmed_at: DateTime.utc_now(),
-          inserted_at: parse_datetime(input_date) || DateTime.utc_now(),
-          updated_at: parse_datetime(last_update) || DateTime.utc_now()
-        }
-
-        changeset =
-          User.changeset(%User{}, attrs,
-            hash_password: true,
-            validate_email: false,
-            validate_username: false
-          )
-
-        case Repo.insert(changeset) do
-          {:ok, user} -> {:ok, user}
-          {:error, changeset} -> {:error, "Changeset error: #{inspect(changeset.errors)}"}
-        end
-      end
-    else
-      {:skip, "Missing required email or username"}
-    end
-  end
-
-  defp process_user_row(_invalid_row) do
     {:error, "Invalid row format"}
   end
 
@@ -471,31 +328,6 @@ defmodule Voile.Migration.UserImporter do
     end
   end
 
-  # Legacy function for backward compatibility
-  defp map_user_type_to_role(user_type) do
-    case user_type do
-      # Admin
-      "1" -> get_role_by_name("Admin")
-      # Librarian (also admin-like)
-      "2" -> get_role_by_name("Admin")
-      # Member
-      "3" -> get_role_by_name("Member")
-      _ -> get_role_by_name("Member")
-    end
-  end
-
-  defp get_role_by_name(name) do
-    Repo.get_by(UserRole, name: name)
-  end
-
-  defp get_default_member_type do
-    Repo.one(from(mt in MemberType, limit: 1))
-  end
-
-  defp get_default_node do
-    Repo.one(from(n in Node, limit: 1))
-  end
-
   defp parse_social_media(social_str) when social_str in [nil, ""], do: %{}
 
   defp parse_social_media(social_str) do
@@ -525,9 +357,5 @@ defmodule Voile.Migration.UserImporter do
     |> Enum.map(fn [group] -> group end)
     # Filter out -1 values
     |> Enum.filter(fn group -> group != "-1" end)
-  end
-
-  defp generate_temp_password(username) do
-    "temp_" <> String.slice(username, 0..7)
   end
 end

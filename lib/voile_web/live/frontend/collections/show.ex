@@ -136,7 +136,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                                 class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
                               /> <span class="text-gray-500 dark:text-gray-400 mr-2">Creator:</span>
                               <span class="font-medium text-gray-900 dark:text-white">
-                                {@collection.mst_creator.name}
+                                {@collection.mst_creator.creator_name}
                               </span>
                             </div>
                           <% end %>
@@ -306,10 +306,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         </h3>
                         
                         <.link
-                          navigate={~p"/collections?q=#{@collection.mst_creator.name}"}
+                          navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
                           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
-                          View all collections by {@collection.mst_creator.name} →
+                          View all collections by {@collection.mst_creator.creator_name} →
                         </.link>
                       </div>
                     <% end %>

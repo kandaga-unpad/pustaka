@@ -15,7 +15,9 @@ defmodule Voile.Migration.LoanImporter do
   alias Voile.Repo
   alias Voile.Schema.Library.Transaction
   alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Accounts.User
+  alias Voile.Schema.Master.Creator
 
   def import_all(batch_size \\ 500) do
     IO.puts("📚 Starting loan data import...")
@@ -58,24 +60,16 @@ defmodule Voile.Migration.LoanImporter do
   defp process_loan_file(file_path, batch_size, node_id) do
     stats = %{inserted: 0, skipped: 0, errors: 0}
 
-    # Get default system user for librarian (created during user import)
-    system_user = get_or_create_system_user()
-
-    # Track seen member_ids to prevent duplicates within the same file
-    seen_member_ids = MapSet.new()
-
     case File.stream!(file_path, [:trim_bom]) do
       stream ->
-        {final_stats, _} =
+        final_stats =
           stream
           |> CSVParser.parse_stream(skip_headers: false)
-          # Skip header row
           |> Stream.drop(1)
-          # Start from line 2 (after header)
-          |> Stream.with_index(2)
+          |> Stream.with_index(1)
           |> Stream.chunk_every(batch_size)
-          |> Enum.reduce({stats, seen_member_ids}, fn chunk, {acc_stats, acc_seen} ->
-            process_loan_batch(chunk, system_user.id, node_id, acc_stats, acc_seen)
+          |> Enum.reduce(stats, fn chunk, acc_stats ->
+            process_loan_batch(chunk, node_id, acc_stats)
           end)
 
         final_stats
@@ -86,35 +80,27 @@ defmodule Voile.Migration.LoanImporter do
       %{inserted: 0, skipped: 0, errors: 1}
   end
 
-  defp process_loan_batch(chunk, librarian_id, node_id, stats, seen_member_ids) do
-    # First, filter and parse rows, checking for duplicate member_ids
-    {loan_attrs, updated_seen, duplicate_count} =
+  defp process_loan_batch(chunk, node_id, stats) do
+    # Parse rows and collect valid loan attributes
+    loan_attrs =
       chunk
-      |> Enum.reduce({[], seen_member_ids, 0}, fn {row, line_num},
-                                                  {acc_attrs, acc_seen, dup_count} ->
-        case parse_loan_row(row, line_num, librarian_id, node_id) do
+      |> Enum.reduce([], fn {row, line_num}, acc_attrs ->
+        case parse_loan_row(row, line_num, node_id) do
           {:ok, attrs} ->
-            member_id = attrs.member_id
+            [attrs | acc_attrs]
 
-            if MapSet.member?(acc_seen, member_id) do
-              IO.puts("⚠️ Skipping duplicate member_id #{member_id} at line #{line_num}")
-              {acc_attrs, acc_seen, dup_count + 1}
-            else
-              {[attrs | acc_attrs], MapSet.put(acc_seen, member_id), dup_count}
-            end
-
-          {:error, _msg} ->
-            {acc_attrs, acc_seen, dup_count}
+          {:error, msg} ->
+            IO.puts("❌ #{msg}")
+            acc_attrs
         end
       end)
 
-    # Count total errors including duplicates and parse errors
-    error_count = length(chunk) - length(loan_attrs) - duplicate_count
+    # Count parsing errors
+    error_count = length(chunk) - length(loan_attrs)
 
     case loan_attrs do
       [] ->
-        {%{stats | errors: stats.errors + error_count, skipped: stats.skipped + duplicate_count},
-         updated_seen}
+        %{stats | errors: stats.errors + error_count}
 
       valid_loans ->
         try do
@@ -127,24 +113,24 @@ defmodule Voile.Migration.LoanImporter do
 
           skipped_count = length(valid_loans) - inserted_count
 
-          {%{
-             inserted: stats.inserted + inserted_count,
-             skipped: stats.skipped + skipped_count + duplicate_count,
-             errors: stats.errors + error_count
-           }, updated_seen}
+          %{
+            inserted: stats.inserted + inserted_count,
+            skipped: stats.skipped + skipped_count,
+            errors: stats.errors + error_count
+          }
         rescue
           e ->
             IO.puts("❌ Error inserting loan batch: #{inspect(e)}")
 
-            {%{
-               stats
-               | errors: stats.errors + length(valid_loans) + error_count + duplicate_count
-             }, updated_seen}
+            %{
+              stats
+              | errors: stats.errors + length(valid_loans) + error_count
+            }
         end
     end
   end
 
-  defp parse_loan_row(row, line_num, librarian_id, node_id) do
+  defp parse_loan_row(row, line_num, node_id) do
     try do
       [
         loan_id,
@@ -164,41 +150,35 @@ defmodule Voile.Migration.LoanImporter do
       if item_code in ["", nil] or member_id in ["", nil] or loan_date in ["", nil] do
         {:error, "Missing essential data at line #{line_num}"}
       else
-        # Find item by item_code (barcode)
-        item = find_item_by_code(item_code)
-        member = find_member_by_id(member_id)
+        # Find item by item_code (barcode) - use fallback if not found
+        item = find_item_by_code(item_code) || get_or_create_default_item()
+        # Find member by ID - use fallback admin user if not found
+        member = find_member_by_id(member_id) || get_default_admin_user()
 
-        if is_nil(item) do
-          {:error, "Item not found for code: #{item_code} at line #{line_num}"}
-        else
-          if is_nil(member) do
-            {:error, "Member not found for ID: #{member_id} at line #{line_num}"}
-          else
-            # Determine transaction type and status
-            {transaction_type, status} =
-              determine_transaction_type_and_status(is_lent, is_return, return_date)
+        # Determine transaction type and status
+        {transaction_type, status} =
+          determine_transaction_type_and_status(is_lent, is_return, return_date)
 
-            attrs = %{
-              id: generate_transaction_id(loan_id, node_id),
-              transaction_type: transaction_type,
-              transaction_date: parse_datetime_with_default(loan_date),
-              due_date: parse_datetime_with_default(due_date),
-              return_date: parse_return_date(return_date),
-              renewal_count: parse_int(renewed) || 0,
-              notes: build_notes(loan_id, loan_rules_id, actual, node_id),
-              status: status,
-              fine_amount: Decimal.new("0.0"),
-              is_overdue: is_overdue?(due_date, return_date),
-              item_id: item.id,
-              member_id: member.id,
-              librarian_id: librarian_id,
-              inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-              updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
-            }
+        attrs = %{
+          id: generate_transaction_id(loan_id, node_id),
+          transaction_type: transaction_type,
+          transaction_date: parse_datetime_with_default(loan_date),
+          due_date: parse_datetime_with_default(due_date),
+          return_date: parse_return_date(return_date),
+          renewal_count: parse_int(renewed) || 0,
+          notes: build_notes(loan_id, loan_rules_id, actual, node_id, item_code, member_id),
+          status: status,
+          fine_amount: Decimal.new("0.0"),
+          is_overdue: is_overdue?(due_date, return_date),
+          item_id: item.id,
+          member_id: member.id,
+          # Using the same member as librarian for historical data
+          librarian_id: member.id,
+          inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+          updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        }
 
-            {:ok, attrs}
-          end
-        end
+        {:ok, attrs}
       end
     rescue
       e ->
@@ -220,7 +200,7 @@ defmodule Voile.Migration.LoanImporter do
       is_lent == "1" ->
         {"loan", "active"}
 
-      # Default case
+      # Default case - ensure we always return valid values
       true ->
         {"loan", "active"}
     end
@@ -248,7 +228,7 @@ defmodule Voile.Migration.LoanImporter do
     end
   end
 
-  defp build_notes(loan_id, loan_rules_id, actual, node_id) do
+  defp build_notes(loan_id, loan_rules_id, actual, node_id, item_code, member_id) do
     parts = []
     parts = if loan_id not in ["", nil], do: parts ++ ["Legacy Loan ID: #{loan_id}"], else: parts
 
@@ -259,6 +239,8 @@ defmodule Voile.Migration.LoanImporter do
 
     parts = if actual not in ["", nil], do: parts ++ ["Actual: #{actual}"], else: parts
     parts = if node_id, do: parts ++ ["Source Node: #{node_id}"], else: parts
+    parts = if item_code not in ["", nil], do: parts ++ ["Item Code: #{item_code}"], else: parts
+    parts = if member_id not in ["", nil], do: parts ++ ["Member ID: #{member_id}"], else: parts
 
     case parts do
       [] -> nil
@@ -267,29 +249,101 @@ defmodule Voile.Migration.LoanImporter do
   end
 
   defp find_item_by_code(item_code) do
-    from(i in Item, where: i.barcode == ^item_code)
+    from(i in Item, where: i.item_code == ^item_code)
     |> Repo.one()
   end
 
   defp find_member_by_id(member_id) do
-    # Try to find by legacy member ID first, then by actual ID
-    user =
-      from(u in User,
-        join: up in assoc(u, :user_profile),
-        where: up.legacy_member_id == ^member_id
-      )
-      |> Repo.one()
+    # Find user by identifier field which matches member_id from CSV
+    # Convert string member_id to Decimal to match the schema type
+    case Decimal.cast(member_id) do
+      {:ok, decimal_id} ->
+        Repo.get_by(User, identifier: decimal_id)
 
-    case user do
+      :error ->
+        nil
+    end
+  end
+
+  defp get_default_admin_user do
+    # Return the default admin user ID provided
+    %{id: "8a35f4b2-833d-4979-a285-0f0fdd52a42d"}
+  end
+
+  defp get_or_create_default_creator do
+    # Try to find existing default creator first
+    case Repo.get_by(Creator, creator_name: "System Import") do
       nil ->
-        # Try to find by actual user ID if it's a valid UUID
-        case Ecto.UUID.cast(member_id) do
-          {:ok, uuid} -> Repo.get(User, uuid)
-          :error -> nil
-        end
+        # Create default creator
+        {:ok, creator} =
+          %Creator{}
+          |> Creator.changeset(%{
+            creator_name: "System Import",
+            creator_contact: "system@voile.app",
+            affiliation: "Voile Library System",
+            type: "Organization"
+          })
+          |> Repo.insert()
 
-      user ->
-        user
+        creator
+
+      creator ->
+        creator
+    end
+  end
+
+  defp get_or_create_default_item do
+    # Try to find existing default item first
+    case Repo.get_by(Item, item_code: "MISSING_ITEM_DEFAULT") do
+      nil ->
+        # Create default collection first if it doesn't exist
+        collection = get_or_create_default_collection()
+
+        # Create default item
+        {:ok, item} =
+          %Item{}
+          |> Item.changeset(%{
+            item_code: "MISSING_ITEM_DEFAULT",
+            inventory_code: "MISSING_ITEM_DEFAULT",
+            location: "Unknown Location",
+            status: "active",
+            condition: "fair",
+            availability: "available",
+            collection_id: collection.id
+          })
+          |> Repo.insert()
+
+        item
+
+      item ->
+        item
+    end
+  end
+
+  defp get_or_create_default_collection do
+    # Try to find existing default collection first
+    case Repo.get_by(Collection, title: "Missing Items Collection") do
+      nil ->
+        # Get or create default creator first
+        creator = get_or_create_default_creator()
+
+        # Create default collection
+        {:ok, collection} =
+          %Collection{}
+          |> Collection.changeset(%{
+            title: "Missing Items Collection",
+            description: "Default collection for items that could not be found during import",
+            status: "published",
+            access_level: "public",
+            thumbnail: "/images/logo.svg",
+            creator_id: creator.id
+          })
+          |> Repo.insert()
+
+        collection
+
+      collection ->
+        collection
     end
   end
 
@@ -309,35 +363,19 @@ defmodule Voile.Migration.LoanImporter do
     "#{p1}-#{p2}-4#{String.slice(p3, 1, 3)}-a#{String.slice(p4, 1, 3)}-#{p5}"
   end
 
-  defp parse_return_date(date) when date in ["", nil, "0000-00-00 00:00:00"], do: nil
+  defp parse_return_date(nil), do: nil
+  defp parse_return_date(""), do: nil
+  defp parse_return_date("0000-00-00 00:00:00"), do: nil
   defp parse_return_date(date), do: parse_datetime_with_default(date)
 
-  defp parse_datetime_with_default(date_str) when date_str in ["", nil, "0000-00-00 00:00:00"],
-    do: nil
+  defp parse_datetime_with_default(nil), do: nil
+  defp parse_datetime_with_default(""), do: nil
+  defp parse_datetime_with_default("0000-00-00 00:00:00"), do: nil
 
   defp parse_datetime_with_default(date_str) do
     case parse_datetime(date_str) do
       nil -> nil
       datetime -> datetime
-    end
-  end
-
-  defp get_or_create_system_user do
-    case Repo.get_by(User, email: "system@library.local") do
-      nil ->
-        # Create system user if it doesn't exist
-        {:ok, system_user} =
-          %User{}
-          |> User.registration_changeset(%{
-            email: "system@library.local",
-            password: "system-generated-#{:rand.uniform(999_999)}"
-          })
-          |> Repo.insert()
-
-        system_user
-
-      user ->
-        user
     end
   end
 end

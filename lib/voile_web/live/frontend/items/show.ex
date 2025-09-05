@@ -143,7 +143,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                             
                             <%= if @item.collection.mst_creator do %>
                               <div class="text-gray-600 dark:text-gray-300 mb-6">
-                                By: {@item.collection.mst_creator.name}
+                                By: {@item.collection.mst_creator.creator_name}
                               </div>
                             <% end %>
                           </div>

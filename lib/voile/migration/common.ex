@@ -78,24 +78,106 @@ defmodule Voile.Migration.Common do
   end
 
   def parse_int(val) when val in [nil, ""], do: nil
-  def parse_int(val), do: String.to_integer(val)
+
+  def parse_int(val) do
+    try do
+      String.to_integer(val)
+    rescue
+      ArgumentError -> nil
+    end
+  end
 
   def parse_date(val) when val in [nil, "", "0000-00-00"], do: nil
 
   def parse_date(val) do
+    val = safe_string_trim(val)
+
+    case val do
+      nil ->
+        nil
+
+      "" ->
+        nil
+
+      "0000-00-00" ->
+        nil
+
+      _ ->
+        # Try different date formats
+        try_parse_date_formats(val)
+    end
+  end
+
+  defp try_parse_date_formats(val) do
+    # Try ISO format first (YYYY-MM-DD)
     case Date.from_iso8601(val) do
-      {:ok, date} -> date
-      {:error, _} -> nil
+      {:ok, date} ->
+        date
+
+      {:error, _} ->
+        # Try other common formats
+        try_other_date_formats(val)
+    end
+  end
+
+  defp try_other_date_formats(val) do
+    # Try DD/MM/YYYY format
+    case Regex.run(~r/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, val) do
+      [_, day, month, year] ->
+        try do
+          Date.new!(String.to_integer(year), String.to_integer(month), String.to_integer(day))
+        rescue
+          _ -> try_yyyy_mm_dd_format(val)
+        end
+
+      nil ->
+        try_yyyy_mm_dd_format(val)
+    end
+  end
+
+  defp try_yyyy_mm_dd_format(val) do
+    # Try YYYY-MM-DD with different separators
+    case Regex.run(~r/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/, val) do
+      [_, year, month, day] ->
+        try do
+          Date.new!(String.to_integer(year), String.to_integer(month), String.to_integer(day))
+        rescue
+          _ -> nil
+        end
+
+      nil ->
+        nil
     end
   end
 
   def parse_datetime(val) when val in [nil, "", "0000-00-00 00:00:00", "0000-00-00"], do: nil
 
   def parse_datetime(val) do
+    val = safe_string_trim(val)
+
+    case val do
+      nil ->
+        nil
+
+      "" ->
+        nil
+
+      "0000-00-00" ->
+        nil
+
+      "0000-00-00 00:00:00" ->
+        nil
+
+      _ ->
+        try_parse_datetime_formats(val)
+    end
+  end
+
+  defp try_parse_datetime_formats(val) do
     case String.contains?(val, " ") do
       true ->
-        [date, time] = String.split(val, " ", parts: 2)
-        parse_datetime_parts(date, time)
+        [date_part, time_part] = String.split(val, " ", parts: 2)
+        parse_datetime_parts(date_part, time_part)
 
       false ->
         parse_datetime_parts(val, "00:00:00")
@@ -103,14 +185,87 @@ defmodule Voile.Migration.Common do
   end
 
   defp parse_datetime_parts(date, time) do
-    case DateTime.from_iso8601(date <> "T" <> time <> "Z") do
-      {:ok, dt, _} -> DateTime.truncate(dt, :second)
-      {:error, _} -> nil
+    # First, try to parse the date part using our improved parse_date function
+    case try_parse_date_formats(date) do
+      nil ->
+        nil
+
+      parsed_date ->
+        # Convert to datetime with the time part
+        {hour, minute, second} = parse_time_part(time)
+
+        try do
+          {:ok, naive_dt} = NaiveDateTime.new(parsed_date, Time.new!(hour, minute, second))
+          DateTime.from_naive!(naive_dt, "Etc/UTC") |> DateTime.truncate(:second)
+        rescue
+          _ -> nil
+        end
+    end
+  end
+
+  defp parse_time_part(time_str) do
+    case Regex.run(~r/^(\d{1,2}):(\d{1,2}):(\d{1,2})$/, time_str) do
+      [_, hour, minute, second] ->
+        try do
+          {String.to_integer(hour), String.to_integer(minute), String.to_integer(second)}
+        rescue
+          _ -> {0, 0, 0}
+        end
+
+      nil ->
+        case Regex.run(~r/^(\d{1,2}):(\d{1,2})$/, time_str) do
+          [_, hour, minute] ->
+            try do
+              {String.to_integer(hour), String.to_integer(minute), 0}
+            rescue
+              _ -> {0, 0, 0}
+            end
+
+          nil ->
+            {0, 0, 0}
+        end
     end
   end
 
   def safe_string_trim(val) when val in [nil, ""], do: nil
   def safe_string_trim(val), do: String.trim(val)
+
+  def utc_now_truncated do
+    DateTime.utc_now() |> DateTime.truncate(:second)
+  end
+
+  @doc """
+  Optimized batch insert that minimizes connection idle time.
+  Uses transactions and proper timeouts for better performance.
+  """
+  def batch_insert_optimized(repo, schema, records, opts \\ []) do
+    if Enum.empty?(records) do
+      {0, []}
+    else
+      timeout = Keyword.get(opts, :timeout, :infinity)
+      on_conflict = Keyword.get(opts, :on_conflict, :nothing)
+      returning = Keyword.get(opts, :returning, [])
+
+      repo.transaction(
+        fn ->
+          repo.insert_all(schema, records,
+            on_conflict: on_conflict,
+            returning: returning,
+            timeout: timeout
+          )
+        end,
+        timeout: timeout
+      )
+      |> case do
+        {:ok, result} ->
+          result
+
+        {:error, reason} ->
+          IO.puts("⚠️ Batch insert transaction failed: #{inspect(reason)}")
+          {0, []}
+      end
+    end
+  end
 
   def batch_insert(repo, schema, records, batch_size, opts \\ []) do
     if Enum.empty?(records) do
