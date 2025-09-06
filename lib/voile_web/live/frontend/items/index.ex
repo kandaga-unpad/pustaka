@@ -307,7 +307,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                   current_page={@current_page}
                   total_pages={@total_pages}
                   search_query={@search_query}
-                  filter_type=""
+                  filter_unit_id=""
                   filter_status=""
                   socket={@socket}
                 />

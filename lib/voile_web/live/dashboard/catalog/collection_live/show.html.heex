@@ -132,11 +132,13 @@
                     <p class="col-span-2">: {status_badge(item.status)}</p>
                   </div>
                   
-                  <div class="grid grid-cols-3">
-                    <p>Node</p>
-                    
-                    <p class="col-span-2">: {item.node.name}</p>
-                  </div>
+                  <%= if item.node do %>
+                    <div class="grid grid-cols-3">
+                      <p>Node</p>
+                      
+                      <p class="col-span-2">: {item.node.name}</p>
+                    </div>
+                  <% end %>
                 </div>
                 
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center gap-2 w-full justify-between">

@@ -31,15 +31,13 @@
             name="type"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
-            <option value="both" selected={@search_type == "both"}>
-              Both Collections and Items
-            </option>
-            
             <option value="collections" selected={@search_type == "collections"}>
               Collections Only
             </option>
             
-            <option value="items" selected={@search_type == "items"}>Items Only</option>
+            <option value="both" selected={@search_type == "both"}>
+              Collections with GLAM Filtering
+            </option>
           </select>
         </div>
         <!-- Common Fields -->
@@ -76,7 +74,7 @@
             Collection Criteria
           </h3>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Description
@@ -92,51 +90,74 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Collection Type
+                Collection Code
+              </label>
+              <input
+                type="text"
+                name="search[collection_code]"
+                value={Map.get(@search_params, "collection_code", "")}
+                placeholder="Enter collection code..."
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                GLAM Type
               </label>
               <select
-                name="search[collection_type]"
+                name="search[resource_glam_type]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any Type</option>
+                <option value="">Any GLAM Type</option>
                 
                 <option
-                  value="book"
-                  selected={Map.get(@search_params, "collection_type", "") == "book"}
+                  value="Gallery"
+                  selected={Map.get(@search_params, "resource_glam_type", "") == "Gallery"}
                 >
-                  Book
+                  Gallery
                 </option>
                 
                 <option
-                  value="journal"
-                  selected={Map.get(@search_params, "collection_type", "") == "journal"}
+                  value="Library"
+                  selected={Map.get(@search_params, "resource_glam_type", "") == "Library"}
                 >
-                  Journal
+                  Library
                 </option>
                 
                 <option
-                  value="media"
-                  selected={Map.get(@search_params, "collection_type", "") == "media"}
-                >
-                  Media
-                </option>
-                
-                <option
-                  value="digital"
-                  selected={Map.get(@search_params, "collection_type", "") == "digital"}
-                >
-                  Digital
-                </option>
-                
-                <option
-                  value="archive"
-                  selected={Map.get(@search_params, "collection_type", "") == "archive"}
+                  value="Archive"
+                  selected={Map.get(@search_params, "resource_glam_type", "") == "Archive"}
                 >
                   Archive
+                </option>
+                
+                <option
+                  value="Museum"
+                  selected={Map.get(@search_params, "resource_glam_type", "") == "Museum"}
+                >
+                  Museum
                 </option>
               </select>
             </div>
             
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Resource Class
+              </label>
+              <input
+                type="text"
+                name="search[resource_class]"
+                value={Map.get(@search_params, "resource_class", "")}
+                placeholder="Search by resource class label..."
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
@@ -148,17 +169,24 @@
                 <option value="">Any Status</option>
                 
                 <option
-                  value="active"
-                  selected={Map.get(@search_params, "status", "") == "active"}
+                  value="draft"
+                  selected={Map.get(@search_params, "status", "") == "draft"}
                 >
-                  Active
+                  Draft
                 </option>
                 
                 <option
-                  value="inactive"
-                  selected={Map.get(@search_params, "status", "") == "inactive"}
+                  value="pending"
+                  selected={Map.get(@search_params, "status", "") == "pending"}
                 >
-                  Inactive
+                  Pending
+                </option>
+                
+                <option
+                  value="published"
+                  selected={Map.get(@search_params, "status", "") == "published"}
+                >
+                  Published
                 </option>
                 
                 <option
@@ -188,155 +216,41 @@
                 </option>
                 
                 <option
-                  value="restricted"
-                  selected={Map.get(@search_params, "access_level", "") == "restricted"}
-                >
-                  Restricted
-                </option>
-                
-                <option
                   value="private"
                   selected={Map.get(@search_params, "access_level", "") == "private"}
                 >
                   Private
                 </option>
+                
+                <option
+                  value="restricted"
+                  selected={Map.get(@search_params, "access_level", "") == "restricted"}
+                >
+                  Restricted
+                </option>
               </select>
             </div>
           </div>
-        </div>
-        <!-- Item-specific Fields -->
-        <div class="border-t border-gray-200 dark:border-gray-600 pt-6" id="item-fields">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Item Criteria</h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Additional Metadata Fields -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Item Code
-              </label>
-              <input
-                type="text"
-                name="search[item_code]"
-                value={Map.get(@search_params, "item_code", "")}
-                placeholder="Enter item code..."
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Inventory Code
-              </label>
-              <input
-                type="text"
-                name="search[inventory_code]"
-                value={Map.get(@search_params, "inventory_code", "")}
-                placeholder="Enter inventory code..."
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Location
-              </label>
-              <input
-                type="text"
-                name="search[location]"
-                value={Map.get(@search_params, "location", "")}
-                placeholder="Enter location..."
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Availability
+                Collection Location
               </label>
               <select
-                name="search[availability]"
+                name="search[unit_id]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any Availability</option>
+                <option value="">Any Unit</option>
                 
-                <option
-                  value="available"
-                  selected={Map.get(@search_params, "availability", "") == "available"}
-                >
-                  Available
-                </option>
-                
-                <option
-                  value="checked_out"
-                  selected={Map.get(@search_params, "availability", "") == "checked_out"}
-                >
-                  Checked Out
-                </option>
-                
-                <option
-                  value="reserved"
-                  selected={Map.get(@search_params, "availability", "") == "reserved"}
-                >
-                  Reserved
-                </option>
-                
-                <option
-                  value="reference"
-                  selected={Map.get(@search_params, "availability", "") == "reference"}
-                >
-                  Reference Only
-                </option>
-                
-                <option
-                  value="lost"
-                  selected={Map.get(@search_params, "availability", "") == "lost"}
-                >
-                  Lost
-                </option>
-                
-                <option
-                  value="damaged"
-                  selected={Map.get(@search_params, "availability", "") == "damaged"}
-                >
-                  Damaged
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Condition
-              </label>
-              <select
-                name="search[condition]"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              >
-                <option value="">Any Condition</option>
-                
-                <option
-                  value="excellent"
-                  selected={Map.get(@search_params, "condition", "") == "excellent"}
-                >
-                  Excellent
-                </option>
-                
-                <option value="good" selected={Map.get(@search_params, "condition", "") == "good"}>
-                  Good
-                </option>
-                
-                <option value="fair" selected={Map.get(@search_params, "condition", "") == "fair"}>
-                  Fair
-                </option>
-                
-                <option value="poor" selected={Map.get(@search_params, "condition", "") == "poor"}>
-                  Poor
-                </option>
-                
-                <option
-                  value="damaged"
-                  selected={Map.get(@search_params, "condition", "") == "damaged"}
-                >
-                  Damaged
-                </option>
+                <%= for node <- @nodes do %>
+                  <option
+                    value={node.id}
+                    selected={Map.get(@search_params, "unit_id", "") == to_string(node.id)}
+                  >
+                    {node.name} ({node.abbr})
+                  </option>
+                <% end %>
               </select>
             </div>
           </div>
@@ -365,11 +279,7 @@
         <!-- Results Summary -->
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <p class="text-gray-700 dark:text-gray-300">
-            Found <strong>{@results.total_results}</strong>
-            results
-            <%= if @results.collections do %>
-              ({@results.collections.total} collections, {@results.items.total} items)
-            <% end %>
+            Found <strong>{@results.total_results}</strong> collections
           </p>
         </div>
         <!-- Collections Results -->
@@ -385,19 +295,38 @@
               <%= for collection <- @results.collections.results do %>
                 <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <div class="flex justify-between items-start">
+                    <div class="mx-4">
+                      <%= if collection.thumbnail do %>
+                        <img
+                          src={collection.thumbnail}
+                          alt={collection.title |> trim_title()}
+                          class="w-16 h-26 object-cover rounded-md"
+                        />
+                      <% else %>
+                        <div class="w-16 h-26 bg-gray-200 dark:bg-gray-500 flex items-center justify-center rounded-md">
+                          <span class="text-gray-500 dark:text-gray-400 text-sm text-center">
+                            No Image
+                          </span>
+                        </div>
+                      <% end %>
+                    </div>
+                    
                     <div class="flex-1">
-                      <h3 class="font-medium text-gray-900 dark:text-white">
+                      <h5
+                        class="font-medium text-gray-900 dark:text-white"
+                        title={collection.title}
+                      >
                         <.link
                           href={~p"/collections/#{collection.id}"}
                           class="hover:text-blue-600 dark:hover:text-blue-400"
                         >
-                          {collection.title}
+                          {collection.title |> trim_title()}
                         </.link>
-                      </h3>
+                      </h5>
                       
                       <%= if collection.description do %>
                         <p class="text-gray-600 dark:text-gray-300 mt-1">
-                          {collection.description}
+                          {collection.description |> trim_and_reduce_description()}
                         </p>
                       <% end %>
                       
@@ -408,7 +337,12 @@
                         
                         <span>
                           Type: {String.capitalize(collection.collection_type || "Unknown")}
-                        </span> <span>Items: {length(collection.items || [])}</span>
+                        </span>
+                        <%= if collection.resource_class do %>
+                          <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {collection.resource_class.glam_type}
+                          </span>
+                        <% end %>
                       </div>
                     </div>
                     
@@ -423,45 +357,49 @@
             </div>
           </div>
         <% end %>
-        <!-- Items Results -->
-        <%= if @results.items && length(@results.items.results) > 0 do %>
+        <!-- Single Type Results (for collections-only searches) -->
+        <%= if @search_type != "both" && @results.results do %>
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-600">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Items ({@results.items.total})
-              </h2>
-            </div>
-            
             <div class="divide-y divide-gray-200 dark:divide-gray-600">
-              <%= for item <- @results.items.results do %>
+              <%= for collection <- @results.results do %>
                 <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
-                      <h3 class="font-medium text-gray-900 dark:text-white">
+                      <h5 class="font-medium text-gray-900 dark:text-white">
                         <.link
-                          href={~p"/items/#{item.id}"}
+                          href={~p"/collections/#{collection.id}"}
                           class="hover:text-blue-600 dark:hover:text-blue-400"
                         >
-                          {item.collection.title}
+                          {collection.title |> trim_title()}
                         </.link>
-                      </h3>
+                      </h5>
                       
-                      <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
-                        <span>Code: {item.item_code}</span>
-                        <%= if item.inventory_code do %>
-                          <span>Inventory: {item.inventory_code}</span>
+                      <%= if collection.description do %>
+                        <p class="text-gray-600 dark:text-gray-300 mt-1">
+                          {collection.description |> trim_and_reduce_description()}
+                        </p>
+                      <% end %>
+                      
+                      <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <%= if collection.mst_creator do %>
+                          <span>By: {collection.mst_creator.creator_name}</span>
                         <% end %>
-                         <span>Location: {item.location}</span>
+                        
+                        <span>
+                          Type: {String.capitalize(collection.collection_type || "Unknown")}
+                        </span>
+                        <%= if collection.resource_class do %>
+                          <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {collection.resource_class.glam_type}
+                          </span>
+                        <% end %>
                       </div>
                     </div>
                     
-                    <div class="ml-4 text-right">
-                      <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
-                        {String.capitalize(item.availability || "unknown")}
+                    <div class="ml-4">
+                      <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
+                        {String.capitalize(collection.status || "unknown")}
                       </span>
-                      <div class="text-xs text-gray-500 mt-1">
-                        {String.capitalize(item.condition || "unknown")}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -469,85 +407,139 @@
             </div>
           </div>
         <% end %>
-        <!-- Single Type Results (for collections-only or items-only searches) -->
-        <%= if @results.results do %>
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
-            <div class="divide-y divide-gray-200 dark:divide-gray-600">
-              <%= if @search_type == "collections" do %>
-                <%= for collection <- @results.results do %>
-                  <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <div class="flex justify-between items-start">
-                      <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
-                          <.link
-                            href={~p"/collections/#{collection.id}"}
-                            class="hover:text-blue-600 dark:hover:text-blue-400"
-                          >
-                            {collection.title}
-                          </.link>
-                        </h3>
-                        
-                        <%= if collection.description do %>
-                          <p class="text-gray-600 dark:text-gray-300 mt-1">
-                            {collection.description}
-                          </p>
-                        <% end %>
-                        
-                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          <%= if collection.mst_creator do %>
-                            <span>By: {collection.mst_creator.creator_name}</span>
-                          <% end %>
-                          
-                          <span>
-                            Type: {String.capitalize(collection.collection_type || "Unknown")}
-                          </span> <span>Items: {length(collection.items || [])}</span>
-                        </div>
-                      </div>
-                      
-                      <div class="ml-4">
-                        <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
-                          {String.capitalize(collection.status || "unknown")}
+        <!-- Pagination for all search types -->
+        <%= if @results.total_results > 0 do %>
+          <div class="mt-6">
+            <%= if @search_type == "both" do %>
+              <!-- Pagination for "both" search type -->
+              <%= if @results.collections && @results.collections.total_pages > 1 do %>
+                <div class="flex justify-center items-center space-x-2 mb-4">
+                  <%= if @results.collections.has_prev do %>
+                    <.link
+                      href={
+                        build_advanced_search_url(
+                          @search_params,
+                          @search_type,
+                          @glam_type,
+                          @page - 1
+                        )
+                      }
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      ← Previous
+                    </.link>
+                  <% end %>
+                  
+                  <div class="flex items-center space-x-1">
+                    <%= for page_num <- page_range(@results.collections.page, @results.collections.total_pages) do %>
+                      <%= if page_num == @results.collections.page do %>
+                        <span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded-md dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
+                          {page_num}
                         </span>
-                      </div>
-                    </div>
+                      <% else %>
+                        <.link
+                          href={
+                            build_advanced_search_url(
+                              @search_params,
+                              @search_type,
+                              @glam_type,
+                              page_num
+                            )
+                          }
+                          class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-gray-300"
+                        >
+                          {page_num}
+                        </.link>
+                      <% end %>
+                    <% end %>
                   </div>
-                <% end %>
-              <% else %>
-                <%= for item <- @results.results do %>
-                  <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <div class="flex justify-between items-start">
-                      <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
-                          <.link
-                            href={~p"/items/#{item.id}"}
-                            class="hover:text-blue-600 dark:hover:text-blue-400"
-                          >
-                            {item.collection.title}
-                          </.link>
-                        </h3>
-                        
-                        <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
-                          <span>Code: {item.item_code}</span>
-                          <%= if item.inventory_code do %>
-                            <span>Inventory: {item.inventory_code}</span>
-                          <% end %>
-                           <span>Location: {item.location}</span>
-                        </div>
-                      </div>
-                      
-                      <div class="ml-4 text-right">
-                        <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
-                          {String.capitalize(item.availability || "unknown")}
-                        </span>
-                        <div class="text-xs text-gray-500 mt-1">
-                          {String.capitalize(item.condition || "unknown")}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
+                  
+                  <%= if @results.collections.has_next do %>
+                    <.link
+                      href={
+                        build_advanced_search_url(
+                          @search_params,
+                          @search_type,
+                          @glam_type,
+                          @page + 1
+                        )
+                      }
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      Next →
+                    </.link>
+                  <% end %>
+                </div>
               <% end %>
-            </div>
+            <% else %>
+              <!-- Pagination for single type searches -->
+              <%= if @results.total_pages && @results.total_pages > 1 do %>
+                <div class="flex justify-center items-center space-x-2">
+                  <%= if @results.has_prev do %>
+                    <.link
+                      href={
+                        build_advanced_search_url(
+                          @search_params,
+                          @search_type,
+                          @glam_type,
+                          @page - 1
+                        )
+                      }
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      ← Previous
+                    </.link>
+                  <% end %>
+                  
+                  <div class="flex items-center space-x-1">
+                    <%= for page_num <- page_range(@page, @results.total_pages) do %>
+                      <%= if page_num == @page do %>
+                        <span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded-md dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
+                          {page_num}
+                        </span>
+                      <% else %>
+                        <.link
+                          href={
+                            build_advanced_search_url(
+                              @search_params,
+                              @search_type,
+                              @glam_type,
+                              page_num
+                            )
+                          }
+                          class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-gray-300"
+                        >
+                          {page_num}
+                        </.link>
+                      <% end %>
+                    <% end %>
+                  </div>
+                  
+                  <%= if @results.has_next do %>
+                    <.link
+                      href={
+                        build_advanced_search_url(
+                          @search_params,
+                          @search_type,
+                          @glam_type,
+                          @page + 1
+                        )
+                      }
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      Next →
+                    </.link>
+                  <% end %>
+                </div>
+                <!-- Results per page information -->
+                <div class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+                  Showing {(@page - 1) * @results.per_page + 1} to {min(
+                    @page * @results.per_page,
+                    @results.total_results
+                  )} of {@results.total_results} results
+                </div>
+              <% end %>
+            <% end %>
           </div>
         <% end %>
       </div>
@@ -595,24 +587,16 @@
     document.addEventListener('DOMContentLoaded', function() {
       const searchTypeSelect = document.querySelector('select[name="type"]');
       const collectionFields = document.getElementById('collection-fields');
-      const itemFields = document.getElementById('item-fields');
 
       function toggleFields() {
         const searchType = searchTypeSelect.value;
         
+        // Since we merged GLAM type into collection fields, we just show/hide collection fields
         switch(searchType) {
           case 'collections':
-            collectionFields.style.display = 'block';
-            itemFields.style.display = 'none';
-            break;
-          case 'items':
-            collectionFields.style.display = 'none';
-            itemFields.style.display = 'block';
-            break;
           case 'both':
           default:
             collectionFields.style.display = 'block';
-            itemFields.style.display = 'block';
             break;
         }
       }

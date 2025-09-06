@@ -472,7 +472,8 @@ defmodule Voile.Migration.BiblioImporter do
     }
 
     @property_map
-    |> Enum.reduce([], fn {field_name, property}, acc ->
+    |> Enum.with_index()
+    |> Enum.reduce([], fn {{field_name, property}, index}, acc ->
       case Map.get(field_values, field_name) do
         value when value != nil and value != "" ->
           trimmed_value = String.trim(value)
@@ -481,7 +482,12 @@ defmodule Voile.Migration.BiblioImporter do
             field = %{
               collection_id: collection_id,
               property_id: property.id,
+              name: property.local_name,
+              label: property.label,
               value: trimmed_value,
+              value_lang: "id",
+              type_value: property.type_value,
+              sort_order: index,
               inserted_at: now,
               updated_at: now
             }
@@ -758,14 +764,20 @@ defmodule Voile.Migration.BiblioImporter do
       "notes" => notes
     }
 
-    Enum.reduce(@property_map, [], fn {field_name, property}, acc ->
+    Enum.with_index(@property_map)
+    |> Enum.reduce([], fn {{field_name, property}, index}, acc ->
       value = Map.get(field_values, field_name)
 
       if value && String.trim(value) != "" do
         field = %{
           collection_id: collection_id,
           property_id: property.id,
+          name: property.local_name,
+          label: property.label,
           value: String.trim(value),
+          value_lang: "id",
+          type_value: property.type_value,
+          sort_order: index,
           inserted_at: now,
           updated_at: now
         }

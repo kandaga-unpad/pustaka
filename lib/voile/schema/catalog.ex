@@ -166,6 +166,7 @@ defmodule Voile.Schema.Catalog do
 
   @doc """
   Get collections organized in a hierarchical tree structure.
+  Now with pagination to prevent loading too many records at once.
 
   ## Examples
 
@@ -173,13 +174,14 @@ defmodule Voile.Schema.Catalog do
       [%Collection{children: [%Collection{}, ...]}, ...]
 
   """
-  def list_collections_tree do
-    # Use a more efficient approach - get all collections and build the tree in memory
+  def list_collections_tree(limit \\ 100) do
+    # Use a more efficient approach - get limited collections and build the tree in memory
     all_collections =
       Repo.all(
         from c in Collection,
           preload: [:mst_creator, :resource_class],
-          order_by: [asc: c.sort_order, asc: c.title]
+          order_by: [asc: c.sort_order, asc: c.title],
+          limit: ^limit
       )
 
     # Build a map of parent_id -> children for quick lookup
@@ -258,7 +260,38 @@ defmodule Voile.Schema.Catalog do
     query =
       from c in Collection,
         preload: [:mst_creator, :resource_class],
-        order_by: [asc: c.title]
+        order_by: [asc: c.title],
+        limit: 50
+
+    query =
+      if collection_id do
+        from c in query, where: c.id != ^collection_id
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Search for potential parent collections by title.
+  Returns limited results for performance.
+
+  ## Examples
+
+      iex> search_potential_parent_collections("Harry", collection_id)
+      [%Collection{}, ...]
+
+  """
+  def search_potential_parent_collections(search_term, collection_id \\ nil, limit \\ 10) do
+    search_pattern = "%#{search_term}%"
+
+    query =
+      from c in Collection,
+        where: ilike(c.title, ^search_pattern),
+        preload: [:mst_creator, :resource_class],
+        order_by: [asc: c.title],
+        limit: ^limit
 
     query =
       if collection_id do

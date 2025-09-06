@@ -21,9 +21,8 @@ defmodule Voile.Search.Collections do
       from c in Collection,
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
-        left_join: items in assoc(c, :items),
         where: c.status == "published",
-        preload: [resource_class: rc, mst_creator: creator, items: items]
+        preload: [resource_class: rc, mst_creator: creator]
 
     # Add search conditions
     search_query =
@@ -43,7 +42,14 @@ defmodule Voile.Search.Collections do
       end
 
     final_query
-    |> order_by([c], desc: :updated_at)
+    |> order_by([c],
+      # Same relevance-based sorting as main search
+      desc: fragment("CASE WHEN LOWER(?) = LOWER(?) THEN 3
+                          WHEN LOWER(?) LIKE LOWER(?) THEN 2
+                          ELSE 1 END", c.title, ^query, c.title, ^"%#{query}%"),
+      desc: :updated_at,
+      desc: :id
+    )
     |> limit(^limit)
     |> Repo.all()
   end
@@ -69,6 +75,7 @@ defmodule Voile.Search.Collections do
 
   @doc """
   Full-text search across collections with pagination and filtering.
+  Can handle both simple query strings and advanced search parameters.
   """
   def search_collections(params \\ %{}) do
     query = Map.get(params, "q", "")
@@ -77,12 +84,21 @@ defmodule Voile.Search.Collections do
     page = String.to_integer(Map.get(params, "page", "1"))
     per_page = String.to_integer(Map.get(params, "per_page", "20"))
 
+    # Handle advanced search parameters
+    title_filter = Map.get(params, "title", "")
+    description_filter = Map.get(params, "description", "")
+    creator_filter = Map.get(params, "creator", "")
+    collection_code_filter = Map.get(params, "collection_code", "")
+    access_level_filter = Map.get(params, "access_level", "")
+    unit_id_filter = Map.get(params, "unit_id", "")
+    resource_glam_type_filter = Map.get(params, "resource_glam_type", "")
+    resource_class_filter = Map.get(params, "resource_class", "")
+
     base_query =
       from c in Collection,
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
-        left_join: items in assoc(c, :items),
-        preload: [resource_class: rc, mst_creator: creator, items: items]
+        preload: [resource_class: rc, mst_creator: creator]
 
     # Apply filters
     filtered_query =
@@ -90,15 +106,31 @@ defmodule Voile.Search.Collections do
       |> filter_by_status(status)
       |> filter_by_glam_type(glam_type)
       |> filter_by_search_query(query)
+      |> filter_by_title(title_filter)
+      |> filter_by_description(description_filter)
+      |> filter_by_creator(creator_filter)
+      |> filter_by_collection_code(collection_code_filter)
+      |> filter_by_access_level(access_level_filter)
+      |> filter_by_unit_id(unit_id_filter)
+      |> filter_by_resource_glam_type(resource_glam_type_filter)
+      |> filter_by_resource_class(resource_class_filter)
 
     # Get total count for pagination
     total_count = Repo.aggregate(filtered_query, :count, :id)
     total_pages = ceil(total_count / per_page)
 
-    # Get paginated results
+    # Get paginated results with relevance-based sorting
     results =
       filtered_query
-      |> order_by([c], desc: :updated_at)
+      |> order_by([c],
+        # Prioritize exact title matches, then title contains, then recent updates
+        desc: fragment("CASE WHEN LOWER(?) = LOWER(?) THEN 3
+                            WHEN LOWER(?) LIKE LOWER(?) THEN 2
+                            ELSE 1 END", c.title, ^query, c.title, ^"%#{query}%"),
+        desc: :updated_at,
+        # Final tiebreaker for deterministic results
+        desc: :id
+      )
       |> limit(^per_page)
       |> offset(^((page - 1) * per_page))
       |> Repo.all()
@@ -114,38 +146,36 @@ defmodule Voile.Search.Collections do
 
   @doc """
   Advanced search with multiple parameters and filters.
+  Focus on collections with GLAM type filtering.
   """
   def advanced_search(search_params, _user_role \\ :public, opts \\ %{}) do
-    # This is a placeholder implementation for advanced search
-    # You can expand this based on your specific requirements
-
-    query = Map.get(search_params, :title, Map.get(search_params, :query, ""))
     page = Map.get(opts, :page, 1)
-    search_type = Map.get(opts, :type, :both)
+    search_type = Map.get(opts, :type, "collections")
+    glam_type = Map.get(opts, :glam_type, "quick")
+    per_page = Map.get(opts, :per_page, 10)
 
     collections_result =
-      if search_type in [:collections, :both] do
-        search_collections(%{
-          "q" => query,
-          "page" => Integer.to_string(page),
-          "per_page" => "10"
-        })
-      else
-        %{results: [], total_count: 0}
-      end
+      if search_type in ["collections", "both"] do
+        # search_params already has string keys, so we can use them directly
+        search_collection_params =
+          search_params
+          |> Map.merge(%{
+            "page" => Integer.to_string(page),
+            "per_page" => Integer.to_string(per_page),
+            "glam_type" => glam_type
+          })
 
-    items_result =
-      if search_type in [:items, :both] do
-        # Placeholder for items search
-        %{results: [], total_count: 0}
+        search_collections(search_collection_params)
       else
         %{results: [], total_count: 0}
       end
 
     %{
       collections: %{results: collections_result.results, total: collections_result.total_count},
-      items: %{results: items_result.results, total: items_result.total_count},
-      total_results: collections_result.total_count + items_result.total_count
+      total_results: collections_result.total_count,
+      total_pages: collections_result.total_pages,
+      current_page: collections_result.current_page,
+      per_page: collections_result.per_page
     }
   end
 
@@ -210,5 +240,56 @@ defmodule Voile.Search.Collections do
       ilike(c.title, ^"%#{search_query}%") or
         ilike(c.description, ^"%#{search_query}%")
     )
+  end
+
+  defp filter_by_title(query, ""), do: query
+
+  defp filter_by_title(query, title) do
+    where(query, [c], ilike(c.title, ^"%#{title}%"))
+  end
+
+  defp filter_by_description(query, ""), do: query
+
+  defp filter_by_description(query, description) do
+    where(query, [c], ilike(c.description, ^"%#{description}%"))
+  end
+
+  defp filter_by_creator(query, ""), do: query
+
+  defp filter_by_creator(query, creator) do
+    where(query, [c, _rc, creator_join], ilike(creator_join.creator_name, ^"%#{creator}%"))
+  end
+
+  defp filter_by_access_level(query, ""), do: query
+
+  defp filter_by_access_level(query, access_level) do
+    where(query, [c], c.access_level == ^access_level)
+  end
+
+  defp filter_by_collection_code(query, ""), do: query
+
+  defp filter_by_collection_code(query, collection_code) do
+    where(query, [c], ilike(c.collection_code, ^"%#{collection_code}%"))
+  end
+
+  defp filter_by_unit_id(query, ""), do: query
+
+  defp filter_by_unit_id(query, unit_id) do
+    case Integer.parse(unit_id) do
+      {id, ""} -> where(query, [c], c.unit_id == ^id)
+      _ -> query
+    end
+  end
+
+  defp filter_by_resource_glam_type(query, ""), do: query
+
+  defp filter_by_resource_glam_type(query, resource_glam_type) do
+    where(query, [c, rc], rc.glam_type == ^resource_glam_type)
+  end
+
+  defp filter_by_resource_class(query, ""), do: query
+
+  defp filter_by_resource_class(query, resource_class) do
+    where(query, [c, rc], ilike(rc.label, ^"%#{resource_class}%"))
   end
 end

@@ -13,6 +13,7 @@ defmodule Voile.Schema.Catalog.Collection do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "collections" do
+    field :collection_code, :string
     field :status, :string
     field :description, :string
     field :title, :string

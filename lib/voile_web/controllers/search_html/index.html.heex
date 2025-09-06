@@ -53,8 +53,6 @@
             <option value="collections" selected={@search_type == "collections"}>
               Collections
             </option>
-            
-            <option value="items" selected={@search_type == "items"}>Items</option>
           </select>
           <button
             type="submit"
@@ -73,15 +71,12 @@
           <%= if @search_type == "universal" do %>
             <p class="text-gray-700 dark:text-gray-300">
               Found <strong>{@results.total_results}</strong>
-              results for "<strong><%= @query %></strong>"
-              ({@results.collections.total} collections, {@results.items.total} items)
+              collections for "<strong><%= @query %></strong>"
             </p>
           <% else %>
             <p class="text-gray-700 dark:text-gray-300">
-              Found
-              <strong>{@results.total}</strong> {if @search_type == "collections",
-                do: "collections",
-                else: "items"} for "<strong><%= @query %></strong>"
+              Found <strong>{@results.total_results}</strong>
+              collections for "<strong><%= @query %></strong>"
             </p>
           <% end %>
         </div>
@@ -109,19 +104,38 @@
                 <%= for collection <- @results.collections.results do %>
                   <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <div class="flex justify-between items-start">
+                      <div class="mx-4">
+                        <%= if collection.thumbnail do %>
+                          <img
+                            src={collection.thumbnail}
+                            alt={collection.title |> trim_title()}
+                            class="w-16 h-26 object-cover rounded-md"
+                          />
+                        <% else %>
+                          <div class="w-16 h-26 bg-gray-200 dark:bg-gray-500 flex items-center justify-center rounded-md">
+                            <span class="text-gray-500 dark:text-gray-400 text-sm text-center">
+                              No Image
+                            </span>
+                          </div>
+                        <% end %>
+                      </div>
+                      
                       <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
+                        <h5
+                          class="font-medium text-gray-900 dark:text-white"
+                          title={collection.title}
+                        >
                           <.link
                             href={~p"/collections/#{collection.id}"}
                             class="hover:text-blue-600 dark:hover:text-blue-400"
                           >
-                            {collection.title}
+                            {collection.title |> trim_title()}
                           </.link>
-                        </h3>
+                        </h5>
                         
                         <%= if collection.description do %>
-                          <p class="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                            {collection.description}
+                          <p class="text-gray-600 dark:text-gray-300 mt-1">
+                            {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
                         
@@ -132,7 +146,12 @@
                           
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
-                          </span> <span>Items: {length(collection.items || [])}</span>
+                          </span>
+                          <%= if collection.resource_class do %>
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {collection.resource_class.glam_type}
+                            </span>
+                          <% end %>
                         </div>
                       </div>
                       
@@ -158,72 +177,6 @@
               <% end %>
             </div>
           <% end %>
-          <!-- Items Section -->
-          <%= if length(@results.items.results) > 0 do %>
-            <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
-              <div class="p-4 border-b border-gray-200 dark:border-gray-600">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    >
-                    </path>
-                  </svg>
-                  Items ({@results.items.total})
-                </h2>
-              </div>
-              
-              <div class="divide-y divide-gray-200 dark:divide-gray-600">
-                <%= for item <- @results.items.results do %>
-                  <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <div class="flex justify-between items-start">
-                      <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
-                          <.link
-                            href={~p"/items/#{item.id}"}
-                            class="hover:text-blue-600 dark:hover:text-blue-400"
-                          >
-                            {item.collection.title}
-                          </.link>
-                        </h3>
-                        
-                        <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
-                          <span>Code: {item.item_code}</span>
-                          <%= if item.inventory_code do %>
-                            <span>Inventory: {item.inventory_code}</span>
-                          <% end %>
-                           <span>Location: {item.location}</span>
-                        </div>
-                      </div>
-                      
-                      <div class="ml-4 text-right">
-                        <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
-                          {String.capitalize(item.availability || "unknown")}
-                        </span>
-                        <div class="text-xs text-gray-500 mt-1">
-                          {String.capitalize(item.condition || "unknown")}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-              
-              <%= if @results.items.total > length(@results.items.results) do %>
-                <div class="p-4 bg-gray-50 dark:bg-gray-800 text-center">
-                  <.link
-                    href={~p"/search?q=#{@query}&type=items"}
-                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-                  >
-                    View all {@results.items.total} items →
-                  </.link>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
         <% else %>
           <!-- Single Type Results -->
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
@@ -232,19 +185,38 @@
                 <%= for collection <- @results.results do %>
                   <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <div class="flex justify-between items-start">
+                      <div class="mx-4">
+                        <%= if collection.thumbnail do %>
+                          <img
+                            src={collection.thumbnail}
+                            alt={collection.title |> trim_title()}
+                            class="w-16 h-26 object-cover rounded-md"
+                          />
+                        <% else %>
+                          <div class="w-16 h-26 bg-gray-200 dark:bg-gray-500 flex items-center justify-center rounded-md">
+                            <span class="text-gray-500 dark:text-gray-400 text-sm text-center">
+                              No Image
+                            </span>
+                          </div>
+                        <% end %>
+                      </div>
+                      
                       <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
+                        <h5
+                          class="font-medium text-gray-900 dark:text-white"
+                          title={collection.title}
+                        >
                           <.link
                             href={~p"/collections/#{collection.id}"}
                             class="hover:text-blue-600 dark:hover:text-blue-400"
                           >
-                            {collection.title}
+                            {collection.title |> trim_title()}
                           </.link>
-                        </h3>
+                        </h5>
                         
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
-                            {collection.description}
+                            {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
                         
@@ -255,7 +227,12 @@
                           
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
-                          </span> <span>Items: {length(collection.items || [])}</span>
+                          </span>
+                          <%= if collection.resource_class do %>
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {collection.resource_class.glam_type}
+                            </span>
+                          <% end %>
                         </div>
                       </div>
                       
@@ -269,36 +246,58 @@
                 <% end %>
               </div>
             <% else %>
+              <!-- No other search types supported, show collections only -->
               <div class="divide-y divide-gray-200 dark:divide-gray-600">
-                <%= for item <- @results.results do %>
-                  <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <div class="flex justify-between items-start">
+                <%= for collection <- @results.results do %>
+                  <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    <!-- Thumbnail -->
+                    <%= if collection.thumbnail_url do %>
+                      <div class="flex-shrink-0">
+                        <img
+                          src={collection.thumbnail_url}
+                          alt="Collection thumbnail"
+                          class="w-16 h-16 object-cover rounded-lg"
+                        />
+                      </div>
+                    <% end %>
+                    <!-- Collection Info -->
+                    <div class="flex justify-between items-start flex-grow">
                       <div class="flex-1">
-                        <h3 class="font-medium text-gray-900 dark:text-white">
+                        <h5 class="font-medium text-gray-900 dark:text-white">
                           <.link
-                            href={~p"/items/#{item.id}"}
+                            href={~p"/collections/#{collection.id}"}
                             class="hover:text-blue-600 dark:hover:text-blue-400"
                           >
-                            {item.collection.title}
+                            {collection.title |> trim_title()}
                           </.link>
-                        </h3>
+                        </h5>
                         
-                        <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
-                          <span>Code: {item.item_code}</span>
-                          <%= if item.inventory_code do %>
-                            <span>Inventory: {item.inventory_code}</span>
+                        <%= if collection.description do %>
+                          <p class="text-gray-600 dark:text-gray-300 mt-1">
+                            {collection.description |> trim_and_reduce_description()}
+                          </p>
+                        <% end %>
+                        
+                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          <%= if collection.mst_creator do %>
+                            <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                           <span>Location: {item.location}</span>
+                          
+                          <span>
+                            Type: {String.capitalize(collection.collection_type || "Unknown")}
+                          </span>
+                          <%= if collection.resource_class do %>
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {collection.resource_class.glam_type}
+                            </span>
+                          <% end %>
                         </div>
                       </div>
                       
-                      <div class="ml-4 text-right">
-                        <span class={"px-2 py-1 text-xs rounded-full #{availability_class(item.availability)}"}>
-                          {String.capitalize(item.availability || "unknown")}
+                      <div class="ml-4">
+                        <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
+                          {String.capitalize(collection.status || "unknown")}
                         </span>
-                        <div class="text-xs text-gray-500 mt-1">
-                          {String.capitalize(item.condition || "unknown")}
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -307,33 +306,55 @@
             <% end %>
             <!-- Pagination -->
             <%= if @results.total_pages > 1 do %>
-              <div class="p-4 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
-                <div class="text-sm text-gray-700 dark:text-gray-300">
-                  Showing page {@results.page} of {@results.total_pages} ({@results.total} total results)
-                </div>
-                
-                <div class="flex gap-2">
+              <div class="p-4 border-t border-gray-200 dark:border-gray-600">
+                <div class="flex justify-center items-center space-x-2 mb-4">
                   <%= if @results.has_prev do %>
                     <.link
                       href={
-                        ~p"/search?q=#{@query}&type=#{@search_type}&page=#{@results.page - 1}"
+                        ~p"/search?q=#{@query}&type=#{@search_type}&glam_type=#{@glam_type}&page=#{@results.page - 1}"
                       }
-                      class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      Previous
+                      ← Previous
                     </.link>
                   <% end %>
+                  
+                  <div class="flex items-center space-x-1">
+                    <%= for page_num <- page_range(@results.page, @results.total_pages) do %>
+                      <%= if page_num == @results.page do %>
+                        <span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded-md dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
+                          {page_num}
+                        </span>
+                      <% else %>
+                        <.link
+                          href={
+                            ~p"/search?q=#{@query}&type=#{@search_type}&glam_type=#{@glam_type}&page=#{page_num}"
+                          }
+                          class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                        >
+                          {page_num}
+                        </.link>
+                      <% end %>
+                    <% end %>
+                  </div>
                   
                   <%= if @results.has_next do %>
                     <.link
                       href={
-                        ~p"/search?q=#{@query}&type=#{@search_type}&page=#{@results.page + 1}"
+                        ~p"/search?q=#{@query}&type=#{@search_type}&glam_type=#{@glam_type}&page=#{@results.page + 1}"
                       }
-                      class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      Next
+                      Next →
                     </.link>
                   <% end %>
+                </div>
+                <!-- Results per page information -->
+                <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+                  Showing {(@results.page - 1) * @results.per_page + 1} to {min(
+                    @results.page * @results.per_page,
+                    @results.total_results
+                  )} of {@results.total_results} results
                 </div>
               </div>
             <% end %>
@@ -341,7 +362,7 @@
         <% end %>
         <!-- No Results -->
         <%= if (@search_type == "universal" and @results.total_results == 0) or 
-              (@search_type != "universal" and @results.total == 0) do %>
+              (@search_type != "universal" and @results.total_results == 0) do %>
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-8 text-center">
             <svg
               class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"

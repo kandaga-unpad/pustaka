@@ -10,6 +10,11 @@ defmodule VoileWeb.Frontend.Collections.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    total_collections = Collection.count_collections()
+    nodes = Collection.get_all_nodes()
+
+    dbg(total_collections)
+
     {:ok,
      socket
      |> assign(:page_title, "Browse Collections")
@@ -18,8 +23,9 @@ defmodule VoileWeb.Frontend.Collections.Index do
      |> assign(:current_page, 1)
      |> assign(:total_pages, 1)
      |> assign(:search_query, "")
-     |> assign(:filter_type, "all")
+     |> assign(:filter_unit_id, "all")
      |> assign(:filter_status, "published")
+     |> assign(:nodes, nodes)
      |> stream_configure(:collections, dom_id: &"collection-#{&1.id}")}
   end
 
@@ -27,26 +33,26 @@ defmodule VoileWeb.Frontend.Collections.Index do
   def handle_params(params, _uri, socket) do
     page = get_page_from_params(params)
     search_query = Map.get(params, "q", "")
-    filter_type = Map.get(params, "type", "all")
+    filter_unit_id = Map.get(params, "unit_id", "all")
     filter_status = Map.get(params, "status", "published")
 
     socket =
       socket
       |> assign(:current_page, page)
       |> assign(:search_query, search_query)
-      |> assign(:filter_type, filter_type)
+      |> assign(:filter_unit_id, filter_unit_id)
       |> assign(:filter_status, filter_status)
       |> assign(:loading, true)
 
-    send(self(), {:load_collections, page, search_query, filter_type, filter_status})
+    send(self(), {:load_collections, page, search_query, filter_unit_id, filter_status})
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_info({:load_collections, page, search_query, filter_type, filter_status}, socket) do
+  def handle_info({:load_collections, page, search_query, filter_unit_id, filter_status}, socket) do
     {collections, total_pages} =
-      Collection.load_collections(page, search_query, filter_type, filter_status)
+      Collection.load_collections(page, search_query, filter_unit_id, filter_status)
 
     {:noreply,
      socket
@@ -57,10 +63,23 @@ defmodule VoileWeb.Frontend.Collections.Index do
   end
 
   @impl true
-  def handle_event("search", %{"q" => query}, socket) do
+  def handle_event("search", %{"q" => query, "unit_id" => unit_id, "status" => status}, socket) do
     params = %{
       "q" => query,
-      "type" => socket.assigns.filter_type,
+      "unit_id" => unit_id,
+      "status" => status,
+      "page" => "1"
+    }
+
+    {:noreply, push_patch(socket, to: ~p"/collections?#{params}")}
+  end
+
+  @impl true
+  def handle_event("search", %{"q" => query}, socket) do
+    # Fallback for cases where hidden fields might not be present
+    params = %{
+      "q" => query,
+      "unit_id" => socket.assigns.filter_unit_id,
       "status" => socket.assigns.filter_status,
       "page" => "1"
     }
@@ -69,10 +88,10 @@ defmodule VoileWeb.Frontend.Collections.Index do
   end
 
   @impl true
-  def handle_event("filter_type", %{"type" => type}, socket) do
+  def handle_event("filter_unit", %{"unit_id" => unit_id}, socket) do
     params = %{
       "q" => socket.assigns.search_query,
-      "type" => type,
+      "unit_id" => unit_id,
       "status" => socket.assigns.filter_status,
       "page" => "1"
     }
@@ -84,7 +103,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
   def handle_event("filter_status", %{"status" => status}, socket) do
     params = %{
       "q" => socket.assigns.search_query,
-      "type" => socket.assigns.filter_type,
+      "unit_id" => socket.assigns.filter_unit_id,
       "status" => status,
       "page" => "1"
     }
@@ -118,7 +137,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse Collections</h1>
                 
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  Discover our library's curated collections
+                  Discover our curated collections
                 </p>
               </div>
               
@@ -140,6 +159,9 @@ defmodule VoileWeb.Frontend.Collections.Index do
               <!-- Search -->
               <div class="flex-1">
                 <form phx-submit="search" phx-change="search" class="relative">
+                  <!-- Hidden fields to preserve current filter state -->
+                  <input type="hidden" name="unit_id" value={@filter_unit_id} />
+                  <input type="hidden" name="status" value={@filter_status} />
                   <input
                     type="text"
                     name="q"
@@ -153,41 +175,37 @@ defmodule VoileWeb.Frontend.Collections.Index do
                   </div>
                 </form>
               </div>
-              <!-- Type Filter -->
+              <!-- Unit Filter -->
               <div class="sm:w-48">
-                <select
-                  name="type"
-                  phx-change="filter_type"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="all" selected={@filter_type == "all"}>All Types</option>
-                  
-                  <option value="book" selected={@filter_type == "book"}>Books</option>
-                  
-                  <option value="journal" selected={@filter_type == "journal"}>Journals</option>
-                  
-                  <option value="digital" selected={@filter_type == "digital"}>Digital</option>
-                  
-                  <option value="multimedia" selected={@filter_type == "multimedia"}>
-                    Multimedia
-                  </option>
-                  
-                  <option value="reference" selected={@filter_type == "reference"}>Reference</option>
-                </select>
+                <form phx-change="filter_unit">
+                  <select
+                    name="unit_id"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all" selected={@filter_unit_id == "all"}>All Location</option>
+                    
+                    <%= for node <- @nodes do %>
+                      <option value={node.id} selected={@filter_unit_id == to_string(node.id)}>
+                        {node.name} ({node.abbr})
+                      </option>
+                    <% end %>
+                  </select>
+                </form>
               </div>
               <!-- Status Filter -->
               <div class="sm:w-48">
-                <select
-                  name="status"
-                  phx-change="filter_status"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="published" selected={@filter_status == "published"}>
-                    Available
-                  </option>
-                  
-                  <option value="all" selected={@filter_status == "all"}>All Status</option>
-                </select>
+                <form phx-change="filter_status">
+                  <select
+                    name="status"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="published" selected={@filter_status == "published"}>
+                      Available
+                    </option>
+                    
+                    <option value="all" selected={@filter_status == "all"}>All Status</option>
+                  </select>
+                </form>
               </div>
             </div>
           </div>
@@ -226,7 +244,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                   current_page={@current_page}
                   total_pages={@total_pages}
                   search_query={@search_query}
-                  filter_type={@filter_type}
+                  filter_unit_id={@filter_unit_id}
                   filter_status={@filter_status}
                 />
               <% end %>

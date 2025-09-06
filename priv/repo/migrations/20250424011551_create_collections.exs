@@ -4,6 +4,7 @@ defmodule Voile.Repo.Migrations.CreateCollections do
   def change do
     create table(:collections, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
+      add :collection_code, :string
       add :title, :text
       add :description, :text
       add :thumbnail, :string
@@ -23,6 +24,7 @@ defmodule Voile.Repo.Migrations.CreateCollections do
     create index(:collections, [:template_id])
     create index(:collections, [:creator_id])
     create index(:collections, [:unit_id])
+    create unique_index(:collections, [:collection_code])
 
     alter table(:collections) do
       add :parent_id, references(:collections, type: :binary_id, on_delete: :nilify_all)

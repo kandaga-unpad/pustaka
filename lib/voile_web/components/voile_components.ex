@@ -770,7 +770,7 @@ defmodule VoileWeb.VoileComponents do
   attr :current_page, :integer, required: true
   attr :total_pages, :integer, required: true
   attr :search_query, :string, default: ""
-  attr :filter_type, :string, default: "all"
+  attr :filter_unit_id, :string, default: "all"
   attr :filter_status, :string, default: "published"
   attr :socket, :map, default: nil
 
@@ -780,7 +780,7 @@ defmodule VoileWeb.VoileComponents do
       <div class="flex flex-1 justify-between sm:hidden">
         <%= if @current_page > 1 do %>
           <.link
-            patch={build_page_url(@current_page - 1, @search_query, @filter_type, @filter_status)}
+            patch={build_page_url(@current_page - 1, @search_query, @filter_unit_id, @filter_status)}
             class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Previous
@@ -789,8 +789,8 @@ defmodule VoileWeb.VoileComponents do
         
         <%= if @current_page < @total_pages do %>
           <.link
-            patch={build_page_url(@current_page + 1, @search_query, @filter_type, @filter_status)}
-            class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            patch={build_page_url(@current_page + 1, @search_query, @filter_unit_id, @filter_status)}
+            class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 hover:bg-gray-50"
           >
             Next
           </.link>
@@ -809,7 +809,9 @@ defmodule VoileWeb.VoileComponents do
           <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
             <%= if @current_page > 1 do %>
               <.link
-                patch={build_page_url(@current_page - 1, @search_query, @filter_type, @filter_status)}
+                patch={
+                  build_page_url(@current_page - 1, @search_query, @filter_unit_id, @filter_status)
+                }
                 class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
               >
                 <.icon name="hero-chevron-left" class="h-5 w-5" />
@@ -818,19 +820,19 @@ defmodule VoileWeb.VoileComponents do
             
             <%= for page <- frontend_pagination_pages(@current_page, @total_pages) do %>
               <%= if page == :ellipsis do %>
-                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
                   ...
                 </span>
               <% else %>
                 <.link
-                  patch={build_page_url(page, @search_query, @filter_type, @filter_status)}
+                  patch={build_page_url(page, @search_query, @filter_unit_id, @filter_status)}
                   class={[
                     "relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0",
                     if(page == @current_page,
                       do:
-                        "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600",
+                        "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ring-1 ring-inset ring-gray-300",
                       else:
-                        "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                        "text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-offset-0"
                     )
                   ]}
                 >
@@ -841,7 +843,9 @@ defmodule VoileWeb.VoileComponents do
             
             <%= if @current_page < @total_pages do %>
               <.link
-                patch={build_page_url(@current_page + 1, @search_query, @filter_type, @filter_status)}
+                patch={
+                  build_page_url(@current_page + 1, @search_query, @filter_unit_id, @filter_status)
+                }
                 class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
               >
                 <.icon name="hero-chevron-right" class="h-5 w-5" />
@@ -1179,11 +1183,11 @@ defmodule VoileWeb.VoileComponents do
   def condition_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
 
-  def build_page_url(page, search_query, filter_type, filter_status) do
+  def build_page_url(page, search_query, filter_unit_id, filter_status) do
     params =
       %{
         "q" => search_query,
-        "type" => filter_type,
+        "unit_id" => filter_unit_id,
         "status" => filter_status,
         "page" => page
       }

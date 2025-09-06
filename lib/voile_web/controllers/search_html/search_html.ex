@@ -102,4 +102,110 @@ defmodule VoileWeb.SearchHTML do
       _ -> "Find collections and resources across all categories"
     end
   end
+
+  @doc """
+  Generates a range of page numbers for pagination
+  """
+  def page_range(current_page, total_pages, window \\ 5) do
+    half_window = div(window, 2)
+
+    start_page = max(1, current_page - half_window)
+    end_page = min(total_pages, current_page + half_window)
+
+    # Adjust range if we're near the beginning or end
+    {start_page, end_page} =
+      if end_page - start_page + 1 < window && total_pages >= window do
+        if start_page == 1 do
+          {start_page, min(total_pages, window)}
+        else
+          {max(1, total_pages - window + 1), end_page}
+        end
+      else
+        {start_page, end_page}
+      end
+
+    start_page..end_page
+  end
+
+  @doc """
+  Builds search parameters for pagination links
+  """
+  def build_search_params(search_params, search_type, glam_type, page) do
+    base_params = %{
+      "type" => search_type,
+      "glam_type" => glam_type,
+      "page" => page
+    }
+
+    # Flatten search params and add them to base params
+    search_map =
+      search_params
+      |> Enum.reduce(%{}, fn {key, value}, acc ->
+        if value != "" do
+          Map.put(acc, "search[#{key}]", value)
+        else
+          acc
+        end
+      end)
+
+    Map.merge(base_params, search_map)
+    |> URI.encode_query()
+  end
+
+  @doc """
+  Builds complete URL for advanced search pagination
+  """
+  def build_advanced_search_url(search_params, search_type, glam_type, page) do
+    base_url = "/search/advanced"
+
+    # Build query parameters
+    query_params = [
+      {"type", search_type},
+      {"glam_type", glam_type},
+      {"page", page}
+    ]
+
+    # Add search parameters that have values
+    search_query_params =
+      search_params
+      |> Enum.reduce([], fn {key, value}, acc ->
+        if value != "" do
+          [{"search[#{key}]", value} | acc]
+        else
+          acc
+        end
+      end)
+
+    all_params = query_params ++ search_query_params
+    query_string = URI.encode_query(all_params)
+    "#{base_url}?#{query_string}"
+  end
+
+  @doc """
+  Trim title for display purposes.
+  """
+  def trim_title(title, max_length \\ 55) do
+    trimmed =
+      title |> String.trim() |> String.slice(0, max_length) |> String.trim_trailing()
+
+    if String.length(title |> String.trim()) > max_length do
+      trimmed <> "..."
+    else
+      trimmed
+    end
+  end
+
+  @doc """
+  Trim and reduce description text for display purposes.
+  """
+  def trim_and_reduce_description(description, max_length \\ 100) do
+    trimmed =
+      description |> String.trim() |> String.slice(0, max_length) |> String.trim_trailing()
+
+    if String.length(description |> String.trim()) > max_length do
+      trimmed <> "..."
+    else
+      trimmed
+    end
+  end
 end

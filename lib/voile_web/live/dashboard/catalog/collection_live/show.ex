@@ -32,6 +32,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     collection = Catalog.get_collection!(id)
 
+    dbg(collection.collection_fields)
+
     socket =
       socket
       |> assign(:page_title, page_title(socket.assigns.live_action))

@@ -6,13 +6,16 @@ defmodule Voile.Task.Catalog.Collection do
   import Ecto.Query, warn: false
   alias Voile.Repo
   alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.{Collection, Item}
+  alias Voile.Schema.System.Node
 
   @doc """
   Load collections with filtering, pagination, and search functionality.
+  Now filters by unit_id (node) instead of non-existent collection types.
   """
-  def load_collections(page, search_query, filter_type, filter_status, per_page \\ 12) do
+  def load_collections(page, search_query, filter_unit_id, filter_status, per_page \\ 12) do
     # Build base query with filtering for public access and member-visible collections
-    base_query = build_base_query(search_query, filter_type, filter_status)
+    base_query = build_base_query(search_query, filter_unit_id, filter_status)
 
     # Apply pagination
     pagination_offset = (page - 1) * per_page
@@ -65,7 +68,7 @@ defmodule Voile.Task.Catalog.Collection do
     offset = (page - 1) * per_page
 
     query =
-      from i in Voile.Schema.Catalog.Item,
+      from i in Item,
         where: i.collection_id == ^collection_id,
         where: i.status == "active",
         preload: [:node],
@@ -77,7 +80,7 @@ defmodule Voile.Task.Catalog.Collection do
 
     # Calculate total pages
     total_count =
-      from(i in Voile.Schema.Catalog.Item,
+      from(i in Item,
         where: i.collection_id == ^collection_id,
         where: i.status == "active"
       )
@@ -88,13 +91,26 @@ defmodule Voile.Task.Catalog.Collection do
     {items, total_pages}
   end
 
+  def count_collections do
+    from(c in Collection)
+    |> where([c], c.access_level in ["public", "restricted"])
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Get all nodes for the unit filter dropdown.
+  """
+  def get_all_nodes do
+    Repo.all(from n in Node, order_by: n.name)
+  end
+
   # Private functions
 
-  defp build_base_query(search_query, filter_type, filter_status) do
-    from(c in Voile.Schema.Catalog.Collection)
+  defp build_base_query(search_query, filter_unit_id, filter_status) do
+    from(c in Collection)
     |> where([c], c.access_level in ["public", "restricted"])
     |> filter_by_status(filter_status)
-    |> filter_by_type(filter_type)
+    |> filter_by_unit_id(filter_unit_id)
     |> search_by_query(search_query)
   end
 
@@ -104,10 +120,14 @@ defmodule Voile.Task.Catalog.Collection do
     where(query, [c], c.status == ^status)
   end
 
-  defp filter_by_type(query, "all"), do: query
+  defp filter_by_unit_id(query, "all"), do: query
+  defp filter_by_unit_id(query, ""), do: query
 
-  defp filter_by_type(query, type) do
-    where(query, [c], c.collection_type == ^type)
+  defp filter_by_unit_id(query, unit_id) do
+    case Integer.parse(unit_id) do
+      {id, ""} -> where(query, [c], c.unit_id == ^id)
+      _ -> query
+    end
   end
 
   defp search_by_query(query, ""), do: query

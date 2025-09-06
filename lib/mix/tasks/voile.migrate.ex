@@ -28,6 +28,7 @@ defmodule Mix.Tasks.Voile.Migrate do
   Usage:
     mix voile.migrate                    # Import all data types from CSV
     mix voile.migrate --source mysql     # Import all data types from MySQL/MariaDB
+    mix voile.migrate --only masters     # Import only master data from CSV
     mix voile.migrate --only biblio      # Import only bibliography data from CSV
     mix voile.migrate --only items --source mysql  # Import only items from MySQL/MariaDB
     mix voile.migrate --only loans       # Import only loan data from CSV

@@ -8,12 +8,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   alias Voile.Schema.Metadata
   alias Voile.Schema.System
 
+  import VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents
+
   @impl true
   def mount(_params, _session, socket) do
     page = 1
     per_page = 10
     {collections, total_pages} = Catalog.list_collections_paginated(page, per_page)
-    tree_collections = Catalog.list_collections_tree()
+    # Limit tree collections to prevent performance issues
+    tree_collections = Catalog.list_collections_tree(50)
     collection_type = Metadata.list_resource_class()
     collection_properties = Metadata.list_metadata_properties_by_vocabulary()
     creator = Master.list_mst_creator()
@@ -81,8 +84,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         {VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent, {:saved, collection}},
         socket
       ) do
-    # Refresh tree collections when a new collection is saved
-    tree_collections = Catalog.list_collections_tree()
+    # Refresh tree collections when a new collection is saved (limited)
+    tree_collections = Catalog.list_collections_tree(50)
 
     socket =
       socket
@@ -97,8 +100,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     collection = Catalog.get_collection!(id)
     {:ok, _} = Catalog.delete_collection(collection)
 
-    # Refresh both views
-    tree_collections = Catalog.list_collections_tree()
+    # Refresh both views with limited tree collections
+    tree_collections = Catalog.list_collections_tree(50)
 
     socket =
       socket
@@ -111,6 +114,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   @impl true
   def handle_event("toggle_view_mode", _params, socket) do
     new_mode = if socket.assigns.view_mode == "list", do: "tree", else: "list"
+
+    # When switching to tree mode, reload limited tree collections
+    socket =
+      if new_mode == "tree" do
+        tree_collections = Catalog.list_collections_tree(50)
+        assign(socket, :tree_collections, tree_collections)
+      else
+        socket
+      end
+
     {:noreply, assign(socket, :view_mode, new_mode)}
   end
 
@@ -128,80 +141,5 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:total_pages, total_pages)
 
     {:noreply, socket}
-  end
-
-  # Tree component for rendering hierarchical collections
-  defp collection_tree_item(assigns) do
-    ~H"""
-    <div class="ml-0 border-l-2 border-gray-200 pl-4 mb-4">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <%= if @collection.thumbnail do %>
-              <img src={@collection.thumbnail} class="w-12 h-12 object-cover rounded" alt="Thumbnail" />
-            <% else %>
-              <img src="/images/v.png" class="w-12 h-12 object-cover rounded" alt="No Thumbnail" />
-            <% end %>
-            
-            <div>
-              <div class="flex items-center space-x-2">
-                <h3 class="font-semibold text-lg">{@collection.title}</h3>
-                
-                <%= if @collection.collection_type do %>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                    {@collection.collection_type}
-                  </span>
-                <% end %>
-                
-                <%= if @collection.sort_order do %>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    #{@collection.sort_order}
-                  </span>
-                <% end %>
-              </div>
-              
-              <div class="text-sm text-gray-600">
-                <span>
-                  by {(@collection.mst_creator && @collection.mst_creator.creator_name) || "Unknown"}
-                </span> <span class="mx-2">•</span>
-                <span class="capitalize">{@collection.status}</span> <span class="mx-2">•</span>
-                <span class="capitalize">{@collection.access_level}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="flex items-center space-x-2">
-            <.link
-              navigate={~p"/manage/catalog/collections/#{@collection.id}"}
-              class="text-blue-600 hover:text-blue-800"
-            >
-              <.icon name="hero-eye" class="w-5 h-5" />
-            </.link>
-            <.link
-              patch={~p"/manage/catalog/collections/#{@collection.id}/edit"}
-              class="text-green-600 hover:text-green-800"
-            >
-              <.icon name="hero-pencil" class="w-5 h-5" />
-            </.link>
-            <.link
-              phx-click={JS.push("delete", value: %{id: @collection.id})}
-              data-confirm="Are you sure?"
-              class="text-red-600 hover:text-red-800"
-            >
-              <.icon name="hero-trash" class="w-5 h-5" />
-            </.link>
-          </div>
-        </div>
-      </div>
-      
-      <%= if @collection.children && !Enum.empty?(@collection.children) do %>
-        <div class="ml-8 mt-2">
-          <%= for child <- @collection.children do %>
-            <.collection_tree_item collection={child} />
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-    """
   end
 end

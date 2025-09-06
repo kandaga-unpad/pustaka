@@ -146,18 +146,67 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt="Select Collection Type"
             required_value={true}
           />
-          <!-- Hierarchical Fields -->
-          <.input
-            field={@form[:parent_id]}
-            label="Parent Collection (Optional)"
-            type="select"
-            options={
-              Enum.map(@potential_parents, fn pc ->
-                {"#{pc.title} (#{pc.mst_creator && pc.mst_creator.creator_name})", pc.id}
-              end)
-            }
-            prompt="None - This will be a root collection"
-          />
+          <!-- Hierarchical Fields - Searchable Parent Collection -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Parent Collection (Optional)
+            </label>
+            <div class="relative">
+              <input
+                type="text"
+                name="parent_search"
+                value={@parent_search || ""}
+                placeholder="Search for parent collection..."
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                phx-change="search_parent"
+                phx-target={@myself}
+                phx-debounce="300"
+                autocomplete="off"
+              />
+              <input
+                type="hidden"
+                name="collection[parent_id]"
+                value={@form.params["parent_id"] || ""}
+              />
+              <%= if @parent_search_results && length(@parent_search_results) > 0 do %>
+                <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <%= for collection <- @parent_search_results do %>
+                    <div
+                      class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      phx-click="select_parent"
+                      phx-target={@myself}
+                      phx-value-id={collection.id}
+                      phx-value-title={collection.title}
+                    >
+                      <div class="font-medium text-gray-900">{collection.title}</div>
+                      
+                      <div class="text-sm text-gray-500">
+                        by {(collection.mst_creator && collection.mst_creator.creator_name) ||
+                          "Unknown"}
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <%= if @form.params["parent_id"] && @form.params["parent_id"] != "" do %>
+                <div class="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
+                  <span class="text-sm text-blue-800">
+                    Selected: {@selected_parent_title || "Loading..."}
+                  </span>
+                  <button
+                    type="button"
+                    class="text-blue-600 hover:text-blue-800"
+                    phx-click="clear_parent"
+                    phx-target={@myself}
+                  >
+                    ✕
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          
           <.input
             field={@form[:collection_type]}
             label="Collection Type"
@@ -743,8 +792,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       assigns.collection_type
       |> Enum.map(fn type -> {type.label, type.id} end)
 
-    # Get potential parent collections (excluding current collection)
-    potential_parents = Voile.Schema.Catalog.list_potential_parent_collections(collection.id)
+    # Don't load all potential parents on mount to avoid performance issues
+    # Instead, we'll load them on search
 
     {original_collection, _changeset} =
       case assigns.action do
@@ -803,7 +852,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:original_collection, original_collection)
-     |> assign(:potential_parents, potential_parents)
+     |> assign(:parent_search, "")
+     |> assign(:parent_search_results, [])
+     |> assign(:selected_parent_title, get_selected_parent_title(collection))
      |> assign(:creator_input, nil)
      |> assign(:creator_list, assigns.creator_list)
      |> assign(:creator_suggestions, [])
@@ -1021,8 +1072,63 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     {:noreply, socket}
   end
 
+  # Parent collection search events
+  def handle_event("search_parent", %{"parent_search" => search_term}, socket) do
+    results =
+      if String.trim(search_term) != "" do
+        collection_id = socket.assigns.collection.id
+        Catalog.search_potential_parent_collections(search_term, collection_id, 10)
+      else
+        []
+      end
+
+    {:noreply,
+     socket
+     |> assign(:parent_search, search_term)
+     |> assign(:parent_search_results, results)}
+  end
+
+  def handle_event("select_parent", %{"id" => parent_id, "title" => title}, socket) do
+    current_params = socket.assigns.form.params || %{}
+    updated_params = Map.put(current_params, "parent_id", parent_id)
+    changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset, action: :validate))
+     |> assign(:parent_search, "")
+     |> assign(:parent_search_results, [])
+     |> assign(:selected_parent_title, title)}
+  end
+
+  def handle_event("clear_parent", _params, socket) do
+    current_params = socket.assigns.form.params || %{}
+    updated_params = Map.put(current_params, "parent_id", nil)
+    changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
+
+    {:noreply,
+     socket
+     |> assign(:form, to_form(changeset, action: :validate))
+     |> assign(:selected_parent_title, nil)}
+  end
+
   defp handle_progress(:thumbnail, entry, socket) do
     handle_thumbnail_progress(:thumbnail, entry, socket)
+  end
+
+  defp get_selected_parent_title(collection) do
+    case collection do
+      %{parent_id: parent_id} when not is_nil(parent_id) ->
+        try do
+          parent = Catalog.get_collection!(parent_id)
+          parent.title
+        rescue
+          _ -> nil
+        end
+
+      _ ->
+        nil
+    end
   end
 
   # defp error_to_string(:too_large), do: "Too large"

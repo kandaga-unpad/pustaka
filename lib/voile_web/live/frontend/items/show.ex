@@ -388,14 +388,15 @@ defmodule VoileWeb.Frontend.Items.Show do
                           <.icon
                             name="hero-phone-solid"
                             class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                          /> <span class="text-gray-900 dark:text-white">(555) 123-4567</span>
+                          /> <span class="text-gray-900 dark:text-white">(+62) 815-7371-0645</span>
                         </div>
                         
                         <div class="flex items-center">
                           <.icon
                             name="hero-envelope-solid"
                             class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                          /> <span class="text-gray-900 dark:text-white">library@example.com</span>
+                          />
+                          <span class="text-gray-900 dark:text-white">perpustakaan@unpad.ac.id</span>
                         </div>
                       </div>
                     </div>
