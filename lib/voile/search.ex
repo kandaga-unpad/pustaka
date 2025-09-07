@@ -80,7 +80,13 @@ defmodule Voile.Search.Collections do
   def search_collections(params \\ %{}) do
     query = Map.get(params, "q", "")
     glam_type = Map.get(params, "glam_type", "quick")
-    status = Map.get(params, "status", "published")
+    # Default to "published" if status is empty or not provided
+    status =
+      case Map.get(params, "status", "published") do
+        "" -> "published"
+        s -> s
+      end
+
     page = String.to_integer(Map.get(params, "page", "1"))
     per_page = String.to_integer(Map.get(params, "per_page", "20"))
 

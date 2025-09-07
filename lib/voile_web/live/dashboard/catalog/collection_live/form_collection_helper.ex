@@ -434,6 +434,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def save_collection(socket, :new, collection_params) do
+    get_unit_abbr =
+      if collection_params["unit_id"] do
+        case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
+          nil -> "UNK"
+          node -> node.abbr
+        end
+      else
+        "UNK"
+      end
+
+    get_collection_type =
+      if collection_params["type_id"] do
+        case Metadata.get_resource_class!(collection_params["type_id"]) do
+          nil -> "UNK"
+          rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
+        end
+      else
+        "UNK"
+      end
+
+    generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+
+    collection_params =
+      Map.put(collection_params, "collection_code", generated_code)
+
     case Catalog.create_collection(collection_params) do
       {:ok, collection} ->
         notify_parent({:saved, collection})
@@ -516,4 +541,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   defp notify_parent(msg),
     do: send(self(), {VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent, msg})
+
+  defp generate_collection_code(unit, collection_type) do
+    timestamp = :os.system_time(:second)
+    random_suffix = :crypto.strong_rand_bytes(3) |> Base.encode16(case: :lower)
+
+    "COLLECTION-#{unit}-#{collection_type}-#{timestamp}-#{random_suffix}"
+  end
 end

@@ -154,8 +154,8 @@ defmodule VoileWeb.Router do
             live "/", Dashboard.Circulation.Fine.Index, :index
             live "/new", Dashboard.Circulation.Fine.Index, :new
             live "/:id", Dashboard.Circulation.Fine.Show, :show
-            live "/:id/payment", Dashboard.Circulation.Fine.Index, :payment
-            live "/:id/waive", Dashboard.Circulation.Fine.Index, :waive
+            live "/:id/payment", Dashboard.Circulation.Fine.Show, :payment
+            live "/:id/waive", Dashboard.Circulation.Fine.Show, :waive
           end
 
           scope "/circulation_history" do

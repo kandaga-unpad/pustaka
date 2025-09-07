@@ -99,14 +99,14 @@
           <div class="flex-shrink-0 h-10 w-10">
             <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
               <span class="text-sm font-medium text-gray-700">
-                {if fine.member, do: String.first(fine.member.full_name || "?"), else: "?"}
+                {if fine.member, do: String.first(fine.member.fullname || "?"), else: "?"}
               </span>
             </div>
           </div>
           
           <div class="ml-4">
             <div class="text-sm font-medium text-gray-900">
-              {if fine.member, do: fine.member.full_name, else: "Unknown Member"}
+              {if fine.member, do: fine.member.fullname, else: "Unknown Member"}
             </div>
             
             <div class="text-sm text-gray-500">ID: {fine.member_id}</div>
@@ -173,29 +173,12 @@
       </:col>
       
       <:action :let={{_id, fine}}>
-        <div class="flex space-x-2">
-          <%= if fine.fine_status in ["pending", "partial_paid"] && !fine.waived do %>
-            <.link
-              navigate={~p"/manage/circulation/fines/#{fine.id}/payment"}
-              class="text-green-600 hover:text-green-900 text-sm font-medium"
-            >
-              Pay
-            </.link>
-            <.link
-              navigate={~p"/manage/circulation/fines/#{fine.id}/waive"}
-              class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-            >
-              Waive
-            </.link>
-          <% end %>
-          
-          <.link
-            navigate={~p"/manage/circulation/fines/#{fine.id}"}
-            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-          >
-            View
-          </.link>
-        </div>
+        <.link
+          navigate={~p"/manage/circulation/fines/#{fine.id}"}
+          class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+        >
+          View Details
+        </.link>
       </:action>
     </.table>
     <!-- Pagination -->
@@ -204,111 +187,6 @@
     </div>
   </div>
 </div>
-<!-- Payment Modal -->
-<.modal
-  :if={@live_action == :payment}
-  id="payment-modal"
-  show
-  on_cancel={JS.patch(~p"/manage/circulation/fines")}
->
-  <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">Process Payment</h3>
-    
-    <div class="bg-gray-50 rounded-md p-4">
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span class="font-medium text-gray-700">Member:</span>
-          <span class="ml-2">{if @fine.member, do: @fine.member.full_name, else: "Unknown"}</span>
-        </div>
-        
-        <div>
-          <span class="font-medium text-gray-700">Fine Type:</span>
-          <span class="ml-2">
-            {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
-          </span>
-        </div>
-        
-        <div>
-          <span class="font-medium text-gray-700">Total Amount:</span>
-          <span class="ml-2">{format_idr(@fine.amount)}</span>
-        </div>
-        
-        <div>
-          <span class="font-medium text-gray-700">Outstanding:</span>
-          <span class="ml-2 font-semibold text-red-600">{format_idr(@fine.balance)}</span>
-        </div>
-      </div>
-    </div>
-    
-    <.form for={%{}} id="payment-form" phx-submit="process_payment" phx-value-id={@fine.id}>
-      <.input
-        name="amount"
-        type="number"
-        step="1"
-        label="Payment Amount (Rp)"
-        placeholder="0"
-        value={(@fine.balance || Decimal.new(0)) |> Decimal.to_float() |> trunc()}
-        required
-      />
-      <.input
-        name="method"
-        type="select"
-        label="Payment Method"
-        options={[
-          {"Cash", "cash"},
-          {"Credit Card", "credit_card"},
-          {"Debit Card", "debit_card"},
-          {"Bank Transfer", "bank_transfer"},
-          {"Online Payment", "online"}
-        ]}
-        required
-      /> <.button type="submit" class="w-full">Process Payment</.button>
-    </.form>
-  </div>
-</.modal>
-<!-- Waive Modal -->
-<.modal
-  :if={@live_action == :waive}
-  id="waive-modal"
-  show
-  on_cancel={JS.patch(~p"/manage/circulation/fines")}
->
-  <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">Waive Fine</h3>
-    
-    <div class="bg-gray-50 rounded-md p-4">
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span class="font-medium text-gray-700">Member:</span>
-          <span class="ml-2">{if @fine.member, do: @fine.member.full_name, else: "Unknown"}</span>
-        </div>
-        
-        <div>
-          <span class="font-medium text-gray-700">Fine Type:</span>
-          <span class="ml-2">
-            {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
-          </span>
-        </div>
-        
-        <div class="col-span-2">
-          <span class="font-medium text-gray-700">Amount to Waive:</span>
-          <span class="ml-2 font-semibold text-red-600">{format_idr(@fine.balance)}</span>
-        </div>
-      </div>
-    </div>
-    
-    <.form for={%{}} id="waive-form" phx-submit="waive_fine" phx-value-id={@fine.id}>
-      <.input
-        name="reason"
-        type="textarea"
-        label="Reason for Waiving"
-        placeholder="Explain why this fine is being waived..."
-        rows="3"
-        required
-      /> <.button type="submit" class="w-full bg-blue-600 hover:bg-blue-700">Waive Fine</.button>
-    </.form>
-  </div>
-</.modal>
 <!-- New Fine Modal -->
 <.modal
   :if={@live_action == :new}
@@ -330,6 +208,7 @@
         name="fine_type"
         type="select"
         label="Fine Type"
+        value=""
         options={[
           {"Overdue", "overdue"},
           {"Lost Item", "lost_item"},

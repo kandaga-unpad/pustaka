@@ -53,6 +53,7 @@ defmodule Voile.Schema.Catalog.Collection do
     collection
     |> cast(attrs, [
       :id,
+      :collection_code,
       :title,
       :description,
       :thumbnail,

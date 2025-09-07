@@ -13,18 +13,26 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Show do
   def handle_params(%{"id" => id}, _, socket) do
     fine = Circulation.get_fine!(id)
 
-    {:noreply,
-     socket
-     |> assign(:fine, fine)
-     |> assign(:page_title, "Fine Details")}
+    socket =
+      socket
+      |> assign(:fine, fine)
+      |> assign(:page_title, "Fine Details")
+
+    case socket.assigns.live_action do
+      action when action in [:payment, :waive] ->
+        {:noreply, socket}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   @impl true
   def handle_event("pay", %{"id" => id}, socket) do
     fine = Circulation.get_fine!(id)
-    current_user_id = socket.assigns.current_user.id
+    current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.pay_fine(fine, fine.amount, "cash", current_user_id) do
+    case Circulation.pay_fine(fine.id, fine.amount, "cash", current_user_id) do
       {:ok, _fine} ->
         {:noreply,
          socket
@@ -39,9 +47,9 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Show do
   @impl true
   def handle_event("waive", %{"id" => id}, socket) do
     fine = Circulation.get_fine!(id)
-    current_user_id = socket.assigns.current_user.id
+    current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.waive_fine(fine, "Waived by librarian", current_user_id) do
+    case Circulation.waive_fine(fine.id, "Waived by librarian", current_user_id) do
       {:ok, _fine} ->
         {:noreply,
          socket
@@ -56,13 +64,52 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Show do
   @impl true
   def handle_event("partial_pay", %{"_id" => id, "amount" => amount}, socket) do
     fine = Circulation.get_fine!(id)
-    current_user_id = socket.assigns.current_user.id
+    current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.pay_fine(fine, Decimal.new(amount), "cash", current_user_id, true) do
+    case Circulation.pay_fine(fine.id, Decimal.new(amount), "cash", current_user_id) do
       {:ok, _fine} ->
         {:noreply,
          socket
          |> put_flash(:info, "Partial payment recorded successfully.")
+         |> push_navigate(to: ~p"/manage/circulation/fines/#{fine.id}")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        dbg(changeset.errors)
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "process_payment",
+        %{"id" => id, "amount" => amount, "method" => method},
+        socket
+      ) do
+    fine = Circulation.get_fine!(id)
+    current_user_id = socket.assigns.current_scope.user.id
+
+    case Circulation.pay_fine(fine.id, Decimal.new(amount), method, current_user_id) do
+      {:ok, _fine} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Payment processed successfully.")
+         |> push_navigate(to: ~p"/manage/circulation/fines/#{fine.id}")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+  @impl true
+  def handle_event("waive_fine", %{"id" => id, "reason" => reason}, socket) do
+    fine = Circulation.get_fine!(id)
+    current_user_id = socket.assigns.current_scope.user.id
+
+    case Circulation.waive_fine(fine.id, reason, current_user_id) do
+      {:ok, _fine} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Fine waived successfully.")
          |> push_navigate(to: ~p"/manage/circulation/fines/#{fine.id}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

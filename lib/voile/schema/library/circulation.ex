@@ -18,8 +18,7 @@ defmodule Voile.Schema.Library.Circulation do
           :transaction,
           :reservation,
           :fine,
-          :processed_by,
-          :waived_by
+          :processed_by
         ],
         order_by: [desc: ch.inserted_at, desc: ch.id],
         offset: ^offset,
@@ -42,8 +41,7 @@ defmodule Voile.Schema.Library.Circulation do
       :transaction,
       :reservation,
       :fine,
-      :processed_by,
-      :waived_by
+      :processed_by
     ])
   end
 
@@ -71,15 +69,22 @@ defmodule Voile.Schema.Library.Circulation do
       :transaction,
       :reservation,
       :fine,
-      :processed_by,
-      :waived_by
+      :processed_by
     ])
     |> CirculationHistory.changeset(attrs)
   end
 
   # Fines Base CRUD
   def list_fines do
-    Repo.all(Fine)
+    Fine
+    |> preload([
+      :member,
+      :transaction,
+      :processed_by,
+      :waived_by,
+      item: [:collection]
+    ])
+    |> Repo.all()
   end
 
   def list_fines_paginated(page \\ 1, per_page \\ 10) do
@@ -89,10 +94,10 @@ defmodule Voile.Schema.Library.Circulation do
       from f in Fine,
         preload: [
           :member,
-          :item,
           :transaction,
           :processed_by,
-          :waived_by
+          :waived_by,
+          item: [:collection]
         ],
         order_by: [desc: f.inserted_at, desc: f.id],
         offset: ^offset,
@@ -106,15 +111,74 @@ defmodule Voile.Schema.Library.Circulation do
     {fines, total_pages}
   end
 
+  def list_fines_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
+    offset = (page - 1) * per_page
+
+    query =
+      from f in Fine,
+        preload: [
+          :member,
+          :transaction,
+          :processed_by,
+          :waived_by,
+          item: [:collection]
+        ]
+
+    # Apply status filter
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        status -> where(query, [f], f.fine_status == ^status)
+      end
+
+    # Apply type filter
+    query =
+      case Map.get(filters, :type, "all") do
+        "all" -> query
+        type -> where(query, [f], f.fine_type == ^type)
+      end
+
+    # Add pagination and ordering
+    query =
+      query
+      |> order_by([f], desc: f.inserted_at, desc: f.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    fines = Repo.all(query)
+
+    # Count total with same filters for pagination
+    count_query =
+      from(f in Fine)
+
+    # Apply same filters for count
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        status -> where(count_query, [f], f.fine_status == ^status)
+      end
+
+    count_query =
+      case Map.get(filters, :type, "all") do
+        "all" -> count_query
+        type -> where(count_query, [f], f.fine_type == ^type)
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {fines, total_pages}
+  end
+
   def get_fine!(id) do
     Fine
     |> Repo.get!(id)
     |> Repo.preload([
       :member,
-      :item,
-      :transaction,
       :processed_by,
-      :waived_by
+      :waived_by,
+      :transaction,
+      item: [:collection]
     ])
   end
 
@@ -125,9 +189,36 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   def update_fine(%Fine{} = fine, attrs) do
+    # Use payment_changeset for payment/waiver updates to preserve original data
+    # Use regular changeset for general updates that may need default values
+    changeset_fn =
+      if payment_related_update?(attrs), do: &Fine.payment_changeset/2, else: &Fine.changeset/2
+
     fine
-    |> Fine.changeset(attrs)
+    |> changeset_fn.(attrs)
     |> Repo.update()
+  end
+
+  # Helper to determine if update is payment-related
+  defp payment_related_update?(attrs) do
+    payment_fields = [
+      :paid_amount,
+      :balance,
+      :payment_date,
+      :payment_method,
+      :processed_by_id,
+      :receipt_number,
+      :waived,
+      :waived_date,
+      :waived_reason,
+      :waived_by_id,
+      :fine_status
+    ]
+
+    Map.keys(attrs)
+    |> Enum.any?(fn key ->
+      key in payment_fields or (is_binary(key) and String.to_atom(key) in payment_fields)
+    end)
   end
 
   def delete_fine(%Fine{} = fine) do
@@ -138,10 +229,10 @@ defmodule Voile.Schema.Library.Circulation do
     fine
     |> Repo.preload([
       :member,
-      :item,
       :transaction,
       :processed_by,
-      :waived_by
+      :waived_by,
+      item: [:collection]
     ])
     |> Fine.changeset(attrs)
   end
@@ -585,7 +676,7 @@ defmodule Voile.Schema.Library.Circulation do
           end
 
         fine
-        |> Fine.changeset(%{
+        |> Fine.payment_changeset(%{
           paid_amount: new_paid_amount,
           balance: new_balance,
           fine_status: status,
@@ -608,7 +699,7 @@ defmodule Voile.Schema.Library.Circulation do
     case Repo.get(Fine, fine_id) do
       %Fine{} = fine ->
         fine
-        |> Fine.changeset(%{
+        |> Fine.payment_changeset(%{
           waived: true,
           waived_date: DateTime.utc_now(),
           waived_reason: reason,
@@ -1028,10 +1119,17 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   defp create_item_reservation(%User{} = member, item_id, attrs) do
+    collection_id =
+      case Repo.get(Item, item_id) do
+        %Item{collection_id: cid} -> cid
+        nil -> nil
+      end
+
     reservation_attrs =
       Map.merge(attrs, %{
         "member_id" => member.id,
         "item_id" => item_id,
+        "collection_id" => collection_id,
         "reservation_date" => DateTime.utc_now(),
         "status" => "pending",
         "expiry_date" => calculate_reservation_expiry(),

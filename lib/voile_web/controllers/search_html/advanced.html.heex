@@ -358,10 +358,10 @@
           </div>
         <% end %>
         <!-- Single Type Results (for collections-only searches) -->
-        <%= if @search_type != "both" && @results.results do %>
+        <%= if @search_type != "both" && @results.collections && @results.collections.results do %>
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
             <div class="divide-y divide-gray-200 dark:divide-gray-600">
-              <%= for collection <- @results.results do %>
+              <%= for collection <- @results.collections.results do %>
                 <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
@@ -473,9 +473,9 @@
               <% end %>
             <% else %>
               <!-- Pagination for single type searches -->
-              <%= if @results.total_pages && @results.total_pages > 1 do %>
+              <%= if @results.collections.total_pages && @results.collections.total_pages > 1 do %>
                 <div class="flex justify-center items-center space-x-2">
-                  <%= if @results.has_prev do %>
+                  <%= if @results.collections.has_prev do %>
                     <.link
                       href={
                         build_advanced_search_url(
@@ -492,7 +492,7 @@
                   <% end %>
                   
                   <div class="flex items-center space-x-1">
-                    <%= for page_num <- page_range(@page, @results.total_pages) do %>
+                    <%= for page_num <- page_range(@page, @results.collections.total_pages) do %>
                       <%= if page_num == @page do %>
                         <span class="px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded-md dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
                           {page_num}
@@ -515,7 +515,7 @@
                     <% end %>
                   </div>
                   
-                  <%= if @results.has_next do %>
+                  <%= if @results.collections.has_next do %>
                     <.link
                       href={
                         build_advanced_search_url(
@@ -545,7 +545,7 @@
       </div>
     <% end %>
     <!-- No Results -->
-    <%= if @results.total_results == 0 and map_size(@search_params) > 0 do %>
+    <%= if @results.total_results == 0 and @form_submitted do %>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-8 text-center">
         <svg
           class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"

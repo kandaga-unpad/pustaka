@@ -77,12 +77,39 @@ defmodule Voile.Schema.Library.Fine do
     |> foreign_key_constraint(:transaction_id)
   end
 
+  @doc """
+  Changeset for payment/waiver updates that preserves original fine amount.
+  Does not apply default value helpers to avoid overriding existing data.
+  """
+  def payment_changeset(fine, attrs) do
+    fine
+    |> cast(attrs, [
+      :paid_amount,
+      :balance,
+      :fine_status,
+      :payment_date,
+      :payment_method,
+      :processed_by_id,
+      :receipt_number,
+      :waived,
+      :waived_date,
+      :waived_reason,
+      :waived_by_id
+    ])
+    |> validate_required([:fine_status])
+    |> validate_inclusion(:fine_status, @statuses)
+    |> validate_inclusion(:payment_method, @payment_methods)
+    |> validate_number(:paid_amount, greater_than_or_equal_to: 0)
+    |> validate_number(:balance, greater_than_or_equal_to: 0)
+    |> calculate_balance()
+  end
+
   # Helper functions for setting defaults
   defp set_default_fine_date(attrs) do
     if attrs["fine_date"] || attrs[:fine_date] do
       attrs
     else
-      Map.put(attrs, "fine_date", DateTime.utc_now())
+      Map.put(attrs, :fine_date, DateTime.utc_now())
     end
   end
 
@@ -90,7 +117,7 @@ defmodule Voile.Schema.Library.Fine do
     if attrs["fine_status"] || attrs[:fine_status] do
       attrs
     else
-      Map.put(attrs, "fine_status", "pending")
+      Map.put(attrs, :fine_status, "pending")
     end
   end
 
@@ -125,7 +152,7 @@ defmodule Voile.Schema.Library.Fine do
             get_member_type_fine_per_day(member_id) || "5000"
         end
 
-      Map.put(attrs, "amount", default_amount)
+      Map.put(attrs, :amount, default_amount)
     end
   end
 

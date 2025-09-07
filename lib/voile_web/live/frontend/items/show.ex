@@ -7,6 +7,9 @@ defmodule VoileWeb.Frontend.Items.Show do
   import VoileWeb.VoileComponents
 
   alias Voile.Task.Catalog.Items
+  alias Voile.Schema.Library.Circulation
+
+  on_mount {VoileWeb.UserAuth, :mount_current_scope}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -15,7 +18,8 @@ defmodule VoileWeb.Frontend.Items.Show do
      |> assign(:item, nil)
      |> assign(:loading, false)
      |> assign(:related_items, [])
-     |> assign(:show_reservation_form, false)}
+     |> assign(:show_reservation_form, false)
+     |> assign(:reservation_loading, false)}
   end
 
   @impl true
@@ -61,13 +65,92 @@ defmodule VoileWeb.Frontend.Items.Show do
   end
 
   @impl true
+  def handle_event("submit_reservation", %{"notes" => notes}, socket) do
+    current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
+    item = socket.assigns.item
+
+    case validate_reservation_request(current_user, item) do
+      {:ok, :valid} ->
+        socket = assign(socket, :reservation_loading, true)
+
+        reservation_attrs = %{
+          "notes" => String.trim(notes)
+        }
+
+        case Circulation.create_reservation(current_user.id, item.id, reservation_attrs) do
+          {:ok, _reservation} ->
+            {:noreply,
+             socket
+             |> assign(:show_reservation_form, false)
+             |> assign(:reservation_loading, false)
+             |> put_flash(
+               :info,
+               "Reservation request submitted successfully. The library will contact you soon."
+             )}
+
+          {:error, reason} when is_binary(reason) ->
+            {:noreply,
+             socket
+             |> assign(:reservation_loading, false)
+             |> put_flash(:error, "Failed to create reservation: #{reason}")}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            errors =
+              changeset.errors
+              |> Enum.map(fn {field, {message, _}} -> "#{field} #{message}" end)
+              |> Enum.join(", ")
+
+            {:noreply,
+             socket
+             |> assign(:reservation_loading, false)
+             |> put_flash(:error, "Failed to create reservation: #{errors}")}
+
+          {:error, _} ->
+            {:noreply,
+             socket
+             |> assign(:reservation_loading, false)
+             |> put_flash(:error, "Failed to create reservation. Please try again later.")}
+        end
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, reason)
+         |> assign(:show_reservation_form, false)}
+    end
+  end
+
+  # Handle form submission without notes parameter (fallback)
+  @impl true
   def handle_event("submit_reservation", _params, socket) do
-    # This would typically create a reservation request
-    # For now, we'll just show a success message
-    {:noreply,
-     socket
-     |> assign(:show_reservation_form, false)
-     |> put_flash(:info, "Reservation request submitted. The library will contact you soon.")}
+    handle_event("submit_reservation", %{"notes" => ""}, socket)
+  end
+
+  # Private helper function to validate reservation eligibility
+  defp validate_reservation_request(nil, _item) do
+    {:error, "You must be logged in to make a reservation."}
+  end
+
+  defp validate_reservation_request(%{confirmed_at: nil}, _item) do
+    {:error, "Please verify your email address before making reservations."}
+  end
+
+  defp validate_reservation_request(%{user_type: nil}, _item) do
+    {:error, "Your account doesn't have a member type assigned. Please contact the library."}
+  end
+
+  defp validate_reservation_request(_user, %{availability: availability})
+       when availability != "available" do
+    case availability do
+      "loaned" -> {:error, "This item is currently on loan."}
+      "reserved" -> {:error, "This item is already reserved by another member."}
+      "maintenance" -> {:error, "This item is currently under maintenance."}
+      _ -> {:error, "This item is not available for reservation."}
+    end
+  end
+
+  defp validate_reservation_request(_user, _item) do
+    {:ok, :valid}
   end
 
   @impl true
@@ -307,12 +390,34 @@ defmodule VoileWeb.Frontend.Items.Show do
                       
                       <div class="space-y-3">
                         <%= if @item.availability == "available" do %>
-                          <button
-                            phx-click="show_reservation_form"
-                            class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                          >
-                            <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" /> Reserve Item
-                          </button>
+                          <%= if @current_scope && @current_scope.user do %>
+                            <%= if @current_scope.user.confirmed_at && @current_scope.user.user_type do %>
+                              <button
+                                phx-click="show_reservation_form"
+                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              >
+                                <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" /> Reserve Item
+                              </button>
+                            <% else %>
+                              <div class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
+                                <%= cond do %>
+                                  <% !@current_scope.user.confirmed_at -> %>
+                                    Please verify your email to reserve items
+                                  <% !@current_scope.user.user_type -> %>
+                                    Member type not assigned - contact library
+                                  <% true -> %>
+                                    Reservation unavailable
+                                <% end %>
+                              </div>
+                            <% end %>
+                          <% else %>
+                            <.link
+                              navigate={~p"/login"}
+                              class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              <.icon name="hero-user-solid" class="w-4 h-4 mr-2" /> Login to Reserve
+                            </.link>
+                          <% end %>
                         <% else %>
                           <div class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
                             <%= case @item.availability do %>
@@ -436,6 +541,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                         rows="3"
                         class="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Any special requests or notes..."
+                        disabled={@reservation_loading}
                       ></textarea>
                     </div>
                     
@@ -444,14 +550,21 @@ defmodule VoileWeb.Frontend.Items.Show do
                         type="button"
                         phx-click="hide_reservation_form"
                         class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        disabled={@reservation_loading}
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={@reservation_loading}
                       >
-                        Submit Reservation
+                        <%= if @reservation_loading do %>
+                          <.icon name="hero-arrow-path" class="w-4 h-4 mr-2 animate-spin" />
+                          Submitting...
+                        <% else %>
+                          Submit Reservation
+                        <% end %>
                       </button>
                     </div>
                   </form>

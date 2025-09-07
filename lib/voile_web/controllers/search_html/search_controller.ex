@@ -138,7 +138,10 @@ defmodule VoileWeb.SearchController do
     # Record advanced search analytics
     current_user = conn.assigns[:current_user]
 
-    if map_size(cleaned_params) > 0 do
+    # Check if form was submitted (has search params) rather than if params have values
+    form_submitted = Map.has_key?(params, "search")
+
+    if form_submitted && map_size(cleaned_params) > 0 do
       search_query = Enum.map(cleaned_params, fn {k, v} -> "#{k}:#{v}" end) |> Enum.join(" ")
 
       SearchAnalytics.record_search(search_query, current_user && current_user.id, %{
@@ -149,9 +152,11 @@ defmodule VoileWeb.SearchController do
     end
 
     results =
-      if map_size(cleaned_params) > 0 do
+      if form_submitted do
+        # Always perform search when form is submitted, even with empty criteria
+        # Use original search_params to include empty strings for proper filtering
         raw_results =
-          SearchCollections.advanced_search(cleaned_params, :public, %{
+          SearchCollections.advanced_search(search_params, :public, %{
             page: page,
             type: search_type,
             glam_type: glam_type,
@@ -231,7 +236,8 @@ defmodule VoileWeb.SearchController do
       search_type: search_type,
       glam_type: glam_type,
       page: page,
-      nodes: get_all_nodes()
+      nodes: get_all_nodes(),
+      form_submitted: form_submitted
     })
   end
 
@@ -248,7 +254,8 @@ defmodule VoileWeb.SearchController do
       search_type: "both",
       glam_type: glam_type,
       page: 1,
-      nodes: get_all_nodes()
+      nodes: get_all_nodes(),
+      form_submitted: false
     })
   end
 
