@@ -34,25 +34,30 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    changeset = Fine.changeset(%Fine{}, %{})
+
     socket
     |> assign(:page_title, "New Fine")
     |> assign(:fine, %Fine{})
+    |> assign(:fine_form, to_form(changeset))
   end
 
   @impl true
-  def handle_event("create_fine", params, socket) do
-    case Circulation.create_fine(params) do
+  def handle_event("create_fine", %{"fine" => fine_params}, socket) do
+    case Circulation.create_fine(fine_params) do
       {:ok, fine} ->
         socket =
           socket
           |> stream_insert(:fines, fine, at: 0)
           |> put_flash(:info, "Fine created successfully")
+          |> push_patch(to: ~p"/manage/circulation/fines")
 
         {:noreply, socket}
 
       {:error, changeset} ->
         socket =
           socket
+          |> assign(:fine_form, to_form(changeset))
           |> put_flash(:error, "Failed to create fine: #{extract_error_message(changeset)}")
 
         {:noreply, socket}

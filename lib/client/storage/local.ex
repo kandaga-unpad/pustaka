@@ -8,8 +8,6 @@ defmodule Client.Storage.Local do
   @base_upload_path "priv/static/uploads"
   @base_url_path "/uploads"
 
-  # No need for separate function headers; default values are defined in the first clause
-
   @impl true
   def upload(
         %Plug.Upload{path: tmp_path, filename: original_filename, content_type: content_type},

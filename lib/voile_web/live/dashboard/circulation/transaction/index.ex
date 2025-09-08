@@ -11,6 +11,16 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
     per_page = 15
     {transactions, total_pages} = Circulation.list_transactions_paginated(page, per_page)
 
+    count_active_collection = Circulation.count_of_collection_based_on_status("active")
+    count_overdue_collection = Circulation.count_of_collection_based_on_status("overdue")
+    count_returned_collection = Circulation.count_of_collection_based_on_status("returned")
+
+    dbg(count_active_collection)
+    dbg(count_overdue_collection)
+    dbg(count_returned_collection)
+
+    checkout_changeset = Transaction.changeset(%Transaction{}, %{})
+
     socket =
       socket
       |> stream(:transactions, transactions)
@@ -18,6 +28,10 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
       |> assign(:total_pages, total_pages)
       |> assign(:search_query, "")
       |> assign(:filter_status, "all")
+      |> assign(:checkout_changeset, checkout_changeset)
+      |> assign(:count_active_collection, count_active_collection)
+      |> assign(:count_overdue_collection, count_overdue_collection)
+      |> assign(:count_returned_collection, count_returned_collection)
 
     {:ok, socket}
   end
@@ -30,12 +44,14 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Library Transactions")
+    |> assign(:checkout_changeset, Transaction.changeset(%Transaction{}, %{}))
   end
 
   defp apply_action(socket, :checkout, _params) do
     socket
     |> assign(:page_title, "New Checkout")
     |> assign(:transaction, %Transaction{})
+    |> assign(:checkout_changeset, Transaction.changeset(%Transaction{}, %{}))
   end
 
   defp apply_action(socket, :return, %{"id" => id}) do
@@ -159,7 +175,16 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
   defp reload_transactions(socket) do
     page = 1
     per_page = 15
-    {transactions, total_pages} = Circulation.list_transactions_paginated(page, per_page)
+    filter_status = Map.get(socket.assigns, :filter_status, "all")
+    search_query = Map.get(socket.assigns, :search_query, "")
+    filters = %{status: filter_status, query: search_query}
+
+    {transactions, total_pages} =
+      Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(
+        page,
+        per_page,
+        filters
+      )
 
     socket
     |> stream(:transactions, transactions, reset: true)
@@ -172,5 +197,13 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
     |> Map.get(:errors, [])
     |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
     |> Enum.join(", ")
+  end
+
+  defp limit_string(string, max_length) do
+    if String.length(string) > max_length do
+      String.slice(string, 0..(max_length - 1)) <> "..."
+    else
+      string
+    end
   end
 end

@@ -152,33 +152,38 @@ defmodule Voile.Migration.LoanImporter do
       else
         # Find item by item_code (barcode) - use fallback if not found
         item = find_item_by_code(item_code) || get_or_create_default_item()
-        # Find member by ID - use fallback admin user if not found
+        # Find member by ID - skip record if not found and no fallback user exists
         member = find_member_by_id(member_id) || get_default_admin_user()
 
-        # Determine transaction type and status
-        {transaction_type, status} =
-          determine_transaction_type_and_status(is_lent, is_return, return_date)
+        # Skip if no valid member found
+        if member == nil do
+          {:error, "Member not found for member_id #{member_id} at line #{line_num}"}
+        else
+          # Determine transaction type and status
+          {transaction_type, status} =
+            determine_transaction_type_and_status(is_lent, is_return, return_date)
 
-        attrs = %{
-          id: generate_transaction_id(loan_id, node_id),
-          transaction_type: transaction_type,
-          transaction_date: parse_datetime_with_default(loan_date),
-          due_date: parse_datetime_with_default(due_date),
-          return_date: parse_return_date(return_date),
-          renewal_count: parse_int(renewed) || 0,
-          notes: build_notes(loan_id, loan_rules_id, actual, node_id, item_code, member_id),
-          status: status,
-          fine_amount: Decimal.new("0.0"),
-          is_overdue: is_overdue?(due_date, return_date),
-          item_id: item.id,
-          member_id: member.id,
-          # Using the same member as librarian for historical data
-          librarian_id: member.id,
-          inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-          updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
-        }
+          attrs = %{
+            id: generate_transaction_id(loan_id, node_id),
+            transaction_type: transaction_type,
+            transaction_date: parse_datetime_with_default(loan_date),
+            due_date: parse_datetime_with_default(due_date),
+            return_date: parse_return_date(return_date),
+            renewal_count: parse_int(renewed) || 0,
+            notes: build_notes(loan_id, loan_rules_id, actual, node_id, item_code, member_id),
+            status: status,
+            fine_amount: Decimal.new("0.0"),
+            is_overdue: is_overdue?(due_date, return_date),
+            item_id: item.id,
+            member_id: member.id,
+            # Using the same member as librarian for historical data
+            librarian_id: member.id,
+            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          }
 
-        {:ok, attrs}
+          {:ok, attrs}
+        end
       end
     rescue
       e ->
@@ -266,8 +271,8 @@ defmodule Voile.Migration.LoanImporter do
   end
 
   defp get_default_admin_user do
-    # Return the default admin user ID provided
-    %{id: "8a35f4b2-833d-4979-a285-0f0fdd52a42d"}
+    # Try to find the admin user specifically
+    Repo.get_by(User, username: "admin")
   end
 
   defp get_or_create_default_creator do

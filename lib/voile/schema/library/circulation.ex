@@ -389,9 +389,9 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       from t in Transaction,
         preload: [
-          :item,
           :member,
-          :librarian
+          :librarian,
+          item: [:collection]
         ],
         order_by: [desc: t.inserted_at, desc: t.id],
         offset: ^offset,
@@ -405,13 +405,109 @@ defmodule Voile.Schema.Library.Circulation do
     {transactions, total_pages}
   end
 
+  def list_transaction_paginated_with_filter(page \\ 1, per_page \\ 10, filters \\ %{}) do
+    offset = (page - 1) * per_page
+
+    # Base query with joins for search
+    query =
+      from t in Transaction,
+        join: m in assoc(t, :member),
+        join: l in assoc(t, :librarian),
+        join: i in assoc(t, :item),
+        left_join: c in assoc(i, :collection),
+        preload: [
+          member: m,
+          librarian: l,
+          item: {i, collection: c}
+        ]
+
+    # Apply status filter
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        status -> where(query, [t, _m, _l, _i, _c], t.status == ^status)
+      end
+
+    # Apply search filter (by member name, member identifier, item code, or collection title)
+    query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            query,
+            [t, m, _l, i, c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+          )
+      end
+
+    # Add ordering, offset, and limit
+    query =
+      query
+      |> order_by([t], desc: t.inserted_at, desc: t.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    transactions = Repo.all(query)
+
+    # Count query with same filters (but without offset/limit/order_by)
+    count_query =
+      from t in Transaction,
+        join: m in assoc(t, :member),
+        join: l in assoc(t, :librarian),
+        join: i in assoc(t, :item),
+        left_join: c in assoc(i, :collection)
+
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        status -> where(count_query, [t, _m, _l, _i, _c], t.status == ^status)
+      end
+
+    count_query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [t, m, _l, i, c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+          )
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {transactions, total_pages}
+  end
+
+  def count_of_collection_based_on_status(status) do
+    from(t in Transaction,
+      where: t.status == ^status
+    )
+    |> Repo.aggregate(:count, :id)
+  end
+
   def get_transaction!(id) do
     Transaction
     |> Repo.get!(id)
     |> Repo.preload([
-      :item,
       :member,
-      :librarian
+      :librarian,
+      item: [:collection]
     ])
   end
 

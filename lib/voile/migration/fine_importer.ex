@@ -136,21 +136,24 @@ defmodule Voile.Migration.FineImporter do
       if member_id in ["", nil] or fines_date in ["", nil] do
         {:error, "Missing essential data at line #{line_num}"}
       else
-        # Find member by ID - skip record if member not found
-        member = find_member_by_id(member_id)
+        # Find member by ID - use admin as fallback if member not found
+        member = find_member_by_id(member_id) || get_admin_user()
 
         if is_nil(member) do
-          {:error, "Member with ID #{member_id} not found at line #{line_num}"}
+          {:error,
+           "Member with ID #{member_id} not found and no admin user available at line #{line_num}"}
         else
-          # Parse amounts
-          debet_amount = parse_amount(debet)
-          credit_amount = parse_amount(credit)
+          # Parse amounts - in SLiMS fines data:
+          # debet = total fine amount
+          # credit = amount paid by member
+          total_fine_amount = parse_amount(debet)
+          paid_amount = parse_amount(credit)
 
-          # Calculate net amount (debet - credit)
-          net_amount = Decimal.sub(debet_amount, credit_amount)
+          # Calculate outstanding balance (total fine - paid)
+          balance = Decimal.sub(total_fine_amount, paid_amount)
 
-          # Skip if net amount is zero or negative
-          if Decimal.compare(net_amount, 0) != :gt do
+          # Skip if total fine amount is zero or negative
+          if Decimal.compare(total_fine_amount, 0) != :gt do
             {:error, "Invalid or zero fine amount at line #{line_num}"}
           else
             # Extract item code from description if available - use fallback if not found
@@ -160,16 +163,19 @@ defmodule Voile.Migration.FineImporter do
             # Try to find related transaction
             transaction = find_related_transaction(member.id, item && item.id, fines_date)
 
-            # Determine fine status based on credit amount
-            {fine_status, paid_amount} = determine_fine_status(debet_amount, credit_amount)
+            # Determine fine status based on payment vs total fine
+            {fine_status, _} = determine_fine_status(paid_amount, total_fine_amount)
 
             attrs = %{
               id: generate_fine_id(fines_id, node_id),
               # Most SLiMS fines are overdue fines
               fine_type: "overdue",
-              amount: net_amount,
+              # total fine amount
+              amount: total_fine_amount,
+              # amount paid by member
               paid_amount: paid_amount,
-              balance: Decimal.sub(net_amount, paid_amount),
+              # outstanding
+              balance: balance,
               fine_date: parse_datetime_with_default(fines_date),
               payment_date: determine_payment_date(fine_status, fines_date),
               fine_status: fine_status,
@@ -182,8 +188,8 @@ defmodule Voile.Migration.FineImporter do
               member_id: member.id,
               item_id: item && item.id,
               transaction_id: transaction && transaction.id,
-              # Using the same member as processed_by for historical data
-              processed_by_id: member.id,
+              # Use the user with username 'admin' as processed_by
+              processed_by_id: get_admin_user_id(),
               waived_by_id: nil,
               inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
               updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -199,6 +205,25 @@ defmodule Voile.Migration.FineImporter do
     end
   end
 
+  # Helper to fetch the admin user id (with username 'admin')
+  defp get_admin_user_id do
+    # Cache the result in the process dictionary to avoid repeated DB hits
+    case Process.get(:admin_user_id) do
+      nil ->
+        case Repo.get_by(User, username: "admin") do
+          %User{id: id} ->
+            Process.put(:admin_user_id, id)
+            id
+
+          _ ->
+            nil
+        end
+
+      id ->
+        id
+    end
+  end
+
   defp parse_amount(nil), do: Decimal.new("0")
   defp parse_amount(""), do: Decimal.new("0")
 
@@ -209,17 +234,17 @@ defmodule Voile.Migration.FineImporter do
     end
   end
 
-  defp determine_fine_status(debet_amount, credit_amount) do
+  defp determine_fine_status(paid_amount, total_fine_amount) do
     cond do
-      # If credit equals or exceeds debet, it's paid
-      Decimal.compare(credit_amount, debet_amount) != :lt ->
-        {"paid", debet_amount}
+      # If paid equals or exceeds total fine, it's fully paid
+      Decimal.compare(paid_amount, total_fine_amount) != :lt ->
+        {"paid", paid_amount}
 
-      # If there's some credit but less than debet, it's partially paid
-      Decimal.compare(credit_amount, Decimal.new("0")) == :gt ->
-        {"partial_paid", credit_amount}
+      # If some amount is paid but less than total fine, it's partially paid
+      Decimal.compare(paid_amount, Decimal.new("0")) == :gt ->
+        {"partial_paid", paid_amount}
 
-      # No credit means it's pending
+      # If nothing is paid, it's pending
       true ->
         {"pending", Decimal.new("0")}
     end
@@ -266,6 +291,11 @@ defmodule Voile.Migration.FineImporter do
       :error ->
         nil
     end
+  end
+
+  defp get_admin_user do
+    # Try to find the admin user specifically
+    Repo.get_by(User, username: "admin")
   end
 
   defp find_related_transaction(member_id, item_id, fine_date) do

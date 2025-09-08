@@ -197,18 +197,17 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Fine</h3>
     
-    <.form for={%{}} id="fine-form" phx-submit="create_fine">
+    <.form for={@fine_form} id="fine-form" phx-submit="create_fine">
       <.input
-        name="member_id"
+        field={@fine_form[:member_id]}
         label="Member ID"
         placeholder="Enter member ID"
         required
       />
       <.input
-        name="fine_type"
+        field={@fine_form[:fine_type]}
         type="select"
         label="Fine Type"
-        value=""
         options={[
           {"Overdue", "overdue"},
           {"Lost Item", "lost_item"},
@@ -218,7 +217,7 @@
         required
       />
       <.input
-        name="amount"
+        field={@fine_form[:amount]}
         type="number"
         step="1"
         label="Fine Amount (Rp)"
@@ -231,7 +230,7 @@
       </div>
       
       <.input
-        name="description"
+        field={@fine_form[:description]}
         type="textarea"
         label="Description"
         placeholder="Describe the reason for the fine"

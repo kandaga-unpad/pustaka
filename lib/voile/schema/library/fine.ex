@@ -109,7 +109,7 @@ defmodule Voile.Schema.Library.Fine do
     if attrs["fine_date"] || attrs[:fine_date] do
       attrs
     else
-      Map.put(attrs, :fine_date, DateTime.utc_now())
+      Map.put(attrs, "fine_date", DateTime.utc_now())
     end
   end
 
@@ -117,7 +117,7 @@ defmodule Voile.Schema.Library.Fine do
     if attrs["fine_status"] || attrs[:fine_status] do
       attrs
     else
-      Map.put(attrs, :fine_status, "pending")
+      Map.put(attrs, "fine_status", "pending")
     end
   end
 
@@ -152,7 +152,7 @@ defmodule Voile.Schema.Library.Fine do
             get_member_type_fine_per_day(member_id) || "5000"
         end
 
-      Map.put(attrs, :amount, default_amount)
+      Map.put(attrs, "amount", default_amount)
     end
   end
 

@@ -11,10 +11,16 @@ defmodule Voile.Migration.ItemImporter do
 
   alias Voile.Repo
   alias Voile.Schema.Catalog.{Collection, Item}
+  alias Voile.Schema.System.Node
+  alias Voile.Schema.Metadata.ResourceClass
+  alias Voile.Utils.ItemHelper
 
   # Cache for frequently accessed data
   @type cache :: %{
-          biblio_map: map()
+          biblio_map: map(),
+          unit_map: map(),
+          resource_class_map: map(),
+          collection_map: map()
         }
 
   def import_all(batch_size \\ 1000) do
@@ -74,11 +80,26 @@ defmodule Voile.Migration.ItemImporter do
     # Build biblio_id to collection_id mapping
     biblio_map = build_biblio_map()
 
+    # Build unit_id to unit data mapping
+    unit_map = build_unit_map()
+
+    # Build type_id to resource class data mapping
+    resource_class_map = build_resource_class_map()
+
+    # Build collection_id to collection data mapping
+    collection_map = build_collection_map()
+
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Biblio mappings: #{map_size(biblio_map)}")
+    IO.puts("  - Unit mappings: #{map_size(unit_map)}")
+    IO.puts("  - Resource class mappings: #{map_size(resource_class_map)}")
+    IO.puts("  - Collection mappings: #{map_size(collection_map)}")
 
     %{
-      biblio_map: biblio_map
+      biblio_map: biblio_map,
+      unit_map: unit_map,
+      resource_class_map: resource_class_map,
+      collection_map: collection_map
     }
   end
 
@@ -106,7 +127,7 @@ defmodule Voile.Migration.ItemImporter do
       |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_item_data(row, cache.biblio_map, state_ref, unit_id), line_num}
+        {prepare_item_data(row, cache, state_ref, unit_id), line_num}
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status in [:ok, :error] end)
       |> Stream.chunk_every(batch_size)
@@ -205,7 +226,12 @@ defmodule Voile.Migration.ItemImporter do
            last_update,
            _uid
          ],
-         biblio_map,
+         %{
+           biblio_map: biblio_map,
+           unit_map: unit_map,
+           resource_class_map: resource_class_map,
+           collection_map: collection_map
+         } = _cache,
          state_ref,
          unit_id
        ) do
@@ -244,14 +270,51 @@ defmodule Voile.Migration.ItemImporter do
 
         now = DateTime.utc_now() |> DateTime.truncate(:second)
 
+        # Get collection and unit data for code generation
+        collection_data = Map.get(collection_map, collection_id, %{})
+        unit_data = Map.get(unit_map, unit_id, %{abbr: "UNK"})
+
+        resource_class_data =
+          Map.get(resource_class_map, collection_data[:type_id], %{local_name: "UNK"})
+
+        # Generate codes using ItemHelper if source codes are nil or empty
+        final_item_code =
+          case safe_string_trim(item_code) do
+            nil ->
+              ItemHelper.generate_item_code(
+                unit_data.abbr,
+                resource_class_data.local_name,
+                collection_id,
+                time_identifier,
+                to_string(index)
+              )
+
+            existing_code ->
+              existing_code
+          end
+
+        final_inventory_code =
+          case safe_string_trim(inventory_code) do
+            nil ->
+              collection_title = collection_data[:title] || "Unknown"
+
+              ItemHelper.generate_inventory_code(
+                unit_data.abbr,
+                resource_class_data.local_name,
+                collection_title,
+                to_string(index)
+              )
+
+            existing_code ->
+              existing_code
+          end
+
         {:ok,
          %{
            id: id,
            collection_id: collection_id,
-           item_code:
-             safe_string_trim(item_code) ||
-               generate_item_code(biblio_id_int, index, time_identifier),
-           inventory_code: safe_string_trim(inventory_code),
+           item_code: final_item_code,
+           inventory_code: final_inventory_code,
            location: "Library Storage",
            status: "active",
            condition: "good",
@@ -266,7 +329,7 @@ defmodule Voile.Migration.ItemImporter do
     end
   end
 
-  defp prepare_item_data(_invalid_row, _biblio_map, _state_ref, _unit_id) do
+  defp prepare_item_data(_invalid_row, _cache, _state_ref, _unit_id) do
     {:error, {:invalid_row, "insufficient columns"}}
   end
 
@@ -282,8 +345,23 @@ defmodule Voile.Migration.ItemImporter do
     |> Map.reject(fn {k, _v} -> k == nil end)
   end
 
-  defp generate_item_code(biblio_id, index, time_identifier) do
-    # Generate a unique item code based on biblio_id, index, and time
-    "B#{biblio_id}-#{index}-#{time_identifier}"
+  defp build_unit_map do
+    from(n in Node, select: {n.id, %{abbr: n.abbr, name: n.name}})
+    |> Repo.all()
+    |> Enum.into(%{})
+  end
+
+  defp build_resource_class_map do
+    from(rc in ResourceClass,
+      select: {rc.id, %{local_name: rc.local_name, glam_type: rc.glam_type}}
+    )
+    |> Repo.all()
+    |> Enum.into(%{})
+  end
+
+  defp build_collection_map do
+    from(c in Collection, select: {c.id, %{title: c.title, type_id: c.type_id}})
+    |> Repo.all()
+    |> Enum.into(%{})
   end
 end

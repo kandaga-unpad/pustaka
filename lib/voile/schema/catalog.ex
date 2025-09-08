@@ -396,7 +396,7 @@ defmodule Voile.Schema.Catalog do
           :collection,
           :node
         ],
-        order_by: [desc: i.inserted_at],
+        order_by: [desc: i.inserted_at, desc: i.id],
         limit: ^per_page,
         offset: ^offset
 

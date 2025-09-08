@@ -55,4 +55,25 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
 
     {:noreply, stream_delete(socket, :items, item)}
   end
+
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page =
+      case page do
+        p when is_integer(p) -> p
+        p when is_binary(p) -> String.to_integer(p)
+        _ -> 1
+      end
+
+    per_page = 10
+    {items, total_pages} = Catalog.list_items_paginated(page, per_page)
+
+    socket =
+      socket
+      |> stream(:items, items, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+
+    {:noreply, socket}
+  end
 end

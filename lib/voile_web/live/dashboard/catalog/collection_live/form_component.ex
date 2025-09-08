@@ -140,7 +140,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <.input field={@form[:id]} type="hidden" />
           <.input
             field={@form[:type_id]}
-            label="Collection Type"
+            label="Resource Type"
             type="select"
             options={Enum.map(@collection_type, fn ct -> {ct.label, ct.id} end)}
             prompt="Select Collection Type"
@@ -319,7 +319,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <%= if @form[:thumbnail].value == nil or @form[:thumbnail].value == "" do %>
               <!-- Upload Area (when no thumbnail) -->
               <div
-                class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 cursor-pointer group"
+                class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer group"
                 phx-drop-target={@uploads.thumbnail.ref}
               >
                 <div class="space-y-4">
@@ -341,7 +341,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   </div>
                   
                   <div>
-                    <p class="text-gray-700 font-medium">Click to upload or drag and drop</p>
+                    <p class="text-gray-900 dark:text-gray-300 font-medium">
+                      Click to upload or drag and drop
+                    </p>
                     
                     <p class="text-gray-500 text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>

@@ -14,13 +14,17 @@ defmodule Voile.Migration.BiblioImporter do
   alias Voile.Repo
   alias Voile.Schema.Catalog.{Collection, CollectionField}
   alias Voile.Schema.Master.Creator
+  alias Voile.Schema.System.Node
+  alias Voile.Schema.Metadata.ResourceClass
 
   # Cache for frequently accessed data
   @type cache :: %{
           author_mappings: map(),
           publisher_mappings: map(),
           creators: map(),
-          existing_collections: MapSet.t()
+          existing_collections: MapSet.t(),
+          unit_map: map(),
+          resource_class_map: map()
         }
 
   @property_map %{
@@ -183,6 +187,12 @@ defmodule Voile.Migration.BiblioImporter do
       |> Repo.all()
       |> MapSet.new()
 
+    # Cache units for collection code generation
+    unit_map = build_unit_map()
+
+    # Cache resource classes for collection code generation
+    resource_class_map = build_resource_class_map()
+
     # Cache the Bibliographic Resource type ID
     bibliographic_resource_type_id = get_bibliographic_resource_type_id()
 
@@ -191,7 +201,8 @@ defmodule Voile.Migration.BiblioImporter do
     IO.puts("  - Publisher mappings: #{map_size(publisher_mappings)} units")
     IO.puts("  - Creators: #{map_size(creators)}")
     IO.puts("  - Existing collections: #{MapSet.size(existing_collections)}")
-
+    IO.puts("  - Units: #{map_size(unit_map)}")
+    IO.puts("  - Resource classes: #{map_size(resource_class_map)}")
     IO.puts("  - Bibliographic Resource type ID: #{bibliographic_resource_type_id}")
 
     %{
@@ -199,6 +210,8 @@ defmodule Voile.Migration.BiblioImporter do
       publisher_mappings: publisher_mappings,
       creators: creators,
       existing_collections: existing_collections,
+      unit_map: unit_map,
+      resource_class_map: resource_class_map,
       bibliographic_resource_type_id: bibliographic_resource_type_id
     }
   end
@@ -403,6 +416,21 @@ defmodule Voile.Migration.BiblioImporter do
               end
             end
 
+          # Get unit and resource class data for collection code generation
+          unit_data = Map.get(cache.unit_map, unit_id, %{abbr: "UNK"})
+
+          resource_class_data =
+            Map.get(cache.resource_class_map, cache.bibliographic_resource_type_id, %{
+              glam_type: "Library"
+            })
+
+          # Generate collection code using similar logic as FormCollectionHelper
+          collection_code =
+            generate_collection_code(
+              unit_data.abbr,
+              String.slice(resource_class_data.glam_type, 0, 3) |> String.upcase()
+            )
+
           # Build collection record
           collection = %{
             id: id,
@@ -413,6 +441,7 @@ defmodule Voile.Migration.BiblioImporter do
             access_level: "public",
             old_biblio_id: biblio_id_int,
             creator_id: creator_id,
+            collection_code: collection_code,
             # Use the cached Bibliographic Resource type ID
             type_id: cache.bibliographic_resource_type_id,
             unit_id: unit_id,
@@ -707,6 +736,7 @@ defmodule Voile.Migration.BiblioImporter do
           access_level: "public",
           old_biblio_id: biblio_id_int,
           creator_id: creator_id,
+          collection_code: generate_collection_code("UNK", "LIB"),
           # All biblio records are books (type_id: 40)
           type_id: 40,
           unit_id: unit_id,
@@ -1045,5 +1075,29 @@ defmodule Voile.Migration.BiblioImporter do
   rescue
     e ->
       {:error, "Exception during HTTP download: #{Exception.message(e)}"}
+  end
+
+  # Build unit mappings for collection code generation
+  defp build_unit_map do
+    from(n in Node, select: {n.id, %{abbr: n.abbr, name: n.name}})
+    |> Repo.all()
+    |> Enum.into(%{})
+  end
+
+  # Build resource class mappings for collection code generation
+  defp build_resource_class_map do
+    from(rc in ResourceClass,
+      select: {rc.id, %{local_name: rc.local_name, glam_type: rc.glam_type}}
+    )
+    |> Repo.all()
+    |> Enum.into(%{})
+  end
+
+  # Generate collection code similar to FormCollectionHelper
+  defp generate_collection_code(unit, collection_type) do
+    timestamp = :os.system_time(:second)
+    random_suffix = :crypto.strong_rand_bytes(3) |> Base.encode16(case: :lower)
+
+    "COLLECTION-#{unit}-#{collection_type}-#{timestamp}-#{random_suffix}"
   end
 end

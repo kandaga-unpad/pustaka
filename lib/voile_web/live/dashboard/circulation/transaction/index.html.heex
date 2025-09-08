@@ -20,19 +20,24 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="flex space-x-4">
-          <select
-            phx-change="filter"
-            name="status"
-            class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all" selected={@filter_status == "all"}>All Status</option>
-            
-            <option value="active" selected={@filter_status == "active"}>Active</option>
-            
-            <option value="returned" selected={@filter_status == "returned"}>Returned</option>
-            
-            <option value="overdue" selected={@filter_status == "overdue"}>Overdue</option>
-          </select>
+          <.form :let={f} for={%{}} phx-change="filter" class="inline">
+            <.input
+              field={f[:status]}
+              type="select"
+              options={[
+                {"All Status", "all"},
+                {"Active", "active"},
+                {"Returned", "returned"},
+                {"Overdue", "overdue"},
+                {"Lost", "lost"},
+                {"Damaged", "damaged"},
+                {"Canceled", "canceled"}
+              ]}
+              value={@filter_status}
+              class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              label=""
+            />
+          </.form>
         </div>
         
         <div class="mt-3 sm:mt-0">
@@ -51,21 +56,21 @@
     <!-- Quick Stats -->
     <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
-        <div class="text-2xl font-semibold text-blue-600">-</div>
+        <div class="text-2xl font-semibold text-blue-600">{@count_active_collection}</div>
         
         <div class="text-xs text-gray-500 uppercase">Active</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-yellow-600">-</div>
+        <div class="text-2xl font-semibold text-yellow-600">{@count_overdue_collection}</div>
         
         <div class="text-xs text-gray-500 uppercase">Overdue</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-green-600">-</div>
+        <div class="text-2xl font-semibold text-green-600">{@count_returned_collection}</div>
         
-        <div class="text-xs text-gray-500 uppercase">Returned Today</div>
+        <div class="text-xs text-gray-500 uppercase">Returned</div>
       </div>
       
       <div class="text-center">
@@ -84,7 +89,7 @@
             <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
               <span class="text-sm font-medium text-gray-700">
                 {if transaction.member,
-                  do: String.first(transaction.member.full_name || "?"),
+                  do: String.first(transaction.member.fullname || "?"),
                   else: "?"}
               </span>
             </div>
@@ -92,10 +97,10 @@
           
           <div class="ml-4">
             <div class="text-sm font-medium text-gray-900">
-              {if transaction.member, do: transaction.member.full_name, else: "Unknown Member"}
+              {if transaction.member, do: transaction.member.fullname, else: "Unknown Member"}
             </div>
             
-            <div class="text-sm text-gray-500">ID: {transaction.member_id}</div>
+            <div class="text-sm text-gray-500">ID: {transaction.member.identifier}</div>
           </div>
         </div>
       </:col>
@@ -106,13 +111,16 @@
             {if transaction.item, do: transaction.item.item_code, else: "Unknown Item"}
           </div>
           
-          <div class="text-sm text-gray-500">
+          <p
+            class="text-sm text-gray-500"
+            title={if transaction.item, do: transaction.item.collection.title, else: ""}
+          >
             {if transaction.item && transaction.item.collection do
-              transaction.item.collection.title
+              limit_string(transaction.item.collection.title, 30)
             else
               "No collection"
             end}
-          </div>
+          </p>
         </div>
       </:col>
       
@@ -150,7 +158,7 @@
       
       <:col :let={{_id, transaction}} label="Fine Amount">
         <div class="text-sm text-gray-900">
-          ${Float.round(Decimal.to_float(transaction.fine_amount || Decimal.new(0)), 2)}
+          Rp {Float.round(Decimal.to_float(transaction.fine_amount || Decimal.new(0)), 2)}
         </div>
       </:col>
       
@@ -200,15 +208,20 @@
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Checkout</h3>
     
-    <.form for={%{}} id="checkout-form" phx-submit="checkout">
+    <.form
+      :let={f}
+      for={@checkout_changeset}
+      id="checkout-form"
+      phx-submit="checkout"
+    >
       <.input
-        name="member_id"
+        field={f[:member_id]}
         label="Member ID"
         placeholder="Enter member ID or scan barcode"
         required
       />
       <.input
-        name="item_id"
+        field={f[:item_id]}
         label="Item Code"
         placeholder="Enter item code or scan barcode"
         required
