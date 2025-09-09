@@ -371,7 +371,7 @@ admin_user_attrs = %{
   password: "super_long_password",
   user_role_id: super_admin_role.id,
   user_type_id: admin_member_type.id,
-  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
+  confirmed_at: Voile.Migration.Common.utc_now_db()
 }
 
 case Repo.get_by(Accounts.User, email: "admin@voile.id") do

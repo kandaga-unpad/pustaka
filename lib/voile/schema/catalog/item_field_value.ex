@@ -12,7 +12,7 @@ defmodule Voile.Schema.Catalog.ItemFieldValue do
     belongs_to :item, Item, type: :binary_id
     belongs_to :collection_field, CollectionField, type: :binary_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

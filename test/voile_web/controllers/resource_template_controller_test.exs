@@ -41,7 +41,10 @@ defmodule VoileWeb.ResourceTemplateControllerTest do
   describe "edit resource_template" do
     setup [:create_resource_template]
 
-    test "renders form for editing chosen resource_template", %{conn: conn, resource_template: resource_template} do
+    test "renders form for editing chosen resource_template", %{
+      conn: conn,
+      resource_template: resource_template
+    } do
       conn = get(conn, ~p"/resource_template/#{resource_template}/edit")
       assert html_response(conn, 200) =~ "Edit Resource template"
     end
@@ -51,15 +54,22 @@ defmodule VoileWeb.ResourceTemplateControllerTest do
     setup [:create_resource_template]
 
     test "redirects when data is valid", %{conn: conn, resource_template: resource_template} do
-      conn = put(conn, ~p"/resource_template/#{resource_template}", resource_template: @update_attrs)
+      conn =
+        put(conn, ~p"/resource_template/#{resource_template}", resource_template: @update_attrs)
+
       assert redirected_to(conn) == ~p"/resource_template/#{resource_template}"
 
       conn = get(conn, ~p"/resource_template/#{resource_template}")
       assert html_response(conn, 200) =~ "some updated label"
     end
 
-    test "renders errors when data is invalid", %{conn: conn, resource_template: resource_template} do
-      conn = put(conn, ~p"/resource_template/#{resource_template}", resource_template: @invalid_attrs)
+    test "renders errors when data is invalid", %{
+      conn: conn,
+      resource_template: resource_template
+    } do
+      conn =
+        put(conn, ~p"/resource_template/#{resource_template}", resource_template: @invalid_attrs)
+
       assert html_response(conn, 200) =~ "Edit Resource template"
     end
   end

@@ -191,8 +191,8 @@ defmodule Voile.Migration.FineImporter do
               # Use the user with username 'admin' as processed_by
               processed_by_id: get_admin_user_id(),
               waived_by_id: nil,
-              inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-              updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+              inserted_at: Voile.Migration.Common.utc_now_db(),
+              updated_at: Voile.Migration.Common.utc_now_db()
             }
 
             {:ok, attrs}

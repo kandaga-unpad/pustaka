@@ -41,7 +41,7 @@ defmodule Voile.Repo.Migrations.CreateMstMemberTypes do
       add :allowed_collections, :map
       add :metadata, :map
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:mst_member_types, [:is_active])

@@ -13,12 +13,12 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
       add :amount, :decimal, precision: 10, scale: 2, null: false
       add :paid_amount, :decimal, precision: 10, scale: 2, default: 0.0
       add :balance, :decimal, precision: 10, scale: 2
-      add :fine_date, :naive_datetime, null: false
-      add :payment_date, :naive_datetime
+      add :fine_date, :utc_datetime, null: false
+      add :payment_date, :utc_datetime
       add :fine_status, :fine_status, null: false
       add :description, :text
       add :waived, :boolean, default: false
-      add :waived_date, :naive_datetime
+      add :waived_date, :utc_datetime
       add :waived_reason, :text
       add :payment_method, :payment_method
       add :receipt_number, :string
@@ -29,7 +29,7 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
       add :processed_by_id, references(:users, on_delete: :nilify_all, type: :binary_id)
       add :waived_by_id, references(:users, on_delete: :nilify_all, type: :binary_id)
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:lib_fines, [:member_id])

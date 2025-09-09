@@ -16,12 +16,12 @@ defmodule Voile.Schema.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
-    field :confirmed_at, :naive_datetime
-    field :authenticated_at, :naive_datetime, virtual: true
+    field :confirmed_at, :utc_datetime
+    field :authenticated_at, :utc_datetime, virtual: true
     field :user_image, :string
     field :social_media, :map, type: :jsonb
     field :groups, {:array, :string}
-    field :last_login, :naive_datetime
+    field :last_login, :utc_datetime
     field :last_login_ip, :string
 
     belongs_to :user_role, UserRole
@@ -34,7 +34,7 @@ defmodule Voile.Schema.Accounts.User do
     field :instagram, :string, virtual: true
     field :website, :string, virtual: true
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   def changeset(user, attrs, opts \\ []) do
@@ -68,26 +68,6 @@ defmodule Voile.Schema.Accounts.User do
 
   @doc """
   A user changeset for registration.
-
-  It is important to validate the length of both email and password.
-  Otherwise databases may truncate the email without warnings, which
-  could lead to unpredictable or insecure behaviour. Long passwords may
-  also be very expensive to hash for certain algorithms.
-
-  ## Options
-
-    * `:hash_password` - Hashes the password so it can be stored securely
-      in the database and ensures the password field is cleared to prevent
-      leaks in the logs. If password hashing is not needed and clearing the
-      password field is not desired (like when using this changeset for
-      validations on a LiveView form), this option can be set to `false`.
-      Defaults to `true`.
-
-    * `:validate_email` - Validates the uniqueness of the email, in case
-      you don't want to validate the uniqueness of the email (like when
-      using this changeset for validations on a LiveView form before
-      submitting the form), this option can be set to `false`.
-      Defaults to `true`.
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
@@ -164,10 +144,6 @@ defmodule Voile.Schema.Accounts.User do
     changeset
     |> validate_required([:password])
     |> validate_length(:password, min: 12, max: 72)
-    # Examples of additional password validation:
-    # |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
-    # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
-    # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
     |> maybe_hash_password(opts)
   end
 
@@ -177,8 +153,6 @@ defmodule Voile.Schema.Accounts.User do
 
     if hash_password? && password && changeset.valid? do
       changeset
-      # Hashing could be done with `Ecto.Changeset.prepare_changes/2`, but that
-      # would keep the database transaction open longer and hurt performance.
       |> put_change(:hashed_password, Pbkdf2.hash_pwd_salt(password))
       |> delete_change(:password)
     else
@@ -208,8 +182,6 @@ defmodule Voile.Schema.Accounts.User do
 
   @doc """
   A user changeset for changing the email.
-
-  It requires the email to change otherwise an error is added.
   """
   def email_changeset(user, attrs, opts \\ []) do
     user
@@ -223,15 +195,6 @@ defmodule Voile.Schema.Accounts.User do
 
   @doc """
   A user changeset for changing the password.
-
-  ## Options
-
-    * `:hash_password` - Hashes the password so it can be stored securely
-      in the database and ensures the password field is cleared to prevent
-      leaks in the logs. If password hashing is not needed and clearing the
-      password field is not desired (like when using this changeset for
-      validations on a LiveView form), this option can be set to `false`.
-      Defaults to `true`.
   """
   def password_changeset(user, attrs, opts \\ []) do
     user
@@ -244,33 +207,20 @@ defmodule Voile.Schema.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-    change(user, confirmed_at: now)
+    change(user, confirmed_at: Voile.Migration.Common.utc_now_db())
   end
 
   @doc """
   A user changeset for onboarding migrated users.
-
-  This changeset allows migrated users to set their new password
-  and confirms their account in one step during the onboarding process.
   """
   def onboarding_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:password])
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
-    |> put_change(
-      :confirmed_at,
-      DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
-    )
+    |> put_change(:confirmed_at, Voile.Migration.Common.utc_now_db())
   end
 
-  @doc """
-  Verifies the password.
-
-  If there is no user or the user doesn't have a password, we call
-  `Pbkdf2.no_user_verify/0` to avoid timing attacks.
-  """
   def valid_password?(%Voile.Schema.Accounts.User{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Pbkdf2.verify_pass(password, hashed_password)

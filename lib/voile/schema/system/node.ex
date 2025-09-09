@@ -8,7 +8,7 @@ defmodule Voile.Schema.System.Node do
     field :abbr, :string
     field :description, :string
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

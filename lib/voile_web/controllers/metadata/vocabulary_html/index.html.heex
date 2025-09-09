@@ -13,17 +13,23 @@
   row_click={&JS.navigate(~p"/manage/metaresource/metadata_vocabularies/#{&1}")}
 >
   <:col :let={vocabulary} label="Label">{vocabulary.label}</:col>
+  
   <:col :let={vocabulary} label="Prefix">{vocabulary.prefix}</:col>
+  
   <:col :let={vocabulary} label="Namespace url">{vocabulary.namespace_url}</:col>
+  
   <:col :let={vocabulary} label="Information">{vocabulary.information}</:col>
+  
   <:action :let={vocabulary}>
     <div class="sr-only">
       <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}>Show</.link>
     </div>
+    
     <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}/edit"}>
       Edit
     </.link>
   </:action>
+  
   <:action :let={vocabulary}>
     <.link
       href={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}

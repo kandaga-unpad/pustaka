@@ -3,8 +3,20 @@ defmodule VoileWeb.CollectionControllerTest do
 
   import Voile.CatalogFixtures
 
-  @create_attrs %{status: "some status", description: "some description", title: "some title", thumbnail: "some thumbnail", access_level: "some access_level"}
-  @update_attrs %{status: "some updated status", description: "some updated description", title: "some updated title", thumbnail: "some updated thumbnail", access_level: "some updated access_level"}
+  @create_attrs %{
+    status: "some status",
+    description: "some description",
+    title: "some title",
+    thumbnail: "some thumbnail",
+    access_level: "some access_level"
+  }
+  @update_attrs %{
+    status: "some updated status",
+    description: "some updated description",
+    title: "some updated title",
+    thumbnail: "some updated thumbnail",
+    access_level: "some updated access_level"
+  }
   @invalid_attrs %{status: nil, description: nil, title: nil, thumbnail: nil, access_level: nil}
 
   describe "index" do

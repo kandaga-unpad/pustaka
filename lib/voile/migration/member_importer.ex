@@ -384,7 +384,7 @@ defmodule Voile.Migration.MemberImporter do
         member_type = get_member_type_cached(member_type_id, cache.member_types)
         node = get_node_cached(node_id, cache.nodes)
 
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
+        now = Voile.Migration.Common.utc_now_db()
 
         # Safely parse datetime values with fallbacks
         parsed_register_date = safe_parse_datetime(register_date)

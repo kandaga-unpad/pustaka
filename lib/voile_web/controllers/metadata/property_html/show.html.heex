@@ -1,6 +1,7 @@
 <.header>
   Property {@property.id}
   <:subtitle>This is a property record from your database.</:subtitle>
+  
   <:actions>
     <.link href={~p"/manage/metaresource/metadata_properties/#{@property}/edit"}>
       <.button>Edit property</.button>
@@ -10,7 +11,9 @@
 
 <.list>
   <:item title="Label">{@property.label}</:item>
+  
   <:item title="Local name">{@property.local_name}</:item>
+  
   <:item title="Information">{@property.information}</:item>
 </.list>
 

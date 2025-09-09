@@ -7,7 +7,7 @@ defmodule Voile.Repo.Migrations.CreateLibCirculationHistory do
     create table(:lib_circulation_history, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :event_type, :circulation_event_type, null: false
-      add :event_date, :naive_datetime, null: false
+      add :event_date, :utc_datetime, null: false
       add :description, :text
       add :old_value, :map
       add :new_value, :map
@@ -21,7 +21,7 @@ defmodule Voile.Repo.Migrations.CreateLibCirculationHistory do
       add :fine_id, references(:lib_fines, type: :binary_id)
       add :processed_by_id, references(:users, type: :binary_id), null: false
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:lib_circulation_history, [:event_type])

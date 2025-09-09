@@ -8,7 +8,7 @@ defmodule Voile.Repo.Migrations.CreateMstCreator do
       add :affiliation, :string
       add :type, :string
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
   end
 end

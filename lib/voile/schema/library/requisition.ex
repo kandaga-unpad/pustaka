@@ -7,7 +7,7 @@ defmodule Voile.Schema.Library.Requisition do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_requisitions" do
-    field :request_date, :naive_datetime
+    field :request_date, :utc_datetime
     field :request_type, :string
     field :status, :string
     field :title, :string
@@ -22,13 +22,13 @@ defmodule Voile.Schema.Library.Requisition do
     field :notes, :string
     field :staff_notes, :string
     field :due_date, :date
-    field :fulfilled_date, :naive_datetime
+    field :fulfilled_date, :utc_datetime
 
     belongs_to :requested_by, User, foreign_key: :requested_by_id, type: :binary_id
     belongs_to :assigned_to, User, foreign_key: :assigned_to_id, type: :binary_id
     belongs_to :unit, Node, foreign_key: :unit_id, type: :binary_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @patron_request_type ~w(purchase_request interlibrary_loan digitization_request reference_question)

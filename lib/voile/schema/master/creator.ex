@@ -8,7 +8,7 @@ defmodule Voile.Schema.Master.Creator do
     field :creator_contact, :string
     field :affiliation, :string
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @types ~w(Person Organization Group Conference Event Project Institution)

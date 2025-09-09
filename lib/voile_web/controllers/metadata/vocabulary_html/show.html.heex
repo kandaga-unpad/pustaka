@@ -1,6 +1,7 @@
 <.header>
   Vocabulary {@vocabulary.id}
   <:subtitle>This is a vocabulary record from your database.</:subtitle>
+  
   <:actions>
     <.link href={~p"/manage/metaresource/metadata_vocabularies/#{@vocabulary}/edit"}>
       <.button>Edit vocabulary</.button>
@@ -10,8 +11,11 @@
 
 <.list>
   <:item title="Label">{@vocabulary.label}</:item>
+  
   <:item title="Prefix">{@vocabulary.prefix}</:item>
+  
   <:item title="Namespace url">{@vocabulary.namespace_url}</:item>
+  
   <:item title="Information">{@vocabulary.information}</:item>
 </.list>
 
