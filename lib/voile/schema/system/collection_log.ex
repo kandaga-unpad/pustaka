@@ -32,7 +32,7 @@ defmodule Voile.Schema.System.CollectionLog do
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :user, User, type: :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @action_types ~w(create update delete publish unpublish archive restore import export)

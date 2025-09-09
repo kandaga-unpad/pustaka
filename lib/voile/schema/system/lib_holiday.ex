@@ -22,7 +22,7 @@ defmodule Voile.Schema.System.LibHoliday do
     # Unit/Branch reference for multi-unit libraries
     belongs_to :unit, Voile.Schema.System.Node, foreign_key: :unit_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc """

@@ -153,7 +153,7 @@ defmodule Voile.Migration.UserImporter do
       try do
         Repo.transaction(
           fn ->
-            now = Voile.Migration.Common.utc_now_db()
+            now = DateTime.utc_now() |> DateTime.truncate(:second)
 
             insert_data =
               valid_users
@@ -224,7 +224,7 @@ defmodule Voile.Migration.UserImporter do
         {:skip, "User with email #{clean_email} already exists"}
       else
         user_role = map_user_type_to_role_cached(user_type, cache.roles)
-        now = Voile.Migration.Common.utc_now_db()
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         attrs = %{
           username: clean_username,

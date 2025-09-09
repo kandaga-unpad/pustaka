@@ -7,7 +7,7 @@ defmodule Voile.Schema.Accounts.UserRole do
     field :permissions, :map, default: %{}
     field :description, :string
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   def changeset(user_role, attrs) do

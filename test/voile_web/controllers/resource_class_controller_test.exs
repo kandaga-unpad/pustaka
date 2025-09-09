@@ -3,16 +3,8 @@ defmodule VoileWeb.ResourceClassControllerTest do
 
   import Voile.MetadataFixtures
 
-  @create_attrs %{
-    label: "some label",
-    local_name: "some local_name",
-    information: "some information"
-  }
-  @update_attrs %{
-    label: "some updated label",
-    local_name: "some updated local_name",
-    information: "some updated information"
-  }
+  @create_attrs %{label: "some label", local_name: "some local_name", information: "some information"}
+  @update_attrs %{label: "some updated label", local_name: "some updated local_name", information: "some updated information"}
   @invalid_attrs %{label: nil, local_name: nil, information: nil}
 
   describe "index" do
@@ -49,10 +41,7 @@ defmodule VoileWeb.ResourceClassControllerTest do
   describe "edit resource_class" do
     setup [:create_resource_class]
 
-    test "renders form for editing chosen resource_class", %{
-      conn: conn,
-      resource_class: resource_class
-    } do
+    test "renders form for editing chosen resource_class", %{conn: conn, resource_class: resource_class} do
       conn = get(conn, ~p"/resource_class/#{resource_class}/edit")
       assert html_response(conn, 200) =~ "Edit Resource class"
     end

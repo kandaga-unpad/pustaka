@@ -12,7 +12,7 @@ defmodule Voile.Repo.Migrations.CreateResourceClass do
       add :owner_id, references(:users, type: :binary_id, on_delete: :nothing)
       add :vocabulary_id, references(:metadata_vocabularies, on_delete: :nothing)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:resource_class, [:owner_id])

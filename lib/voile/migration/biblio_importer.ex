@@ -382,7 +382,7 @@ defmodule Voile.Migration.BiblioImporter do
         if MapSet.member?(cache.existing_collections, biblio_id_int) do
           {:skip, "Collection with biblio_id #{biblio_id_int} already exists"}
         else
-          now = Voile.Migration.Common.utc_now_db()
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
 
           # Generate UUID for collection
           id = Ecto.UUID.generate()
@@ -699,7 +699,7 @@ defmodule Voile.Migration.BiblioImporter do
         _uid | _rest
       ]
       when length(row) >= 29 ->
-        now = Voile.Migration.Common.utc_now_db()
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
         biblio_id_int = parse_int(biblio_id)
 
         # Generate UUID for collection

@@ -35,12 +35,7 @@ defmodule Voile.SystemTest do
 
     test "update_node/2 with valid data updates the node" do
       node = node_fixture()
-
-      update_attrs = %{
-        name: "some updated name",
-        image: "some updated image",
-        abbr: "some updated abbr"
-      }
+      update_attrs = %{name: "some updated name", image: "some updated image", abbr: "some updated abbr"}
 
       assert {:ok, %Node{} = node} = System.update_node(node, update_attrs)
       assert node.name == "some updated name"
@@ -97,11 +92,7 @@ defmodule Voile.SystemTest do
 
     test "update_setting/2 with valid data updates the setting" do
       setting = setting_fixture()
-
-      update_attrs = %{
-        setting_name: "some updated setting_name",
-        setting_value: "some updated setting_value"
-      }
+      update_attrs = %{setting_name: "some updated setting_name", setting_value: "some updated setting_value"}
 
       assert {:ok, %Setting{} = setting} = System.update_setting(setting, update_attrs)
       assert setting.setting_name == "some updated setting_name"
@@ -144,12 +135,7 @@ defmodule Voile.SystemTest do
     end
 
     test "create_system_log/1 with valid data creates a system_log" do
-      valid_attrs = %{
-        log_msg: "some log_msg",
-        log_type: "some log_type",
-        log_location: "some log_location",
-        log_date: ~U[2025-04-21 08:02:00Z]
-      }
+      valid_attrs = %{log_msg: "some log_msg", log_type: "some log_type", log_location: "some log_location", log_date: ~U[2025-04-21 08:02:00Z]}
 
       assert {:ok, %SystemLog{} = system_log} = System.create_system_log(valid_attrs)
       assert system_log.log_msg == "some log_msg"
@@ -164,13 +150,7 @@ defmodule Voile.SystemTest do
 
     test "update_system_log/2 with valid data updates the system_log" do
       system_log = system_log_fixture()
-
-      update_attrs = %{
-        log_msg: "some updated log_msg",
-        log_type: "some updated log_type",
-        log_location: "some updated log_location",
-        log_date: ~U[2025-04-22 08:02:00Z]
-      }
+      update_attrs = %{log_msg: "some updated log_msg", log_type: "some updated log_type", log_location: "some updated log_location", log_date: ~U[2025-04-22 08:02:00Z]}
 
       assert {:ok, %SystemLog{} = system_log} = System.update_system_log(system_log, update_attrs)
       assert system_log.log_msg == "some updated log_msg"
@@ -229,16 +209,9 @@ defmodule Voile.SystemTest do
 
     test "update_collection_log/2 with valid data updates the collection_log" do
       collection_log = collection_log_fixture()
+      update_attrs = %{message: "some updated message", title: "some updated title", action: "some updated action"}
 
-      update_attrs = %{
-        message: "some updated message",
-        title: "some updated title",
-        action: "some updated action"
-      }
-
-      assert {:ok, %CollectionLog{} = collection_log} =
-               System.update_collection_log(collection_log, update_attrs)
-
+      assert {:ok, %CollectionLog{} = collection_log} = System.update_collection_log(collection_log, update_attrs)
       assert collection_log.message == "some updated message"
       assert collection_log.title == "some updated title"
       assert collection_log.action == "some updated action"
@@ -246,10 +219,7 @@ defmodule Voile.SystemTest do
 
     test "update_collection_log/2 with invalid data returns error changeset" do
       collection_log = collection_log_fixture()
-
-      assert {:error, %Ecto.Changeset{}} =
-               System.update_collection_log(collection_log, @invalid_attrs)
-
+      assert {:error, %Ecto.Changeset{}} = System.update_collection_log(collection_log, @invalid_attrs)
       assert collection_log == System.get_collection_log!(collection_log.id)
     end
 

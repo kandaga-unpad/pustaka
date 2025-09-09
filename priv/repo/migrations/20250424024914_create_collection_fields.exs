@@ -13,7 +13,7 @@ defmodule Voile.Repo.Migrations.CreateCollectionFields do
       add :collection_id, references(:collections, on_delete: :nilify_all, type: :binary_id)
       add :property_id, references(:metadata_properties, on_delete: :nilify_all)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:collection_fields, [:collection_id])

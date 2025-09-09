@@ -6,7 +6,7 @@ defmodule Voile.Schema.System.Setting do
     field :setting_name, :string
     field :setting_value, :string
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false

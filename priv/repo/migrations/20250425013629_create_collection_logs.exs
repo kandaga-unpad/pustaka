@@ -31,7 +31,7 @@ defmodule Voile.Repo.Migrations.CreateCollectionLogs do
       add :collection_id, references(:collections, on_delete: :nothing, type: :binary_id)
       add :user_id, references(:users, on_delete: :nothing, type: :binary_id)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:collection_logs, [:action_type])

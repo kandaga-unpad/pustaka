@@ -231,12 +231,7 @@ defmodule Voile.Migration.Common do
   def safe_string_trim(val), do: String.trim(val)
 
   def utc_now_truncated do
-    Voile.Migration.Common.utc_now_db()
-  end
-
-  @doc "Return a DB-friendly UTC timestamp (NaiveDateTime) for insert_all etc."
-  def utc_now_db do
-    Voile.Migration.Common.utc_now_db()
+    DateTime.utc_now() |> DateTime.truncate(:second)
   end
 
   @doc """

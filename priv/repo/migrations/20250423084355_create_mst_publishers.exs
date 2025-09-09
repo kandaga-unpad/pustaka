@@ -8,7 +8,7 @@ defmodule Voile.Repo.Migrations.CreateMstPublishers do
       add :address, :string
       add :contact, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
   end
 end

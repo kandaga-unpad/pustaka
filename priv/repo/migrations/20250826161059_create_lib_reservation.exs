@@ -6,14 +6,14 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
 
     create table(:lib_reservations, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :reservation_date, :utc_datetime, null: false
-      add :expiry_date, :utc_datetime
+      add :reservation_date, :naive_datetime, null: false
+      add :expiry_date, :naive_datetime
       add :notification_sent, :boolean, default: false
       add :status, :reservation_status, null: false
       add :priority, :integer, default: 1
       add :notes, :text
-      add :pickup_date, :utc_datetime
-      add :cancelled_date, :utc_datetime
+      add :pickup_date, :naive_datetime
+      add :cancelled_date, :naive_datetime
       add :cancellation_reason, :text
 
       add :item_id, references(:items, on_delete: :nilify_all, type: :binary_id), null: false
@@ -21,7 +21,7 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
       add :collection_id, references(:collections, on_delete: :nilify_all, type: :binary_id)
       add :processed_by_id, references(:users, on_delete: :nilify_all, type: :binary_id)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:lib_reservations, [:item_id])

@@ -7,7 +7,7 @@ defmodule Voile.Repo.Migrations.CreateMstFrequency do
       add :time_increment, :integer
       add :time_unit, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
   end
 end

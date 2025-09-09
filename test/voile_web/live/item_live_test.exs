@@ -4,33 +4,9 @@ defmodule VoileWeb.ItemLiveTest do
   import Phoenix.LiveViewTest
   import Voile.CatalogFixtures
 
-  @create_attrs %{
-    status: "some status",
-    location: "some location",
-    item_code: "some item_code",
-    inventory_code: "some inventory_code",
-    barcode: "some barcode",
-    condition: "some condition",
-    availability: "some availability"
-  }
-  @update_attrs %{
-    status: "some updated status",
-    location: "some updated location",
-    item_code: "some updated item_code",
-    inventory_code: "some updated inventory_code",
-    barcode: "some updated barcode",
-    condition: "some updated condition",
-    availability: "some updated availability"
-  }
-  @invalid_attrs %{
-    status: nil,
-    location: nil,
-    item_code: nil,
-    inventory_code: nil,
-    barcode: nil,
-    condition: nil,
-    availability: nil
-  }
+  @create_attrs %{status: "some status", location: "some location", item_code: "some item_code", inventory_code: "some inventory_code", barcode: "some barcode", condition: "some condition", availability: "some availability"}
+  @update_attrs %{status: "some updated status", location: "some updated location", item_code: "some updated item_code", inventory_code: "some updated inventory_code", barcode: "some updated barcode", condition: "some updated condition", availability: "some updated availability"}
+  @invalid_attrs %{status: nil, location: nil, item_code: nil, inventory_code: nil, barcode: nil, condition: nil, availability: nil}
 
   defp create_item(_) do
     item = item_fixture()

@@ -3,16 +3,8 @@ defmodule VoileWeb.PropertyControllerTest do
 
   import Voile.SchemaMetadataFixtures
 
-  @create_attrs %{
-    label: "some label",
-    local_name: "some local_name",
-    information: "some information"
-  }
-  @update_attrs %{
-    label: "some updated label",
-    local_name: "some updated local_name",
-    information: "some updated information"
-  }
+  @create_attrs %{label: "some label", local_name: "some local_name", information: "some information"}
+  @update_attrs %{label: "some updated label", local_name: "some updated local_name", information: "some updated information"}
   @invalid_attrs %{label: nil, local_name: nil, information: nil}
 
   describe "index" do

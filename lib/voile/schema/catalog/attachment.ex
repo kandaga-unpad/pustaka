@@ -23,7 +23,7 @@ defmodule Voile.Schema.Catalog.Attachment do
     # Virtual field for file upload
     field :file, :any, virtual: true
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @file_types ~w(document image video audio software archive other)

@@ -7,7 +7,7 @@ defmodule Voile.Repo.Migrations.CreateMstTopics do
       add :type, :string
       add :description, :text
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
   end
 end

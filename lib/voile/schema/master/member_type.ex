@@ -43,7 +43,7 @@ defmodule Voile.Schema.Master.MemberType do
     field :allowed_collections, :map, default: %{}
     field :metadata, :map, default: %{}
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false
@@ -174,7 +174,6 @@ defmodule Voile.Schema.Master.MemberType do
   def compute_ends_at(%__MODULE__{membership_period_days: days}, %DateTime{} = start)
       when is_integer(days) and days > 0 do
     start_naive = DateTime.to_naive(start)
-
     ends_at = NaiveDateTime.add(start_naive, days * 24 * 60 * 60, :second)
     {:ok, ends_at}
   end
@@ -202,7 +201,6 @@ defmodule Voile.Schema.Master.MemberType do
       )
       when is_integer(n) and n > 0 do
     from_naive = DateTime.to_naive(from)
-
     {:ok, NaiveDateTime.add(from_naive, n * 24 * 60 * 60, :second)}
   end
 

@@ -19,7 +19,7 @@ defmodule Voile.Repo.Migrations.CreateUserProfile do
 
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create unique_index(:user_profiles, [:user_id])

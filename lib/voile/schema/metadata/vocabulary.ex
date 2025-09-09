@@ -11,7 +11,7 @@ defmodule Voile.Schema.Metadata.Vocabulary do
     field :information, :string
     belongs_to :owner, User
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false

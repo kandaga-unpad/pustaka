@@ -6,7 +6,7 @@ defmodule Voile.Repo.Migrations.CreateSettings do
       add :setting_name, :string
       add :setting_value, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
   end
 end

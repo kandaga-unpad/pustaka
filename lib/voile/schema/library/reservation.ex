@@ -7,14 +7,14 @@ defmodule Voile.Schema.Library.Reservation do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_reservations" do
-    field :reservation_date, :utc_datetime
-    field :expiry_date, :utc_datetime
+    field :reservation_date, :naive_datetime
+    field :expiry_date, :naive_datetime
     field :notification_sent, :boolean, default: false
     field :status, :string
     field :priority, :integer, default: 1
     field :notes, :string
-    field :pickup_date, :utc_datetime
-    field :cancelled_date, :utc_datetime
+    field :pickup_date, :naive_datetime
+    field :cancelled_date, :naive_datetime
     field :cancellation_reason, :string
 
     belongs_to :item, Item, type: :binary_id
@@ -22,7 +22,7 @@ defmodule Voile.Schema.Library.Reservation do
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :processed_by, User, foreign_key: :processed_by_id, type: :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @statuses ~w(pending available picked_up expired cancelled)

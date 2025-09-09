@@ -141,7 +141,7 @@ defmodule Voile.Migration.MasterImporter do
   defp process_creator_file_optimized(file_path, batch_size, existing_names) do
     IO.puts("📂 Processing creator file: #{Path.basename(file_path)}")
 
-    now = Voile.Migration.Common.utc_now_db()
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     stats_ref = :ets.new(:creator_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
@@ -180,7 +180,7 @@ defmodule Voile.Migration.MasterImporter do
   defp process_publisher_file_optimized(file_path, batch_size, existing_names) do
     IO.puts("📂 Processing publisher file: #{Path.basename(file_path)}")
 
-    now = Voile.Migration.Common.utc_now_db()
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     stats_ref = :ets.new(:publisher_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})

@@ -8,9 +8,9 @@ defmodule Voile.Schema.Library.Transaction do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_transactions" do
     field :transaction_type, :string
-    field :transaction_date, :utc_datetime
-    field :due_date, :utc_datetime
-    field :return_date, :utc_datetime
+    field :transaction_date, :naive_datetime
+    field :due_date, :naive_datetime
+    field :return_date, :naive_datetime
     field :renewal_count, :integer, default: 0
     field :notes, :string
     field :status, :string
@@ -21,7 +21,7 @@ defmodule Voile.Schema.Library.Transaction do
     belongs_to :member, User, type: :binary_id
     belongs_to :librarian, User, foreign_key: :librarian_id, type: :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @transaction_types ~w(loan return renewal lost_item damaged_item cancel)

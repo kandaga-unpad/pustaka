@@ -8,7 +8,7 @@ defmodule Voile.Repo.Migrations.CreateNodes do
       add :description, :text
       add :image, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create unique_index(:nodes, [:name])

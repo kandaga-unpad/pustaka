@@ -268,7 +268,7 @@ defmodule Voile.Migration.ItemImporter do
               new_time
           end
 
-        now = Voile.Migration.Common.utc_now_db()
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         # Get collection and unit data for code generation
         collection_data = Map.get(collection_map, collection_id, %{})

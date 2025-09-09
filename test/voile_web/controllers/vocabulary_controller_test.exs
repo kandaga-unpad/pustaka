@@ -3,18 +3,8 @@ defmodule VoileWeb.VocabularyControllerTest do
 
   import Voile.MetadataFixtures
 
-  @create_attrs %{
-    label: "some label",
-    prefix: "some prefix",
-    namespace_url: "some namespace_url",
-    information: "some information"
-  }
-  @update_attrs %{
-    label: "some updated label",
-    prefix: "some updated prefix",
-    namespace_url: "some updated namespace_url",
-    information: "some updated information"
-  }
+  @create_attrs %{label: "some label", prefix: "some prefix", namespace_url: "some namespace_url", information: "some information"}
+  @update_attrs %{label: "some updated label", prefix: "some updated prefix", namespace_url: "some updated namespace_url", information: "some updated information"}
   @invalid_attrs %{label: nil, prefix: nil, namespace_url: nil, information: nil}
 
   describe "index" do

@@ -25,7 +25,7 @@ defmodule Voile.Repo.Migrations.CreateLibHolidays do
         default: "holiday",
         comment: "Type: holiday, schedule"
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     # Indexes for holidays
