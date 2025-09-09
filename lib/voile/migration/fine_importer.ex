@@ -374,10 +374,7 @@ defmodule Voile.Migration.FineImporter do
   defp parse_datetime_with_default("0000-00-00 00:00:00"), do: nil
 
   defp parse_datetime_with_default(date_str) do
-    case parse_datetime(date_str) do
-      nil -> nil
-      datetime -> datetime
-    end
+    parse_datetime(date_str)
   end
 
   defp get_or_create_default_item do

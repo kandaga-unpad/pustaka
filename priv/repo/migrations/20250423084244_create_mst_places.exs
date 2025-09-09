@@ -5,7 +5,7 @@ defmodule Voile.Repo.Migrations.CreateMstPlaces do
     create table(:mst_places) do
       add :name, :string
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
   end
 end

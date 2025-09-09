@@ -13,12 +13,12 @@ defmodule Voile.Repo.Migrations.CreateItems do
       add :price, :decimal, precision: 10, scale: 2
       add :acquisition_date, :date
       add :last_inventory_date, :date
-      add :last_circulated, :naive_datetime
+      add :last_circulated, :utc_datetime
       add :rfid_tag, :string
       add :unit_id, references(:nodes, on_delete: :nilify_all)
       add :collection_id, references(:collections, on_delete: :delete_all, type: :binary_id)
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create unique_index(:items, [:item_code])

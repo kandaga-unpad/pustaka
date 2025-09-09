@@ -11,7 +11,7 @@ defmodule Voile.Repo.Migrations.CreateItemFieldValues do
       add :collection_field_id,
           references(:collection_fields, on_delete: :nothing, type: :binary_id)
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:item_field_values, [:item_id])

@@ -13,7 +13,7 @@ defmodule Voile.Schema.Metadata.ResourceClass do
     belongs_to :owner, User
     belongs_to :vocabulary, Vocabulary
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

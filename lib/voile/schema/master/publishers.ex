@@ -8,7 +8,7 @@ defmodule Voile.Schema.Master.Publishers do
     field :city, :string
     field :contact, :string
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

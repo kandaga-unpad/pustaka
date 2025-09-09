@@ -43,7 +43,7 @@ defmodule Voile.Schema.Master.MemberType do
     field :allowed_collections, :map, default: %{}
     field :metadata, :map, default: %{}
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
@@ -157,24 +157,23 @@ defmodule Voile.Schema.Master.MemberType do
   # Date / Subscription helpers
   # -------------------------
   @doc """
-  Compute ends_at given a start_date (NaiveDateTime or DateTime) and the member type's
-  `membership_period_days`. Returns `{:ok, NaiveDateTime}` or `:no_period`.
+  Compute ends_at given a start_date (DateTime) and the member type's
+  `membership_period_days`. Returns `{:ok, DateTime}` or `:no_period`.
 
   Example:
-    MemberType.compute_ends_at(member_type, ~N[2025-01-01 00:00:00])
+    MemberType.compute_ends_at(member_type, ~U[2025-01-01 00:00:00Z])
   """
   def compute_ends_at(%__MODULE__{membership_period_days: nil}, _start), do: :no_period
 
-  def compute_ends_at(%__MODULE__{membership_period_days: days}, %NaiveDateTime{} = start)
+  def compute_ends_at(%__MODULE__{membership_period_days: days}, %DateTime{} = start)
       when is_integer(days) and days > 0 do
-    ends_at = NaiveDateTime.add(start, days * 24 * 60 * 60, :second)
+    ends_at = DateTime.add(start, days * 24 * 60 * 60, :second)
     {:ok, ends_at}
   end
 
   def compute_ends_at(%__MODULE__{membership_period_days: days}, %DateTime{} = start)
       when is_integer(days) and days > 0 do
-    start_naive = DateTime.to_naive(start)
-    ends_at = NaiveDateTime.add(start_naive, days * 24 * 60 * 60, :second)
+    ends_at = DateTime.add(start, days * 24 * 60 * 60, :second)
     {:ok, ends_at}
   end
 
@@ -183,16 +182,16 @@ defmodule Voile.Schema.Master.MemberType do
   - Supports `recurrence_unit: "days"` out of the box.
   - For `"months"` or `"years"` we recommend using Timex or Calendar operations
     in your application code because months/years are variable-length.
-  Returns `{:ok, NaiveDateTime}` | `:not_applicable` | `{:error, reason}`.
+  Returns `{:ok, DateTime}` | `:not_applicable` | `{:error, reason}`.
   """
   def compute_next_renewal(%__MODULE__{auto_renew: false}, _from), do: :not_applicable
 
   def compute_next_renewal(
         %__MODULE__{recurrence_unit: "days", recurrence_interval: n},
-        %NaiveDateTime{} = from
+        %DateTime{} = from
       )
       when is_integer(n) and n > 0 do
-    {:ok, NaiveDateTime.add(from, n * 24 * 60 * 60, :second)}
+    {:ok, DateTime.add(from, n * 24 * 60 * 60, :second)}
   end
 
   def compute_next_renewal(
@@ -200,8 +199,7 @@ defmodule Voile.Schema.Master.MemberType do
         %DateTime{} = from
       )
       when is_integer(n) and n > 0 do
-    from_naive = DateTime.to_naive(from)
-    {:ok, NaiveDateTime.add(from_naive, n * 24 * 60 * 60, :second)}
+    {:ok, DateTime.add(from, n * 24 * 60 * 60, :second)}
   end
 
   def compute_next_renewal(%__MODULE__{recurrence_unit: unit} = _mt, _from)

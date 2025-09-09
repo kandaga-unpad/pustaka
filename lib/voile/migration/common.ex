@@ -21,15 +21,15 @@ defmodule Voile.Migration.Common do
       files = Path.wildcard(pattern) |> sort_csv_files_by_priority()
 
       if Enum.empty?(files) do
-        IO.puts("⚠️ No CSV files found in #{base_path}")
+        IO.puts("âš ï¸ No CSV files found in #{base_path}")
         []
       else
-        IO.puts("📁 Found #{length(files)} CSV files in #{base_path} (sorted by priority):")
+        IO.puts("ðŸ“ Found #{length(files)} CSV files in #{base_path} (sorted by priority):")
         Enum.each(files, &IO.puts("  - #{Path.basename(&1)}"))
         files
       end
     else
-      IO.puts("⚠️ Directory not found: #{base_path}")
+      IO.puts("âš ï¸ Directory not found: #{base_path}")
       []
     end
   end
@@ -41,10 +41,10 @@ defmodule Voile.Migration.Common do
     files = Path.wildcard(full_pattern) |> Enum.sort()
 
     if Enum.empty?(files) do
-      IO.puts("⚠️ No files found matching pattern: #{full_pattern}")
+      IO.puts("âš ï¸ No files found matching pattern: #{full_pattern}")
       []
     else
-      IO.puts("📁 Found #{length(files)} files matching pattern:")
+      IO.puts("ðŸ“ Found #{length(files)} files matching pattern:")
       Enum.each(files, &IO.puts("  - #{Path.basename(&1)}"))
       files
     end
@@ -261,7 +261,7 @@ defmodule Voile.Migration.Common do
           result
 
         {:error, reason} ->
-          IO.puts("⚠️ Batch insert transaction failed: #{inspect(reason)}")
+          IO.puts("âš ï¸ Batch insert transaction failed: #{inspect(reason)}")
           {0, []}
       end
     end
@@ -301,7 +301,7 @@ defmodule Voile.Migration.Common do
     end_time = System.monotonic_time(:millisecond)
     duration = end_time - start_time
 
-    IO.puts("⏱️  #{operation} completed in #{duration}ms")
+    IO.puts("â±ï¸  #{operation} completed in #{duration}ms")
     result
   end
 
@@ -352,7 +352,7 @@ defmodule Voile.Migration.Common do
 
       if MapSet.member?(acc_seen, field_value) do
         line_info = if line_getter, do: " at line #{line_getter.(record)}", else: ""
-        IO.puts("⚠️ Skipping duplicate #{field_value}#{line_info}")
+        IO.puts("âš ï¸ Skipping duplicate #{field_value}#{line_info}")
         {acc_records, acc_seen, dup_count + 1}
       else
         {[record | acc_records], MapSet.put(acc_seen, field_value), dup_count}

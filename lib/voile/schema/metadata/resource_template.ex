@@ -17,7 +17,7 @@ defmodule Voile.Schema.Metadata.ResourceTemplate do
              foreign_key: :template_id,
              on_replace: :delete
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

@@ -7,7 +7,7 @@ defmodule Voile.Schema.Master.Topic do
     field :type, :string
     field :description, :string
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

@@ -12,12 +12,12 @@ defmodule Voile.Schema.Library.Fine do
     field :amount, :decimal
     field :paid_amount, :decimal, default: 0
     field :balance, :decimal
-    field :fine_date, :naive_datetime
-    field :payment_date, :naive_datetime
+    field :fine_date, :utc_datetime
+    field :payment_date, :utc_datetime
     field :fine_status, :string
     field :description, :string
     field :waived, :boolean, default: false
-    field :waived_date, :naive_datetime
+    field :waived_date, :utc_datetime
     field :waived_reason, :string
     field :payment_method, :string
     field :receipt_number, :string
@@ -28,7 +28,7 @@ defmodule Voile.Schema.Library.Fine do
     belongs_to :processed_by, User, foreign_key: :processed_by_id, type: :binary_id
     belongs_to :waived_by, User, foreign_key: :waived_by_id, type: :binary_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @fine_types ~w(overdue lost_item damaged_item processing)

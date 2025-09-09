@@ -9,7 +9,7 @@ defmodule Voile.Schema.Library.CirculationHistory do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_circulation_history" do
     field :event_type, :string
-    field :event_date, :naive_datetime
+    field :event_date, :utc_datetime
     field :description, :string
     field :old_value, :map
     field :new_value, :map
@@ -23,7 +23,7 @@ defmodule Voile.Schema.Library.CirculationHistory do
     belongs_to :fine, Fine, foreign_key: :fine_id, type: :binary_id
     belongs_to :processed_by, User, foreign_key: :processed_by_id, type: :binary_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @circulation_event_types ~w(loan return renewal reserve cancel_reserve fine_paid fine_waived member_created member_updated item_status_change)

@@ -202,9 +202,9 @@ defmodule Voile.Schema.Accounts do
   """
   def sudo_mode?(user, minutes \\ -20)
 
-  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, NaiveDateTime) do
-    target_time = DateTime.utc_now() |> DateTime.add(minutes, :minute) |> DateTime.to_naive()
-    NaiveDateTime.after?(ts, target_time)
+  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
+    target_time = DateTime.utc_now() |> DateTime.add(minutes, :minute)
+    DateTime.after?(ts, target_time)
   end
 
   def sudo_mode?(_user, _minutes), do: false

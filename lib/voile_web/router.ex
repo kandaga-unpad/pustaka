@@ -36,8 +36,12 @@ defmodule VoileWeb.Router do
       on_mount: [{VoileWeb.UserAuth, :mount_current_scope}] do
       # Search dashboard (admin only)
       live "/", PageLive.Home, :index
+
       live "/about", PageLive.About, :index
       live "/search/dashboard", SearchDashboardLive, :index
+
+      # User Profiles and Dashboard for Members
+      live "/atrium", Frontend.Atrium.Index, :index
 
       # LiveView search (optional alternative)
       live "/search/live", SearchLive, :index

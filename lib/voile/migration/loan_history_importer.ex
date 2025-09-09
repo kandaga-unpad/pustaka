@@ -230,10 +230,7 @@ defmodule Voile.Migration.LoanHistoryImporter do
   defp determine_event_date(loan_date, return_date, event_type) do
     case event_type do
       "return" ->
-        case parse_datetime_with_default(return_date) do
-          nil -> parse_datetime_with_default(loan_date)
-          date -> date
-        end
+        parse_datetime_with_default(return_date) || parse_datetime_with_default(loan_date)
 
       _ ->
         parse_datetime_with_default(loan_date)
@@ -347,10 +344,7 @@ defmodule Voile.Migration.LoanHistoryImporter do
     do: nil
 
   defp parse_datetime_with_default(date_str) do
-    case parse_datetime(date_str) do
-      nil -> nil
-      datetime -> datetime
-    end
+    parse_datetime(date_str)
   end
 
   defp get_or_create_default_item do

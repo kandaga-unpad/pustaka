@@ -9,7 +9,7 @@ defmodule Voile.Repo.Migrations.CreateMetadataVocabularies do
       add :information, :text
       add :owner_id, references(:users, type: :binary_id, on_delete: :nothing)
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:metadata_vocabularies, [:owner_id])

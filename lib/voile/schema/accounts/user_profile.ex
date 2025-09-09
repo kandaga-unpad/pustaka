@@ -22,7 +22,7 @@ defmodule Voile.Schema.Accounts.UserProfile do
 
     belongs_to :user, User, type: :binary_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   def changeset(user_profile, attrs) do

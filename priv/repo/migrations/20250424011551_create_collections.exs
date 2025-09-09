@@ -16,7 +16,7 @@ defmodule Voile.Repo.Migrations.CreateCollections do
       add :creator_id, references(:mst_creator, on_delete: :nilify_all)
       add :unit_id, references(:nodes, on_delete: :nilify_all)
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:collections, [:title])

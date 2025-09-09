@@ -24,7 +24,7 @@ config :voile, :scopes,
 
 config :voile,
   ecto_repos: [Voile.Repo],
-  generators: [timestamp_type: :naive_datetime]
+  generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
 config :voile, VoileWeb.Endpoint,

@@ -19,7 +19,7 @@ defmodule Voile.Repo.Migrations.CreateAttachments do
       add :attachable_id, :binary_id, null: false
       add :attachable_type, :string, null: false
 
-      timestamps(type: :naive_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create index(:attachments, [:attachable_id, :attachable_type])

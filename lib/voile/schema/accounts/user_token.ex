@@ -18,10 +18,10 @@ defmodule Voile.Schema.Accounts.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    field :authenticated_at, :naive_datetime
+    field :authenticated_at, :utc_datetime
     belongs_to :user, Voile.Schema.Accounts.User, type: :binary_id
 
-    timestamps(type: :naive_datetime, updated_at: false)
+    timestamps(type: :utc_datetime, updated_at: false)
   end
 
   @doc """
@@ -45,7 +45,22 @@ defmodule Voile.Schema.Accounts.UserToken do
   """
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    dt = user.authenticated_at || DateTime.utc_now(:second) |> DateTime.to_naive()
+
+    dt =
+      case user.authenticated_at do
+        %DateTime{} = d ->
+          d
+
+        %NaiveDateTime{} = nd ->
+          case DateTime.from_naive(nd, "Etc/UTC") do
+            {:ok, d} -> d
+            _ -> DateTime.utc_now() |> DateTime.truncate(:second)
+          end
+
+        _ ->
+          DateTime.utc_now() |> DateTime.truncate(:second)
+      end
+
     {token, %UserToken{token: token, context: "session", user_id: user.id, authenticated_at: dt}}
   end
 
@@ -159,6 +174,8 @@ defmodule Voile.Schema.Accounts.UserToken do
 
   defp days_for_context("confirm"), do: @confirm_validity_in_days
   defp days_for_context("reset_password"), do: @reset_password_validity_in_days
+  # Onboarding tokens are like confirmation tokens (users must confirm and set password).
+  defp days_for_context("onboarding"), do: @confirm_validity_in_days
 
   @doc """
   Checks if the token is valid and returns its underlying lookup query.

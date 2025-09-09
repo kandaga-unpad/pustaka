@@ -28,11 +28,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.start_link(config) do
       {:ok, conn} ->
-        Logger.info("✅ Connected to SLiMS MySQL/MariaDB database: #{config[:database]}")
+        Logger.info("âœ… Connected to SLiMS MySQL/MariaDB database: #{config[:database]}")
         {:ok, conn}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to connect to MySQL/MariaDB: #{inspect(reason)}")
+        Logger.error("âŒ Failed to connect to MySQL/MariaDB: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -61,11 +61,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("📚 Fetched #{length(rows)} bibliography records from MySQL")
+        Logger.info("ðŸ“š Fetched #{length(rows)} bibliography records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch biblio data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch biblio data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -91,11 +91,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("📦 Fetched #{length(rows)} item records from MySQL")
+        Logger.info("ðŸ“¦ Fetched #{length(rows)} item records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch item data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch item data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -121,11 +121,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("👥 Fetched #{length(rows)} member records from MySQL")
+        Logger.info("ðŸ‘¥ Fetched #{length(rows)} member records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch member data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch member data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -150,11 +150,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("👤 Fetched #{length(rows)} user records from MySQL")
+        Logger.info("ðŸ‘¤ Fetched #{length(rows)} user records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch user data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch user data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -178,11 +178,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("✍️ Fetched #{length(rows)} author records from MySQL")
+        Logger.info("âœï¸ Fetched #{length(rows)} author records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch author data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch author data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -205,11 +205,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("🏢 Fetched #{length(rows)} publisher records from MySQL")
+        Logger.info("ðŸ¢ Fetched #{length(rows)} publisher records from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch publisher data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch publisher data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -232,11 +232,11 @@ defmodule Voile.Migration.MySQLAdapter do
 
     case MyXQL.query(conn, query) do
       {:ok, %{rows: rows, columns: columns}} ->
-        Logger.info("🔗 Fetched #{length(rows)} biblio-author relationships from MySQL")
+        Logger.info("ðŸ”— Fetched #{length(rows)} biblio-author relationships from MySQL")
         {:ok, format_mysql_rows(rows, columns)}
 
       {:error, reason} ->
-        Logger.error("❌ Failed to fetch biblio-author data: #{inspect(reason)}")
+        Logger.error("âŒ Failed to fetch biblio-author data: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -261,7 +261,7 @@ defmodule Voile.Migration.MySQLAdapter do
   """
   def close(conn) do
     GenServer.stop(conn)
-    Logger.info("🔌 Closed MySQL connection")
+    Logger.info("ðŸ”Œ Closed MySQL connection")
   end
 
   # Private helper functions
@@ -291,7 +291,6 @@ defmodule Voile.Migration.MySQLAdapter do
       Enum.map(row, fn
         nil -> ""
         %DateTime{} = dt -> DateTime.to_string(dt)
-        %NaiveDateTime{} = ndt -> NaiveDateTime.to_string(ndt)
         %Date{} = date -> Date.to_string(date)
         value when is_binary(value) -> value
         value -> to_string(value)

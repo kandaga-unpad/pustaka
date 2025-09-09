@@ -7,7 +7,7 @@ defmodule Voile.Schema.Master.Frequency do
     field :frequency, :string
     field :time_increment, :integer
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

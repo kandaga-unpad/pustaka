@@ -17,7 +17,7 @@ defmodule Voile.Schema.Catalog.CollectionField do
     belongs_to :collection, Collection, on_replace: :nilify, type: :binary_id
     belongs_to :metadata_properties, Property, on_replace: :nilify, foreign_key: :property_id
 
-    timestamps(type: :naive_datetime)
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

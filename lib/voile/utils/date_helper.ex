@@ -8,7 +8,7 @@ defmodule Voile.Utils.DateHelper do
 
   ## Parameters
 
-    * `utc_datetime` - The UTC datetime to convert (%DateTime{} or %NaiveDateTime{})
+    * `utc_datetime` - The UTC datetime to convert (%DateTime{} or %DateTime{})
     * `timezone` - The target timezone (default: "Asia/Jakarta")
     * `format` - The format string (default: "%d/%m/%Y %H:%M %Z")
 
@@ -31,14 +31,6 @@ defmodule Voile.Utils.DateHelper do
     |> Calendar.strftime(format)
   rescue
     _ -> format_fallback(utc_datetime)
-  end
-
-  def to_local_time(%NaiveDateTime{} = naive_datetime, timezone, format) do
-    naive_datetime
-    |> DateTime.from_naive!("Etc/UTC")
-    |> to_local_time(timezone, format)
-  rescue
-    _ -> format_fallback(naive_datetime)
   end
 
   def to_local_time(nil, _timezone, _format), do: ""
@@ -72,11 +64,6 @@ defmodule Voile.Utils.DateHelper do
     case utc_datetime do
       %DateTime{} = dt ->
         do_time_ago(dt)
-
-      %NaiveDateTime{} = ndt ->
-        ndt
-        |> DateTime.from_naive!("Etc/UTC")
-        |> do_time_ago()
 
       nil ->
         ""
@@ -119,14 +106,6 @@ defmodule Voile.Utils.DateHelper do
   """
   def to_utc(datetime, timezone \\ "Asia/Jakarta")
 
-  def to_utc(%NaiveDateTime{} = naive_datetime, timezone) do
-    naive_datetime
-    |> DateTime.from_naive!(timezone)
-    |> DateTime.shift_zone!("Etc/UTC")
-  rescue
-    _ -> nil
-  end
-
   def to_utc(%DateTime{} = datetime, _timezone) do
     DateTime.shift_zone!(datetime, "Etc/UTC")
   rescue
@@ -156,10 +135,6 @@ defmodule Voile.Utils.DateHelper do
 
   defp format_fallback(%DateTime{} = dt) do
     Calendar.strftime(dt, "%d/%m/%Y %H:%M UTC")
-  end
-
-  defp format_fallback(%NaiveDateTime{} = ndt) do
-    Calendar.strftime(ndt, "%d/%m/%Y %H:%M")
   end
 
   defp format_fallback(_), do: ""

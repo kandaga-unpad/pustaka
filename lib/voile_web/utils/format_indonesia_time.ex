@@ -43,24 +43,11 @@ defmodule VoileWeb.Utils.FormatIndonesiaTime do
     "#{day_of_week}, #{datetime.day} #{month} #{datetime.year}"
   end
 
-  # Handle NaiveDateTime as well
-  def format_indonesian_date(%NaiveDateTime{} = naive_datetime) do
-    # Convert NaiveDateTime to DateTime first
-    datetime = DateTime.from_naive!(naive_datetime, "Asia/Jakarta")
-    format_indonesian_date(datetime)
-  end
-
   def format_full_indonesian_date(%DateTime{} = datetime) do
     day_of_week = get_day_of_week(datetime)
     month = get_month(datetime)
 
     "#{day_of_week}, #{datetime.day} #{month} #{datetime.year} #{pad_zero(datetime.hour)}:#{pad_zero(datetime.minute)}"
-  end
-
-  def format_full_indonesian_date(%NaiveDateTime{} = naive_datetime) do
-    # Convert NaiveDateTime to DateTime first
-    datetime = DateTime.from_naive!(naive_datetime, "Asia/Jakarta")
-    format_full_indonesian_date(datetime)
   end
 
   defp get_day_of_week(%DateTime{} = datetime) do
