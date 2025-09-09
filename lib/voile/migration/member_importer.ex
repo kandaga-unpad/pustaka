@@ -181,38 +181,113 @@ defmodule Voile.Migration.MemberImporter do
         {[user_data | users], [profile_data | profiles], [line_num | lines]}
       end)
 
-    # Use single transaction to minimize connection idle time
+    # Use single transaction to minimize connection idle time and correctly
+    # associate profiles with existing users when inserts are skipped.
     users_inserted =
       if length(users_data) > 0 do
         try do
+          # Restore original input order
+          users_in_order = Enum.reverse(users_data)
+          profiles_in_order = Enum.reverse(profiles_data)
+
+          # Clean users (remove plain password) before any DB work
+          users_clean = Enum.map(users_in_order, &remove_password_field/1)
+
+          # Collect batch emails/identifiers to detect existing users
+          emails = users_clean |> Enum.map(& &1.email) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+          idents =
+            users_clean |> Enum.map(& &1.identifier) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+          existing_users =
+            cond do
+              emails != [] and idents != [] ->
+                from(u in User,
+                  where: u.email in ^emails or u.identifier in ^idents,
+                  select: {u.email, u.identifier, u.id}
+                )
+                |> Repo.all()
+
+              emails != [] ->
+                from(u in User,
+                  where: u.email in ^emails,
+                  select: {u.email, u.identifier, u.id}
+                )
+                |> Repo.all()
+
+              idents != [] ->
+                from(u in User,
+                  where: u.identifier in ^idents,
+                  select: {u.email, u.identifier, u.id}
+                )
+                |> Repo.all()
+
+              true ->
+                []
+            end
+
+          existing_by_email =
+            existing_users
+            |> Enum.reduce(%{}, fn {email, _ident, id}, acc ->
+              if email, do: Map.put(acc, email, id), else: acc
+            end)
+
+          existing_by_ident =
+            existing_users
+            |> Enum.reduce(%{}, fn {_email, ident, id}, acc ->
+              if ident, do: Map.put(acc, ident, id), else: acc
+            end)
+
+          # Partition pairs into new users to insert and profiles that belong to existing users
+          {to_insert_users, profiles_for_new_users, profiles_for_existing} =
+            Enum.reduce(Enum.zip(users_clean, profiles_in_order), {[], [], []}, fn {u, p},
+                                                                                   {ui, pu, pe} ->
+              cond do
+                u.email && Map.has_key?(existing_by_email, u.email) ->
+                  pe = [Map.put(p, :user_id, existing_by_email[u.email]) | pe]
+                  {ui, pu, pe}
+
+                u.identifier && Map.has_key?(existing_by_ident, u.identifier) ->
+                  pe = [Map.put(p, :user_id, existing_by_ident[u.identifier]) | pe]
+                  {ui, pu, pe}
+
+                true ->
+                  {ui ++ [u], pu ++ [p], pe}
+              end
+            end)
+
           Repo.transaction(
             fn ->
-              # Skip password hashing - users will onboard later
-              users_data_clean = Enum.map(users_data, &remove_password_field/1)
-
-              {count, inserted_users} =
-                Repo.insert_all(User, Enum.reverse(users_data_clean),
-                  on_conflict: :nothing,
-                  returning: [:id],
-                  timeout: :infinity
-                )
-
-              # Update user profiles with correct user_ids in same transaction
-              if count > 0 and length(profiles_data) > 0 do
-                profiles_with_user_ids =
-                  inserted_users
-                  |> Enum.zip(Enum.reverse(profiles_data))
-                  |> Enum.map(fn {user, profile_data} ->
-                    Map.put(profile_data, :user_id, user.id)
-                  end)
-
-                # Batch insert profiles in same transaction
-                {_profile_count, _} =
-                  Repo.insert_all(UserProfile, profiles_with_user_ids,
+              # Insert new users (if any)
+              {count, inserted_rows} =
+                if to_insert_users != [] do
+                  Repo.insert_all(User, to_insert_users,
                     on_conflict: :nothing,
-                    returning: false,
+                    returning: [:id, :email, :identifier],
                     timeout: :infinity
                   )
+                else
+                  {0, []}
+                end
+
+              # Prepare profiles for newly inserted users by zipping returned ids
+              profiles_from_inserted =
+                inserted_rows
+                |> Enum.zip(profiles_for_new_users)
+                |> Enum.map(fn {user_row, profile_data} ->
+                  Map.put(profile_data, :user_id, user_row.id)
+                end)
+
+              # Combine profiles for existing users and newly inserted users
+              profiles_to_insert = Enum.reverse(profiles_for_existing) ++ profiles_from_inserted
+
+              # Insert profiles if any
+              if profiles_to_insert != [] do
+                Repo.insert_all(UserProfile, profiles_to_insert,
+                  on_conflict: :nothing,
+                  returning: false,
+                  timeout: :infinity
+                )
               end
 
               count

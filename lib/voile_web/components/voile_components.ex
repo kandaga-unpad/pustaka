@@ -486,11 +486,11 @@ defmodule VoileWeb.VoileComponents do
         <%= if @collection.thumbnail do %>
           <img
             src={@collection.thumbnail}
-            class="w-full h-40 object-cover rounded-lg"
+            class="w-full h-86 object-cover rounded-lg border-1 border-gray-300 dark:border-gray-600 shadow-md"
             alt={@collection.title}
           />
         <% else %>
-          <div class="w-full h-40 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+          <div class="w-full h-86 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center border-gray-300 dark:border-gray-600 shadow-md">
             <.icon name="hero-book-open" class="w-8 h-8 text-gray-400" />
           </div>
         <% end %>
@@ -515,10 +515,24 @@ defmodule VoileWeb.VoileComponents do
             </div>
           <% end %>
           
+          <%= if @collection.node do %>
+            <div class="flex items-center">
+              <.icon
+                name="hero-building-library-solid"
+                class="w-3 h-3 mr-2 text-gray-400 dark:text-gray-500"
+              />
+              <span class="font-medium text-gray-900 dark:text-white">{@collection.node.name}</span>
+            </div>
+          <% end %>
+          
           <%= if length(@collection.items) > 0 do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-document-duplicate" class="w-3 h-3" />
-              <span>{length(@collection.items)} items</span>
+              <span>
+                {length(@collection.items)} {if length(@collection.items) == 1,
+                  do: "item",
+                  else: "items"}
+              </span>
             </div>
           <% end %>
         </div>
@@ -602,8 +616,16 @@ defmodule VoileWeb.VoileComponents do
       <!-- Main Item Info -->
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-4">
-          <div class="flex-shrink-0">
-            <.icon name="hero-document-solid" class="w-6 h-6 text-gray-400" />
+          <div class="flex-shrink-0 mr-3">
+            <%= if @item.collection.thumbnail do %>
+              <img
+                src={@item.collection.thumbnail}
+                alt={@item.collection.title}
+                class="w-14 h-14 object-cover rounded"
+              />
+            <% else %>
+              <.icon name="hero-document-solid" class="w-14 h-14 text-gray-400" />
+            <% end %>
           </div>
           
           <div class="min-w-0 flex-1">

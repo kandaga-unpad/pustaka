@@ -11,7 +11,7 @@ defmodule Voile.Repo.Migrations.CreateResourceTemplate do
           references(:resource_class, on_delete: :nilify_all),
           null: false
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:resource_template, [:owner_id])

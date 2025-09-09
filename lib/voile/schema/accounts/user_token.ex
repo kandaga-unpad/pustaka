@@ -18,10 +18,10 @@ defmodule Voile.Schema.Accounts.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    field :authenticated_at, :utc_datetime
+    field :authenticated_at, :naive_datetime
     belongs_to :user, Voile.Schema.Accounts.User, type: :binary_id
 
-    timestamps(type: :utc_datetime, updated_at: false)
+    timestamps(type: :naive_datetime, updated_at: false)
   end
 
   @doc """
@@ -45,7 +45,7 @@ defmodule Voile.Schema.Accounts.UserToken do
   """
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    dt = user.authenticated_at || DateTime.utc_now(:second)
+    dt = user.authenticated_at || DateTime.utc_now(:second) |> DateTime.to_naive()
     {token, %UserToken{token: token, context: "session", user_id: user.id, authenticated_at: dt}}
   end
 

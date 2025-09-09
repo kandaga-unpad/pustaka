@@ -16,12 +16,12 @@ defmodule Voile.Schema.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
-    field :confirmed_at, :utc_datetime
-    field :authenticated_at, :utc_datetime, virtual: true
+    field :confirmed_at, :naive_datetime
+    field :authenticated_at, :naive_datetime, virtual: true
     field :user_image, :string
     field :social_media, :map, type: :jsonb
     field :groups, {:array, :string}
-    field :last_login, :utc_datetime
+    field :last_login, :naive_datetime
     field :last_login_ip, :string
 
     belongs_to :user_role, UserRole
@@ -34,7 +34,7 @@ defmodule Voile.Schema.Accounts.User do
     field :instagram, :string, virtual: true
     field :website, :string, virtual: true
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   def changeset(user, attrs, opts \\ []) do
@@ -246,6 +246,23 @@ defmodule Voile.Schema.Accounts.User do
   def confirm_changeset(user) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
     change(user, confirmed_at: now)
+  end
+
+  @doc """
+  A user changeset for onboarding migrated users.
+
+  This changeset allows migrated users to set their new password
+  and confirms their account in one step during the onboarding process.
+  """
+  def onboarding_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:password])
+    |> validate_confirmation(:password, message: "does not match password")
+    |> validate_password(opts)
+    |> put_change(
+      :confirmed_at,
+      DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
+    )
   end
 
   @doc """

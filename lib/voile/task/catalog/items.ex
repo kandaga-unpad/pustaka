@@ -8,6 +8,47 @@ defmodule Voile.Task.Catalog.Items do
   alias Voile.Schema.Catalog
 
   @doc """
+  Get unique filter options for items (availability, condition, location).
+  """
+  def get_filter_options do
+    availabilities =
+      from(i in Voile.Schema.Catalog.Item,
+        where: i.status == "active",
+        select: i.availability,
+        distinct: true
+      )
+      |> Repo.all()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.sort()
+
+    conditions =
+      from(i in Voile.Schema.Catalog.Item,
+        where: i.status == "active",
+        select: i.condition,
+        distinct: true
+      )
+      |> Repo.all()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.sort()
+
+    locations =
+      from(i in Voile.Schema.Catalog.Item,
+        where: i.status == "active",
+        select: i.location,
+        distinct: true
+      )
+      |> Repo.all()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.sort()
+
+    %{
+      availability: availabilities,
+      condition: conditions,
+      location: locations
+    }
+  end
+
+  @doc """
   Load items with filtering, pagination, search, and sorting functionality.
   """
   def load_items(page, search_query, filters, sort_by, sort_order, per_page \\ 20) do

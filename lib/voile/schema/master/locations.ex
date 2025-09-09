@@ -7,7 +7,7 @@ defmodule Voile.Schema.Master.Locations do
     field :location_name, :string
     field :location_place, :string
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false

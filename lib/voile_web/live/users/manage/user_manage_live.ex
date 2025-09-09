@@ -35,7 +35,7 @@ defmodule VoileWeb.Users.ManageLive do
             rows={@streams.users}
             row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
           >
-            <:col :let={{_id, user}} label="Avatar">
+            <:col :let={{_id, user}} label="User Image">
               <%= if user.user_image do %>
                 <img
                   class="h-10 w-10 rounded-full"

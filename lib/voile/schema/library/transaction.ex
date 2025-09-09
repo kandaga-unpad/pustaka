@@ -8,9 +8,9 @@ defmodule Voile.Schema.Library.Transaction do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_transactions" do
     field :transaction_type, :string
-    field :transaction_date, :utc_datetime
-    field :due_date, :utc_datetime
-    field :return_date, :utc_datetime
+    field :transaction_date, :naive_datetime
+    field :due_date, :naive_datetime
+    field :return_date, :naive_datetime
     field :renewal_count, :integer, default: 0
     field :notes, :string
     field :status, :string
@@ -21,7 +21,7 @@ defmodule Voile.Schema.Library.Transaction do
     belongs_to :member, User, type: :binary_id
     belongs_to :librarian, User, foreign_key: :librarian_id, type: :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @transaction_types ~w(loan return renewal lost_item damaged_item cancel)
@@ -68,8 +68,13 @@ defmodule Voile.Schema.Library.Transaction do
 
   def days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
     case DateTime.compare(due_date, DateTime.utc_now()) do
-      :lt -> DateTime.diff(DateTime.utc_now(), due_date, :day)
-      _ -> 0
+      :lt ->
+        # Use holiday-aware calculation that excludes weekends and holidays
+        alias Voile.Schema.System.LibHoliday
+        LibHoliday.business_days_between(due_date, DateTime.utc_now())
+
+      _ ->
+        0
     end
   end
 

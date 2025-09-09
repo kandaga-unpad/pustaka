@@ -9,9 +9,9 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
     create table(:lib_transactions, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
       add :transaction_type, :transaction_type, null: false
-      add :transaction_date, :utc_datetime
-      add :due_date, :utc_datetime
-      add :return_date, :utc_datetime
+      add :transaction_date, :naive_datetime
+      add :due_date, :naive_datetime
+      add :return_date, :naive_datetime
       add :renewal_count, :integer, default: 0
       add :notes, :text
       add :status, :transaction_status, null: false
@@ -23,7 +23,7 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
 
       add :librarian_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:lib_transactions, [:due_date])

@@ -366,12 +366,12 @@ admin_member_type = Enum.find(created_member_types, fn mt -> mt.slug == "adminis
 # Create the admin user using proper changeset validation
 admin_user_attrs = %{
   email: "admin@voile.id",
-  fullname: "Admin User",
+  fullname: "Voile Administrator",
   username: "admin",
   password: "super_long_password",
   user_role_id: super_admin_role.id,
   user_type_id: admin_member_type.id,
-  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
 }
 
 case Repo.get_by(Accounts.User, email: "admin@voile.id") do

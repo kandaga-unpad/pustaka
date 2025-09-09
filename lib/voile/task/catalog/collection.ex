@@ -38,7 +38,7 @@ defmodule Voile.Task.Catalog.Collection do
     total_count = Repo.aggregate(base_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {collections, total_pages}
+    {collections, total_pages, total_count}
   end
 
   @doc """

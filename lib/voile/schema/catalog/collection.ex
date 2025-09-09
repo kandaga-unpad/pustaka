@@ -42,7 +42,7 @@ defmodule Voile.Schema.Catalog.Collection do
       foreign_key: :attachable_id,
       on_delete: :delete_all
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @statuses ~w(draft pending published archived)

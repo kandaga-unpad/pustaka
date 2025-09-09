@@ -62,7 +62,8 @@ defmodule Voile.Schema.Accounts do
             fullname: fullname,
             password: pw,
             user_image: profile_picture,
-            confirmed_at: if(user["email_verified"], do: DateTime.utc_now(), else: nil)
+            confirmed_at:
+              if(user["email_verified"], do: DateTime.utc_now() |> DateTime.to_naive(), else: nil)
           })
 
         user
@@ -201,8 +202,9 @@ defmodule Voile.Schema.Accounts do
   """
   def sudo_mode?(user, minutes \\ -20)
 
-  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
-    DateTime.after?(ts, DateTime.utc_now() |> DateTime.add(minutes, :minute))
+  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, NaiveDateTime) do
+    target_time = DateTime.utc_now() |> DateTime.add(minutes, :minute) |> DateTime.to_naive()
+    NaiveDateTime.after?(ts, target_time)
   end
 
   def sudo_mode?(_user, _minutes), do: false
@@ -455,6 +457,45 @@ defmodule Voile.Schema.Accounts do
     {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Delivers the onboarding magic link instructions to the given migrated user.
+  This is specifically for users who were migrated from the old system and need
+  to set their password and confirm their account.
+  """
+  def deliver_onboarding_instructions(%User{} = user, onboarding_url_fun)
+      when is_function(onboarding_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "onboarding")
+    Repo.insert!(user_token)
+    UserNotifier.deliver_onboarding_instructions(user, onboarding_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Gets the user by onboarding token for the onboarding process.
+  """
+  def get_user_by_onboarding_token(token) do
+    with {:ok, query} <- UserToken.verify_email_token_query(token, "onboarding"),
+         %User{} = user <- Repo.one(query) do
+      user
+    else
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Completes the onboarding process for a migrated user by setting their new password
+  and confirming their account.
+  """
+  def complete_user_onboarding(user, attrs) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:user, User.onboarding_changeset(user, attrs))
+    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["onboarding"]))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{user: user}} -> {:ok, user}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
   end
 
   ## Confirmation

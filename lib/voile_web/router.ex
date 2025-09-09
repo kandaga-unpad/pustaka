@@ -85,9 +85,11 @@ defmodule VoileWeb.Router do
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/users/onboarding/:token", UserOnboardingLive, :edit
     end
 
     post "/users/log_in", UserSessionController, :create
+    get "/users/login/:token", MagicLinkController, :login
     delete "/users/log_out", UserSessionController, :delete
   end
 
@@ -211,6 +213,7 @@ defmodule VoileWeb.Router do
             live "/new", Users.ManageLive, :new
             live "/:id", Users.ManageLive.Show, :show
             live "/:id/edit", Users.ManageLive, :edit
+            live "/onboarding/manage", Users.OnboardingManageLive, :index
           end
 
           scope "/users/roles" do
@@ -222,6 +225,7 @@ defmodule VoileWeb.Router do
 
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
+          live "/holidays", Dashboard.Settings.HolidayLive, :index
         end
       end
     end

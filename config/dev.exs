@@ -9,6 +9,8 @@ config :voile, Voile.Repo,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,
+  # Set timezone to Indonesia (GMT+7)
+  parameters: [timezone: "Asia/Jakarta"],
   # Optimize for migration workloads
   queue_target: 50,
   queue_interval: 1000,

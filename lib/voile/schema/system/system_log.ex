@@ -8,10 +8,10 @@ defmodule Voile.Schema.System.SystemLog do
     field :log_msg, :string
     field :log_type, :string
     field :log_location, :string
-    field :log_date, :utc_datetime
+    field :log_date, :naive_datetime
     field :users, :binary_id
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false

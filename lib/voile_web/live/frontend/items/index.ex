@@ -10,6 +10,8 @@ defmodule VoileWeb.Frontend.Items.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    filter_options = Items.get_filter_options()
+
     {:ok,
      socket
      |> assign(:page_title, "Browse Items")
@@ -23,6 +25,9 @@ defmodule VoileWeb.Frontend.Items.Index do
      |> assign(:filter_location, "all")
      |> assign(:sort_by, "item_code")
      |> assign(:sort_order, "asc")
+     |> assign(:availability_options, filter_options.availability)
+     |> assign(:condition_options, filter_options.condition)
+     |> assign(:location_options, filter_options.location)
      |> stream_configure(:items, dom_id: &"item-#{&1.id}")}
   end
 
@@ -79,20 +84,8 @@ defmodule VoileWeb.Frontend.Items.Index do
   end
 
   @impl true
-  def handle_event("filter_availability", %{"availability" => availability}, socket) do
-    params = build_params(socket, %{"availability" => availability, "page" => "1"})
-    {:noreply, push_patch(socket, to: ~p"/items?#{params}")}
-  end
-
-  @impl true
-  def handle_event("filter_condition", %{"condition" => condition}, socket) do
-    params = build_params(socket, %{"condition" => condition, "page" => "1"})
-    {:noreply, push_patch(socket, to: ~p"/items?#{params}")}
-  end
-
-  @impl true
-  def handle_event("filter_location", %{"location" => location}, socket) do
-    params = build_params(socket, %{"location" => location, "page" => "1"})
+  def handle_event("filter", params, socket) do
+    params = build_params(socket, Map.merge(params, %{"page" => "1"}))
     {:noreply, push_patch(socket, to: ~p"/items?#{params}")}
   end
 
@@ -156,121 +149,100 @@ defmodule VoileWeb.Frontend.Items.Index do
               </form>
             </div>
             <!-- Filters Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <!-- Availability Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Availability
-                </label>
-                <select
-                  name="availability"
-                  phx-change="filter_availability"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="available" selected={@filter_availability == "available"}>
-                    Available
-                  </option>
-                  
-                  <option value="all" selected={@filter_availability == "all"}>All</option>
-                  
-                  <option value="loaned" selected={@filter_availability == "loaned"}>On Loan</option>
-                  
-                  <option value="reserved" selected={@filter_availability == "reserved"}>
-                    Reserved
-                  </option>
-                  
-                  <option value="maintenance" selected={@filter_availability == "maintenance"}>
-                    Maintenance
-                  </option>
-                </select>
-              </div>
-              <!-- Condition Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Condition
-                </label>
-                <select
-                  name="condition"
-                  phx-change="filter_condition"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="all" selected={@filter_condition == "all"}>All Conditions</option>
-                  
-                  <option value="excellent" selected={@filter_condition == "excellent"}>
-                    Excellent
-                  </option>
-                  
-                  <option value="good" selected={@filter_condition == "good"}>Good</option>
-                  
-                  <option value="fair" selected={@filter_condition == "fair"}>Fair</option>
-                  
-                  <option value="poor" selected={@filter_condition == "poor"}>Poor</option>
-                </select>
-              </div>
-              <!-- Location Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Location
-                </label>
-                <select
-                  name="location"
-                  phx-change="filter_location"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="all" selected={@filter_location == "all"}>All Locations</option>
-                  <!-- You can populate these dynamically from your data -->
-                  <option value="A1" selected={@filter_location == "A1"}>Section A1</option>
-                  
-                  <option value="A2" selected={@filter_location == "A2"}>Section A2</option>
-                  
-                  <option value="B1" selected={@filter_location == "B1"}>Section B1</option>
-                  
-                  <option value="B2" selected={@filter_location == "B2"}>Section B2</option>
-                </select>
-              </div>
-              <!-- Sort By -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sort By
-                </label>
-                <select
-                  name="sort"
-                  phx-change="sort"
-                  phx-change-target="sort_select"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="item_code" selected={@sort_by == "item_code"}>Item Code</option>
-                  
-                  <option value="location" selected={@sort_by == "location"}>Location</option>
-                  
-                  <option value="availability" selected={@sort_by == "availability"}>
+            <form phx-change="filter">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Availability Filter -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Availability
-                  </option>
-                  
-                  <option value="condition" selected={@sort_by == "condition"}>Condition</option>
-                  
-                  <option value="collection" selected={@sort_by == "collection"}>Collection</option>
-                  
-                  <option value="date_added" selected={@sort_by == "date_added"}>Date Added</option>
-                </select>
+                  </label>
+                  <select
+                    name="availability"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="all" selected={@filter_availability == "all"}>All</option>
+                    
+                    <%= for value <- @availability_options do %>
+                      <option value={value} selected={@filter_availability == value}>
+                        {String.capitalize(value)}
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <!-- Condition Filter -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Condition
+                  </label>
+                  <select
+                    name="condition"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="all" selected={@filter_condition == "all"}>All Conditions</option>
+                    
+                    <%= for value <- @condition_options do %>
+                      <option value={value} selected={@filter_condition == value}>
+                        {String.capitalize(value)}
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <!-- Location Filter -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Location
+                  </label>
+                  <select
+                    name="location"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="all" selected={@filter_location == "all"}>All Locations</option>
+                    
+                    <%= for value <- @location_options do %>
+                      <option value={value} selected={@filter_location == value}>{value}</option>
+                    <% end %>
+                  </select>
+                </div>
+                <!-- Sort By -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Sort By
+                  </label>
+                  <select
+                    name="sort"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="item_code" selected={@sort_by == "item_code"}>Item Code</option>
+                    
+                    <option value="location" selected={@sort_by == "location"}>Location</option>
+                    
+                    <option value="availability" selected={@sort_by == "availability"}>
+                      Availability
+                    </option>
+                    
+                    <option value="condition" selected={@sort_by == "condition"}>Condition</option>
+                    
+                    <option value="collection" selected={@sort_by == "collection"}>Collection</option>
+                    
+                    <option value="date_added" selected={@sort_by == "date_added"}>Date Added</option>
+                  </select>
+                </div>
+                <!-- Sort Order -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Order
+                  </label>
+                  <select
+                    name="order"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  >
+                    <option value="asc" selected={@sort_order == "asc"}>Ascending</option>
+                    
+                    <option value="desc" selected={@sort_order == "desc"}>Descending</option>
+                  </select>
+                </div>
               </div>
-              <!-- Sort Order -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Order
-                </label>
-                <select
-                  name="order"
-                  phx-change="sort"
-                  phx-change-target="order_select"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="asc" selected={@sort_order == "asc"}>Ascending</option>
-                  
-                  <option value="desc" selected={@sort_order == "desc"}>Descending</option>
-                </select>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
         <!-- Content -->

@@ -9,7 +9,7 @@ defmodule Voile.Repo.Migrations.CreateResourceTemplateProperty do
       add :template_id, references(:resource_template, on_delete: :nothing)
       add :property_id, references(:metadata_properties, on_delete: :nothing)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create unique_index(:resource_template_properties, [:template_id, :property_id],

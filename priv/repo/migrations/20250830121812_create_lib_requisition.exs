@@ -8,7 +8,7 @@ defmodule Voile.Repo.Migrations.CreateLibRequisition do
 
     create table(:lib_requisitions, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :request_date, :utc_datetime, null: false
+      add :request_date, :naive_datetime, null: false
       add :request_type, :patron_request_type, null: false
       add :status, :patron_request_status, null: false, default: "submitted"
       add :title, :text, null: false
@@ -23,7 +23,7 @@ defmodule Voile.Repo.Migrations.CreateLibRequisition do
       add :notes, :text
       add :staff_notes, :text
       add :due_date, :date
-      add :fulfilled_date, :utc_datetime
+      add :fulfilled_date, :naive_datetime
 
       add :requested_by_id, references(:users, on_delete: :nilify_all, type: :binary_id),
         null: false
@@ -31,7 +31,7 @@ defmodule Voile.Repo.Migrations.CreateLibRequisition do
       add :assigned_to_id, references(:users, on_delete: :nilify_all, type: :binary_id)
       add :unit_id, references(:nodes, on_delete: :nilify_all)
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create index(:lib_requisitions, [:request_type])

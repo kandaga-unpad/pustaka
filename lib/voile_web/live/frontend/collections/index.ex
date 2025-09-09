@@ -13,12 +13,11 @@ defmodule VoileWeb.Frontend.Collections.Index do
     total_collections = Collection.count_collections()
     nodes = Collection.get_all_nodes()
 
-    dbg(total_collections)
-
     {:ok,
      socket
      |> assign(:page_title, "Browse Collections")
      |> assign(:collections, [])
+     |> assign(:total_collections, total_collections)
      |> assign(:loading, false)
      |> assign(:current_page, 1)
      |> assign(:total_pages, 1)
@@ -51,13 +50,14 @@ defmodule VoileWeb.Frontend.Collections.Index do
 
   @impl true
   def handle_info({:load_collections, page, search_query, filter_unit_id, filter_status}, socket) do
-    {collections, total_pages} =
+    {collections, total_pages, total_count_filtered} =
       Collection.load_collections(page, search_query, filter_unit_id, filter_status)
 
     {:noreply,
      socket
      |> assign(:collections, collections)
      |> assign(:total_pages, total_pages)
+     |> assign(:total_count_filtered, total_count_filtered)
      |> assign(:loading, false)
      |> stream(:collections, collections, reset: true)}
   end
@@ -225,6 +225,15 @@ defmodule VoileWeb.Frontend.Collections.Index do
                 <%= if @search_query != "" do %>
                   for "<strong><%= @search_query %></strong>"
                 <% end %>
+                
+                <span>
+                  from
+                  <%= if @search_query && @total_count_filtered do %>
+                    <strong>{@total_count_filtered}</strong> filtered collections
+                  <% else %>
+                    <strong>0</strong> filtered collections
+                  <% end %>
+                </span>
               </p>
             </div>
             <!-- Collections Grid -->

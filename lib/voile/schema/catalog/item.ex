@@ -17,7 +17,7 @@ defmodule Voile.Schema.Catalog.Item do
     field :price, :decimal
     field :acquisition_date, :date
     field :last_inventory_date, :date
-    field :last_circulated, :utc_datetime
+    field :last_circulated, :naive_datetime
     field :rfid_tag, :string
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :node, Node, foreign_key: :unit_id
@@ -27,7 +27,7 @@ defmodule Voile.Schema.Catalog.Item do
       foreign_key: :attachable_id,
       on_delete: :delete_all
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @statuses ~w(active inactive lost damaged discarded)

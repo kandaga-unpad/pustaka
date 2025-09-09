@@ -10,6 +10,7 @@ defmodule Client.Storage.S3 do
   @s3_secret_key_access Application.compile_env(:voile, :s3_secret_key_access, nil)
   @s3_bucket_name Application.compile_env(:voile, :s3_bucket_name, nil)
   @s3_public_url Application.compile_env(:voile, :s3_public_url, nil)
+  @s3_public_url_format Application.compile_env(:voile, :s3_public_url_format, nil)
 
   @impl true
   def upload(
@@ -28,7 +29,12 @@ defmodule Client.Storage.S3 do
         original_filename
       end
 
-    file_key = Path.join([folder, filename])
+    file_key =
+      if unit_id = Keyword.get(opts, :unit_id) do
+        Path.join([folder, to_string(unit_id), filename])
+      else
+        Path.join([folder, filename])
+      end
 
     # Read file and calculate MD5
     file_content = File.read!(tmp_path)
@@ -129,7 +135,22 @@ defmodule Client.Storage.S3 do
   end
 
   defp build_public_url(file_key) do
-    "#{@s3_public_url}/#{@s3_bucket_name}/#{file_key}"
+    # Support custom public URL format via config :s3_public_url_format
+    # Placeholders supported: {endpoint} {bucket} {key}
+    # Examples:
+    #  - "{endpoint}/{bucket}/{key}" (default)
+    #  - "https://{bucket}.{endpoint}/{key}" (virtual-hosted-style)
+    #  - "{endpoint}/b2api/v1/b2_download_file_by_id?fileId={key}" (provider-specific)
+
+    endpoint = @s3_public_url
+    bucket = to_string(@s3_bucket_name)
+
+    format = @s3_public_url_format || "{endpoint}/{bucket}/{key}"
+
+    format
+    |> String.replace("{endpoint}", endpoint)
+    |> String.replace("{bucket}", bucket)
+    |> String.replace("{key}", file_key)
   end
 
   defp extract_file_key_from_url(url) do

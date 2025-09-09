@@ -7,7 +7,7 @@ defmodule Voile.Repo.Migrations.CreateMstLocations do
       add :location_name, :string
       add :location_place, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
   end
 end

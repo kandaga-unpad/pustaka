@@ -315,7 +315,7 @@ defmodule Voile.Migration.ItemImporter do
            collection_id: collection_id,
            item_code: final_item_code,
            inventory_code: final_inventory_code,
-           location: "Library Storage",
+           location: unit_data.name,
            status: "active",
            condition: "good",
            availability: "available",

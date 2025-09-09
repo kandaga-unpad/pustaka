@@ -247,7 +247,7 @@ defmodule VoileWeb.UserAuth do
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       user = socket.assigns.current_scope.user
 
-      if user.authenticated_at && is_struct(user.authenticated_at, DateTime) do
+      if user.authenticated_at && is_struct(user.authenticated_at, NaiveDateTime) do
         {:cont, socket}
       else
         socket =

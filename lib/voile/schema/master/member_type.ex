@@ -43,7 +43,7 @@ defmodule Voile.Schema.Master.MemberType do
     field :allowed_collections, :map, default: %{}
     field :metadata, :map, default: %{}
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false

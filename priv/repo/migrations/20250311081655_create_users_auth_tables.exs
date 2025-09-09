@@ -11,15 +11,15 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :email, :citext, null: false
       add :fullname, :string
       add :hashed_password, :string, null: false
-      add :confirmed_at, :utc_datetime
+      add :confirmed_at, :naive_datetime
       add :user_type, :string
       add :user_image, :string
       add :social_media, :map, type: :jsonb
       add :groups, {:array, :string}
-      add :last_login, :utc_datetime
+      add :last_login, :naive_datetime
       add :last_login_ip, :string
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create unique_index(:users, [:email])
@@ -37,7 +37,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :description, :text
       add :permissions, :map, default: %{}
 
-      timestamps(type: :utc_datetime)
+      timestamps(type: :naive_datetime)
     end
 
     create unique_index(:user_roles, [:name])
@@ -54,9 +54,9 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :token, :binary, null: false
       add :context, :string, null: false
       add :sent_to, :string
-      add :authenticated_at, :utc_datetime
+      add :authenticated_at, :naive_datetime
 
-      timestamps(type: :utc_datetime, updated_at: false)
+      timestamps(type: :naive_datetime, updated_at: false)
     end
 
     create index(:users_tokens, [:user_id])

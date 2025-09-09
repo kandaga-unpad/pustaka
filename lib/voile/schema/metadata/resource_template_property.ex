@@ -12,7 +12,7 @@ defmodule Voile.Schema.Metadata.ResourceTemplateProperty do
     belongs_to :resource_template, ResourceTemplate, foreign_key: :template_id
     belongs_to :property, Property
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :naive_datetime)
   end
 
   @doc false
