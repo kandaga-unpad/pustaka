@@ -59,10 +59,31 @@ defmodule Voile.Schema.System.CollectionLog do
       :collection_id,
       :user_id
     ])
-    |> validate_required([:title, :message, :action, :collection_id, :user_id])
-    |> validate_inclusion(:action_type, @action_types)
-    |> validate_inclusion(:severity, @severities)
-    |> validate_number(:duration_ms, greater_than_or_equal_to: 0)
+    |> validate_required([:title, :message, :action])
+    |> (fn changeset ->
+          # Only validate action_type if present
+          if get_field(changeset, :action_type) do
+            validate_inclusion(changeset, :action_type, @action_types)
+          else
+            changeset
+          end
+        end).()
+    |> (fn changeset ->
+          # Only validate severity if present
+          if get_field(changeset, :severity) do
+            validate_inclusion(changeset, :severity, @severities)
+          else
+            changeset
+          end
+        end).()
+    |> (fn changeset ->
+          # Only validate duration when present
+          if get_field(changeset, :duration_ms) do
+            validate_number(changeset, :duration_ms, greater_than_or_equal_to: 0)
+          else
+            changeset
+          end
+        end).()
     |> foreign_key_constraint(:collection_id)
     |> foreign_key_constraint(:user_id)
   end

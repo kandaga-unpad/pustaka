@@ -335,8 +335,7 @@ defmodule Voile.Schema.System do
 
   """
   def create_collection_log(attrs \\ %{}) do
-    %CollectionLog{}
-    |> CollectionLog.changeset(attrs)
+    CollectionLog.create_changeset(attrs)
     |> Repo.insert()
   end
 

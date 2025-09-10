@@ -186,29 +186,7 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
             </div>
           </div>
         </.link>
-        <!-- Quick Actions Card -->
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 h-full">
-          <div class="flex items-center mb-4">
-            <div class="flex-shrink-0"><.icon name="hero-bolt" class="w-8 h-8 text-gray-700" /></div>
-
-            <h3 class="ml-3 text-lg font-semibold text-gray-900">Quick Actions</h3>
-          </div>
-
-          <div class="space-y-2">
-            <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white hover:shadow-sm rounded-md transition-colors">
-              Quick Checkout
-            </button>
-            <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white hover:shadow-sm rounded-md transition-colors">
-              Quick Return
-            </button>
-            <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white hover:shadow-sm rounded-md transition-colors">
-              Member Lookup
-            </button>
-            <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white hover:shadow-sm rounded-md transition-colors">
-              Item Search
-            </button>
-          </div>
-        </div>
+        <.quick_actions current_user={@current_user} />
       </div>
       <!-- Recent Activity -->
       <div class="mt-8 bg-white rounded-lg shadow">

@@ -164,6 +164,49 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     """
   end
 
+  @doc """
+  Renders the Quick Actions card used on the circulation dashboard.
+  """
+  attr :current_user, :map, required: true
+
+  def quick_actions(assigns) do
+    ~H"""
+    <div class="bg-white shadow rounded-lg p-6">
+      <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "circulation.transactions.checkout") do %>
+          <.link navigate={~p"/manage/circulation/transactions/checkout"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+            Quick Checkout
+          </.link>
+        <% else %>
+          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Quick Checkout</button>
+        <% end %>
+
+        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "circulation.transactions") do %>
+          <.link navigate={~p"/manage/circulation/transactions"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+            Quick Return
+          </.link>
+        <% else %>
+          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Quick Return</button>
+        <% end %>
+
+        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "settings.users") do %>
+          <.link navigate={~p"/manage/settings/users"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+            Member Lookup
+          </.link>
+        <% else %>
+          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Member Lookup</button>
+        <% end %>
+
+        <.link navigate={~p"/search?type=items"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+          Item Search
+        </.link>
+      </div>
+    </div>
+    """
+  end
+
   # Private helper functions
 
   defp badge_class_for_type(:transaction, status), do: transaction_type_badge_class(status)

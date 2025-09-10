@@ -1,10 +1,10 @@
 defmodule Voile.SystemTest do
   use Voile.DataCase
 
-  alias Voile.System
+  alias Voile.Schema.System
 
   describe "nodes" do
-    alias Voile.System.Node
+    alias Voile.Schema.System.Node
 
     import Voile.SystemFixtures
 
@@ -67,7 +67,7 @@ defmodule Voile.SystemTest do
   end
 
   describe "settings" do
-    alias Voile.System.Setting
+    alias Voile.Schema.System.Setting
 
     import Voile.SystemFixtures
 
@@ -127,7 +127,7 @@ defmodule Voile.SystemTest do
   end
 
   describe "system_logs" do
-    alias Voile.System.SystemLog
+    alias Voile.Schema.System.SystemLog
 
     import Voile.SystemFixtures
 
@@ -198,7 +198,7 @@ defmodule Voile.SystemTest do
   end
 
   describe "collection_logs" do
-    alias Voile.System.CollectionLog
+    alias Voile.Schema.System.CollectionLog
 
     import Voile.SystemFixtures
 
