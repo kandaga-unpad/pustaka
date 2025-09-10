@@ -51,7 +51,7 @@ defmodule VoileWeb.VoileComponents do
           </button>
         <% end %>
       </div>
-      
+
       <div class="bg-violet-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg">
         <%= if @live_action do %>
           <!-- LiveView Form -->
@@ -75,7 +75,7 @@ defmodule VoileWeb.VoileComponents do
                   </div>
                 <% end %>
               </div>
-               <input type="hidden" name="glam_type" value={@current_glam_type} />
+              <input type="hidden" name="glam_type" value={@current_glam_type} />
               <!-- Search Suggestions Dropdown -->
               <%= if @show_suggestions and length(@search_results) > 0 do %>
                 <.search_suggestions
@@ -90,13 +90,13 @@ defmodule VoileWeb.VoileComponents do
                   <div class="text-center text-gray-500 dark:text-gray-400">
                     <.icon name="hero-magnifying-glass" class="mx-auto h-8 w-8 mb-2" />
                     <p class="text-sm">No collections found for "{@search_query}"</p>
-                    
+
                     <p class="text-xs mt-1">Try different keywords or check another GLAM type</p>
                   </div>
                 </div>
               <% end %>
             </div>
-            
+
             <div><button type="submit" class="default-btn">Search</button></div>
           </form>
         <% else %>
@@ -121,7 +121,7 @@ defmodule VoileWeb.VoileComponents do
                 </div>
               <% end %>
             </div>
-            
+
             <div><button type="submit" class="default-btn">Search</button></div>
           </form>
         <% end %>
@@ -230,7 +230,7 @@ defmodule VoileWeb.VoileComponents do
                       <span>{collection.mst_creator.creator_name}</span>
                     </div>
                   <% end %>
-                  
+
                   <%= if length(collection.items || []) > 0 do %>
                     <div class="flex items-center gap-1">
                       <.icon name="hero-document-duplicate" class="w-3 h-3" />
@@ -340,17 +340,17 @@ defmodule VoileWeb.VoileComponents do
             <div class="flex-shrink-0">
               <.icon name="hero-magnifying-glass" class="w-5 h-5 text-blue-500" />
             </div>
-            
+
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-white">
                 Search for "<span class="text-blue-600 dark:text-blue-400">{@search_query}</span>"
               </p>
-              
+
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 in {get_glam_type_name(@current_glam_type)} collections
               </p>
             </div>
-            
+
             <div class="flex-shrink-0">
               <kbd class="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded">Enter</kbd>
             </div>
@@ -398,21 +398,21 @@ defmodule VoileWeb.VoileComponents do
                   ]}>
                   </div>
                 <% end %>
-                
+
                 <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate">
                   <.highlight_text text={collection.title} query={@search_query} />
                 </h4>
               </div>
-              
+
               <div class="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                 <%= if collection.resource_class do %>
                   <span>{collection.resource_class.glam_type}</span>
                 <% end %>
-                
+
                 <%= if collection.mst_creator do %>
                   <span>• {collection.mst_creator.creator_name}</span>
                 <% end %>
-                
+
                 <%= if length(collection.items || []) > 0 do %>
                   <span>• {length(collection.items)} items</span>
                 <% end %>
@@ -500,7 +500,7 @@ defmodule VoileWeb.VoileComponents do
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
           {@collection.title}
         </h3>
-        
+
         <%= if @collection.description do %>
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
             {@collection.description}
@@ -514,7 +514,7 @@ defmodule VoileWeb.VoileComponents do
               <span>{@collection.mst_creator.creator_name}</span>
             </div>
           <% end %>
-          
+
           <%= if @collection.node do %>
             <div class="flex items-center">
               <.icon
@@ -524,7 +524,7 @@ defmodule VoileWeb.VoileComponents do
               <span class="font-medium text-gray-900 dark:text-white">{@collection.node.name}</span>
             </div>
           <% end %>
-          
+
           <%= if length(@collection.items) > 0 do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-document-duplicate" class="w-3 h-3" />
@@ -566,7 +566,7 @@ defmodule VoileWeb.VoileComponents do
           <div class="flex-shrink-0">
             <.icon name="hero-document-solid" class="w-5 h-5 text-gray-400" />
           </div>
-          
+
           <div class="min-w-0 flex-1">
             <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
               <.link
@@ -576,14 +576,14 @@ defmodule VoileWeb.VoileComponents do
                 Item Code: {@item.item_code}
               </.link>
             </p>
-            
+
             <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
               Location: {@item.location}
             </p>
           </div>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-4">
         <div class="text-right">
           <span class={"px-2 py-1 text-xs rounded-full #{availability_badge_class(@item.availability)}"}>
@@ -593,7 +593,7 @@ defmodule VoileWeb.VoileComponents do
             {String.capitalize(@item.condition || "Unknown")} condition
           </p>
         </div>
-        
+
         <.link
           navigate={"/items/#{@item.id}"}
           class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
@@ -627,7 +627,7 @@ defmodule VoileWeb.VoileComponents do
               <.icon name="hero-document-solid" class="w-14 h-14 text-gray-400" />
             <% end %>
           </div>
-          
+
           <div class="min-w-0 flex-1">
             <h3 class="text-sm font-medium text-gray-900 dark:text-white">
               <.link
@@ -637,12 +637,12 @@ defmodule VoileWeb.VoileComponents do
                 {@item.item_code}
               </.link>
             </h3>
-            
+
             <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
               <div class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <.icon name="hero-map-pin" class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" /> {@item.location}
               </div>
-              
+
               <%= if @item.collection do %>
                 <div class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <.icon name="hero-folder" class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
@@ -668,7 +668,7 @@ defmodule VoileWeb.VoileComponents do
             {String.capitalize(@item.condition || "Unknown")}
           </span>
         </div>
-        
+
         <div class="flex items-center gap-2">
           <.link
             navigate={"/items/#{@item.id}"}
@@ -694,7 +694,7 @@ defmodule VoileWeb.VoileComponents do
         <div class="flex-shrink-0">
           <.icon name="hero-document-solid" class="w-5 h-5 text-gray-400" />
         </div>
-        
+
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-gray-900 dark:text-white">
             <.link
@@ -704,11 +704,11 @@ defmodule VoileWeb.VoileComponents do
               {@item.item_code}
             </.link>
           </p>
-          
+
           <p class="text-sm text-gray-500 dark:text-gray-400">Location: {@item.location}</p>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-2">
         <span class={"px-2 py-1 text-xs rounded-full #{availability_badge_class(@item.availability)}"}>
           {String.capitalize(@item.availability || "Unknown")}
@@ -740,10 +740,10 @@ defmodule VoileWeb.VoileComponents do
             <.icon name="hero-information-circle-solid" class="w-5 h-5 text-gray-400" />
         <% end %>
       </div>
-      
+
       <div class="ml-3 flex-1 min-w-0">
         <p class="text-sm font-medium text-gray-900 dark:text-white">{@value}</p>
-        
+
         <p class="text-xs text-gray-500 dark:text-gray-400">{@label}</p>
       </div>
     </div>
@@ -763,7 +763,7 @@ defmodule VoileWeb.VoileComponents do
     <div class="text-center py-12">
       <.icon name={@icon_name} class="mx-auto h-12 w-12 text-gray-400" />
       <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{@title}</h3>
-      
+
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         <%= if @search_query != "" do %>
           No results match your search criteria. Try adjusting your search terms or filters.
@@ -771,7 +771,7 @@ defmodule VoileWeb.VoileComponents do
           {@message}
         <% end %>
       </p>
-      
+
       <%= if @search_query != "" do %>
         <div class="mt-6">
           <.link
@@ -808,7 +808,7 @@ defmodule VoileWeb.VoileComponents do
             Previous
           </.link>
         <% end %>
-        
+
         <%= if @current_page < @total_pages do %>
           <.link
             patch={build_page_url(@current_page + 1, @search_query, @filter_unit_id, @filter_status)}
@@ -818,7 +818,7 @@ defmodule VoileWeb.VoileComponents do
           </.link>
         <% end %>
       </div>
-      
+
       <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p class="text-sm text-gray-700 dark:text-gray-300">
@@ -826,7 +826,7 @@ defmodule VoileWeb.VoileComponents do
             of <span class="font-medium">{@total_pages}</span>
           </p>
         </div>
-        
+
         <div>
           <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
             <%= if @current_page > 1 do %>
@@ -839,7 +839,7 @@ defmodule VoileWeb.VoileComponents do
                 <.icon name="hero-chevron-left" class="h-5 w-5" />
               </.link>
             <% end %>
-            
+
             <%= for page <- frontend_pagination_pages(@current_page, @total_pages) do %>
               <%= if page == :ellipsis do %>
                 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
@@ -862,7 +862,7 @@ defmodule VoileWeb.VoileComponents do
                 </.link>
               <% end %>
             <% end %>
-            
+
             <%= if @current_page < @total_pages do %>
               <.link
                 patch={
@@ -980,11 +980,11 @@ defmodule VoileWeb.VoileComponents do
               <.glam_type_badge glam_type={@collection.resource_class.glam_type} />
             </div>
           <% end %>
-          
+
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
             {@collection.title}
           </h3>
-          
+
           <%= if @collection.description do %>
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
               {@collection.description}
@@ -1009,7 +1009,7 @@ defmodule VoileWeb.VoileComponents do
                 <span>{@collection.mst_creator.creator_name}</span>
               </div>
             <% end %>
-            
+
             <%= if length(@collection.items || []) > 0 do %>
               <div class="flex items-center gap-1">
                 <.icon name="hero-document-duplicate" class="w-3 h-3" />

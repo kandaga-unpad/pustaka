@@ -50,20 +50,20 @@ defmodule VoileWeb.Components.SearchBar do
             </svg>
           </div>
         </div>
-        
+
         <%= if @show_filters do %>
           <select
             name="type"
             class={select_class(@size)}
           >
             <option value="universal">All</option>
-            
+
             <option value="collections">Collections</option>
-            
+
             <option value="items">Items</option>
           </select>
         <% end %>
-        
+
         <button
           type="submit"
           class={button_class(@size)}

@@ -148,7 +148,6 @@ defmodule VoileWeb.VoileDashboardComponents do
         size="default"
         class="w-full"
       />
-
       <div class="mt-4 flex gap-2">
         <.link
           href="/search/advanced"
@@ -165,11 +164,14 @@ defmodule VoileWeb.VoileDashboardComponents do
   Search statistics widget for dashboard
   """
   def search_stats_widget(assigns) do
-    assigns = assign_new(assigns, :stats, fn -> %{
-      total_searches: 0,
-      popular_queries: [],
-      recent_activity: []
-    } end)
+    assigns =
+      assign_new(assigns, :stats, fn ->
+        %{
+          total_searches: 0,
+          popular_queries: [],
+          recent_activity: []
+        }
+      end)
 
     ~H"""
     <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
@@ -183,31 +185,29 @@ defmodule VoileWeb.VoileDashboardComponents do
         <div class="flex justify-between items-center">
           <span class="text-sm text-gray-600 dark:text-gray-300">Searches Today</span>
           <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            <%= @stats.total_searches %>
+            {@stats.total_searches}
           </span>
         </div>
-
         <!-- Popular queries -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Popular Queries</h4>
+
           <div class="space-y-1">
             <%= for {query, count} <- Enum.take(@stats.popular_queries, 3) do %>
               <div class="flex justify-between text-xs">
-                <span class="text-gray-600 dark:text-gray-400 truncate"><%= query %></span>
-                <span class="text-gray-500 dark:text-gray-500"><%= count %></span>
+                <span class="text-gray-600 dark:text-gray-400 truncate">{query}</span>
+                <span class="text-gray-500 dark:text-gray-500">{count}</span>
               </div>
             <% end %>
           </div>
         </div>
-
         <!-- Recent activity -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Activity</h4>
+
           <div class="space-y-1">
             <%= for activity <- Enum.take(@stats.recent_activity, 3) do %>
-              <div class="text-xs text-gray-600 dark:text-gray-400">
-                <%= activity %>
-              </div>
+              <div class="text-xs text-gray-600 dark:text-gray-400">{activity}</div>
             <% end %>
           </div>
         </div>

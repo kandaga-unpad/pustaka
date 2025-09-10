@@ -11,14 +11,14 @@ defmodule VoileWeb.UserForgotPasswordLive do
           Forgot your password?
           <:subtitle>We'll send a password reset link to your inbox</:subtitle>
         </.header>
-        
+
         <.form for={@form} id="reset_password_form" phx-submit="send_email">
           <.input field={@form[:email]} type="email" placeholder="Email" required />
           <.button phx-disable-with="Sending..." class="w-full">
             Send password reset instructions
           </.button>
         </.form>
-        
+
         <p class="text-center text-sm mt-4">
           <.link href={~p"/register"}>Register</.link> | <.link href={~p"/login"}>Log in</.link>
         </p>

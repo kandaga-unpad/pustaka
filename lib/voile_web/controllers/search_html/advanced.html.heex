@@ -5,12 +5,12 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Advanced Search</h1>
-          
+
           <p class="text-gray-600 dark:text-gray-300 mt-1">
             Search {String.downcase(search_page_description(@glam_type))} with specific criteria
           </p>
         </div>
-        
+
         <.link
           href={~p"/search"}
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
@@ -34,7 +34,7 @@
             <option value="collections" selected={@search_type == "collections"}>
               Collections Only
             </option>
-            
+
             <option value="both" selected={@search_type == "both"}>
               Collections with GLAM Filtering
             </option>
@@ -54,7 +54,7 @@
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Creator/Author
@@ -73,7 +73,7 @@
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Collection Criteria
           </h3>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -87,7 +87,7 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Collection Code
@@ -101,7 +101,7 @@
               />
             </div>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -112,28 +112,28 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
                 <option value="">Any GLAM Type</option>
-                
+
                 <option
                   value="Gallery"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Gallery"}
                 >
                   Gallery
                 </option>
-                
+
                 <option
                   value="Library"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Library"}
                 >
                   Library
                 </option>
-                
+
                 <option
                   value="Archive"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Archive"}
                 >
                   Archive
                 </option>
-                
+
                 <option
                   value="Museum"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Museum"}
@@ -142,7 +142,7 @@
                 </option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Resource Class
@@ -156,7 +156,7 @@
               />
             </div>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -167,28 +167,28 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
                 <option value="">Any Status</option>
-                
+
                 <option
                   value="draft"
                   selected={Map.get(@search_params, "status", "") == "draft"}
                 >
                   Draft
                 </option>
-                
+
                 <option
                   value="pending"
                   selected={Map.get(@search_params, "status", "") == "pending"}
                 >
                   Pending
                 </option>
-                
+
                 <option
                   value="published"
                   selected={Map.get(@search_params, "status", "") == "published"}
                 >
                   Published
                 </option>
-                
+
                 <option
                   value="archived"
                   selected={Map.get(@search_params, "status", "") == "archived"}
@@ -197,7 +197,7 @@
                 </option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Access Level
@@ -207,21 +207,21 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
                 <option value="">Any Access Level</option>
-                
+
                 <option
                   value="public"
                   selected={Map.get(@search_params, "access_level", "") == "public"}
                 >
                   Public
                 </option>
-                
+
                 <option
                   value="private"
                   selected={Map.get(@search_params, "access_level", "") == "private"}
                 >
                   Private
                 </option>
-                
+
                 <option
                   value="restricted"
                   selected={Map.get(@search_params, "access_level", "") == "restricted"}
@@ -242,7 +242,7 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
                 <option value="">Any Unit</option>
-                
+
                 <%= for node <- @nodes do %>
                   <option
                     value={node.id}
@@ -290,7 +290,7 @@
                 Collections ({@results.collections.total})
               </h2>
             </div>
-            
+
             <div class="divide-y divide-gray-200 dark:divide-gray-600">
               <%= for collection <- @results.collections.results do %>
                 <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -310,7 +310,7 @@
                         </div>
                       <% end %>
                     </div>
-                    
+
                     <div class="flex-1">
                       <h5
                         class="font-medium text-gray-900 dark:text-white"
@@ -323,18 +323,18 @@
                           {collection.title |> trim_title()}
                         </.link>
                       </h5>
-                      
+
                       <%= if collection.description do %>
                         <p class="text-gray-600 dark:text-gray-300 mt-1">
                           {collection.description |> trim_and_reduce_description()}
                         </p>
                       <% end %>
-                      
+
                       <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <%= if collection.mst_creator do %>
                           <span>By: {collection.mst_creator.creator_name}</span>
                         <% end %>
-                        
+
                         <span>
                           Type: {String.capitalize(collection.collection_type || "Unknown")}
                         </span>
@@ -345,7 +345,7 @@
                         <% end %>
                       </div>
                     </div>
-                    
+
                     <div class="ml-4">
                       <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                         {String.capitalize(collection.status || "unknown")}
@@ -373,18 +373,18 @@
                           {collection.title |> trim_title()}
                         </.link>
                       </h5>
-                      
+
                       <%= if collection.description do %>
                         <p class="text-gray-600 dark:text-gray-300 mt-1">
                           {collection.description |> trim_and_reduce_description()}
                         </p>
                       <% end %>
-                      
+
                       <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <%= if collection.mst_creator do %>
                           <span>By: {collection.mst_creator.creator_name}</span>
                         <% end %>
-                        
+
                         <span>
                           Type: {String.capitalize(collection.collection_type || "Unknown")}
                         </span>
@@ -395,7 +395,7 @@
                         <% end %>
                       </div>
                     </div>
-                    
+
                     <div class="ml-4">
                       <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                         {String.capitalize(collection.status || "unknown")}
@@ -429,7 +429,7 @@
                       ← Previous
                     </.link>
                   <% end %>
-                  
+
                   <div class="flex items-center space-x-1">
                     <%= for page_num <- page_range(@results.collections.page, @results.collections.total_pages) do %>
                       <%= if page_num == @results.collections.page do %>
@@ -453,7 +453,7 @@
                       <% end %>
                     <% end %>
                   </div>
-                  
+
                   <%= if @results.collections.has_next do %>
                     <.link
                       href={
@@ -490,7 +490,7 @@
                       ← Previous
                     </.link>
                   <% end %>
-                  
+
                   <div class="flex items-center space-x-1">
                     <%= for page_num <- page_range(@page, @results.collections.total_pages) do %>
                       <%= if page_num == @page do %>
@@ -514,7 +514,7 @@
                       <% end %>
                     <% end %>
                   </div>
-                  
+
                   <%= if @results.collections.has_next do %>
                     <.link
                       href={
@@ -562,26 +562,26 @@
           </path>
         </svg>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
-        
+
         <p class="text-gray-600 dark:text-gray-300 mb-4">No items match your search criteria.</p>
-        
+
         <div class="text-sm text-gray-500 dark:text-gray-400">
           <p>Try:</p>
-          
+
           <ul class="list-disc list-inside mt-2 space-y-1">
             <li>Removing some search criteria</li>
-            
+
             <li>Using more general terms</li>
-            
+
             <li>Checking different status or availability options</li>
-            
+
             <li>Trying a simple search instead</li>
           </ul>
         </div>
       </div>
     <% end %>
   </div>
-  
+
   <script>
     // Show/hide field groups based on search type
     document.addEventListener('DOMContentLoaded', function() {

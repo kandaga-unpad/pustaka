@@ -26,11 +26,11 @@ defmodule VoileWeb.Users.ManageLive.Role.Show do
 
     <div>
       <h2>{@user_role.name}</h2>
-      
+
       <p>Description: {@user_role.description}</p>
-      
+
       <h3>Permissions:</h3>
-      
+
       <ul>
         <%= for perm <- @user_role.permissions do %>
           <li>{perm.resource} - {perm.action}</li>

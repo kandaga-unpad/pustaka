@@ -107,7 +107,7 @@ defmodule VoileWeb.SearchExampleLive do
     <div class="max-w-4xl mx-auto px-4 py-8">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Enhanced Search Example</h1>
-        
+
         <p class="text-gray-600 dark:text-gray-400 mb-6">
           This demonstrates the enhanced search component with immediate feedback and autocomplete.
           Start typing to see suggestions appear automatically.
@@ -128,7 +128,7 @@ defmodule VoileWeb.SearchExampleLive do
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Search Results for "{@search_query}"
           </h2>
-          
+
           <%= if length(@search_results) > 0 do %>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <%= for collection <- @search_results do %>

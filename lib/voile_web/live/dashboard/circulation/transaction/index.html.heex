@@ -2,10 +2,10 @@
   <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Library Transactions</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage book checkouts, returns, and renewals</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/circulation/transactions/checkout"}
@@ -39,7 +39,7 @@
             />
           </.form>
         </div>
-        
+
         <div class="mt-3 sm:mt-0">
           <form phx-change="search" phx-submit="search">
             <input
@@ -57,25 +57,25 @@
     <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">{@count_active_collection}</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Active</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">{@count_overdue_collection}</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Overdue</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-green-600">{@count_returned_collection}</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Returned</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-purple-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Renewals</div>
       </div>
     </div>
@@ -94,23 +94,23 @@
               </span>
             </div>
           </div>
-          
+
           <div class="ml-4">
             <div class="text-sm font-medium text-gray-900">
               {if transaction.member, do: transaction.member.fullname, else: "Unknown Member"}
             </div>
-            
+
             <div class="text-sm text-gray-500">ID: {transaction.member.identifier}</div>
           </div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Item">
         <div>
           <div class="text-sm font-medium text-gray-900">
             {if transaction.item, do: transaction.item.item_code, else: "Unknown Item"}
           </div>
-          
+
           <p
             class="text-sm text-gray-500"
             title={if transaction.item, do: transaction.item.collection.title, else: ""}
@@ -123,19 +123,19 @@
           </p>
         </div>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Transaction Type">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{transaction_type_badge_class(transaction.transaction_type)}"}>
           {String.capitalize(transaction.transaction_type)}
         </span>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(transaction.status)}"}>
           {String.capitalize(transaction.status)}
         </span>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Due Date">
         <div class="text-sm text-gray-900">
           {if transaction.due_date do
@@ -144,24 +144,24 @@
             "-"
           end}
         </div>
-        
+
         <%= if transaction.due_date && DateTime.compare(transaction.due_date, DateTime.utc_now()) == :lt && transaction.status == "active" do %>
           <div class="text-xs text-red-500 font-medium">
             {abs(DateTime.diff(DateTime.utc_now(), transaction.due_date, :day))} days overdue
           </div>
         <% end %>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Renewal Count">
         <div class="text-sm text-gray-900">{transaction.renewal_count || 0}</div>
       </:col>
-      
+
       <:col :let={{_id, transaction}} label="Fine Amount">
         <div class="text-sm text-gray-900">
           Rp {Float.round(Decimal.to_float(transaction.fine_amount || Decimal.new(0)), 2)}
         </div>
       </:col>
-      
+
       <:action :let={{_id, transaction}}>
         <div class="flex space-x-2">
           <%= if transaction.status == "active" do %>
@@ -182,7 +182,7 @@
               Renew
             </button>
           <% end %>
-          
+
           <.link
             navigate={~p"/manage/circulation/transactions/#{transaction.id}"}
             class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -207,7 +207,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Checkout</h3>
-    
+
     <.form
       :let={f}
       for={@checkout_changeset}

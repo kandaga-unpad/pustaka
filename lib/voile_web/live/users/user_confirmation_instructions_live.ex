@@ -15,14 +15,14 @@ defmodule VoileWeb.UserConfirmationInstructionsLive do
             <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
           </.header>
         </div>
-        
+
         <.form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
           <.input field={@form[:email]} type="email" placeholder="Email" required />
           <.button phx-disable-with="Sending..." class="w-full">
             Resend confirmation instructions
           </.button>
         </.form>
-        
+
         <p class="text-center mt-4">
           <.link href={~p"/register"}>Register</.link>
           | <.link href={~p"/users/log_in"}>Log in</.link>

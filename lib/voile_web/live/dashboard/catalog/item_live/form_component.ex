@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="item-form"

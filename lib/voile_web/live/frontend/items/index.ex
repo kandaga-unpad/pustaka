@@ -106,12 +106,12 @@ defmodule VoileWeb.Frontend.Items.Index do
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse Items</h1>
-                
+
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
                   Browse individual items in our library collection
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-4">
                 <.link
                   navigate={~p"/collections"}
@@ -161,7 +161,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="all" selected={@filter_availability == "all"}>All</option>
-                    
+
                     <%= for value <- @availability_options do %>
                       <option value={value} selected={@filter_availability == value}>
                         {String.capitalize(value)}
@@ -179,7 +179,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="all" selected={@filter_condition == "all"}>All Conditions</option>
-                    
+
                     <%= for value <- @condition_options do %>
                       <option value={value} selected={@filter_condition == value}>
                         {String.capitalize(value)}
@@ -197,7 +197,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="all" selected={@filter_location == "all"}>All Locations</option>
-                    
+
                     <%= for value <- @location_options do %>
                       <option value={value} selected={@filter_location == value}>{value}</option>
                     <% end %>
@@ -213,17 +213,17 @@ defmodule VoileWeb.Frontend.Items.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="item_code" selected={@sort_by == "item_code"}>Item Code</option>
-                    
+
                     <option value="location" selected={@sort_by == "location"}>Location</option>
-                    
+
                     <option value="availability" selected={@sort_by == "availability"}>
                       Availability
                     </option>
-                    
+
                     <option value="condition" selected={@sort_by == "condition"}>Condition</option>
-                    
+
                     <option value="collection" selected={@sort_by == "collection"}>Collection</option>
-                    
+
                     <option value="date_added" selected={@sort_by == "date_added"}>Date Added</option>
                   </select>
                 </div>
@@ -237,7 +237,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="asc" selected={@sort_order == "asc"}>Ascending</option>
-                    
+
                     <option value="desc" selected={@sort_order == "desc"}>Descending</option>
                   </select>
                 </div>
@@ -250,7 +250,7 @@ defmodule VoileWeb.Frontend.Items.Index do
           <%= if @loading do %>
             <div class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-               <span class="ml-2 text-gray-600 dark:text-gray-300">Loading items...</span>
+              <span class="ml-2 text-gray-600 dark:text-gray-300">Loading items...</span>
             </div>
           <% else %>
             <!-- Results Header -->

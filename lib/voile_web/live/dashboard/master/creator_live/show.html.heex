@@ -2,7 +2,7 @@
   <.header>
     Creator {@creator.id}
     <:subtitle>This is a creator record from your database.</:subtitle>
-    
+
     <:actions>
       <.link
         patch={~p"/manage/master/creators/#{@creator}/show/edit"}
@@ -12,19 +12,19 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title="Creator name">{@creator.creator_name}</:item>
-    
+
     <:item title="Creator contact">{@creator.creator_contact}</:item>
-    
+
     <:item title="Type">{@creator.type}</:item>
-    
+
     <:item title="Affiliation">{@creator.affiliation}</:item>
   </.list>
-  
+
   <.back navigate={~p"/manage/master/creators"}>Back to creators</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="creator-modal"

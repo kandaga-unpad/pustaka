@@ -74,7 +74,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-             <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
+            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
           </div>
         <% else %>
           <%= if @collection do %>
@@ -121,7 +121,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                           {@collection.title}
                         </h1>
-                        
+
                         <%= if @collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                             {@collection.description}
@@ -140,7 +140,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <%= if @collection.collection_type do %>
                             <div class="flex items-center">
                               <.icon
@@ -152,7 +152,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-document-duplicate-solid"
@@ -162,7 +162,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {length(@collection.items || [])}
                             </span>
                           </div>
-                          
+
                           <%= if @collection.node do %>
                             <div class="flex items-center">
                               <.icon
@@ -174,7 +174,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-calendar-solid"
@@ -184,7 +184,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
                             </span>
                           </div>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-eye-solid"
@@ -209,7 +209,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         </span>
                       </h2>
                     </div>
-                    
+
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                       <div
                         :for={{id, item} <- @streams.items}
@@ -240,7 +240,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
                           No items available
                         </h3>
-                        
+
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           This collection currently has no available items.
                         </p>
@@ -256,7 +256,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Quick Actions
                       </h3>
-                      
+
                       <div class="space-y-3">
                         <.link
                           navigate={~p"/search?q=#{@collection.title}&type=items"}
@@ -279,7 +279,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Statistics
                       </h3>
-                      
+
                       <div class="space-y-4">
                         <.stat_item
                           icon="document-duplicate"
@@ -304,7 +304,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                           More by this Creator
                         </h3>
-                        
+
                         <.link
                           navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
                           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

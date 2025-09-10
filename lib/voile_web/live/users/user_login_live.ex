@@ -8,11 +8,11 @@ defmodule VoileWeb.UserLoginLive do
     <.modal id="magic-link-modal">
       <div class="flex flex-col gap-4">
         <h3 class="text-lg font-semibold">Login with Email Link</h3>
-        
+
         <p class="text-sm text-gray-600">
           Enter your email address and we'll send you a secure login link. No password required!
         </p>
-        
+
         <.form for={@magic_link_form} phx-submit="send_magic_link">
           <.input
             field={@magic_link_form[:email]}
@@ -53,7 +53,7 @@ defmodule VoileWeb.UserLoginLive do
             for an account now.
           </:subtitle>
         </.header>
-        
+
         <div class="flex flex-col gap-8 items-center justify-center lg:flex-row lg:gap-2 w-full">
           <div class="w-full max-w-sm">
             <.form for={@form} id="login_form" action={~p"/users/log_in"}>
@@ -65,13 +65,13 @@ defmodule VoileWeb.UserLoginLive do
                   Forgot your password?
                 </.link>
               </div>
-              
+
               <.button phx-disable-with="Logging in..." class="default-btn w-full">
                 Log in <span aria-hidden="true">→</span>
               </.button>
             </.form>
           </div>
-          
+
           <div class="w-full max-w-sm">
             <%= if @current_scope === nil do %>
               <div class="flex flex-col gap-4 items-center justify-center">

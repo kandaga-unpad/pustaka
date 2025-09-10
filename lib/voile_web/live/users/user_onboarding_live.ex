@@ -11,13 +11,13 @@ defmodule VoileWeb.UserOnboardingLive do
           Welcome to Voile!
           <:subtitle>Complete your account setup by setting a new password</:subtitle>
         </.header>
-        
+
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div class="flex">
             <.icon name="hero-information-circle" class="h-5 w-5 text-blue-400" />
             <div class="ml-3">
               <h3 class="text-sm font-medium text-blue-800">Account Migration Complete</h3>
-              
+
               <p class="mt-2 text-sm text-blue-700">
                 Your account has been successfully migrated from the previous system.
                 Please set a new password to access your account and all your previous data.
@@ -25,7 +25,7 @@ defmodule VoileWeb.UserOnboardingLive do
             </div>
           </div>
         </div>
-        
+
         <.form
           for={@form}
           id="onboarding_form"
@@ -50,17 +50,17 @@ defmodule VoileWeb.UserOnboardingLive do
             Complete Account Setup
           </.button>
         </.form>
-        
+
         <div class="mt-6 p-4 bg-gray-50 rounded-lg">
           <h4 class="text-sm font-medium text-gray-900 mb-2">What happens next?</h4>
-          
+
           <ul class="text-sm text-gray-600 space-y-1">
             <li>• Your password will be securely updated</li>
-            
+
             <li>• Your account will be confirmed and activated</li>
-            
+
             <li>• You'll be logged in automatically</li>
-            
+
             <li>• All your previous data will be available</li>
           </ul>
         </div>

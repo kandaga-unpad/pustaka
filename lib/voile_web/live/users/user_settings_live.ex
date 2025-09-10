@@ -7,13 +7,13 @@ defmodule VoileWeb.UserSettingsLive do
     ~H"""
     <.header>
       <h4>Account Settings</h4>
-      
+
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
     <div class="flex gap-4">
       <div class="w-full max-w-64"><.dashboard_settings_sidebar /></div>
-      
+
       <div class="w-full space-y-12 divide-y">
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.form
@@ -34,7 +34,7 @@ defmodule VoileWeb.UserSettingsLive do
             /> <.button phx-disable-with="Changing...">Change Email</.button>
           </.form>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.form
             for={@password_form}

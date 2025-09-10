@@ -1,33 +1,33 @@
 <section class="flex flex-col gap-4">
   <.back navigate="/manage/master">Kembali</.back>
-  
+
   <.header>
     Listing Publishers
     <:actions>
       <.link patch={~p"/manage/master/publishers/new"}><.button>New Publisher</.button></.link>
     </:actions>
   </.header>
-  
+
   <.table
     id="items"
     rows={@publishers || []}
     row_click={fn publisher -> JS.navigate(~p"/manage/master/publishers/#{publisher.id}") end}
   >
     <:col :let={publisher} label="Publisher Name">{publisher.name}</:col>
-    
+
     <:col :let={publisher} label="Address">{publisher.address}</:col>
-    
+
     <:col :let={publisher} label="City">{publisher.city}</:col>
-    
+
     <:col :let={publisher} label="Contact">{publisher.contact}</:col>
-    
+
     <:action :let={publisher}>
       <div class="sr-only">
         <.link navigate={~p"/manage/master/publishers/#{publisher.id}"}>Show</.link>
       </div>
-       <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>Edit</.link>
     </:action>
-    
+
     <:action :let={publisher}>
       <.link
         phx-click={JS.push("delete", value: %{id: publisher.id}) |> hide("##{publisher.id}")}
@@ -37,7 +37,7 @@
       </.link>
     </:action>
   </.table>
-   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
   <.modal
     :if={@live_action in [:new, :edit]}
     id="publisher-modal"

@@ -2,10 +2,10 @@
   <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Library Reservations</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage item reservations and queue system</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/circulation/reservations/new"}
@@ -26,15 +26,15 @@
             class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
           >
             <option value="all" selected={@filter_status == "all"}>All Status</option>
-            
+
             <option value="pending" selected={@filter_status == "pending"}>Pending</option>
-            
+
             <option value="available" selected={@filter_status == "available"}>Available</option>
-            
+
             <option value="picked_up" selected={@filter_status == "picked_up"}>Picked Up</option>
-            
+
             <option value="expired" selected={@filter_status == "expired"}>Expired</option>
-            
+
             <option value="cancelled" selected={@filter_status == "cancelled"}>Cancelled</option>
           </select>
         </div>
@@ -44,25 +44,25 @@
     <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Pending</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-green-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Available</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Picked Up</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Expired</div>
       </div>
     </div>
@@ -81,22 +81,22 @@
               </span>
             </div>
           </div>
-          
+
           <div class="ml-4">
             <div class="text-sm font-medium text-gray-900">
               {if reservation.member, do: reservation.member.full_name, else: "Unknown Member"}
             </div>
-            
+
             <div class="text-sm text-gray-500">ID: {reservation.member_id}</div>
           </div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Item/Collection">
         <div>
           <%= if reservation.item do %>
             <div class="text-sm font-medium text-gray-900">{reservation.item.item_code}</div>
-            
+
             <div class="text-sm text-gray-500">
               {if reservation.item.collection,
                 do: reservation.item.collection.title,
@@ -104,7 +104,7 @@
             </div>
           <% else %>
             <div class="text-sm font-medium text-gray-900">Collection Reservation</div>
-            
+
             <div class="text-sm text-gray-500">
               {if reservation.collection,
                 do: reservation.collection.title,
@@ -113,13 +113,13 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{reservation_status_badge_class(reservation.status)}"}>
           {String.capitalize(reservation.status)}
         </span>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Priority">
         <div class="flex items-center">
           <span class="text-sm text-gray-900">{reservation.priority || 1}</span>
@@ -128,11 +128,11 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Reserved Date">
         <div class="text-sm text-gray-900">{format_datetime(reservation.reservation_date)}</div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Expiry Date">
         <div class="text-sm text-gray-900">
           {if reservation.expiry_date do
@@ -141,12 +141,12 @@
             "-"
           end}
         </div>
-        
+
         <%= if reservation.expiry_date && DateTime.compare(reservation.expiry_date, DateTime.utc_now()) == :lt && reservation.status in ["pending", "available"] do %>
           <div class="text-xs text-red-500 font-medium">Expired</div>
         <% end %>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Notification">
         <%= if reservation.notification_sent do %>
           <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -158,7 +158,7 @@
           </span>
         <% end %>
       </:col>
-      
+
       <:action :let={{_id, reservation}}>
         <div class="flex space-x-2">
           <%= if reservation.status == "pending" do %>
@@ -171,7 +171,7 @@
               Available
             </button>
           <% end %>
-          
+
           <%= if reservation.status == "available" do %>
             <button
               phx-click="fulfill_reservation"
@@ -182,7 +182,7 @@
               Fulfill
             </button>
           <% end %>
-          
+
           <%= if reservation.status in ["pending", "available"] do %>
             <button
               phx-click="cancel_reservation"
@@ -193,7 +193,7 @@
               Cancel
             </button>
           <% end %>
-          
+
           <.link
             navigate={~p"/manage/circulation/reservations/#{reservation.id}"}
             class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -218,7 +218,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Reservation</h3>
-    
+
     <.form for={%{}} id="reservation-form" phx-submit="create_reservation">
       <.input
         name="member_id"

@@ -15,7 +15,7 @@ defmodule VoileWeb.Users.OnboardingManageLive do
             Send onboarding emails to migrated members who need to set their passwords
           </:subtitle>
         </.header>
-        
+
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div class="flex">
             <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
@@ -23,7 +23,7 @@ defmodule VoileWeb.Users.OnboardingManageLive do
               <h3 class="text-sm font-medium text-yellow-800">
                 Migrated Members Requiring Onboarding
               </h3>
-              
+
               <p class="mt-2 text-sm text-yellow-700">
                 These members were migrated from the previous system and need to set up their passwords.
                 They currently have the default password "changeme123" and need to confirm their accounts.
@@ -31,12 +31,12 @@ defmodule VoileWeb.Users.OnboardingManageLive do
             </div>
           </div>
         </div>
-        
+
         <div class="flex justify-between items-center">
           <div class="text-sm text-gray-600">
             Found <strong>{length(@unconfirmed_users)}</strong> users needing onboarding
           </div>
-          
+
           <div class="space-x-2">
             <.button
               phx-click="send_all_onboarding_emails"
@@ -54,7 +54,7 @@ defmodule VoileWeb.Users.OnboardingManageLive do
             </.button>
           </div>
         </div>
-        
+
         <div class="bg-white shadow rounded-lg">
           <div class="px-4 py-5 sm:p-6">
             <div class="flow-root">
@@ -66,21 +66,21 @@ defmodule VoileWeb.Users.OnboardingManageLive do
                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
                           User Information
                         </th>
-                        
+
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                           Registration Date
                         </th>
-                        
+
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                           Status
                         </th>
-                        
+
                         <th class="relative py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-gray-900">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    
+
                     <tbody class="divide-y divide-gray-200">
                       <%= for user <- @unconfirmed_users do %>
                         <tr>
@@ -93,17 +93,17 @@ defmodule VoileWeb.Users.OnboardingManageLive do
                                   </span>
                                 </div>
                               </div>
-                              
+
                               <div class="ml-4">
                                 <div class="font-medium text-gray-900">{user.fullname || "N/A"}</div>
-                                
+
                                 <div class="text-gray-500">{user.email}</div>
-                                
+
                                 <div class="text-xs text-gray-400">@{user.username}</div>
                               </div>
                             </div>
                           </td>
-                          
+
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                             <%= if user.inserted_at do %>
                               {Calendar.strftime(user.inserted_at, "%Y-%m-%d")}
@@ -111,13 +111,13 @@ defmodule VoileWeb.Users.OnboardingManageLive do
                               N/A
                             <% end %>
                           </td>
-                          
+
                           <td class="whitespace-nowrap px-3 py-4 text-sm">
                             <span class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">
                               Needs Onboarding
                             </span>
                           </td>
-                          
+
                           <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
                             <.button
                               phx-click="send_onboarding_email"
@@ -129,7 +129,7 @@ defmodule VoileWeb.Users.OnboardingManageLive do
                           </td>
                         </tr>
                       <% end %>
-                      
+
                       <%= if length(@unconfirmed_users) == 0 do %>
                         <tr>
                           <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
@@ -137,7 +137,7 @@ defmodule VoileWeb.Users.OnboardingManageLive do
                             <h3 class="mt-2 text-sm font-medium text-gray-900">
                               All members onboarded!
                             </h3>
-                            
+
                             <p class="mt-1 text-sm text-gray-500">
                               All migrated members have completed their onboarding process.
                             </p>

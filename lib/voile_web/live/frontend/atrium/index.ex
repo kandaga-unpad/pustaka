@@ -46,7 +46,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       <div class="text-center max-w-7xl mx-auto">
         <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
           <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">My Atrium</h1>
-          
+
           <div>
             <img
               src={@current_scope.user.user_image || ~p"/images/default_avatar.jpg"}
@@ -57,20 +57,20 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               Hello, {@current_scope.user.username}
             </h3>
           </div>
-          
+
           <p class="text-lg text-gray-700 dark:text-gray-300">
             Welcome to the Atrium! This is your central hub for managing and accessing various features of the Voile platform. From here, you can navigate to different sections, manage your profile, and explore the tools available to you.
           </p>
         </div>
       </div>
-      
+
       <div class="text-center max-w-7xl mx-auto">
         <div>
           <div>
             <h5>
               Manage your profile, view your collections, and explore new items all from your Atrium.
             </h5>
-            
+
             <div class="mt-4">
               <nav
                 role="tablist"
@@ -103,7 +103,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             <!-- Placeholder tab panels (dummy content to be replaced later) -->
             <div class="mt-6 text-left max-w-3xl mx-auto">
               <h6 class="sr-only">Atrium tab panels</h6>
-              
+
               <div id="atrium-tabpanels" class="space-y-4">
                 <%= if @active_tab == :profile do %>
                   <div
@@ -111,33 +111,33 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     class="p-4 bg-white dark:bg-gray-900 rounded-md shadow-sm border border-gray-200 dark:border-gray-800"
                   >
                     <h4 class="text-lg font-semibold mb-2">Profile (placeholder)</h4>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-300">
                       Profile tab content will be added soon. This area will show profile settings, avatar upload, and user preferences.
                     </p>
                   </div>
                 <% end %>
-                
+
                 <%= if @active_tab == :collections do %>
                   <div
                     id="tab-collections"
                     class="p-4 bg-white dark:bg-gray-900 rounded-md shadow-sm border border-gray-200 dark:border-gray-800"
                   >
                     <h4 class="text-lg font-semibold mb-2">Collections (placeholder)</h4>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-300">
                       Collections tab content will be added soon. This area will list and manage your collections.
                     </p>
                   </div>
                 <% end %>
-                
+
                 <%= if @active_tab == :items do %>
                   <div
                     id="tab-items"
                     class="p-4 bg-white dark:bg-gray-900 rounded-md shadow-sm border border-gray-200 dark:border-gray-800"
                   >
                     <h4 class="text-lg font-semibold mb-2">Items (placeholder)</h4>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-300">
                       Items tab content will be added soon. This area will allow browsing and filtering items.
                     </p>

@@ -37,6 +37,8 @@ defmodule Voile.Schema.Library.Requisition do
 
   @doc false
   def changeset(requisition, attrs) do
+    attrs = normalize_params(attrs)
+
     requisition
     |> cast(attrs, [
       :request_date,
@@ -74,6 +76,17 @@ defmodule Voile.Schema.Library.Requisition do
     |> validate_cost_positive()
     |> validate_dates_logical()
   end
+
+  defp normalize_params(params) when is_map(params) do
+    params
+    |> Enum.map(fn {k, v} ->
+      key = if is_atom(k), do: Atom.to_string(k), else: k
+      {key, v}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp normalize_params(val), do: val
 
   defp validate_isbn_format(changeset) do
     validate_change(changeset, :isbn, fn :isbn, isbn ->

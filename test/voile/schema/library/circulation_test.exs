@@ -4,6 +4,7 @@ defmodule Voile.Schema.Library.CirculationTest do
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.{CirculationHistory, Fine, Requisition, Reservation, Transaction}
   alias Voile.Repo
+  alias Voile.Schema.Catalog.Item
 
   import Voile.LibraryFixtures
   import Voile.AccountsFixtures
@@ -124,7 +125,7 @@ defmodule Voile.Schema.Library.CirculationTest do
   describe "fines" do
     test "list_fines/0 returns all fines" do
       fine = fine_fixture()
-      assert fine in Circulation.list_fines()
+      assert Enum.any?(Circulation.list_fines(), fn f -> f.id == fine.id end)
     end
 
     test "list_fines_paginated/2 returns paginated fines" do
@@ -695,7 +696,7 @@ defmodule Voile.Schema.Library.CirculationTest do
   # Batch operations tests
   describe "batch operations" do
     test "process_overdue_items/0 marks overdue transactions and creates fines" do
-      overdue_transaction = overdue_transaction_fixture()
+      _overdue_transaction = overdue_transaction_fixture()
 
       result = Circulation.process_overdue_items()
 

@@ -2,7 +2,7 @@
   <.header>
     Publisher {@publishers.id}
     <:subtitle>This is a publisher record from your database.</:subtitle>
-    
+
     <:actions>
       <.link
         patch={~p"/manage/master/publishers/#{@publishers}/show/edit"}
@@ -12,19 +12,19 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title="Publisher name">{@publishers.name}</:item>
-    
+
     <:item title="Address">{@publishers.address}</:item>
-    
+
     <:item title="City">{@publishers.city}</:item>
-    
+
     <:item title="Contact">{@publishers.contact}</:item>
   </.list>
-  
+
   <.back navigate={~p"/manage/master/publishers"}>Back to publishers</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="publisher-modal"

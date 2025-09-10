@@ -18,7 +18,7 @@ defmodule VoileWeb.UserRegistrationLive do
             to your account now.
           </:subtitle>
         </.header>
-        
+
         <.form
           for={@form}
           id="registration_form"

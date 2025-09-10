@@ -12,24 +12,24 @@ defmodule VoileWeb.Users.ManageLive do
       <.header>
         Users Management
         <:subtitle>Manage system users and their roles</:subtitle>
-        
+
         <:actions>
           <%= if AuthHelper.can?(@current_scope.user, "users", "create") do %>
             <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
           <% end %>
         </:actions>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64 "><.dashboard_settings_sidebar /></div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
               <.input name="query" placeholder="Search users..." value="" />
             </.form>
           </div>
-          
+
           <.table
             id="users"
             rows={@streams.users}
@@ -50,17 +50,17 @@ defmodule VoileWeb.Users.ManageLive do
                 </div>
               <% end %>
             </:col>
-            
+
             <:col :let={{_id, user}} label="Username">{user.username}</:col>
-            
+
             <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
-            
+
             <:col :let={{_id, user}} label="Role">
               <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{VoileWeb.Helpers.AuthHelper.role_badge_class(user.user_role && user.user_role.name || nil)}"}>
                 {(user.user_role && user.user_role.name) || "-"}
               </span>
             </:col>
-            
+
             <:col :let={{_id, user}} label="Status">
               <%= if user.confirmed_at do %>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -72,19 +72,19 @@ defmodule VoileWeb.Users.ManageLive do
                 </span>
               <% end %>
             </:col>
-            
+
             <:action :let={{_id, user}}>
               <%= if AuthHelper.can?(@current_scope.user, "users", "read") do %>
                 <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{_id, user}}>
               <%= if AuthHelper.can?(@current_scope.user, "users", "update") do %>
                 <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{id, user}}>
               <%= if AuthHelper.can?(@current_scope.user, "users", "delete") do %>
                 <.link
@@ -96,10 +96,10 @@ defmodule VoileWeb.Users.ManageLive do
               <% end %>
             </:action>
           </.table>
-           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
-      
+
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"

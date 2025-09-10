@@ -11,7 +11,7 @@ defmodule VoileWeb.Users.ManageLive.Role do
     <.header>
       Roles Management
       <:subtitle>Manage user roles and permissions</:subtitle>
-      
+
       <:actions>
         <%= if VoileWeb.Helpers.AuthHelper.can?(@current_user, "roles", "create") do %>
           <.link patch={~p"/manage/settings/users/roles/new"}><.button>New Role</.button></.link>
@@ -31,11 +31,11 @@ defmodule VoileWeb.Users.ManageLive.Role do
           {user_role.name}
         </span>
       </:col>
-      
+
       <:col :let={{_id, user_role}} label="Description">
         <div class="max-w-xs truncate">{user_role.description}</div>
       </:col>
-      
+
       <:col :let={{_id, user_role}} label="Resources">
         <div class="flex flex-wrap gap-1">
           <%= for resource <- Map.keys(user_role.permissions) |> Enum.take(3) do %>
@@ -43,29 +43,29 @@ defmodule VoileWeb.Users.ManageLive.Role do
               {resource}
             </span>
           <% end %>
-          
+
           <%= if map_size(user_role.permissions) > 3 do %>
             <span class="text-xs text-gray-500">+{map_size(user_role.permissions) - 3} more</span>
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, user_role}} label="Users Count">
         {length(Accounts.get_users_by_role(user_role.name))}
       </:col>
-      
+
       <:action :let={{_id, user_role}}>
         <%= if AuthHelper.can?(@current_user, "roles", "read") do %>
           <.link navigate={~p"/manage/settings/users/roles/#{user_role}"}>Show</.link>
         <% end %>
       </:action>
-      
+
       <:action :let={{_id, user_role}}>
         <%= if AuthHelper.can?(@current_user, "roles", "update") do %>
           <.link patch={~p"/manage/settings/users/roles/#{user_role}/edit"}>Edit</.link>
         <% end %>
       </:action>
-      
+
       <:action :let={{id, user_role}}>
         <%= if AuthHelper.can?(@current_user, "roles", "delete") do %>
           <.link

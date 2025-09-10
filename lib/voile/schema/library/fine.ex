@@ -43,6 +43,9 @@ defmodule Voile.Schema.Library.Fine do
       |> set_default_fine_status()
       |> set_default_amount_for_type()
 
+    # Normalize param keys to strings to avoid mixed atom/string maps
+    attrs = normalize_params(attrs)
+
     fine
     |> cast(attrs, [
       :fine_type,
@@ -77,6 +80,18 @@ defmodule Voile.Schema.Library.Fine do
     |> foreign_key_constraint(:transaction_id)
   end
 
+  # Convert any atom keys to string keys to keep params consistent for Ecto.cast
+  defp normalize_params(params) when is_map(params) do
+    params
+    |> Enum.map(fn {k, v} ->
+      key = if is_atom(k), do: Atom.to_string(k), else: k
+      {key, v}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp normalize_params(val), do: val
+
   @doc """
   Changeset for payment/waiver updates that preserves original fine amount.
   Does not apply default value helpers to avoid overriding existing data.
@@ -109,7 +124,7 @@ defmodule Voile.Schema.Library.Fine do
     if attrs["fine_date"] || attrs[:fine_date] do
       attrs
     else
-      Map.put(attrs, "fine_date", DateTime.utc_now())
+      Map.put(attrs, :fine_date, DateTime.utc_now())
     end
   end
 
@@ -117,7 +132,7 @@ defmodule Voile.Schema.Library.Fine do
     if attrs["fine_status"] || attrs[:fine_status] do
       attrs
     else
-      Map.put(attrs, "fine_status", "pending")
+      Map.put(attrs, :fine_status, "pending")
     end
   end
 
@@ -152,7 +167,7 @@ defmodule Voile.Schema.Library.Fine do
             get_member_type_fine_per_day(member_id) || "5000"
         end
 
-      Map.put(attrs, "amount", default_amount)
+      Map.put(attrs, :amount, default_amount)
     end
   end
 
@@ -174,18 +189,25 @@ defmodule Voile.Schema.Library.Fine do
   defp get_member_type_fine_per_day(_), do: nil
 
   defp calculate_balance(changeset) do
-    amount = get_field(changeset, :amount) || Decimal.new("0")
+    # If balance explicitly provided in attrs, keep it
+    case get_change(changeset, :balance) do
+      nil ->
+        amount = get_field(changeset, :amount) || Decimal.new("0")
 
-    paid_amount =
-      case get_field(changeset, :paid_amount) do
-        nil -> Decimal.new("0")
-        val when is_float(val) -> Decimal.from_float(val)
-        val when is_integer(val) -> Decimal.new(val)
-        val -> val
-      end
+        paid_amount =
+          case get_field(changeset, :paid_amount) do
+            nil -> Decimal.new("0")
+            val when is_float(val) -> Decimal.from_float(val)
+            val when is_integer(val) -> Decimal.new(val)
+            val -> val
+          end
 
-    balance = Decimal.sub(amount, paid_amount)
-    put_change(changeset, :balance, balance)
+        balance = Decimal.sub(amount, paid_amount)
+        put_change(changeset, :balance, balance)
+
+      _balance ->
+        changeset
+    end
   end
 
   def fully_paid?(%__MODULE__{balance: balance}) do

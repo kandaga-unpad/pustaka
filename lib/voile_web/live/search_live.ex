@@ -121,10 +121,10 @@ defmodule VoileWeb.SearchLive do
         <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900">Search Library Catalog</h1>
-            
+
             <p class="text-gray-600 mt-1">Find books, collections, and resources</p>
           </div>
-          
+
           <div class="flex gap-2">
             <.link
               patch={~p"/search/advanced"}
@@ -166,7 +166,7 @@ defmodule VoileWeb.SearchLive do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -177,18 +177,18 @@ defmodule VoileWeb.SearchLive do
                 </div>
               <% end %>
             </div>
-            
+
             <select
               name="type"
               phx-change="change_type"
               class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="universal" selected={@search_type == "universal"}>All</option>
-              
+
               <option value="collections" selected={@search_type == "collections"}>
                 Collections
               </option>
-              
+
               <option value="items" selected={@search_type == "items"}>Items</option>
             </select>
             <%= if @search_query != "" do %>
@@ -299,10 +299,10 @@ defmodule VoileWeb.SearchLive do
               </path>
             </svg>
           <% end %>
-           {@title} ({@total})
+          {@title} ({@total})
         </h2>
       </div>
-      
+
       <div class="divide-y divide-gray-200">
         <%= if @type == "collections" do %>
           <%= for collection <- @results do %>
@@ -314,7 +314,7 @@ defmodule VoileWeb.SearchLive do
           <% end %>
         <% end %>
       </div>
-      
+
       <%= if not @show_pagination and @total > length(@results) do %>
         <div class="p-4 bg-gray-50 text-center">
           <.link
@@ -325,7 +325,7 @@ defmodule VoileWeb.SearchLive do
           </.link>
         </div>
       <% end %>
-      
+
       <%= if @show_pagination and @pagination.total_pages > 1 do %>
         <.search_pagination pagination={@pagination} search_query={@search_query} type={@type} />
       <% end %>
@@ -345,7 +345,7 @@ defmodule VoileWeb.SearchLive do
               )}
             </.link>
           </h3>
-          
+
           <%= if @collection.description do %>
             <p class="text-gray-600 mt-1 line-clamp-2">
               {Phoenix.HTML.raw(
@@ -356,16 +356,16 @@ defmodule VoileWeb.SearchLive do
               )}
             </p>
           <% end %>
-          
+
           <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <%= if @collection.mst_creator do %>
               <span>By: {@collection.mst_creator.name}</span>
             <% end %>
-             <span>Type: {String.capitalize(@collection.collection_type || "Unknown")}</span>
+            <span>Type: {String.capitalize(@collection.collection_type || "Unknown")}</span>
             <span>Items: {length(@collection.items || [])}</span>
           </div>
         </div>
-        
+
         <div class="ml-4">
           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.SearchHTML.status_class(@collection.status)}"}>
             {String.capitalize(@collection.status || "unknown")}
@@ -388,16 +388,16 @@ defmodule VoileWeb.SearchLive do
               )}
             </.link>
           </h3>
-          
+
           <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
             <span>Code: {@item.item_code}</span>
             <%= if @item.inventory_code do %>
               <span>Inventory: {@item.inventory_code}</span>
             <% end %>
-             <span>Location: {@item.location}</span>
+            <span>Location: {@item.location}</span>
           </div>
         </div>
-        
+
         <div class="ml-4 text-right">
           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.SearchHTML.availability_class(@item.availability)}"}>
             {String.capitalize(@item.availability || "unknown")}
@@ -417,7 +417,7 @@ defmodule VoileWeb.SearchLive do
       <div class="text-sm text-gray-700">
         Showing page {@pagination.page} of {@pagination.total_pages} ({@pagination.total} total results)
       </div>
-      
+
       <div class="flex gap-2">
         <%= if @pagination.has_prev do %>
           <.link
@@ -427,7 +427,7 @@ defmodule VoileWeb.SearchLive do
             Previous
           </.link>
         <% end %>
-        
+
         <%= if @pagination.has_next do %>
           <.link
             patch={~p"/search?q=#{@search_query}&type=#{@type}&page=#{@pagination.page + 1}"}
@@ -459,21 +459,21 @@ defmodule VoileWeb.SearchLive do
         </path>
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-      
+
       <p class="text-gray-600 mb-4">
         We couldn't find anything matching "<strong><%= @query %></strong>".
       </p>
-      
+
       <div class="text-sm text-gray-500">
         <p>Try:</p>
-        
+
         <ul class="list-disc list-inside mt-2 space-y-1">
           <li>Checking your spelling</li>
-          
+
           <li>Using different keywords</li>
-          
+
           <li>Using more general terms</li>
-          
+
           <li>Using the advanced search for more specific criteria</li>
         </ul>
       </div>

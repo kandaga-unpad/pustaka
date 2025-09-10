@@ -2,7 +2,7 @@
   <.dashboard_menu_bar active_menu={@current_uri} />
   <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">Kembali</.back>
-    
+
     <.header>
       Listing Collections
       <:actions>
@@ -25,7 +25,7 @@
         </div>
       </:actions>
     </.header>
-    
+
     <%= if @view_mode == "tree" do %>
       <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div class="flex items-center">
@@ -36,12 +36,12 @@
           </p>
         </div>
       </div>
-      
+
       <div class="space-y-4">
         <%= for collection <- @tree_collections do %>
           <.collection_tree_item collection={collection} level={0} />
         <% end %>
-        
+
         <%= if Enum.empty?(@tree_collections) do %>
           <div class="text-center py-8 text-gray-500">No collections found.</div>
         <% end %>
@@ -65,7 +65,7 @@
             </div>
           <% end %>
         </:col>
-        
+
         <:col :let={{_id, collection}} label="Thumbnail">
           <%= if collection.thumbnail do %>
             <img src={collection.thumbnail} class="w-16 h-16 object-cover" alt="Thumbnail" />
@@ -73,36 +73,36 @@
             <img src="/images/v.png" class="w-16 h-16 object-cover" alt="No Thumbnail" />
           <% end %>
         </:col>
-        
+
         <:col :let={{_id, collection}} label="Title">
           <div>
             <div class="font-medium">{collection.title || "-"}</div>
-            
+
             <%= if collection.collection_type do %>
               <div class="text-xs text-gray-500 capitalize">{collection.collection_type}</div>
             <% end %>
-            
+
             <%= if collection.sort_order do %>
               <div class="text-xs text-gray-400">Order: {collection.sort_order}</div>
             <% end %>
           </div>
         </:col>
-        
+
         <:col :let={{_id, collection}} label="Author">
           {(collection.mst_creator && collection.mst_creator.creator_name) || "-"}
         </:col>
-        
+
         <:col :let={{_id, collection}} label="Status">{collection.status || "-"}</:col>
-        
+
         <:col :let={{_id, collection}} label="Access">{collection.access_level || "-"}</:col>
-        
+
         <:action :let={{_id, collection}}>
           <div class="sr-only">
             <.link navigate={~p"/manage/catalog/collections/#{collection}"}>Show</.link>
           </div>
-           <.link patch={~p"/manage/catalog/collections/#{collection}/edit"}>Edit</.link>
+          <.link patch={~p"/manage/catalog/collections/#{collection}/edit"}>Edit</.link>
         </:action>
-        
+
         <:action :let={{id, collection}}>
           <.link
             phx-click={JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")}
@@ -112,9 +112,9 @@
           </.link>
         </:action>
       </.table>
-       <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+      <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <% end %>
-    
+
     <.collection_modal
       :if={@live_action in [:new, :edit]}
       id="collection-modal"

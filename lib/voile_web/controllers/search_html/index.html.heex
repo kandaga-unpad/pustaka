@@ -7,12 +7,12 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {search_page_title(@glam_type)}
           </h1>
-          
+
           <p class="text-gray-600 dark:text-gray-300 mt-1">
             {search_page_description(@glam_type)}
           </p>
         </div>
-        
+
         <div class="flex gap-2">
           <.link
             href={~p"/search/advanced"}
@@ -43,13 +43,13 @@
             >
             </div>
           </div>
-          
+
           <select
             name="type"
             class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="universal" selected={@search_type == "universal"}>All</option>
-            
+
             <option value="collections" selected={@search_type == "collections"}>
               Collections
             </option>
@@ -99,7 +99,7 @@
                   Collections ({@results.collections.total})
                 </h2>
               </div>
-              
+
               <div class="divide-y divide-gray-200 dark:divide-gray-600">
                 <%= for collection <- @results.collections.results do %>
                   <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -119,7 +119,7 @@
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="flex-1">
                         <h5
                           class="font-medium text-gray-900 dark:text-white"
@@ -132,18 +132,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -154,7 +154,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -164,7 +164,7 @@
                   </div>
                 <% end %>
               </div>
-              
+
               <%= if @results.collections.total > length(@results.collections.results) do %>
                 <div class="p-4 bg-gray-50 dark:bg-gray-800 text-center">
                   <.link
@@ -200,7 +200,7 @@
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="flex-1">
                         <h5
                           class="font-medium text-gray-900 dark:text-white"
@@ -213,18 +213,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -235,7 +235,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -271,18 +271,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -293,7 +293,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -318,7 +318,7 @@
                       ← Previous
                     </.link>
                   <% end %>
-                  
+
                   <div class="flex items-center space-x-1">
                     <%= for page_num <- page_range(@results.page, @results.total_pages) do %>
                       <%= if page_num == @results.page do %>
@@ -337,7 +337,7 @@
                       <% end %>
                     <% end %>
                   </div>
-                  
+
                   <%= if @results.has_next do %>
                     <.link
                       href={
@@ -381,21 +381,21 @@
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No results found
             </h3>
-            
+
             <p class="text-gray-600 dark:text-gray-300 mb-4">
               We couldn't find anything matching "<strong><%= @query %></strong>".
             </p>
-            
+
             <div class="text-sm text-gray-500 dark:text-gray-400">
               <p>Try:</p>
-              
+
               <ul class="list-disc list-inside mt-2 space-y-1">
                 <li>Checking your spelling</li>
-                
+
                 <li>Using different keywords</li>
-                
+
                 <li>Using more general terms</li>
-                
+
                 <li>Using the advanced search for more specific criteria</li>
               </ul>
             </div>
@@ -404,7 +404,7 @@
       </div>
     <% end %>
   </div>
-  
+
   <script>
     // Auto-complete functionality
     document.addEventListener('DOMContentLoaded', function() {

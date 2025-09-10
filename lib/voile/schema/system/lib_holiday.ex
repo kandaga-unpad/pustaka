@@ -20,7 +20,8 @@ defmodule Voile.Schema.System.LibHoliday do
     field :schedule_type, :string
 
     # Unit/Branch reference for multi-unit libraries
-    belongs_to :unit, Voile.Schema.System.Node, foreign_key: :unit_id
+    # Node primary keys are integer/bigint; override module-level @foreign_key_type
+    belongs_to :unit, Voile.Schema.System.Node, foreign_key: :unit_id, type: :integer
 
     timestamps(type: :utc_datetime)
   end
@@ -142,16 +143,45 @@ defmodule Voile.Schema.System.LibHoliday do
 
     day_of_week = Date.day_of_week(date)
 
-    query =
-      from h in __MODULE__,
-        where:
-          h.schedule_type == "schedule" and
-            h.day_of_week == ^day_of_week and
-            h.holiday_type == "non_business" and
-            h.is_active == true and
-            (h.unit_id == ^unit_id or (is_nil(^unit_id) and is_nil(h.unit_id)))
+    is_nil_unit = is_nil(unit_id)
 
-    Repo.exists?(query)
+    if is_nil_unit do
+      query =
+        from h in __MODULE__,
+          where:
+            h.schedule_type == "schedule" and
+              h.day_of_week == ^day_of_week and
+              h.holiday_type == "non_business" and
+              h.is_active == true and
+              is_nil(h.unit_id)
+
+      Repo.exists?(query)
+    else
+      # Check unit-specific schedule first; if none, fall back to system-wide
+      unit_query =
+        from h in __MODULE__,
+          where:
+            h.schedule_type == "schedule" and
+              h.day_of_week == ^day_of_week and
+              h.holiday_type == "non_business" and
+              h.is_active == true and
+              h.unit_id == type(^unit_id, :integer)
+
+      if Repo.exists?(unit_query) do
+        true
+      else
+        system_query =
+          from h in __MODULE__,
+            where:
+              h.schedule_type == "schedule" and
+                h.day_of_week == ^day_of_week and
+                h.holiday_type == "non_business" and
+                h.is_active == true and
+                is_nil(h.unit_id)
+
+        Repo.exists?(system_query)
+      end
+    end
   end
 
   def is_non_business_day_by_schedule?(%DateTime{} = datetime, unit_id) do
@@ -170,15 +200,42 @@ defmodule Voile.Schema.System.LibHoliday do
     import Ecto.Query
     alias Voile.Repo
 
-    query =
-      from h in __MODULE__,
-        where:
-          h.schedule_type == "holiday" and
-            h.holiday_date == ^date and
-            h.is_active == true and
-            (h.unit_id == ^unit_id or (is_nil(^unit_id) and is_nil(h.unit_id)))
+    is_nil_unit = is_nil(unit_id)
 
-    Repo.exists?(query)
+    if is_nil_unit do
+      query =
+        from h in __MODULE__,
+          where:
+            h.schedule_type == "holiday" and
+              h.holiday_date == ^date and
+              h.is_active == true and
+              is_nil(h.unit_id)
+
+      Repo.exists?(query)
+    else
+      # Check unit-specific holiday first, then fall back to system-wide
+      unit_query =
+        from h in __MODULE__,
+          where:
+            h.schedule_type == "holiday" and
+              h.holiday_date == ^date and
+              h.is_active == true and
+              h.unit_id == type(^unit_id, :integer)
+
+      if Repo.exists?(unit_query) do
+        true
+      else
+        system_query =
+          from h in __MODULE__,
+            where:
+              h.schedule_type == "holiday" and
+                h.holiday_date == ^date and
+                h.is_active == true and
+                is_nil(h.unit_id)
+
+        Repo.exists?(system_query)
+      end
+    end
   end
 
   def is_specific_holiday?(%DateTime{} = datetime, unit_id) do
@@ -282,16 +339,32 @@ defmodule Voile.Schema.System.LibHoliday do
   def get_weekly_schedule(unit_id \\ nil) do
     import Ecto.Query
     alias Voile.Repo
-
-    schedules =
+    # Load system-wide schedule as base
+    system_schedules =
       from(h in __MODULE__,
-        where:
-          h.schedule_type == "schedule" and h.is_active == true and
-            (h.unit_id == ^unit_id or (is_nil(^unit_id) and is_nil(h.unit_id))),
+        where: h.schedule_type == "schedule" and h.is_active == true and is_nil(h.unit_id),
         select: {h.day_of_week, h.holiday_type}
       )
       |> Repo.all()
       |> Enum.into(%{})
+
+    schedules =
+      if is_nil(unit_id) do
+        system_schedules
+      else
+        # Load unit-specific schedule and overlay on top of system-wide schedule
+        unit_schedules =
+          from(h in __MODULE__,
+            where:
+              h.schedule_type == "schedule" and h.is_active == true and
+                h.unit_id == type(^unit_id, :integer),
+            select: {h.day_of_week, h.holiday_type}
+          )
+          |> Repo.all()
+          |> Enum.into(%{})
+
+        Map.merge(system_schedules, unit_schedules)
+      end
 
     # Create full week schedule with defaults
     day_names = [
@@ -325,12 +398,15 @@ defmodule Voile.Schema.System.LibHoliday do
     alias Voile.Repo
 
     # Clear existing schedule for this unit
-    from(h in __MODULE__,
-      where:
-        h.schedule_type == "schedule" and
-          (h.unit_id == ^unit_id or (is_nil(^unit_id) and is_nil(h.unit_id)))
-    )
-    |> Repo.delete_all()
+    if is_nil(unit_id) do
+      from(h in __MODULE__, where: h.schedule_type == "schedule" and is_nil(h.unit_id))
+      |> Repo.delete_all()
+    else
+      from(h in __MODULE__,
+        where: h.schedule_type == "schedule" and h.unit_id == type(^unit_id, :integer)
+      )
+      |> Repo.delete_all()
+    end
 
     # Create default schedule
     default_schedule = [
@@ -343,7 +419,7 @@ defmodule Voile.Schema.System.LibHoliday do
       {7, "Sunday", "non_business"}
     ]
 
-    unit_suffix = if unit_id, do: " (Unit Specific)", else: " (System Wide)"
+    unit_suffix = if unit_id, do: " (Specific for Unit : #{unit_id})", else: " (System Wide)"
 
     Enum.each(default_schedule, fn {day_num, day_name, status} ->
       %__MODULE__{
@@ -380,16 +456,24 @@ defmodule Voile.Schema.System.LibHoliday do
 
     day_name = Map.get(day_names, day_of_week)
     holiday_type = if is_business_day, do: "business", else: "non_business"
-    unit_suffix = if unit_id, do: " (Unit Specific)", else: " (System Wide)"
+    unit_suffix = if unit_id, do: " (Specific to Unit : #{unit_id})", else: " (System Wide)"
 
     # Try to find existing schedule entry
     existing =
-      from(h in __MODULE__,
-        where:
-          h.schedule_type == "schedule" and h.day_of_week == ^day_of_week and
-            (h.unit_id == ^unit_id or (is_nil(^unit_id) and is_nil(h.unit_id)))
-      )
-      |> Repo.one()
+      if is_nil(unit_id) do
+        from(h in __MODULE__,
+          where:
+            h.schedule_type == "schedule" and h.day_of_week == ^day_of_week and is_nil(h.unit_id)
+        )
+        |> Repo.one()
+      else
+        from(h in __MODULE__,
+          where:
+            h.schedule_type == "schedule" and h.day_of_week == ^day_of_week and
+              h.unit_id == type(^unit_id, :integer)
+        )
+        |> Repo.one()
+      end
 
     attrs = %{
       name: "#{day_name} Schedule#{unit_suffix}",

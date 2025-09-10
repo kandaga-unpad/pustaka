@@ -1,7 +1,7 @@
 <.header>
   Resource class {@resource_class.id}
   <:subtitle>This is a resource_class record from your database.</:subtitle>
-  
+
   <:actions>
     <.link href={~p"/manage/metaresource/resource_class/#{@resource_class}/edit"}>
       <.button>Edit resource_class</.button>
@@ -11,11 +11,11 @@
 
 <.list>
   <:item title="Label">{@resource_class.label}</:item>
-  
+
   <:item title="Local name">{@resource_class.local_name}</:item>
-  
+
   <:item title="Information">{@resource_class.information}</:item>
-  
+
   <:item title="GLAM Type">{@resource_class.glam_type}</:item>
 </.list>
 

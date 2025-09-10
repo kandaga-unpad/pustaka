@@ -13,20 +13,20 @@
   row_click={&JS.navigate(~p"/manage/metaresource/metadata_properties/#{&1}")}
 >
   <:col :let={property} label="Label">{property.label}</:col>
-  
+
   <:col :let={property} label="Local name">{property.local_name}</:col>
-  
+
   <:col :let={property} label="Information">{trim_information(property.information, 30)}</:col>
-  
+
   <:col :let={property} label="Vocabulary">{property.vocabulary.label}</:col>
-  
+
   <:action :let={property}>
     <div class="sr-only">
       <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}"}>Show</.link>
     </div>
-     <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}/edit"}>Edit</.link>
+    <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}/edit"}>Edit</.link>
   </:action>
-  
+
   <:action :let={property}>
     <.link
       href={~p"/manage/metaresource/metadata_properties/#{property}"}

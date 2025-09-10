@@ -8,12 +8,12 @@ defmodule VoileWeb.UserConfirmationLive do
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-sm">
         <.header>Confirm Account</.header>
-        
+
         <.form for={@form} id="confirmation_form" phx-submit="confirm_account">
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
           <.button phx-disable-with="Confirming..." class="w-full">Confirm my account</.button>
         </.form>
-        
+
         <p class="text-center mt-4">
           <.link href={~p"/register"}>Register</.link> | <.link href={~p"/login"}>Log in</.link>
         </p>

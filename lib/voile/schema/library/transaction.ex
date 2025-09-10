@@ -29,6 +29,8 @@ defmodule Voile.Schema.Library.Transaction do
 
   @doc false
   def changeset(transaction, attrs) do
+    attrs = normalize_params(attrs)
+
     transaction
     |> cast(attrs, [
       :transaction_type,
@@ -59,6 +61,17 @@ defmodule Voile.Schema.Library.Transaction do
     |> foreign_key_constraint(:item_id)
     |> foreign_key_constraint(:librarian_id)
   end
+
+  defp normalize_params(params) when is_map(params) do
+    params
+    |> Enum.map(fn {k, v} ->
+      key = if is_atom(k), do: Atom.to_string(k), else: k
+      {key, v}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp normalize_params(val), do: val
 
   def overdue?(%__MODULE__{due_date: due_date, return_date: nil}) do
     DateTime.compare(due_date, DateTime.utc_now()) == :lt

@@ -8,7 +8,7 @@
             <.icon name="hero-home" class="w-4 h-4 mr-2" /> Circulation
           </.link>
         </li>
-        
+
         <li>
           <div class="flex items-center">
             <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
@@ -20,7 +20,7 @@
             </.link>
           </div>
         </li>
-        
+
         <li aria-current="page">
           <div class="flex items-center">
             <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
@@ -29,14 +29,14 @@
         </li>
       </ol>
     </nav>
-    
+
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Fine Details</h1>
-        
+
         <p class="mt-2 text-sm text-gray-700">Complete information about this fine</p>
       </div>
-      
+
       <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
         <%= if @fine.fine_status == "pending" do %>
           <.link
@@ -52,17 +52,17 @@
             <.icon name="hero-hand-raised" class="w-4 h-4 mr-2" /> Waive Fine
           </.link>
         <% end %>
-        
+
         <%= if @fine.fine_status in ["pending", "partial_paid"] do %>
           <details class="dropdown">
             <summary class="btn btn-outline btn-sm">
               <.icon name="hero-ellipsis-horizontal" class="w-4 h-4" /> More Actions
             </summary>
-            
+
             <div class="dropdown-content bg-white rounded-lg shadow-lg border border-gray-200 mt-2 w-48">
               <div class="p-4">
                 <h4 class="text-sm font-medium text-gray-900 mb-3">Partial Payment</h4>
-                
+
                 <form phx-submit="partial_pay" class="space-y-3">
                   <input type="hidden" name="_id" value={@fine.id} />
                   <input
@@ -98,15 +98,15 @@
             <.icon name="hero-currency-dollar" class="w-4 h-4 text-red-600" />
           </div>
         </div>
-        
+
         <div class="ml-4">
           <h3 class="text-sm font-medium text-gray-500">Fine Amount</h3>
-          
+
           <p class="text-lg font-semibold text-gray-900">{format_currency(@fine.amount)}</p>
         </div>
       </div>
     </div>
-    
+
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
@@ -114,15 +114,15 @@
             <.icon name="hero-check-circle" class="w-4 h-4 text-green-600" />
           </div>
         </div>
-        
+
         <div class="ml-4">
           <h3 class="text-sm font-medium text-gray-500">Paid Amount</h3>
-          
+
           <p class="text-lg font-semibold text-gray-900">{format_currency(@fine.paid_amount)}</p>
         </div>
       </div>
     </div>
-    
+
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
@@ -130,17 +130,17 @@
             <.icon name="hero-minus-circle" class="w-4 h-4 text-yellow-600" />
           </div>
         </div>
-        
+
         <div class="ml-4">
           <h3 class="text-sm font-medium text-gray-500">Balance Due</h3>
-          
+
           <p class={"text-lg font-semibold #{if Decimal.equal?(calculate_balance(@fine), 0), do: "text-green-600", else: "text-red-600"}"}>
             {format_currency(calculate_balance(@fine))}
           </p>
         </div>
       </div>
     </div>
-    
+
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
@@ -148,10 +148,10 @@
             <.icon name="hero-calendar-days" class="w-4 h-4 text-blue-600" />
           </div>
         </div>
-        
+
         <div class="ml-4">
           <h3 class="text-sm font-medium text-gray-500">Days Outstanding</h3>
-          
+
           <p class="text-lg font-semibold text-gray-900">
             {DateTime.diff(DateTime.utc_now(), @fine.fine_date, :day)}
           </p>
@@ -167,44 +167,44 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Fine Information</h3>
         </div>
-        
+
         <div class="px-6 py-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt class="text-sm font-medium text-gray-500">Fine Type</dt>
-              
+
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_type_badge_class(@fine.fine_type)}"}>
                   {String.capitalize(@fine.fine_type)}
                 </span>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Status</dt>
-              
+
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_status_badge_class(@fine.fine_status)}"}>
                   {String.capitalize(@fine.fine_status)}
                 </span>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Assessment Date</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@fine.fine_date)}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Due Date</dt>
-              
+
               <dd class="mt-1">
                 <%= if @fine.transaction && @fine.transaction.due_date do %>
                   <div class="text-sm text-gray-900">
                     {format_datetime(@fine.transaction.due_date)}
                   </div>
-                  
+
                   <%= if @fine.transaction.due_date && DateTime.compare(@fine.transaction.due_date, DateTime.utc_now()) == :lt && @fine.fine_status in ["pending", "partial_paid"] do %>
                     <div class="text-xs text-red-500 font-medium mt-1">
                       {abs(DateTime.diff(DateTime.utc_now(), @fine.transaction.due_date, :day))} days past due
@@ -215,44 +215,44 @@
                 <% end %>
               </dd>
             </div>
-            
+
             <%= if @fine.payment_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Payment Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-green-600">{format_datetime(@fine.payment_date)}</dd>
               </div>
             <% end %>
-            
+
             <%= if @fine.waived_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Waived Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-blue-600">{format_datetime(@fine.waived_date)}</dd>
               </div>
             <% end %>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Payment Method</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">
                 {@fine.payment_method || "Not specified"}
               </dd>
             </div>
           </div>
-          
+
           <%= if @fine.description do %>
             <div class="pt-4 border-t border-gray-200">
               <dt class="text-sm font-medium text-gray-500">Description</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{@fine.description}</dd>
             </div>
           <% end %>
-          
+
           <%= if @fine.waived_reason do %>
             <div class="pt-4 border-t border-blue-200 bg-blue-50 -mx-6 px-6 py-4">
               <dt class="text-sm font-medium text-blue-700">Waiver Reason</dt>
-              
+
               <dd class="mt-1 text-sm text-blue-800 whitespace-pre-wrap">
                 {@fine.waived_reason}
               </dd>
@@ -268,7 +268,7 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
         </div>
-        
+
         <div class="px-6 py-4">
           <%= if @fine.member do %>
             <div class="flex items-center space-x-4">
@@ -279,16 +279,16 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900 truncate">
                   {@fine.member.fullname || @fine.member.username || "Unknown Member"}
                 </p>
-                
+
                 <p class="text-sm text-gray-500">Member ID: {@fine.member.identifier}</p>
-                
+
                 <p class="text-sm text-gray-500">Email: {@fine.member.email}</p>
-                
+
                 <p class="text-sm text-gray-500">Username: {@fine.member.username}</p>
               </div>
             </div>
@@ -297,13 +297,13 @@
               <div class="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div class="text-xl font-bold text-red-600">Rp 0</div>
-                  
+
                   <div class="text-xs text-gray-500">Total Outstanding</div>
                 </div>
-                
+
                 <div>
                   <div class="text-xl font-bold text-gray-900">0</div>
-                  
+
                   <div class="text-xs text-gray-500">Active Fines</div>
                 </div>
               </div>
@@ -319,11 +319,11 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Related Transaction</h3>
           </div>
-          
+
           <div class="px-6 py-4 space-y-3">
             <div>
               <dt class="text-xs font-medium text-gray-500 uppercase">Transaction ID</dt>
-              
+
               <dd class="mt-1 text-sm font-medium text-gray-900">
                 <.link
                   navigate={~p"/manage/circulation/transactions/#{@fine.transaction.id}"}
@@ -333,27 +333,27 @@
                 </.link>
               </dd>
             </div>
-            
+
             <%= if @fine.transaction.item do %>
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Item</dt>
-                
+
                 <dd class="mt-1 text-sm text-gray-900">{@fine.transaction.item.item_code}</dd>
               </div>
             <% end %>
-            
+
             <div>
               <dt class="text-xs font-medium text-gray-500 uppercase">Transaction Date</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">
                 {format_datetime(@fine.transaction.transaction_date)}
               </dd>
             </div>
-            
+
             <%= if @fine.transaction.due_date do %>
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Due Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-gray-900">
                   {format_datetime(@fine.transaction.due_date)}
                 </dd>
@@ -368,7 +368,7 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
           </div>
-          
+
           <div class="px-6 py-4">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-10 w-10">
@@ -380,12 +380,12 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">
                   {@fine.processed_by.fullname || @fine.processed_by.username || "Unknown Staff"}
                 </p>
-                
+
                 <p class="text-sm text-gray-500">Staff Member</p>
               </div>
             </div>
@@ -399,7 +399,7 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <h3 class="text-lg font-medium text-gray-900">Payment History</h3>
     </div>
-    
+
     <div class="px-6 py-4">
       <div class="h-full">
         <ul class="mb-8">
@@ -413,25 +413,25 @@
                 >
                 </span>
               <% end %>
-              
+
               <div class="relative flex space-x-3">
                 <div>
                   <span class="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center ring-8 ring-white">
                     <.icon name="hero-exclamation-triangle" class="w-4 h-4 text-white" />
                   </span>
                 </div>
-                
+
                 <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                   <div>
                     <p class="text-sm text-gray-500">
                       Fine assessed - {String.capitalize(@fine.fine_type)}
                     </p>
-                    
+
                     <p class="text-sm font-medium text-gray-900">
                       {format_currency(@fine.amount)}
                     </p>
                   </div>
-                  
+
                   <div class="text-right text-sm whitespace-nowrap text-gray-500">
                     {format_datetime(@fine.fine_date)}
                   </div>
@@ -450,23 +450,23 @@
                   >
                   </span>
                 <% end %>
-                
+
                 <div class="relative flex space-x-3">
                   <div>
                     <span class="h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center ring-8 ring-white">
                       <.icon name="hero-currency-dollar" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Partial payment received</p>
-                      
+
                       <p class="text-sm font-medium text-gray-900">
                         {format_currency(@fine.paid_amount)}
                       </p>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@fine.updated_at)}
                     </div>
@@ -485,16 +485,16 @@
                       <.icon name="hero-check" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Fine paid in full</p>
-                      
+
                       <%= if @fine.payment_method do %>
                         <p class="text-xs text-gray-400">Method: {@fine.payment_method}</p>
                       <% end %>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@fine.payment_date)}
                     </div>
@@ -513,16 +513,16 @@
                       <.icon name="hero-hand-raised" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Fine waived</p>
-                      
+
                       <%= if @fine.waived_reason do %>
                         <p class="text-xs text-gray-400">{@fine.waived_reason}</p>
                       <% end %>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@fine.waived_date)}
                     </div>
@@ -545,26 +545,26 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">Process Payment</h3>
-    
+
     <div class="bg-gray-50 rounded-md p-4">
       <div class="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span class="font-medium text-gray-700">Member:</span>
           <span class="ml-2">{if @fine.member, do: @fine.member.fullname, else: "Unknown"}</span>
         </div>
-        
+
         <div>
           <span class="font-medium text-gray-700">Fine Type:</span>
           <span class="ml-2">
             {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
           </span>
         </div>
-        
+
         <div>
           <span class="font-medium text-gray-700">Total Amount:</span>
           <span class="ml-2">{format_currency(@fine.amount)}</span>
         </div>
-        
+
         <div>
           <span class="font-medium text-gray-700">Outstanding:</span>
           <span class="ml-2 font-semibold text-red-600">
@@ -573,7 +573,7 @@
         </div>
       </div>
     </div>
-    
+
     <.form for={%{}} id="payment-form" phx-submit="process_payment" phx-value-id={@fine.id}>
       <.input
         name="amount"
@@ -610,21 +610,21 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">Waive Fine</h3>
-    
+
     <div class="bg-gray-50 rounded-md p-4">
       <div class="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span class="font-medium text-gray-700">Member:</span>
           <span class="ml-2">{if @fine.member, do: @fine.member.fullname, else: "Unknown"}</span>
         </div>
-        
+
         <div>
           <span class="font-medium text-gray-700">Fine Type:</span>
           <span class="ml-2">
             {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
           </span>
         </div>
-        
+
         <div class="col-span-2">
           <span class="font-medium text-gray-700">Amount to Waive:</span>
           <span class="ml-2 font-semibold text-red-600">
@@ -633,7 +633,7 @@
         </div>
       </div>
     </div>
-    
+
     <.form for={%{}} id="waive-form" phx-submit="waive_fine" phx-value-id={@fine.id}>
       <.input
         name="reason"

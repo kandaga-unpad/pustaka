@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage publishers records in your database.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="publishers-form"

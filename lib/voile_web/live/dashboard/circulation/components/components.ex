@@ -41,12 +41,12 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
           </span>
         </div>
       </div>
-      
+
       <div class="ml-4">
         <div class="text-sm font-medium text-gray-900">
           {if @member, do: @member.full_name, else: "Unknown Member"}
         </div>
-        
+
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">ID: {@member.id}</div>
         <% end %>
@@ -66,7 +66,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     <div>
       <%= if @item do %>
         <div class="text-sm font-medium text-gray-900">{@item.item_code}</div>
-        
+
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">
             {if @item.collection, do: @item.collection.title, else: "No collection"}
@@ -93,10 +93,10 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
             <div class="flex-shrink-0">
               <.icon name={stat.icon} class={"w-8 h-8 #{stat.icon_color}"} />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">{stat.label}</h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900">{stat.value}</p>
             </div>
           </div>

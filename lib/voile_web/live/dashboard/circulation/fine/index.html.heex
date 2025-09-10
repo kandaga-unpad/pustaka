@@ -2,10 +2,10 @@
   <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Library Fines</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage fines, payments, and waivers</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/circulation/fines/new"}
@@ -27,19 +27,19 @@
               class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
             >
               <option value="all" selected={@filter_status == "all"}>All Status</option>
-              
+
               <option value="pending" selected={@filter_status == "pending"}>Pending</option>
-              
+
               <option value="partial_paid" selected={@filter_status == "partial_paid"}>
                 Partial Paid
               </option>
-              
+
               <option value="paid" selected={@filter_status == "paid"}>Paid</option>
-              
+
               <option value="waived" selected={@filter_status == "waived"}>Waived</option>
             </select>
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <select
@@ -47,15 +47,15 @@
               class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
             >
               <option value="all" selected={@filter_type == "all"}>All Types</option>
-              
+
               <option value="overdue" selected={@filter_type == "overdue"}>Overdue</option>
-              
+
               <option value="lost_item" selected={@filter_type == "lost_item"}>Lost Item</option>
-              
+
               <option value="damaged_item" selected={@filter_type == "damaged_item"}>
                 Damaged Item
               </option>
-              
+
               <option value="processing" selected={@filter_type == "processing"}>
                 Processing
               </option>
@@ -68,25 +68,25 @@
     <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Outstanding</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Partial Paid</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-green-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Paid Today</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">Rp -</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Total Outstanding</div>
       </div>
     </div>
@@ -103,22 +103,22 @@
               </span>
             </div>
           </div>
-          
+
           <div class="ml-4">
             <div class="text-sm font-medium text-gray-900">
               {if fine.member, do: fine.member.fullname, else: "Unknown Member"}
             </div>
-            
+
             <div class="text-sm text-gray-500">ID: {fine.member_id}</div>
           </div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Item">
         <div>
           <%= if fine.item do %>
             <div class="text-sm font-medium text-gray-900">{fine.item.item_code}</div>
-            
+
             <div class="text-sm text-gray-500">
               {if fine.item.collection, do: fine.item.collection.title, else: "No collection"}
             </div>
@@ -127,27 +127,27 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Fine Type">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_type_badge_class(fine.fine_type)}"}>
           {fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
         </span>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Amount">
         <div class="text-sm font-medium text-gray-900">{format_idr(fine.amount)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Paid">
         <div class="text-sm text-gray-900">{format_idr(fine.paid_amount)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Balance">
         <div class={"text-sm font-medium #{if Decimal.equal?(fine.balance || Decimal.new(0), 0), do: "text-green-600", else: "text-red-600"}"}>
           {format_idr(fine.balance)}
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_status_badge_class(fine.fine_status)}"}>
           {if fine.waived do
@@ -157,11 +157,11 @@
           end}
         </span>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Fine Date">
         <div class="text-sm text-gray-900">{format_date(fine.fine_date)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Payment Method">
         <div class="text-sm text-gray-900">
           {if fine.payment_method do
@@ -171,7 +171,7 @@
           end}
         </div>
       </:col>
-      
+
       <:action :let={{_id, fine}}>
         <.link
           navigate={~p"/manage/circulation/fines/#{fine.id}"}
@@ -196,7 +196,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-gray-900">New Fine</h3>
-    
+
     <.form for={@fine_form} id="fine-form" phx-submit="create_fine">
       <.input
         field={@fine_form[:member_id]}
@@ -228,7 +228,7 @@
         <strong>Note:</strong>
         For overdue fines, amount defaults to member type's daily fine rate. For other types: Lost Item (Rp 50,000), Damaged Item (Rp 25,000), Processing Fee (Rp 10,000).
       </div>
-      
+
       <.input
         field={@fine_form[:description]}
         type="textarea"

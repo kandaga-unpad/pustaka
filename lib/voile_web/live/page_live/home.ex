@@ -136,7 +136,7 @@ defmodule VoileWeb.PageLive.Home do
     ~H"""
     <.modal id="advanced-search">
       <h5>Pencarian Lanjutan</h5>
-      
+
       <div><.input type="text" name="keyword" value="" label="Keyword" /></div>
     </.modal>
 
@@ -149,18 +149,18 @@ defmodule VoileWeb.PageLive.Home do
             alt="Cover Background"
           />
         </div>
-        
+
         <div class="relative bg-white/50 dark:bg-gray-800/50 h-[600px] w-full">
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col items-center justify-center gap-3 pb-16 pt-4 relative z-5 bg-white/80 dark:bg-gray-800/80 rounded-b-xl">
               <img src="/images/v.png" alt="" class="h-full w-32" />
               <h5 class="text-center">Voile, the Magic Library</h5>
-              
+
               <p class="max-w-3xl mx-auto text-center text-sm">
                 Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment.
               </p>
             </div>
-            
+
             <div class="max-w-5xl mx-auto flex flex-col w-full gap-4">
               <div class="w-full flex flex-col gap-2">
                 <VoileComponents.main_search
@@ -183,10 +183,10 @@ defmodule VoileWeb.PageLive.Home do
             </div>
           </div>
         </div>
-        
+
         <section class="max-w-5xl mx-auto pt-10">
           <h1 class="text-center">Voile</h1>
-          
+
           <p class="text-justify">
             Lorem ipsum dolor, sit amet consectetur adipisicing elit. Esse iusto qui
             possimus? Explicabo vitae doloremque et atque, reiciendis possimus,

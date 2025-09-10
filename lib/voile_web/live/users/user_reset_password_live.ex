@@ -8,7 +8,7 @@ defmodule VoileWeb.UserResetPasswordLive do
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-sm">
         <.header>Reset Password</.header>
-        
+
         <.form
           for={@form}
           id="reset_password_form"
@@ -23,7 +23,7 @@ defmodule VoileWeb.UserResetPasswordLive do
             required
           /> <.button phx-disable-with="Resetting..." class="w-full">Reset Password</.button>
         </.form>
-        
+
         <p class="text-center text-sm mt-4">
           <.link href={~p"/register"}>Register</.link>
           | <.link href={~p"/users/log_in"}>Log in</.link>

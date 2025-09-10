@@ -40,6 +40,7 @@ defmodule VoileWeb.SearchDashboardLive do
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Dashboard</h1>
+
           <p class="text-gray-600 dark:text-gray-300">Monitor search activity and trends</p>
         </div>
 
@@ -47,19 +48,15 @@ defmodule VoileWeb.SearchDashboardLive do
           href="/search"
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
-          <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" />
-          New Search
+          <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" /> New Search
         </.link>
       </div>
-
       <!-- Search Statistics Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Search Stats Widget -->
         <.search_stats_widget stats={@search_stats} />
-
         <!-- Quick Search Widget -->
         <.dashboard_search_widget />
-
         <!-- Popular Searches -->
         <div class="bg-white dark:bg-gray-700 rounded-xl p-5">
           <div class="flex items-center gap-3 mb-4">
@@ -74,10 +71,10 @@ defmodule VoileWeb.SearchDashboardLive do
                   href={"/search?q=#{URI.encode_www_form(query)}"}
                   class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate"
                 >
-                  <%= query %>
+                  {query}
                 </.link>
                 <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                  <%= count %>
+                  {count}
                 </span>
               </div>
             <% end %>
@@ -88,7 +85,6 @@ defmodule VoileWeb.SearchDashboardLive do
           </div>
         </div>
       </div>
-
       <!-- Search Trends Chart (placeholder) -->
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
@@ -104,16 +100,15 @@ defmodule VoileWeb.SearchDashboardLive do
                 style={"height: #{get_hour_percentage(@search_trends, hour)}%"}
               >
               </div>
-              <span class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= hour %></span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">{hour}</span>
             </div>
           <% end %>
         </div>
 
         <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-          <p>Peak search hours: <%= get_peak_hours(@search_trends) %></p>
+          <p>Peak search hours: {get_peak_hours(@search_trends)}</p>
         </div>
       </div>
-
       <!-- Recent Search Activity -->
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
@@ -123,9 +118,7 @@ defmodule VoileWeb.SearchDashboardLive do
 
         <div class="space-y-2">
           <%= for activity <- @search_stats.recent_activity do %>
-            <div class="text-sm text-gray-600 dark:text-gray-300 py-1">
-              <%= activity %>
-            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-300 py-1">{activity}</div>
           <% end %>
 
           <%= if length(@search_stats.recent_activity) == 0 do %>
@@ -144,7 +137,7 @@ defmodule VoileWeb.SearchDashboardLive do
     current_count = Map.get(trends, hour, 0)
 
     if max_count > 0 do
-      trunc((current_count / max_count) * 100)
+      trunc(current_count / max_count * 100)
     else
       0
     end
@@ -155,6 +148,7 @@ defmodule VoileWeb.SearchDashboardLive do
       "No data available"
     else
       max_count = trends |> Map.values() |> Enum.max()
+
       peak_hours =
         trends
         |> Enum.filter(fn {_hour, count} -> count == max_count end)

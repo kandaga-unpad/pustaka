@@ -18,34 +18,35 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents do
             <% else %>
               <img src="/images/v.png" class="w-12 h-12 object-cover rounded" alt="No Thumbnail" />
             <% end %>
-            
+
             <div>
               <div class="flex items-center space-x-2">
                 <h3 class="font-semibold text-lg">{@collection.title}</h3>
-                
+
                 <%= if @collection.collection_type do %>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
                     {@collection.collection_type}
                   </span>
                 <% end %>
-                
+
                 <%= if @collection.sort_order do %>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                     #{@collection.sort_order}
                   </span>
                 <% end %>
               </div>
-              
+
               <div class="text-sm text-gray-600">
                 <span>
                   by {(@collection.mst_creator && @collection.mst_creator.creator_name) || "Unknown"}
-                </span> <span class="mx-2">•</span>
+                </span>
+                 <span class="mx-2">•</span>
                 <span class="capitalize">{@collection.status}</span> <span class="mx-2">•</span>
                 <span class="capitalize">{@collection.access_level}</span>
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-2">
             <.link
               navigate={~p"/manage/catalog/collections/#{@collection.id}"}
@@ -69,7 +70,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents do
           </div>
         </div>
       </div>
-      
+
       <%= if @collection.children && !Enum.empty?(@collection.children) do %>
         <%= for child <- @collection.children do %>
           <.collection_tree_item collection={child} level={@level + 1} />

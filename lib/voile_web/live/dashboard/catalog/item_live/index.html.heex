@@ -2,38 +2,38 @@
   <.dashboard_menu_bar active_menu={@current_uri} />
   <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">Kembali</.back>
-    
+
     <.header>
       Listing Items
       <:actions>
         <.link patch={~p"/manage/catalog/items/new"}><.button>New Item</.button></.link>
       </:actions>
     </.header>
-    
+
     <.table
       id="items"
       rows={@streams.items}
       row_click={fn {_id, item} -> JS.navigate(~p"/manage/catalog/items/#{item}") end}
     >
       <:col :let={{_id, item}} label="Item code">{item.item_code || "-"}</:col>
-      
+
       <:col :let={{_id, item}} label="Inventory code">{item.inventory_code || "-"}</:col>
-      
+
       <:col :let={{_id, item}} label="Location">{item.location || "-"}</:col>
-      
+
       <:col :let={{_id, item}} label="Status">{item.status || "-"}</:col>
-      
+
       <:col :let={{_id, item}} label="Condition">{item.condition || "-"}</:col>
-      
+
       <:col :let={{_id, item}} label="Availability">{item.availability || "-"}</:col>
-      
+
       <:action :let={{_id, item}}>
         <div class="sr-only">
           <.link navigate={~p"/manage/catalog/items/#{item}"}>Show</.link>
         </div>
-         <.link patch={~p"/manage/catalog/items/#{item}/edit"}>Edit</.link>
+        <.link patch={~p"/manage/catalog/items/#{item}/edit"}>Edit</.link>
       </:action>
-      
+
       <:action :let={{id, item}}>
         <.link
           phx-click={JS.push("delete", value: %{id: item.id}) |> hide("##{id}")}
@@ -43,7 +43,7 @@
         </.link>
       </:action>
     </.table>
-     <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <.modal
       :if={@live_action in [:new, :edit]}
       id="item-modal"

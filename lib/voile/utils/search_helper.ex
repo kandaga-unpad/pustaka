@@ -59,7 +59,10 @@ defmodule Voile.Utils.SearchHelper do
 
   defp get_user_role_from_user(nil), do: "patron"
   defp get_user_role_from_user(%{user_role: %{name: "librarian"}}), do: "librarian"
-  defp get_user_role_from_user(%{user_role: %{name: name}}) when name in ["admin", "superadmin"], do: "librarian"
+
+  defp get_user_role_from_user(%{user_role: %{name: name}}) when name in ["admin", "superadmin"],
+    do: "librarian"
+
   defp get_user_role_from_user(_), do: "patron"
 
   @doc """
@@ -69,7 +72,8 @@ defmodule Voile.Utils.SearchHelper do
     query
     |> String.trim()
     |> String.replace(~r/[^\w\s\-'"]/, "")
-    |> String.slice(0, 200) # Limit query length
+    # Limit query length
+    |> String.slice(0, 200)
   end
 
   def sanitize_query(_), do: ""
@@ -111,7 +115,8 @@ defmodule Voile.Utils.SearchHelper do
     |> String.downcase()
     |> String.split(~r/\s+/)
     |> Enum.reject(&(String.length(&1) < 2))
-    |> Enum.take(5) # Limit number of terms to highlight
+    # Limit number of terms to highlight
+    |> Enum.take(5)
   end
 
   def extract_search_terms(_), do: []

@@ -11,7 +11,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
         {@title}
         <:subtitle>Configure role permissions for different resources.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="user_role-form"
@@ -26,7 +26,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
           <!-- Add new resource -->
           <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
             <h4 class="text-sm font-medium text-gray-700 mb-3">Add New Resource</h4>
-            
+
             <div class="flex gap-3">
               <input
                 type="text"
@@ -50,7 +50,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
               <div class="border border-gray-200 rounded-lg p-4">
                 <div class="flex items-center justify-between mb-3">
                   <h4 class="text-sm font-medium text-gray-900 capitalize">{resource}</h4>
-                  
+
                   <button
                     type="button"
                     phx-target={@myself}
@@ -61,7 +61,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
                     Remove Resource
                   </button>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <%= for action <- ["create", "read", "update", "delete"] do %>
                     <label class="flex items-center">
@@ -84,7 +84,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
           <%= if @suggested_resources != [] do %>
             <div class="mt-6">
               <h4 class="text-sm font-medium text-gray-700 mb-3">Common Resources</h4>
-              
+
               <div class="flex flex-wrap gap-2">
                 <%= for resource <- @suggested_resources do %>
                   <button
@@ -101,7 +101,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
             </div>
           <% end %>
         </div>
-         <.button phx-disable-with="Saving...">Save Role</.button>
+        <.button phx-disable-with="Saving...">Save Role</.button>
       </.form>
     </div>
     """

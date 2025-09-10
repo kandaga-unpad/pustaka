@@ -1,33 +1,33 @@
 <section class="flex flex-col gap-4">
   <.back navigate="/manage/master">Kembali</.back>
-  
+
   <.header>
     Listing Creators
     <:actions>
       <.link patch={~p"/manage/master/creators/new"}><.button>New Creator</.button></.link>
     </:actions>
   </.header>
-  
+
   <.table
     id="items"
     rows={@creators}
     row_click={fn creator -> JS.navigate(~p"/manage/master/creators/#{creator.id}") end}
   >
     <:col :let={creator} label="Creator Name">{creator.creator_name}</:col>
-    
+
     <:col :let={creator} label="Creator Contact">{creator.creator_contact}</:col>
-    
+
     <:col :let={creator} label="Type">{creator.type}</:col>
-    
+
     <:col :let={creator} label="Affiliation">{creator.affiliation}</:col>
-    
+
     <:action :let={creator}>
       <div class="sr-only">
         <.link navigate={~p"/manage/master/creators/#{creator.id}"}>Show</.link>
       </div>
-       <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>Edit</.link>
     </:action>
-    
+
     <:action :let={creator}>
       <.link
         phx-click={JS.push("delete", value: %{id: creator.id}) |> hide("##{creator.id}")}
@@ -37,7 +37,7 @@
       </.link>
     </:action>
   </.table>
-   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
   <.modal
     :if={@live_action in [:new, :edit]}
     id="creator-modal"

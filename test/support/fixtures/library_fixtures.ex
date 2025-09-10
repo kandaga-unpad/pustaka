@@ -36,7 +36,8 @@ defmodule Voile.LibraryFixtures do
       |> CirculationHistory.changeset(attrs)
       |> Repo.insert()
 
-    circulation_history
+    Repo.get!(CirculationHistory, circulation_history.id)
+    |> Repo.preload([:member, {:item, [:collection]}, :processed_by])
   end
 
   def valid_fine_attributes(attrs \\ %{}) do
@@ -67,7 +68,8 @@ defmodule Voile.LibraryFixtures do
       |> Fine.changeset(attrs)
       |> Repo.insert()
 
-    fine
+    Repo.get!(Fine, fine.id)
+    |> Repo.preload([:member, {:item, [:collection]}, :processed_by, :transaction])
   end
 
   def valid_requisition_attributes(attrs \\ %{}) do
@@ -94,7 +96,8 @@ defmodule Voile.LibraryFixtures do
       |> Requisition.changeset(attrs)
       |> Repo.insert()
 
-    requisition
+    Repo.get!(Requisition, requisition.id)
+    |> Repo.preload([:requested_by, :assigned_to, :unit])
   end
 
   def valid_reservation_attributes(attrs \\ %{}) do
@@ -121,7 +124,8 @@ defmodule Voile.LibraryFixtures do
       |> Reservation.changeset(attrs)
       |> Repo.insert()
 
-    reservation
+    Repo.get!(Reservation, reservation.id)
+    |> Repo.preload([:member, {:item, [:collection]}, :collection, :processed_by])
   end
 
   def valid_transaction_attributes(attrs \\ %{}) do
@@ -151,7 +155,8 @@ defmodule Voile.LibraryFixtures do
       |> Transaction.changeset(attrs)
       |> Repo.insert()
 
-    transaction
+    Repo.get!(Transaction, transaction.id)
+    |> Repo.preload([:member, {:item, [:collection]}, :librarian])
   end
 
   def overdue_transaction_fixture(attrs \\ %{}) do
@@ -182,34 +187,28 @@ defmodule Voile.LibraryFixtures do
 
   # Helper functions to ensure required entities exist
   defp ensure_user do
-    case Repo.all(from u in User, limit: 1) do
-      [user | _] ->
-        user
+    # Always create a fresh user to ensure test isolation
+    member_type = ensure_member_type()
+    email = "test#{System.unique_integer()}@example.com"
+    username = String.split(email, "@") |> hd()
 
-      [] ->
-        # Create a basic user with member type
-        member_type = ensure_member_type()
-        email = "test#{System.unique_integer()}@example.com"
-        username = String.split(email, "@") |> hd()
+    {:ok, user} =
+      %User{}
+      |> User.registration_changeset(%{
+        email: email,
+        username: username,
+        password: "testpassword123",
+        user_type_id: member_type.id
+      })
+      |> Repo.insert()
 
-        {:ok, user} =
-          %User{}
-          |> User.registration_changeset(%{
-            email: email,
-            username: username,
-            password: "testpassword123",
-            user_type_id: member_type.id
-          })
-          |> Repo.insert()
-
-        user
-    end
+    user
   end
 
   defp ensure_item do
     case Repo.all(from i in Item, limit: 1) do
       [item | _] ->
-        item
+        Repo.preload(item, [:collection])
 
       [] ->
         collection = ensure_collection()
@@ -227,7 +226,7 @@ defmodule Voile.LibraryFixtures do
           })
           |> Repo.insert()
 
-        item
+        Repo.preload(item, [:collection])
     end
   end
 
@@ -236,7 +235,7 @@ defmodule Voile.LibraryFixtures do
 
     case Repo.all(from c in Collection, limit: 1) do
       [collection | _] ->
-        collection
+        Repo.preload(collection, [:mst_creator])
 
       [] ->
         creator = ensure_creator()
@@ -253,7 +252,7 @@ defmodule Voile.LibraryFixtures do
           })
           |> Repo.insert()
 
-        collection
+        Repo.preload(collection, [:mst_creator])
     end
   end
 
@@ -280,11 +279,16 @@ defmodule Voile.LibraryFixtures do
   end
 
   defp ensure_member_type do
-    case Repo.all(from mt in MemberType, limit: 1) do
-      [member_type | _] ->
+    # Prefer an explicitly active member type that allows renewals to avoid
+    # reusing arbitrary MemberType rows created elsewhere in the test DB which
+    # may be misconfigured and cause policy checks to fail.
+    case Repo.one(
+           from mt in MemberType, where: mt.is_active == true and mt.can_renew == true, limit: 1
+         ) do
+      %MemberType{} = member_type ->
         member_type
 
-      [] ->
+      nil ->
         {:ok, member_type} =
           %MemberType{}
           |> MemberType.changeset(%{

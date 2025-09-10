@@ -15,19 +15,19 @@
   <:col :let={resource_template_property} label="Template Name">
     {resource_template_property.resource_template.label}
   </:col>
-  
+
   <:col :let={resource_template_property} label="Property Name">
     {resource_template_property.property.label}
   </:col>
-  
+
   <:col :let={resource_template_property} label="Override label">
     {resource_template_property.override_label}
   </:col>
-  
+
   <:col :let={resource_template_property} label="Position">
     {resource_template_property.position}
   </:col>
-  
+
   <:action :let={resource_template_property}>
     <div class="sr-only">
       <.link navigate={
@@ -36,14 +36,14 @@
         Show
       </.link>
     </div>
-    
+
     <.link navigate={
       ~p"/manage/metaresource/resource_templ_property/#{resource_template_property}/edit"
     }>
       Edit
     </.link>
   </:action>
-  
+
   <:action :let={resource_template_property}>
     <.link
       href={~p"/manage/metaresource/resource_templ_property/#{resource_template_property}"}

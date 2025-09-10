@@ -13,19 +13,19 @@
   row_click={&JS.navigate(~p"/manage/metaresource/resource_template/#{&1}")}
 >
   <:col :let={resource_template} label="Label">{resource_template.label}</:col>
-  
+
   <:action :let={resource_template}>
     <div class="sr-only">
       <.link navigate={~p"/manage/metaresource/resource_template/#{resource_template}"}>
         Show
       </.link>
     </div>
-    
+
     <.link navigate={~p"/manage/metaresource/resource_template/#{resource_template}/edit"}>
       Edit
     </.link>
   </:action>
-  
+
   <:action :let={resource_template}>
     <.link
       href={~p"/manage/metaresource/resource_template/#{resource_template}"}

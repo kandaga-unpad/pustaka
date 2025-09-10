@@ -161,7 +161,7 @@ defmodule VoileWeb.Frontend.Items.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-             <span class="ml-2 text-gray-600 dark:text-gray-300">Loading item...</span>
+            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading item...</span>
           </div>
         <% else %>
           <%= if @item do %>
@@ -174,7 +174,8 @@ defmodule VoileWeb.Frontend.Items.Show do
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   >
                     <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> Back to Items
-                  </.link> <span class="text-gray-300 dark:text-gray-600">|</span>
+                  </.link>
+                   <span class="text-gray-300 dark:text-gray-600">|</span>
                   <.link
                     navigate={~p"/collections/#{@item.collection.id}"}
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -213,7 +214,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                               {@item.item_code}
                             </h1>
-                            
+
                             <div class="text-lg text-gray-600 dark:text-gray-300 mb-4">
                               From:
                               <.link
@@ -223,7 +224,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                                 {@item.collection.title}
                               </.link>
                             </div>
-                            
+
                             <%= if @item.collection.mst_creator do %>
                               <div class="text-gray-600 dark:text-gray-300 mb-6">
                                 By: {@item.collection.mst_creator.creator_name}
@@ -251,7 +252,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               {@item.item_code}
                             </span>
                           </div>
-                          
+
                           <%= if @item.inventory_code do %>
                             <div class="flex items-center">
                               <.icon
@@ -266,7 +267,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-map-pin-solid"
@@ -276,7 +277,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               {@item.location}
                             </span>
                           </div>
-                          
+
                           <%= if @item.node do %>
                             <div class="flex items-center">
                               <.icon
@@ -288,7 +289,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <%= if @item.price do %>
                             <div class="flex items-center">
                               <.icon
@@ -300,7 +301,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <%= if @item.acquisition_date do %>
                             <div class="flex items-center">
                               <.icon
@@ -312,7 +313,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <%= if @item.last_circulated do %>
                             <div class="flex items-center">
                               <.icon
@@ -327,7 +328,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-calendar-solid"
@@ -347,7 +348,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         About this Collection
                       </h3>
-                      
+
                       <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
                         {@item.collection.description}
                       </p>
@@ -361,7 +362,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                           Other Items in this Collection
                         </h3>
                       </div>
-                      
+
                       <div class="divide-y divide-gray-200 dark:divide-gray-700">
                         <%= for item <- @related_items do %>
                           <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -369,7 +370,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 text-center">
                         <.link
                           navigate={~p"/collections/#{@item.collection.id}"}
@@ -387,7 +388,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                     <!-- Actions -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Actions</h3>
-                      
+
                       <div class="space-y-3">
                         <%= if @item.availability == "available" do %>
                           <%= if @current_scope && @current_scope.user do %>
@@ -432,7 +433,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                             <% end %>
                           </div>
                         <% end %>
-                        
+
                         <.link
                           navigate={~p"/collections/#{@item.collection.id}"}
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -454,7 +455,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Item Status
                       </h3>
-                      
+
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
                           <span class="text-sm text-gray-500 dark:text-gray-400">Availability:</span>
@@ -462,14 +463,14 @@ defmodule VoileWeb.Frontend.Items.Show do
                             {String.capitalize(@item.availability || "Unknown")}
                           </span>
                         </div>
-                        
+
                         <div class="flex items-center justify-between">
                           <span class="text-sm text-gray-500 dark:text-gray-400">Condition:</span>
                           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.VoileComponents.condition_badge(@item.condition)}"}>
                             {String.capitalize(@item.condition || "Unknown")}
                           </span>
                         </div>
-                        
+
                         <div class="flex items-center justify-between">
                           <span class="text-sm text-gray-500 dark:text-gray-400">Status:</span>
                           <span class="text-sm font-medium text-gray-900 dark:text-white">
@@ -483,11 +484,11 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Need Help?
                       </h3>
-                      
+
                       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
                         Contact the library for more information about this item or to make special requests.
                       </p>
-                      
+
                       <div class="space-y-2 text-sm">
                         <div class="flex items-center">
                           <.icon
@@ -495,7 +496,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                             class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
                           /> <span class="text-gray-900 dark:text-white">(+62) 815-7371-0645</span>
                         </div>
-                        
+
                         <div class="flex items-center">
                           <.icon
                             name="hero-envelope-solid"
@@ -515,7 +516,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">Reserve Item</h3>
-                    
+
                     <button
                       phx-click="hide_reservation_form"
                       class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
@@ -523,11 +524,11 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <.icon name="hero-x-mark-solid" class="w-5 h-5" />
                     </button>
                   </div>
-                  
+
                   <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
                     You are requesting to reserve: <strong>{@item.item_code}</strong>
                   </p>
-                  
+
                   <form phx-submit="submit_reservation" class="space-y-4">
                     <div>
                       <label
@@ -535,7 +536,8 @@ defmodule VoileWeb.Frontend.Items.Show do
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                       >
                         Notes (optional)
-                      </label> <textarea
+                      </label>
+                       <textarea
                         id="reservation_notes"
                         name="notes"
                         rows="3"
@@ -544,7 +546,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                         disabled={@reservation_loading}
                       ></textarea>
                     </div>
-                    
+
                     <div class="flex justify-end gap-3">
                       <button
                         type="button"
