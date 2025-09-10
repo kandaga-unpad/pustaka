@@ -266,18 +266,136 @@ defmodule Voile.Migration.FineImporter do
   defp extract_and_find_item_from_description(""), do: nil
 
   defp extract_and_find_item_from_description(description) do
-    # Try to extract item code from description like "Overdue fines for item 01001970500082"
+    # First try to extract legacy numeric item id from description like
+    # "Overdue fines for item 01001970500082" and map it to the imported Item
     case Regex.run(~r/item\s+(\d+)/i, description) do
-      [_, item_code] ->
-        find_item_by_code(item_code)
+      [_, legacy_id] ->
+        # Try legacy id -> item mapping (built from items CSVs and DB)
+        case get_item_by_legacy_id(legacy_id) do
+          %Item{} = item ->
+            item
+
+          _ ->
+            # fallback: maybe the description contains an item_code string
+            find_item_by_code(legacy_id)
+        end
 
       _ ->
-        nil
+        # If no numeric id, also try to extract a code-like token (eg inventory code)
+        case Regex.run(~r{item\s+([A-Za-z0-9\-\./_\s]+)}i, description) do
+          [_, token] ->
+            token = String.trim(token)
+
+            # try exact item_code match first, then inventory_code
+            find_item_by_code(token) || find_item_by_inventory_code(token)
+
+          _ ->
+            nil
+        end
     end
+  end
+
+  # Build or return cached mapping of legacy CSV item_id (integer) -> Item struct
+  defp get_legacy_item_map do
+    case Process.get(:legacy_item_map) do
+      nil ->
+        map = build_legacy_item_map()
+        Process.put(:legacy_item_map, map)
+        map
+
+      map ->
+        map
+    end
+  end
+
+  defp get_item_by_legacy_id(legacy_id) do
+    legacy_int = parse_int(legacy_id)
+
+    if is_nil(legacy_int) do
+      nil
+    else
+      case get_legacy_item_map() do
+        %{^legacy_int => %Item{} = item} ->
+          item
+
+        %{^legacy_int => item_id} when is_binary(item_id) ->
+          Repo.get(Item, item_id)
+
+        _ ->
+          nil
+      end
+    end
+  end
+
+  defp build_legacy_item_map do
+    # Build quick lookup maps from DB for item_code and inventory_code to item id
+    db_items = Repo.all(from i in Item, select: {i.id, i.item_code, i.inventory_code})
+
+    item_code_map =
+      db_items
+      |> Enum.reduce(%{}, fn {id, item_code, _inventory}, acc ->
+        if item_code in [nil, ""], do: acc, else: Map.put(acc, String.trim(item_code), id)
+      end)
+
+    inventory_map =
+      db_items
+      |> Enum.reduce(%{}, fn {id, _item_code, inventory}, acc ->
+        if inventory in [nil, ""], do: acc, else: Map.put(acc, String.trim(inventory), id)
+      end)
+
+    # Read item CSVs and map csv item_id -> matched Item id (prefer item_code then inventory_code)
+    files = get_csv_files("items")
+
+    files
+    |> Enum.reduce(%{}, fn file, acc ->
+      File.stream!(file)
+      |> CSVParser.parse_stream(skip_headers: false)
+      |> Stream.drop(1)
+      |> Stream.each(fn row ->
+        # row: item_id,biblio_id,call_number,coll_type_id,item_code,inventory_code,...
+        case row do
+          [csv_item_id | rest] ->
+            csv_item_id_int = parse_int(csv_item_id)
+
+            # try to fetch item_code and inventory_code positions safely
+            item_code = Enum.at(rest, 3) |> safe_string_trim()
+            inventory_code = Enum.at(rest, 4) |> safe_string_trim()
+
+            found_id =
+              cond do
+                item_code && Map.has_key?(item_code_map, item_code) ->
+                  Map.get(item_code_map, item_code)
+
+                inventory_code && Map.has_key?(inventory_map, inventory_code) ->
+                  Map.get(inventory_map, inventory_code)
+
+                true ->
+                  nil
+              end
+
+            if csv_item_id_int && found_id do
+              Map.put(acc, csv_item_id_int, found_id)
+            else
+              acc
+            end
+
+          _ ->
+            acc
+        end
+      end)
+      |> Stream.run()
+
+      acc
+    end)
   end
 
   defp find_item_by_code(item_code) do
     from(i in Item, where: i.item_code == ^item_code)
+    |> Repo.one()
+  end
+
+  defp find_item_by_inventory_code(inventory_code) do
+    from(i in Item, where: i.inventory_code == ^inventory_code)
     |> Repo.one()
   end
 

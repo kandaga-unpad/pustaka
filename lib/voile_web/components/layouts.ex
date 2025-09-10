@@ -74,38 +74,46 @@ defmodule VoileWeb.Layouts do
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <!-- Hook wrapper: contains the anchor (image button) and the panel -->
-                <div id="position-panel" phx-hook="PositionPanel" class="relative flex items-center justify-center gap-3">
+                <div
+                  id="position-panel"
+                  phx-hook="PositionPanel"
+                  class="relative flex items-center justify-center gap-3"
+                >
                   <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
                     <.link navigate="/manage"><.button class="default-btn">Dashboard</.button></.link>
                   <% else %>
                     <.link navigate="/atrium"><.button class="default-btn">Atrium</.button></.link>
                   <% end %>
-
                   <!-- clickable image button toggles the panel -->
-                  <button data-panel-anchor role="button" tabindex="0" aria-expanded="false" class="p-0 bg-transparent">
+                  <button
+                    data-panel-anchor
+                    role="button"
+                    tabindex="0"
+                    aria-expanded="false"
+                    class="p-0 bg-transparent"
+                  >
                     <img
                       src={@current_scope.user.user_image || "/images/default_avatar.jpg"}
                       class="w-8 h-8 rounded-full border-2 border-violet-600"
                       alt="User avatar"
                     />
                   </button>
-
                   <div
                     data-position-panel
                     class="absolute bg-gray-200 max-w-sm right-8 p-4 rounded-md shadow-md text-right hidden"
                   >
                     <p class="text-sm">Signed in as <strong>{@current_scope.user.email}</strong></p>
-
+                    
                     <p><.link navigate="/settings">Settings</.link></p>
-
+                    
                     <p>
                       Departures adalah film drama Jepang tahun 2008 yang disutradarai oleh Yōjirō Takita dan dibintangi oleh Masahiro Motoki, Ryōko Hirosue, serta Tsutomu Yamazaki. Film ini bercerita mengenai seorang pria muda yang kembali ke kampung halamannya setelah gagal berkarir sebagai pemain selo dan akhirnya tersandung ke dalam pekerjaan sebagai nōkanshi—pengurus ritual pemakaman tradisional Jepang.
                     </p>
-
+                    
                     <.link
-                      navigate="/logout"
+                      href="/users/log_out"
                       method="delete"
-                      class="text-red-600 hover:text-red-800 font-semibold"
+                      class="default-menu bg-red-400 hover:bg-red-500 text-white"
                     >
                       Logout
                     </.link>
