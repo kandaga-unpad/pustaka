@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
   use VoileWeb, :live_component
 
   import VoileWeb.Dashboard.Circulation.Helpers
+  import VoileWeb.Utils.AuthHelper
 
   @doc """
   Renders a status badge with appropriate styling.
@@ -41,12 +42,12 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
           </span>
         </div>
       </div>
-
+      
       <div class="ml-4">
         <div class="text-sm font-medium text-gray-900">
           {if @member, do: @member.full_name, else: "Unknown Member"}
         </div>
-
+        
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">ID: {@member.id}</div>
         <% end %>
@@ -66,7 +67,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     <div>
       <%= if @item do %>
         <div class="text-sm font-medium text-gray-900">{@item.item_code}</div>
-
+        
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">
             {if @item.collection, do: @item.collection.title, else: "No collection"}
@@ -93,10 +94,10 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
             <div class="flex-shrink-0">
               <.icon name={stat.icon} class={"w-8 h-8 #{stat.icon_color}"} />
             </div>
-
+            
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">{stat.label}</h3>
-
+              
               <p class="text-2xl font-semibold text-gray-900">{stat.value}</p>
             </div>
           </div>
@@ -173,33 +174,60 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     ~H"""
     <div class="bg-white shadow rounded-lg p-6">
       <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
-
+      
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "circulation.transactions.checkout") do %>
-          <.link navigate={~p"/manage/circulation/transactions/checkout"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+        <%= if can_access?(@current_user, "circulation.transactions.checkout") do %>
+          <.link
+            navigate={~p"/manage/circulation/transactions/checkout"}
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
             Quick Checkout
           </.link>
         <% else %>
-          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Quick Checkout</button>
+          <button
+            disabled
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+          >
+            Quick Checkout
+          </button>
         <% end %>
-
-        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "circulation.transactions") do %>
-          <.link navigate={~p"/manage/circulation/transactions"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+        
+        <%= if can_access?(@current_user, "circulation.transactions") do %>
+          <.link
+            navigate={~p"/manage/circulation/transactions"}
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+          >
             Quick Return
           </.link>
         <% else %>
-          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Quick Return</button>
+          <button
+            disabled
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+          >
+            Quick Return
+          </button>
         <% end %>
-
-        <%= if VoileWeb.Helpers.AuthHelper.can_access?(@current_user, :manage, "settings.users") do %>
-          <.link navigate={~p"/manage/settings/users"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+        
+        <%= if can_access?(@current_user, "settings.users") do %>
+          <.link
+            navigate={~p"/manage/settings/users"}
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+          >
             Member Lookup
           </.link>
         <% else %>
-          <button disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400">Member Lookup</button>
+          <button
+            disabled
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+          >
+            Member Lookup
+          </button>
         <% end %>
-
-        <.link navigate={~p"/search?type=items"} class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+        
+        <.link
+          navigate={~p"/search?type=items"}
+          class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+        >
           Item Search
         </.link>
       </div>

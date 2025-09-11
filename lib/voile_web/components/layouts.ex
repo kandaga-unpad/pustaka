@@ -53,7 +53,7 @@ defmodule VoileWeb.Layouts do
             <h5>Voile</h5>
           </a>
         </div>
-
+        
         <nav class="hidden lg:flex items-center gap-10 font-semibold leading-6">
           <%= for nav_item <- @nav_items do %>
             <div>
@@ -65,43 +65,57 @@ defmodule VoileWeb.Layouts do
             </div>
           <% end %>
         </nav>
-
+        
         <div>
           <div class="flex lg:hidden"><.button><.icon name="hero-bars-3" /></.button></div>
-
+          
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
-                <div class="flex items-center justify-center gap-3">
-                  <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
-                    <.link navigate="/manage"><.button class="default-btn">Dashboard</.button></.link>
-                  <% else %>
-                    <.link navigate="/atrium"><.button class="default-btn">Atrium</.button></.link>
-                  <% end %>
-
-                  <img
-                    src={@current_scope.user.user_image || "/images/default_avatar.jpg"}
-                    class="w-8 h-8 rounded-full border-2 border-violet-600"
-                  />
-                </div>
-
-                <div class="absolute bg-gray-200 max-w-sm right-8 mt-34 p-4 rounded-md shadow-md text-right">
-                  <p class="text-sm">Signed in as <strong>{@current_scope.user.email}</strong></p>
-
-                  <p><.link navigate="/settings">Settings</.link></p>
-
-                  <p>
-                    Departures adalah film drama Jepang tahun 2008 yang disutradarai oleh Yōjirō Takita dan dibintangi oleh Masahiro Motoki, Ryōko Hirosue, serta Tsutomu Yamazaki. Film ini bercerita mengenai seorang pria muda yang kembali ke kampung halamannya setelah gagal berkarir sebagai pemain selo dan akhirnya tersandung ke dalam pekerjaan sebagai nōkanshi—pengurus ritual pemakaman tradisional Jepang.
-                  </p>
-
-                  <.link
-                    navigate="/logout"
-                    method="delete"
-                    class="text-red-600 hover:text-red-800 font-semibold"
+                <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
+                  <div class="flex items-center justify-center gap-3">
+                    <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                      <.link navigate="/manage">
+                        <.button class="default-btn">Dashboard</.button>
+                      </.link>
+                    <% else %>
+                      <.link navigate="/atrium"><.button class="default-btn">Atrium</.button></.link>
+                    <% end %>
+                    
+                    <button
+                      data-panel-anchor
+                      aria-expanded="false"
+                      class="p-0 bg-transparent border-0"
+                    >
+                      <img
+                        src={@current_scope.user.user_image || "/images/default_avatar.jpg"}
+                        class="w-8 h-8 rounded-full border-2 border-violet-600"
+                        alt="User avatar"
+                      />
+                    </button>
+                  </div>
+                  
+                  <div
+                    data-position-panel
+                    class="sticky hidden bg-gray-200 max-w-sm right-8 p-4 rounded-md shadow-md text-right"
                   >
-                    Logout
-                  </.link>
+                    <p class="text-sm">Signed in as <strong>{@current_scope.user.email}</strong></p>
+                    
+                    <p><.link navigate="/settings">Settings</.link></p>
+                    
+                    <p>
+                      Departures adalah film drama Jepang tahun 2008 yang disutradarai oleh Yōjirō Takita dan dibintangi oleh Masahiro Motoki, Ryōko Hirosue, serta Tsutomu Yamazaki. Film ini bercerita mengenai seorang pria muda yang kembali ke kampung halamannya setelah gagal berkarir sebagai pemain selo dan akhirnya tersandung ke dalam pekerjaan sebagai nōkanshi—pengurus ritual pemakaman tradisional Jepang.
+                    </p>
+                    
+                    <.link
+                      navigate="/logout"
+                      method="delete"
+                      class="text-red-600 hover:text-red-800 font-semibold"
+                    >
+                      Logout
+                    </.link>
+                  </div>
                 </div>
               <% else %>
                 <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>
@@ -117,7 +131,7 @@ defmodule VoileWeb.Layouts do
     <footer>
       <div class="bg-zinc-700 py-3 text-center text-violet-200">&copy; Voile {get_year()}</div>
     </footer>
-    <.flash_group flash={@flash} />
+     <.flash_group flash={@flash} />
     """
   end
 

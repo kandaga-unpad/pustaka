@@ -26,6 +26,7 @@ import { hooks as colocatedHooks } from "phoenix-colocated/voile";
 import topbar from "../vendor/topbar";
 import DragDrop from "./hooks/sortable";
 import DragUpload from "./hooks/draggable_area";
+import position_panel from "./hooks/position_panel";
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
@@ -36,6 +37,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
   hooks: {
     DragDrop,
     DragUpload,
+    position_panel,
     ...colocatedHooks,
   },
 });

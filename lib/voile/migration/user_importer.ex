@@ -319,9 +319,9 @@ defmodule Voile.Migration.UserImporter do
   defp map_user_type_to_role_cached(user_type, roles_cache) do
     case user_type do
       # Admin
-      "1" -> roles_cache["Admin"]
+      "1" -> roles_cache["Pustakawan (Koordinator)"]
       # Librarian (also admin-like)
-      "2" -> roles_cache["Admin"]
+      "2" -> roles_cache["Pustakawan (General)"]
       # Member
       "3" -> roles_cache["Member"]
       _ -> roles_cache["Member"]
