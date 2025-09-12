@@ -174,7 +174,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     ~H"""
     <div class="bg-white shadow rounded-lg p-6">
       <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
-      
+       {can_access?(@current_user, "circulation.transactions.checkout")}
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <%= if can_access?(@current_user, "circulation.transactions.checkout") do %>
           <.link

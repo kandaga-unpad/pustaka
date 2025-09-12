@@ -4,6 +4,7 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
   import VoileWeb.Dashboard.Circulation.Helpers
   import VoileWeb.Dashboard.Circulation.Components
 
+  alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
 
   def render(assigns) do
@@ -188,7 +189,7 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
               <span>View History</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
-        </.link> <.quick_actions current_user={@current_user} />
+        </.link> <.quick_actions current_user={@current_scope.user} />
       </div>
       <!-- Recent Activity -->
       <div class="mt-8 bg-white rounded-lg shadow">
@@ -231,6 +232,12 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
 
     # Get recent activities (limit to 10)
     {recent_activities, _} = Circulation.list_circulation_history_paginated(1, 10)
+
+    user_roles = Accounts.list_user_roles()
+
+    permission = user_roles |> Enum.at(0)
+
+    dbg(permission.permissions["collection"]["create"])
 
     socket =
       socket

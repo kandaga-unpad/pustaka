@@ -168,7 +168,7 @@ export default {
   destroyed() {
     if (this.resizeObserver) this.resizeObserver.disconnect();
     window.removeEventListener("resize", this.calculate);
-  window.removeEventListener("scroll", this._onScroll, { passive: true });
+    window.removeEventListener("scroll", this._onScroll, { passive: true });
     const anchorEl = this.el.querySelector("[data-panel-anchor]");
     if (anchorEl) anchorEl.removeEventListener("click", this.toggle);
     document.removeEventListener("click", this.outsideClick);

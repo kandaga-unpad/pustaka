@@ -676,16 +676,78 @@ defmodule Voile.Schema.Accounts do
 
   @doc """
   Checks if a user has permission for a specific resource and action.
+
+  This function accepts `resource` in one of three forms:
+    - a single string or atom key (e.g. "collection" or :collection)
+    - a dot-separated string path (e.g. "collection.transaction.checkout")
+    - a list of keys (e.g. ["collection", "transaction", "checkout"]) where each
+      element is a string or atom
+
+  `action` must be a string or atom that corresponds to the final permission key.
+
+  Examples:
+
+      # shallow
+      has_permission?(user, "collection", "create")
+
+      # deep, dot-separated
+      has_permission?(user, "collection.transaction.checkout", "read")
+
+      # deep, list
+      has_permission?(user, ["collection", "transaction", "checkout"], "read")
+
+  Passing the actual nested boolean value (for example `permissions["collection"]["create"]`)
+  or other invalid shapes will raise an `ArgumentError` to guide callers to use keys/paths.
   """
-  def has_permission?(%User{user_role: %UserRole{permissions: permissions}}, resource, action) do
-    case get_in(permissions, [resource, action]) do
+  def has_permission?(%User{user_role: %UserRole{permissions: permissions}}, resource, action)
+      when (is_binary(resource) or is_atom(resource) or is_list(resource)) and
+             (is_binary(action) or is_atom(action)) do
+    # Normalize resource into a list of keys
+    keys =
+      cond do
+        is_list(resource) ->
+          resource
+
+        is_binary(resource) ->
+          if String.contains?(resource, ".") do
+            String.split(resource, ".")
+          else
+            [resource]
+          end
+
+        is_atom(resource) ->
+          [resource]
+      end
+
+    # Validate each key element
+    unless Enum.all?(keys, fn k -> is_binary(k) or is_atom(k) end) do
+      raise ArgumentError,
+            "has_permission?/3 expects resource path elements to be strings or atoms (got: #{inspect(keys)})"
+    end
+
+    path = keys ++ [action]
+
+    case get_in(permissions, path) do
       true -> true
       _ -> false
     end
   end
 
+  # Explicit false when user has no role or user is nil
   def has_permission?(%User{user_role: nil}, _resource, _action), do: false
   def has_permission?(nil, _resource, _action), do: false
+
+  # Catch-all to prevent callers from passing nested boolean values or other invalid shapes.
+  def has_permission?(_user, resource, _action)
+      when not (is_binary(resource) or is_atom(resource)) do
+    raise ArgumentError,
+          "has_permission?/3 expects `resource` to be a string or atom key (got: #{inspect(resource)})"
+  end
+
+  def has_permission?(_user, _resource, action) when not (is_binary(action) or is_atom(action)) do
+    raise ArgumentError,
+          "has_permission?/3 expects `action` to be a string or atom key (got: #{inspect(action)})"
+  end
 
   @doc """
   Checks if a user can perform any CRUD operation on a resource.

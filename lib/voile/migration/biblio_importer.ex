@@ -893,22 +893,32 @@ defmodule Voile.Migration.BiblioImporter do
     File.stream!(file_path)
     |> CSVParser.parse_stream()
     |> Stream.drop(1)
-    |> Enum.reduce(%{}, fn [biblio_id, author_id, level], acc ->
-      biblio_id_int = parse_int(biblio_id)
-      author_id_int = parse_int(author_id)
-      level_int = parse_int(level)
+    |> Enum.reduce(%{}, fn row, acc ->
+      # Accept rows with at least three columns; ignore extra columns
+      case row do
+        [biblio_id, author_id, level | _rest] ->
+          biblio_id_int = parse_int(biblio_id)
+          author_id_int = parse_int(author_id)
+          level_int = parse_int(level)
 
-      if biblio_id_int && author_id_int && level_int do
-        current_authors = Map.get(acc, biblio_id_int, [])
+          if biblio_id_int && author_id_int && level_int do
+            current_authors = Map.get(acc, biblio_id_int, [])
 
-        updated_authors =
-          [{author_id_int, level_int} | current_authors]
-          # Sort by level
-          |> Enum.sort_by(&elem(&1, 1))
+            updated_authors =
+              [{author_id_int, level_int} | current_authors]
+              # Sort by level
+              |> Enum.sort_by(&elem(&1, 1))
 
-        Map.put(acc, biblio_id_int, updated_authors)
-      else
-        acc
+            Map.put(acc, biblio_id_int, updated_authors)
+          else
+            # Skip malformed numeric fields
+            acc
+          end
+
+        # If the row doesn't have at least 3 columns, skip and log minimal info
+        other ->
+          IO.puts("⚠️ Skipping malformed biblio-author row: #{inspect(other)}")
+          acc
       end
     end)
   end
