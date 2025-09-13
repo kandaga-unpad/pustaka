@@ -1,6 +1,8 @@
 defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
+  alias Voile.Schema.Accounts
   use VoileWeb, :live_view_dashboard
   import VoileWeb.Dashboard.Circulation.Helpers
+  import VoileWeb.Dashboard.Circulation.Components
 
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Transaction
@@ -14,10 +16,6 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
     count_active_collection = Circulation.count_of_collection_based_on_status("active")
     count_overdue_collection = Circulation.count_of_collection_based_on_status("overdue")
     count_returned_collection = Circulation.count_of_collection_based_on_status("returned")
-
-    dbg(count_active_collection)
-    dbg(count_overdue_collection)
-    dbg(count_returned_collection)
 
     checkout_changeset = Transaction.changeset(%Transaction{}, %{})
 
@@ -71,24 +69,51 @@ defmodule VoileWeb.Dashboard.Circulation.Transaction.Index do
   end
 
   @impl true
-  def handle_event("checkout", %{"member_id" => member_id, "item_id" => item_id}, socket) do
-    current_user_id = socket.assigns.current_user.id
+  def handle_event("checkout", params, socket) do
+    # Support both nested params under "transaction" (from the form)
+    # and flat params sent directly as %{"member_id" => ..., "item_id" => ...}.
+    transaction = Map.get(params, "transaction", params)
+    member_id = Map.get(transaction, "member_id")
+    item_id = Map.get(transaction, "item_id")
 
-    case Circulation.checkout_item(member_id, item_id, current_user_id) do
-      {:ok, transaction} ->
-        socket =
-          socket
-          |> stream_insert(:transactions, transaction, at: 0)
-          |> put_flash(:info, "Item checked out successfully")
-
+    cond do
+      is_nil(member_id) or member_id == "" ->
+        socket = put_flash(socket, :error, "Member identifier is required")
         {:noreply, socket}
 
-      {:error, changeset} ->
-        socket =
-          socket
-          |> put_flash(:error, "Failed to checkout item: #{extract_error_message(changeset)}")
-
+      is_nil(item_id) or item_id == "" ->
+        socket = put_flash(socket, :error, "Item ID is required")
         {:noreply, socket}
+
+      true ->
+        case Accounts.get_user_by_identifier(member_id) do
+          nil ->
+            socket = put_flash(socket, :error, "Member not found")
+            {:noreply, socket}
+
+          member ->
+            librarian = socket.assigns.current_scope.user.id
+
+            case Circulation.checkout_item(member.id, item_id, librarian) do
+              {:ok, transaction} ->
+                socket =
+                  socket
+                  |> stream_insert(:transactions, transaction, at: 0)
+                  |> put_flash(:info, "Item checked out successfully")
+
+                {:noreply, socket}
+
+              {:error, changeset} ->
+                socket =
+                  socket
+                  |> put_flash(
+                    :error,
+                    "Failed to checkout item: #{extract_error_message(changeset)}"
+                  )
+
+                {:noreply, socket}
+            end
+        end
     end
   end
 

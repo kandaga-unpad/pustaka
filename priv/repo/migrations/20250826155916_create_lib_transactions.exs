@@ -22,6 +22,7 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
       add :member_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false
 
       add :librarian_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false
+      add :unit_id, references(:nodes, on_delete: :nilify_all)
 
       timestamps(type: :utc_datetime)
     end

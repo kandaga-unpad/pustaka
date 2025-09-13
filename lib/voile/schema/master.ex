@@ -56,6 +56,35 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Search creators by name using a case-insensitive partial match.
+
+  Returns a list limited by `limit`.
+  """
+  def search_mst_creator(query, limit \\ 10) when is_binary(query) do
+    q = "%" <> String.replace(query, "%", "\\%") <> "%"
+
+    Creator
+    |> where([c], ilike(c.creator_name, ^q))
+    |> order_by([c], asc: c.creator_name)
+    |> limit(^limit)
+    |> Repo.all()
+  end
+
+  @doc """
+  Search creators but return only minimal fields (id and creator_name) to reduce data transfer.
+  """
+  def search_mst_creator_names(query, limit \\ 10) when is_binary(query) do
+    q = "%" <> String.replace(query, "%", "\\%") <> "%"
+
+    Creator
+    |> where([c], ilike(c.creator_name, ^q))
+    |> order_by([c], asc: c.creator_name)
+    |> limit(^limit)
+    |> select([c], %{id: c.id, creator_name: c.creator_name})
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single creator.
 
   Raises `Ecto.NoResultsError` if the Creator does not exist.

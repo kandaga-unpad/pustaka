@@ -190,7 +190,14 @@ defmodule Voile.Migration.ItemImporter do
     if length(error_items) > 0 do
       error_biblio_ids =
         error_items
-        |> Enum.map(fn {{:error, {:missing_biblio_id, biblio_id}}, _line_num} -> biblio_id end)
+        |> Enum.map(fn
+          {{:error, {:missing_biblio_id, biblio_id}}, _line_num} ->
+            biblio_id
+
+          _other ->
+            # For other error shapes (e.g. invalid_row), return nil and filter out later
+            nil
+        end)
         |> Enum.reject(&is_nil/1)
 
       :ets.update_counter(stats_ref, :skipped, length(error_items))

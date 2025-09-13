@@ -1,6 +1,7 @@
 defmodule VoileWeb.Dashboard.Circulation.Requisition.Index do
   use VoileWeb, :live_view_dashboard
   import VoileWeb.Dashboard.Circulation.Helpers
+  import VoileWeb.Dashboard.Circulation.Components
 
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Requisition

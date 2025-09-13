@@ -164,6 +164,15 @@ defmodule Voile.Schema.Catalog do
     |> Collection.changeset(attrs)
   end
 
+  def count_collections() do
+    Repo.aggregate(Collection, :count, :id)
+  end
+
+  def count_collections(unit_id) when is_integer(unit_id) do
+    from(c in Collection, where: c.unit_id == ^unit_id)
+    |> Repo.aggregate(:count, :id)
+  end
+
   @doc """
   Get collections organized in a hierarchical tree structure.
   Now with pagination to prevent loading too many records at once.
@@ -471,6 +480,15 @@ defmodule Voile.Schema.Catalog do
   """
   def change_item(%Item{} = item, attrs \\ %{}) do
     Item.changeset(item, attrs)
+  end
+
+  def count_items() do
+    Repo.aggregate(Item, :count, :id)
+  end
+
+  def count_items(unit_id) when is_integer(unit_id) do
+    from(i in Item, where: i.unit_id == ^unit_id)
+    |> Repo.aggregate(:count, :id)
   end
 
   def list_available_items do

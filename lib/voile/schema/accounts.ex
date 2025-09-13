@@ -73,6 +73,18 @@ defmodule Voile.Schema.Accounts do
     end
   end
 
+  def get_user_by_identifier(nil), do: nil
+
+  def get_user_by_identifier(identifier) when is_binary(identifier) do
+    case Integer.parse(identifier) do
+      {id, ""} ->
+        Repo.get(User, id)
+
+      :error ->
+        Repo.get_by(User, username: identifier)
+    end
+  end
+
   @doc """
   Gets all users.
   """

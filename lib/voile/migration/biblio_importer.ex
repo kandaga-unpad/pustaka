@@ -243,15 +243,28 @@ defmodule Voile.Migration.BiblioImporter do
       |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_biblio_data(
-           row,
-           unit_id,
-           skip_images,
-           unit_author_mappings,
-           unit_publisher_mappings,
-           unit_author_data,
-           cache
-         ), line_num}
+        case prepare_biblio_data(
+               row,
+               unit_id,
+               skip_images,
+               unit_author_mappings,
+               unit_publisher_mappings,
+               unit_author_data,
+               cache
+             ) do
+          {:ok, {collection, fields}} ->
+            {{:ok, {collection, fields}}, line_num}
+
+          {:skip, reason} ->
+            IO.puts("⚠️ Skipping line #{line_num}: #{inspect(reason)}")
+            :ets.update_counter(stats_ref, :skipped, 1)
+            {{:skip, reason}, line_num}
+
+          {:error, reason} ->
+            IO.puts("❌ Error on line #{line_num}: #{inspect(reason)}")
+            :ets.update_counter(stats_ref, :errors, 1)
+            {{:error, reason}, line_num}
+        end
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status == :ok end)
       |> Stream.map(fn {{:ok, {collection, fields}}, line_num} ->
@@ -285,7 +298,7 @@ defmodule Voile.Migration.BiblioImporter do
 
   # Process a batch of bibliography data with single transaction
   defp process_biblio_batch(batch, stats_ref) do
-    {collections, all_fields, _line_nums} =
+    {collections, all_fields, line_nums} =
       batch
       |> Enum.reduce({[], [], []}, fn {collection, fields, line_num}, {colls, all_flds, lines} ->
         {[collection | colls], all_flds ++ fields, [line_num | lines]}
@@ -305,7 +318,11 @@ defmodule Voile.Migration.BiblioImporter do
           count
         rescue
           e ->
+            sample_old_ids = collections |> Enum.take(5) |> Enum.map(& &1.old_biblio_id)
+            sample_lines = Enum.take(line_nums, 5)
             IO.puts("\n⚠️ Collection batch insert error: #{inspect(e)}")
+            IO.puts("  - Sample old_biblio_ids: #{inspect(sample_old_ids)}")
+            IO.puts("  - Sample lines: #{inspect(sample_lines)}")
             :ets.update_counter(stats_ref, :errors, length(collections))
             0
         end
@@ -313,16 +330,87 @@ defmodule Voile.Migration.BiblioImporter do
         0
       end
 
-    # Batch insert fields
-    if length(all_fields) > 0 and collections_inserted > 0 do
-      try do
-        {fields_count, _} =
-          Repo.insert_all(CollectionField, all_fields, on_conflict: :nothing, returning: false)
+    # Batch insert fields: remap temporary collection ids (source_old_biblio_id) to actual DB ids
+    if length(all_fields) > 0 do
+      # Collect all unique old_biblio_ids referenced by fields (available to rescue block)
+      old_ids =
+        all_fields
+        |> Enum.map(& &1.source_old_biblio_id)
+        |> Enum.uniq()
+        |> Enum.filter(& &1)
 
-        :ets.update_counter(stats_ref, :fields_inserted, fields_count)
+      try do
+        # Query DB for collections inserted (or existing) with those old_biblio_ids
+        mapping_query =
+          from(c in Collection,
+            where: c.old_biblio_id in ^old_ids,
+            select: {c.old_biblio_id, c.id}
+          )
+
+        db_mappings = Repo.all(mapping_query) |> Enum.into(%{})
+
+        # Remap fields' collection_id from the temporary marker to the real DB id
+        remapped_fields =
+          Enum.reduce(all_fields, [], fn field, acc ->
+            case Map.get(field, :source_old_biblio_id) || Map.get(field, "source_old_biblio_id") do
+              nil ->
+                [field | acc]
+
+              old_biblio ->
+                case Map.get(db_mappings, old_biblio) do
+                  nil ->
+                    # If we couldn't find the collection in DB, skip the field and count as error
+                    prop = Map.get(field, :property_id) || Map.get(field, "property_id")
+                    name = Map.get(field, :name) || Map.get(field, "name")
+
+                    IO.puts(
+                      "\n⚠️ Skipping field for missing collection old_biblio_id=#{inspect(old_biblio)} - property_id=#{inspect(prop)} name=#{inspect(name)}"
+                    )
+
+                    :ets.update_counter(stats_ref, :errors, 1)
+                    acc
+
+                  real_id ->
+                    # Replace collection_id and remove temporary marker
+                    cleaned_field =
+                      field
+                      |> Map.put(:collection_id, real_id)
+                      |> Map.delete(:source_old_biblio_id)
+
+                    [cleaned_field | acc]
+                end
+            end
+          end)
+
+        remapped_fields = Enum.reverse(remapped_fields)
+
+        if length(remapped_fields) > 0 and (collections_inserted > 0 or length(old_ids) > 0) do
+          {fields_count, _} =
+            Repo.insert_all(CollectionField, remapped_fields,
+              on_conflict: :nothing,
+              returning: false
+            )
+
+          :ets.update_counter(stats_ref, :fields_inserted, fields_count)
+        end
       rescue
         e ->
+          sample_old_ids = Enum.take(old_ids, 5)
+
+          sample_props =
+            all_fields
+            |> Enum.take(5)
+            |> Enum.map(fn f ->
+              {Map.get(f, :property_id) || Map.get(f, "property_id"),
+               Map.get(f, :name) || Map.get(f, "name")}
+            end)
+
           IO.puts("\n⚠️ Fields batch insert error: #{inspect(e)}")
+
+          IO.puts(
+            "  - All_fields: #{length(all_fields)}; sample_old_biblio_ids: #{inspect(sample_old_ids)}; sample_props: #{inspect(sample_props)}"
+          )
+
           :ets.update_counter(stats_ref, :errors, length(all_fields))
       end
     end
@@ -449,8 +537,8 @@ defmodule Voile.Migration.BiblioImporter do
             updated_at: now
           }
 
-          # Build collection fields
-          fields = build_collection_fields_optimized(id, row, publisher_name, now)
+          # Build collection fields (include original biblio id for later remapping)
+          fields = build_collection_fields_optimized(id, row, publisher_name, now, biblio_id_int)
 
           {:ok, {collection, fields}}
         end
@@ -464,7 +552,7 @@ defmodule Voile.Migration.BiblioImporter do
   end
 
   # Optimized field building - same logic but cleaner
-  defp build_collection_fields_optimized(collection_id, row, publisher_name, now) do
+  defp build_collection_fields_optimized(collection_id, row, publisher_name, now, old_biblio_id) do
     [
       _biblio_id,
       _gmd_id,
@@ -510,6 +598,8 @@ defmodule Voile.Migration.BiblioImporter do
           if trimmed_value != "" do
             field = %{
               collection_id: collection_id,
+              # temporary marker to remap to actual DB id after collection insert
+              source_old_biblio_id: old_biblio_id,
               property_id: property.id,
               name: property.local_name,
               label: property.label,
@@ -643,9 +733,60 @@ defmodule Voile.Migration.BiblioImporter do
         0
       end
 
+    # Remap legacy fields to actual DB collection ids using old_biblio_id
     fields_inserted =
       if length(final_fields) > 0 do
-        batch_insert(Repo, CollectionField, final_fields, batch_size, on_conflict: :nothing)
+        old_ids =
+          final_fields |> Enum.map(& &1.source_old_biblio_id) |> Enum.uniq() |> Enum.filter(& &1)
+
+        db_mappings =
+          if length(old_ids) > 0 do
+            from(c in Collection,
+              where: c.old_biblio_id in ^old_ids,
+              select: {c.old_biblio_id, c.id}
+            )
+            |> Repo.all()
+            |> Enum.into(%{})
+          else
+            %{}
+          end
+
+        remapped_fields =
+          Enum.reduce(final_fields, [], fn field, acc ->
+            case Map.get(field, :source_old_biblio_id) || Map.get(field, "source_old_biblio_id") do
+              nil ->
+                [field | acc]
+
+              old_biblio ->
+                case Map.get(db_mappings, old_biblio) do
+                  nil ->
+                    prop = Map.get(field, :property_id) || Map.get(field, "property_id")
+                    name = Map.get(field, :name) || Map.get(field, "name")
+
+                    IO.puts(
+                      "⚠️ Skipping legacy field for missing collection old_biblio_id=#{inspect(old_biblio)} - property_id=#{inspect(prop)} name=#{inspect(name)}"
+                    )
+
+                    acc
+
+                  real_id ->
+                    cleaned_field =
+                      field
+                      |> Map.put(:collection_id, real_id)
+                      |> Map.delete(:source_old_biblio_id)
+
+                    [cleaned_field | acc]
+                end
+            end
+          end)
+
+        remapped_fields = Enum.reverse(remapped_fields)
+
+        if length(remapped_fields) > 0 do
+          batch_insert(Repo, CollectionField, remapped_fields, batch_size, on_conflict: :nothing)
+        else
+          0
+        end
       else
         0
       end

@@ -177,7 +177,7 @@ defmodule Voile.Schema.Library.Circulation do
       :member,
       :processed_by,
       :waived_by,
-      :transaction,
+      transaction: [:item],
       item: [:collection]
     ])
   end

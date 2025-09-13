@@ -235,6 +235,66 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     """
   end
 
+  @doc """
+  Renders a small breadcrumb for circulation pages.
+  Accepts optional `:root_label` and `:root_path` (when provided, the root becomes a link),
+  and required `:current_label` for the active page.
+  """
+  attr :root_label, :string, default: "Circulation"
+  attr :root_path, :any, default: nil
+  attr :section_label, :string, default: nil
+  attr :section_path, :any, default: nil
+  attr :current_label, :string, required: true
+
+  def circulation_breadcrumb(assigns) do
+    ~H"""
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <%= if @root_path do %>
+            <.link navigate={@root_path} class="text-gray-700 hover:text-gray-900">
+              <.icon name="hero-home" class="w-4 h-4 mr-2" /> {@root_label}
+            </.link>
+          <% else %>
+            <div class="text-gray-700">
+              <.icon name="hero-home" class="w-4 h-4 mr-2" /> {@root_label}
+            </div>
+          <% end %>
+        </li>
+        
+        <%= if @section_label do %>
+          <li>
+            <div class="flex items-center">
+              <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+              <%= if @section_path do %>
+                <.link navigate={@section_path} class="ml-1 text-gray-700 hover:text-gray-900">
+                  {@section_label}
+                </.link>
+              <% else %>
+                <span class="ml-1 text-gray-500">{@section_label}</span>
+              <% end %>
+            </div>
+          </li>
+          
+          <li aria-current="page">
+            <div class="flex items-center">
+              <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+              <span class="ml-1 text-gray-500">{@current_label}</span>
+            </div>
+          </li>
+        <% else %>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
+              <span class="ml-1 text-gray-500">{@current_label}</span>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+    """
+  end
+
   # Private helper functions
 
   defp badge_class_for_type(:transaction, status), do: transaction_type_badge_class(status)

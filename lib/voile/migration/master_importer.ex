@@ -146,7 +146,15 @@ defmodule Voile.Migration.MasterImporter do
     stats_ref = :ets.new(:creator_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
-    :ets.insert(stats_ref, {:seen_names, existing_names})
+    # Create a separate ETS table to store seen names as individual keys.
+    # This avoids repeatedly copying a large MapSet into ETS per row.
+    seen_table = :ets.new(:seen_creator_names, [:set, :private])
+    # Preload existing names (lowercased strings) into the seen table
+    Enum.each(existing_names, fn name ->
+      :ets.insert(seen_table, {name, true})
+    end)
+
+    :ets.insert(stats_ref, {:seen_table, seen_table})
 
     try do
       File.stream!(file_path)
@@ -168,10 +176,31 @@ defmodule Voile.Migration.MasterImporter do
       # Return final stats
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
-      [{:seen_names, seen_names}] = :ets.lookup(stats_ref, :seen_names)
+
+      # Extract final seen names from the seen_table ETS and return as MapSet
+      seen_table_tid =
+        case :ets.lookup(stats_ref, :seen_table) do
+          [{:seen_table, tid}] -> tid
+          _ -> nil
+        end
+
+      seen_names =
+        if seen_table_tid do
+          :ets.tab2list(seen_table_tid)
+          |> Enum.map(fn {k, _v} -> k end)
+          |> MapSet.new()
+        else
+          MapSet.new()
+        end
 
       %{inserted: inserted, skipped: skipped, seen_names: seen_names}
     after
+      # clean up ETS tables
+      case :ets.lookup(stats_ref, :seen_table) do
+        [{:seen_table, tid}] -> :ets.delete(tid)
+        _ -> :ok
+      end
+
       :ets.delete(stats_ref)
     end
   end
@@ -185,7 +214,14 @@ defmodule Voile.Migration.MasterImporter do
     stats_ref = :ets.new(:publisher_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
-    :ets.insert(stats_ref, {:seen_names, existing_names})
+    # Create ETS table for publisher seen names to avoid copying MapSet repeatedly
+    seen_table = :ets.new(:seen_publisher_names, [:set, :private])
+
+    Enum.each(existing_names, fn name ->
+      :ets.insert(seen_table, {name, true})
+    end)
+
+    :ets.insert(stats_ref, {:seen_table, seen_table})
 
     try do
       File.stream!(file_path)
@@ -207,10 +243,29 @@ defmodule Voile.Migration.MasterImporter do
       # Return final stats
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
-      [{:seen_names, seen_names}] = :ets.lookup(stats_ref, :seen_names)
+
+      seen_table_tid =
+        case :ets.lookup(stats_ref, :seen_table) do
+          [{:seen_table, tid}] -> tid
+          _ -> nil
+        end
+
+      seen_names =
+        if seen_table_tid do
+          :ets.tab2list(seen_table_tid)
+          |> Enum.map(fn {k, _v} -> k end)
+          |> MapSet.new()
+        else
+          MapSet.new()
+        end
 
       %{inserted: inserted, skipped: skipped, seen_names: seen_names}
     after
+      case :ets.lookup(stats_ref, :seen_table) do
+        [{:seen_table, tid}] -> :ets.delete(tid)
+        _ -> :ok
+      end
+
       :ets.delete(stats_ref)
     end
   end
@@ -275,28 +330,38 @@ defmodule Voile.Migration.MasterImporter do
 
     if name && name != "" do
       key = String.downcase(name)
-      [{:seen_names, seen_names}] = :ets.lookup(stats_ref, :seen_names)
+      # Lookup the seen_table tid from stats_ref
+      seen_table_tid =
+        case :ets.lookup(stats_ref, :seen_table) do
+          [{:seen_table, tid}] -> tid
+          _ -> nil
+        end
 
-      if MapSet.member?(seen_names, key) do
-        :ets.update_counter(stats_ref, :skipped, 1)
-        {:skip, "duplicate name"}
-      else
-        # Update seen names
-        updated_seen = MapSet.put(seen_names, key)
-        :ets.insert(stats_ref, {:seen_names, updated_seen})
+      case seen_table_tid do
+        nil ->
+          :ets.update_counter(stats_ref, :skipped, 1)
+          {:skip, "duplicate name"}
 
-        creator_type = map_authority_to_type(authority_type)
+        tid ->
+          case :ets.insert_new(tid, {key, true}) do
+            true ->
+              creator_type = map_authority_to_type(authority_type)
 
-        creator_data = %{
-          creator_name: name,
-          type: creator_type,
-          creator_contact: nil,
-          affiliation: nil,
-          inserted_at: now,
-          updated_at: now
-        }
+              creator_data = %{
+                creator_name: name,
+                type: creator_type,
+                creator_contact: nil,
+                affiliation: nil,
+                inserted_at: now,
+                updated_at: now
+              }
 
-        {:ok, creator_data}
+              {:ok, creator_data}
+
+            false ->
+              :ets.update_counter(stats_ref, :skipped, 1)
+              {:skip, "duplicate name"}
+          end
       end
     else
       :ets.update_counter(stats_ref, :skipped, 1)
@@ -315,26 +380,36 @@ defmodule Voile.Migration.MasterImporter do
 
     if name && name != "" do
       key = String.downcase(name)
-      [{:seen_names, seen_names}] = :ets.lookup(stats_ref, :seen_names)
 
-      if MapSet.member?(seen_names, key) do
-        :ets.update_counter(stats_ref, :skipped, 1)
-        {:skip, "duplicate name"}
-      else
-        # Update seen names
-        updated_seen = MapSet.put(seen_names, key)
-        :ets.insert(stats_ref, {:seen_names, updated_seen})
+      seen_table_tid =
+        case :ets.lookup(stats_ref, :seen_table) do
+          [{:seen_table, tid}] -> tid
+          _ -> nil
+        end
 
-        publisher_data = %{
-          name: name,
-          address: "",
-          city: "",
-          contact: "",
-          inserted_at: now,
-          updated_at: now
-        }
+      case seen_table_tid do
+        nil ->
+          :ets.update_counter(stats_ref, :skipped, 1)
+          {:skip, "duplicate name"}
 
-        {:ok, publisher_data}
+        tid ->
+          case :ets.insert_new(tid, {key, true}) do
+            true ->
+              publisher_data = %{
+                name: name,
+                address: "",
+                city: "",
+                contact: "",
+                inserted_at: now,
+                updated_at: now
+              }
+
+              {:ok, publisher_data}
+
+            false ->
+              :ets.update_counter(stats_ref, :skipped, 1)
+              {:skip, "duplicate name"}
+          end
       end
     else
       :ets.update_counter(stats_ref, :skipped, 1)

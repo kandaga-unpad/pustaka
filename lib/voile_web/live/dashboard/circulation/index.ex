@@ -4,12 +4,16 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
   import VoileWeb.Dashboard.Circulation.Helpers
   import VoileWeb.Dashboard.Circulation.Components
 
-  alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
 
   def render(assigns) do
     ~H"""
     <div class="px-4 py-6">
+      <.circulation_breadcrumb
+        root_label="Manage"
+        root_path={~p"/manage"}
+        current_label="Circulation"
+      />
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Library Circulation Dashboard</h1>
         
@@ -18,7 +22,7 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
         </p>
       </div>
       <!-- Quick Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -28,7 +32,35 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">Active Transactions</h3>
               
-              <p class="text-2xl font-semibold text-gray-900">{@stats.active_transactions}</p>
+              <p class="text-2xl font-semibold text-gray-900">
+                <%= if @stats.active_transactions do %>
+                  {@stats.active_transactions}
+                <% else %>
+                  <svg
+                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    >
+                    </circle>
+                    
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    >
+                    </path>
+                  </svg>
+                <% end %>
+              </p>
             </div>
           </div>
         </div>
@@ -42,7 +74,35 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">Overdue Items</h3>
               
-              <p class="text-2xl font-semibold text-gray-900">{@stats.overdue_count}</p>
+              <p class="text-2xl font-semibold text-gray-900">
+                <%= if @stats.overdue_count do %>
+                  {@stats.overdue_count}
+                <% else %>
+                  <svg
+                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    >
+                    </circle>
+                    
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    >
+                    </path>
+                  </svg>
+                <% end %>
+              </p>
             </div>
           </div>
         </div>
@@ -56,24 +116,78 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">Active Reservations</h3>
               
-              <p class="text-2xl font-semibold text-gray-900">{@stats.active_reservations}</p>
+              <p class="text-2xl font-semibold text-gray-900">
+                <%= if @stats.active_reservations do %>
+                  {@stats.active_reservations}
+                <% else %>
+                  <svg
+                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    >
+                    </circle>
+                    
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    >
+                    </path>
+                  </svg>
+                <% end %>
+              </p>
             </div>
           </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <.icon name="hero-currency-dollar" class="w-8 h-8 text-red-500" />
-            </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500 mb-8">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
+          </div>
+          
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-gray-500">Outstanding Fines</h3>
             
-            <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500">Outstanding Fines</h3>
-              
-              <p class="text-2xl font-semibold text-gray-900">
+            <p class="text-2xl font-semibold text-gray-900">
+              <%= if @stats.outstanding_fines do %>
                 {format_idr(@stats.outstanding_fines)}
-              </p>
-            </div>
+              <% else %>
+                <svg
+                  class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  >
+                  </path>
+                </svg>
+              <% end %>
+            </p>
           </div>
         </div>
       </div>
@@ -222,28 +336,20 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
   end
 
   def mount(_params, _session, socket) do
-    # Get circulation statistics
-    stats = %{
-      active_transactions: get_active_transactions_count(),
-      overdue_count: length(Circulation.list_overdue_transactions() || []),
-      active_reservations: get_active_reservations_count(),
-      outstanding_fines: calculate_outstanding_fines()
-    }
-
-    # Get recent activities (limit to 10)
-    {recent_activities, _} = Circulation.list_circulation_history_paginated(1, 10)
-
-    user_roles = Accounts.list_user_roles()
-
-    permission = user_roles |> Enum.at(0)
-
-    dbg(permission.permissions["collection"]["create"])
-
+    # Assign placeholders and load heavy data asynchronously to speed up mount
     socket =
       socket
       |> assign(:page_title, "Circulation Dashboard")
-      |> assign(:stats, stats)
-      |> assign(:recent_activities, recent_activities || [])
+      |> assign(:stats, %{
+        active_transactions: nil,
+        overdue_count: nil,
+        active_reservations: nil,
+        outstanding_fines: nil
+      })
+      |> assign(:recent_activities, [])
+
+    # Trigger async load of stats and recent activities
+    if connected?(socket), do: send(self(), :load_stats)
 
     {:ok, socket}
   end
@@ -252,19 +358,47 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
     {:noreply, socket}
   end
 
-  defp calculate_outstanding_fines do
-    fines = Circulation.list_fines()
+  def handle_info(:load_stats, socket) do
+    # Perform DB queries asynchronously
+    stats = %{
+      active_transactions: get_active_transactions_count(),
+      overdue_count: length(Circulation.list_overdue_transactions() || []),
+      active_reservations: get_active_reservations_count(),
+      outstanding_fines: calculate_outstanding_fines()
+    }
 
-    fines
-    |> Enum.reduce(Decimal.new(0), fn fine, acc ->
-      if fine.fine_status in ["pending", "partial_paid"] do
-        Decimal.add(acc, fine.balance || Decimal.new(0))
-      else
-        acc
-      end
-    end)
-    |> Decimal.to_float()
-    |> trunc()
+    {recent_activities, _} = Circulation.list_circulation_history_paginated(1, 10)
+
+    {:noreply,
+     socket
+     |> assign(:stats, stats)
+     |> assign(:recent_activities, recent_activities || [])}
+  end
+
+  defp calculate_outstanding_fines do
+    # Use cached result when available
+    case cache_get(:outstanding_fines) do
+      {:ok, val} ->
+        val
+
+      :miss ->
+        fines = Circulation.list_fines()
+
+        total =
+          fines
+          |> Enum.reduce(Decimal.new(0), fn fine, acc ->
+            if fine.fine_status in ["pending", "partial_paid"] do
+              Decimal.add(acc, fine.balance || Decimal.new(0))
+            else
+              acc
+            end
+          end)
+          |> Decimal.to_float()
+          |> trunc()
+
+        cache_put(:outstanding_fines, total, 30_000)
+        total
+    end
   end
 
   defp get_active_transactions_count do
@@ -273,9 +407,19 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
     alias Voile.Repo
     import Ecto.Query
 
-    Transaction
-    |> where([t], t.status == "active")
-    |> Repo.aggregate(:count, :id)
+    case cache_get(:active_transactions) do
+      {:ok, val} ->
+        val
+
+      :miss ->
+        val =
+          Transaction
+          |> where([t], t.status == "active")
+          |> Repo.aggregate(:count, :id)
+
+        cache_put(:active_transactions, val, 30_000)
+        val
+    end
   end
 
   defp get_active_reservations_count do
@@ -284,9 +428,54 @@ defmodule VoileWeb.Dashboard.Circulation.Index do
     alias Voile.Repo
     import Ecto.Query
 
-    Reservation
-    |> where([r], r.status in ["pending", "available"])
-    |> Repo.aggregate(:count, :id)
+    case cache_get(:active_reservations) do
+      {:ok, val} ->
+        val
+
+      :miss ->
+        val =
+          Reservation
+          |> where([r], r.status in ["pending", "available"])
+          |> Repo.aggregate(:count, :id)
+
+        cache_put(:active_reservations, val, 30_000)
+        val
+    end
+  end
+
+  # Simple ETS cache helpers (table: :voile_dashboard_cache)
+  defp ensure_cache_table do
+    case :ets.info(:voile_dashboard_cache) do
+      :undefined ->
+        :ets.new(:voile_dashboard_cache, [:named_table, :public, read_concurrency: true])
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp cache_put(key, value, ttl_ms) do
+    ensure_cache_table()
+    expire_at = System.system_time(:millisecond) + ttl_ms
+    :ets.insert(:voile_dashboard_cache, {key, value, expire_at})
+    :ok
+  end
+
+  defp cache_get(key) do
+    ensure_cache_table()
+
+    case :ets.lookup(:voile_dashboard_cache, key) do
+      [{^key, value, expire_at}] ->
+        if System.system_time(:millisecond) <= expire_at do
+          {:ok, value}
+        else
+          :ets.delete(:voile_dashboard_cache, key)
+          :miss
+        end
+
+      _ ->
+        :miss
+    end
   end
 
   defp activity_color("loan"), do: "bg-blue-400"

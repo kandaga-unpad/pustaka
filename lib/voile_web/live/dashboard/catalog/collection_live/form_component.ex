@@ -13,37 +13,37 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       <%= if msg = @flash["error"] do %>
         <.flash kind={:error} class="mb-4">{msg}</.flash>
       <% end %>
-
+      
       <%= if msg = @flash["info"] do %>
         <.flash kind={:info} class="mb-4">{msg}</.flash>
       <% end %>
-
+      
       <.modal id="col_field_delete_confirmation">
         <div class="text-center">
           <h5>Are you sure want to delete this field ?</h5>
-
+          
           <p class="text-sm text-gray-500">
             This action cannot be undone. Please confirm your action.
           </p>
-
+          
           <p class="text-sm italic font-semibold text-red-500">You will delete this property :</p>
-
+          
           <div class="my-4">
             <h6 class="text-brand">
               {(@chosen_collection_field && @chosen_collection_field.label) || ""}
             </h6>
-
+            
             <p class="text-xs">with value :</p>
-
+            
             <h5 class="font-bold text-gray-500 dark:text-white">
               {(@chosen_collection_field && @chosen_collection_field.value) || ""}
             </h5>
-
+            
             <p class="text-xs">from this collection :</p>
-
+            
             <h6 class="text-orange-500">{@collection.title}</h6>
           </div>
-
+          
           <div class="flex items-center w-full my-5 gap-5">
             <.button
               class="w-full cancel-btn"
@@ -65,26 +65,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </div>
         </div>
       </.modal>
-
+      
       <.modal id="item_delete_confirmation">
         <div class="text-center">
           <h5>Are you sure want to delete this item data?</h5>
-
+          
           <p class="text-sm text-gray-500">
             This action cannot be undone. Please confirm your action and make sure this item is not in use.
           </p>
-
+          
           <div class="my-4">
             <p class="text-xs">Item Code :</p>
-
+            
             <h6 class="text-brand">{(@chosen_item_field && @chosen_item_field.item_code) || ""}</h6>
           </div>
-
+          
           <p class="text-sm">will be deleted forever from this collection :</p>
-
+          
           <h6 class="text-orange-500">{@collection.title}</h6>
         </div>
-
+        
         <div class="flex items-center w-full my-5 gap-5">
           <.button
             class="w-full cancel-btn"
@@ -103,16 +103,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </.button>
         </div>
       </.modal>
-
+      
       <.header>
         {@title}
         <:subtitle>Use this form to manage collection records in your database.</:subtitle>
       </.header>
-
+      
       <div class="text-xs italic">
         {if @action == :edit, do: "Edit Collection", else: "New Collection"} - Step {@step} of 3
       </div>
-
+      
       <div class="mb-12">
         <%= case @step do %>
           <% 1 -> %>
@@ -127,7 +127,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             </p>
         <% end %>
       </div>
-
+      
       <.form
         for={@form}
         id="collection-form-1"
@@ -179,7 +179,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       phx-value-title={collection.title}
                     >
                       <div class="font-medium text-gray-900">{collection.title}</div>
-
+                      
                       <div class="text-sm text-gray-500">
                         by {(collection.mst_creator && collection.mst_creator.creator_name) ||
                           "Unknown"}
@@ -188,7 +188,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   <% end %>
                 </div>
               <% end %>
-
+              
               <%= if @form.params["parent_id"] && @form.params["parent_id"] != "" do %>
                 <div class="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
                   <span class="text-sm text-blue-800">
@@ -206,7 +206,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% end %>
             </div>
           </div>
-
+          
           <.input
             field={@form[:collection_type]}
             label="Collection Type"
@@ -228,17 +228,50 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt="Select Collection Location"
             required_value={true}
           /> <.input field={@form[:title]} type="text" label="Title" required_value={true} />
-          <.input
-            type="text"
-            name="creator"
-            value={
-              (@collection.mst_creator && @collection.mst_creator.creator_name) || @creator_input
-            }
-            label="Creator"
-            disabled={@creator_input != "" and @collection.creator_id !== nil}
-            required_value={true}
-            autocomplete="off"
-          />
+          <div class="relative">
+            <.input
+              type="text"
+              name="creator"
+              value={
+                (@collection.mst_creator && @collection.mst_creator.creator_name) || @creator_input
+              }
+              label="Creator"
+              disabled={@creator_input != "" and @collection.creator_id !== nil}
+              required_value={true}
+              autocomplete="off"
+              phx-keyup="search_creator"
+              phx-debounce="300"
+              phx-target={@myself}
+            />
+            <%= if @creator_searching do %>
+              <div
+                class="absolute right-3 top-10 opacity-0 animate-fade-in"
+                aria-label="Searching creators"
+                role="status"
+              >
+                <svg
+                  class="animate-spin h-5 w-5 text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                  </path>
+                </svg>
+              </div>
+            <% end %>
+          </div>
+          
           <%= if @creator_input != "" and @creator_suggestions != [] and @form[:creator_id] != nil and @collection.creator_id == nil do %>
             <ul class="absolute z-10 bg-white dark:bg-gray-800 border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
               <%= for creator <- @creator_suggestions do %>
@@ -253,7 +286,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% end %>
             </ul>
           <% end %>
-
+          
           <%= if @creator_input != nil and @creator_suggestions == [] and @collection.creator_id == nil do %>
             <.button
               type="button"
@@ -267,13 +300,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <p class="text-red-500 text-sm mt-2">Please choose Creator or click Create!</p>
             <% end %>
           <% end %>
-
+          
           <%= if @collection.creator_id != nil do %>
             <.button type="button" phx-click="delete_creator" phx-target={@myself} class="cancel-btn">
               Delete Author
             </.button>
           <% end %>
-
+          
           <.input
             field={@form[:description]}
             type="textarea"
@@ -339,15 +372,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       </path>
                     </svg>
                   </div>
-
+                  
                   <div>
                     <p class="text-gray-900 dark:text-gray-300 font-medium">
                       Click to upload or drag and drop
                     </p>
-
+                    
                     <p class="text-gray-500 text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>
-
+                  
                   <div class="mt-4">
                     <.live_file_input upload={@uploads.thumbnail} class="hidden" />
                     <label
@@ -369,7 +402,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 </div>
               </div>
             <% end %>
-
+            
             <%= for entry <- @uploads.thumbnail.entries do %>
               <div class="space-y-4">
                 <div class="flex items-center space-x-3">
@@ -389,10 +422,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       </path>
                     </svg>
                   </div>
-
+                  
                   <div class="flex-1">
                     <p class="text-gray-700 font-medium text-sm">{entry.client_name}</p>
-
+                    
                     <div class="mt-2 bg-gray-200 rounded-full h-2">
                       <div
                         class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
@@ -400,13 +433,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       >
                       </div>
                     </div>
-
+                    
                     <p class="text-gray-500 text-xs mt-1">Uploading... {entry.progress}%</p>
                   </div>
                 </div>
               </div>
             <% end %>
-
+            
             <%= if @form[:thumbnail].value != nil and @form[:thumbnail].value != "" do %>
               <div class="space-y-4">
                 <div class="relative group w-full max-w-96">
@@ -418,7 +451,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 rounded-xl transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                   </div>
                 </div>
-
+                
                 <div class="flex items-center justify-between w-full max-w-96">
                   <div class="flex items-center space-x-2 text-green-600">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -428,10 +461,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         clip-rule="evenodd"
                       >
                       </path>
-                    </svg>
-                     <span class="text-sm font-medium">Thumbnail uploaded</span>
+                    </svg> <span class="text-sm font-medium">Thumbnail uploaded</span>
                   </div>
-
+                  
                   <.button
                     type="button"
                     phx-click="delete_thumbnail"
@@ -461,17 +493,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% end %>
           </div>
         <% end %>
-
+        
         <%= if @step == 2 do %>
           <div class="flex items-start gap-5">
             <div class="sticky top-0 w-full h-full max-w-72">
               <h5>Collection Properties</h5>
-
+              
               <div class="w-full h-full max-h-screen border border-1 border-violet-100 overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
                 <p class="text-xs italic mb-4 max-w-48">
                   You can click each category below and pick any necessary property for your collection.
                 </p>
-
+                
                 <div>
                   <.input
                     type="text"
@@ -484,7 +516,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     phx-debounce="300"
                   />
                 </div>
-
+                
                 <%= if Enum.empty?(@filtered_properties) do %>
                   <p class="text-red-500 text-sm mt-2">No property found.</p>
                 <% else %>
@@ -506,7 +538,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           (<span class="text-brand">{length(props)}</span>)
                         <% end %>
                       </h6>
-
+                      
                       <div
                         id={id |> String.downcase() |> String.replace(" ", "-")}
                         class={
@@ -536,7 +568,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 <% end %>
               </div>
             </div>
-
+            
             <div class="w-full">
               <%= if @form[:collection_fields] == nil or Enum.empty?(@form[:collection_fields].value || []) do %>
                 <p class="text-red-500 text-sm mt-2">No collection fields added yet.</p>
@@ -546,13 +578,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     <h6 class="bg-violet-500 px-4 py-1 rounded-t-xl text-white">
                       {col_field[:label].value}
                     </h6>
-
+                    
                     <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
                       <p class="text-gray-500 dark:text-white italic pb-4">
                         {col_field[:information].value ||
                           col_field.data.metadata_properties.information}
                       </p>
-
+                      
                       <input
                         type="hidden"
                         name={col_field[:label].name}
@@ -601,7 +633,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           />
                         </div>
                       </div>
-
+                      
                       <div class="w-full flex items-center gap-3 mt-2">
                         <%= if col_field[:id].value != nil do %>
                           <.button
@@ -635,11 +667,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 3 do %>
           <div class="flex items-center justify-between mb-5">
             <h5>The Items Data</h5>
-
+            
             <div class="flex items-center gap-5">
               <.button
                 type="button"
@@ -651,7 +683,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               </.button>
             </div>
           </div>
-
+          
           <div class="">
             <%= if @form[:items] == nil or Enum.empty?(@form[:items].value || []) do %>
               <p class="text-red-500 text-sm mt-2">
@@ -687,7 +719,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         </.button>
                       <% end %>
                     </div>
-
+                    
                     <.input
                       field={item_field[:item_code]}
                       type="text"
@@ -756,7 +788,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% end %>
           </div>
         <% end %>
-
+        
         <div class="mt-12 w-full flex justify-between items-center gap-5">
           <%= if @step > 1 do %>
             <.button
@@ -768,7 +800,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               &leftarrow; Back
             </.button>
           <% end %>
-
+          
           <%= if @step == 3 do %>
             <.button type="submit" phx-disable-with="Saving..." class="success-btn w-full">
               Save
@@ -908,10 +940,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         %{"collection" => collection_params, "creator" => creator_input},
         socket
       ) do
-    suggestions =
-      Enum.filter(socket.assigns.creator_list, fn creator ->
-        String.contains?(String.downcase(creator.creator_name), String.downcase(creator_input))
-      end)
+    # Keep validate focused on form validation only; suggestions are fetched via `search_creator`
+    suggestions = socket.assigns.creator_suggestions || []
 
     current_params = socket.assigns.form.params || %{}
     updated_params = Map.merge(current_params, collection_params)
@@ -944,6 +974,30 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
   def handle_event("validate", %{"property_search" => _value}, socket) do
     # Update assigns or do something with `value`
+    {:noreply, socket}
+  end
+
+  def handle_event("search_creator", %{"value" => query}, socket) do
+    # Mark searching true so UI can show a loading indicator
+    socket = assign(socket, :creator_searching, true)
+
+    suggestions =
+      try do
+        Voile.Schema.Master.search_mst_creator_names(query, 10)
+      rescue
+        _ ->
+          # Fallback to in-memory filtering
+          Enum.filter(socket.assigns.creator_list || [], fn creator ->
+            String.contains?(String.downcase(creator.creator_name), String.downcase(query))
+          end)
+      end
+
+    socket =
+      socket
+      |> assign(:creator_searching, false)
+      |> assign(:creator_input, query)
+      |> assign(:creator_suggestions, suggestions)
+
     {:noreply, socket}
   end
 
