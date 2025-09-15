@@ -20,6 +20,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:collection_type, collection_type)
       |> assign(:collection_properties, collection_properties)
       |> assign(:creator, creator)
+      |> assign(:creator_searching, false)
       |> assign(:node_location, node_location)
       |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
@@ -31,8 +32,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     collection = Catalog.get_collection!(id)
-
-    dbg(collection.collection_fields)
 
     socket =
       socket

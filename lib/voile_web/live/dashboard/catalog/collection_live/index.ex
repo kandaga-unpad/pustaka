@@ -9,6 +9,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   alias Voile.Schema.System
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents
+  import VoileWeb.Utils.StringHelper, only: [trim_text: 2]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -30,6 +31,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:tree_collections, tree_collections)
       # "list" or "tree"
       |> assign(:view_mode, "list")
+      # track whether creator search UI is active (used by form_component)
+      |> assign(:creator_searching, false)
       |> assign(:collection_type, collection_type)
       |> assign(:collection_properties, collection_properties)
       |> assign(:creator, creator)

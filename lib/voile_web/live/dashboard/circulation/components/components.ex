@@ -172,21 +172,21 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
 
   def quick_actions(assigns) do
     ~H"""
-    <div class="bg-white shadow rounded-lg p-6">
-      <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+    <div class="bg-white dark:bg-gray-700 shadow rounded-lg p-6">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Quick Actions</h3>
        {can_access?(@current_user, "circulation.transactions.checkout")}
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <%= if can_access?(@current_user, "circulation.transactions.checkout") do %>
           <.link
             navigate={~p"/manage/circulation/transactions/checkout"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-gray-100"
           >
             Quick Checkout
           </.link>
         <% else %>
           <button
             disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
           >
             Quick Checkout
           </button>
@@ -195,14 +195,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         <%= if can_access?(@current_user, "circulation.transactions") do %>
           <.link
             navigate={~p"/manage/circulation/transactions"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
           >
             Quick Return
           </.link>
         <% else %>
           <button
             disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
           >
             Quick Return
           </button>
@@ -211,14 +211,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         <%= if can_access?(@current_user, "settings.users") do %>
           <.link
             navigate={~p"/manage/settings/users"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
           >
             Member Lookup
           </.link>
         <% else %>
           <button
             disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
           >
             Member Lookup
           </button>
@@ -226,7 +226,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         
         <.link
           navigate={~p"/search?type=items"}
-          class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+          class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
         >
           Item Search
         </.link>
@@ -252,11 +252,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
           <%= if @root_path do %>
-            <.link navigate={@root_path} class="text-gray-700 hover:text-gray-900">
+            <.link
+              navigate={@root_path}
+              class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex items-center"
+            >
               <.icon name="hero-home" class="w-4 h-4 mr-2" /> {@root_label}
             </.link>
           <% else %>
-            <div class="text-gray-700">
+            <div class="text-gray-700 dark:text-gray-300 flex items-center">
               <.icon name="hero-home" class="w-4 h-4 mr-2" /> {@root_label}
             </div>
           <% end %>
@@ -267,11 +270,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
             <div class="flex items-center">
               <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
               <%= if @section_path do %>
-                <.link navigate={@section_path} class="ml-1 text-gray-700 hover:text-gray-900">
+                <.link
+                  navigate={@section_path}
+                  class="ml-1 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
                   {@section_label}
                 </.link>
               <% else %>
-                <span class="ml-1 text-gray-500">{@section_label}</span>
+                <span class="ml-1 text-gray-500 dark:text-gray-300">{@section_label}</span>
               <% end %>
             </div>
           </li>
@@ -279,14 +285,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
           <li aria-current="page">
             <div class="flex items-center">
               <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
-              <span class="ml-1 text-gray-500">{@current_label}</span>
+              <span class="ml-1 text-gray-500 dark:text-gray-300">{@current_label}</span>
             </div>
           </li>
         <% else %>
           <li aria-current="page">
             <div class="flex items-center">
               <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500" />
-              <span class="ml-1 text-gray-500">{@current_label}</span>
+              <span class="ml-1 text-gray-500 dark:text-gray-300">{@current_label}</span>
             </div>
           </li>
         <% end %>

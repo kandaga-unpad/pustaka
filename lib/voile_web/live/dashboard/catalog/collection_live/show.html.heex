@@ -25,7 +25,9 @@
             class="object-cover w-96 h-96 border border-1 border-gray-50"
           />
         <% else %>
-          <p>No thumbnail available</p>
+          <div class="w-full h-full flex items-center justify-center border-1 border rounded border-violet-500 dark:border-gray-200">
+            <p>No thumbnail available</p>
+          </div>
         <% end %>
       </div>
 
@@ -41,13 +43,17 @@
         <:item title="Status">{@collection.status || "-"}</:item>
 
         <:item title="Thumbnail">
-          <.link
-            navigate={@collection.thumbnail}
-            target="_blank"
-            class="text-violet-600 hover:underline"
-          >
-            View
-          </.link>
+          <%= if @collection.thumbnail do %>
+            <.link
+              navigate={@collection.thumbnail}
+              target="_blank"
+              class="text-violet-600 hover:underline"
+            >
+              View
+            </.link>
+          <% else %>
+            -
+          <% end %>
         </:item>
 
         <:item title="Access Level">{@collection.access_level || "-"}</:item>

@@ -893,6 +893,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:creator_input, nil)
      |> assign(:creator_list, assigns.creator_list)
      |> assign(:creator_suggestions, [])
+     |> assign(:creator_searching, false)
      |> assign(:step2_params, nil)
      |> assign(:step3_params, nil)
      |> assign(:type_options, type_options)

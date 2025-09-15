@@ -10,7 +10,9 @@
           <.button
             phx-click="toggle_view_mode"
             class={
-              if @view_mode == "tree", do: "btn bg-blue-500 text-white", else: "btn bg-gray-200"
+              if @view_mode == "tree",
+                do: "btn bg-blue-500 text-white",
+                else: "btn bg-gray-200 dark:bg-gray-600"
             }
           >
             <%= if @view_mode == "tree" do %>
@@ -76,7 +78,9 @@
         
         <:col :let={{_id, collection}} label="Title">
           <div>
-            <div class="font-medium">{collection.title || "-"}</div>
+            <div class="font-medium" title={collection.title || "-"}>
+              {trim_text(collection.title || "-", 40)}
+            </div>
             
             <%= if collection.collection_type do %>
               <div class="text-xs text-gray-500 capitalize">{collection.collection_type}</div>
