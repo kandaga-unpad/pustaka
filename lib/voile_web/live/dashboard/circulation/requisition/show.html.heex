@@ -64,7 +64,7 @@
     <!-- Main Requisition Details -->
     <div class="lg:col-span-2">
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Requisition Information</h3>
         </div>
         
@@ -165,7 +165,7 @@
             <% end %>
           </div>
           
-          <div class="pt-4 border-t border-gray-200">
+          <div class="pt-4 border-t border-voile-light">
             <dt class="text-sm font-medium text-gray-500">Request Description</dt>
             
             <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
@@ -174,7 +174,7 @@
           </div>
           
           <%= if @requisition.justification do %>
-            <div class="pt-4 border-t border-gray-200">
+            <div class="pt-4 border-t border-voile-light">
               <dt class="text-sm font-medium text-gray-500">Justification</dt>
               
               <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
@@ -199,7 +199,7 @@
     <div class="space-y-6">
       <!-- Requesting Member -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Requesting Member</h3>
         </div>
         
@@ -229,7 +229,7 @@
               </div>
             </div>
             <!-- Member Stats -->
-            <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="mt-4 pt-4 border-t border-voile-light">
               <div class="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div class="text-2xl font-bold text-gray-900">12</div>
@@ -252,7 +252,7 @@
       <!-- Assigned Staff -->
       <%= if @requisition.assigned_librarian do %>
         <div class="bg-white shadow rounded-lg">
-          <div class="px-6 py-4 border-b border-gray-200">
+          <div class="px-6 py-4 border-b border-voile-light">
             <h3 class="text-lg font-medium text-gray-900">Assigned Staff</h3>
           </div>
           
@@ -280,7 +280,7 @@
       <!-- Processing Librarian -->
       <%= if @requisition.processing_librarian do %>
         <div class="bg-white shadow rounded-lg">
-          <div class="px-6 py-4 border-b border-gray-200">
+          <div class="px-6 py-4 border-b border-voile-light">
             <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
           </div>
           
@@ -307,7 +307,7 @@
       <% end %>
       <!-- Request Statistics -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Request Stats</h3>
         </div>
         

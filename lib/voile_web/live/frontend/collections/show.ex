@@ -74,7 +74,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
+             <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
           </div>
         <% else %>
           <%= if @collection do %>
@@ -97,7 +97,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                 <!-- Main Content -->
                 <div class="lg:col-span-8">
                   <!-- Collection Header -->
-                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
                     <div class="flex flex-col sm:flex-row gap-6">
                       <!-- Thumbnail -->
                       <div class="sm:w-48 flex-shrink-0">
@@ -121,7 +121,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                           {@collection.title}
                         </h1>
-
+                        
                         <%= if @collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                             {@collection.description}
@@ -140,7 +140,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          
                           <%= if @collection.collection_type do %>
                             <div class="flex items-center">
                               <.icon
@@ -152,7 +152,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          
                           <div class="flex items-center">
                             <.icon
                               name="hero-document-duplicate-solid"
@@ -162,7 +162,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {length(@collection.items || [])}
                             </span>
                           </div>
-
+                          
                           <%= if @collection.node do %>
                             <div class="flex items-center">
                               <.icon
@@ -174,7 +174,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          
                           <div class="flex items-center">
                             <.icon
                               name="hero-calendar-solid"
@@ -184,7 +184,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
                             </span>
                           </div>
-
+                          
                           <div class="flex items-center">
                             <.icon
                               name="hero-eye-solid"
@@ -199,8 +199,8 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     </div>
                   </div>
                   <!-- Items Section -->
-                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark">
+                    <div class="px-6 py-4 border-b border-voile-light dark:border-voile-dark">
                       <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <.icon name="hero-document-duplicate-solid" class="w-5 h-5 mr-2" />
                         Collection Items
@@ -209,7 +209,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         </span>
                       </h2>
                     </div>
-
+                    
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                       <div
                         :for={{id, item} <- @streams.items}
@@ -221,10 +221,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     </div>
                     <!-- Load More Button -->
                     <%= if @items_page < @total_items_pages do %>
-                      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 text-center">
+                      <div class="px-6 py-4 border-t border-voile-light dark:border-voile-dark text-center">
                         <button
                           phx-click="load_more_items"
-                          class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          class="inline-flex items-center px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm text-sm font-medium text-voile dark:text-voile-surface bg-white dark:bg-voile-neutral-dark hover:bg-voile-surface dark:hover:bg-voile-surface-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           Load More Items
                         </button>
@@ -240,7 +240,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
                           No items available
                         </h3>
-
+                        
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           This collection currently has no available items.
                         </p>
@@ -252,11 +252,11 @@ defmodule VoileWeb.Frontend.Collections.Show do
                 <div class="mt-8 lg:mt-0 lg:col-span-4">
                   <div class="sticky top-8 space-y-6">
                     <!-- Quick Actions -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Quick Actions
                       </h3>
-
+                      
                       <div class="space-y-3">
                         <.link
                           navigate={~p"/search?q=#{@collection.title}&type=items"}
@@ -275,11 +275,11 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       </div>
                     </div>
                     <!-- Collection Stats -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Statistics
                       </h3>
-
+                      
                       <div class="space-y-4">
                         <.stat_item
                           icon="document-duplicate"
@@ -300,11 +300,11 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     </div>
                     <!-- Related Collections (if any) -->
                     <%= if @collection.mst_creator do %>
-                      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                           More by this Creator
                         </h3>
-
+                        
                         <.link
                           navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
                           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

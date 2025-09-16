@@ -40,9 +40,6 @@ defmodule VoileWeb.Router do
       live "/about", PageLive.About, :index
       live "/search/dashboard", SearchDashboardLive, :index
 
-      # User Profiles and Dashboard for Members
-      live "/atrium", Frontend.Atrium.Index, :index
-
       # LiveView search (optional alternative)
       live "/search/live", SearchLive, :index
 
@@ -95,6 +92,20 @@ defmodule VoileWeb.Router do
     post "/users/log_in", UserSessionController, :create
     get "/users/login/:token", MagicLinkController, :login
     delete "/users/log_out", UserSessionController, :delete
+  end
+
+  scope "/", VoileWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_and_verified_member,
+      on_mount: [
+        {VoileWeb.UserAuth, :require_authenticated_and_verified_member},
+        {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
+        {VoileWeb.UserAuth, :mount_current_scope}
+      ] do
+      # Frontend member routes that require authentication
+      live "/atrium", Frontend.Atrium.Index, :index
+    end
   end
 
   scope "/", VoileWeb do

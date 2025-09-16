@@ -6,28 +6,50 @@ defmodule VoileWeb.UserResetPasswordLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header>Reset Password</.header>
-
-        <.form
-          for={@form}
-          id="reset_password_form"
-          phx-submit="reset_password"
-          phx-change="validate"
-        >
-          <.input field={@form[:password]} type="password" label="New password" required />
-          <.input
-            field={@form[:password_confirmation]}
-            type="password"
-            label="Confirm new password"
-            required
-          /> <.button phx-disable-with="Resetting..." class="w-full">Reset Password</.button>
-        </.form>
-
-        <p class="text-center text-sm mt-4">
-          <.link href={~p"/register"}>Register</.link>
-          | <.link href={~p"/users/log_in"}>Log in</.link>
-        </p>
+      <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="w-full max-w-md bg-white/80 dark:bg-gray-800/70 backdrop-blur rounded-lg shadow-md p-6">
+          <div class="mb-4 text-center">
+            <.header>Reset your password</.header>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+              Enter a new password below. Make it long and unique.
+            </p>
+          </div>
+          
+          <.form
+            for={@form}
+            id="reset_password_form"
+            phx-submit="reset_password"
+            phx-change="validate"
+            class="space-y-4"
+          >
+            <.input
+              field={@form[:password]}
+              type="password"
+              label="New password"
+              required
+              class="input-lg"
+            />
+            <.input
+              field={@form[:password_confirmation]}
+              type="password"
+              label="Confirm new password"
+              required
+              class="input-lg"
+            />
+            <div class="pt-2">
+              <.button phx-disable-with="Resetting..." class="w-full primary-btn">
+                Reset Password
+              </.button>
+            </div>
+          </.form>
+          
+          <div class="mt-5 text-center text-sm text-gray-600 dark:text-gray-300">
+            <.link href={~p"/register"} class="underline mr-2">Register</.link>
+            <span class="mx-1">·</span>
+            <.link href={~p"/users/log_in"} class="underline ml-2">Log in</.link>
+          </div>
+        </div>
       </div>
     </Layouts.app>
     """

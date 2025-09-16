@@ -9,6 +9,7 @@ defmodule VoileWeb.Layouts do
   `use VoileWeb, :live_view`.
   """
   use VoileWeb, :html
+  alias Phoenix.LiveView.JS
 
   embed_templates "layouts/*"
 
@@ -38,12 +39,12 @@ defmodule VoileWeb.Layouts do
     assigns = assign_nav_items(assigns)
 
     ~H"""
-    <div class="bg-violet-200 dark:bg-gray-500 px-3 py-1 text-sm font-semibold">
+    <div class="bg-violet-200 dark:bg-violet-400 px-3 py-1 text-sm font-semibold">
       <p>If you need information about [Redacted]</p>
     </div>
 
     <header
-      class="px-4 sm:px-6 lg:px-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm z-10 w-full"
+      class="px-4 sm:px-6 lg:px-8 bg-voile-surface/60 dark:bg-gray-700/60 backdrop-blur-sm z-10 w-full"
       id="navigationHeader"
     >
       <div class="flex items-center justify-between py-3 text-sm">
@@ -67,7 +68,27 @@ defmodule VoileWeb.Layouts do
         </nav>
         
         <div>
-          <div class="flex lg:hidden"><.button><.icon name="hero-bars-3" /></.button></div>
+          <div class="flex lg:hidden">
+            <.button
+              phx-click={
+                JS.toggle(
+                  to: "#mobileNav [data-mobile-backdrop]",
+                  in: "opacity-100 pointer-events-auto",
+                  out: "opacity-0 pointer-events-none",
+                  display: "block"
+                )
+                |> JS.toggle(
+                  to: "#mobileNav [data-mobile-panel]",
+                  in: "translate-x-0",
+                  out: "-translate-x-full",
+                  display: "block"
+                )
+              }
+              id="mobile-nav-toggle"
+            >
+              <.icon name="hero-bars-3" />
+            </.button>
+          </div>
           
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
@@ -90,31 +111,60 @@ defmodule VoileWeb.Layouts do
                     >
                       <img
                         src={@current_scope.user.user_image || "/images/default_avatar.jpg"}
-                        class="w-8 h-8 rounded-full border-2 border-violet-600"
+                        class="w-8 h-8 rounded-full border-2 border-voile-primary"
                         alt="User avatar"
+                        referrerpolicy="no-referrer"
                       />
                     </button>
                   </div>
                   
                   <div
                     data-position-panel
-                    class="sticky hidden bg-gray-200 max-w-sm right-8 p-4 rounded-md shadow-md text-right"
+                    class="sticky hidden bg-voile-light dark:bg-voile-dark max-w-sm right-8 p-4 mt-1 rounded-md shadow-xl text-right"
                   >
-                    <p class="text-sm">Signed in as <strong>{@current_scope.user.email}</strong></p>
-                    
-                    <p><.link navigate="/settings">Settings</.link></p>
-                    
-                    <p>
-                      Departures adalah film drama Jepang tahun 2008 yang disutradarai oleh Yōjirō Takita dan dibintangi oleh Masahiro Motoki, Ryōko Hirosue, serta Tsutomu Yamazaki. Film ini bercerita mengenai seorang pria muda yang kembali ke kampung halamannya setelah gagal berkarir sebagai pemain selo dan akhirnya tersandung ke dalam pekerjaan sebagai nōkanshi—pengurus ritual pemakaman tradisional Jepang.
+                    <p class="text-sm">
+                      Signed in as <strong>{@current_scope.user.fullname}</strong>
                     </p>
                     
-                    <.link
-                      navigate="/logout"
-                      method="delete"
-                      class="text-red-600 hover:text-red-800 font-semibold"
-                    >
-                      Logout
-                    </.link>
+                    <div class="mt-2 flex w-full gap-2 text-xs">
+                      <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                        <.link navigate="/manage" class="primary-btn w-full text-center">
+                          <span>
+                            <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
+                          </span> <span>Dashboard</span>
+                        </.link>
+                        <.link
+                          href="/users/log_out"
+                          method="delete"
+                          class="cancel-btn w-full text-center"
+                        >
+                          <span>
+                            <.icon
+                              name="hero-arrow-right-on-rectangle"
+                              class="size-5 inline-block mr-1"
+                            />
+                          </span> <span>Logout</span>
+                        </.link>
+                      <% else %>
+                        <.link navigate="/atrium" class="primary-btn w-full text-center">
+                          <span>
+                            <.icon name="hero-cog-6-tooth" class="size-5 inline-block mr-1" />
+                          </span> <span>Settings</span>
+                        </.link>
+                        <.link
+                          href="/users/log_out"
+                          method="delete"
+                          class="cancel-btn w-full text-center"
+                        >
+                          <span>
+                            <.icon
+                              name="hero-arrow-right-on-rectangle"
+                              class="size-5 inline-block mr-1"
+                            />
+                          </span> <span>Logout</span>
+                        </.link>
+                      <% end %>
+                    </div>
                   </div>
                 </div>
               <% else %>
@@ -125,11 +175,14 @@ defmodule VoileWeb.Layouts do
         </div>
       </div>
     </header>
-
+    <!-- Mobile navigation component -->
+    <.mobile_nav id="mobileNav" current_scope={@current_scope} />
     <main class="min-h-screen w-full h-full">{render_slot(@inner_block)}</main>
 
     <footer>
-      <div class="bg-zinc-700 py-3 text-center text-violet-200">&copy; Voile {get_year()}</div>
+      <div class="bg-zinc-700 dark:bg-surface-dark py-3 text-center text-white">
+        &copy; Voile - Curatorian Developer | 2024 - {get_year()}
+      </div>
     </footer>
      <.flash_group flash={@flash} />
     """
@@ -185,5 +238,118 @@ defmodule VoileWeb.Layouts do
     ]
 
     assign(assigns, :nav_items, nav_items)
+  end
+
+  # Mobile nav function component inlined per request
+  attr :id, :string, required: true
+  attr :current_scope, :map, default: nil
+
+  def mobile_nav(assigns) do
+    assigns = assign_new(assigns, :nav_items, fn -> mobile_nav_items() end)
+
+    ~H"""
+    <div id={@id} phx-hook="MobileNav" class="lg:hidden">
+      <!-- backdrop -->
+      <div
+        phx-click={
+          JS.toggle(
+            to: "#mobileNav [data-mobile-backdrop]",
+            in: "block opacity-100 pointer-events-auto",
+            out: "hidden opacity-0 pointer-events-none",
+            display: "block"
+          )
+          |> JS.toggle(
+            to: "#mobileNav [data-mobile-panel]",
+            in: "block translate-x-0",
+            out: "hidden -translate-x-full",
+            display: "block"
+          )
+          |> JS.dispatch("voile:mobile-nav-toggled")
+        }
+        data-mobile-backdrop
+        class="hidden fixed inset-0 bg-black/40 opacity-0 pointer-events-none transition-opacity duration-200 z-50"
+        aria-hidden="true"
+      />
+      <!-- slide-in panel -->
+      <aside
+        data-mobile-panel
+        class="hidden fixed inset-y-0 left-0 w-72 max-w-full transform -translate-x-full transition-transform duration-200 bg-white dark:bg-gray-800 shadow-lg z-50"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="p-4 border-b border-base-200 dark:border-gray-700 flex items-center justify-between">
+          <a href="/" class="flex items-center gap-2">
+            <img src={~p"/images/v.png"} width="28" /> <span class="font-semibold">Voile</span>
+          </a>
+          <button
+            phx-click={
+              JS.toggle(
+                to: "#mobileNav [data-mobile-backdrop]",
+                in: "block opacity-100 pointer-events-auto",
+                out: "hidden opacity-0 pointer-events-none",
+                display: "block"
+              )
+              |> JS.toggle(
+                to: "#mobileNav [data-mobile-panel]",
+                in: "block translate-x-0",
+                out: "hidden -translate-x-full",
+                display: "block"
+              )
+              |> JS.dispatch("voile:mobile-nav-toggled")
+            }
+            aria-label="Close"
+            class="p-2"
+          >
+            <.icon name="hero-x-mark" />
+          </button>
+        </div>
+        
+        <nav class="p-4">
+          <ul class="flex flex-col gap-3">
+            <%= for item <- @nav_items do %>
+              <li>
+                <%= if item.href do %>
+                  <.link href={item.href} class="block py-2 px-3 rounded hover:bg-base-200">
+                    {item.label}
+                  </.link>
+                <% else %>
+                  <span class="block py-2 px-3">{item.label}</span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+          
+          <div class="mt-6">
+            <%= if @current_scope do %>
+              <p class="text-sm mb-2">Signed in as <strong>{@current_scope.user.fullname}</strong></p>
+              
+              <div class="flex flex-col gap-2">
+                <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                  <.link navigate="/manage" class="primary-btn w-full text-center">Dashboard</.link>
+                <% else %>
+                  <.link navigate="/atrium" class="primary-btn w-full text-center">Atrium</.link>
+                <% end %>
+                
+                <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
+                  Logout
+                </.link>
+              </div>
+            <% else %>
+              <.link navigate="/login" class="default-btn w-full">Masuk</.link>
+            <% end %>
+          </div>
+        </nav>
+      </aside>
+    </div>
+    """
+  end
+
+  defp mobile_nav_items do
+    [
+      %{label: "Beranda", href: "/"},
+      %{label: "Tentang", href: "/about"},
+      %{label: "Koleksi", href: "/collections"},
+      %{label: "Eksemplar", href: "/items"}
+    ]
   end
 end

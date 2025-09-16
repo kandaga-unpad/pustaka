@@ -6,63 +6,84 @@ defmodule VoileWeb.UserOnboardingLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header>
-          Welcome to Voile!
-          <:subtitle>Complete your account setup by setting a new password</:subtitle>
-        </.header>
-
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div class="flex">
-            <.icon name="hero-information-circle" class="h-5 w-5 text-blue-400" />
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-blue-800">Account Migration Complete</h3>
-
-              <p class="mt-2 text-sm text-blue-700">
-                Your account has been successfully migrated from the previous system.
-                Please set a new password to access your account and all your previous data.
+      <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div class="flex items-center justify-center">
+            <div class="max-w-sm text-center">
+              <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
+              <h3 class="mt-6 text-lg font-semibold text-gray-900">You're almost done</h3>
+              
+              <p class="mt-2 text-sm text-gray-600">
+                Set a new password to finalize your account migration and access all of your data.
               </p>
             </div>
           </div>
-        </div>
-
-        <.form
-          for={@form}
-          id="onboarding_form"
-          phx-submit="complete_onboarding"
-          phx-change="validate"
-        >
-          <.input
-            field={@form[:password]}
-            type="password"
-            label="New password"
-            required
-            autocomplete="new-password"
-          />
-          <.input
-            field={@form[:password_confirmation]}
-            type="password"
-            label="Confirm new password"
-            required
-            autocomplete="new-password"
-          />
-          <.button phx-disable-with="Setting up your account..." class="w-full">
-            Complete Account Setup
-          </.button>
-        </.form>
-
-        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 class="text-sm font-medium text-gray-900 mb-2">What happens next?</h4>
-
-          <ul class="text-sm text-gray-600 space-y-1">
-            <li>• Your password will be securely updated</li>
-
-            <li>• Your account will be confirmed and activated</li>
-
-            <li>• You'll be logged in automatically</li>
-
-            <li>• All your previous data will be available</li>
-          </ul>
+          
+          <div class="bg-white shadow rounded-lg border border-gray-100 p-6">
+            <.header>
+              Welcome to Voile!
+              <:subtitle>
+                <span class="text-sm text-gray-500">
+                  Complete your account setup by setting a new password
+                </span>
+              </:subtitle>
+            </.header>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start">
+                <.icon name="hero-information-circle" class="h-5 w-5 text-blue-400 mt-1" />
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-blue-800">Account Migration Complete</h3>
+                  
+                  <p class="mt-2 text-sm text-blue-700">
+                    Your account has been successfully migrated from the previous system.
+                    Please set a new password to access your account and all your previous data.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <.form
+              for={@form}
+              id="onboarding_form"
+              phx-submit="complete_onboarding"
+              phx-change="validate"
+            >
+              <div class="space-y-4">
+                <.input
+                  field={@form[:password]}
+                  type="password"
+                  label="New password"
+                  required
+                  autocomplete="new-password"
+                />
+                <.input
+                  field={@form[:password_confirmation]}
+                  type="password"
+                  label="Confirm new password"
+                  required
+                  autocomplete="new-password"
+                />
+                <.button phx-disable-with="Setting up your account..." class="w-full">
+                  Complete Account Setup
+                </.button>
+              </div>
+            </.form>
+            
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 class="text-sm font-medium text-gray-900 mb-2">What happens next?</h4>
+              
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Your password will be securely updated</li>
+                
+                <li>• Your account will be confirmed and activated</li>
+                
+                <li>• You'll be logged in automatically</li>
+                
+                <li>• All your previous data will be available</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </Layouts.app>

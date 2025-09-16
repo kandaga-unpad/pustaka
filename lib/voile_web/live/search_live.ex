@@ -117,14 +117,14 @@ defmodule VoileWeb.SearchLive do
     ~H"""
     <div class="max-w-6xl mx-auto p-6">
       <!-- Search Header -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="bg-voile-surface rounded-lg shadow-sm p-6 mb-6">
         <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Search Library Catalog</h1>
-
-            <p class="text-gray-600 mt-1">Find books, collections, and resources</p>
+            <h1 class="text-2xl font-bold text-voile">Search Library Catalog</h1>
+            
+            <p class="text-voile-muted mt-1">Find books, collections, and resources</p>
           </div>
-
+          
           <div class="flex gap-2">
             <.link
               patch={~p"/search/advanced"}
@@ -136,7 +136,7 @@ defmodule VoileWeb.SearchLive do
         </div>
       </div>
       <!-- Search Form -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="bg-voile-surface rounded-lg shadow-sm p-6 mb-6">
         <form phx-change="search" phx-submit="search" class="space-y-4">
           <div class="flex gap-2">
             <div class="flex-1 relative">
@@ -145,7 +145,7 @@ defmodule VoileWeb.SearchLive do
                 name="query"
                 value={@search_query}
                 placeholder="Search for books, authors, subjects..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-voile-light rounded-md focus:ring-2 focus:ring-voile-primary focus:border-transparent"
                 autocomplete="off"
                 phx-debounce="500"
               />
@@ -166,7 +166,7 @@ defmodule VoileWeb.SearchLive do
                       stroke-width="4"
                     >
                     </circle>
-
+                    
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -177,25 +177,25 @@ defmodule VoileWeb.SearchLive do
                 </div>
               <% end %>
             </div>
-
+            
             <select
               name="type"
               phx-change="change_type"
-              class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="px-4 py-2 border border-voile-light rounded-md focus:ring-2 focus:ring-voile-primary focus:border-transparent"
             >
               <option value="universal" selected={@search_type == "universal"}>All</option>
-
+              
               <option value="collections" selected={@search_type == "collections"}>
                 Collections
               </option>
-
+              
               <option value="items" selected={@search_type == "items"}>Items</option>
             </select>
             <%= if @search_query != "" do %>
               <button
                 type="button"
                 phx-click="clear_search"
-                class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
+                class="px-4 py-2 bg-voile-surface text-voile-muted rounded-md hover:bg-voile-surface/90 transition-colors"
               >
                 Clear
               </button>
@@ -207,9 +207,9 @@ defmodule VoileWeb.SearchLive do
       <%= if @show_results and not @loading do %>
         <div class="space-y-6">
           <!-- Results Summary -->
-          <div class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-voile-surface rounded-lg p-4">
             <%= if @search_type == "universal" do %>
-              <p class="text-gray-700">
+              <p class="text-voile-muted">
                 Found <strong>{@results.total_results}</strong>
                 results for "<strong><%= @search_query %></strong>"
                 ({@results.collections.total} collections, {@results.items.total} items)
@@ -259,7 +259,7 @@ defmodule VoileWeb.SearchLive do
           <% end %>
           <!-- No Results -->
           <%= if (@search_type == "universal" and @results.total_results == 0) or
-                  (@search_type != "universal" and @results.total == 0) do %>
+                    (@search_type != "universal" and @results.total == 0) do %>
             <.no_results_message query={@search_query} />
           <% end %>
         </div>
@@ -275,9 +275,9 @@ defmodule VoileWeb.SearchLive do
     assigns = assign_new(assigns, :pagination, fn -> %{} end)
 
     ~H"""
-    <div class="bg-white rounded-lg shadow-sm">
-      <div class="p-4 border-b border-gray-200">
-        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+    <div class="bg-voile-surface rounded-lg shadow-sm">
+      <div class="p-4 border-b border-voile-light">
+        <h2 class="text-lg font-semibold text-voile flex items-center">
           <%= if @type == "collections" do %>
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -299,11 +299,11 @@ defmodule VoileWeb.SearchLive do
               </path>
             </svg>
           <% end %>
-          {@title} ({@total})
+           {@title} ({@total})
         </h2>
       </div>
-
-      <div class="divide-y divide-gray-200">
+      
+      <div class="divide-y divide-voile-light">
         <%= if @type == "collections" do %>
           <%= for collection <- @results do %>
             <.collection_result_item collection={collection} search_query={@search_query} />
@@ -314,18 +314,18 @@ defmodule VoileWeb.SearchLive do
           <% end %>
         <% end %>
       </div>
-
+      
       <%= if not @show_pagination and @total > length(@results) do %>
-        <div class="p-4 bg-gray-50 text-center">
+        <div class="p-4 bg-voile-surface text-center">
           <.link
             patch={~p"/search?q=#{@search_query}&type=#{@type}"}
-            class="text-blue-600 hover:text-blue-800 font-medium"
+            class="text-voile-primary hover:text-voile-primary/90 font-medium"
           >
             View all {@total} {@type} →
           </.link>
         </div>
       <% end %>
-
+      
       <%= if @show_pagination and @pagination.total_pages > 1 do %>
         <.search_pagination pagination={@pagination} search_query={@search_query} type={@type} />
       <% end %>
@@ -345,7 +345,7 @@ defmodule VoileWeb.SearchLive do
               )}
             </.link>
           </h3>
-
+          
           <%= if @collection.description do %>
             <p class="text-gray-600 mt-1 line-clamp-2">
               {Phoenix.HTML.raw(
@@ -356,16 +356,16 @@ defmodule VoileWeb.SearchLive do
               )}
             </p>
           <% end %>
-
+          
           <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <%= if @collection.mst_creator do %>
               <span>By: {@collection.mst_creator.name}</span>
             <% end %>
-            <span>Type: {String.capitalize(@collection.collection_type || "Unknown")}</span>
+             <span>Type: {String.capitalize(@collection.collection_type || "Unknown")}</span>
             <span>Items: {length(@collection.items || [])}</span>
           </div>
         </div>
-
+        
         <div class="ml-4">
           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.SearchHTML.status_class(@collection.status)}"}>
             {String.capitalize(@collection.status || "unknown")}
@@ -388,16 +388,16 @@ defmodule VoileWeb.SearchLive do
               )}
             </.link>
           </h3>
-
+          
           <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
             <span>Code: {@item.item_code}</span>
             <%= if @item.inventory_code do %>
               <span>Inventory: {@item.inventory_code}</span>
             <% end %>
-            <span>Location: {@item.location}</span>
+             <span>Location: {@item.location}</span>
           </div>
         </div>
-
+        
         <div class="ml-4 text-right">
           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.SearchHTML.availability_class(@item.availability)}"}>
             {String.capitalize(@item.availability || "unknown")}
@@ -413,25 +413,25 @@ defmodule VoileWeb.SearchLive do
 
   defp search_pagination(assigns) do
     ~H"""
-    <div class="p-4 border-t border-gray-200 flex items-center justify-between">
-      <div class="text-sm text-gray-700">
+    <div class="p-4 border-t border-voile-light flex items-center justify-between">
+      <div class="text-sm text-voile-muted">
         Showing page {@pagination.page} of {@pagination.total_pages} ({@pagination.total} total results)
       </div>
-
+      
       <div class="flex gap-2">
         <%= if @pagination.has_prev do %>
           <.link
             patch={~p"/search?q=#{@search_query}&type=#{@type}&page=#{@pagination.page - 1}"}
-            class="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+            class="px-3 py-2 text-sm border border-voile-light rounded-md hover:bg-voile-surface"
           >
             Previous
           </.link>
         <% end %>
-
+        
         <%= if @pagination.has_next do %>
           <.link
             patch={~p"/search?q=#{@search_query}&type=#{@type}&page=#{@pagination.page + 1}"}
-            class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            class="px-3 py-2 text-sm bg-voile-primary text-voile-dark rounded-md hover:bg-voile-primary/90"
           >
             Next
           </.link>
@@ -443,9 +443,9 @@ defmodule VoileWeb.SearchLive do
 
   defp no_results_message(assigns) do
     ~H"""
-    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+    <div class="bg-voile-surface rounded-lg shadow-sm p-8 text-center">
       <svg
-        class="w-16 h-16 mx-auto text-gray-400 mb-4"
+        class="w-16 h-16 mx-auto text-voile-muted mb-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -458,22 +458,22 @@ defmodule VoileWeb.SearchLive do
         >
         </path>
       </svg>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-
-      <p class="text-gray-600 mb-4">
+      <h3 class="text-lg font-medium text-voile mb-2">No results found</h3>
+      
+      <p class="text-voile-muted mb-4">
         We couldn't find anything matching "<strong><%= @query %></strong>".
       </p>
-
-      <div class="text-sm text-gray-500">
+      
+      <div class="text-sm text-voile-muted">
         <p>Try:</p>
-
+        
         <ul class="list-disc list-inside mt-2 space-y-1">
           <li>Checking your spelling</li>
-
+          
           <li>Using different keywords</li>
-
+          
           <li>Using more general terms</li>
-
+          
           <li>Using the advanced search for more specific criteria</li>
         </ul>
       </div>

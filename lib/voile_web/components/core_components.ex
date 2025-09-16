@@ -64,7 +64,7 @@ defmodule VoileWeb.CoreComponents do
     >
       <div
         id={"#{@id}-bg"}
-        class="bg-zinc-50/90 dark:bg-gray-600/90 fixed inset-0 transition-opacity"
+        class="bg-voile-surface/90 dark:bg-voile-dark/90 fixed inset-0 transition-opacity"
         aria-hidden="true"
       />
       <div
@@ -82,7 +82,7 @@ defmodule VoileWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white dark:bg-gray-800 p-14 shadow-lg ring-1 transition"
+              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-voile-light dark:bg-gray-700 p-14 shadow-lg ring-1 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -94,7 +94,7 @@ defmodule VoileWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-
+              
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -141,10 +141,10 @@ defmodule VoileWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
-
+          
           <p>{msg}</p>
         </div>
-        <div class="flex-1" />
+         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
@@ -179,7 +179,7 @@ defmodule VoileWeb.CoreComponents do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
-
+      
       <.flash
         id="server-error"
         kind={:error}
@@ -310,7 +310,7 @@ defmodule VoileWeb.CoreComponents do
             checked={@checked}
             class={@class || "checkbox checkbox-sm"}
             {@rest}
-          />{@label}<span :if={@required_value} class="text-red-500">*</span>
+          />{@label}<span :if={@required_value} class="text-voile-error">*</span>
         </span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -323,7 +323,7 @@ defmodule VoileWeb.CoreComponents do
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">
-          {@label}<span :if={@required_value} class="text-red-500">*</span>
+          {@label}<span :if={@required_value} class="text-voile-error">*</span>
         </span>
         <select
           id={@id}
@@ -333,7 +333,7 @@ defmodule VoileWeb.CoreComponents do
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
+           {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -346,9 +346,8 @@ defmodule VoileWeb.CoreComponents do
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">
-          {@label}<span :if={@required_value} class="text-red-500">*</span>
-        </span>
-         <textarea
+          {@label}<span :if={@required_value} class="text-voile-error">*</span>
+        </span> <textarea
           id={@id}
           name={@name}
           class={[
@@ -369,7 +368,7 @@ defmodule VoileWeb.CoreComponents do
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">
-          {@label}<span :if={@required_value} class="text-red-500">*</span>
+          {@label}<span :if={@required_value} class="text-voile-error">*</span>
         </span>
         <input
           type={@type}
@@ -396,7 +395,7 @@ defmodule VoileWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6 text-voile-dark">
       {render_slot(@inner_block)}
     </label>
     """
@@ -405,7 +404,7 @@ defmodule VoileWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+    <p class="mt-1.5 flex gap-2 items-center text-sm text-voile-error">
       <.icon name="hero-exclamation-circle" class="size-5" /> {render_slot(@inner_block)}
     </p>
     """
@@ -426,10 +425,10 @@ defmodule VoileWeb.CoreComponents do
     ]}>
       <div>
         <h5 class="font-semibold">{render_slot(@inner_block)}</h5>
-
+        
         <p :if={@subtitle != []} class="text-sm text-base-content/70">{render_slot(@subtitle)}</p>
       </div>
-
+      
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -471,11 +470,11 @@ defmodule VoileWeb.CoreComponents do
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-
+          
           <th :if={@action != []}><span class="sr-only">{gettext("Actions")}</span></th>
         </tr>
       </thead>
-
+      
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -485,7 +484,7 @@ defmodule VoileWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
-
+          
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -519,8 +518,8 @@ defmodule VoileWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold text-base">{item.title}</div>
-
-          <div class="font-semibold text-gray-500 dark:text-gray-400 italic">{render_slot(item)}</div>
+          
+          <div class="font-semibold text-voile italic">{render_slot(item)}</div>
         </div>
       </li>
     </ul>
@@ -542,7 +541,7 @@ defmodule VoileWeb.CoreComponents do
     <div class="mt-5">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-800 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-zinc-100"
+        class="text-sm font-semibold leading-6 text-voile-dark hover:text-voile-dark dark:text-voile-surface dark:hover:text-voile-surface"
       >
         <.icon name="hero-arrow-left-solid" class="h-3 w-3" /> {render_slot(@inner_block)}
       </.link>

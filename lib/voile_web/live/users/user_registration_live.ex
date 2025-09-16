@@ -7,33 +7,52 @@ defmodule VoileWeb.UserRegistrationLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header>
-          Register for an account
-          <:subtitle>
-            Already registered?
-            <.link navigate={~p"/login"} class="font-semibold text-brand hover:underline">
-              Log in
-            </.link>
-            to your account now.
-          </:subtitle>
-        </.header>
-
-        <.form
-          for={@form}
-          id="registration_form"
-          phx-submit="save"
-          phx-change="validate"
-          phx-trigger-action={@trigger_submit}
-          action={~p"/users/log_in?_action=registered"}
-          method="post"
-        >
-          <.input field={@form[:email]} type="email" label="Email" required />
-          <.input field={@form[:password]} type="password" label="Password" required />
-          <.button phx-disable-with="Creating account..." class="default-btn w-full">
-            Create an account
-          </.button>
-        </.form>
+      <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div class="flex items-center justify-center">
+            <div class="max-w-sm text-center">
+              <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
+              <h3 class="mt-6 text-lg font-semibold text-gray-900">Create your account</h3>
+              
+              <p class="mt-2 text-sm text-gray-600">
+                Join Voile to manage your projects and collaborate with your team.
+              </p>
+            </div>
+          </div>
+          
+          <div class="bg-white shadow rounded-lg border border-gray-100 p-6 md:p-8">
+            <.header>
+              Register for an account
+              <:subtitle>
+                <span class="text-sm text-gray-500">
+                  Already registered?
+                  <.link navigate={~p"/login"} class="font-semibold text-brand hover:underline ml-1">
+                    Log in
+                  </.link>
+                  to your account now.
+                </span>
+              </:subtitle>
+            </.header>
+            
+            <.form
+              for={@form}
+              id="registration_form"
+              phx-submit="save"
+              phx-change="validate"
+              phx-trigger-action={@trigger_submit}
+              action={~p"/users/log_in?_action=registered"}
+              method="post"
+            >
+              <div class="space-y-4">
+                <.input field={@form[:email]} type="email" label="Email" required />
+                <.input field={@form[:password]} type="password" label="Password" required />
+                <.button phx-disable-with="Creating account..." class="default-btn w-full">
+                  Create an account
+                </.button>
+              </div>
+            </.form>
+          </div>
+        </div>
       </div>
     </Layouts.app>
     """

@@ -22,26 +22,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <div class="text-center">
           <h5>Are you sure want to delete this field ?</h5>
           
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-voile-dark">
             This action cannot be undone. Please confirm your action.
           </p>
           
-          <p class="text-sm italic font-semibold text-red-500">You will delete this property :</p>
+          <p class="text-sm italic font-semibold text-voile-error">You will delete this property :</p>
           
           <div class="my-4">
-            <h6 class="text-brand">
+            <h6 class="text-voile-primary">
               {(@chosen_collection_field && @chosen_collection_field.label) || ""}
             </h6>
             
             <p class="text-xs">with value :</p>
             
-            <h5 class="font-bold text-gray-500 dark:text-white">
+            <h5 class="font-bold text-voile-dark dark:text-voile">
               {(@chosen_collection_field && @chosen_collection_field.value) || ""}
             </h5>
             
             <p class="text-xs">from this collection :</p>
             
-            <h6 class="text-orange-500">{@collection.title}</h6>
+            <h6 class="text-voile-warning">{@collection.title}</h6>
           </div>
           
           <div class="flex items-center w-full my-5 gap-5">
@@ -70,19 +70,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <div class="text-center">
           <h5>Are you sure want to delete this item data?</h5>
           
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-voile-dark">
             This action cannot be undone. Please confirm your action and make sure this item is not in use.
           </p>
           
           <div class="my-4">
             <p class="text-xs">Item Code :</p>
             
-            <h6 class="text-brand">{(@chosen_item_field && @chosen_item_field.item_code) || ""}</h6>
+            <h6 class="text-voile-primary">
+              {(@chosen_item_field && @chosen_item_field.item_code) || ""}
+            </h6>
           </div>
           
           <p class="text-sm">will be deleted forever from this collection :</p>
           
-          <h6 class="text-orange-500">{@collection.title}</h6>
+          <h6 class="text-voile-warning">{@collection.title}</h6>
         </div>
         
         <div class="flex items-center w-full my-5 gap-5">
@@ -148,7 +150,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           />
           <!-- Hierarchical Fields - Searchable Parent Collection -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-voile mb-2">
               Parent Collection (Optional)
             </label>
             <div class="relative">
@@ -157,7 +159,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 name="parent_search"
                 value={@parent_search || ""}
                 placeholder="Search for parent collection..."
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                class="block w-full px-3 py-2 border border-voile-muted rounded-md shadow-sm focus:outline-none focus:ring-voile-primary focus:border-voile-primary"
                 phx-change="search_parent"
                 phx-target={@myself}
                 phx-debounce="300"
@@ -169,18 +171,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 value={@form.params["parent_id"] || ""}
               />
               <%= if @parent_search_results && length(@parent_search_results) > 0 do %>
-                <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                <div class="absolute z-10 w-full mt-1 bg-voile-surface border border-voile-muted rounded-md shadow-lg max-h-60 overflow-auto">
                   <%= for collection <- @parent_search_results do %>
                     <div
-                      class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      class="px-4 py-2 hover:bg-voile-surface cursor-pointer border-b border-voile-light last:border-b-0"
                       phx-click="select_parent"
                       phx-target={@myself}
                       phx-value-id={collection.id}
                       phx-value-title={collection.title}
                     >
-                      <div class="font-medium text-gray-900">{collection.title}</div>
+                      <div class="font-medium text-voile">{collection.title}</div>
                       
-                      <div class="text-sm text-gray-500">
+                      <div class="text-sm text-voile-muted">
                         by {(collection.mst_creator && collection.mst_creator.creator_name) ||
                           "Unknown"}
                       </div>
@@ -190,13 +192,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% end %>
               
               <%= if @form.params["parent_id"] && @form.params["parent_id"] != "" do %>
-                <div class="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
-                  <span class="text-sm text-blue-800">
+                <div class="mt-2 px-3 py-2 bg-voile-info border border-voile-light rounded-md flex items-center justify-between">
+                  <span class="text-sm text-voile-primary">
                     Selected: {@selected_parent_title || "Loading..."}
                   </span>
                   <button
                     type="button"
-                    class="text-blue-600 hover:text-blue-800"
+                    class="text-voile-primary hover:text-voile"
                     phx-click="clear_parent"
                     phx-target={@myself}
                   >
@@ -250,7 +252,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 role="status"
               >
                 <svg
-                  class="animate-spin h-5 w-5 text-gray-500"
+                  class="animate-spin h-5 w-5 text-voile-dark"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -273,13 +275,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </div>
           
           <%= if @creator_input != "" and @creator_suggestions != [] and @form[:creator_id] != nil and @collection.creator_id == nil do %>
-            <ul class="absolute z-10 bg-white dark:bg-gray-800 border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
+            <ul class="absolute z-10 bg-voile-surface dark:bg-voile-dark border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
               <%= for creator <- @creator_suggestions do %>
                 <li
                   phx-click="select_creator"
                   phx-value-id={creator.id}
                   phx-target={@myself}
-                  class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  class="px-4 py-2 hover:bg-voile-surface dark:hover:bg-voile-dark cursor-pointer"
                 >
                   {creator.creator_name}
                 </li>
@@ -352,13 +354,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <%= if @form[:thumbnail].value == nil or @form[:thumbnail].value == "" do %>
               <!-- Upload Area (when no thumbnail) -->
               <div
-                class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer group"
+                class="border-2 border-dashed border-voile-muted rounded-xl p-8 text-center hover:border-voile-primary hover:bg-voile-info dark:hover:bg-voile-dark transition-all duration-300 cursor-pointer group"
                 phx-drop-target={@uploads.thumbnail.ref}
               >
                 <div class="space-y-4">
-                  <div class="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <div class="mx-auto w-16 h-16 bg-voile-info rounded-full flex items-center justify-center group-hover:bg-voile-primary transition-colors">
                     <svg
-                      class="w-8 h-8 text-blue-500"
+                      class="w-8 h-8 text-voile-primary"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -374,18 +376,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   </div>
                   
                   <div>
-                    <p class="text-gray-900 dark:text-gray-300 font-medium">
+                    <p class="text-voile dark:text-voile-dark font-medium">
                       Click to upload or drag and drop
                     </p>
                     
-                    <p class="text-gray-500 text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <p class="text-voile-dark text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>
                   
                   <div class="mt-4">
                     <.live_file_input upload={@uploads.thumbnail} class="hidden" />
                     <label
                       for={@uploads.thumbnail.ref}
-                      class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-voile-primary to-voile hover:from-voile-primary hover:to-voile transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-white font-medium rounded-lg"
                     >
                       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path

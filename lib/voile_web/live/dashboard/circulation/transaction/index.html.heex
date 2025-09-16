@@ -16,15 +16,15 @@
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/circulation/transactions/checkout"}
-        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md"
+        class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-voile-surface text-sm font-medium rounded-md"
       >
         <.icon name="hero-plus" class="w-4 h-4 mr-2" /> New Checkout
       </.link>
     </div>
   </div>
   <!-- Filters and Search -->
-  <div class="bg-white shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-gray-200">
+  <div class="bg-voile-surface shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-voile-light">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="flex space-x-4">
           <.form :let={f} for={%{}} phx-change="filter" class="inline">
@@ -41,7 +41,7 @@
                 {"Canceled", "canceled"}
               ]}
               value={@filter_status}
-              class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              class="block w-40 text-sm border border-voile-muted rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               label=""
             />
           </.form>
@@ -54,36 +54,36 @@
               name="query"
               value={@search_query}
               placeholder="Search transactions..."
-              class="block w-64 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </form>
         </div>
       </div>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="px-6 py-4 bg-voile-surface grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
-        <div class="text-2xl font-semibold text-blue-600">{@count_active_collection}</div>
+        <div class="text-2xl font-semibold text-voile-primary">{@count_active_collection}</div>
         
-        <div class="text-xs text-gray-500 uppercase">Active</div>
+        <div class="text-xs text-voile-muted uppercase">Active</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-yellow-600">{@count_overdue_collection}</div>
+        <div class="text-2xl font-semibold text-voile-warning">{@count_overdue_collection}</div>
         
-        <div class="text-xs text-gray-500 uppercase">Overdue</div>
+        <div class="text-xs text-voile-muted uppercase">Overdue</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-green-600">{@count_returned_collection}</div>
+        <div class="text-2xl font-semibold text-voile-success">{@count_returned_collection}</div>
         
-        <div class="text-xs text-gray-500 uppercase">Returned</div>
+        <div class="text-xs text-voile-muted uppercase">Returned</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-purple-600">-</div>
+        <div class="text-2xl font-semibold text-voile-muted">-</div>
         
-        <div class="text-xs text-gray-500 uppercase">Renewals</div>
+        <div class="text-xs text-voile-muted uppercase">Renewals</div>
       </div>
     </div>
   </div>
@@ -200,7 +200,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+    <div class="bg-white px-4 py-3 border-t border-voile-light sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

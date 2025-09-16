@@ -135,12 +135,12 @@ defmodule VoileWeb.Frontend.Collections.Index do
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse Collections</h1>
-
+                
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
                   Discover our curated collections
                 </p>
               </div>
-
+              
               <div class="flex items-center gap-4">
                 <.link
                   navigate={~p"/search"}
@@ -183,7 +183,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="all" selected={@filter_unit_id == "all"}>All Location</option>
-
+                    
                     <%= for node <- @nodes do %>
                       <option value={node.id} selected={@filter_unit_id == to_string(node.id)}>
                         {node.name} ({node.abbr})
@@ -202,7 +202,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     <option value="published" selected={@filter_status == "published"}>
                       Available
                     </option>
-
+                    
                     <option value="all" selected={@filter_status == "all"}>All Status</option>
                   </select>
                 </form>
@@ -215,7 +215,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
           <%= if @loading do %>
             <div class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collections...</span>
+               <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collections...</span>
             </div>
           <% else %>
             <!-- Results Header -->
@@ -225,11 +225,11 @@ defmodule VoileWeb.Frontend.Collections.Index do
                 <%= if @search_query != "" do %>
                   for "<strong><%= @search_query %></strong>"
                 <% end %>
-
+                
                 <span>
                   from
                   <%= if @search_query && @total_count_filtered do %>
-                    <strong>{@total_count_filtered}</strong> filtered collections
+                    <strong>{@total_count_filtered}</strong> total collections
                   <% else %>
                     <strong>0</strong> filtered collections
                   <% end %>

@@ -27,6 +27,7 @@ import topbar from "../vendor/topbar";
 import DragDrop from "./hooks/sortable";
 import DragUpload from "./hooks/draggable_area";
 import position_panel from "./hooks/position_panel";
+import MobileNav from "./hooks/mobile_nav";
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
@@ -38,8 +39,35 @@ const liveSocket = new LiveSocket("/live", Socket, {
     DragDrop,
     DragUpload,
     position_panel,
+    MobileNav,
     ...colocatedHooks,
   },
+});
+
+// Listen for Voile-specific dispatched events from HEEx components
+document.addEventListener("voile:set-active-tab", (e) => {
+  try {
+    const { selector, content } = e.detail || {};
+    if (selector) {
+      // set active tab styles
+      document
+        .querySelectorAll(".search-tab-item")
+        .forEach((el) => el.classList.remove("active-tab-item"));
+      const tab = document.querySelector(selector);
+      if (tab) tab.classList.add("active-tab-item");
+    }
+
+    if (content) {
+      // show the corresponding content pane if present
+      document
+        .querySelectorAll(".tab-pane")
+        .forEach((p) => p.classList.remove("active"));
+      const pane = document.querySelector(content);
+      if (pane) pane.classList.add("active");
+    }
+  } catch (err) {
+    console.error("Error handling voile:set-active-tab", err);
+  }
 });
 
 let header = document.getElementById("navigationHeader");

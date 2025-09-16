@@ -62,6 +62,7 @@ defmodule Voile.Schema.Accounts do
             fullname: fullname,
             password: pw,
             user_image: profile_picture,
+            user_role_id: 16,
             confirmed_at:
               if(user["email_verified"], do: DateTime.utc_now() |> DateTime.to_naive(), else: nil)
           })

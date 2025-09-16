@@ -6,26 +6,27 @@ defmodule VoileWeb.UserLoginLive do
   def render(assigns) do
     ~H"""
     <.modal id="magic-link-modal">
-      <div class="flex flex-col gap-4">
-        <h3 class="text-lg font-semibold">Login with Email Link</h3>
-
-        <p class="text-sm text-gray-600">
-          Enter your email address and we'll send you a secure login link. No password required!
+      <div class="p-6 sm:p-8 rounded-lg max-w-md mx-auto">
+        <h3 class="text-xl sm:text-2xl font-semibold mb-2">Login with Email Link</h3>
+        
+        <p class="text-sm text-voile-muted mb-4">
+          Enter your email and we'll send a secure login link. No password required.
         </p>
-
+        
         <.form for={@magic_link_form} phx-submit="send_magic_link">
           <.input
             field={@magic_link_form[:email]}
             type="email"
             label="Email Address"
-            placeholder="Enter your email address"
+            placeholder="you@example.com"
             required
+            class="default-input"
           />
-          <div class="flex gap-2 justify-end mt-4">
+          <div class="flex gap-3 justify-end mt-6">
             <.button
               type="button"
               phx-click={hide_modal("magic-link-modal")}
-              class="px-4 py-2 text-gray-600 hover:text-gray-800"
+              class="px-4 py-2 text-voile-text hover:text-voile-primary bg-voile-neutral rounded-md"
             >
               Cancel
             </.button>
@@ -42,58 +43,131 @@ defmodule VoileWeb.UserLoginLive do
     </.modal>
 
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="max-w-7xl mx-auto flex flex-col items-center">
-        <.header>
-          Log in to account
-          <:subtitle>
-            Don't have an account?
-            <.link navigate={~p"/register"} class="font-semibold text-brand hover:underline">
-              Sign up
-            </.link>
-            for an account now.
-          </:subtitle>
-        </.header>
-
-        <div class="flex flex-col gap-8 items-center justify-center lg:flex-row lg:gap-2 w-full">
-          <div class="w-full max-w-sm">
-            <.form for={@form} id="login_form" action={~p"/users/log_in"}>
-              <.input field={@form[:email]} type="email" label="Email" required />
-              <.input field={@form[:password]} type="password" label="Password" required />
-              <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
-              <div class="flex flex-col gap-2 my-2">
-                <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
-                  Forgot your password?
-                </.link>
+      <div class="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-5xl bg-transparent">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <!-- Left: Brand / Illustration -->
+            <div class="hidden lg:flex flex-col justify-center items-start px-6 py-8 bg-gradient-to-br from-voile-gradient to-library-gradient rounded-xl text-voile-surface">
+              <h1 class="text-3xl font-extrabold mb-2 voile-text-gradient">Welcome back to Voile</h1>
+              
+              <p class="text-voile-dark/90 dark:text-voile-light max-w-prose mb-6">
+                Sign in to access your dashboard, manage content, and explore features built for creators and teams.
+              </p>
+              
+              <ul class="space-y-3">
+                <li class="flex items-center gap-3">
+                  <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
+                  <span class="text-voile-dark/90 dark:text-voile-light">Fast, secure login</span>
+                </li>
+                
+                <li class="flex items-center gap-3">
+                  <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
+                  <span class="text-voile-dark/90 dark:text-voile-light">
+                    Passwordless and social auth
+                  </span>
+                </li>
+                
+                <li class="flex items-center gap-3">
+                  <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
+                  <span class="text-voile-dark/90 dark:text-voile-light">
+                    Accessible & responsive
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <!-- Right: Form Card -->
+            <div class="default-card rounded-xl shadow-md p-6 sm:p-8">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h2 class="text-2xl font-bold">Sign in to your account</h2>
+                  
+                  <p class="text-sm italic">
+                    Don't have an account?
+                    <.link
+                      navigate={~p"/register"}
+                      class="font-semibold text-voile-primary hover:underline"
+                    >
+                      Create one
+                    </.link>
+                  </p>
+                </div>
               </div>
-
-              <.button phx-disable-with="Logging in..." class="default-btn w-full">
-                Log in <span aria-hidden="true">→</span>
-              </.button>
-            </.form>
-          </div>
-
-          <div class="w-full max-w-sm">
-            <%= if @current_scope === nil do %>
-              <div class="flex flex-col gap-4 items-center justify-center">
-                <.button phx-click="google_auth" class="default-btn">Login with Google</.button>
-                <.button phx-click="paus_auth" class="default-btn">Login with PAuS ID</.button>
+              
+              <.form for={@form} id="login_form" action={~p"/users/log_in"} class="space-y-4">
+                <.input
+                  field={@form[:email]}
+                  type="email"
+                  label="Email"
+                  required
+                  class="default-input"
+                />
+                <.input
+                  field={@form[:password]}
+                  type="password"
+                  label="Password"
+                  required
+                  class="default-input"
+                />
+                <div class="flex items-center justify-between gap-4">
+                  <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
+                  <.link
+                    href={~p"/users/reset_password"}
+                    class="text-sm font-semibold text-voile-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </.link>
+                </div>
+                
+                <.button phx-disable-with="Logging in..." class="default-btn w-full">
+                  Log in <span aria-hidden="true">→</span>
+                </.button>
+              </.form>
+              
+              <div class="my-4 flex items-center gap-3">
+                <hr class="flex-1 border-voile-muted" />
+                <span class="text-sm text-voile-muted">or</span>
+                <hr class="flex-1 border-voile-muted" />
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <.button
+                  phx-click="google_auth"
+                  class="btn border-voile-primary bg-white text-voile-primary hover:shadow-md"
+                >
+                  <span class="hidden sm:inline">Login with </span>
+                  <span>
+                    <img
+                      src={~p"/images/google_img.png"}
+                      class="inline h-5 w-5"
+                      alt="Google logo"
+                    />
+                  </span> <span>Google</span>
+                </.button>
                 <.button
                   type="button"
                   phx-click={show_modal("magic-link-modal")}
-                  class="default-btn"
+                  class="btn bg-voile-primary text-sm"
                 >
-                  Login Passwordless
+                  <span>
+                    <.icon
+                      name="hero-link"
+                      class="size-4 opacity-75 hover:opacity-100"
+                    />
+                  </span> <span>Login passwordless</span>
                 </.button>
               </div>
-            <% else %>
-              <.link
-                href="/users/log_out"
-                method="delete"
-                class="default-menu bg-red-400 hover:bg-red-500 text-white"
-              >
-                Log out
-              </.link>
-            <% end %>
+              
+              <div class="mt-4 text-center w-full">
+                <.button
+                  phx-click="paus_auth"
+                  class="btn bg-voile-primary w-full text-voile-surface hover:brightness-95"
+                >
+                  <span>
+                    <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
+                  </span> <span>PAuS ID</span>
+                </.button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

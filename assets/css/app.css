@@ -107,6 +107,48 @@
 
 /* This file is for your main application CSS */
 /* Base styles */
+@theme {
+  --color-brand: oklch(54.1% 0.281 293.009);
+  --color-brand-50: oklch(96.9% 0.016 293.756);
+  --color-brand-100: oklch(94.3% 0.029 294.588);
+  --color-brand-200: oklch(89.4% 0.057 293.283);
+  --color-brand-300: oklch(81.1% 0.111 293.571);
+  --color-brand-400: oklch(70.2% 0.183 293.541);
+  --color-brand-500: oklch(60.6% 0.25 292.717);
+  --color-brand-600: oklch(54.1% 0.281 293.009);
+  --color-brand-700: oklch(49.1% 0.27 292.581);
+  --color-brand-800: oklch(43.2% 0.232 292.759);
+  --color-brand-900: oklch(38% 0.189 293.745);
+  --color-brand-950: oklch(28.3% 0.141 291.089);
+
+  /* Voile Brand */
+  --color-voile-primary: oklch(55% 0.24 300);
+  --color-voile-secondary: oklch(82% 0.12 300);
+  --color-voile-accent: oklch(75% 0.2 340);
+
+  /* Voile Neutral / Surface */
+  /* Light mode neutrals */
+  --color-voile-neutral: oklch(96% 0.03 280);
+  --color-voile-surface: oklch(96% 0.03 280);
+  --color-voile-text: oklch(22% 0.05 270);
+
+  /* Dark mode neutrals */
+  --color-voile-neutral-dark: oklch(18% 0.03 270);
+  --color-voile-surface-dark: oklch(14% 0.02 270);
+  --color-voile-text-dark: oklch(96% 0.02 270);
+
+  /* Border token variants for the Voile theme */
+  --color-voile-light: oklch(96% 0.03 280);
+  --color-voile-muted: oklch(90% 0.04 280);
+  --color-voile-dark: oklch(20% 0.04 270);
+
+  /* Voile Functional Color */
+  --color-voile-info: oklch(55% 0.15 270);
+  --color-voile-success: oklch(72% 0.18 160);
+  --color-voile-warning: oklch(85% 0.18 95);
+  --color-voile-error: oklch(65% 0.22 25);
+}
+
 @layer base {
   * {
     font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont,
@@ -116,7 +158,7 @@
   }
 
   *:disabled {
-    @apply bg-gray-200 cursor-not-allowed;
+    @apply bg-voile-neutral cursor-not-allowed;
   }
 
   h1,
@@ -171,11 +213,22 @@
   }
 
   .active-voile-menu {
-    @apply bg-white text-blue-500;
+    /* Use theme surface and primary for active voile menu */
+    background-color: var(--color-voile-surface);
+    color: var(--color-voile-primary);
   }
 
   .voile-text-gradient {
-    @apply bg-gradient-to-br from-blue-500 to-green-500 inline-block text-transparent bg-clip-text;
+    /* text gradient driven by theme primary -> accent */
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-accent)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
   }
 
   .sticky-header {
@@ -201,19 +254,42 @@
   }
 
   .tab-blocks {
-    @apply bg-violet-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg flex gap-2;
+    @apply p-5 rounded-bl-lg rounded-br-lg flex gap-2;
+    background-color: var(--color-voile-neutral);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .tab-blocks {
+    background-color: var(--color-voile-neutral-dark);
   }
 
   .search-tab-item {
-    @apply bg-violet-50 dark:bg-gray-600 p-2 w-full text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all hover:bg-violet-200 dark:hover:bg-gray-800;
+    @apply p-2 w-full text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all;
+    background-color: var(--color-voile-surface);
+    color: var(--color-voile-text);
+  }
+  .search-tab-item:hover {
+    background-color: var(--color-voile-neutral);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .search-tab-item {
+    background-color: var(--color-voile-neutral-dark);
+    color: var(--color-voile-text-dark);
   }
 
   .active-tab-item {
-    @apply bg-violet-200 dark:bg-gray-800 p-2 hover:bg-violet-200 dark:hover:bg-gray-800;
+    @apply p-2;
+    background-color: var(--color-voile-neutral);
+    color: var(--color-voile-text);
   }
 
   .input-main-search {
-    @apply w-full p-2 rounded-md border-1 border-violet-500 bg-violet-50 dark:border-gray-300 dark:bg-gray-600 focus:outline-none;
+    @apply w-full p-2 rounded-md border focus:outline-none;
+    border-color: var(--color-voile-primary);
+    background-color: var(--color-voile-surface);
+    color: var(--color-voile-text);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .input-main-search {
+    border-color: var(--color-voile-surface-dark);
+    background-color: var(--color-voile-neutral-dark);
+    color: var(--color-voile-text-dark);
   }
 
   .btn {
@@ -221,59 +297,118 @@
   }
 
   .primary-btn {
-    @apply bg-violet-500 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-violet-600;
+    /* Primary button: use voile primary color and surface for text */
+    @apply py-2 px-4 rounded-lg transition ease-in-out duration-300;
+    background-color: var(--color-voile-primary);
+    color: var(--color-voile-surface);
+  }
+  .primary-btn:hover {
+    filter: brightness(0.95);
   }
 
   .disabled-btn {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-500 py-2 px-4 rounded-lg cursor-not-allowed;
+    @apply py-2 px-4 rounded-lg cursor-not-allowed;
+    background-color: var(--color-voile-neutral);
+    color: var(--color-voile-text);
   }
 
   .warning-btn {
-    @apply bg-yellow-500 text-zinc-900 py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-yellow-600;
+    @apply py-2 px-4 rounded-lg transition ease-in-out duration-300;
+    background-color: var(--color-voile-warning);
+    color: var(--color-voile-text);
+  }
+  .warning-btn:hover {
+    filter: brightness(0.95);
   }
 
   .success-btn {
-    @apply bg-green-500 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-green-600;
+    @apply py-2 px-4 rounded-lg transition ease-in-out duration-300;
+    background-color: var(--color-voile-success);
+    color: var(--color-voile-surface);
   }
 
   .cancel-btn {
-    @apply bg-red-500 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 hover:bg-red-600;
+    @apply py-2 px-4 rounded-lg transition ease-in-out duration-300;
+    background-color: var(--color-voile-error);
+    color: var(--color-voile-surface);
   }
 
   .hover-btn {
-    @apply bg-violet-100 border border-violet-100 text-violet-600 hover:bg-violet-500 hover:text-white transition-all duration-500;
+    @apply border transition-all duration-500;
+    background-color: var(--color-voile-neutral);
+    border-color: var(--color-voile-muted);
+    color: var(--color-voile-primary);
+  }
+  .hover-btn:hover {
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
+    color: var(--color-voile-surface);
   }
 
   .dashboard-menu-btn {
-    @apply py-2 px-4 bg-violet-100 text-violet-600 rounded-lg hover:bg-violet-400 hover:text-white transition duration-700 ease-in-out;
+    /* Secondary/dashboard button uses neutral surface and primary for text */
+    @apply py-2 px-4 rounded-lg transition duration-700 ease-in-out;
+    background-color: var(--color-voile-neutral);
+    color: var(--color-voile-primary);
   }
 
   .dashboard-menu-btn-active {
-    @apply py-2 px-4 bg-violet-600 text-white rounded-lg;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
+    color: var(--color-voile-surface);
   }
 
   .default-menu {
-    @apply px-3 py-2 rounded-lg transition-all dark:text-violet-200 hover:bg-violet-100 dark:hover:text-violet-500;
+    @apply px-3 py-2 rounded-lg transition-all hover:bg-brand-100 transition-all;
   }
 
   .active-menu {
-    @apply bg-gradient-to-br from-violet-400 via-violet-700 to-violet-400 rounded-lg text-white dark:hover:text-violet-200;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
+    border-radius: 0.5rem;
+    color: var(--color-voile-surface);
+    transition: color 200ms ease-in-out;
   }
 
   .default-voile-menu {
-    @apply px-6 py-2 rounded-lg transition-all text-white hover:bg-violet-400 hover:text-violet-50;
+    @apply px-6 py-2 rounded-lg transition-all;
+    color: var(--color-voile-surface);
+  }
+  .default-voile-menu:hover {
+    background-color: var(--color-voile-accent);
   }
 
   .default-voile-menu-active {
-    @apply px-6 py-2 rounded-lg transition-all bg-white text-violet-500 hover:bg-white hover:text-violet-500;
+    @apply px-6 py-2 rounded-lg transition-all;
+    background-color: var(--color-voile-surface);
+    color: var(--color-voile-primary);
   }
 
   .voile-card {
-    @apply flex flex-col items-center rounded-lg bg-violet-100 dark:bg-gray-600 shadow-lg p-12 text-justify;
+    @apply flex flex-col items-center rounded-lg shadow-lg p-12 text-justify;
+    background-color: var(--color-voile-neutral);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-card {
+    background-color: var(--color-voile-neutral-dark);
+    color: var(--color-voile-text-dark);
   }
 
   .default-card {
-    @apply bg-white dark:bg-gray-700 w-full rounded-xl p-5;
+    @apply w-full rounded-xl p-5;
+    background-color: var(--color-voile-surface);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .default-card {
+    background-color: var(--color-voile-surface-dark);
+    color: var(--color-voile-text-dark);
   }
 
   .sidebar-size {
@@ -285,22 +420,28 @@
   }
 
   .pagination-btn {
-    @apply btn bg-violet-100 text-violet-600 py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
+    @apply btn py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
+    background-color: var(--color-voile-neutral);
+    color: var(--color-voile-primary);
   }
 
   .active-pagination {
-    @apply btn bg-violet-500 text-white py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
+    @apply btn py-1 px-3 rounded-lg transition-all duration-300 ease-in-out;
+    background-color: var(--color-voile-primary);
+    color: var(--color-voile-surface);
   }
 
   .upload-area.dragging {
-    @apply border-4 border-dashed border-violet-400 bg-violet-100 dark:bg-violet-500;
+    @apply border-4 border-dashed;
+    border-color: var(--color-voile-primary);
+    background-color: var(--color-voile-neutral);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .upload-area.dragging {
+    background-color: var(--color-voile-neutral-dark);
   }
 
   .item-card {
-    transition: all 0.3s ease;
-  }
-  .item-card:hover {
-    transform: translateY(-5px);
+    @apply transition-all duration-300 ease-in-out hover:-translate-y-1.5;
   }
 }
 
@@ -323,28 +464,144 @@
 }
 
 /* Utility styles */
+/* Utility styles (hoisted) */
 @layer utilities {
   .voile-gradient {
-    @apply bg-gradient-to-br from-violet-400 via-violet-700 to-violet-400;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
   }
 
   .gallery-gradient {
-    @apply bg-gradient-to-br from-purple-500 to-yellow-500;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-secondary),
+      var(--color-voile-accent)
+    );
   }
 
   .library-gradient {
-    @apply bg-gradient-to-br from-yellow-500 to-rose-500;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-accent),
+      var(--color-voile-primary)
+    );
   }
 
   .archive-gradient {
-    @apply bg-gradient-to-br from-rose-500 to-emerald-500;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-success)
+    );
   }
 
   .museum-gradient {
-    @apply bg-gradient-to-br from-emerald-500 to-purple-500;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-success),
+      var(--color-voile-secondary)
+    );
   }
 
   .default-btn {
-    @apply bg-gradient-to-br from-violet-400 via-violet-700 to-violet-400 py-2 px-4 rounded-lg text-white transition ease-in-out duration-300;
+    @apply py-2 px-4 rounded-lg transition ease-in-out duration-300;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
+    color: var(--color-voile-surface);
+  }
+
+  /* Voile named utilities so components can @apply plain class names */
+  .bg-voile-surface {
+    background-color: var(--color-voile-surface);
+  }
+  .bg-voile-neutral {
+    background-color: var(--color-voile-neutral);
+  }
+  .bg-voile-neutral-dark {
+    background-color: var(--color-voile-neutral-dark);
+  }
+  .bg-voile-surface-dark {
+    background-color: var(--color-voile-surface-dark);
+  }
+  .bg-voile-primary {
+    background-color: var(--color-voile-primary);
+  }
+  .bg-voile-secondary {
+    background-color: var(--color-voile-secondary);
+  }
+  .bg-voile-accent {
+    background-color: var(--color-voile-accent);
+  }
+
+  .bg-voile-info {
+    background-color: var(--color-voile-info);
+  }
+  .bg-voile-success {
+    background-color: var(--color-voile-success);
+  }
+  .bg-voile-warning {
+    background-color: var(--color-voile-warning);
+  }
+  .bg-voile-error {
+    background-color: var(--color-voile-error);
+  }
+
+  .text-voile {
+    color: var(--color-voile-text);
+  }
+  .text-voile-dark {
+    color: var(--color-voile-text-dark);
+  }
+  .text-voile-surface {
+    color: var(--color-voile-surface);
+  }
+  .text-voile-primary {
+    color: var(--color-voile-primary);
+  }
+
+  .text-voile-info {
+    color: var(--color-voile-info);
+  }
+  .text-voile-success {
+    color: var(--color-voile-success);
+  }
+  .text-voile-warning {
+    color: var(--color-voile-warning);
+  }
+  .text-voile-error {
+    color: var(--color-voile-error);
+  }
+
+  .border-voile-primary {
+    border-color: var(--color-voile-primary);
+  }
+  .border-voile-neutral {
+    border-color: var(--color-voile-neutral);
+  }
+  .border-voile-surface-dark {
+    border-color: var(--color-voile-surface-dark);
+  }
+  .border-voile-light {
+    border-color: var(--color-voile-light);
+  }
+  .border-voile-muted {
+    border-color: var(--color-voile-muted);
+  }
+  .border-voile-dark {
+    border-color: var(--color-voile-dark);
+  }
+
+  .bg-gradient-voile {
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
   }
 }

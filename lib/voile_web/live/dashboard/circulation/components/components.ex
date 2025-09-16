@@ -36,7 +36,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     ~H"""
     <div class="flex items-center">
       <div class="flex-shrink-0 h-10 w-10">
-        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+        <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
           <span class="text-sm font-medium text-gray-700">
             {if @member, do: String.first(@member.full_name || "?"), else: "?"}
           </span>
@@ -126,7 +126,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
                   <select
                     phx-change={filter.event}
                     name={filter.name}
-                    class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
                   >
                     <%= for option <- filter.options do %>
                       <option
@@ -144,7 +144,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
                       name={filter.name}
                       value={Map.get(@current_filters, filter.name, "")}
                       placeholder={filter.placeholder}
-                      class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
                     />
                   </form>
                 <% :date -> %>
@@ -153,7 +153,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
                       type="date"
                       name={filter.name}
                       value={Map.get(@current_filters, filter.name, "")}
-                      class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
                     />
                   </form>
               <% end %>
@@ -179,7 +179,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         <%= if can_access?(@current_user, "circulation.transactions.checkout") do %>
           <.link
             navigate={~p"/manage/circulation/transactions/checkout"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-gray-100"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-voile-primary hover:bg-voile-dark dark:bg-voile-primary dark:hover:bg-voile-dark dark:text-voile-surface"
           >
             Quick Checkout
           </.link>
@@ -195,7 +195,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         <%= if can_access?(@current_user, "circulation.transactions") do %>
           <.link
             navigate={~p"/manage/circulation/transactions"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
+            class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile"
           >
             Quick Return
           </.link>
@@ -211,7 +211,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         <%= if can_access?(@current_user, "settings.users") do %>
           <.link
             navigate={~p"/manage/settings/users"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
+            class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-voile border border-voile"
           >
             Member Lookup
           </.link>
@@ -226,7 +226,7 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
         
         <.link
           navigate={~p"/search?type=items"}
-          class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-900"
+          class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile bg-voile-primary text-white"
         >
           Item Search
         </.link>

@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Upload Files</h3>
-
+            
             <%= if @collection_type do %>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
                 {@collection_type} Collection
@@ -22,34 +22,33 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           </div>
           <!-- Collection Type Specific Hints -->
           <%= if @upload_hints do %>
-            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p class="text-sm text-blue-700">
+            <div class="mb-4 p-3 bg-voile-info border border-voile-primary rounded-md">
+              <p class="text-sm text-voile-primary">
                 <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fill-rule="evenodd"
                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                     clip-rule="evenodd"
                   />
-                </svg>
-                 {@upload_hints}
+                </svg> {@upload_hints}
               </p>
             </div>
           <% end %>
-
+          
           <form phx-submit="save_attachments" phx-change="validate" phx-target={@myself}>
             <!-- File Upload Area -->
             <div
               phx-drop-target={@uploads.attachments.ref}
               id="upload-area"
-              class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
+              class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-voile-muted border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
               phx-hook="DragUpload"
             >
               <div class="space-y-1 text-center flex flex-col items-center">
                 {collection_type_icon(@collection_type)}
-                <div class="flex text-sm text-gray-600 dark:text-white">
+                <div class="flex text-sm text-voile-dark dark:text-voile-surface">
                   <label
                     for={@uploads.attachments.ref}
-                    class="relative cursor-pointer bg-white dark:bg-gray-600 rounded-md font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-200 dark:hover:text-indigo-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                    class="relative cursor-pointer bg-voile-surface dark:bg-voile-neutral-dark rounded-md font-medium text-voile-primary hover:text-voile-primary dark:text-voile-surface dark:hover:text-voile-surface focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-voile-primary"
                   >
                     <span>Upload files</span>
                     <.live_file_input upload={@uploads.attachments} class="sr-only" />
@@ -57,7 +56,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   <p class="pl-1">or drag and drop</p>
                 </div>
                 <!-- Dynamic file type hints -->
-                <p class="text-xs text-gray-500 dark:text-white">
+                <p class="text-xs text-voile-dark dark:text-voile-surface">
                   {format_allowed_types(@allowed_types)} up to 100MB each
                 </p>
               </div>
@@ -65,18 +64,18 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             <!-- Upload Progress -->
             <div class="mt-4 space-y-2">
               <%= for entry <- @uploads.attachments.entries do %>
-                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div class="bg-gray-50 rounded-lg p-4 border border-voile-light">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <div class="flex items-center">
                         {file_type_icon(determine_file_type_from_name(entry.client_name))}
                         <div class="ml-3">
-                          <p class="text-sm font-medium text-gray-900">{entry.client_name}</p>
-
-                          <p class="text-xs text-gray-500">
+                          <p class="text-sm font-medium text-voile">{entry.client_name}</p>
+                          
+                          <p class="text-xs text-voile-dark">
                             {format_bytes(entry.client_size)} • {entry.client_type}
                             <%= if @collection_type && !is_file_type_allowed?(entry.client_type, @collection_type) do %>
-                              <span class="ml-2 text-red-600 font-medium">
+                              <span class="ml-2 text-voile-error font-medium">
                                 ⚠ May not be suitable for this collection type
                               </span>
                             <% end %>
@@ -84,44 +83,43 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         </div>
                       </div>
                     </div>
-
+                    
                     <button
                       type="button"
                       phx-click="cancel_upload"
                       phx-value-ref={entry.ref}
                       phx-target={@myself}
-                      class="ml-4 text-sm text-red-600 hover:text-red-500"
+                      class="ml-4 text-sm text-voile-error hover:text-voile-error"
                     >
                       Cancel
                     </button>
                   </div>
                   <!-- Progress Bar -->
                   <div class="mt-3">
-                    <div class="bg-gray-200 rounded-full h-2">
+                    <div class="bg-voile-neutral rounded-full h-2">
                       <div
-                        class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                        class="bg-voile-primary h-2 rounded-full transition-all duration-300"
                         style={"width: #{entry.progress}%"}
                       >
                       </div>
                     </div>
-
-                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    
+                    <div class="flex justify-between text-xs text-voile-dark mt-1">
                       <span>{entry.progress}% uploaded</span>
                       <span>{if entry.done?, do: "Complete", else: "Uploading..."}</span>
                     </div>
                   </div>
                   <!-- Upload Errors -->
                   <%= for err <- upload_errors(@uploads.attachments, entry) do %>
-                    <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                      <p class="text-sm text-red-600 flex items-center">
+                    <div class="mt-2 p-2 bg-voile-error/20 border border-voile-error rounded">
+                      <p class="text-sm text-voile-error flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path
                             fill-rule="evenodd"
                             d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                             clip-rule="evenodd"
                           />
-                        </svg>
-                         {humanize_upload_error(err)}
+                        </svg> {humanize_upload_error(err)}
                       </p>
                     </div>
                   <% end %>
@@ -134,17 +132,17 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Attachments</h3>
-
+            
             <div class="flex items-center space-x-4">
               <!-- File type filter -->
               <%= if length(@attachments) > 0 do %>
                 <select
                   phx-change="filter_by_type"
                   phx-target={@myself}
-                  class="text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  class="text-sm border-voile-muted rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="">All files ({length(@attachments)})</option>
-
+                  
                   <%= for {type, count} <- get_file_type_counts(@attachments) do %>
                     <option value={type} class="capitalize">{type} ({count})</option>
                   <% end %>
@@ -154,13 +152,15 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
               <% end %>
             </div>
           </div>
-
+          
           <%= if @attachments == [] do %>
             <div class="text-center py-12">
-              {collection_type_icon(@collection_type, "h-12 w-12 mx-auto text-gray-300")}
-              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No attachments</h3>
-
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
+              {collection_type_icon(@collection_type, "h-12 w-12 mx-auto text-voile-dark")}
+              <h3 class="mt-2 text-sm font-medium text-voile dark:text-voile-surface">
+                No attachments
+              </h3>
+              
+              <p class="mt-1 text-sm text-voile-dark dark:text-voile-dark">
                 Start by uploading your first {if @collection_type, do: @collection_type, else: "file"}.
               </p>
             </div>
@@ -168,17 +168,17 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             <!-- Attachment Grid/List -->
             <div class="space-y-3">
               <%= for attachment <- filter_attachments(@attachments, @filter_type || "") do %>
-                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors duration-150">
+                <div class="flex items-center justify-between p-4 border border-voile-light rounded-lg hover:bg-voile-neutral/90 dark:hover:bg-voile-neutral-dark transition-colors duration-150">
                   <div class="flex items-center space-x-4">
                     <!-- File Type Icon -->
                     <div class="flex-shrink-0">{file_type_icon(attachment.file_type)}</div>
-
+                    
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center">
                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {attachment.original_name}
                         </p>
-
+                        
                         <%= if attachment.is_primary do %>
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-2">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -192,15 +192,15 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           </span>
                         <% end %>
                       </div>
-
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      
+                      <p class="text-sm text-voile-dark dark:text-voile-surface mt-1">
                         {format_bytes(attachment.file_size)} •
                         <span class="capitalize">{attachment.file_type}</span>
                         <%= if attachment.inserted_at do %>
                           • Uploaded {format_date(attachment.inserted_at)}
                         <% end %>
                       </p>
-
+                      
                       <%= if attachment.description && attachment.description != "" do %>
                         <p class="text-xs text-gray-400 dark:text-white mt-1">
                           <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -209,13 +209,12 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                               clip-rule="evenodd"
                             />
-                          </svg>
-                           {attachment.description}
+                          </svg> {attachment.description}
                         </p>
                       <% end %>
                     </div>
                   </div>
-
+                  
                   <div class="flex items-center space-x-2">
                     <!-- Set as Primary -->
                     <%= unless attachment.is_primary do %>
@@ -224,7 +223,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         phx-click="set_primary"
                         phx-value-id={attachment.id}
                         phx-target={@myself}
-                        class="inline-flex items-center px-2 py-1 border border-gray-300 rounded text-xs text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        class="inline-flex items-center px-2 py-1 border border-voile-muted rounded text-xs text-voile-dark dark:text-voile-surface hover:bg-voile-neutral/90 dark:hover:bg-voile-neutral-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-voile-primary"
                       >
                         <svg
                           class="w-3 h-3 mr-1"
@@ -246,7 +245,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                     <a
                       href={Catalog.get_file_url(attachment)}
                       download={attachment.original_name}
-                      class="inline-flex items-center px-2 py-1 border border-gray-300 rounded text-xs text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      class="inline-flex items-center px-2 py-1 border border-voile-muted rounded text-xs text-voile-dark dark:text-voile-surface hover:bg-voile-neutral/90 dark:hover:bg-voile-neutral-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-voile-primary"
                     >
                       <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -265,7 +264,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                       phx-value-id={attachment.id}
                       phx-target={@myself}
                       data-confirm="Are you sure you want to delete this file?"
-                      class="inline-flex items-center px-2 py-1 border border-red-300 rounded text-xs text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      class="inline-flex items-center px-2 py-1 border border-voile-error rounded text-xs text-voile-error dark:text-voile-error hover:bg-voile-error/20 dark:hover:bg-voile-error focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-voile-error"
                     >
                       <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -282,44 +281,44 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
               <% end %>
             </div>
             <!-- Attachment Stats -->
-            <div class="mt-6 pt-4 border-t border-gray-200">
+            <div class="mt-6 pt-4 border-t border-voile-light">
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="text-center">
-                  <p class="text-2xl font-semibold text-indigo-600 dark:text-indigo-200">
+                  <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {length(@attachments)}
                   </p>
-
-                  <p class="text-xs text-gray-500 dark:text-white uppercase tracking-wider">
+                  
+                  <p class="text-xs text-voile-dark dark:text-voile-surface uppercase tracking-wider">
                     Total Files
                   </p>
                 </div>
-
+                
                 <div class="text-center">
-                  <p class="text-2xl font-semibold text-indigo-600 dark:text-indigo-200">
+                  <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {format_bytes(Enum.sum(Enum.map(@attachments, & &1.file_size)))}
                   </p>
-
-                  <p class="text-xs text-gray-500 dark:text-white uppercase tracking-wider">
+                  
+                  <p class="text-xs text-voile-dark dark:text-voile-surface uppercase tracking-wider">
                     Total Size
                   </p>
                 </div>
-
+                
                 <div class="text-center">
-                  <p class="text-2xl font-semibold text-indigo-600 dark:text-indigo-200">
+                  <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {@attachments |> Enum.count(&is_recent_upload?(&1.inserted_at))}
                   </p>
-
-                  <p class="text-xs text-gray-500 dark:text-white uppercase tracking-wider">
+                  
+                  <p class="text-xs text-voile-dark dark:text-voile-surface uppercase tracking-wider">
                     Recent Uploads
                   </p>
                 </div>
-
+                
                 <div class="text-center">
-                  <p class="text-2xl font-semibold text-indigo-600 dark:text-indigo-200">
+                  <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {@attachments |> Enum.count(& &1.is_primary)}
                   </p>
-
-                  <p class="text-xs text-gray-500 dark:text-white uppercase tracking-wider">
+                  
+                  <p class="text-xs text-voile-dark dark:text-voile-surface uppercase tracking-wider">
                     Primary Set
                   </p>
                 </div>

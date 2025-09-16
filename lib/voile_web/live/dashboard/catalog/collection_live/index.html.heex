@@ -1,6 +1,6 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} />
-  <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
+  <div class="bg-voile-surface dark:bg-voile-neutral-dark p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">Kembali</.back>
     
     <.header>
@@ -11,8 +11,8 @@
             phx-click="toggle_view_mode"
             class={
               if @view_mode == "tree",
-                do: "btn bg-blue-500 text-white",
-                else: "btn bg-gray-200 dark:bg-gray-600"
+                do: "btn bg-voile-primary text-voile-surface",
+                else: "btn bg-voile-neutral dark:bg-voile-neutral-dark"
             }
           >
             <%= if @view_mode == "tree" do %>

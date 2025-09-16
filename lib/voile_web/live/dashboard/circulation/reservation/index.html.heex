@@ -23,14 +23,14 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-white shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-gray-200">
+  <div class="bg-voile-surface shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-voile-light">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="flex space-x-4">
           <select
             phx-change="filter"
             name="status"
-            class="block w-40 text-sm border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
           >
             <option value="all" selected={@filter_status == "all"}>All Status</option>
             
@@ -211,7 +211,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+    <div class="bg-white px-4 py-3 border-t border-voile-light sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

@@ -10,9 +10,9 @@
     />
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Transaction Details</h1>
+        <h1 class="text-2xl font-bold text-voile">Transaction Details</h1>
         
-        <p class="mt-2 text-sm text-gray-700">
+        <p class="mt-2 text-sm text-voile-muted">
           Complete information about this library transaction
         </p>
       </div>
@@ -22,7 +22,7 @@
           <button
             phx-click="return"
             phx-value-id={@transaction.id}
-            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md"
+            class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success text-voile-surface text-sm font-medium rounded-md"
             data-confirm="Are you sure you want to return this item?"
           >
             <.icon name="hero-arrow-uturn-left" class="w-4 h-4 mr-2" /> Return Item
@@ -30,7 +30,7 @@
           <button
             phx-click="renew"
             phx-value-id={@transaction.id}
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md"
+            class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-voile-surface text-sm font-medium rounded-md"
             data-confirm="Are you sure you want to renew this item?"
           >
             <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Renew Item
@@ -44,14 +44,14 @@
     <!-- Main Transaction Details -->
     <div class="lg:col-span-2">
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Transaction Information</h3>
+        <div class="px-6 py-4 border-b border-voile-light">
+          <h3 class="text-lg font-medium text-voile">Transaction Information</h3>
         </div>
         
         <div class="px-6 py-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Transaction Type</dt>
+              <dt class="text-sm font-medium text-voile-muted">Transaction Type</dt>
               
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{transaction_type_badge_class(@transaction.transaction_type)}"}>
@@ -61,7 +61,7 @@
             </div>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              <dt class="text-sm font-medium text-voile-muted">Status</dt>
               
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@transaction.status)}"}>
@@ -71,7 +71,7 @@
             </div>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Transaction Date</dt>
+              <dt class="text-sm font-medium text-voile-muted">Transaction Date</dt>
               
               <dd class="mt-1 text-sm text-gray-900">
                 {format_datetime(@transaction.transaction_date)}
@@ -79,7 +79,7 @@
             </div>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Due Date</dt>
+              <dt class="text-sm font-medium text-voile-muted">Due Date</dt>
               
               <dd class="mt-1">
                 <%= if @transaction.due_date do %>
@@ -88,52 +88,52 @@
                   </div>
                   
                   <%= if @transaction.due_date && DateTime.compare(@transaction.due_date, DateTime.utc_now()) == :lt && @transaction.status == "active" do %>
-                    <div class="text-xs text-red-500 font-medium mt-1">
+                    <div class="text-xs text-voile-error font-medium mt-1">
                       {abs(DateTime.diff(DateTime.utc_now(), @transaction.due_date, :day))} days overdue
                     </div>
                   <% end %>
                 <% else %>
-                  <span class="text-sm text-gray-500">Not set</span>
+                  <span class="text-sm text-voile-muted">Not set</span>
                 <% end %>
               </dd>
             </div>
             
             <%= if @transaction.return_date do %>
               <div>
-                <dt class="text-sm font-medium text-gray-500">Return Date</dt>
+                <dt class="text-sm font-medium text-voile-muted">Return Date</dt>
                 
-                <dd class="mt-1 text-sm text-gray-900">
+                <dd class="mt-1 text-sm text-voile">
                   {format_datetime(@transaction.return_date)}
                 </dd>
               </div>
             <% end %>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Renewal Count</dt>
+              <dt class="text-sm font-medium text-voile-muted">Renewal Count</dt>
               
-              <dd class="mt-1 text-sm text-gray-900">{@transaction.renewal_count || 0} times</dd>
+              <dd class="mt-1 text-sm text-voile">{@transaction.renewal_count || 0} times</dd>
             </div>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Fine Amount</dt>
+              <dt class="text-sm font-medium text-voile-muted">Fine Amount</dt>
               
               <dd class="mt-1">
-                <span class={"text-sm font-medium #{if Decimal.equal?(@transaction.fine_amount || Decimal.new(0), 0), do: "text-gray-900", else: "text-red-600"}"}>
+                <span class={"text-sm font-medium " <> (if Decimal.equal?(@transaction.fine_amount || Decimal.new(0), 0), do: "text-voile", else: "text-voile-error")}>
                   ${Float.round(Decimal.to_float(@transaction.fine_amount || Decimal.new(0)), 2)}
                 </span>
               </dd>
             </div>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Overdue Status</dt>
+              <dt class="text-sm font-medium text-voile-muted">Overdue Status</dt>
               
               <dd class="mt-1">
                 <%= if @transaction.is_overdue do %>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-error/20 text-voile-error">
                     <.icon name="hero-exclamation-triangle" class="w-3 h-3 mr-1" /> Overdue
                   </span>
                 <% else %>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-success/20 text-voile-success">
                     <.icon name="hero-check" class="w-3 h-3 mr-1" /> On Time
                   </span>
                 <% end %>
@@ -155,16 +155,16 @@
     <div class="space-y-6">
       <!-- Member Information -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
+        <div class="px-6 py-4 border-b border-voile-light">
+          <h3 class="text-lg font-medium text-voile">Member Information</h3>
         </div>
         
         <div class="px-6 py-4">
           <%= if @transaction.member do %>
             <div class="flex items-center space-x-4">
               <div class="flex-shrink-0 h-12 w-12">
-                <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span class="text-lg font-medium text-gray-700">
+                <div class="h-12 w-12 rounded-full bg-voile-surface flex items-center justify-center">
+                  <span class="text-lg font-medium text-voile">
                     {String.first(@transaction.member.fullname || "?")}
                   </span>
                 </div>
@@ -188,38 +188,36 @@
       <!-- Item Information -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Item Information</h3>
+          <h3 class="text-lg font-medium text-voile">Item Information</h3>
         </div>
         
         <div class="px-6 py-4">
           <%= if @transaction.item do %>
             <div class="space-y-3">
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Item Code</dt>
+                <dt class="text-xs font-medium text-voile-muted uppercase">Item Code</dt>
                 
-                <dd class="mt-1 text-sm font-medium text-gray-900">
-                  {@transaction.item.item_code}
-                </dd>
+                <dd class="mt-1 text-sm font-medium text-voile">{@transaction.item.item_code}</dd>
               </div>
               
               <%= if @transaction.item.collection do %>
                 <div>
-                  <dt class="text-xs font-medium text-gray-500 uppercase">Collection</dt>
+                  <dt class="text-xs font-medium text-voile-muted uppercase">Collection</dt>
                   
-                  <dd class="mt-1 text-sm text-gray-900">{@transaction.item.collection.title}</dd>
+                  <dd class="mt-1 text-sm text-voile">{@transaction.item.collection.title}</dd>
                 </div>
               <% end %>
               
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Location</dt>
+                <dt class="text-xs font-medium text-voile-muted uppercase">Location</dt>
                 
-                <dd class="mt-1 text-sm text-gray-900">
+                <dd class="mt-1 text-sm text-voile">
                   {@transaction.item.location || "Not specified"}
                 </dd>
               </div>
               
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Status</dt>
+                <dt class="text-xs font-medium text-voile-muted uppercase">Status</dt>
                 
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@transaction.item.status)}"}>
@@ -229,7 +227,7 @@
               </div>
               
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Condition</dt>
+                <dt class="text-xs font-medium text-voile-muted uppercase">Condition</dt>
                 
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@transaction.item.condition)}"}>
@@ -246,15 +244,15 @@
       <!-- Librarian Information -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
+          <h3 class="text-lg font-medium text-voile">Processed By</h3>
         </div>
         
         <div class="px-6 py-4">
           <%= if @transaction.librarian do %>
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-10 w-10">
-                <div class="h-10 w-10 rounded-full bg-indigo-200 flex items-center justify-center">
-                  <span class="text-sm font-medium text-indigo-700">
+                <div class="h-10 w-10 rounded-full bg-voile-primary/20 flex items-center justify-center">
+                  <span class="text-sm font-medium text-voile-primary">
                     {String.first(@transaction.librarian.fullname || "?")}
                   </span>
                 </div>
@@ -275,8 +273,8 @@
   </div>
   <!-- Transaction History/Timeline -->
   <div class="bg-white shadow rounded-lg">
-    <div class="px-6 py-4 border-b border-gray-200">
-      <h3 class="text-lg font-medium text-gray-900">Transaction Timeline</h3>
+    <div class="px-6 py-4 border-b border-voile-light">
+      <h3 class="text-lg font-medium text-voile">Transaction Timeline</h3>
     </div>
     
     <div class="px-6 py-4">
@@ -285,13 +283,13 @@
           <li>
             <div class="relative pb-8">
               <span
-                class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-voile-light"
                 aria-hidden="true"
               >
               </span>
               <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                 <div>
-                  <p class="text-sm text-gray-500">Transaction created</p>
+                  <p class="text-sm text-voile-muted">Transaction created</p>
                 </div>
                 
                 <div class="text-right text-sm whitespace-nowrap text-gray-500">

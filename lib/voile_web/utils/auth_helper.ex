@@ -52,14 +52,14 @@ defmodule VoileWeb.Utils.AuthHelper do
   """
   def role_badge_class(role_name) do
     case role_name do
-      "Admin Node" -> "bg-red-100 text-red-800"
-      "Administrator Dev" -> "bg-purple-100 text-purple-800"
-      "Koordinator Koleksi" -> "bg-blue-100 text-blue-800"
-      "Pustakawan (Koordinator)" -> "bg-green-100 text-green-800"
-      "Arsiparis (Koordinator)" -> "bg-yellow-100 text-yellow-800"
-      "Kurator Museum" -> "bg-indigo-100 text-indigo-800"
-      "Kurator Galeri" -> "bg-pink-100 text-pink-800"
-      _ -> "bg-gray-100 text-gray-800"
+      "Admin Node" -> "bg-voile-error text-voile-dark"
+      "Administrator Dev" -> "bg-voile-primary text-voile-dark"
+      "Koordinator Koleksi" -> "bg-voile-info text-voile-dark"
+      "Pustakawan (Koordinator)" -> "bg-voile-success text-voile-dark"
+      "Arsiparis (Koordinator)" -> "bg-voile-warning text-voile-dark"
+      "Kurator Museum" -> "bg-voile-primary text-voile-dark"
+      "Kurator Galeri" -> "bg-voile-accent text-voile-dark"
+      _ -> "bg-voile-surface text-voile-dark"
     end
   end
 end
