@@ -262,7 +262,7 @@
   }
 
   .search-tab-item {
-    @apply p-2 w-full text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all;
+    @apply p-2 w-full text-xs md:text-base text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all;
     background-color: var(--color-voile-surface);
     color: var(--color-voile-text);
   }
@@ -275,9 +275,7 @@
   }
 
   .active-tab-item {
-    @apply p-2;
-    background-color: var(--color-voile-neutral);
-    color: var(--color-voile-text);
+    @apply p-2 bg-brand-200 dark:bg-gray-800;
   }
 
   .input-main-search {
@@ -603,5 +601,61 @@
       var(--color-voile-primary),
       var(--color-voile-secondary)
     );
+  }
+
+  /* Dashboard highlight cards with subtle animations */
+  .highlight-card {
+    @apply transform transition-all duration-300 hover:scale-105 hover:shadow-xl;
+  }
+
+  .stats-number {
+    @apply text-3xl font-bold;
+    background: linear-gradient(
+      to bottom right,
+      var(--color-voile-primary),
+      var(--color-voile-accent)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Modern card with glassmorphism effect */
+  .glass-card {
+    @apply backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border border-white/20 dark:border-gray-700/50;
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  /* Modern gradient buttons */
+  .gradient-btn {
+    @apply bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+  }
+
+  .gradient-btn-outline {
+    @apply border-2 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 font-medium px-6 py-3 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-300;
   }
 }

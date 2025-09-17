@@ -55,7 +55,7 @@ defmodule VoileWeb.VoileComponents do
         <% end %>
       </div>
       
-      <div class="bg-violet-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg">
+      <div class="bg-brand-200 dark:bg-gray-800 p-5 rounded-bl-lg rounded-br-lg">
         <%= if @live_action do %>
           <!-- LiveView Form -->
           <form phx-submit="search" phx-change="search_change" class="flex gap-2">

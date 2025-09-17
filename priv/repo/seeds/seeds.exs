@@ -186,3 +186,7 @@ for node <- node_list do
     _existing -> IO.puts("Node #{node.name} already exists, skipping...")
   end
 end
+
+# Load GLAM Collections (Gallery, Library, Archive, Museum)
+IO.puts("🎨 Loading GLAM Collections...")
+Code.require_file("priv/repo/seeds/glams.exs")

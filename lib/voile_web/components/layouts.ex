@@ -233,8 +233,7 @@ defmodule VoileWeb.Layouts do
     nav_items = [
       %{label: "Beranda", href: "/"},
       %{label: "Tentang", href: "/about"},
-      %{label: "Koleksi", href: "/collections"},
-      %{label: "Eksemplar", href: "/items"}
+      %{label: "Koleksi", href: "/collections"}
     ]
 
     assign(assigns, :nav_items, nav_items)
@@ -348,8 +347,7 @@ defmodule VoileWeb.Layouts do
     [
       %{label: "Beranda", href: "/"},
       %{label: "Tentang", href: "/about"},
-      %{label: "Koleksi", href: "/collections"},
-      %{label: "Eksemplar", href: "/items"}
+      %{label: "Koleksi", href: "/collections"}
     ]
   end
 end
