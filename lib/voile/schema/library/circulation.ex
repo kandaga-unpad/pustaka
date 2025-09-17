@@ -512,7 +512,7 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.get!(id)
     |> Repo.preload([
       :member,
-      :librarian,
+      librarian: [:user_role],
       item: [:collection]
     ])
   end
@@ -559,7 +559,7 @@ defmodule Voile.Schema.Library.Circulation do
            {:ok, transaction} <- create_checkout_transaction(member, item, librarian_id, attrs),
            {:ok, _item} <- update_item_availability(item, "loaned"),
            {:ok, _history} <- record_circulation_history(transaction, "loan") do
-        transaction |> Repo.preload([:member, :item, :librarian])
+        transaction |> Repo.preload([:member, :librarian, item: [:collection]])
       else
         {:error, reason} -> Repo.rollback(reason)
       end
@@ -577,7 +577,7 @@ defmodule Voile.Schema.Library.Circulation do
            {:ok, _item} <- update_item_availability(transaction.item, "available"),
            {:ok, _history} <- record_circulation_history(transaction, "return"),
            {:ok, _fine} <- calculate_and_create_fine_if_needed(transaction, member.user_type) do
-        transaction |> Repo.preload([:member, :item, :librarian])
+        transaction |> Repo.preload([:member, :librarian, item: [:collection]])
       else
         {:error, reason} -> Repo.rollback(reason)
       end
@@ -826,6 +826,17 @@ defmodule Voile.Schema.Library.Circulation do
     |> preload([:item, :transaction])
     |> order_by([f], f.fine_date)
     |> Repo.all()
+  end
+
+  @doc """
+  Gets a fine by transaction id if present.
+  Returns {:ok, fine} or {:error, reason}
+  """
+  def get_fine_by_transaction(transaction_id) do
+    case Fine |> where([f], f.transaction_id == ^transaction_id) |> Repo.one() do
+      %Fine{} = fine -> {:ok, Repo.preload(fine, [:member, :transaction, :item])}
+      nil -> {:error, "Fine not found"}
+    end
   end
 
   @doc """
@@ -1336,10 +1347,51 @@ defmodule Voile.Schema.Library.Circulation do
       item_id: transaction.item_id,
       transaction_id: transaction.id,
       processed_by_id: transaction.librarian_id,
-      description: "#{String.capitalize(event_type)} transaction for item #{transaction.item_id}"
+      description: "#{String.capitalize(event_type)} transaction for item #{transaction.item_id}",
+      ip_address: get_ip_address()
     })
     |> Repo.insert()
   end
+
+  # Attempts to determine the remote IP for the current request/operation.
+  # Tries common places where connection/ip is stored: process :plug_conn, process
+  # key :remote_ip, and Logger metadata :remote_ip. Returns a string or nil.
+  defp get_ip_address do
+    # 1) Plug connection stored in process dictionary (common in LiveView tests/hooks)
+    case Process.get(:plug_conn) do
+      %Plug.Conn{remote_ip: ip} ->
+        format_ip(ip)
+
+      _ ->
+        # 2) Process stored remote_ip (some apps set this manually)
+        case Process.get(:remote_ip) do
+          ip when not is_nil(ip) ->
+            format_ip(ip)
+
+          _ ->
+            # 3) Logger metadata (if set by plugs or instrumentations)
+            case Logger.metadata()[:remote_ip] || Logger.metadata()[:remoteaddr] do
+              ip when not is_nil(ip) ->
+                format_ip(ip)
+
+              _ ->
+                nil
+            end
+        end
+    end
+  end
+
+  defp format_ip(ip) when is_tuple(ip) do
+    try do
+      ip |> :inet.ntoa() |> to_string()
+    rescue
+      _ -> nil
+    end
+  end
+
+  defp format_ip(ip) when is_binary(ip), do: ip
+
+  defp format_ip(_), do: nil
 
   defp get_active_transaction(transaction_id) do
     case Repo.get(Transaction, transaction_id) |> Repo.preload([:item, :member]) do

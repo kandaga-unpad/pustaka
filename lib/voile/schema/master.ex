@@ -187,6 +187,32 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Returns the list of mst_frequency with pagination.
+
+  ## Examples
+
+      iex> list_mst_frequency_paginated(1, 10)
+      {[%Frequency{}], 3}
+
+  """
+  def list_mst_frequency_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from f in Frequency,
+        order_by: [desc: f.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    frequencies = Repo.all(query)
+
+    total_count = Repo.aggregate(Frequency, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {frequencies, total_pages}
+  end
+
+  @doc """
   Gets a single frequency.
 
   Raises `Ecto.NoResultsError` if the Frequency does not exist.
@@ -280,6 +306,23 @@ defmodule Voile.Schema.Master do
   """
   def list_mst_member_types do
     Repo.all(MemberType)
+  end
+
+  def list_mst_member_types_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from mt in MemberType,
+        order_by: [desc: mt.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    member_types = Repo.all(query)
+
+    total_count = Repo.aggregate(MemberType, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {member_types, total_pages}
   end
 
   @doc """
@@ -379,6 +422,26 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Returns the list of mst_locations with pagination.
+  """
+  def list_mst_locations_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from l in Locations,
+        order_by: [desc: l.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    locations = Repo.all(query)
+
+    total_count = Repo.aggregate(Locations, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {locations, total_pages}
+  end
+
+  @doc """
   Gets a single locations.
 
   Raises `Ecto.NoResultsError` if the Locations does not exist.
@@ -472,6 +535,26 @@ defmodule Voile.Schema.Master do
   """
   def list_mst_places do
     Repo.all(Places)
+  end
+
+  @doc """
+  Returns the list of mst_places with pagination.
+  """
+  def list_mst_places_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from p in Places,
+        order_by: [desc: p.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    places = Repo.all(query)
+
+    total_count = Repo.aggregate(Places, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {places, total_pages}
   end
 
   @doc """
@@ -684,6 +767,26 @@ defmodule Voile.Schema.Master do
   """
   def list_mst_topics do
     Repo.all(Topic)
+  end
+
+  @doc """
+  Returns the list of mst_topics with pagination.
+  """
+  def list_mst_topics_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from t in Topic,
+        order_by: [desc: t.id],
+        limit: ^per_page,
+        offset: ^offset
+
+    topics = Repo.all(query)
+
+    total_count = Repo.aggregate(Topic, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {topics, total_pages}
   end
 
   @doc """

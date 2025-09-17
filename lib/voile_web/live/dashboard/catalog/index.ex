@@ -26,7 +26,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
   def render(assigns) do
     ~H"""
     <section class="flex flex-col gap-4">
-      <div><.dashboard_menu_bar /></div>
+      <div><.dashboard_menu_bar user={@current_scope.user} /></div>
       
       <div class="flex flex-col gap-4 p-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
         <h1 class="text-2xl font-bold">Catalog</h1>

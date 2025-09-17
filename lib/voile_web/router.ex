@@ -201,6 +201,54 @@ defmodule VoileWeb.Router do
             live "/:id", Dashboard.Master.PublisherLive.Show, :show
             live "/:id/show/edit", Dashboard.Master.PublisherLive.Show, :edit
           end
+
+          scope "/member_types" do
+            live "/", Dashboard.Master.MemberTypeLive.Index, :index
+            live "/new", Dashboard.Master.MemberTypeLive.Index, :new
+            live "/:id/edit", Dashboard.Master.MemberTypeLive.Index, :edit
+
+            # We don't have a separate Show module for MemberType yet; map
+            # the detail route to the Edit LiveView so row navigation works.
+            live "/:id", Dashboard.Master.MemberTypeLive.Edit, :edit
+            live "/:id/show/edit", Dashboard.Master.MemberTypeLive.Edit, :edit
+          end
+
+          scope "/frequencies" do
+            live "/", Dashboard.Master.FrequencyLive.Index, :index
+            live "/new", Dashboard.Master.FrequencyLive.Index, :new
+            live "/:id/edit", Dashboard.Master.FrequencyLive.Index, :edit
+
+            # Map detail route to Edit liveview
+            live "/:id", Dashboard.Master.FrequencyLive.Edit, :edit
+            live "/:id/show/edit", Dashboard.Master.FrequencyLive.Edit, :edit
+          end
+
+          scope "/locations" do
+            live "/", Dashboard.Master.LocationsLive.Index, :index
+            live "/new", Dashboard.Master.LocationsLive.Index, :new
+            live "/:id/edit", Dashboard.Master.LocationsLive.Index, :edit
+
+            live "/:id", Dashboard.Master.LocationsLive.Edit, :edit
+            live "/:id/show/edit", Dashboard.Master.LocationsLive.Edit, :edit
+          end
+
+          scope "/places" do
+            live "/", Dashboard.Master.PlacesLive.Index, :index
+            live "/new", Dashboard.Master.PlacesLive.Index, :new
+            live "/:id/edit", Dashboard.Master.PlacesLive.Index, :edit
+
+            live "/:id", Dashboard.Master.PlacesLive.Edit, :edit
+            live "/:id/show/edit", Dashboard.Master.PlacesLive.Edit, :edit
+          end
+
+          scope "/topics" do
+            live "/", Dashboard.Master.TopicLive.Index, :index
+            live "/new", Dashboard.Master.TopicLive.Index, :new
+            live "/:id/edit", Dashboard.Master.TopicLive.Index, :edit
+
+            live "/:id", Dashboard.Master.TopicLive.Edit, :edit
+            live "/:id/show/edit", Dashboard.Master.TopicLive.Edit, :edit
+          end
         end
 
         scope "/metaresource" do

@@ -79,10 +79,10 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_identifier(identifier) when is_binary(identifier) do
     case Integer.parse(identifier) do
       {id, ""} ->
-        Repo.get(User, id)
+        Repo.get_by(User, identifier: id)
 
       :error ->
-        Repo.get_by(User, username: identifier)
+        Repo.get_by(User, identifier: identifier)
     end
   end
 

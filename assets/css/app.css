@@ -126,21 +126,26 @@
   --color-voile-secondary: oklch(82% 0.12 300);
   --color-voile-accent: oklch(75% 0.2 340);
 
-  /* Voile Neutral / Surface */
+  /* Voile Neutral / Surface
+    Updated values to improve light/dark contrast and avoid identical surface/neutral
+    which made the theme toggle appear flat. These values keep a bright white
+    surface for light mode and deeper surfaces for dark mode while keeping
+    accessible text contrast. */
+
   /* Light mode neutrals */
-  --color-voile-neutral: oklch(96% 0.03 280);
-  --color-voile-surface: oklch(96% 0.03 280);
-  --color-voile-text: oklch(22% 0.05 270);
+  --color-voile-surface: oklch(98% 0 0);
+  --color-voile-neutral: oklch(96% 0.02 280);
+  --color-voile-text: oklch(18% 0.05 260);
 
   /* Dark mode neutrals */
-  --color-voile-neutral-dark: oklch(18% 0.03 270);
-  --color-voile-surface-dark: oklch(14% 0.02 270);
+  --color-voile-surface-dark: oklch(10% 0.02 270);
+  --color-voile-neutral-dark: oklch(20% 0.03 270);
   --color-voile-text-dark: oklch(96% 0.02 270);
 
   /* Border token variants for the Voile theme */
-  --color-voile-light: oklch(96% 0.03 280);
-  --color-voile-muted: oklch(90% 0.04 280);
-  --color-voile-dark: oklch(20% 0.04 270);
+  --color-voile-light: oklch(98% 0.01 280);
+  --color-voile-muted: oklch(92% 0.02 280);
+  --color-voile-dark: oklch(16% 0.03 270);
 
   /* Voile Functional Color */
   --color-voile-info: oklch(55% 0.15 270);
@@ -363,7 +368,7 @@
   }
 
   .default-menu {
-    @apply px-3 py-2 rounded-lg transition-all hover:bg-brand-100 transition-all;
+    @apply px-3 py-2 rounded-lg transition-all text-brand-500 dark:text-brand-100 hover:bg-brand-100 dark:hover:bg-gray-100 dark:hover:text-brand-500 transition-all;
   }
 
   .active-menu {
@@ -401,12 +406,7 @@
   }
 
   .default-card {
-    @apply w-full rounded-xl p-5;
-    background-color: var(--color-voile-surface);
-  }
-  :where([data-theme="dark"], [data-theme="dark"] *) .default-card {
-    background-color: var(--color-voile-surface-dark);
-    color: var(--color-voile-text-dark);
+    @apply w-full rounded-xl p-5 bg-white dark:bg-gray-700;
   }
 
   .sidebar-size {
@@ -535,6 +535,28 @@
   }
   .bg-voile-accent {
     background-color: var(--color-voile-accent);
+  }
+
+  /* Ensure these utilities respect daisyUI's data-theme attribute so
+     toggling `data-theme="dark"` applies the dark surface/neutral/text
+     without requiring Tailwind's `.dark` class. This also makes
+     `dark:bg-voile-surface-dark` (which compiles to a selector with
+     an escaped class) work when the document uses `data-theme="dark"`. */
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-voile-surface,
+  :where([data-theme="dark"], [data-theme="dark"] *)
+    .dark\:bg-voile-surface-dark,
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-voile-surface-dark {
+    background-color: var(--color-voile-surface-dark);
+  }
+
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-voile-neutral,
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-voile-neutral-dark {
+    background-color: var(--color-voile-neutral-dark);
+  }
+
+  :where([data-theme="dark"], [data-theme="dark"] *) .text-voile,
+  :where([data-theme="dark"], [data-theme="dark"] *) .text-voile-dark {
+    color: var(--color-voile-text-dark);
   }
 
   .bg-voile-info {

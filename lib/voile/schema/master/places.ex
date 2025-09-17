@@ -11,7 +11,7 @@ defmodule Voile.Schema.Master.Places do
   @doc false
   def changeset(places, attrs) do
     places
-    |> cast(attrs, [:place_name])
-    |> validate_required([:place_name])
+    |> cast(attrs, [:name])
+    |> validate_required([:name])
   end
 end

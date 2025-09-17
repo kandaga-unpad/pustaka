@@ -1,0 +1,48 @@
+<section class="flex flex-col gap-4">
+  <.back navigate="/manage/master">Kembali</.back>
+  
+  <.header>
+    Listing Places
+    <:actions>
+      <.link patch={~p"/manage/master/places/new"}><.button>New Place</.button></.link>
+    </:actions>
+  </.header>
+  
+  <.table
+    id="places"
+    rows={@places || []}
+    row_click={fn place -> JS.navigate(~p"/manage/master/places/#{place.id}") end}
+  >
+    <:col :let={p} label="Name">{p.name}</:col>
+    
+    <:action :let={p}>
+      <div class="sr-only"><.link navigate={~p"/manage/master/places/#{p.id}"}>Show</.link></div>
+       <.link patch={~p"/manage/master/places/#{p.id}/edit"}>Edit</.link>
+    </:action>
+    
+    <:action :let={p}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: p.id}) |> hide("##{p.id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="place-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/master/places")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Master.PlacesLive.FormComponent}
+      id={(@place && @place.id) || :new}
+      title={@page_title}
+      action={@live_action}
+      place={@place}
+      patch={~p"/manage/master/places"}
+    />
+  </.modal>
+</section>

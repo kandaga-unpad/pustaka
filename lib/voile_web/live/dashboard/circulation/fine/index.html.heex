@@ -8,7 +8,7 @@
   />
   <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Library Fines</h1>
+      <h1 class="text-2xl font-bold text-surface-dark">Library Fines</h1>
       
       <p class="mt-2 text-sm text-gray-700">Manage fines, payments, and waivers</p>
     </div>
@@ -23,7 +23,7 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-voile-surface shadow rounded-lg mb-6">
+  <div class="bg-voile-neutral dark:bg-voile-neutral-dark shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
       <form phx-change="filter">
         <div class="sm:flex sm:items-center sm:space-x-4">
@@ -72,7 +72,7 @@
       </form>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="px-6 py-4 bg-voile-neutral dark:bg-voile-neutral-dark grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
         
@@ -99,7 +99,7 @@
     </div>
   </div>
   <!-- Fines Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+  <div class="bg-voile-neutral dark:bg-voile-neutral-dark shadow overflow-hidden sm:rounded-md">
     <.table id="fines" rows={@streams.fines}>
       <:col :let={{_id, fine}} label="Member">
         <div class="flex items-center">
@@ -112,11 +112,13 @@
           </div>
           
           <div class="ml-4">
-            <div class="text-sm font-medium text-gray-900">
+            <div class="text-sm font-medium text-surface-dark">
               {if fine.member, do: fine.member.fullname, else: "Unknown Member"}
             </div>
             
-            <div class="text-sm text-gray-500">ID: {fine.member_id}</div>
+            <div class="text-sm text-gray-500">
+              ID: {if fine.member.identifier, do: fine.member.identifier, else: "-"}
+            </div>
           </div>
         </div>
       </:col>
@@ -124,9 +126,14 @@
       <:col :let={{_id, fine}} label="Item">
         <div>
           <%= if fine.item do %>
-            <div class="text-sm font-medium text-gray-900">{fine.item.item_code}</div>
+            <div class="text-sm font-medium text-surface-dark">{fine.item.item_code}</div>
             
-            <div class="text-sm text-gray-500">
+            <div
+              class="text-sm text-gray-500"
+              title={
+                if fine.item.collection, do: fine.item.collection.title, else: "No collection"
+              }
+            >
               {if fine.item.collection, do: fine.item.collection.title, else: "No collection"}
             </div>
           <% else %>
@@ -142,11 +149,11 @@
       </:col>
       
       <:col :let={{_id, fine}} label="Amount">
-        <div class="text-sm font-medium text-gray-900">{format_idr(fine.amount)}</div>
+        <div class="text-sm font-medium text-surface-dark">{format_idr(fine.amount)}</div>
       </:col>
       
       <:col :let={{_id, fine}} label="Paid">
-        <div class="text-sm text-gray-900">{format_idr(fine.paid_amount)}</div>
+        <div class="text-sm text-surface-dark">{format_idr(fine.paid_amount)}</div>
       </:col>
       
       <:col :let={{_id, fine}} label="Balance">
@@ -166,11 +173,11 @@
       </:col>
       
       <:col :let={{_id, fine}} label="Fine Date">
-        <div class="text-sm text-gray-900">{format_date(fine.fine_date)}</div>
+        <div class="text-sm text-surface-dark">{format_date(fine.fine_date)}</div>
       </:col>
       
       <:col :let={{_id, fine}} label="Payment Method">
-        <div class="text-sm text-gray-900">
+        <div class="text-sm text-surface-dark">
           {if fine.payment_method do
             String.capitalize(fine.payment_method)
           else
@@ -202,7 +209,7 @@
   on_cancel={JS.patch(~p"/manage/circulation/fines")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">New Fine</h3>
+    <h3 class="text-lg font-medium text-surface-dark">New Fine</h3>
     
     <.form for={@fine_form} id="fine-form" phx-submit="create_fine">
       <.input

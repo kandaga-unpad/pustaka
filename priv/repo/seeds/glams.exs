@@ -5,9 +5,12 @@
 alias Voile.Repo
 alias Voile.Schema.Catalog.Collection
 alias Voile.Schema.Catalog.CollectionField
+alias Voile.Schema.Catalog.Item
 alias Voile.Schema.Metadata.Property
 alias Voile.Schema.Metadata.ResourceClass
 alias Voile.Schema.System.Node
+alias Voile.Utils.ItemHelper
+alias Client.Storage
 
 # Define CSV parser using NimbleCSV
 # Use a unique module name to avoid redefinition warnings
@@ -19,6 +22,8 @@ defmodule GLAMSeeds do
   @moduledoc """
   Seeds for GLAM collections based on CSV data
   """
+
+  @base_url "https://kandaga.unpad.ac.id/backoffice/assets/"
 
   def seed_all do
     IO.puts("🎨 Seeding GLAM collections...")
@@ -222,7 +227,7 @@ defmodule GLAMSeeds do
         tanggal_publikasi,
         _user_created_first_name,
         _user_created_last_name,
-        _thumbnail_id,
+        thumbnail_id,
         _thumbnail_filename
       ] = row
 
@@ -237,7 +242,8 @@ defmodule GLAMSeeds do
         keywords: parse_keywords(keywords),
         created_date: parse_date(tanggal_dibuat),
         publication_date: parse_date(tanggal_publikasi),
-        directus_id: id
+        directus_id: id,
+        thumbnail_id: parse_empty_string(thumbnail_id)
       }
     end)
   end
@@ -264,7 +270,7 @@ defmodule GLAMSeeds do
         keywords,
         tanggal_dibuat,
         tanggal_publikasi,
-        _thumbnail,
+        thumbnail,
         _user_created_first_name,
         _user_created_last_name
       ] = row
@@ -280,7 +286,8 @@ defmodule GLAMSeeds do
         keywords: parse_keywords(keywords),
         created_date: parse_date(tanggal_dibuat),
         publication_date: parse_date(tanggal_publikasi),
-        directus_id: id
+        directus_id: id,
+        thumbnail_id: parse_empty_string(thumbnail)
       }
     end)
   end
@@ -309,7 +316,7 @@ defmodule GLAMSeeds do
         tanggal_publikasi,
         _user_created_first_name,
         _user_created_last_name,
-        _thumbnail
+        thumbnail_id
       ] = row
 
       %{
@@ -323,7 +330,8 @@ defmodule GLAMSeeds do
         keywords: parse_keywords(keywords),
         created_date: parse_date(tanggal_dibuat),
         publication_date: parse_date(tanggal_publikasi),
-        directus_id: id
+        directus_id: id,
+        thumbnail_id: parse_empty_string(thumbnail_id)
       }
     end)
   end
@@ -398,6 +406,9 @@ defmodule GLAMSeeds do
       # Use UUID from CSV as collection ID
       collection_id = collection_data.id
 
+      # Download thumbnail if available
+      thumbnail_filename = download_thumbnail(collection_data.thumbnail_id, collection_id)
+
       collection = %{
         id: collection_id,
         collection_code: collection_code,
@@ -407,7 +418,7 @@ defmodule GLAMSeeds do
         unit_id: unit.id,
         status: "published",
         access_level: "public",
-        thumbnail: "",
+        thumbnail: thumbnail_filename || "",
         # Default creator, adjust as needed
         creator_id: 1,
         inserted_at: now,
@@ -419,11 +430,22 @@ defmodule GLAMSeeds do
           inserted_collection = Repo.insert!(struct(Collection, collection))
           insert_collection_fields(inserted_collection.id, collection_data, now)
 
+          # Create a default item for this collection
+          create_default_item(inserted_collection, unit, now, index)
+
           if rem(index, 50) == 0 do
             IO.puts("  📝 Processed #{index} collections...")
           end
 
         _existing ->
+          # Check if item already exists for this collection
+          existing_item = Repo.get_by(Item, collection_id: collection_id)
+
+          if is_nil(existing_item) do
+            existing_collection = Repo.get!(Collection, collection_id)
+            create_default_item(existing_collection, unit, now, index)
+          end
+
           if rem(index, 50) == 0 do
             IO.puts("  ⏭️  Skipped #{index} existing collections...")
           end
@@ -481,6 +503,137 @@ defmodule GLAMSeeds do
     timestamp = :os.system_time(:second)
 
     "COLLECTION-#{unit_abbr}-#{type_prefix}-#{timestamp}-#{String.pad_leading(to_string(index), 6, "0")}"
+  end
+
+  defp create_default_item(collection, unit, now, index) do
+    # Get resource class data for the collection
+    resource_class = Repo.get(ResourceClass, collection.type_id)
+    resource_class_name = if resource_class, do: resource_class.local_name, else: "item"
+
+    # Generate time identifier (similar to item_importer)
+    time_identifier = System.system_time(:second)
+
+    # Generate item codes using ItemHelper
+    item_code =
+      ItemHelper.generate_item_code(
+        unit.abbr,
+        resource_class_name,
+        collection.id,
+        time_identifier,
+        "1"
+      )
+
+    inventory_code =
+      ItemHelper.generate_inventory_code(
+        unit.abbr,
+        resource_class_name,
+        collection.id,
+        1
+      )
+
+    item_data = %{
+      id: Ecto.UUID.generate(),
+      collection_id: collection.id,
+      item_code: item_code,
+      inventory_code: inventory_code,
+      location: unit.name,
+      status: "active",
+      condition: "good",
+      availability: "available",
+      unit_id: unit.id,
+      inserted_at: now,
+      updated_at: now
+    }
+
+    Repo.insert!(struct(Item, item_data))
+  end
+
+  defp download_thumbnail(nil, _collection_id), do: nil
+  defp download_thumbnail("", _collection_id), do: nil
+
+  defp download_thumbnail(thumbnail_id, collection_id) do
+    # Build download URL
+    download_url = @base_url <> thumbnail_id
+
+    try do
+      IO.puts("  📷 Downloading thumbnail: #{download_url}")
+
+      # Download using Req
+      case Req.get(download_url, follow_redirects: true) do
+        {:ok, %{status: 200, body: body, headers: headers}} ->
+          # Determine content type and extension
+          content_type = get_content_type_from_headers(headers)
+          extension = get_extension_from_content_type(content_type)
+
+          # Create a temporary file
+          temp_filename = "thumbnail_#{collection_id}_#{thumbnail_id}#{extension}"
+          temp_dir = System.tmp_dir!()
+          temp_path = Path.join(temp_dir, temp_filename)
+
+          # Write downloaded content to temp file
+          File.write!(temp_path, body)
+
+          # Create Plug.Upload struct for Storage module
+          upload = %Plug.Upload{
+            path: temp_path,
+            filename: temp_filename,
+            content_type: content_type
+          }
+
+          # Upload using Storage module with glams folder
+          case Storage.upload(upload,
+                 folder: "glams",
+                 generate_filename: false,
+                 preserve_extension: true
+               ) do
+            {:ok, file_url} ->
+              # Clean up temp file
+              File.rm(temp_path)
+              IO.puts("  ✅ Saved thumbnail: #{file_url}")
+              file_url
+
+            {:error, reason} ->
+              # Clean up temp file
+              File.rm(temp_path)
+              IO.puts("  ⚠️  Failed to save thumbnail: #{reason}")
+              nil
+          end
+
+        {:ok, %{status: status}} ->
+          IO.puts("  ⚠️  Failed to download thumbnail (HTTP #{status}): #{download_url}")
+          nil
+
+        {:error, reason} ->
+          IO.puts("  ⚠️  Error downloading thumbnail: #{inspect(reason)}")
+          nil
+      end
+    rescue
+      e ->
+        IO.puts("  ⚠️  Exception downloading thumbnail: #{inspect(e)}")
+        nil
+    end
+  end
+
+  defp get_content_type_from_headers(headers) do
+    headers
+    |> Enum.find(fn {key, _value} -> String.downcase(key) == "content-type" end)
+    |> case do
+      {_key, content_type} -> String.split(content_type, ";") |> hd() |> String.trim()
+      # Default fallback
+      nil -> "image/jpeg"
+    end
+  end
+
+  defp get_extension_from_content_type(content_type) do
+    case content_type do
+      "image/jpeg" -> ".jpg"
+      "image/jpg" -> ".jpg"
+      "image/png" -> ".png"
+      "image/gif" -> ".gif"
+      "image/webp" -> ".webp"
+      # Default fallback
+      _ -> ".jpg"
+    end
   end
 end
 

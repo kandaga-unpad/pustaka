@@ -14,7 +14,7 @@ defmodule Voile.Schema.Catalog.CollectionField do
     field :type_value, :string
     field :sort_order, :integer
     field :col_field_values, :string, virtual: true
-    belongs_to :collection, Collection, on_replace: :nilify, type: :binary_id
+    belongs_to :collection, Collection, type: :binary_id
     belongs_to :metadata_properties, Property, on_replace: :nilify, foreign_key: :property_id
 
     timestamps(type: :utc_datetime)

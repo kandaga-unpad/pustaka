@@ -6,24 +6,24 @@ defmodule VoileWeb.Dashboard.Circulation.Helpers do
   @doc """
   Returns CSS classes for transaction type badges.
   """
-  def transaction_type_badge_class("loan"), do: "bg-voile-info text-voile-primary"
-  def transaction_type_badge_class("return"), do: "bg-voile-success text-voile-success"
-  def transaction_type_badge_class("renewal"), do: "bg-voile-warning text-voile-warning"
-  def transaction_type_badge_class("lost_item"), do: "bg-voile-error text-voile-error"
-  def transaction_type_badge_class("damaged_item"), do: "bg-voile-warning text-voile-warning"
+  def transaction_type_badge_class("loan"), do: "bg-voile-info text-voile-neutral"
+  def transaction_type_badge_class("return"), do: "bg-voile-success text-voile-neutral"
+  def transaction_type_badge_class("renewal"), do: "bg-voile-warning text-voile-neutral"
+  def transaction_type_badge_class("lost_item"), do: "bg-voile-error text-voile-neutral"
+  def transaction_type_badge_class("damaged_item"), do: "bg-voile-warning text-voile-neutral"
   def transaction_type_badge_class("cancel"), do: "bg-voile-neutral text-voile-dark"
   def transaction_type_badge_class(_), do: "bg-voile-neutral text-voile-dark"
 
   @doc """
   Returns CSS classes for status badges.
   """
-  def status_badge_class("active"), do: "bg-voile-info text-voile-primary"
-  def status_badge_class("returned"), do: "bg-voile-success text-voile-success"
-  def status_badge_class("overdue"), do: "bg-voile-error text-voile-error"
-  def status_badge_class("lost"), do: "bg-voile-error text-voile-error"
-  def status_badge_class("damaged"), do: "bg-voile-warning text-voile-warning"
+  def status_badge_class("active"), do: "bg-voile-info text-voile-neutral"
+  def status_badge_class("returned"), do: "bg-voile-success text-voile-neutral"
+  def status_badge_class("overdue"), do: "bg-voile-error text-voile-neutral"
+  def status_badge_class("lost"), do: "bg-voile-error text-voile-neutral"
+  def status_badge_class("damaged"), do: "bg-voile-warning text-voile-neutral"
   def status_badge_class("canceled"), do: "bg-voile-neutral text-voile-dark"
-  def status_badge_class(_), do: "bg-voile-neutral text-voile-dark"
+  def status_badge_class(_), do: "bg-voile-neutral"
 
   @doc """
   Returns CSS classes for reservation status badges.
@@ -63,18 +63,18 @@ defmodule VoileWeb.Dashboard.Circulation.Helpers do
   @doc """
   Returns CSS classes for fine type badges.
   """
-  def fine_type_badge_class("overdue"), do: "bg-voile-error text-voile-error"
-  def fine_type_badge_class("lost_item"), do: "bg-voile-error text-voile-error"
-  def fine_type_badge_class("damaged_item"), do: "bg-voile-warning text-voile-warning"
+  def fine_type_badge_class("overdue"), do: "bg-voile-error text-voile-light"
+  def fine_type_badge_class("lost_item"), do: "bg-voile-error text-voile-light"
+  def fine_type_badge_class("damaged_item"), do: "bg-voile-warning text-voile-dark"
   def fine_type_badge_class("processing"), do: "bg-voile-info text-voile-primary"
   def fine_type_badge_class(_), do: "bg-voile-neutral text-voile-dark"
 
   @doc """
   Returns CSS classes for fine status badges.
   """
-  def fine_status_badge_class("pending"), do: "bg-voile-error text-voile-error"
-  def fine_status_badge_class("partial_paid"), do: "bg-voile-warning text-voile-warning"
-  def fine_status_badge_class("paid"), do: "bg-voile-success text-voile-success"
+  def fine_status_badge_class("pending"), do: "bg-voile-error text-voile-light"
+  def fine_status_badge_class("partial_paid"), do: "bg-voile-warning text-voile-dark"
+  def fine_status_badge_class("paid"), do: "bg-voile-success text-voile-light"
   def fine_status_badge_class("waived"), do: "bg-voile-info text-voile-primary"
   def fine_status_badge_class(_), do: "bg-voile-neutral text-voile-dark"
 
@@ -203,5 +203,53 @@ defmodule VoileWeb.Dashboard.Circulation.Helpers do
     |> to_string()
     |> String.replace(~r/(\d)(?=(\d{3})+(?!\d))/, "\\1,")
     |> (&("Rp " <> &1)).()
+  end
+
+  # Transaction-specific helpers (migrated from Transaction.Helpers)
+  alias Voile.Schema.Accounts
+  alias Voile.Schema.Library.Transaction
+
+  @doc """
+  Calculate predicted fine for a transaction.
+  """
+  def predicted_fine_for(transaction) do
+    member = Accounts.get_user!(transaction.member_id)
+
+    if Transaction.overdue?(transaction) do
+      days = Transaction.days_overdue(transaction)
+      daily = member.user_type.fine_per_day || Decimal.new("1.00")
+      Decimal.mult(Decimal.new(days), daily)
+    else
+      Decimal.new("0")
+    end
+  end
+
+  def recommended_renew_days_for(transaction) do
+    member = Accounts.get_user!(transaction.member_id)
+
+    case member.user_type do
+      %{} = ut -> ut.max_days || nil
+      _ -> nil
+    end
+  end
+
+  def preview_due_date_for(transaction, days)
+      when is_integer(days) and not is_nil(transaction.due_date) do
+    DateTime.add(transaction.due_date, days * 24 * 60 * 60, :second)
+  end
+
+  def preview_due_date_for(_transaction, _), do: nil
+
+  def remaining_renewals_for(transaction) do
+    member = Accounts.get_user!(transaction.member_id)
+
+    case member.user_type do
+      %{} = ut ->
+        max = ut.max_renewals || 0
+        max - (transaction.renewal_count || 0)
+
+      _ ->
+        0
+    end
   end
 end

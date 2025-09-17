@@ -1,0 +1,54 @@
+<section class="flex flex-col gap-4">
+  <.back navigate="/manage/master">Kembali</.back>
+  
+  <.header>
+    Listing Locations
+    <:actions>
+      <.link patch={~p"/manage/master/locations/new"}><.button>New Location</.button></.link>
+    </:actions>
+  </.header>
+  
+  <.table
+    id="locations"
+    rows={@locations || []}
+    row_click={fn location -> JS.navigate(~p"/manage/master/locations/#{location.id}") end}
+  >
+    <:col :let={loc} label="Code">{loc.location_code}</:col>
+    
+    <:col :let={loc} label="Name">{loc.location_name}</:col>
+    
+    <:col :let={loc} label="Place">{loc.location_place}</:col>
+    
+    <:action :let={loc}>
+      <div class="sr-only">
+        <.link navigate={~p"/manage/master/locations/#{loc.id}"}>Show</.link>
+      </div>
+       <.link patch={~p"/manage/master/locations/#{loc.id}/edit"}>Edit</.link>
+    </:action>
+    
+    <:action :let={loc}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: loc.id}) |> hide("##{loc.id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="location-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/master/locations")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Master.LocationsLive.FormComponent}
+      id={(@location && @location.id) || :new}
+      title={@page_title}
+      action={@live_action}
+      location={@location}
+      patch={~p"/manage/master/locations"}
+    />
+  </.modal>
+</section>

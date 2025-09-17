@@ -86,20 +86,21 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def side_bar_dashboard(assigns) do
     ~H"""
-    <section class="bg-voile-surface dark:bg-voile-neutral-dark rounded-xl p-5 max-w-64 w-full h-full mr-5">
+    <section class="bg-white dark:bg-gray-700 rounded-xl p-5 max-w-64 w-full h-full mr-5">
       <div class="flex flex-col gap-2">{render_slot(@inner_block)}</div>
     </section>
     """
   end
 
   attr :active_menu, :string, default: ""
+  attr :user, :map
 
   def dashboard_menu_bar(assigns) do
     ~H"""
-    <div class="bg-voile-light dark:bg-voile-dark rounded-xl p-5 w-full h-full flex items-center justify-between">
+    <div class="bg-voile-neutral dark:bg-voile-neutral-dark rounded-xl p-5 w-full h-full flex items-center justify-between">
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
-          <h5>Halo, Admin!</h5>
+          <h5>Halo, {@user.fullname}!</h5>
           
           <p>Data Koleksi bisa kamu cek disini</p>
         </div>

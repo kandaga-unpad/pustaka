@@ -49,7 +49,6 @@ defmodule Voile.Analytics.Dashboard do
       on: i.collection_id == c.id,
       join: rc in ResourceClass,
       on: c.type_id == rc.id,
-      where: rc.glam_type == "Library",
       where: i.inserted_at >= ago(7, "day"),
       order_by: [desc: i.inserted_at],
       limit: ^limit,

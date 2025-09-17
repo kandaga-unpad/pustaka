@@ -1,0 +1,58 @@
+<section class="flex flex-col gap-4">
+  <.back navigate="/manage/master">Kembali</.back>
+  
+  <.header>
+    Listing Member Types
+    <:actions>
+      <.link patch={~p"/manage/master/member_types/new"}>
+        <.button>New Member Type</.button>
+      </.link>
+    </:actions>
+  </.header>
+  
+  <.table
+    id="member-types"
+    rows={@member_types || []}
+    row_click={fn mt -> JS.navigate(~p"/manage/master/member_types/#{mt.id}") end}
+  >
+    <:col :let={mt} label="Name">{mt.name}</:col>
+    
+    <:col :let={mt} label="Slug">{mt.slug}</:col>
+    
+    <:col :let={mt} label="Max Items">{mt.max_items}</:col>
+    
+    <:col :let={mt} label="Max Days">{mt.max_days}</:col>
+    
+    <:action :let={mt}>
+      <div class="sr-only">
+        <.link navigate={~p"/manage/master/member_types/#{mt.id}"}>Show</.link>
+      </div>
+       <.link patch={~p"/manage/master/member_types/#{mt.id}/edit"}>Edit</.link>
+    </:action>
+    
+    <:action :let={mt}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: mt.id}) |> hide("##{mt.id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="member-type-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/master/member_types")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent}
+      id={(@member_type && @member_type.id) || :new}
+      title={@page_title}
+      action={@live_action}
+      member_type={@member_type}
+      patch={~p"/manage/master/member_types"}
+    />
+  </.modal>
+</section>

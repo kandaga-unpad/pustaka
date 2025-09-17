@@ -78,7 +78,7 @@ node_list = [
   },
   %{
     name: "Fakultas Pertanian",
-    abbr: "Faperta",
+    abbr: "FAPERTA",
     description: nil,
     image: nil
   },

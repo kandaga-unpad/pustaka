@@ -301,6 +301,208 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     """
   end
 
+  # Transaction modals (migrated from Transaction.Components)
+
+  def return_modal(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:return_modal_visible, fn -> false end)
+      |> assign_new(:transaction, fn -> nil end)
+      |> assign_new(:predicted_fine, fn -> Decimal.new("0") end)
+      |> assign_new(:payment_method, fn -> "cash" end)
+      |> assign_new(:return_transaction_id, fn -> nil end)
+
+    ~H"""
+    <.modal
+      :if={@return_modal_visible}
+      id="return-modal"
+      show
+      on_cancel={JS.hide(to: "#return-modal") |> JS.push("cancel_return")}
+    >
+      <div class="space-y-4">
+        <div class="flex items-start space-x-3">
+          <div class="p-2 rounded-full bg-rose-100 text-rose-600 dark:bg-rose-700/10 dark:text-rose-300">
+            <.icon name="hero-check" class="w-5" />
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Return Item</h3>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Process the return and optionally accept payment for any fine.
+            </p>
+          </div>
+        </div>
+        
+        <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+          <div class="text-xs text-gray-500 dark:text-gray-400">Predicted fine</div>
+          
+          <div class="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
+            Rp {Decimal.to_string(@predicted_fine || Decimal.new("0"))}
+          </div>
+        </div>
+        
+        <.form :let={f} for={%{}} id="return-payment-form" phx-submit="confirm_return">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <.input
+              field={f[:payment_amount]}
+              name="payment_amount"
+              type="text"
+              label="Payment Amount"
+              value={Decimal.to_string(@predicted_fine || Decimal.new("0"))}
+            />
+            <.input
+              field={f[:payment_method]}
+              name="payment_method"
+              type="select"
+              options={[{"Cash", "cash"}, {"Card", "card"}, {"Other", "other"}]}
+              label="Payment Method"
+              value={@payment_method || "cash"}
+            />
+          </div>
+          
+          <div class="mt-4 flex justify-end items-center space-x-3">
+            <button
+              type="button"
+              phx-click="cancel_return"
+              class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 text-white">
+              Return
+            </button>
+          </div>
+          
+          <input
+            type="hidden"
+            name="transaction_id"
+            value={@return_transaction_id || (@transaction && @transaction.id)}
+          />
+        </.form>
+      </div>
+    </.modal>
+    """
+  end
+
+  def renew_modal(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:renew_modal_visible, fn -> false end)
+      |> assign_new(:transaction, fn -> nil end)
+      |> assign_new(:recommended_renew_days, fn -> nil end)
+      |> assign_new(:preview_due_date, fn -> nil end)
+      |> assign_new(:remaining_renewals, fn -> 0 end)
+
+    ~H"""
+    <.modal
+      :if={@renew_modal_visible}
+      id="renew-modal"
+      show
+      on_cancel={JS.hide(to: "#renew-modal") |> JS.push("cancel_renew")}
+    >
+      <div class="space-y-4">
+        <div class="flex items-start space-x-3">
+          <div class="p-2 rounded-full bg-voile-primary/10 dark:bg-voile-primary/20 text-voile-primary dark:text-voile-surface">
+            <.icon name="hero-arrow-path" class="w-5 h-5" />
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Renew Item</h3>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Extend the due date for this transaction. You can use the recommended duration or enter a custom number of days.
+            </p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Recommended</div>
+            
+            <div class="mt-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
+              {if @recommended_renew_days, do: "#{@recommended_renew_days} days", else: "-"}
+            </div>
+            
+            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Based on member type</div>
+          </div>
+          
+          <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Current due date</div>
+            
+            <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
+              {if @transaction && @transaction.due_date,
+                do: format_datetime(@transaction.due_date),
+                else: "-"}
+            </div>
+            
+            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">Expected new due date</div>
+            
+            <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
+              {if @preview_due_date, do: format_datetime(@preview_due_date), else: "-"}
+            </div>
+          </div>
+        </div>
+        
+        <.form
+          :let={f}
+          for={%{}}
+          id="renew-form"
+          phx-submit="confirm_renew"
+          phx-change="renew_days_change"
+          class="mt-1"
+        >
+          <div class="flex items-center space-x-3">
+            <.input
+              field={f[:renew_days]}
+              name="renew_days"
+              type="number"
+              min="1"
+              label="Renewal Duration (days)"
+              value={@recommended_renew_days || 1}
+              class="w-40"
+            />
+            <div class="ml-auto flex items-center space-x-3">
+              <div class="text-sm text-gray-600 dark:text-gray-300">Remaining</div>
+              
+              <div class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-700/20 dark:text-amber-300">
+                {@remaining_renewals || 0}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4 flex justify-end items-center space-x-3">
+            <button
+              type="button"
+              phx-click="cancel_renew"
+              class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class={[
+                "px-4 py-2 rounded text-white font-medium",
+                @remaining_renewals > 0 && "bg-voile-primary hover:bg-voile-primary-dark",
+                @remaining_renewals <= 0 && "bg-gray-400 cursor-not-allowed"
+              ]}
+              disabled={@remaining_renewals <= 0}
+            >
+              Renew
+            </button>
+          </div>
+          
+          <input
+            type="hidden"
+            name="transaction_id"
+            value={@renew_transaction_id || (@transaction && @transaction.id)}
+          />
+        </.form>
+      </div>
+    </.modal>
+    """
+  end
+
   # Private helper functions
 
   defp badge_class_for_type(:transaction, status), do: transaction_type_badge_class(status)

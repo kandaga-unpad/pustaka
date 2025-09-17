@@ -4,7 +4,7 @@
     root_path={~p"/manage/circulation"}
     section_label="Transactions"
     section_path={~p"/manage/circulation/transactions"}
-    current_label="Transactions"
+    current_label="List"
   />
   <div class="sm:flex sm:items-center sm:justify-between mb-6">
     <div>
@@ -23,7 +23,7 @@
     </div>
   </div>
   <!-- Filters and Search -->
-  <div class="bg-voile-surface shadow rounded-lg mb-6">
+  <div class="bg-voile-light dark:bg-gray-700 shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="flex space-x-4">
@@ -61,40 +61,40 @@
       </div>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-voile-surface grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-primary">{@count_active_collection}</div>
         
-        <div class="text-xs text-voile-muted uppercase">Active</div>
+        <div class="text-xs uppercase">Active</div>
       </div>
       
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-warning">{@count_overdue_collection}</div>
         
-        <div class="text-xs text-voile-muted uppercase">Overdue</div>
+        <div class="text-xs uppercase">Overdue</div>
       </div>
       
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-success">{@count_returned_collection}</div>
         
-        <div class="text-xs text-voile-muted uppercase">Returned</div>
+        <div class="text-xs uppercase">Returned</div>
       </div>
       
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-muted">-</div>
+        <div class="text-2xl font-semibold ">-</div>
         
-        <div class="text-xs text-voile-muted uppercase">Renewals</div>
+        <div class="text-xs uppercase">Renewals</div>
       </div>
     </div>
   </div>
   <!-- Transactions Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
     <.table id="transactions" rows={@streams.transactions}>
       <:col :let={{_id, transaction}} label="Member">
         <div class="flex items-center">
           <div class="flex-shrink-0 h-10 w-10">
             <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span class="text-sm font-medium text-gray-700">
+              <span class="text-sm font-medium">
                 {if transaction.member,
                   do: String.first(transaction.member.fullname || "?"),
                   else: "?"}
@@ -103,7 +103,7 @@
           </div>
           
           <div class="ml-4">
-            <div class="text-sm font-medium text-gray-900">
+            <div class="text-sm font-medium">
               {if transaction.member, do: transaction.member.fullname, else: "Unknown Member"}
             </div>
             
@@ -114,12 +114,12 @@
       
       <:col :let={{_id, transaction}} label="Item">
         <div>
-          <div class="text-sm font-medium text-gray-900">
+          <div class="text-sm font-medium">
             {if transaction.item, do: transaction.item.item_code, else: "Unknown Item"}
           </div>
           
           <p
-            class="text-sm text-gray-500"
+            class="text-sm"
             title={if transaction.item, do: transaction.item.collection.title, else: ""}
           >
             {if transaction.item && transaction.item.collection do
@@ -144,7 +144,7 @@
       </:col>
       
       <:col :let={{_id, transaction}} label="Due Date">
-        <div class="text-sm text-gray-900">
+        <div class="text-sm">
           {if transaction.due_date do
             format_date(transaction.due_date)
           else
@@ -160,12 +160,14 @@
       </:col>
       
       <:col :let={{_id, transaction}} label="Renewal Count">
-        <div class="text-sm text-gray-900">{transaction.renewal_count || 0}</div>
+        <div class="text-sm">{transaction.renewal_count || 0}</div>
       </:col>
       
       <:col :let={{_id, transaction}} label="Fine Amount">
-        <div class="text-sm text-gray-900">
-          Rp {Float.round(Decimal.to_float(transaction.fine_amount || Decimal.new(0)), 2)}
+        <div class="text-sm">
+          Rp {Decimal.to_string(
+            if transaction.fine_amount, do: transaction.fine_amount, else: Decimal.new(0)
+          )}
         </div>
       </:col>
       
@@ -173,18 +175,16 @@
         <div class="flex space-x-2">
           <%= if transaction.status == "active" do %>
             <button
-              phx-click="return"
+              phx-click="show_return_modal"
               phx-value-id={transaction.id}
               class="text-green-600 hover:text-green-900 text-sm font-medium"
-              data-confirm="Are you sure you want to return this item?"
             >
               Return
             </button>
             <button
-              phx-click="renew"
+              phx-click="show_renew_modal"
               phx-value-id={transaction.id}
               class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-              data-confirm="Are you sure you want to renew this item?"
             >
               Renew
             </button>
@@ -192,7 +192,7 @@
           
           <.link
             navigate={~p"/manage/circulation/transactions/#{transaction.id}"}
-            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-200 hover:dark:text-indigo-100 text-sm font-medium"
           >
             View
           </.link>
@@ -213,7 +213,7 @@
   on_cancel={JS.patch(~p"/manage/circulation/transactions")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">New Checkout</h3>
+    <h3 class="text-lg font-medium">New Checkout</h3>
     
     <.form
       :let={f}
@@ -232,7 +232,23 @@
         label="Item Code"
         placeholder="Enter item code or scan barcode"
         required
-      /> <.button type="submit" class="w-full">Check Out Item</.button>
+      /> <.button type="submit" class="w-full primary-btn">Check Out Item</.button>
     </.form>
   </div>
 </.modal>
+
+<.return_modal
+  return_modal_visible={assigns[:return_modal_visible] || false}
+  transaction={assigns[:transaction] || nil}
+  predicted_fine={assigns[:predicted_fine] || Decimal.new("0")}
+  payment_method={assigns[:payment_method] || "cash"}
+  return_transaction_id={assigns[:return_transaction_id] || nil}
+/>
+<.renew_modal
+  renew_modal_visible={assigns[:renew_modal_visible] || false}
+  transaction={assigns[:renew_transaction] || assigns[:transaction] || nil}
+  recommended_renew_days={assigns[:recommended_renew_days]}
+  preview_due_date={assigns[:preview_due_date]}
+  remaining_renewals={assigns[:remaining_renewals] || 0}
+  renew_transaction_id={assigns[:renew_transaction_id] || nil}
+/>

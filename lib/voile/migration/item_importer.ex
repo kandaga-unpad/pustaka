@@ -215,8 +215,8 @@ defmodule Voile.Migration.ItemImporter do
            biblio_id,
            _call_number,
            _coll_type_id,
-           item_code,
-           inventory_code,
+           _item_code,
+           _inventory_code,
            _received_date,
            _supplier_id,
            _order_no,
@@ -284,37 +284,23 @@ defmodule Voile.Migration.ItemImporter do
         resource_class_data =
           Map.get(resource_class_map, collection_data[:type_id], %{local_name: "UNK"})
 
-        # Generate codes using ItemHelper if source codes are nil or empty
+        # Generate codes using ItemHelper format
         final_item_code =
-          case safe_string_trim(item_code) do
-            nil ->
-              ItemHelper.generate_item_code(
-                unit_data.abbr,
-                resource_class_data.local_name,
-                collection_id,
-                time_identifier,
-                to_string(index)
-              )
-
-            existing_code ->
-              existing_code
-          end
+          ItemHelper.generate_item_code(
+            unit_data.abbr,
+            resource_class_data.local_name,
+            collection_id,
+            time_identifier,
+            to_string(index)
+          )
 
         final_inventory_code =
-          case safe_string_trim(inventory_code) do
-            nil ->
-              collection_title = collection_data[:title] || "Unknown"
-
-              ItemHelper.generate_inventory_code(
-                unit_data.abbr,
-                resource_class_data.local_name,
-                collection_title,
-                to_string(index)
-              )
-
-            existing_code ->
-              existing_code
-          end
+          ItemHelper.generate_inventory_code(
+            unit_data.abbr,
+            resource_class_data.local_name,
+            collection_id,
+            index
+          )
 
         {:ok,
          %{

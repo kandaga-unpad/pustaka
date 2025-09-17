@@ -431,9 +431,12 @@ defmodule VoileWeb.PageLive.Home do
                         </div>
                         
                         <div class="flex-1 min-w-0">
-                          <h4 class="text-gray-800 dark:text-gray-200 truncate mb-1">
+                          <h5
+                            class="text-gray-800 dark:text-gray-200 truncate mb-1"
+                            title={item.collection.title || "Untitled Collection"}
+                          >
                             {item.collection.title || "Untitled Collection"}
-                          </h4>
+                          </h5>
                           
                           <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
                             {item.collection.description || "No description available"}
@@ -511,7 +514,7 @@ defmodule VoileWeb.PageLive.Home do
                       </p>
                       
                       <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                        {category.category}
+                        {category.category} collections
                       </p>
                     </div>
                   <% end %>
@@ -525,7 +528,7 @@ defmodule VoileWeb.PageLive.Home do
                     Browse Collections
                   </.link>
                   <.link
-                    navigate="/search"
+                    navigate="/search/advanced"
                     class="block w-full text-center py-3 px-6 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-medium hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300"
                   >
                     Advanced Search
