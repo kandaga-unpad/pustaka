@@ -85,7 +85,7 @@ defmodule VoileWeb.UserLoginLive do
                     Don't have an account?
                     <.link
                       navigate={~p"/register"}
-                      class="font-semibold text-voile-primary hover:underline"
+                      class="font-semibold hover:underline"
                     >
                       Create one
                     </.link>
@@ -112,7 +112,7 @@ defmodule VoileWeb.UserLoginLive do
                   <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
                   <.link
                     href={~p"/users/reset_password"}
-                    class="text-sm font-semibold text-voile-primary hover:underline"
+                    class="text-sm font-semibold hover:underline"
                   >
                     Forgot your password?
                   </.link>
@@ -146,7 +146,7 @@ defmodule VoileWeb.UserLoginLive do
                 <.button
                   type="button"
                   phx-click={show_modal("magic-link-modal")}
-                  class="btn bg-voile-primary text-sm"
+                  class="btn bg-voile-primary text-sm text-white"
                 >
                   <span>
                     <.icon
@@ -160,7 +160,8 @@ defmodule VoileWeb.UserLoginLive do
               <div class="mt-4 text-center w-full">
                 <.button
                   phx-click="paus_auth"
-                  class="btn bg-voile-primary w-full text-voile-surface hover:brightness-95"
+                  class="btn w-full hover:brightness-95 cursor-not-allowed"
+                  disabled
                 >
                   <span>
                     <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />

@@ -322,6 +322,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       |> assign(:count_collections, nil)
       |> assign(:count_items, nil)
       |> assign(:count_all_nodes, [])
+      |> assign(:page_title, "Catalog Dashboard")
 
     # Defer loading counts to handle_info so UI mounts fast
     if connected?(socket), do: send(self(), :load_counts)

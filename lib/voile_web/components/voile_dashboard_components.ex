@@ -97,7 +97,7 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def dashboard_menu_bar(assigns) do
     ~H"""
-    <div class="bg-voile-neutral dark:bg-voile-neutral-dark rounded-xl p-5 w-full h-full flex items-center justify-between">
+    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full h-full flex items-center justify-between">
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
           <h5>Halo, {@user.fullname}!</h5>
