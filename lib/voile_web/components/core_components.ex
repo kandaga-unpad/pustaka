@@ -519,7 +519,7 @@ defmodule VoileWeb.CoreComponents do
         <div class="list-col-grow">
           <div class="font-bold text-base">{item.title}</div>
           
-          <div class="font-semibold text-voile italic">{render_slot(item)}</div>
+          <div class="font-semibold italic">{render_slot(item)}</div>
         </div>
       </li>
     </ul>

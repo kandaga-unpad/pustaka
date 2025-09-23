@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Index do
 
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Fine
+  alias Voile.Schema.Catalog
 
   @impl true
   def mount(_params, _session, socket) do
@@ -41,6 +42,49 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Index do
     |> assign(:page_title, "New Fine")
     |> assign(:fine, %Fine{})
     |> assign(:fine_form, to_form(changeset))
+    |> assign(:item_suggestions, [])
+    |> assign(:item_search_text, "")
+    |> assign(:selected_item_id, nil)
+  end
+
+  @impl true
+  def handle_event("item_search", %{"item_search" => query}, socket) do
+    q = String.trim(query || "")
+
+    if q == "" do
+      {:noreply,
+       socket
+       |> assign(:item_suggestions, [])
+       |> assign(:item_search_text, "")
+       |> assign(:selected_item_id, nil)}
+    else
+      {items, _total_pages} = Catalog.search_items_paginated(q, 1, 10)
+
+      {:noreply,
+       socket
+       |> assign(:item_suggestions, items)
+       |> assign(:item_search_text, q)}
+    end
+  end
+
+  @impl true
+  def handle_event("choose_item", %{"item_id" => item_id}, socket) do
+    # item_id comes as string from the DOM
+    id = String.to_integer(item_id)
+    item = Catalog.get_item!(id)
+
+    display_text =
+      if item.collection && item.collection.title do
+        "#{item.item_code} — #{item.collection.title}"
+      else
+        "#{item.item_code}"
+      end
+
+    {:noreply,
+     socket
+     |> assign(:selected_item_id, id)
+     |> assign(:item_search_text, display_text)
+     |> assign(:item_suggestions, [])}
   end
 
   @impl true

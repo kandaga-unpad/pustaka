@@ -26,7 +26,7 @@ defmodule VoileWeb.UserLoginLive do
             <.button
               type="button"
               phx-click={hide_modal("magic-link-modal")}
-              class="px-4 py-2 text-voile-text hover:text-voile-primary bg-voile-neutral rounded-md"
+              class="px-4 py-2 hover:text-voile-primary bg-voile-neutral rounded-md"
             >
               Cancel
             </.button>

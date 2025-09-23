@@ -150,9 +150,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           />
           <!-- Hierarchical Fields - Searchable Parent Collection -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-voile mb-2">
-              Parent Collection (Optional)
-            </label>
+            <label class="block text-sm font-medium mb-2 label">Parent Collection (Optional)</label>
             <div class="relative">
               <input
                 type="text"
@@ -230,7 +228,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt="Select Collection Location"
             required_value={true}
           /> <.input field={@form[:title]} type="text" label="Title" required_value={true} />
-          <div class="relative">
+          <div class="relative" phx-hook="SearchDropdown" id={"creator-search-#{@form[:id].value}"}>
             <.input
               type="text"
               name="creator"
@@ -241,13 +239,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               disabled={@creator_input != "" and @collection.creator_id !== nil}
               required_value={true}
               autocomplete="off"
-              phx-keyup="search_creator"
+              phx-change="search_creator"
               phx-debounce="300"
               phx-target={@myself}
             />
+            <input
+              type="hidden"
+              name={@form[:creator_id].name}
+              value={@form[:creator_id].value || ""}
+            />
             <%= if @creator_searching do %>
               <div
-                class="absolute right-3 top-10 opacity-0 animate-fade-in"
+                class="absolute right-3 top-10"
                 aria-label="Searching creators"
                 role="status"
               >
@@ -272,36 +275,44 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 </svg>
               </div>
             <% end %>
-          </div>
-          
-          <%= if @creator_input != "" and @creator_suggestions != [] and @form[:creator_id] != nil and @collection.creator_id == nil do %>
-            <ul class="absolute z-10 bg-voile-surface dark:bg-voile-dark border -mt-4 rounded shadow max-h-64 overflow-y-auto max-w-full">
-              <%= for creator <- @creator_suggestions do %>
-                <li
-                  phx-click="select_creator"
-                  phx-value-id={creator.id}
-                  phx-target={@myself}
-                  class="px-4 py-2 hover:bg-voile-surface dark:hover:bg-voile-dark cursor-pointer"
-                >
-                  {creator.creator_name}
-                </li>
-              <% end %>
-            </ul>
-          <% end %>
-          
-          <%= if @creator_input != nil and @creator_suggestions == [] and @collection.creator_id == nil do %>
-            <.button
-              type="button"
-              phx-click="create_new_creator"
-              phx-value-creator={@creator_input}
-              phx-target={@myself}
-            >
-              Create {@creator_input}
-            </.button>
-            <%= for {_msg, _opts} <- Keyword.get_values(@form.errors, :creator_id) do %>
-              <p class="text-red-500 text-sm mt-2">Please choose Creator or click Create!</p>
+            
+            <%= if @creator_input != "" and @creator_suggestions != [] and @collection.creator_id == nil do %>
+              <div class="absolute z-10 w-full mt-1 bg-voile-surface border border-voile-muted rounded-md shadow-lg max-h-60 overflow-auto">
+                <ul role="listbox" aria-label="Creator suggestions">
+                  <%= for creator <- @creator_suggestions do %>
+                    <li
+                      role="option"
+                      class="px-4 py-2 hover:bg-gray-400 cursor-pointer border-b border-voile-light last:border-b-0"
+                      phx-click="select_creator"
+                      phx-target={@myself}
+                      phx-value-id={creator.id}
+                    >
+                      <div class="font-medium">{creator.creator_name}</div>
+                      
+                      <div class="text-xs">{Map.get(creator, :affiliation, "")}</div>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
             <% end %>
-          <% end %>
+            
+            <%= if @creator_input != nil and @creator_suggestions == [] and @collection.creator_id == nil do %>
+              <div class="mt-2 flex items-center gap-3">
+                <.button
+                  type="button"
+                  phx-click="create_new_creator"
+                  phx-value-creator={@creator_input}
+                  phx-target={@myself}
+                  class="primary-btn"
+                >
+                  Create "{@creator_input}"
+                </.button>
+                <%= for {_msg, _opts} <- Keyword.get_values(@form.errors, :creator_id) do %>
+                  <p class="text-red-500 text-sm mt-2">Please choose Creator or click Create!</p>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
           
           <%= if @collection.creator_id != nil do %>
             <.button type="button" phx-click="delete_creator" phx-target={@myself} class="cancel-btn">
@@ -360,7 +371,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 <div class="space-y-4">
                   <div class="mx-auto w-16 h-16 bg-voile-info rounded-full flex items-center justify-center group-hover:bg-voile-primary transition-colors">
                     <svg
-                      class="w-8 h-8 text-voile-primary"
+                      class="w-8 h-8"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -376,11 +387,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   </div>
                   
                   <div>
-                    <p class="text-voile dark:text-voile-dark font-medium">
-                      Click to upload or drag and drop
-                    </p>
+                    <p class="font-medium">Click to upload or drag and drop</p>
                     
-                    <p class="text-voile-dark text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <p class="text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>
                   
                   <div class="mt-4">
@@ -1002,6 +1011,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       |> assign(:creator_suggestions, suggestions)
 
     {:noreply, socket}
+  end
+
+  # Accept `creator` param name (from phx-change on input) and forward to the same logic
+  def handle_event("search_creator", %{"creator" => query}, socket) do
+    handle_event("search_creator", %{"value" => query}, socket)
   end
 
   def handle_event("select_creator", %{"id" => id}, socket) do

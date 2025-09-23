@@ -7,6 +7,7 @@ defmodule Voile.Schema.Accounts do
   alias Voile.Repo
 
   alias Voile.Schema.Accounts.{User, UserRole, UserToken, UserNotifier}
+  alias Voile.Schema.Accounts.UserProfile
 
   ## Database getters
 
@@ -164,6 +165,34 @@ defmodule Voile.Schema.Accounts do
   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
+  end
+
+  @doc """
+  Get the user profile record for a given user id, or nil if absent.
+  """
+  def get_user_profile(user_id) when is_binary(user_id) do
+    Repo.get_by(UserProfile, user_id: user_id)
+  end
+
+  @doc """
+  Upsert a user's profile. If a profile exists it's updated, otherwise a new profile is created.
+
+  Returns {:ok, profile} or {:error, changeset}.
+  """
+  def upsert_user_profile(%User{} = user, attrs) when is_map(attrs) do
+    attrs = Map.put(attrs, "user_id", user.id)
+
+    case get_user_profile(user.id) do
+      nil ->
+        %UserProfile{}
+        |> UserProfile.changeset(attrs)
+        |> Repo.insert()
+
+      profile ->
+        profile
+        |> UserProfile.changeset(attrs)
+        |> Repo.update()
+    end
   end
 
   @doc """

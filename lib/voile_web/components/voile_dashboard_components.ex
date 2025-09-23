@@ -93,7 +93,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   end
 
   attr :active_menu, :string, default: ""
-  attr :user, :map
+  attr :user, :map, default: %{fullname: ""}
 
   def dashboard_menu_bar(assigns) do
     ~H"""

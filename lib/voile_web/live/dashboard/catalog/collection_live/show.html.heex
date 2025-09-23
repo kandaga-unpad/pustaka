@@ -1,5 +1,5 @@
 <section class="flex flex-col gap-4">
-  <.dashboard_menu_bar active_menu={@current_uri} />
+  <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
   <div class="bg-white dark:bg-gray-700 py-4 px-8 rounded-xl shadow-md">
     <.back navigate={~p"/manage/catalog/collections"}>Back to collections</.back>
 
@@ -107,9 +107,9 @@
               <div class="absolute top-3 right-3">{availability_badge(item.availability)}</div>
 
               <div class="p-5">
-                <div class="flex justify-between items-start mb-4">
+                <div class="flex justify-between items-start mt-6 mb-4">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-lg">
-                    Item: {item.item_code}
+                    Item: <br /> <span class="font-medium italic">{item.item_code}</span>
                   </h3>
                 </div>
 
@@ -147,9 +147,13 @@
                   <% end %>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center gap-2 w-full justify-between">
-                  <.link navigate="#" class="primary-btn text-sm font-medium">Details</.link>
-                  <.link navigate="#" class="warning-btn text-sm rounded-lg">Request</.link>
+                <div class="mt-6 text-center pt-4 border-t border-gray-100 flex items-center gap-2 w-full justify-between">
+                  <.link navigate="#" class="primary-btn text-sm font-medium w-full">
+                    Item Detail
+                  </.link>
+                  <.link navigate="#" class="warning-btn text-sm rounded-lg w-full">
+                    Transfer Location
+                  </.link>
                 </div>
               </div>
             </div>

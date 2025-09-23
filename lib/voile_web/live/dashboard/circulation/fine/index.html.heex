@@ -218,11 +218,51 @@
         placeholder="Enter member ID"
         required
       />
-      <.input
-        field={@fine_form[:item_id]}
-        label="Item ID"
-        placeholder="Enter item ID if applicable"
-      />
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Item</label>
+        <div class="relative">
+          <input
+            type="text"
+            name="item_search"
+            id="item-search"
+            value={@item_search_text}
+            phx-change="item_search"
+            phx-debounce="300"
+            autocomplete="off"
+            class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 px-3 py-2"
+            placeholder="Search by collection title, description, item code, or inventory code"
+          /> <input type="hidden" name="fine[item_id]" value={@selected_item_id} />
+          <div class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+            <ul>
+              <%= for item <- @item_suggestions do %>
+                <li
+                  class="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  phx-click="choose_item"
+                  phx-value-item_id={item.id}
+                >
+                  <div class="text-sm font-medium text-surface-dark">
+                    {item.item_code}
+                    <span class="text-xs text-gray-500">
+                      — {if item.collection, do: item.collection.title, else: "No collection"}
+                    </span>
+                  </div>
+                  
+                  <div class="text-xs text-gray-500 truncate">
+                    {if item.collection && item.collection.title,
+                      do: item.collection.title,
+                      else: item.description || ""}
+                  </div>
+                </li>
+              <% end %>
+              
+              <%= if @item_suggestions == [] and @item_search_text != "" do %>
+                <li class="px-3 py-2 text-sm text-gray-500">No items found</li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
       <.input
         field={@fine_form[:fine_type]}
         type="select"
