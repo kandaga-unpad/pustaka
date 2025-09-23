@@ -252,4 +252,11 @@ defmodule VoileWeb.Dashboard.Circulation.Helpers do
         0
     end
   end
+
+  def get_id_from_member_identifier(identifier) do
+    case Accounts.get_user_by_identifier(identifier) do
+      nil -> nil
+      user -> user.id
+    end
+  end
 end

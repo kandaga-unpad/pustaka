@@ -1617,4 +1617,26 @@ defmodule Voile.Schema.Library.Circulation do
       total: length(auto_renewable_transactions)
     }
   end
+
+  @doc """
+  Suggest items for autocomplete by item_code, collection title, or collection description.
+  Returns a list of items (preloaded with collection) matching the query.
+  """
+  def suggest_items_by_code_or_collection(query, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 10)
+    pattern = "%#{query}%"
+
+    Item
+    |> join(:left, [i], c in assoc(i, :collection))
+    |> where(
+      [i, c],
+      ilike(i.item_code, ^pattern) or
+        ilike(fragment("COALESCE(?, '')", c.title), ^pattern) or
+        ilike(fragment("COALESCE(?, '')", c.description), ^pattern)
+    )
+    |> where([i, _c], i.status == "active")
+    |> preload([i, c], collection: c)
+    |> limit(^limit)
+    |> Repo.all()
+  end
 end

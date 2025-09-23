@@ -45,6 +45,14 @@ defmodule VoileWeb.Dashboard.Circulation.Fine.Index do
 
   @impl true
   def handle_event("create_fine", %{"fine" => fine_params}, socket) do
+    fine_params =
+      if Map.has_key?(fine_params, "member_id") do
+        member_id = get_id_from_member_identifier(fine_params["member_id"])
+        Map.put(fine_params, "member_id", member_id)
+      else
+        fine_params
+      end
+
     case Circulation.create_fine(fine_params) do
       {:ok, fine} ->
         socket =
