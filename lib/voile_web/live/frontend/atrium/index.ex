@@ -114,7 +114,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             case Circulation.pay_fine(fine_id, dec, "cash", member.id, nil) do
               {:ok, _updated} ->
                 fines = Circulation.list_member_unpaid_fines(member.id)
-                {:noreply, socket |> put_flash(:info, "Fine payment successful") |> assign(fines: fines)}
+
+                {:noreply,
+                 socket |> put_flash(:info, "Fine payment successful") |> assign(fines: fines)}
 
               {:error, reason} ->
                 {:noreply, socket |> put_flash(:error, "Payment failed: #{inspect(reason)}")}
@@ -183,7 +185,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     {:noreply, assign(socket, profile_form: to_form(changeset))}
   end
 
-
   def handle_event("save_profile", %{"user" => user_params}, socket) do
     user = socket.assigns.current_scope.user
 
@@ -198,20 +199,25 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Profile updated")
-             |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)}
+             |> assign(
+               profile_form: to_form(Accounts.change_user(user)),
+               current_email: user.email
+             )}
 
           {:error, _changeset} ->
             {:noreply,
              socket
              |> put_flash(:error, "Profile updated but failed to save extended profile data")
-             |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)}
+             |> assign(
+               profile_form: to_form(Accounts.change_user(user)),
+               current_email: user.email
+             )}
         end
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, profile_form: to_form(changeset))}
     end
   end
-
 
   def handle_event("validate_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
@@ -252,7 +258,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
       result =
         consume_uploaded_entries(socket, :user_image, fn %{path: path}, entry ->
-          upload = %Plug.Upload{path: path, filename: entry.client_name, content_type: entry.client_type}
+          upload = %Plug.Upload{
+            path: path,
+            filename: entry.client_name,
+            content_type: entry.client_type
+          }
+
           user_id = socket.assigns.current_scope.user && socket.assigns.current_scope.user.id
 
           Storage.upload(upload, folder: "user_image", generate_filename: true, unit_id: user_id)
@@ -392,8 +403,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <h6 class="sr-only">Atrium tab panels</h6>
               
               <div id="atrium-tabpanels" class="space-y-4">
-                
-                
                 <%= if @active_tab == :collections do %>
                   <div
                     id="tab-collections"
@@ -413,7 +422,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-2">Account Settings</h4>
-
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
                         <.form
@@ -425,14 +434,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           <.input field={@profile_form[:fullname]} type="text" label="Full name" />
                           <.input field={@profile_form[:username]} type="text" label="Username" />
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />
-                          <label class="block text-sm font-medium text-gray-700 mb-2">Profile image</label>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Profile image
+                          </label>
                           <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
                             <%= if @profile_form.params["user_image"] && @profile_form.params["user_image"] != "" do %>
                               <div class="flex items-center gap-4">
-                                <img src={@profile_form.params["user_image"]} class="w-20 h-20 rounded-full object-cover" />
+                                <img
+                                  src={@profile_form.params["user_image"]}
+                                  class="w-20 h-20 rounded-full object-cover"
+                                />
                                 <div class="flex-1">
                                   <p class="text-sm text-gray-700">Uploaded</p>
-
+                                  
                                   <.button
                                     type="button"
                                     phx-click="delete_user_image"
@@ -446,51 +460,99 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <% else %>
                               <div class="border border-dashed rounded p-4 text-center">
                                 <p class="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                                <.live_file_input upload={@uploads.user_image} class="hidden" />
-                                <label for={@uploads.user_image.ref} class="inline-flex items-center px-4 py-2 mt-2 bg-gray-800 text-white rounded cursor-pointer">
+                                 <.live_file_input upload={@uploads.user_image} class="hidden" />
+                                <label
+                                  for={@uploads.user_image.ref}
+                                  class="inline-flex items-center px-4 py-2 mt-2 bg-gray-800 text-white rounded cursor-pointer"
+                                >
                                   Choose file
                                 </label>
                                 <%= for entry <- @uploads.user_image.entries do %>
-                                  <div class="mt-2 text-sm text-gray-600">Uploading... {entry.progress}%</div>
+                                  <div class="mt-2 text-sm text-gray-600">
+                                    Uploading... {entry.progress}%
+                                  </div>
                                 <% end %>
                               </div>
                             <% end %>
                           </div>
-                          <.input field={@profile_form[:website]} type="url" label="Website" />
-                          <.input field={@profile_form[:twitter]} type="text" label="Twitter" placeholder="@username" />
-                          <.input field={@profile_form[:facebook]} type="text" label="Facebook" placeholder="profile url" />
-                          <.input field={@profile_form[:linkedin]} type="text" label="LinkedIn" placeholder="profile url" />
-                          <.input field={@profile_form[:instagram]} type="text" label="Instagram" placeholder="@username" />
-
-                          <hr class="my-4" />
+                           <.input field={@profile_form[:website]} type="url" label="Website" />
+                          <.input
+                            field={@profile_form[:twitter]}
+                            type="text"
+                            label="Twitter"
+                            placeholder="@username"
+                          />
+                          <.input
+                            field={@profile_form[:facebook]}
+                            type="text"
+                            label="Facebook"
+                            placeholder="profile url"
+                          />
+                          <.input
+                            field={@profile_form[:linkedin]}
+                            type="text"
+                            label="LinkedIn"
+                            placeholder="profile url"
+                          />
+                          <.input
+                            field={@profile_form[:instagram]}
+                            type="text"
+                            label="Instagram"
+                            placeholder="@username"
+                          /> <hr class="my-4" />
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
+                          
                           <div class="text-sm text-gray-600 mb-3">
-                            <p>Role: <%= role_name(@current_scope.user) %></p>
-                            <p>Member type: <%= user_type_name(@current_scope.user) %></p>
-                            <p>Node: <%= node_name(@current_scope.user) %></p>
-                            <p>Confirmed at: <%= @current_scope.user.confirmed_at %></p>
-                            <p>Last login: <%= @current_scope.user.last_login %> (<%= @current_scope.user.last_login_ip %>)</p>
+                            <p>Role: {role_name(@current_scope.user)}</p>
+                            
+                            <p>Member type: {user_type_name(@current_scope.user)}</p>
+                            
+                            <p>Node: {node_name(@current_scope.user)}</p>
+                            
+                            <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
+                            
+                            <p>
+                              Last login: {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
+                            </p>
                           </div>
+                          
                           <.input field={@profile_form[:identifier]} type="text" label="Identifier" />
-                          <.input field={@profile_form[:groups]} type="text" label="Groups (comma-separated)" />
-                          <.input field={@profile_form[:website]} type="url" label="Website" />
-
+                          <.input
+                            field={@profile_form[:groups]}
+                            type="text"
+                            label="Groups (comma-separated)"
+                          /> <.input field={@profile_form[:website]} type="url" label="Website" />
                           <!-- UserProfile fields -->
-                          <.input field={@profile_form[:full_name]} type="text" label="Profile full name" />
-                          <.input field={@profile_form[:address]} type="text" label="Address" />
-                          <.input field={@profile_form[:phone_number]} type="text" label="Phone number" />
+                          <.input
+                            field={@profile_form[:full_name]}
+                            type="text"
+                            label="Profile full name"
+                          /> <.input field={@profile_form[:address]} type="text" label="Address" />
+                          <.input
+                            field={@profile_form[:phone_number]}
+                            type="text"
+                            label="Phone number"
+                          />
                           <.input field={@profile_form[:birth_date]} type="date" label="Birth date" />
                           <.input field={@profile_form[:birth_place]} type="text" label="Birth place" />
                           <.input field={@profile_form[:gender]} type="text" label="Gender" />
-                          <.input field={@profile_form[:registration_date]} type="date" label="Registration date" />
+                          <.input
+                            field={@profile_form[:registration_date]}
+                            type="date"
+                            label="Registration date"
+                          />
                           <.input field={@profile_form[:expiry_date]} type="date" label="Expiry date" />
-                          <.input field={@profile_form[:organization]} type="text" label="Organization" />
+                          <.input
+                            field={@profile_form[:organization]}
+                            type="text"
+                            label="Organization"
+                          />
                           <.input field={@profile_form[:department]} type="text" label="Department" />
                           <.input field={@profile_form[:position]} type="text" label="Position" />
                           <.button phx-disable-with="Saving...">Save Profile</.button>
                         </.form>
                       </div>
-
+                      
                       <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
                         <.form
                           for={@password_form}
@@ -507,7 +569,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             id="hidden_user_email"
                             value={@current_email}
                           />
-                          <.input field={@password_form[:password]} type="password" label="New password" required />
+                          <.input
+                            field={@password_form[:password]}
+                            type="password"
+                            label="New password"
+                            required
+                          />
                           <.input
                             field={@password_form[:password_confirmation]}
                             type="password"
@@ -521,19 +588,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             id="current_password_for_password"
                             value={@current_password}
                             required
-                          />
-                          <.button phx-disable-with="Changing...">Change Password</.button>
+                          /> <.button phx-disable-with="Changing...">Change Password</.button>
                         </.form>
                       </div>
                     </div>
                   </div>
                 <% end %>
-
                 <!-- Member dashboard panels -->
                 <%= if @active_tab == :profile do %>
                   <div class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark">
                     <h4 class="text-lg font-semibold mb-2">Your Active Loans</h4>
-
+                    
                     <%= if @loans == [] do %>
                       <p class="text-sm">You have no active loans.</p>
                     <% else %>
@@ -541,9 +606,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         <%= for tx <- @loans do %>
                           <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded">
                             <div class="text-sm">
-                              <div><strong><%= tx.item.title || tx.item.item_code %></strong></div>
-                              <div class="text-xs text-gray-500">Due: <%= tx.due_date %></div>
+                              <div><strong>{tx.item.title || tx.item.item_code}</strong></div>
+                              
+                              <div class="text-xs text-gray-500">Due: {tx.due_date}</div>
                             </div>
+                            
                             <div class="flex items-center gap-2">
                               <.button phx-click="renew_loan" phx-value-transaction_id={tx.id}>
                                 Renew
@@ -554,10 +621,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       </ul>
                     <% end %>
                   </div>
-
+                  
                   <div class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark mt-4">
                     <h4 class="text-lg font-semibold mb-2">Outstanding Fines</h4>
-
+                    
                     <%= if @fines == [] do %>
                       <p class="text-sm">You have no unpaid fines.</p>
                     <% else %>
@@ -565,14 +632,22 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         <%= for f <- @fines do %>
                           <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded">
                             <div class="text-sm">
-                              <div><strong><%= f.description || (f.item && f.item.title) || "Fine" %></strong></div>
-                              <div class="text-xs text-gray-500">Balance: <%= f.balance %></div>
+                              <div>
+                                <strong>{f.description || (f.item && f.item.title) || "Fine"}</strong>
+                              </div>
+                              
+                              <div class="text-xs text-gray-500">Balance: {f.balance}</div>
                             </div>
+                            
                             <div class="flex items-center gap-2">
                               <form phx-submit="pay_fine">
                                 <input type="hidden" name="fine_id" value={f.id} />
-                                <input type="text" name="amount" value={f.balance} class="px-2 py-1 rounded border" />
-                                <.button type="submit">Pay</.button>
+                                <input
+                                  type="text"
+                                  name="amount"
+                                  value={f.balance}
+                                  class="px-2 py-1 rounded border"
+                                /> <.button type="submit">Pay</.button>
                               </form>
                             </div>
                           </li>
