@@ -2,6 +2,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   use VoileWeb, :live_view
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Accounts
+  alias Voile.Schema.Accounts.UserProfile
   alias Client.Storage
 
   @impl true
@@ -14,6 +15,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     profile_changeset = Accounts.change_user(user)
     password_changeset = Accounts.change_user_password(user)
 
+    # load existing user_profile if present so we can prefill profile inputs
+    user_profile = Accounts.get_user_profile(user.id)
+
+    # prepare a changeset/form for user_profile and set `as: :user` so inputs submit as user[...] params
+    user_profile_changeset =
+      UserProfile.changeset(user_profile || %UserProfile{}, %{
+        "full_name" => user.fullname,
+        "photo" => user.user_image
+      })
+
+    user_profile_form = to_form(user_profile_changeset, as: :user)
+
     socket =
       socket
       |> assign(
@@ -25,6 +38,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         current_password: nil,
         current_email: user.email,
         profile_form: to_form(profile_changeset),
+        user_profile: user_profile || %{},
+        user_profile_form: user_profile_form,
         password_form: to_form(password_changeset),
         trigger_submit: false
       )
@@ -191,27 +206,47 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     # Extract profile-specific fields for UserProfile upsert
     user_profile_params = extract_user_profile_params(user_params)
 
+    # If an uploaded image URL exists in the profile_form params (set by handle_progress),
+    # ensure it's included in the submitted user params so the User record gets updated.
+    uploaded_image =
+      socket.assigns.profile_form.params && socket.assigns.profile_form.params["user_image"]
+
+    user_params =
+      if uploaded_image, do: Map.put(user_params, "user_image", uploaded_image), else: user_params
+
     case Accounts.update_profile_user(user, user_params) do
       {:ok, user} ->
-        # Upsert the user_profile record
-        case Accounts.upsert_user_profile(user, user_profile_params) do
-          {:ok, _profile} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Profile updated")
-             |> assign(
-               profile_form: to_form(Accounts.change_user(user)),
-               current_email: user.email
-             )}
+        # Only upsert the user_profile record when at least one profile field is present
+        # Ensure full_name/photo sync with user
+        user_profile_params =
+          user_profile_params
+          |> Map.put("full_name", user.fullname)
+          |> Map.put("photo", user.user_image)
 
-          {:error, _changeset} ->
-            {:noreply,
-             socket
-             |> put_flash(:error, "Profile updated but failed to save extended profile data")
-             |> assign(
-               profile_form: to_form(Accounts.change_user(user)),
-               current_email: user.email
-             )}
+        profile_non_empty =
+          user_profile_params
+          |> Map.values()
+          |> Enum.any?(fn v -> not (v == nil or v == "") end)
+
+        # Update assigns so the UI (header/profile) reflects the saved user immediately
+        socket =
+          socket
+          |> put_flash(:info, "Profile updated")
+          |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)
+          |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, user))
+
+        if profile_non_empty do
+          case Accounts.upsert_user_profile(user, user_profile_params) do
+            {:ok, _profile} ->
+              {:noreply, socket}
+
+            {:error, _changeset} ->
+              {:noreply,
+               socket
+               |> put_flash(:error, "Profile updated but failed to save extended profile data")}
+          end
+        else
+          {:noreply, socket}
         end
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -274,17 +309,24 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
           changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
 
+          # Update the preview form and also update current_scope user so header reflects new image
+          new_user = Map.put(socket.assigns.current_scope.user, :user_image, cache_bust(url))
+
           {:noreply,
            socket
-           |> assign(:profile_form, to_form(changeset))}
+           |> assign(:profile_form, to_form(changeset))
+           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, new_user))}
 
         [url] when is_binary(url) ->
           form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
           changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
 
+          new_user = Map.put(socket.assigns.current_scope.user, :user_image, cache_bust(url))
+
           {:noreply,
            socket
-           |> assign(:profile_form, to_form(changeset))}
+           |> assign(:profile_form, to_form(changeset))
+           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, new_user))}
 
         [{:error, err}] ->
           {:noreply, put_flash(socket, :error, err)}
@@ -336,6 +378,14 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     fines = Circulation.list_member_unpaid_fines(member.id)
 
     {:noreply, assign(socket, loans: loans, fines: fines)}
+  end
+
+  defp cache_bust(url) do
+    ts = System.system_time(:millisecond)
+
+    if String.contains?(url, "?"),
+      do: url <> "&t=" <> Integer.to_string(ts),
+      else: url <> "?t=" <> Integer.to_string(ts)
   end
 
   @impl true
@@ -534,6 +584,58 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               type="text"
                               label="Twitter"
                               placeholder="@username"
+                            />
+                          </div>
+                          
+                          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <.input
+                              field={@user_profile_form[:full_name]}
+                              type="text"
+                              label="Full name"
+                            />
+                            <.input
+                              field={@user_profile_form[:phone_number]}
+                              type="text"
+                              label="Phone number"
+                            />
+                            <.input field={@user_profile_form[:address]} type="text" label="Address" />
+                            <.input
+                              field={@user_profile_form[:birth_date]}
+                              type="date"
+                              label="Birth date"
+                            />
+                            <.input
+                              field={@user_profile_form[:birth_place]}
+                              type="text"
+                              label="Birth place"
+                            />
+                            <.input field={@user_profile_form[:gender]} type="text" label="Gender" />
+                            <.input
+                              field={@user_profile_form[:registration_date]}
+                              type="date"
+                              label="Registration date"
+                              disabled
+                            />
+                            <.input
+                              field={@user_profile_form[:expiry_date]}
+                              type="date"
+                              label="Expiry date"
+                              disabled
+                            />
+                            <.input
+                              field={@user_profile_form[:organization]}
+                              type="text"
+                              label="Organization"
+                            />
+                            <.input
+                              field={@user_profile_form[:department]}
+                              type="text"
+                              label="Department"
+                            />
+                            <.input
+                              field={@user_profile_form[:position]}
+                              type="text"
+                              label="Position"
                             />
                           </div>
                            <hr class="my-4" />
