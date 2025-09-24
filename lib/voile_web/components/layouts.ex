@@ -92,7 +92,20 @@ defmodule VoileWeb.Layouts do
           
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
-              <Layouts.theme_toggle />
+              <.button
+                phx-click={
+                  JS.toggle(
+                    to: "#searchPanel",
+                    in: "block",
+                    out: "hidden",
+                    display: "block"
+                  )
+                }
+                aria-label="Open search"
+                class="p-2 bg-transparent border-0"
+              >
+                <.icon name="hero-magnifying-glass" class="w-5 h-5" />
+              </.button> <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
@@ -175,6 +188,8 @@ defmodule VoileWeb.Layouts do
         </div>
       </div>
     </header>
+    <!-- Search panel (hidden by default) -->
+    <.search_panel id="searchPanel" />
     <!-- Mobile navigation component -->
     <.mobile_nav id="mobileNav" current_scope={@current_scope} />
     <main class="min-h-screen w-full h-full">{render_slot(@inner_block)}</main>
@@ -280,6 +295,50 @@ defmodule VoileWeb.Layouts do
           <a href="/" class="flex items-center gap-2">
             <img src={~p"/images/v.png"} width="28" /> <span class="font-semibold">Voile</span>
           </a>
+          <div class="flex items-center gap-2">
+            <.button
+              phx-click={
+                JS.toggle(
+                  to: "#searchPanel",
+                  in: "block",
+                  out: "hidden",
+                  display: "block"
+                )
+                |> JS.toggle(
+                  to: "#mobileNav [data-mobile-backdrop]",
+                  in: "hidden",
+                  out: "block",
+                  display: "block"
+                )
+              }
+              aria-label="Open search"
+              class="p-2"
+            >
+              <.icon name="hero-magnifying-glass" />
+            </.button>
+            <button
+              phx-click={
+                JS.toggle(
+                  to: "#mobileNav [data-mobile-backdrop]",
+                  in: "block opacity-100 pointer-events-auto",
+                  out: "hidden opacity-0 pointer-events-none",
+                  display: "block"
+                )
+                |> JS.toggle(
+                  to: "#mobileNav [data-mobile-panel]",
+                  in: "block translate-x-0",
+                  out: "hidden -translate-x-full",
+                  display: "block"
+                )
+                |> JS.dispatch("voile:mobile-nav-toggled")
+              }
+              aria-label="Close"
+              class="p-2"
+            >
+              <.icon name="hero-x-mark" />
+            </button>
+          </div>
+          
           <button
             phx-click={
               JS.toggle(
@@ -349,5 +408,69 @@ defmodule VoileWeb.Layouts do
       %{label: "Tentang", href: "/about"},
       %{label: "Koleksi", href: "/collections"}
     ]
+  end
+
+  attr :id, :string, required: true
+
+  def search_panel(assigns) do
+    ~H"""
+    <div>
+      <div
+        id={@id}
+        class="hidden fixed inset-x-0 top-[64px] z-40"
+        aria-hidden={true}
+      >
+        <div class="max-w-4xl mx-auto p-4 bg-white dark:bg-gray-800 rounded-b shadow-md">
+          <div
+            phx-hook="SearchPanel"
+            id={"panel-" <> @id}
+            class="transition-all duration-200 ease-out"
+          >
+            <div class="flex items-center gap-3">
+              <div class="flex-1">
+                <form action="/search" method="get" class="relative">
+                  <input
+                    type="text"
+                    name="q"
+                    placeholder="Search collections..."
+                    class="block w-full pl-3 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    autocomplete="off"
+                  />
+                </form>
+              </div>
+              
+              <button
+                phx-click={
+                  JS.toggle(
+                    to: "#" <> @id,
+                    in: "block",
+                    out: "hidden",
+                    display: "block"
+                  )
+                }
+                aria-label="Close search"
+                class="p-2"
+              >
+                <.icon name="hero-x-mark" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- backdrop: clicking it closes the search panel -->
+      <div
+        phx-click={
+          JS.toggle(
+            to: "#" <> @id,
+            in: "block",
+            out: "hidden",
+            display: "block"
+          )
+        }
+        class="hidden fixed inset-0 bg-black/40 z-30"
+        data-search-backdrop
+      />
+    </div>
+    """
   end
 end

@@ -22,8 +22,23 @@ defmodule VoileWeb.Components.SearchWidget do
     socket = assign(socket, :search_query, query)
 
     if String.length(trimmed_query) >= 2 do
-      send(self(), {:fetch_suggestions, trimmed_query, socket.assigns.id})
-      {:noreply, assign(socket, :loading, true)}
+      # Spawn an async task to fetch suggestions so we don't block the socket.
+      # We send the final `:suggestions_fetched` message directly so the
+      # parent LiveView doesn't receive an intermediate `:fetch_suggestions`
+      # message it doesn't handle (which produced the warning).
+      # Indicate loading, perform synchronous fetch, then update state.
+      socket = assign(socket, :loading, true)
+      user_role = Voile.Utils.SearchHelper.get_user_role(socket)
+
+      suggestions = Voile.Utils.SearchHelper.fetch_suggestions(trimmed_query, user_role)
+
+      socket =
+        socket
+        |> assign(:suggestions, suggestions)
+        |> assign(:show_suggestions, length(suggestions) > 0)
+        |> assign(:loading, false)
+
+      {:noreply, socket}
     else
       socket =
         socket
@@ -34,6 +49,8 @@ defmodule VoileWeb.Components.SearchWidget do
       {:noreply, socket}
     end
   end
+
+  # ...existing code...
 
   @impl true
   def handle_event("select_suggestion", %{"title" => title}, socket) do
@@ -122,7 +139,7 @@ defmodule VoileWeb.Components.SearchWidget do
                   stroke-width="4"
                 >
                 </circle>
-
+                
                 <path
                   class="opacity-75"
                   fill="currentColor"

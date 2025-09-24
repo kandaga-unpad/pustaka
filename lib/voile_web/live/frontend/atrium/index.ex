@@ -6,7 +6,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    tabs = [:profile, :collections, :settings]
+    tabs = [:circulation, :collections, :settings]
 
     user = socket.assigns.current_scope.user
 
@@ -17,7 +17,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     socket =
       socket
       |> assign(
-        active_tab: :profile,
+        active_tab: :circulation,
         tabs: tabs,
         loans: [],
         fines: [],
@@ -42,10 +42,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   def handle_event("select_tab", %{"tab" => tab}, socket) do
     tab_atom =
       case tab do
-        "profile" -> :profile
+        "circulation" -> :circulation
         "collections" -> :collections
         "settings" -> :settings
-        _ -> :profile
+        _ -> :circulation
       end
 
     {:noreply, assign(socket, :active_tab, tab_atom)}
@@ -342,76 +342,124 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="text-center max-w-7xl mx-auto px-5">
-        <div class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
-          <h1 class="text-3xl font-bold mb-6 voile-text-gradient">My Atrium</h1>
-          
-          <div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-xl text-white shadow-lg p-6 mb-8">
+          <div class="flex items-center justify-center gap-6">
             <img
               src={@current_scope.user.user_image || ~p"/images/default_avatar.jpg"}
               alt="User Avatar"
-              class="w-24 h-24 rounded-full mx-auto mb-4"
+              class="w-20 h-20 rounded-full ring-4 ring-white object-cover shadow-md"
               referrerpolicy="no-referrer"
             />
-            <h3 class="text-xl font-semibold mb-4">Hello, {@current_scope.user.fullname}!</h3>
+            <div>
+              <h1 class="text-2xl font-semibold">Welcome back, {@current_scope.user.fullname}</h1>
+              
+              <p class="mt-1 text-sm opacity-90">
+                This is your Atrium — a personalized member dashboard.
+              </p>
+              
+              <div class="mt-3 flex items-center gap-3 text-sm">
+                <span class="px-3 py-1 bg-white/20 rounded-full">
+                  Loans: <strong class="ml-1">{length(@loans || [])}</strong>
+                </span>
+                <span class="px-3 py-1 bg-white/20 rounded-full">
+                  Unpaid fines: <strong class="ml-1">{length(@fines || [])}</strong>
+                </span>
+              </div>
+            </div>
           </div>
-          
-          <p class="italic text-xs">
-            Welcome to the Atrium! This is your central hub for managing and accessing various features of the Voile platform. From here, you can navigate to different sections, manage your profile, and explore the tools available to you.
-          </p>
-        </div>
-      </div>
-      
-      <div class="text-center max-w-7xl mx-auto px-5">
-        <div>
-          <div>
-            <h5>
-              Manage your profile, view your collections, and explore new items all from your Atrium.
-            </h5>
-            
-            <div class="mt-4">
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Left column: profile card -->
+          <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 sticky top-6">
+              <div class="flex items-center gap-4">
+                <img
+                  src={@current_scope.user.user_image || ~p"/images/default_avatar.jpg"}
+                  class="w-16 h-16 rounded-full object-cover"
+                  alt="avatar"
+                />
+                <div>
+                  <div class="text-lg font-medium">{@current_scope.user.fullname}</div>
+                  
+                  <div class="text-sm mt-1">{role_name(@current_scope.user)}</div>
+                </div>
+              </div>
+              
+              <div class="mt-4 text-sm space-y-2">
+                <div><strong>Email:</strong> {@current_scope.user.email}</div>
+                
+                <div><strong>Member type:</strong> {user_type_name(@current_scope.user)}</div>
+                
+                <div><strong>Node:</strong> {node_name(@current_scope.user)}</div>
+              </div>
+              
+              <div class="mt-6">
+                <h6 class="text-sm font-medium text-voile-muted mb-3">Circulation Summary</h6>
+                
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="p-3 bg-voile-neutral rounded-lg text-center">
+                    <div class="text-xs text-voile-muted">Active Loans</div>
+                    
+                    <div class="text-lg font-semibold">{length(@loans || [])}</div>
+                  </div>
+                  
+                  <div class="p-3 bg-voile-neutral rounded-lg text-center">
+                    <div class="text-xs text-voile-muted">Unpaid Fines</div>
+                    
+                    <div class="text-lg font-semibold">{length(@fines || [])}</div>
+                  </div>
+                </div>
+                
+                <div class="mt-4">
+                  <.button
+                    type="button"
+                    phx-click="select_tab"
+                    phx-value-tab="circulation"
+                    class="w-full primary-btn"
+                  >
+                    View Circulation
+                  </.button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Right column: tabs and panels -->
+          <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <nav
                 role="tablist"
                 aria-label="Atrium navigation"
-                class="inline-flex overflow-hidden rounded-md w-full items-center justify-around"
+                class="flex space-x-2 mb-6"
                 phx-keydown="navigate_tab"
                 tabindex="0"
               >
                 <%= for {tab, idx} <- Enum.with_index(@tabs) do %>
-                  <% tab_str = Atom.to_string(tab) %> <% label = String.capitalize(tab_str) %> <% last_idx =
-                    length(@tabs) - 1 %> <% rounded =
-                    cond do
-                      idx == 0 -> "rounded-l-md"
-                      idx == last_idx -> "rounded-r-md"
-                      true -> ""
-                    end %>
+                  <% tab_str = Atom.to_string(tab) %> <% label = String.capitalize(tab_str) %>
                   <button
                     type="button"
                     role="tab"
                     aria-selected={@active_tab == tab}
                     phx-click="select_tab"
                     phx-value-tab={tab_str}
-                    class={"w-full px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 border border-brand-300 dark:border-brand-700 " <> (if @active_tab == tab, do: "bg-brand-100 dark:bg-brand-700 text-indigo-600 dark:text-indigo-200 " <> rounded, else: "dark:text-voile-muted hover:bg-voile-surface dark:hover:bg-voile-dark " <> rounded)}
+                    class={"px-4 py-2 text-sm font-medium rounded-lg focus:outline-none " <> (if @active_tab == tab, do: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200 shadow-sm", else: "text-voile-muted hover:bg-voile-surface dark:hover:bg-voile-dark")}
                   >
                     {label}
                   </button>
                 <% end %>
               </nav>
-            </div>
-            <!-- Placeholder tab panels (dummy content to be replaced later) -->
-            <div class="mt-6 text-left max-w-7xl mx-auto">
-              <h6 class="sr-only">Atrium tab panels</h6>
               
-              <div id="atrium-tabpanels" class="space-y-4">
+              <div id="atrium-tabpanels" class="space-y-6">
                 <%= if @active_tab == :collections do %>
                   <div
                     id="tab-collections"
-                    class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark"
+                    class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
-                    <h4 class="text-lg font-semibold mb-2">Collections (placeholder)</h4>
+                    <h4 class="text-lg font-semibold mb-2">Collections</h4>
                     
                     <p class="text-sm">
-                      Collections tab content will be added soon. This area will list and manage your collections.
+                      Your collections will be shown here — curated and simple to browse.
                     </p>
                   </div>
                 <% end %>
@@ -419,20 +467,23 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 <%= if @active_tab == :settings do %>
                   <div
                     id="tab-settings"
-                    class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark"
+                    class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
-                    <h4 class="text-lg font-semibold mb-2">Account Settings</h4>
+                    <h4 class="text-lg font-semibold mb-4">Account Settings</h4>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div class="space-y-4">
                         <.form
                           for={@profile_form}
                           id="profile_form"
                           phx-submit="save_profile"
                           phx-change="validate_profile"
                         >
-                          <.input field={@profile_form[:fullname]} type="text" label="Full name" />
-                          <.input field={@profile_form[:username]} type="text" label="Username" />
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <.input field={@profile_form[:fullname]} type="text" label="Full name" />
+                            <.input field={@profile_form[:username]} type="text" label="Username" />
+                          </div>
+                          
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />
                           <label class="block text-sm font-medium text-gray-700 mb-2">
                             Profile image
@@ -445,7 +496,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                   class="w-20 h-20 rounded-full object-cover"
                                 />
                                 <div class="flex-1">
-                                  <p class="text-sm text-gray-700">Uploaded</p>
+                                  <p class="text-sm text-voile-muted">Uploaded</p>
                                   
                                   <.button
                                     type="button"
@@ -459,50 +510,36 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               </div>
                             <% else %>
                               <div class="border border-dashed rounded p-4 text-center">
-                                <p class="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
                                  <.live_file_input upload={@uploads.user_image} class="hidden" />
                                 <label
                                   for={@uploads.user_image.ref}
-                                  class="inline-flex items-center px-4 py-2 mt-2 bg-gray-800 text-white rounded cursor-pointer"
+                                  class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
                                 >
                                   Choose file
                                 </label>
                                 <%= for entry <- @uploads.user_image.entries do %>
-                                  <div class="mt-2 text-sm text-gray-600">
+                                  <div class="mt-2 text-sm text-voile-muted">
                                     Uploading... {entry.progress}%
                                   </div>
                                 <% end %>
                               </div>
                             <% end %>
                           </div>
-                           <.input field={@profile_form[:website]} type="url" label="Website" />
-                          <.input
-                            field={@profile_form[:twitter]}
-                            type="text"
-                            label="Twitter"
-                            placeholder="@username"
-                          />
-                          <.input
-                            field={@profile_form[:facebook]}
-                            type="text"
-                            label="Facebook"
-                            placeholder="profile url"
-                          />
-                          <.input
-                            field={@profile_form[:linkedin]}
-                            type="text"
-                            label="LinkedIn"
-                            placeholder="profile url"
-                          />
-                          <.input
-                            field={@profile_form[:instagram]}
-                            type="text"
-                            label="Instagram"
-                            placeholder="@username"
-                          /> <hr class="my-4" />
+                          
+                          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <.input field={@profile_form[:website]} type="url" label="Website" />
+                            <.input
+                              field={@profile_form[:twitter]}
+                              type="text"
+                              label="Twitter"
+                              placeholder="@username"
+                            />
+                          </div>
+                           <hr class="my-4" />
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
                           
-                          <div class="text-sm text-gray-600 mb-3">
+                          <div class="text-sm text-voile-muted mb-3 space-y-1">
                             <p>Role: {role_name(@current_scope.user)}</p>
                             
                             <p>Member type: {user_type_name(@current_scope.user)}</p>
@@ -516,44 +553,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             </p>
                           </div>
                           
-                          <.input field={@profile_form[:identifier]} type="text" label="Identifier" />
-                          <.input
-                            field={@profile_form[:groups]}
-                            type="text"
-                            label="Groups (comma-separated)"
-                          /> <.input field={@profile_form[:website]} type="url" label="Website" />
-                          <!-- UserProfile fields -->
-                          <.input
-                            field={@profile_form[:full_name]}
-                            type="text"
-                            label="Profile full name"
-                          /> <.input field={@profile_form[:address]} type="text" label="Address" />
-                          <.input
-                            field={@profile_form[:phone_number]}
-                            type="text"
-                            label="Phone number"
-                          />
-                          <.input field={@profile_form[:birth_date]} type="date" label="Birth date" />
-                          <.input field={@profile_form[:birth_place]} type="text" label="Birth place" />
-                          <.input field={@profile_form[:gender]} type="text" label="Gender" />
-                          <.input
-                            field={@profile_form[:registration_date]}
-                            type="date"
-                            label="Registration date"
-                          />
-                          <.input field={@profile_form[:expiry_date]} type="date" label="Expiry date" />
-                          <.input
-                            field={@profile_form[:organization]}
-                            type="text"
-                            label="Organization"
-                          />
-                          <.input field={@profile_form[:department]} type="text" label="Department" />
-                          <.input field={@profile_form[:position]} type="text" label="Position" />
-                          <.button phx-disable-with="Saving...">Save Profile</.button>
+                          <div class="mt-3 grid grid-cols-1 gap-2">
+                            <.button phx-disable-with="Saving...">Save Profile</.button>
+                          </div>
                         </.form>
                       </div>
                       
-                      <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
+                      <div>
                         <.form
                           for={@password_form}
                           id="password_form"
@@ -588,72 +594,77 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             id="current_password_for_password"
                             value={@current_password}
                             required
-                          /> <.button phx-disable-with="Changing...">Change Password</.button>
+                          />
+                          <div class="mt-3">
+                            <.button phx-disable-with="Changing...">Change Password</.button>
+                          </div>
                         </.form>
                       </div>
                     </div>
                   </div>
                 <% end %>
                 <!-- Member dashboard panels -->
-                <%= if @active_tab == :profile do %>
-                  <div class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark">
-                    <h4 class="text-lg font-semibold mb-2">Your Active Loans</h4>
-                    
-                    <%= if @loans == [] do %>
-                      <p class="text-sm">You have no active loans.</p>
-                    <% else %>
-                      <ul class="space-y-3">
-                        <%= for tx <- @loans do %>
-                          <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded">
-                            <div class="text-sm">
-                              <div><strong>{tx.item.title || tx.item.item_code}</strong></div>
-                              
-                              <div class="text-xs text-gray-500">Due: {tx.due_date}</div>
-                            </div>
-                            
-                            <div class="flex items-center gap-2">
-                              <.button phx-click="renew_loan" phx-value-transaction_id={tx.id}>
-                                Renew
-                              </.button>
-                            </div>
-                          </li>
-                        <% end %>
-                      </ul>
-                    <% end %>
-                  </div>
-                  
-                  <div class="p-4 rounded-md shadow-sm border border-voile-light dark:border-voile-dark mt-4">
-                    <h4 class="text-lg font-semibold mb-2">Outstanding Fines</h4>
-                    
-                    <%= if @fines == [] do %>
-                      <p class="text-sm">You have no unpaid fines.</p>
-                    <% else %>
-                      <ul class="space-y-3">
-                        <%= for f <- @fines do %>
-                          <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded">
-                            <div class="text-sm">
-                              <div>
-                                <strong>{f.description || (f.item && f.item.title) || "Fine"}</strong>
+                <%= if @active_tab == :circulation do %>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <h4 class="text-lg font-semibold mb-3">Your Active Loans</h4>
+                      
+                      <%= if @loans == [] do %>
+                        <p class="text-sm text-voile-muted">You have no active loans.</p>
+                      <% else %>
+                        <ul class="space-y-3">
+                          <%= for tx <- @loans do %>
+                            <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                              <div class="text-sm">
+                                <div class="font-medium">{tx.item.title || tx.item.item_code}</div>
+                                
+                                <div class="text-xs text-voile-muted">Due: {tx.due_date}</div>
                               </div>
                               
-                              <div class="text-xs text-gray-500">Balance: {f.balance}</div>
-                            </div>
-                            
-                            <div class="flex items-center gap-2">
-                              <form phx-submit="pay_fine">
-                                <input type="hidden" name="fine_id" value={f.id} />
-                                <input
-                                  type="text"
-                                  name="amount"
-                                  value={f.balance}
-                                  class="px-2 py-1 rounded border"
-                                /> <.button type="submit">Pay</.button>
-                              </form>
-                            </div>
-                          </li>
-                        <% end %>
-                      </ul>
-                    <% end %>
+                              <div class="flex items-center gap-2">
+                                <.button phx-click="renew_loan" phx-value-transaction_id={tx.id}>
+                                  Renew
+                                </.button>
+                              </div>
+                            </li>
+                          <% end %>
+                        </ul>
+                      <% end %>
+                    </div>
+                    
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <h4 class="text-lg font-semibold mb-3">Outstanding Fines</h4>
+                      
+                      <%= if @fines == [] do %>
+                        <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
+                      <% else %>
+                        <ul class="space-y-3">
+                          <%= for f <- @fines do %>
+                            <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                              <div class="text-sm">
+                                <div class="font-medium">
+                                  {f.description || (f.item && f.item.title) || "Fine"}
+                                </div>
+                                
+                                <div class="text-xs text-voile-muted">Balance: {f.balance}</div>
+                              </div>
+                              
+                              <div class="flex items-center gap-2">
+                                <form phx-submit="pay_fine">
+                                  <input type="hidden" name="fine_id" value={f.id} />
+                                  <input
+                                    type="text"
+                                    name="amount"
+                                    value={f.balance}
+                                    class="px-2 py-1 rounded border"
+                                  /> <.button type="submit">Pay</.button>
+                                </form>
+                              </div>
+                            </li>
+                          <% end %>
+                        </ul>
+                      <% end %>
+                    </div>
                   </div>
                 <% end %>
               </div>

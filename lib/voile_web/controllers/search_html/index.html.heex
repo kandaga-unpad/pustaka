@@ -139,7 +139,7 @@
                           </p>
                         <% end %>
                         
-                        <div class="flex items-center gap-4 mt-2 text-sm text-voile-dark dark:text-voile-dark">
+                        <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
@@ -148,7 +148,7 @@
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
                           <%= if collection.resource_class do %>
-                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-voile-info text-voile-primary dark:bg-voile-primary-dark dark:text-voile-primary-light">
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-voile-info text-white">
                               {collection.resource_class.glam_type}
                             </span>
                           <% end %>
@@ -156,7 +156,7 @@
                       </div>
                       
                       <div class="ml-4">
-                        <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
+                        <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status |> String.downcase())}"}>
                           {String.capitalize(collection.status || "unknown")}
                         </span>
                       </div>
@@ -220,7 +220,7 @@
                           </p>
                         <% end %>
                         
-                        <div class="flex items-center gap-4 mt-2 text-sm text-voile-dark dark:text-voile-dark">
+                        <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
@@ -278,7 +278,7 @@
                           </p>
                         <% end %>
                         
-                        <div class="flex items-center gap-4 mt-2 text-sm text-voile-dark dark:text-voile-dark">
+                        <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
