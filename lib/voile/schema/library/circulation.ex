@@ -1,5 +1,6 @@
 defmodule Voile.Schema.Library.Circulation do
   import Ecto.Query
+
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.MemberType
@@ -389,6 +390,15 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.all()
   end
 
+  def count_list_active_transactions(nil), do: 0
+
+  def count_list_active_transactions(id) do
+    Transaction
+    |> where([t], t.member_id == ^id)
+    |> where([t], t.status == "active")
+    |> Repo.aggregate(:count, :id)
+  end
+
   def list_transactions_paginated(page \\ 1, per_page \\ 10) do
     offset = (page - 1) * per_page
 
@@ -513,8 +523,23 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.preload([
       :member,
       librarian: [:user_role],
-      item: [:collection]
+      item: [:collection],
+      collection: []
     ])
+  end
+
+  @doc """
+  Safe non-bang version of get_transaction/1. Returns the transaction struct
+  preloaded or nil if not found.
+  """
+  def get_transaction(id) do
+    case Repo.get(Transaction, id) do
+      %Transaction{} = t ->
+        Repo.preload(t, [:member, librarian: [:user_role], item: [:collection], collection: []])
+
+      nil ->
+        nil
+    end
   end
 
   def create_transaction(attrs \\ %{}) do
@@ -535,11 +560,7 @@ defmodule Voile.Schema.Library.Circulation do
 
   def change_transaction(%Transaction{} = transaction, attrs) do
     transaction
-    |> Repo.preload([
-      :item,
-      :member,
-      :librarian
-    ])
+    |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
     |> Transaction.changeset(attrs)
   end
 
@@ -559,7 +580,8 @@ defmodule Voile.Schema.Library.Circulation do
            {:ok, transaction} <- create_checkout_transaction(member, item, librarian_id, attrs),
            {:ok, _item} <- update_item_availability(item, "loaned"),
            {:ok, _history} <- record_circulation_history(transaction, "loan") do
-        transaction |> Repo.preload([:member, :librarian, item: [:collection]])
+        transaction
+        |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
       else
         {:error, reason} -> Repo.rollback(reason)
       end
@@ -577,7 +599,8 @@ defmodule Voile.Schema.Library.Circulation do
            {:ok, _item} <- update_item_availability(transaction.item, "available"),
            {:ok, _history} <- record_circulation_history(transaction, "return"),
            {:ok, _fine} <- calculate_and_create_fine_if_needed(transaction, member.user_type) do
-        transaction |> Repo.preload([:member, :librarian, item: [:collection]])
+        transaction
+        |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
       else
         {:error, reason} -> Repo.rollback(reason)
       end
@@ -595,7 +618,8 @@ defmodule Voile.Schema.Library.Circulation do
            {:ok, transaction} <-
              process_renewal(transaction, member.user_type, librarian_id, attrs),
            {:ok, _history} <- record_circulation_history(transaction, "renewal") do
-        transaction |> Repo.preload([:member, :item, :librarian])
+        transaction
+        |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
       else
         {:error, reason} -> Repo.rollback(reason)
       end
@@ -610,9 +634,35 @@ defmodule Voile.Schema.Library.Circulation do
   def list_member_active_transactions(member_id) do
     Transaction
     |> where([t], t.member_id == ^member_id and t.status == "active")
-    |> preload([:item, :librarian])
+    |> preload(member: [], librarian: [], item: [:collection], collection: [])
     |> order_by([t], desc: t.transaction_date)
     |> Repo.all()
+  end
+
+  def list_member_active_transactions_paginated(member_id, page \\ 1, per_page \\ 10)
+
+  def list_member_active_transactions_paginated(nil, _page, _per_page), do: {[], 0}
+
+  def list_member_active_transactions_paginated(member_id, page, per_page) do
+    offset = (page - 1) * per_page
+
+    query =
+      from t in Transaction,
+        where: t.member_id == ^member_id and t.status == "active",
+        preload: [member: [], librarian: [], item: [:collection], collection: []],
+        order_by: [desc: t.transaction_date],
+        offset: ^offset,
+        limit: ^per_page
+
+    transactions = Repo.all(query)
+
+    count_query =
+      from(t in Transaction, where: t.member_id == ^member_id and t.status == "active")
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {transactions, total_pages}
   end
 
   @doc """
@@ -623,7 +673,7 @@ defmodule Voile.Schema.Library.Circulation do
 
     Transaction
     |> where([t], t.status == "active" and t.due_date < ^now)
-    |> preload([:member, :item, :librarian])
+    |> preload(member: [], librarian: [], item: [:collection], collection: [])
     |> order_by([t], t.due_date)
     |> Repo.all()
   end
@@ -636,7 +686,7 @@ defmodule Voile.Schema.Library.Circulation do
 
     Transaction
     |> where([t], t.status == "active" and t.due_date <= ^due_date)
-    |> preload([:member, :item, :librarian])
+    |> preload(member: [], librarian: [], item: [:collection], collection: [])
     |> order_by([t], t.due_date)
     |> Repo.all()
   end
@@ -823,9 +873,45 @@ defmodule Voile.Schema.Library.Circulation do
   def list_member_unpaid_fines(member_id) do
     Fine
     |> where([f], f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"])
-    |> preload([:item, :transaction])
+    |> preload(item: [:collection], transaction: [])
     |> order_by([f], f.fine_date)
     |> Repo.all()
+  end
+
+  def count_member_unpaid_fines(nil), do: 0
+
+  def count_member_unpaid_fines(member_id) do
+    Fine
+    |> where([f], f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"])
+    |> Repo.aggregate(:count, :id)
+  end
+
+  def list_member_unpaid_fines_paginated(member_id, page \\ 1, per_page \\ 10)
+
+  def list_member_unpaid_fines_paginated(nil, _page, _per_page), do: {[], 0}
+
+  def list_member_unpaid_fines_paginated(member_id, page, per_page) do
+    offset = (page - 1) * per_page
+
+    query =
+      from f in Fine,
+        where: f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"],
+        preload: [item: [:collection], transaction: []],
+        order_by: [desc: f.fine_date, desc: f.id],
+        offset: ^offset,
+        limit: ^per_page
+
+    fines = Repo.all(query)
+
+    count_query =
+      from(f in Fine,
+        where: f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"]
+      )
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {fines, total_pages}
   end
 
   @doc """
@@ -1394,7 +1480,8 @@ defmodule Voile.Schema.Library.Circulation do
   defp format_ip(_), do: nil
 
   defp get_active_transaction(transaction_id) do
-    case Repo.get(Transaction, transaction_id) |> Repo.preload([:item, :member]) do
+    case Repo.get(Transaction, transaction_id)
+         |> Repo.preload(member: [], item: [:collection], collection: []) do
       %Transaction{status: "active"} = transaction -> {:ok, transaction}
       %Transaction{} -> {:error, "Transaction is not active"}
       nil -> {:error, "Transaction not found"}
@@ -1415,7 +1502,8 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   defp get_renewable_transaction(transaction_id) do
-    case Repo.get(Transaction, transaction_id) |> Repo.preload([:item, :member]) do
+    case Repo.get(Transaction, transaction_id)
+         |> Repo.preload(member: [], item: [:collection], collection: []) do
       %Transaction{status: "active"} = transaction -> {:ok, transaction}
       %Transaction{} -> {:error, "Transaction is not active"}
       nil -> {:error, "Transaction not found"}
@@ -1477,7 +1565,8 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   defp get_available_reservation(reservation_id) do
-    case Repo.get(Reservation, reservation_id) |> Repo.preload([:member, :item]) do
+    case Repo.get(Reservation, reservation_id)
+         |> Repo.preload(member: [], item: [:collection], collection: []) do
       %Reservation{status: "available"} = reservation -> {:ok, reservation}
       %Reservation{} -> {:error, "Reservation is not available"}
       nil -> {:error, "Reservation not found"}
@@ -1638,5 +1727,15 @@ defmodule Voile.Schema.Library.Circulation do
     |> preload([i, c], collection: c)
     |> limit(^limit)
     |> Repo.all()
+  end
+
+  def get_admin_id_for_self_renewal() do
+    # Return the id of a user with the admin role (user_role_id == 1), or nil
+    # if no such user exists. Use the aliased User schema.
+    User
+    |> where([u], u.user_role_id == 1)
+    |> select([u], u.id)
+    |> limit(1)
+    |> Repo.one()
   end
 end

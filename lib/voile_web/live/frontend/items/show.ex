@@ -37,7 +37,10 @@ defmodule VoileWeb.Frontend.Items.Show do
          socket
          |> assign(:item, item)
          |> assign(:related_items, related_items)
-         |> assign(:page_title, "#{item.item_code} - #{item.collection.title}")
+         |> assign(
+           :page_title,
+           "#{item.item_code} - #{if item.collection && item.collection.title, do: item.collection.title, else: ""}"
+         )
          |> assign(:loading, false)}
 
       {:error, :not_found} ->
@@ -213,14 +216,20 @@ defmodule VoileWeb.Frontend.Items.Show do
                             <div class="text-lg mb-4">
                               From:
                               <.link
-                                navigate={~p"/collections/#{@item.collection.id}"}
+                                navigate={
+                                  if @item.collection,
+                                    do: ~p"/collections/#{@item.collection.id}",
+                                    else: "#"
+                                }
                                 class="text-voile-primary dark:text-voile-primary font-medium"
                               >
-                                {@item.collection.title}
+                                {if @item.collection && @item.collection.title,
+                                  do: @item.collection.title,
+                                  else: ""}
                               </.link>
                             </div>
                             
-                            <%= if @item.collection.mst_creator do %>
+                            <%= if @item.collection && @item.collection.mst_creator do %>
                               <div class="mb-6">By: {@item.collection.mst_creator.creator_name}</div>
                             <% end %>
                           </div>

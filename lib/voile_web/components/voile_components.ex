@@ -773,6 +773,8 @@ defmodule VoileWeb.VoileComponents do
   attr :search_query, :string, default: ""
   attr :filter_unit_id, :string, default: "all"
   attr :filter_status, :string, default: "published"
+  # or "items"
+  attr :type_page, :string, default: "collections"
   attr :socket, :map, default: nil
 
   def frontend_pagination(assigns) do
@@ -781,7 +783,15 @@ defmodule VoileWeb.VoileComponents do
       <div class="flex flex-1 justify-between sm:hidden">
         <%= if @current_page > 1 do %>
           <.link
-            patch={build_page_url(@current_page - 1, @search_query, @filter_unit_id, @filter_status)}
+            patch={
+              build_page_url(
+                @current_page - 1,
+                @search_query,
+                @filter_unit_id,
+                @filter_status,
+                @type_page
+              )
+            }
             class="relative inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile hover:bg-voile-surface"
           >
             Previous
@@ -790,7 +800,15 @@ defmodule VoileWeb.VoileComponents do
         
         <%= if @current_page < @total_pages do %>
           <.link
-            patch={build_page_url(@current_page + 1, @search_query, @filter_unit_id, @filter_status)}
+            patch={
+              build_page_url(
+                @current_page + 1,
+                @search_query,
+                @filter_unit_id,
+                @filter_status,
+                @type_page
+              )
+            }
             class="relative ml-3 inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile dark:bg-voile-neutral-dark dark:text-voile-surface dark:hover:bg-voile-surface-dark hover:bg-voile-surface"
           >
             Next
@@ -811,7 +829,13 @@ defmodule VoileWeb.VoileComponents do
             <%= if @current_page > 1 do %>
               <.link
                 patch={
-                  build_page_url(@current_page - 1, @search_query, @filter_unit_id, @filter_status)
+                  build_page_url(
+                    @current_page - 1,
+                    @search_query,
+                    @filter_unit_id,
+                    @filter_status,
+                    @type_page
+                  )
                 }
                 class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
               >
@@ -826,7 +850,9 @@ defmodule VoileWeb.VoileComponents do
                 </span>
               <% else %>
                 <.link
-                  patch={build_page_url(page, @search_query, @filter_unit_id, @filter_status)}
+                  patch={
+                    build_page_url(page, @search_query, @filter_unit_id, @filter_status, @type_page)
+                  }
                   class={[
                     "relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0",
                     if(page == @current_page,
@@ -845,7 +871,13 @@ defmodule VoileWeb.VoileComponents do
             <%= if @current_page < @total_pages do %>
               <.link
                 patch={
-                  build_page_url(@current_page + 1, @search_query, @filter_unit_id, @filter_status)
+                  build_page_url(
+                    @current_page + 1,
+                    @search_query,
+                    @filter_unit_id,
+                    @filter_status,
+                    @type_page
+                  )
                 }
                 class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
               >
@@ -1184,7 +1216,7 @@ defmodule VoileWeb.VoileComponents do
   def condition_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
 
-  def build_page_url(page, search_query, filter_unit_id, filter_status) do
+  def build_page_url(page, search_query, filter_unit_id, filter_status, type_page) do
     params =
       %{
         "q" => search_query,
@@ -1195,7 +1227,7 @@ defmodule VoileWeb.VoileComponents do
       |> Enum.reject(fn {_k, v} -> v == "" or v == "all" end)
       |> Enum.into(%{})
 
-    "/collections?" <> URI.encode_query(params)
+    "/#{type_page}?" <> URI.encode_query(params)
   end
 
   def frontend_pagination_pages(_current_page, total_pages) when total_pages <= 7 do

@@ -280,8 +280,9 @@ defmodule VoileWeb.Frontend.Items.Index do
                   total_pages={@total_pages}
                   search_query={@search_query}
                   filter_unit_id=""
-                  filter_status=""
+                  filter_status="published"
                   socket={@socket}
+                  type_page="items"
                 />
               <% end %>
             <% else %>

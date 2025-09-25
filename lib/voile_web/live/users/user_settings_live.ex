@@ -9,13 +9,13 @@ defmodule VoileWeb.UserSettingsLive do
     ~H"""
     <.header>
       <h4>Account Settings</h4>
-
+      
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
     <div class="flex gap-4">
       <div class="w-full max-w-64"><.dashboard_settings_sidebar /></div>
-
+      
       <div class="w-full space-y-12 divide-y">
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.form
@@ -33,11 +33,10 @@ defmodule VoileWeb.UserSettingsLive do
               label="Current password"
               value={@email_form_current_password}
               required
-            />
-            <.button phx-disable-with="Changing...">Change Email</.button>
+            /> <.button phx-disable-with="Changing...">Change Email</.button>
           </.form>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.form
             for={@password_form}
@@ -68,13 +67,13 @@ defmodule VoileWeb.UserSettingsLive do
               id="current_password_for_password"
               value={@current_password}
               required
-            />
-            <.button phx-disable-with="Changing...">Change Password</.button>
+            /> <.button phx-disable-with="Changing...">Change Password</.button>
           </.form>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <h4 class="text-lg font-semibold mb-4">Profile & Member Details</h4>
+          
           <.form
             for={@profile_form}
             id="profile_form"
@@ -85,9 +84,7 @@ defmodule VoileWeb.UserSettingsLive do
               <.input field={@profile_form[:fullname]} type="text" label="Full name" />
               <.input field={@profile_form[:username]} type="text" label="Username" />
             </div>
-
-            <.input field={@profile_form[:email]} type="email" label="Email" disabled />
-
+             <.input field={@profile_form[:email]} type="email" label="Email" disabled />
             <label class="block text-sm font-medium text-gray-700 mb-2">Profile image</label>
             <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
               <%= if @profile_image_preview || profile_image_url(@profile_form) do %>
@@ -98,6 +95,7 @@ defmodule VoileWeb.UserSettingsLive do
                   />
                   <div class="flex-1">
                     <p class="text-sm text-voile-muted">Uploaded</p>
+                    
                     <.button
                       type="button"
                       phx-click="delete_user_image"
@@ -111,7 +109,7 @@ defmodule VoileWeb.UserSettingsLive do
               <% else %>
                 <div class="border border-dashed rounded p-4 text-center">
                   <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
-                  <.live_file_input upload={@uploads.user_image} class="hidden" />
+                   <.live_file_input upload={@uploads.user_image} class="hidden" />
                   <label
                     for={@uploads.user_image.ref}
                     class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
@@ -124,14 +122,12 @@ defmodule VoileWeb.UserSettingsLive do
                 </div>
               <% end %>
             </div>
-
+            
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <.input field={@user_profile_form[:website]} type="url" label="Website" />
               <.input field={@user_profile_form[:phone_number]} type="text" label="Phone number" />
             </div>
-
-            <hr class="my-4" />
-
+             <hr class="my-4" />
             <div class="mt-3 grid grid-cols-1 gap-2">
               <.button phx-disable-with="Saving...">Save Profile</.button>
             </div>
@@ -283,11 +279,13 @@ defmodule VoileWeb.UserSettingsLive do
           |> Map.put("photo", user.user_image)
 
         if Enum.any?(user_profile_params, fn {_, v} -> v && v != "" end) do
-          case Accounts.upsert_user_profile(user.id, user_profile_params) do
-            {:ok, _profile} ->
+          case Accounts.update_profile_user(user, user_profile_params) do
+            {:ok, profile} ->
+              dbg(profile)
               :ok
 
-            {:error, _changeset} ->
+            {:error, changeset} ->
+              dbg(changeset)
               :error
           end
         end

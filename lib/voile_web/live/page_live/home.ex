@@ -319,7 +319,9 @@ defmodule VoileWeb.PageLive.Home do
                   <%= for item <- Enum.take(@dashboard_stats.new_books, 3) do %>
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
                       <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                        {item.collection.title || "Untitled"}
+                        {if item.collection && item.collection.title,
+                          do: item.collection.title,
+                          else: "Untitled"}
                       </p>
                       
                       <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -417,7 +419,11 @@ defmodule VoileWeb.PageLive.Home do
                           <%= if item.collection.thumbnail && item.collection.thumbnail != "" do %>
                             <img
                               src={item.collection.thumbnail}
-                              alt={item.collection.title || "Collection thumbnail"}
+                              alt={
+                                if item.collection && item.collection.title,
+                                  do: item.collection.title,
+                                  else: "Collection thumbnail"
+                              }
                               class="w-16 h-16 rounded-xl object-cover shadow-md"
                             />
                           <% else %>
@@ -433,18 +439,28 @@ defmodule VoileWeb.PageLive.Home do
                         <div class="flex-1 min-w-0">
                           <h5
                             class="text-gray-800 dark:text-gray-200 truncate mb-1"
-                            title={item.collection.title || "Untitled Collection"}
+                            title={
+                              if item.collection && item.collection.title,
+                                do: item.collection.title,
+                                else: "Untitled Collection"
+                            }
                           >
-                            {item.collection.title || "Untitled Collection"}
+                            {if item.collection && item.collection.title,
+                              do: item.collection.title,
+                              else: "Untitled Collection"}
                           </h5>
                           
                           <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                            {item.collection.description || "No description available"}
+                            {if item.collection && item.collection.description,
+                              do: item.collection.description,
+                              else: "No description available"}
                           </p>
                           
                           <div class="flex items-center gap-3">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-violet-100 to-purple-100 text-violet-800 dark:from-violet-900/50 dark:to-purple-900/50 dark:text-violet-200">
-                              {item.collection.resource_class.glam_type}
+                              {if item.collection && item.collection.resource_class,
+                                do: item.collection.resource_class.glam_type,
+                                else: ""}
                             </span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                               {Calendar.strftime(item.inserted_at, "%B %d, %Y")}

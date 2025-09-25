@@ -165,9 +165,7 @@
       
       <:col :let={{_id, transaction}} label="Fine Amount">
         <div class="text-sm">
-          Rp {Decimal.to_string(
-            if transaction.fine_amount, do: transaction.fine_amount, else: Decimal.new(0)
-          )}
+          Rp {Decimal.to_string(transaction.fine_amount || Decimal.new("0"))}
         </div>
       </:col>
       

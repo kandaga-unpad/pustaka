@@ -21,6 +21,8 @@ defmodule Voile.Schema.Library.Transaction do
     belongs_to :member, User, type: :binary_id
     belongs_to :librarian, User, foreign_key: :librarian_id, type: :binary_id
 
+    has_one :collection, through: [:item, :collection]
+
     timestamps(type: :utc_datetime)
   end
 

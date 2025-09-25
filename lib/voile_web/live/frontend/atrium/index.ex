@@ -1,8 +1,9 @@
 defmodule VoileWeb.Frontend.Atrium.Index do
   use VoileWeb, :live_view
-  alias Voile.Schema.Library.Circulation
+
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.UserProfile
+  alias Voile.Schema.Library.Circulation
   alias Client.Storage
 
   @impl true
@@ -27,13 +28,28 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     user_profile_form = to_form(user_profile_changeset, as: :user)
 
+    # Load first page of loans and fines for the member
+    {loans, loans_total_pages} =
+      Circulation.list_member_active_transactions_paginated(user.id, 1, 10)
+
+    {fines, fines_total_pages} = Circulation.list_member_unpaid_fines_paginated(user.id, 1, 10)
+
+    total_loans = Circulation.count_list_active_transactions(user.id)
+    total_unpaid_fines = Circulation.count_member_unpaid_fines(user.id)
+
     socket =
       socket
       |> assign(
         active_tab: :circulation,
         tabs: tabs,
-        loans: [],
-        fines: [],
+        loans: loans,
+        loans_page: 1,
+        loans_total_pages: loans_total_pages,
+        fines: fines,
+        fines_page: 1,
+        fines_total_pages: fines_total_pages,
+        total_loans: total_loans,
+        total_unpaid_fines: total_unpaid_fines,
         paying: nil,
         current_password: nil,
         current_email: user.email,
@@ -51,6 +67,35 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       )
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("loans_prev", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = max((socket.assigns.loans_page || 1) - 1, 1)
+    {loans, total} = Circulation.list_member_active_transactions_paginated(member.id, page, 10)
+    {:noreply, assign(socket, loans: loans, loans_page: page, loans_total_pages: total)}
+  end
+
+  def handle_event("loans_next", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = min((socket.assigns.loans_page || 1) + 1, socket.assigns.loans_total_pages || 1)
+    {loans, total} = Circulation.list_member_active_transactions_paginated(member.id, page, 10)
+    {:noreply, assign(socket, loans: loans, loans_page: page, loans_total_pages: total)}
+  end
+
+  def handle_event("fines_prev", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = max((socket.assigns.fines_page || 1) - 1, 1)
+    {fines, total} = Circulation.list_member_unpaid_fines_paginated(member.id, page, 10)
+    {:noreply, assign(socket, fines: fines, fines_page: page, fines_total_pages: total)}
+  end
+
+  def handle_event("fines_next", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = min((socket.assigns.fines_page || 1) + 1, socket.assigns.fines_total_pages || 1)
+    {fines, total} = Circulation.list_member_unpaid_fines_paginated(member.id, page, 10)
+    {:noreply, assign(socket, fines: fines, fines_page: page, fines_total_pages: total)}
   end
 
   @impl true
@@ -88,27 +133,46 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   @impl true
   def handle_event("renew_loan", %{"transaction_id" => tx_id}, socket) do
     member = socket.assigns.current_scope.user
+    # Quick client-side friendly checks based on member type entitlements so
+    # the user gets immediate feedback without an unnecessary server call.
+    user_type = Map.get(member, :user_type)
+    get_admin_id = Circulation.get_admin_id_for_self_renewal()
 
-    # Verify transaction belongs to current member
-    try do
-      tx = Circulation.get_transaction!(tx_id)
+    case can_renew_transaction_precheck(tx_id, member, user_type) do
+      {:error, msg} ->
+        {:noreply, socket |> put_flash(:error, msg)}
 
-      if tx.member_id != member.id do
-        {:noreply, socket |> put_flash(:error, "You can only renew your own loans")}
-      else
-        # Attempt to renew via Circulation. Use nil librarian (self-service) and empty attrs.
-        case Circulation.renew_transaction(tx_id, nil, %{}) do
-          {:ok, _transaction} ->
-            loans = Circulation.list_member_active_transactions(member.id)
-            {:noreply, socket |> put_flash(:info, "Loan renewed") |> assign(loans: loans)}
+      {:ok} ->
+        # Verify transaction belongs to current member and attempt renewal.
+        case Circulation.get_transaction(tx_id) do
+          nil ->
+            {:noreply, socket |> put_flash(:error, "Transaction not found")}
 
-          {:error, reason} ->
-            {:noreply, socket |> put_flash(:error, "Could not renew loan: #{inspect(reason)}")}
+          tx ->
+            if tx.member_id != member.id do
+              {:noreply, socket |> put_flash(:error, "You can only renew your own loans")}
+            else
+              # Attempt to renew via Circulation. Use admin id (if found) or nil for self-service.
+              case Circulation.renew_transaction(tx_id, get_admin_id, %{}) do
+                {:ok, _transaction} ->
+                  {loans, loans_total_pages} =
+                    Circulation.list_member_active_transactions_paginated(
+                      member.id,
+                      socket.assigns.loans_page || 1,
+                      10
+                    )
+
+                  {:noreply,
+                   socket
+                   |> put_flash(:info, "Loan renewed")
+                   |> assign(loans: loans, loans_total_pages: loans_total_pages)}
+
+                {:error, reason} ->
+                  {:noreply,
+                   socket |> put_flash(:error, "Could not renew loan: #{inspect(reason)}")}
+              end
+            end
         end
-      end
-    rescue
-      _ ->
-        {:noreply, socket |> put_flash(:error, "Transaction not found")}
     end
   end
 
@@ -128,10 +192,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           else
             case Circulation.pay_fine(fine_id, dec, "cash", member.id, nil) do
               {:ok, _updated} ->
-                fines = Circulation.list_member_unpaid_fines(member.id)
+                {fines, fines_total_pages} =
+                  Circulation.list_member_unpaid_fines_paginated(
+                    member.id,
+                    socket.assigns.fines_page || 1,
+                    10
+                  )
 
                 {:noreply,
-                 socket |> put_flash(:info, "Fine payment successful") |> assign(fines: fines)}
+                 socket
+                 |> put_flash(:info, "Fine payment successful")
+                 |> assign(fines: fines, fines_total_pages: fines_total_pages)}
 
               {:error, reason} ->
                 {:noreply, socket |> put_flash(:error, "Payment failed: #{inspect(reason)}")}
@@ -356,6 +427,37 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     ])
   end
 
+  # Quick precheck for renewals to provide immediate UI feedback.
+  # Returns true if we should proceed to call Circulation.renew_transaction/3.
+  defp can_renew_transaction_precheck(_transaction_id, _member, nil) do
+    # If we don't have the member type preloaded on the user, let server do
+    # authoritative checks.
+    {:ok}
+  end
+
+  defp can_renew_transaction_precheck(transaction_id, _member, %{} = user_type) do
+    # First check if member type allows renewals
+    if not Map.get(user_type, :can_renew, true) do
+      {:error, "Your member type does not allow renewing items"}
+    else
+      # Try to fetch transaction quickly and check renewal_count vs max_renewals.
+      case Circulation.get_transaction(transaction_id) do
+        nil ->
+          # Let server-side handle missing transaction
+          {:ok}
+
+        tx ->
+          max_renewals = Map.get(user_type, :max_renewals, 0) || 0
+
+          if tx.renewal_count >= max_renewals do
+            {:error, "Maximum renewals (#{max_renewals}) reached for your member type"}
+          else
+            {:ok}
+          end
+      end
+    end
+  end
+
   # Safe association helpers - avoid accessing NotLoaded associations directly in templates
   defp role_name(%{user_role: %_{name: name}}), do: name
   defp role_name(%{user_role_id: id}) when not is_nil(id), do: to_string(id)
@@ -374,10 +476,26 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     # Load member-specific data when LiveView mounts or params change
     member = socket.assigns.current_scope.user
 
-    loans = Circulation.list_member_active_transactions(member.id)
-    fines = Circulation.list_member_unpaid_fines(member.id)
+    # Respect already assigned pagination state (set in mount) or default to page 1
+    loans_page = socket.assigns[:loans_page] || 1
+    fines_page = socket.assigns[:fines_page] || 1
+    per_page = 10
 
-    {:noreply, assign(socket, loans: loans, fines: fines)}
+    {loans, loans_total_pages} =
+      Circulation.list_member_active_transactions_paginated(member.id, loans_page, per_page)
+
+    {fines, fines_total_pages} =
+      Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, per_page)
+
+    {:noreply,
+     assign(socket,
+       loans: loans,
+       loans_page: loans_page,
+       loans_total_pages: loans_total_pages,
+       fines: fines,
+       fines_page: fines_page,
+       fines_total_pages: fines_total_pages
+     )}
   end
 
   defp cache_bust(url) do
@@ -452,13 +570,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Active Loans</div>
                     
-                    <div class="text-lg font-semibold">{length(@loans || [])}</div>
+                    <div class="text-lg font-semibold">{@total_loans}</div>
                   </div>
                   
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Unpaid Fines</div>
                     
-                    <div class="text-lg font-semibold">{length(@fines || [])}</div>
+                    <div class="text-lg font-semibold">{@total_unpaid_fines}</div>
                   </div>
                 </div>
                 
@@ -707,65 +825,167 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 <% end %>
                 <!-- Member dashboard panels -->
                 <%= if @active_tab == :circulation do %>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-6">
+                    <!-- Loans card -->
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
-                      <h4 class="text-lg font-semibold mb-3">Your Active Loans</h4>
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <h4 class="text-lg font-semibold">Your Active Loans</h4>
+                          
+                          <div class="text-sm text-voile-muted mt-1">
+                            Active loans: <strong>{length(@loans || [])}</strong>
+                          </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                          <div class="text-sm text-voile-muted">
+                            Page {@loans_page || 1} of {@loans_total_pages || 1}
+                          </div>
+                          
+                          <.button
+                            phx-click="loans_prev"
+                            disabled={@loans_page <= 1}
+                            class="px-2 py-1"
+                          >
+                            Prev
+                          </.button>
+                          <.button
+                            phx-click="loans_next"
+                            disabled={@loans_page >= @loans_total_pages}
+                            class="px-2 py-1"
+                          >
+                            Next
+                          </.button>
+                        </div>
+                      </div>
                       
-                      <%= if @loans == [] do %>
-                        <p class="text-sm text-voile-muted">You have no active loans.</p>
-                      <% else %>
-                        <ul class="space-y-3">
-                          <%= for tx <- @loans do %>
-                            <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                              <div class="text-sm">
-                                <div class="font-medium">{tx.item.title || tx.item.item_code}</div>
-                                
-                                <div class="text-xs text-voile-muted">Due: {tx.due_date}</div>
-                              </div>
-                              
-                              <div class="flex items-center gap-2">
-                                <.button phx-click="renew_loan" phx-value-transaction_id={tx.id}>
-                                  Renew
-                                </.button>
-                              </div>
-                            </li>
-                          <% end %>
-                        </ul>
-                      <% end %>
-                    </div>
-                    
-                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
-                      <h4 class="text-lg font-semibold mb-3">Outstanding Fines</h4>
-                      
-                      <%= if @fines == [] do %>
-                        <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
-                      <% else %>
-                        <ul class="space-y-3">
-                          <%= for f <- @fines do %>
-                            <li class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                              <div class="text-sm">
-                                <div class="font-medium">
-                                  {f.description || (f.item && f.item.title) || "Fine"}
+                      <div class="mt-4">
+                        <%= if @loans == [] do %>
+                          <p class="text-sm text-voile-muted">You have no active loans.</p>
+                        <% else %>
+                          <ul class="space-y-3">
+                            <%= for tx <- @loans do %>
+                              <li class="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral">
+                                  <%= if tx.item && tx.item.collection && tx.item.collection.thumbnail do %>
+                                    <img
+                                      src={tx.item.collection.thumbnail}
+                                      class="w-full h-full object-cover"
+                                    />
+                                  <% else %>
+                                    <div class="w-full h-full flex items-center justify-center text-xs text-voile-muted text-center">
+                                      No image
+                                    </div>
+                                  <% end %>
                                 </div>
                                 
-                                <div class="text-xs text-voile-muted">Balance: {f.balance}</div>
-                              </div>
-                              
-                              <div class="flex items-center gap-2">
-                                <form phx-submit="pay_fine">
-                                  <input type="hidden" name="fine_id" value={f.id} />
-                                  <input
-                                    type="text"
-                                    name="amount"
-                                    value={f.balance}
-                                    class="px-2 py-1 rounded border"
-                                  /> <.button type="submit">Pay</.button>
-                                </form>
-                              </div>
-                            </li>
-                          <% end %>
-                        </ul>
-                      <% end %>
+                                <div class="flex-1 text-sm">
+                                  <div class="font-medium">
+                                    {if tx.collection && tx.collection.title,
+                                      do: tx.collection.title,
+                                      else: tx.item.item_code}
+                                  </div>
+                                  
+                                  <div class="text-xs text-voile-muted">Due: {tx.due_date}</div>
+                                </div>
+                                
+                                <div class="flex-shrink-0">
+                                  <% can_renew_type =
+                                    @current_scope.user.user_type &&
+                                      @current_scope.user.user_type.can_renew %> <% max_renewals =
+                                    (@current_scope.user.user_type &&
+                                       @current_scope.user.user_type.max_renewals) || 0 %> <% renew_disabled =
+                                    not can_renew_type or tx.renewal_count >= max_renewals %>
+                                  <.button
+                                    class="primary-btn text-xs"
+                                    phx-click="renew_loan"
+                                    phx-value-transaction_id={tx.id}
+                                    disabled={renew_disabled}
+                                  >
+                                    Renew
+                                  </.button>
+                                </div>
+                              </li>
+                            <% end %>
+                          </ul>
+                        <% end %>
+                      </div>
+                    </div>
+                    <!-- Fines card -->
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <h4 class="text-lg font-semibold">Outstanding Fines</h4>
+                          
+                          <div class="text-sm text-voile-muted mt-1">
+                            Unpaid fines: <strong>{length(@fines || [])}</strong>
+                          </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                          <div class="text-sm text-voile-muted">
+                            Page {@fines_page || 1} of {@fines_total_pages || 1}
+                          </div>
+                          
+                          <.button
+                            phx-click="fines_prev"
+                            disabled={@fines_page <= 1}
+                            class="px-2 py-1"
+                          >
+                            Prev
+                          </.button>
+                          <.button
+                            phx-click="fines_next"
+                            disabled={@fines_page >= @fines_total_pages}
+                            class="px-2 py-1"
+                          >
+                            Next
+                          </.button>
+                        </div>
+                      </div>
+                      
+                      <div class="mt-4">
+                        <%= if @fines == [] do %>
+                          <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
+                        <% else %>
+                          <ul class="space-y-3">
+                            <%= for f <- @fines do %>
+                              <li class="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
+                                  <%= if f.item && f.item.collection && f.item.collection.thumbnail do %>
+                                    <img
+                                      src={f.item.collection.thumbnail}
+                                      class="w-full h-full object-cover"
+                                    />
+                                  <% else %>
+                                    Fine
+                                  <% end %>
+                                </div>
+                                
+                                <div class="flex-1 text-sm">
+                                  <div class="font-medium">
+                                    {f.description || (f.item && f.item.title) || "Fine"}
+                                  </div>
+                                  
+                                  <div class="text-xs text-voile-muted">Balance: {f.balance}</div>
+                                </div>
+                                
+                                <div class="flex-shrink-0">
+                                  <form phx-submit="pay_fine" class="flex items-center gap-2">
+                                    <input type="hidden" name="fine_id" value={f.id} />
+                                    <input
+                                      type="text"
+                                      name="amount"
+                                      value={f.balance}
+                                      class="px-2 py-1 rounded border text-sm"
+                                    /> <.button type="submit">Pay</.button>
+                                  </form>
+                                </div>
+                              </li>
+                            <% end %>
+                          </ul>
+                        <% end %>
+                      </div>
                     </div>
                   </div>
                 <% end %>
