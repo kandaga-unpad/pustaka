@@ -77,7 +77,7 @@ defmodule VoileWeb.Frontend.Items.Show do
         socket = assign(socket, :reservation_loading, true)
 
         reservation_attrs = %{
-          "notes" => String.trim(notes)
+          notes: String.trim(notes)
         }
 
         case Circulation.create_reservation(current_user.id, item.id, reservation_attrs) do
@@ -514,7 +514,7 @@ defmodule VoileWeb.Frontend.Items.Show do
             </div>
             <!-- Reservation Form Modal -->
             <%= if @show_reservation_form do %>
-              <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div class="fixed inset-0 bg-gray-600/85 bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">Reserve Item</h3>
