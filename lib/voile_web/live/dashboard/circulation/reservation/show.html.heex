@@ -61,7 +61,7 @@
               <dt class="text-sm font-medium text-voile-muted">Status</dt>
               
               <dd class="mt-1">
-                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@reservation.status)}"}>
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{reservation_status_badge_class(@reservation.status)}"}>
                   {@reservation.status}
                 </span>
               </dd>
@@ -136,11 +136,11 @@
               
               <dd class="mt-1">
                 <%= if @reservation.notification_sent do %>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-success text-voile-dark">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-success text-white">
                     <.icon name="hero-check" class="w-3 h-3 mr-1" /> Yes
                   </span>
                 <% else %>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-surface text-voile-dark">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-error text-white">
                     <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> No
                   </span>
                 <% end %>

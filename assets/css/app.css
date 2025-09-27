@@ -272,10 +272,14 @@
     color: var(--color-voile-text);
   }
   .search-tab-item:hover {
-    background-color: var(--color-voile-neutral);
+    background-color: var(--color-voile-surface);
   }
   :where([data-theme="dark"], [data-theme="dark"] *) .search-tab-item {
     background-color: var(--color-voile-neutral-dark);
+    color: var(--color-voile-text-dark);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .search-tab-item:hover {
+    @apply bg-gray-700;
     color: var(--color-voile-text-dark);
   }
 

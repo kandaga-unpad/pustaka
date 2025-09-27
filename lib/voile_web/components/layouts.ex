@@ -48,24 +48,23 @@ defmodule VoileWeb.Layouts do
       id="navigationHeader"
     >
       <div class="flex items-center justify-between py-3 text-sm">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-10">
           <a href="/" class="flex items-center gap-2">
             <img src={~p"/images/v.png"} width="36" />
             <h5>Voile</h5>
           </a>
+          <nav class="hidden lg:flex items-center gap-10 font-semibold leading-6">
+            <%= for nav_item <- @nav_items do %>
+              <div>
+                <%= if nav_item.href do %>
+                  <.link href={nav_item.href}>{nav_item.label}</.link>
+                <% else %>
+                  <p>{nav_item.label}</p>
+                <% end %>
+              </div>
+            <% end %>
+          </nav>
         </div>
-        
-        <nav class="hidden lg:flex items-center gap-10 font-semibold leading-6">
-          <%= for nav_item <- @nav_items do %>
-            <div>
-              <%= if nav_item.href do %>
-                <.link href={nav_item.href}>{nav_item.label}</.link>
-              <% else %>
-                <p>{nav_item.label}</p>
-              <% end %>
-            </div>
-          <% end %>
-        </nav>
         
         <div>
           <div class="flex lg:hidden">
@@ -122,13 +121,21 @@ defmodule VoileWeb.Layouts do
                       aria-expanded="false"
                       class="p-0 bg-transparent border-0"
                     >
-                      <img
-                        src={@current_scope.user.user_image || "/images/default_avatar.jpg"}
-                        class="w-8 h-8 rounded-full border-2 border-voile-primary"
-                        alt="User avatar"
-                        referrerpolicy="no-referrer"
-                      />
-                    </button>
+                      <%= if @current_scope.user.user_image == nil do %>
+                        <img
+                          src="/images/default_avatar.jpg"
+                          class="w-8 h-8 rounded-full border-2 border-voile-primary"
+                          alt="User avatar"
+                        />
+                      <% else %>
+                        <img
+                          src={@current_scope.user.user_image}
+                          class="w-8 h-8 rounded-full border-2 border-voile-primary"
+                          alt="User avatar"
+                          referrerpolicy="no-referrer"
+                        />
+                      <% end %>
+                    </button> {@current_scope.user.user_image}
                   </div>
                   
                   <div
@@ -295,7 +302,7 @@ defmodule VoileWeb.Layouts do
           <a href="/" class="flex items-center gap-2">
             <img src={~p"/images/v.png"} width="28" /> <span class="font-semibold">Voile</span>
           </a>
-          <div class="flex items-center gap-2">
+          <%!-- <div class="flex items-center gap-2">
             <.button
               phx-click={
                 JS.toggle(
@@ -337,8 +344,8 @@ defmodule VoileWeb.Layouts do
             >
               <.icon name="hero-x-mark" />
             </button>
-          </div>
-          
+          </div> --%>
+          <.link navigate="/search" class="p-2"><.icon name="hero-magnifying-glass" /></.link>
           <button
             phx-click={
               JS.toggle(

@@ -14,8 +14,6 @@ defmodule VoileWeb.Dashboard.Circulation.Reservation.Show do
   def handle_params(%{"id" => id}, _, socket) do
     reservation = Circulation.get_reservation!(id)
 
-    dbg(reservation)
-
     {:noreply,
      socket
      |> assign(:reservation, reservation)

@@ -63,15 +63,15 @@ defmodule VoileWeb.VoileDashboardComponents do
       
       <div class="w-full flex justify-end gap-3">
         <Layouts.theme_toggle />
-        <.link href="/" class="default-menu bg-voile-error hover:bg-voile-error text-voile-surface">
-          Exit
-        </.link>
         <.link
           href="/users/log_out"
           method="delete"
           class="default-menu bg-red-400 hover:bg-red-500 text-white"
         >
-          Log out
+          <.icon name="hero-x-circle" class="h-5 w-5" /> Logout
+        </.link>
+        <.link href="/" class="default-menu bg-voile-primary text-voile-surface">
+          Home <.icon name="hero-arrow-right-solid" class="h-3 w-3" />
         </.link>
       </div>
     </div>

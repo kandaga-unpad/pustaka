@@ -28,12 +28,12 @@ defmodule VoileWeb.Dashboard.Circulation.Helpers do
   @doc """
   Returns CSS classes for reservation status badges.
   """
-  def reservation_status_badge_class("pending"), do: "bg-voile-warning text-voile-warning"
-  def reservation_status_badge_class("available"), do: "bg-voile-success text-voile-success"
-  def reservation_status_badge_class("picked_up"), do: "bg-voile-info text-voile-primary"
-  def reservation_status_badge_class("expired"), do: "bg-voile-error text-voile-error"
-  def reservation_status_badge_class("cancelled"), do: "bg-voile-neutral text-voile-dark"
-  def reservation_status_badge_class(_), do: "bg-voile-neutral text-voile-dark"
+  def reservation_status_badge_class("pending"), do: "bg-voile-warning text-gray-700"
+  def reservation_status_badge_class("available"), do: "bg-voile-success"
+  def reservation_status_badge_class("picked_up"), do: "bg-voile-info"
+  def reservation_status_badge_class("expired"), do: "bg-voile-neutral"
+  def reservation_status_badge_class("cancelled"), do: "bg-voile-error"
+  def reservation_status_badge_class(_), do: "bg-voile-neutral"
 
   @doc """
   Returns CSS classes for requisition type badges.

@@ -196,6 +196,41 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Atomically updates the user and upserts the user's profile using Ecto.Multi.
+
+  This ensures both the `users` update and the `user_profiles` insert/update
+  happen in a single transaction so we don't end up with inconsistent state
+  where the user's `user_image` is written but the profile isn't (or vice versa).
+
+  Returns `{:ok, %{user: user, profile: profile}}` on success or
+  `{:error, failed_operation, changeset, _changes_so_far}` on failure.
+  """
+  def update_user_and_profile(%User{} = user, user_attrs, profile_attrs) when is_map(user_attrs) and is_map(profile_attrs) do
+    # Build the user update changeset
+    user_changeset = User.update_profile_changeset(user, user_attrs)
+
+    # Ensure profile_attrs contains the user_id
+    profile_attrs = Map.put(profile_attrs, "user_id", user.id)
+
+    Multi.new()
+    |> Multi.update(:user, user_changeset)
+    |> Multi.run(:profile, fn repo, %{user: updated_user} ->
+      case repo.get_by(UserProfile, user_id: updated_user.id) do
+        nil ->
+          %UserProfile{}
+          |> UserProfile.changeset(profile_attrs)
+          |> repo.insert()
+
+        profile ->
+          profile
+          |> UserProfile.changeset(profile_attrs)
+          |> repo.update()
+      end
+    end)
+    |> Repo.transaction()
+  end
+
+  @doc """
   Update an existing user data.
   """
   def update_user(%User{} = user, attrs) do

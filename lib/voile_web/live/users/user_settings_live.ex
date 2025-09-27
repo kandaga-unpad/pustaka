@@ -180,6 +180,8 @@ defmodule VoileWeb.UserSettingsLive do
     email_changeset = Accounts.change_user_email(user)
     password_changeset = Accounts.change_user_password(user)
 
+    dbg(user)
+
     profile_changeset = Accounts.change_user(user)
     user_profile = Accounts.get_user_profile(user.id)
 
@@ -269,36 +271,30 @@ defmodule VoileWeb.UserSettingsLive do
 
     user = socket.assigns.current_scope.user
 
-    case Accounts.update_profile_user(user, user_params) do
-      {:ok, user} ->
-        user_profile_params = Map.get(params, "user_profile", %{})
+    # Build profile params and ensure we include the persisted user_image
+    user_profile_params = Map.get(params, "user_profile", %{})
 
-        user_profile_params =
-          user_profile_params
-          |> Map.put("full_name", user.fullname)
-          |> Map.put("photo", user.user_image)
+    # prefer the preview merged into user_params earlier; user_image will be
+    # persisted by the transactional operation below and then used for the
+    # profile's `photo` field inside the transaction.
+    user_profile_params =
+      user_profile_params
+      |> Map.put("full_name", user.fullname)
 
-        if Enum.any?(user_profile_params, fn {_, v} -> v && v != "" end) do
-          case Accounts.update_profile_user(user, user_profile_params) do
-            {:ok, profile} ->
-              dbg(profile)
-              :ok
-
-            {:error, changeset} ->
-              dbg(changeset)
-              :error
-          end
-        end
-
+    case Accounts.update_user_and_profile(user, user_params, Map.put(user_profile_params, "photo", get_in(user_params, ["user_image"]))) do
+      {:ok, %{user: updated_user, profile: _profile}} ->
         socket = assign(socket, :current_password, "")
-        socket = assign(socket, :profile_form, to_form(Accounts.change_user(user, %{})))
+        socket = assign(socket, :profile_form, to_form(Accounts.change_user(updated_user, %{})))
 
-        current_scope = Map.put(socket.assigns.current_scope, :user, user)
+        current_scope = Map.put(socket.assigns.current_scope, :user, updated_user)
 
-        {:noreply,
-         socket |> assign(:current_scope, current_scope) |> put_flash(:info, "Profile updated")}
+        {:noreply, socket |> assign(:current_scope, current_scope) |> put_flash(:info, "Profile updated")}
 
-      {:error, changeset} ->
+      {:error, _failed_op, changeset, _changes_so_far} ->
+        # If the user update failed, the changeset will be for :user
+        # otherwise it will be for the profile insert/update; show the
+        # relevant changeset in the profile_form to surface validation
+        # errors back to the user.
         {:noreply, assign(socket, :profile_form, to_form(changeset))}
     end
   end
