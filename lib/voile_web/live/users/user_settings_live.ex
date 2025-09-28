@@ -4,6 +4,7 @@ defmodule VoileWeb.UserSettingsLive do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.UserProfile
   alias Client.Storage
+  require Logger
 
   def render(assigns) do
     ~H"""
@@ -127,6 +128,10 @@ defmodule VoileWeb.UserSettingsLive do
               <.input field={@user_profile_form[:website]} type="url" label="Website" />
               <.input field={@user_profile_form[:phone_number]} type="text" label="Phone number" />
             </div>
+            
+            <div class="mt-4 grid grid-cols-1 gap-3">
+              <.input field={@user_profile_form[:address]} type="text" label="Address" />
+            </div>
              <hr class="my-4" />
             <div class="mt-3 grid grid-cols-1 gap-2">
               <.button phx-disable-with="Saving...">Save Profile</.button>
@@ -176,11 +181,14 @@ defmodule VoileWeb.UserSettingsLive do
   end
 
   def mount(_params, _session, socket) do
-    user = socket.assigns.current_scope.user
+    # Use the persisted user from the database to build the changeset.
+    # The socket's `current_scope.user` may have been temporarily mutated
+    # to show a preview (profile_image_preview) which can prevent Ecto
+    # from detecting changes. Loading the persisted user ensures the
+    # update changeset sees the difference and an UPDATE is issued.
+    user = Accounts.get_user!(socket.assigns.current_scope.user.id)
     email_changeset = Accounts.change_user_email(user)
     password_changeset = Accounts.change_user_password(user)
-
-    dbg(user)
 
     profile_changeset = Accounts.change_user(user)
     user_profile = Accounts.get_user_profile(user.id)
@@ -256,45 +264,56 @@ defmodule VoileWeb.UserSettingsLive do
     {:noreply, assign(socket, :profile_form, to_form(profile_changeset))}
   end
 
-  def handle_event("save_profile", %{"user" => user_params} = params, socket) do
-    # Merge preview image if present (prefer the explicit preview assign set during upload)
-    profile_image =
-      socket.assigns.profile_image_preview ||
-        get_in(socket.assigns.profile_form.params || %{}, ["user_image"])
+  def handle_event("save_profile", %{"user" => user_params} = _params, socket) do
+    preview = socket.assigns.profile_image_preview
 
-    user_params =
-      if profile_image && profile_image != "" do
-        Map.put(user_params, "user_image", profile_image)
-      else
-        user_params
+    # Prefer preview, fall back to form param. Only accept a binary URL.
+    photo_value =
+      case preview || get_in(user_params || %{}, ["user_image"]) do
+        v when is_binary(v) and v != "" -> v
+        _ -> nil
       end
 
-    user = socket.assigns.current_scope.user
+    user_params =
+      if photo_value, do: Map.put(user_params, "user_image", photo_value), else: user_params
 
-    # Build profile params and ensure we include the persisted user_image
-    user_profile_params = Map.get(params, "user_profile", %{})
+    # Always use persisted user when building the update changeset.
+    user = Accounts.get_user!(socket.assigns.current_scope.user.id)
 
-    # prefer the preview merged into user_params earlier; user_image will be
-    # persisted by the transactional operation below and then used for the
-    # profile's `photo` field inside the transaction.
-    user_profile_params =
-      user_profile_params
-      |> Map.put("full_name", user.fullname)
+    # Keep the previous user_image so we can remove the file from storage
+    old_image = user.user_image
 
-    case Accounts.update_user_and_profile(user, user_params, Map.put(user_profile_params, "photo", get_in(user_params, ["user_image"]))) do
-      {:ok, %{user: updated_user, profile: _profile}} ->
-        socket = assign(socket, :current_password, "")
-        socket = assign(socket, :profile_form, to_form(Accounts.change_user(updated_user, %{})))
+    case Accounts.update_profile_user(user, user_params) do
+      {:ok, _user} ->
+        persisted_user = Accounts.get_user!(user.id)
 
-        current_scope = Map.put(socket.assigns.current_scope, :user, updated_user)
+        # If we changed the image and the old image looks like an upload path,
+        # attempt to delete the old file. Ignore any errors from Storage.
+        new_image = persisted_user.user_image
 
-        {:noreply, socket |> assign(:current_scope, current_scope) |> put_flash(:info, "Profile updated")}
+        if old_image && is_binary(old_image) && old_image != new_image &&
+             String.starts_with?(old_image, "/uploads") do
+          case Storage.delete(old_image) do
+            {:ok, _} -> :ok
+            _ -> :ok
+          end
+        end
 
-      {:error, _failed_op, changeset, _changes_so_far} ->
-        # If the user update failed, the changeset will be for :user
-        # otherwise it will be for the profile insert/update; show the
-        # relevant changeset in the profile_form to surface validation
-        # errors back to the user.
+        current_scope = Map.put(socket.assigns.current_scope, :user, persisted_user)
+
+        {:noreply,
+         socket
+         |> assign(:profile_image_preview, nil)
+         |> assign(:current_scope, current_scope)
+         |> assign(
+           :profile_form,
+           to_form(
+             Accounts.change_user(persisted_user, %{"user_image" => persisted_user.user_image})
+           )
+         )
+         |> put_flash(:info, "Profile updated")}
+
+      {:error, changeset} ->
         {:noreply, assign(socket, :profile_form, to_form(changeset))}
     end
   end
@@ -369,7 +388,7 @@ defmodule VoileWeb.UserSettingsLive do
             content_type: entry.client_type
           }
 
-          case Storage.upload(upload) do
+          case Storage.upload(upload, folder: "user_image") do
             {:ok, url} ->
               {:ok, url}
 
@@ -386,7 +405,19 @@ defmodule VoileWeb.UserSettingsLive do
           []
       end
 
-    preview = List.first(List.wrap(uploaded_files))
+    # consume_uploaded_entries returns a list of results from the callback.
+    # Our callback returns {:ok, url} or {:ok, nil}, so normalize to extract
+    # the url string (or nil) so we don't accidentally store a tuple in
+    # assigns or persist it to the DB.
+    preview =
+      uploaded_files
+      |> List.wrap()
+      |> Enum.find_value(nil, fn
+        {:ok, url} when is_binary(url) -> url
+        {:ok, _} -> nil
+        url when is_binary(url) -> url
+        _ -> nil
+      end)
 
     socket =
       if preview do

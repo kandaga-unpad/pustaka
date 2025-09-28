@@ -42,6 +42,6 @@ defmodule Voile.Schema.Accounts.UserProfile do
       :position,
       :user_id
     ])
-    |> validate_required([:full_name, :address, :phone_number])
+    |> validate_required([:full_name])
   end
 end

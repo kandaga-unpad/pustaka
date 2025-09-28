@@ -205,29 +205,32 @@ defmodule Voile.Schema.Accounts do
   Returns `{:ok, %{user: user, profile: profile}}` on success or
   `{:error, failed_operation, changeset, _changes_so_far}` on failure.
   """
-  def update_user_and_profile(%User{} = user, user_attrs, profile_attrs) when is_map(user_attrs) and is_map(profile_attrs) do
-    # Build the user update changeset
+  def update_user_and_profile(%User{} = user, user_attrs, profile_attrs)
+      when is_map(user_attrs) and is_map(profile_attrs) do
+    # Build the user update changeset and persist it. We intentionally avoid
+    # running a multi/transaction here: per request we only update the
+    # `users` table (persisting `user_image`). Return a consistent shape so
+    # callers that expect %{user: user, profile: profile} still match.
     user_changeset = User.update_profile_changeset(user, user_attrs)
 
-    # Ensure profile_attrs contains the user_id
-    profile_attrs = Map.put(profile_attrs, "user_id", user.id)
+    require Logger
 
-    Multi.new()
-    |> Multi.update(:user, user_changeset)
-    |> Multi.run(:profile, fn repo, %{user: updated_user} ->
-      case repo.get_by(UserProfile, user_id: updated_user.id) do
-        nil ->
-          %UserProfile{}
-          |> UserProfile.changeset(profile_attrs)
-          |> repo.insert()
+    Logger.debug(
+      "update_user_and_profile: updating user_id=#{inspect(user.id)} user_attrs=#{inspect(user_attrs)}"
+    )
 
-        profile ->
-          profile
-          |> UserProfile.changeset(profile_attrs)
-          |> repo.update()
-      end
-    end)
-    |> Repo.transaction()
+    case Repo.update(user_changeset) do
+      {:ok, updated_user} ->
+        Logger.debug("update_user_and_profile: user updated id=#{inspect(updated_user.id)}")
+        {:ok, %{user: updated_user, profile: nil}}
+
+      {:error, changeset} ->
+        Logger.debug(
+          "update_user_and_profile: user update failed errors=#{inspect(changeset.errors)}"
+        )
+
+        {:error, :user, changeset, %{}}
+    end
   end
 
   @doc """
