@@ -164,7 +164,11 @@
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium ">{@transaction.librarian.fullname}</p>
                 
-                <p class="text-sm text-gray-500">{@transaction.librarian.user_role.name}</p>
+                <p class="text-sm text-gray-500">
+                  {if Ecto.assoc_loaded?(@transaction.librarian.user_role),
+                    do: @transaction.librarian.user_role.name,
+                    else: "-"}
+                </p>
               </div>
             </div>
           <% else %>

@@ -490,10 +490,11 @@ defmodule VoileWeb.SearchLive do
       is_nil(current_user) ->
         "patron"
 
-      current_user.user_role && current_user.user_role.name == "librarian" ->
+      Ecto.assoc_loaded?(current_user.user_role) && current_user.user_role.name == "librarian" ->
         "librarian"
 
-      current_user.user_role && current_user.user_role.name in ["admin", "superadmin"] ->
+      Ecto.assoc_loaded?(current_user.user_role) &&
+          current_user.user_role.name in ["admin", "superadmin"] ->
         "librarian"
 
       true ->

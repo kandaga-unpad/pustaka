@@ -12,7 +12,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage user records in your database.</:subtitle>
       </.header>
-
+      
       <.form
         for={@form}
         id="user-form"
@@ -21,10 +21,14 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         phx-submit="save"
       >
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <.input field={@form[:username]} type="text" label="Username" disabled />
-          <.input field={@form[:email]} type="email" label="Email" />
+          <.input
+            field={@form[:username]}
+            type="text"
+            label="Username"
+            disabled={@current_scope.user.user_role.id not in [1, 2, 3]}
+          /> <.input field={@form[:email]} type="email" label="Email" />
         </div>
-
+        
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <.input field={@form[:fullname]} type="text" label="Full Name" />
           <.input
@@ -35,12 +39,12 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             prompt="Select a role"
           />
         </div>
-
+        
         <%= if @action == :new do %>
           <.input field={@form[:password]} type="password" label="Password" />
           <.input field={@form[:password_confirmation]} type="password" label="Confirm Password" />
         <% end %>
-
+        
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <.input
             field={@form[:user_type_id]}
@@ -66,7 +70,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
                 <img src={@form.params["user_image"]} class="w-20 h-20 rounded-full object-cover" />
                 <div class="flex-1">
                   <p class="text-sm text-gray-700">Uploaded</p>
-
+                  
                   <.button
                     type="button"
                     phx-click="delete_user_image"
@@ -82,7 +86,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             <% else %>
               <div class="border border-dashed rounded p-4 text-center">
                 <p class="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                <.live_file_input upload={@uploads.user_image} class="hidden" />
+                 <.live_file_input upload={@uploads.user_image} class="hidden" />
                 <label
                   for={@uploads.user_image.ref}
                   class="inline-flex items-center px-4 py-2 mt-2 bg-gray-800 text-white rounded cursor-pointer"
@@ -96,19 +100,19 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             <% end %>
           </div>
         </div>
-
+        
         <fieldset class="border border-gray-300 rounded-lg p-4">
           <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
             Social Media
           </legend>
-
+          
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
             <.input field={@form[:twitter]} type="text" label="Twitter" placeholder="@username" />
             <.input field={@form[:facebook]} type="text" label="Facebook" placeholder="profile-url" />
             <.input field={@form[:linkedin]} type="text" label="LinkedIn" placeholder="profile-url" />
             <.input field={@form[:instagram]} type="text" label="Instagram" placeholder="@username" />
           </div>
-
+          
           <div class="mt-4">
             <.input
               field={@form[:website]}
@@ -118,7 +122,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             />
           </div>
         </fieldset>
-
+        
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <.input
             field={@form[:groups]}
@@ -127,7 +131,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             placeholder="group1, group2, group3"
           />
         </div>
-        <.button phx-disable-with="Saving...">Save User</.button>
+         <.button phx-disable-with="Saving...">Save User</.button>
       </.form>
     </div>
     """

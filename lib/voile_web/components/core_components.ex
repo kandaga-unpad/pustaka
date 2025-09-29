@@ -541,7 +541,7 @@ defmodule VoileWeb.CoreComponents do
     <div class="mt-5">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-voile-dark hover:text-voile-dark dark:text-voile-surface dark:hover:text-voile-surface"
+        class="text-sm font-semibold leading-6"
       >
         <.icon name="hero-arrow-left-solid" class="h-3 w-3" /> {render_slot(@inner_block)}
       </.link>

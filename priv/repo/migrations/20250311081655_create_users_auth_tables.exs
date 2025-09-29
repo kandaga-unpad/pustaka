@@ -24,8 +24,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
 
     create unique_index(:users, [:email])
     create unique_index(:users, [:username])
-    # Uncomment if identifier should be unique
-    # create unique_index(:users, [:identifier])
+    create unique_index(:users, [:identifier])
 
     # Performance indexes
     create index(:users, [:confirmed_at])

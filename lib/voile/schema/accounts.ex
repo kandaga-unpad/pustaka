@@ -9,6 +9,10 @@ defmodule Voile.Schema.Accounts do
   alias Voile.Schema.Accounts.{User, UserRole, UserToken, UserNotifier}
   alias Voile.Schema.Accounts.UserProfile
 
+  # Helper to ensure returned user structs have common associations preloaded
+  defp preload_user_assocs(nil), do: nil
+  defp preload_user_assocs(%User{} = user), do: Repo.preload(user, [:user_role, :user_type])
+
   ## Database getters
 
   @doc """
@@ -24,7 +28,7 @@ defmodule Voile.Schema.Accounts do
 
   """
   def get_user_by_email(email) when is_binary(email) do
-    Repo.get_by(User, email: email)
+    Repo.get_by(User, email: email) |> preload_user_assocs()
   end
 
   @doc """
@@ -42,7 +46,7 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
-    if User.valid_password?(user, password), do: user
+    if User.valid_password?(user, password), do: preload_user_assocs(user)
   end
 
   @doc """
@@ -80,10 +84,10 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_identifier(identifier) when is_binary(identifier) do
     case Integer.parse(identifier) do
       {id, ""} ->
-        Repo.get_by(User, identifier: id)
+        Repo.get_by(User, identifier: id) |> preload_user_assocs()
 
       :error ->
-        Repo.get_by(User, identifier: identifier)
+        Repo.get_by(User, identifier: identifier) |> preload_user_assocs()
     end
   end
 
@@ -103,7 +107,7 @@ defmodule Voile.Schema.Accounts do
     query =
       from u in User,
         preload: [:user_role, :user_type],
-        order_by: [asc: u.inserted_at],
+        order_by: [desc: u.inserted_at],
         limit: ^per_page,
         offset: ^offset
 
@@ -246,6 +250,13 @@ defmodule Voile.Schema.Accounts do
     user
     |> User.update_profile_changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        {:ok, Repo.preload(user, [:user_role, :user_type])}
+
+      error ->
+        error
+    end
   end
 
   def update_user_login(%User{} = user, attrs) do
@@ -272,6 +283,13 @@ defmodule Voile.Schema.Accounts do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        {:ok, Repo.preload(user, [:user_role, :user_type])}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -419,7 +437,7 @@ defmodule Voile.Schema.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
+      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
@@ -460,7 +478,11 @@ defmodule Voile.Schema.Accounts do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query)
+
+    case Repo.one(query) do
+      {user, inserted_at} -> {preload_user_assocs(user), inserted_at}
+      nil -> nil
+    end
   end
 
   @doc """
@@ -477,7 +499,7 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_magic_link_token(token) do
     with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
          {user, _token} <- Repo.one(query) do
-      user
+      preload_user_assocs(user)
     else
       _ -> nil
     end
@@ -557,7 +579,7 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_onboarding_token(token) do
     with {:ok, query} <- UserToken.verify_email_token_query(token, "onboarding"),
          %User{} = user <- Repo.one(query) do
-      user
+      preload_user_assocs(user)
     else
       _ -> nil
     end
@@ -573,7 +595,7 @@ defmodule Voile.Schema.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["onboarding"]))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
+      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
@@ -613,7 +635,7 @@ defmodule Voile.Schema.Accounts do
     with {:ok, query} <- UserToken.verify_email_token_query(token, "confirm"),
          %User{} = user <- Repo.one(query),
          {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
-      {:ok, user}
+      {:ok, preload_user_assocs(user)}
     else
       _ -> :error
     end
@@ -658,7 +680,7 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_reset_password_token(token) do
     with {:ok, query} <- UserToken.verify_email_token_query(token, "reset_password"),
          %User{} = user <- Repo.one(query) do
-      user
+      preload_user_assocs(user)
     else
       _ -> nil
     end
@@ -682,7 +704,7 @@ defmodule Voile.Schema.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, :all))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
+      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
@@ -879,18 +901,85 @@ defmodule Voile.Schema.Accounts do
 
   @doc """
   Searches users by username, email, or fullname.
+
+  Accepts either a plain query string or a map of filters.
+
+  Example usages:
+    search_users("alice")
+    search_users(%{"query" => "alice", "node_id" => "1", "user_role_id" => "2"})
   """
-  def search_users(query_string) when is_binary(query_string) do
+  def search_users(query) when is_binary(query) do
+    search_users(%{"query" => query})
+  end
+
+  def search_users(%{} = params) do
+    query_string = Map.get(params, "query", "")
     search_term = "%#{query_string}%"
 
-    from(u in User,
-      where:
-        ilike(u.username, ^search_term) or
-          ilike(u.email, ^search_term) or
-          ilike(u.fullname, ^search_term),
-      preload: [:user_role]
-    )
-    |> Repo.all()
+    q =
+      from(u in User,
+        left_join: r in assoc(u, :user_role),
+        preload: [:user_role]
+      )
+
+    q =
+      if query_string != "" do
+        from(u in q,
+          where:
+            ilike(u.username, ^search_term) or ilike(u.email, ^search_term) or
+              ilike(u.fullname, ^search_term)
+        )
+      else
+        q
+      end
+
+    # optional filters: node_id, user_role_id, member_type_id
+    q =
+      case Map.get(params, "node_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        node_id when is_binary(node_id) ->
+          from(u in q, where: u.node_id == ^String.to_integer(node_id))
+
+        node_id when is_integer(node_id) ->
+          from(u in q, where: u.node_id == ^node_id)
+      end
+
+    q =
+      case Map.get(params, "user_role_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        role_id when is_binary(role_id) ->
+          from(u in q, where: u.user_role_id == ^String.to_integer(role_id))
+
+        role_id when is_integer(role_id) ->
+          from(u in q, where: u.user_role_id == ^role_id)
+      end
+
+    q =
+      case Map.get(params, "user_type_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        mt when is_binary(mt) ->
+          from(u in q, where: u.user_type_id == ^String.to_integer(mt))
+
+        mt when is_integer(mt) ->
+          from(u in q, where: u.user_type_id == ^mt)
+      end
+
+    Repo.all(q)
   end
 
   @doc """

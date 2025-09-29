@@ -108,7 +108,7 @@ defmodule VoileWeb.Layouts do
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
-                    <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                    <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
                       <.link navigate="/manage">
                         <.button class="default-btn">Dashboard</.button>
                       </.link>
@@ -135,7 +135,7 @@ defmodule VoileWeb.Layouts do
                           referrerpolicy="no-referrer"
                         />
                       <% end %>
-                    </button> {@current_scope.user.user_image}
+                    </button>
                   </div>
                   
                   <div
@@ -147,7 +147,7 @@ defmodule VoileWeb.Layouts do
                     </p>
                     
                     <div class="mt-2 flex w-full gap-2 text-xs">
-                      <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                      <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
                         <.link navigate="/manage" class="primary-btn w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
@@ -389,7 +389,7 @@ defmodule VoileWeb.Layouts do
               <p class="text-sm mb-2">Signed in as <strong>{@current_scope.user.fullname}</strong></p>
               
               <div class="flex flex-col gap-2">
-                <%= unless @current_scope.user.user_role.name in ["Member", "Admin"] do %>
+                <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
                   <.link navigate="/manage" class="primary-btn w-full text-center">Dashboard</.link>
                 <% else %>
                   <.link navigate="/atrium" class="primary-btn w-full text-center">Atrium</.link>

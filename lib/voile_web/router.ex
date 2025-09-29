@@ -270,13 +270,14 @@ defmodule VoileWeb.Router do
           live "/", Dashboard.Settings.SettingLive, :index
 
           live "/user_dashboard", Users.Manage.Dashboard, :index
+          live "/onboarding", Users.OnboardingManageLive, :index
 
           scope "/users" do
             live "/", Users.ManageLive, :index
             live "/new", Users.ManageLive, :new
             live "/:id", Users.ManageLive.Show, :show
+            live "/:id/show/edit", Users.ManageLive.Show, :edit
             live "/:id/edit", Users.ManageLive, :edit
-            live "/onboarding/manage", Users.OnboardingManageLive, :index
           end
 
           scope "/users/roles" do

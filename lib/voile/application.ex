@@ -14,6 +14,8 @@ defmodule Voile.Application do
       {Phoenix.PubSub, name: Voile.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Voile.Finch},
+      # Supervisor for short-lived tasks (used by LiveViews for async work)
+      {Task.Supervisor, name: Voile.TaskSupervisor},
       # Start a worker by calling: Voile.Worker.start_link(arg)
       # {Voile.Worker, arg},
       # Start to serve requests, typically the last entry

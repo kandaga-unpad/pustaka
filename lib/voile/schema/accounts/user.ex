@@ -60,7 +60,6 @@ defmodule Voile.Schema.Accounts.User do
       :last_login_ip
     ])
     |> put_social_media
-    |> validate_length(:username, min: 3, max: 30)
     |> validate_username(opts)
     |> validate_email(opts)
     |> validate_password(opts)
@@ -113,6 +112,7 @@ defmodule Voile.Schema.Accounts.User do
     ])
     |> validate_email(opts)
     |> validate_password(opts)
+    |> generate_username_based_on_email_if_username_is_empty()
   end
 
   def update_profile_changeset(user, attrs, opts \\ []) do
@@ -310,5 +310,24 @@ defmodule Voile.Schema.Accounts.User do
     }
 
     put_change(changeset, :social_media, social_media)
+  end
+
+  defp generate_username_based_on_email_if_username_is_empty(changeset) do
+    username = get_field(changeset, :username)
+    email = get_field(changeset, :email)
+
+    if is_nil(username) or username == "" do
+      if is_binary(email) do
+        email
+        |> String.split("@")
+        |> List.first()
+        |> String.slice(0, 30)
+        |> then(&put_change(changeset, :username, &1))
+      else
+        changeset
+      end
+    else
+      changeset
+    end
   end
 end
