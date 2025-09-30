@@ -727,7 +727,9 @@ defmodule Voile.Schema.Accounts do
   Returns the list of user roles.
   """
   def list_user_roles do
-    Repo.all(UserRole)
+    UserRole
+    |> order_by(:id)
+    |> Repo.all()
   end
 
   @doc """
@@ -854,6 +856,9 @@ defmodule Voile.Schema.Accounts do
   @doc """
   Checks if a user can perform any CRUD operation on a resource.
   """
+  # Return false when user is nil to avoid callers crashing when no user is present
+  def can_access_resource?(nil, _resource), do: false
+
   def can_access_resource?(%User{} = user, resource) do
     has_permission?(user, resource, "create") ||
       has_permission?(user, resource, "read") ||

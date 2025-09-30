@@ -11,7 +11,31 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
         {@title}
         <:subtitle>Configure role permissions for different resources.</:subtitle>
       </.header>
-
+      <!-- Small form to add a new resource without JS execJS - use core input component -->
+      <.form
+        for={to_form(%{}, as: :new_resource)}
+        id="add-resource-form"
+        phx-target={@myself}
+        phx-submit="add_resource"
+      >
+        <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 w-full">
+          <h4 class="text-sm font-medium mb-3">Add New Resource</h4>
+          
+          <div class="flex gap-3 w-full">
+            <div class="w-full">
+              <.input
+                field={to_form(%{}, as: :new_resource)[:resource]}
+                type="text"
+                id="new-resource"
+                placeholder="Resource name (e.g., books, collections)"
+              />
+            </div>
+            
+            <div><.button type="submit" class="primary-btn text-sm">Add</.button></div>
+          </div>
+        </div>
+      </.form>
+      
       <.form
         for={@form}
         id="user_role-form"
@@ -22,46 +46,25 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
         <.input field={@form[:name]} type="text" label="Role Name" />
         <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
         <div class="mt-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Permissions</h3>
-          <!-- Add new resource -->
-          <div class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <h4 class="text-sm font-medium text-gray-700 mb-3">Add New Resource</h4>
-
-            <div class="flex gap-3">
-              <input
-                type="text"
-                id="new-resource"
-                placeholder="Resource name (e.g., books, collections)"
-                class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-              <button
-                type="button"
-                phx-target={@myself}
-                phx-click="add_resource"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Add
-              </button>
-            </div>
-          </div>
+          <h3 class="text-lg font-medium mb-4">Permissions</h3>
           <!-- Existing permissions -->
           <div class="space-y-4">
             <%= for {resource, permissions} <- @current_permissions do %>
               <div class="border border-gray-200 rounded-lg p-4">
                 <div class="flex items-center justify-between mb-3">
-                  <h4 class="text-sm font-medium text-gray-900 capitalize">{resource}</h4>
-
+                  <h4 class="text-sm font-medium capitalize">{resource}</h4>
+                  
                   <button
                     type="button"
                     phx-target={@myself}
                     phx-click="remove_resource"
                     phx-value-resource={resource}
-                    class="text-red-600 hover:text-red-700 text-sm"
+                    class="cancel-btn text-xs"
                   >
                     Remove Resource
                   </button>
                 </div>
-
+                
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <%= for action <- ["create", "read", "update", "delete"] do %>
                     <label class="flex items-center">
@@ -72,8 +75,8 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
                         checked={Map.get(permissions, action, false)}
                         phx-target={@myself}
                         phx-change="update_permission"
-                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      /> <span class="ml-2 text-sm text-gray-600 capitalize">{action}</span>
+                        class="rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      /> <span class="ml-2 text-sm capitalize">{action}</span>
                     </label>
                   <% end %>
                 </div>
@@ -84,7 +87,7 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
           <%= if @suggested_resources != [] do %>
             <div class="mt-6">
               <h4 class="text-sm font-medium text-gray-700 mb-3">Common Resources</h4>
-
+              
               <div class="flex flex-wrap gap-2">
                 <%= for resource <- @suggested_resources do %>
                   <button
@@ -101,7 +104,8 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
             </div>
           <% end %>
         </div>
-        <.button phx-disable-with="Saving...">Save Role</.button>
+        
+        <div class="mt-6"><.button phx-disable-with="Saving...">Save Role</.button></div>
       </.form>
     </div>
     """
@@ -143,9 +147,41 @@ defmodule VoileWeb.Users.Manage.UserRoleFormComponent do
     save_user_role(socket, socket.assigns.action, user_role_params)
   end
 
-  def handle_event("add_resource", _params, socket) do
-    # This will be handled by JavaScript to get the input value
-    {:noreply, socket}
+  def handle_event("add_resource", params, socket) do
+    resource =
+      case params do
+        %{"resource" => r} -> r
+        %{"new_resource" => %{"resource" => r}} -> r
+        _ -> ""
+      end
+
+    resource = (resource || "") |> String.trim() |> String.downcase()
+
+    if resource == "" do
+      {:noreply, socket}
+    else
+      current_permissions = socket.assigns.current_permissions || %{}
+
+      # don't override if resource already exists
+      new_permissions =
+        if Map.has_key?(current_permissions, resource) do
+          current_permissions
+        else
+          Map.put(current_permissions, resource, %{
+            "create" => false,
+            "read" => true,
+            "update" => false,
+            "delete" => false
+          })
+        end
+
+      suggested_resources = (socket.assigns.suggested_resources || []) -- [resource]
+
+      {:noreply,
+       socket
+       |> assign(:current_permissions, new_permissions)
+       |> assign(:suggested_resources, suggested_resources)}
+    end
   end
 
   def handle_event("add_suggested_resource", %{"resource" => resource}, socket) do

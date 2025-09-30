@@ -105,6 +105,102 @@ defmodule VoileWeb.CoreComponents do
   end
 
   @doc """
+  Renders a reusable delete / confirm modal.
+
+  This builds on the existing `modal/1` semantics and accepts JS commands
+  for `:on_cancel` and `:on_confirm`. The inner block is used to render
+  a descriptive message about what will be deleted.
+
+  Example:
+
+      <.delete_modal id="confirm-delete" show={@show_delete}
+        title="Delete Role" confirm_label="Delete"
+        on_cancel={JS.patch(~p"/items")} on_confirm={JS.push("confirm_delete", value: %{id: @item.id})}>
+        Are you sure you want to delete this role? This action cannot be undone.
+      </.delete_modal>
+
+  The component uses existing project button classes so it fits the visual
+  language of the app.
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :title, :string, default: gettext("Are you sure?")
+  attr :confirm_label, :string, default: gettext("Delete")
+  attr :confirm_class, :string, default: "cancel-btn"
+  attr :on_cancel, JS, default: %JS{}
+  attr :on_confirm, JS, default: %JS{}
+  slot :inner_block, required: true
+
+  def confirm_delete(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      data-cancel={JS.exec(@on_cancel, "phx-remove")}
+      class="relative z-50 hidden"
+    >
+      <div
+        id={"#{@id}-bg"}
+        class="bg-voile-surface/90 dark:bg-voile-dark/90 fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
+      <div
+        class="fixed inset-0 overflow-y-auto"
+        aria-labelledby={"#{@id}-title"}
+        aria-describedby={"#{@id}-description"}
+        role="dialog"
+        aria-modal="true"
+        tabindex="0"
+      >
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="w-full max-w-lg">
+            <.focus_wrap
+              id={"#{@id}-container"}
+              phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
+              phx-key="escape"
+              phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
+              class="relative rounded-xl bg-voile-light dark:bg-gray-700 p-8 shadow-lg ring-1 ring-zinc-700/10"
+            >
+              <div class="flex items-start gap-4">
+                <div class="flex-none">
+                  <.icon name="hero-exclamation-triangle-solid" class="h-8 w-8 text-voile-error" />
+                </div>
+                
+                <div class="flex-1">
+                  <h3 id={"#{@id}-title"} class="text-lg font-semibold">{@title}</h3>
+                  
+                  <p id={"#{@id}-description"} class="mt-2 text-sm text-base-content/70">
+                    {render_slot(@inner_block)}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  phx-click={JS.exec("data-cancel", to: "##{@id}")}
+                  class="hover-btn"
+                >
+                  {gettext("Cancel")}
+                </button>
+                <button
+                  type="button"
+                  phx-click={hide(@on_confirm, "##{@id}")}
+                  class={@confirm_class}
+                >
+                  {@confirm_label}
+                </button>
+              </div>
+            </.focus_wrap>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Renders flash notices.
 
   ## Examples

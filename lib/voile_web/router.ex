@@ -272,19 +272,25 @@ defmodule VoileWeb.Router do
           live "/user_dashboard", Users.Manage.Dashboard, :index
           live "/onboarding", Users.OnboardingManageLive, :index
 
+          scope "/users/roles" do
+            live "/", Users.ManageLive.Role, :index
+            live "/new", Users.ManageLive.Role, :new
+            live "/:id", Users.ManageLive.Role.Show, :show
+            # Keep the index LiveView handling "/:id/edit" so editing from
+            # the list opens a modal over the index page. Provide a
+            # separate route "/:id/show/edit" that maps to the Show LiveView
+            # so editing from the show page opens a modal while keeping the
+            # show page as the background (matching other resources).
+            live "/:id/edit", Users.ManageLive.Role, :edit
+            live "/:id/show/edit", Users.ManageLive.Role.Show, :edit
+          end
+
           scope "/users" do
             live "/", Users.ManageLive, :index
             live "/new", Users.ManageLive, :new
             live "/:id", Users.ManageLive.Show, :show
             live "/:id/show/edit", Users.ManageLive.Show, :edit
             live "/:id/edit", Users.ManageLive, :edit
-          end
-
-          scope "/users/roles" do
-            live "/", Users.ManageLive.Role, :index
-            live "/new", Users.ManageLive.Role, :new
-            live "/:id", Users.ManageLive.Role.Show, :show
-            live "/:id/edit", Users.ManageLive.Role, :edit
           end
 
           live "/user_profile", UserSettingsLive, :edit
