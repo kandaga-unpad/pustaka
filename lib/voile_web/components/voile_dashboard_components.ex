@@ -248,17 +248,6 @@ defmodule VoileWeb.VoileDashboardComponents do
             User Management
           </.link>
         </li>
-        
-        <%= if @current_user && VoileWeb.Helpers.AuthHelper.can_access?(@current_user, "roles") do %>
-          <li>
-            <.link
-              patch="/manage/settings/users/roles"
-              class="text-blue-600 dark:text-blue-200 hover:underline"
-            >
-              User Roles
-            </.link>
-          </li>
-        <% end %>
       </ul>
     </.side_bar_dashboard>
     """

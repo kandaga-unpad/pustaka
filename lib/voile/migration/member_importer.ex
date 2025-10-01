@@ -521,25 +521,25 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   defp setup_default_data do
-    ensure_member_role()
+    # ensure_member_role()
     ensure_default_member_types()
     ensure_default_nodes()
   end
 
-  defp ensure_member_role do
-    unless Repo.get_by(UserRole, name: "Member") do
-      %UserRole{}
-      |> UserRole.changeset(%{
-        name: "Member",
-        description: "Library member role",
-        permissions: %{
-          "catalog" => %{"read" => true},
-          "profile" => %{"read" => true, "update" => true}
-        }
-      })
-      |> Repo.insert!()
-    end
-  end
+  # defp ensure_member_role do
+  #   unless Repo.get_by(UserRole, name: "Member") do
+  #     %UserRole{}
+  #     |> UserRole.changeset(%{
+  #       name: "Member",
+  #       description: "Library member role",
+  #       permissions: %{
+  #         "catalog" => %{"read" => true},
+  #         "profile" => %{"read" => true, "update" => true}
+  #       }
+  #     })
+  #     |> Repo.insert!()
+  #   end
+  # end
 
   defp ensure_default_member_types do
     # Create default member type if none exist

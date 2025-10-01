@@ -6,12 +6,12 @@ defmodule Voile.Schema.Accounts do
   import Ecto.Query, warn: false
   alias Voile.Repo
 
-  alias Voile.Schema.Accounts.{User, UserRole, UserToken, UserNotifier}
+  alias Voile.Schema.Accounts.{User, UserToken, UserNotifier}
   alias Voile.Schema.Accounts.UserProfile
 
   # Helper to ensure returned user structs have common associations preloaded
   defp preload_user_assocs(nil), do: nil
-  defp preload_user_assocs(%User{} = user), do: Repo.preload(user, [:user_role, :user_type])
+  defp preload_user_assocs(%User{} = user), do: Repo.preload(user, [:user_type])
 
   ## Database getters
 
@@ -724,159 +724,6 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
-  Returns the list of user roles.
-  """
-  def list_user_roles do
-    UserRole
-    |> order_by(:id)
-    |> Repo.all()
-  end
-
-  @doc """
-  Gets a single user role.
-  """
-  def get_user_role!(id), do: Repo.get!(UserRole, id)
-
-  @doc """
-  Gets a user role by name.
-  """
-  def get_user_role_by_name(name) when is_binary(name) do
-    Repo.get_by(UserRole, name: name)
-  end
-
-  @doc """
-  Creates a user role.
-  """
-  def create_user_role(attrs \\ %{}) do
-    %UserRole{}
-    |> UserRole.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a user role.
-  """
-  def update_user_role(%UserRole{} = user_role, attrs) do
-    user_role
-    |> UserRole.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a user role.
-  """
-  def delete_user_role(%UserRole{} = user_role) do
-    Repo.delete(user_role)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user role changes.
-  """
-  def change_user_role(%UserRole{} = user_role, attrs \\ %{}) do
-    UserRole.changeset(user_role, attrs)
-  end
-
-  ## Permission functions
-
-  @doc """
-  Checks if a user has permission for a specific resource and action.
-
-  This function accepts `resource` in one of three forms:
-    - a single string or atom key (e.g. "collection" or :collection)
-    - a dot-separated string path (e.g. "collection.transaction.checkout")
-    - a list of keys (e.g. ["collection", "transaction", "checkout"]) where each
-      element is a string or atom
-
-  `action` must be a string or atom that corresponds to the final permission key.
-
-  Examples:
-
-      # shallow
-      has_permission?(user, "collection", "create")
-
-      # deep, dot-separated
-      has_permission?(user, "collection.transaction.checkout", "read")
-
-      # deep, list
-      has_permission?(user, ["collection", "transaction", "checkout"], "read")
-
-  Passing the actual nested boolean value (for example `permissions["collection"]["create"]`)
-  or other invalid shapes will raise an `ArgumentError` to guide callers to use keys/paths.
-  """
-  def has_permission?(%User{user_role: %UserRole{permissions: permissions}}, resource, action)
-      when (is_binary(resource) or is_atom(resource) or is_list(resource)) and
-             (is_binary(action) or is_atom(action)) do
-    # Normalize resource into a list of keys
-    keys =
-      cond do
-        is_list(resource) ->
-          resource
-
-        is_binary(resource) ->
-          if String.contains?(resource, ".") do
-            String.split(resource, ".")
-          else
-            [resource]
-          end
-
-        is_atom(resource) ->
-          [resource]
-      end
-
-    # Validate each key element
-    unless Enum.all?(keys, fn k -> is_binary(k) or is_atom(k) end) do
-      raise ArgumentError,
-            "has_permission?/3 expects resource path elements to be strings or atoms (got: #{inspect(keys)})"
-    end
-
-    path = keys ++ [action]
-
-    case get_in(permissions, path) do
-      true -> true
-      _ -> false
-    end
-  end
-
-  # Explicit false when user has no role or user is nil
-  def has_permission?(%User{user_role: nil}, _resource, _action), do: false
-  def has_permission?(nil, _resource, _action), do: false
-
-  # Catch-all to prevent callers from passing nested boolean values or other invalid shapes.
-  def has_permission?(_user, resource, _action)
-      when not (is_binary(resource) or is_atom(resource)) do
-    raise ArgumentError,
-          "has_permission?/3 expects `resource` to be a string or atom key (got: #{inspect(resource)})"
-  end
-
-  def has_permission?(_user, _resource, action) when not (is_binary(action) or is_atom(action)) do
-    raise ArgumentError,
-          "has_permission?/3 expects `action` to be a string or atom key (got: #{inspect(action)})"
-  end
-
-  @doc """
-  Checks if a user can perform any CRUD operation on a resource.
-  """
-  # Return false when user is nil to avoid callers crashing when no user is present
-  def can_access_resource?(nil, _resource), do: false
-
-  def can_access_resource?(%User{} = user, resource) do
-    has_permission?(user, resource, "create") ||
-      has_permission?(user, resource, "read") ||
-      has_permission?(user, resource, "update") ||
-      has_permission?(user, resource, "delete")
-  end
-
-  @doc """
-  Gets all available resources from all roles.
-  """
-  def get_available_resources do
-    list_user_roles()
-    |> Enum.flat_map(fn role -> Map.keys(role.permissions) end)
-    |> Enum.uniq()
-    |> Enum.sort()
-  end
-
-  @doc """
   Gets user statistics.
   """
   def get_user_statistics do
@@ -886,21 +733,10 @@ defmodule Voile.Schema.Accounts do
       from(u in User, where: not is_nil(u.confirmed_at))
       |> Repo.aggregate(:count, :id)
 
-    users_by_role =
-      from(u in User,
-        join: r in UserRole,
-        on: u.user_role_id == r.id,
-        group_by: r.name,
-        select: {r.name, count(u.id)}
-      )
-      |> Repo.all()
-      |> Enum.into(%{})
-
     %{
       total_users: total_users,
       confirmed_users: confirmed_users,
-      unconfirmed_users: total_users - confirmed_users,
-      users_by_role: users_by_role
+      unconfirmed_users: total_users - confirmed_users
     }
   end
 
@@ -911,7 +747,7 @@ defmodule Voile.Schema.Accounts do
 
   Example usages:
     search_users("alice")
-    search_users(%{"query" => "alice", "node_id" => "1", "user_role_id" => "2"})
+    search_users(%{"query" => "alice", "node_id" => "1"})
   """
   def search_users(query) when is_binary(query) do
     search_users(%{"query" => query})
@@ -921,11 +757,7 @@ defmodule Voile.Schema.Accounts do
     query_string = Map.get(params, "query", "")
     search_term = "%#{query_string}%"
 
-    q =
-      from(u in User,
-        left_join: r in assoc(u, :user_role),
-        preload: [:user_role]
-      )
+    q = from(u in User, preload: [:user_type])
 
     q =
       if query_string != "" do
@@ -938,7 +770,7 @@ defmodule Voile.Schema.Accounts do
         q
       end
 
-    # optional filters: node_id, user_role_id, member_type_id
+    # optional filters: node_id, user_type_id
     q =
       case Map.get(params, "node_id") do
         nil ->
@@ -952,21 +784,6 @@ defmodule Voile.Schema.Accounts do
 
         node_id when is_integer(node_id) ->
           from(u in q, where: u.node_id == ^node_id)
-      end
-
-    q =
-      case Map.get(params, "user_role_id") do
-        nil ->
-          q
-
-        "" ->
-          q
-
-        role_id when is_binary(role_id) ->
-          from(u in q, where: u.user_role_id == ^String.to_integer(role_id))
-
-        role_id when is_integer(role_id) ->
-          from(u in q, where: u.user_role_id == ^role_id)
       end
 
     q =
@@ -985,18 +802,5 @@ defmodule Voile.Schema.Accounts do
       end
 
     Repo.all(q)
-  end
-
-  @doc """
-  Gets users by role.
-  """
-  def get_users_by_role(role_name) when is_binary(role_name) do
-    from(u in User,
-      join: r in UserRole,
-      on: u.user_role_id == r.id,
-      where: r.name == ^role_name,
-      preload: [:user_role]
-    )
-    |> Repo.all()
   end
 end

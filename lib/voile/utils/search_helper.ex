@@ -8,9 +8,9 @@ defmodule Voile.Utils.SearchHelper do
   @doc """
   Fetches search suggestions for autocomplete functionality
   """
-  def fetch_suggestions(query, user_role \\ "patron", limit \\ 8) do
-    collections = Search.search_collections(query, user_role, %{per_page: div(limit, 2)})
-    items = Search.search_items(query, user_role, %{per_page: div(limit, 2)})
+  def fetch_suggestions(query, _user_role \\ nil, limit \\ 8) do
+    collections = Search.search_collections(query, %{per_page: div(limit, 2)})
+    items = Search.search_items(query, %{per_page: div(limit, 2)})
 
     collection_suggestions =
       collections.results

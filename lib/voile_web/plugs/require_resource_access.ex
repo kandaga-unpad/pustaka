@@ -1,24 +1,22 @@
 defmodule VoileWeb.Plugs.RequireResourceAccess do
   @moduledoc """
   Plug for checking if user can access any operation on a resource.
+  Note: RBAC system removed - this now allows access for all authenticated users.
   """
 
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Voile.Schema.Accounts
-
   def init(opts), do: opts
 
-  def call(conn, opts) do
-    resource = Keyword.get(opts, :resource)
+  def call(conn, _opts) do
     current_user = conn.assigns[:current_user]
 
-    if Accounts.can_access_resource?(current_user, resource) do
+    if current_user do
       conn
     else
       conn
-      |> put_flash(:error, "You don't have access to this resource.")
+      |> put_flash(:error, "You must be logged in to access this resource.")
       |> redirect(to: "/dashboard")
       |> halt()
     end

@@ -2,29 +2,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Accounts
-  alias VoileWeb.Helpers.AuthHelper
   alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    current_user = socket.assigns.current_scope.user
     user = Accounts.get_user!(id)
 
-    if AuthHelper.can?(current_user, "users", "read") do
-      # do not assume edit modal is open yet; basic assigns for show
-      socket =
-        socket
-        |> assign(user: user)
+    # do not assume edit modal is open yet; basic assigns for show
+    socket =
+      socket
+      |> assign(user: user)
 
-      {:ok, socket}
-    else
-      socket =
-        socket
-        |> put_flash(:error, "You don't have permission to view this user.")
-        |> push_navigate(to: "/manage/settings/users")
-
-      {:ok, socket}
-    end
+    {:ok, socket}
   end
 
   @impl true
@@ -40,11 +29,9 @@ defmodule VoileWeb.Users.ManageLive.Show do
         <.back navigate={~p"/manage/settings/users"}>Back to Users</.back>
         
         <div class="text-right">
-          <%= if AuthHelper.can?(@current_scope.user, "users", "update") do %>
-            <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
-              Edit
-            </.link>
-          <% end %>
+          <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
+            Edit
+          </.link>
         </div>
       </div>
       

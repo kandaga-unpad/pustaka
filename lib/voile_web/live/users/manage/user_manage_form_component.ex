@@ -140,12 +140,10 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
   @impl true
   def update(%{user: user} = assigns, socket) do
     changeset = Accounts.change_user(user)
-    role_options = Accounts.list_user_roles() |> Enum.map(&{&1.name, &1.id})
 
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:role_options, role_options)
      |> allow_upload(:user_image,
        accept: ~w(.jpg .jpeg .png .webp),
        max_entries: 1,

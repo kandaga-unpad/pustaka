@@ -5,7 +5,6 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
   use VoileWeb, :live_component
 
   import VoileWeb.Dashboard.Circulation.Helpers
-  import VoileWeb.Utils.AuthHelper
 
   @doc """
   Renders a status badge with appropriate styling.
@@ -174,56 +173,26 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
     ~H"""
     <div class="bg-white dark:bg-gray-700 shadow rounded-lg p-6">
       <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Quick Actions</h3>
-       {can_access?(@current_user, "circulation.transactions.checkout")}
+      
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <%= if can_access?(@current_user, "circulation.transactions.checkout") do %>
-          <.link
-            navigate={~p"/manage/circulation/transactions/checkout"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-voile-primary hover:bg-voile-dark dark:bg-voile-primary dark:hover:bg-voile-dark dark:text-voile-surface"
-          >
-            Quick Checkout
-          </.link>
-        <% else %>
-          <button
-            disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
-          >
-            Quick Checkout
-          </button>
-        <% end %>
-        
-        <%= if can_access?(@current_user, "circulation.transactions") do %>
-          <.link
-            navigate={~p"/manage/circulation/transactions"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile"
-          >
-            Quick Return
-          </.link>
-        <% else %>
-          <button
-            disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
-          >
-            Quick Return
-          </button>
-        <% end %>
-        
-        <%= if can_access?(@current_user, "settings.users") do %>
-          <.link
-            navigate={~p"/manage/settings/users"}
-            class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-voile border border-voile"
-          >
-            Member Lookup
-          </.link>
-        <% else %>
-          <button
-            disabled
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
-          >
-            Member Lookup
-          </button>
-        <% end %>
-        
+        <button
+          disabled
+          class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
+        >
+          Quick Checkout
+        </button>
+        <button
+          disabled
+          class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
+        >
+          Quick Return
+        </button>
+        <button
+          disabled
+          class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
+        >
+          Member Lookup
+        </button>
         <.link
           navigate={~p"/search?type=items"}
           class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile bg-voile-primary text-white"

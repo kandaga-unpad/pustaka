@@ -31,23 +31,6 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     create index(:users, [:last_login])
     create index(:users, [:identifier], where: "identifier IS NOT NULL")
 
-    create table(:user_roles) do
-      add :name, :string, null: false
-      add :description, :text
-      add :permissions, :map, default: %{}
-
-      timestamps(type: :utc_datetime)
-    end
-
-    create unique_index(:user_roles, [:name])
-
-    alter table(:users) do
-      add :user_role_id, references(:user_roles)
-    end
-
-    # Add performance index for user_role_id
-    create index(:users, [:user_role_id])
-
     create table(:users_tokens) do
       add :user_id, references(:users, type: :uuid, on_delete: :delete_all), null: false
       add :token, :binary, null: false

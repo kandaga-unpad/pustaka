@@ -91,18 +91,16 @@ defmodule VoileWeb.SearchLive do
 
   @impl true
   def handle_info({:perform_search, query, search_type, page}, socket) do
-    user_role = socket.assigns.user_role
-
     results =
       case search_type do
         "collections" ->
-          Search.search_collections(query, user_role, %{page: page})
+          Search.search_collections(query, %{page: page})
 
         "items" ->
-          Search.search_items(query, user_role, %{page: page})
+          Search.search_items(query, %{page: page})
 
         "universal" ->
-          Search.universal_search(query, user_role, %{page: page})
+          Search.universal_search(query, %{page: page})
       end
 
     {:noreply,

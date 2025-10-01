@@ -10,50 +10,48 @@ defmodule Voile.Schema.Search do
   alias Voile.Schema.Master.Creator
 
   @doc """
-  Search collections with optional filters and role-based access control.
+  Search collections with optional filters.
 
   ## Parameters
   - query_string: The search term
-  - user_role: "librarian" or "patron" for access control
   - opts: Additional options like pagination, filters, etc.
 
   ## Examples
-      iex> search_collections("science", "patron", %{page: 1, per_page: 10})
+      iex> search_collections("science", %{page: 1, per_page: 10})
       %{results: [%Collection{}], total: 5, page: 1, total_pages: 1}
   """
-  def search_collections(query_string, user_role \\ "patron", opts \\ %{})
+  def search_collections(query_string, opts \\ %{})
 
-  def search_collections(query_string, user_role, opts) when is_binary(query_string) do
+  def search_collections(query_string, opts) when is_binary(query_string) do
     page = Map.get(opts, :page, 1)
     per_page = Map.get(opts, :per_page, 10)
     filters = Map.get(opts, :filters, %{})
 
     query_string
-    |> build_collection_search_query(user_role, filters)
+    |> build_collection_search_query(filters)
     |> paginate_results(page, per_page)
   end
 
   @doc """
-  Search items with optional filters and role-based access control.
+  Search items with optional filters.
 
   ## Parameters
   - query_string: The search term
-  - user_role: "librarian" or "patron" for access control
   - opts: Additional options like pagination, filters, etc.
 
   ## Examples
-      iex> search_items("programming", "patron", %{status: "available"})
+      iex> search_items("programming", %{status: "available"})
       %{results: [%Item{}], total: 12, page: 1, total_pages: 2}
   """
-  def search_items(query_string, user_role \\ "patron", opts \\ %{})
+  def search_items(query_string, opts \\ %{})
 
-  def search_items(query_string, user_role, opts) when is_binary(query_string) do
+  def search_items(query_string, opts) when is_binary(query_string) do
     page = Map.get(opts, :page, 1)
     per_page = Map.get(opts, :per_page, 10)
     filters = Map.get(opts, :filters, %{})
 
     query_string
-    |> build_item_search_query(user_role, filters)
+    |> build_item_search_query(filters)
     |> paginate_results(page, per_page)
   end
 
@@ -62,21 +60,21 @@ defmodule Voile.Schema.Search do
   Returns a combined result set with type indicators.
 
   ## Examples
-      iex> universal_search("history", "patron", %{page: 1})
+      iex> universal_search("history", %{page: 1})
       %{
         collections: %{results: [...], total: 3},
         items: %{results: [...], total: 8},
         total_results: 11
       }
   """
-  def universal_search(query_string, user_role \\ "patron", opts \\ %{})
+  def universal_search(query_string, opts \\ %{})
 
-  def universal_search(query_string, user_role, opts) when is_binary(query_string) do
+  def universal_search(query_string, opts) when is_binary(query_string) do
     collections_opts = Map.put(opts, :per_page, Map.get(opts, :collections_per_page, 5))
     items_opts = Map.put(opts, :per_page, Map.get(opts, :items_per_page, 10))
 
-    collections_result = search_collections(query_string, user_role, collections_opts)
-    items_result = search_items(query_string, user_role, items_opts)
+    collections_result = search_collections(query_string, collections_opts)
+    items_result = search_items(query_string, items_opts)
 
     %{
       collections: collections_result,
@@ -91,12 +89,12 @@ defmodule Voile.Schema.Search do
   Allows searching specific fields like title, description, creator, etc.
 
   ## Examples
-      iex> advanced_search(%{title: "physics", creator: "einstein"}, "librarian")
+      iex> advanced_search(%{title: "physics", creator: "einstein"})
       %{results: [...], total: 2}
   """
-  def advanced_search(search_params, user_role \\ "patron", opts \\ %{})
+  def advanced_search(search_params, opts \\ %{})
 
-  def advanced_search(search_params, user_role, opts) when is_map(search_params) do
+  def advanced_search(search_params, opts) when is_map(search_params) do
     page = Map.get(opts, :page, 1)
     per_page = Map.get(opts, :per_page, 10)
     # :collections, :items, or :both
@@ -105,19 +103,19 @@ defmodule Voile.Schema.Search do
     case search_type do
       :collections ->
         search_params
-        |> build_advanced_collection_query(user_role)
+        |> build_advanced_collection_query()
         |> paginate_results(page, per_page)
 
       :items ->
         search_params
-        |> build_advanced_item_query(user_role)
+        |> build_advanced_item_query()
         |> paginate_results(page, per_page)
 
       :both ->
         collections_result =
-          advanced_search(search_params, user_role, Map.put(opts, :type, :collections))
+          advanced_search(search_params, Map.put(opts, :type, :collections))
 
-        items_result = advanced_search(search_params, user_role, Map.put(opts, :type, :items))
+        items_result = advanced_search(search_params, Map.put(opts, :type, :items))
 
         %{
           collections: collections_result,
@@ -129,7 +127,7 @@ defmodule Voile.Schema.Search do
 
   # Private functions for building queries
 
-  defp build_collection_search_query(query_string, user_role, filters) do
+  defp build_collection_search_query(query_string, filters) do
     search_term = "%#{String.trim(query_string)}%"
 
     base_query =
@@ -153,12 +151,10 @@ defmodule Voile.Schema.Search do
           :items
         ]
 
-    base_query
-    |> apply_role_based_access(user_role, :collection)
-    |> apply_collection_filters(filters)
+    apply_collection_filters(base_query, filters)
   end
 
-  defp build_item_search_query(query_string, user_role, filters) do
+  defp build_item_search_query(query_string, filters) do
     search_term = "%#{String.trim(query_string)}%"
 
     base_query =
@@ -184,12 +180,10 @@ defmodule Voile.Schema.Search do
           :attachments
         ]
 
-    base_query
-    |> apply_role_based_access(user_role, :item)
-    |> apply_item_filters(filters)
+    apply_item_filters(base_query, filters)
   end
 
-  defp build_advanced_collection_query(search_params, user_role) do
+  defp build_advanced_collection_query(search_params) do
     base_query =
       from c in Collection,
         left_join: creator in Creator,
@@ -221,10 +215,10 @@ defmodule Voile.Schema.Search do
         end
       end)
 
-    apply_role_based_access(query, user_role, :collection)
+    query
   end
 
-  defp build_advanced_item_query(search_params, user_role) do
+  defp build_advanced_item_query(search_params) do
     base_query =
       from i in Item,
         left_join: c in Collection,
@@ -257,30 +251,8 @@ defmodule Voile.Schema.Search do
         end
       end)
 
-    apply_role_based_access(query, user_role, :item)
-  end
-
-  defp apply_role_based_access(query, "librarian", _type) do
-    # Librarians can see everything
     query
   end
-
-  defp apply_role_based_access(query, "patron", :collection) do
-    # Patrons can only see public collections
-    where(query, [c], c.access_level in ["public", "restricted"])
-  end
-
-  defp apply_role_based_access(query, "patron", :item) do
-    # Patrons can only see available items from public collections
-    where(
-      query,
-      [i, c],
-      i.availability in ["available", "reference"] and
-        c.access_level in ["public", "restricted"]
-    )
-  end
-
-  defp apply_role_based_access(query, _user_role, _type), do: query
 
   defp apply_collection_filters(query, filters) do
     Enum.reduce(filters, query, fn {key, value}, acc ->

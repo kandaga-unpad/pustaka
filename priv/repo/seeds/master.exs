@@ -1,142 +1,6 @@
 alias Voile.Repo
 alias Voile.Schema.Accounts
-alias Voile.Schema.Accounts.UserRole
 alias Voile.Schema.Master.MemberType
-
-# First, create comprehensive user roles from seeds.exs
-user_roles = [
-  %{
-    name: "Super Administrator Dev",
-    description: "Super Administrator",
-    permissions: %{
-      "collection" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "item" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "media" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
-    }
-  },
-  %{
-    name: "Admin Node",
-    description: "Full administrative access to node operations",
-    permissions: %{
-      "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "roles" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
-    }
-  },
-  %{
-    name: "Koordinator Koleksi",
-    description: "Collection coordinator with management access",
-    permissions: %{
-      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan (Koordinator)",
-    description: "Lead librarian with coordination responsibilities",
-    permissions: %{
-      "collections" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Sirkulasi",
-    description: "Circulation librarian",
-    permissions: %{
-      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Pengolahan (Buku)",
-    description: "Book processing librarian",
-    permissions: %{
-      "books" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "cataloging" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Referensi",
-    description: "Reference librarian",
-    permissions: %{
-      "reference" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Sistem (TI)",
-    description: "IT systems librarian",
-    permissions: %{
-      "system" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "users" => %{"create" => false, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Pengolahan (ETD)",
-    description: "Electronic thesis and dissertation processing librarian",
-    permissions: %{
-      "etd" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "cataloging" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan (General)",
-    description: "General librarian",
-    permissions: %{
-      "collections" => %{"create" => false, "read" => true, "update" => false, "delete" => false},
-      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Pustakawan Koleksi Populer",
-    description: "Popular collection librarian",
-    permissions: %{
-      "popular_collections" => %{
-        "create" => true,
-        "read" => true,
-        "update" => true,
-        "delete" => false
-      },
-      "circulation" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Arsiparis (Koordinator)",
-    description: "Head archivist",
-    permissions: %{
-      "archives" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-      "users" => %{"create" => false, "read" => true, "update" => false, "delete" => false}
-    }
-  },
-  %{
-    name: "Arsiparis",
-    description: "Archivist",
-    permissions: %{
-      "archives" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Kurator Museum",
-    description: "Museum curator",
-    permissions: %{
-      "museum" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "exhibitions" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  },
-  %{
-    name: "Kurator Galeri",
-    description: "Gallery curator",
-    permissions: %{
-      "gallery" => %{"create" => true, "read" => true, "update" => true, "delete" => false},
-      "exhibitions" => %{"create" => true, "read" => true, "update" => true, "delete" => false}
-    }
-  }
-]
 
 list_member_type = [
   %{
@@ -341,25 +205,6 @@ created_member_types =
     end
   end)
 
-# Create all user roles and store the Super Administrator Dev role for admin user
-created_roles =
-  Enum.map(user_roles, fn role ->
-    case Repo.get_by(UserRole, name: role.name) do
-      nil ->
-        Repo.insert!(%UserRole{
-          name: role.name,
-          description: role.description,
-          permissions: role.permissions
-        })
-
-      existing_role ->
-        existing_role
-    end
-  end)
-
-# Get the Super Administrator Dev role for the admin user
-super_admin_role = Enum.find(created_roles, fn role -> role.name == "Super Administrator Dev" end)
-
 # Get the Administrator member type for the admin user
 admin_member_type = Enum.find(created_member_types, fn mt -> mt.slug == "administrator" end)
 
@@ -369,7 +214,6 @@ admin_user_attrs = %{
   fullname: "Voile Administrator",
   username: "admin",
   password: "super_long_password",
-  user_role_id: super_admin_role.id,
   user_type_id: admin_member_type.id,
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
 }

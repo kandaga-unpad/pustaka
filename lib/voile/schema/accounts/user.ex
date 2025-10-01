@@ -2,7 +2,6 @@ defmodule Voile.Schema.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Voile.Schema.Accounts.UserRole
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
@@ -24,7 +23,6 @@ defmodule Voile.Schema.Accounts.User do
     field :last_login, :utc_datetime
     field :last_login_ip, :string
 
-    belongs_to :user_role, UserRole
     belongs_to :user_type, MemberType, type: :binary_id
     belongs_to :node, Node
 
@@ -44,7 +42,6 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_role_id,
       :user_type_id,
       :password,
       :confirmed_at,
@@ -95,7 +92,6 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_role_id,
       :user_type_id,
       :password,
       :confirmed_at,
@@ -122,7 +118,6 @@ defmodule Voile.Schema.Accounts.User do
       :identifier,
       :email,
       :fullname,
-      :user_role_id,
       :user_type_id,
       :password,
       :confirmed_at,

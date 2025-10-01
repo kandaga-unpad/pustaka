@@ -260,41 +260,41 @@ defmodule Voile.Migration.UserImporter do
   end
 
   defp setup_default_data do
-    ensure_default_user_roles()
+    # ensure_default_user_roles()
     ensure_default_member_type()
     ensure_default_node()
   end
 
-  defp ensure_default_user_roles do
-    # Create Member role if it doesn't exist
-    unless Repo.get_by(UserRole, name: "Member") do
-      %UserRole{}
-      |> UserRole.changeset(%{
-        name: "Member",
-        description: "Default member role",
-        permissions: %{
-          "catalog" => %{"read" => true},
-          "profile" => %{"read" => true, "update" => true}
-        }
-      })
-      |> Repo.insert!()
-    end
+  # defp ensure_default_user_roles do
+  #   # Create Member role if it doesn't exist
+  #   unless Repo.get_by(UserRole, name: "Member") do
+  #     %UserRole{}
+  #     |> UserRole.changeset(%{
+  #       name: "Member",
+  #       description: "Default member role",
+  #       permissions: %{
+  #         "catalog" => %{"read" => true},
+  #         "profile" => %{"read" => true, "update" => true}
+  #       }
+  #     })
+  #     |> Repo.insert!()
+  #   end
 
-    # Create Admin role if it doesn't exist
-    unless Repo.get_by(UserRole, name: "Admin") do
-      %UserRole{}
-      |> UserRole.changeset(%{
-        name: "Admin",
-        description: "Administrator role",
-        permissions: %{
-          "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-          "catalog" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
-          "library" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
-        }
-      })
-      |> Repo.insert!()
-    end
-  end
+  #   # Create Admin role if it doesn't exist
+  #   unless Repo.get_by(UserRole, name: "Admin") do
+  #     %UserRole{}
+  #     |> UserRole.changeset(%{
+  #       name: "Admin",
+  #       description: "Administrator role",
+  #       permissions: %{
+  #         "users" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+  #         "catalog" => %{"create" => true, "read" => true, "update" => true, "delete" => true},
+  #         "library" => %{"create" => true, "read" => true, "update" => true, "delete" => true}
+  #       }
+  #     })
+  #     |> Repo.insert!()
+  #   end
+  # end
 
   defp ensure_default_member_type do
     unless Repo.one(from(mt in MemberType, limit: 1)) do

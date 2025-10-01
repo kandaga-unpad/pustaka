@@ -91,6 +91,10 @@ config :voile,
   s3_public_url:
     System.get_env("VOILE_S3_PUBLIC_URL") || "https://s3.ap-southeast-1.amazonaws.com"
 
+config :voile, VoileWeb.Gettext,
+  locales: ~w(id en),
+  default_locale: "id"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
