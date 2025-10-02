@@ -2,7 +2,6 @@ defmodule VoileWeb.UserSettingsLive do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Accounts
-  alias Voile.Schema.Accounts.UserProfile
   alias Client.Storage
   require Logger
 
@@ -193,14 +192,8 @@ defmodule VoileWeb.UserSettingsLive do
     password_changeset = Accounts.change_user_password(user)
 
     profile_changeset = Accounts.change_user(user)
-    user_profile = Accounts.get_user_profile(user.id)
 
-    user_profile_changeset =
-      UserProfile.changeset(user_profile || %UserProfile{}, %{
-        "full_name" => user.fullname,
-        "photo" => user.user_image
-      })
-
+    user_profile_changeset = Accounts.change_user(user)
     user_profile_form = to_form(user_profile_changeset, as: :user)
 
     socket =
@@ -211,7 +204,6 @@ defmodule VoileWeb.UserSettingsLive do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:profile_form, to_form(profile_changeset))
-      |> assign(:user_profile, user_profile || %{})
       |> assign(:user_profile_form, user_profile_form)
       |> assign(:profile_image_preview, nil)
       |> allow_upload(:user_image,

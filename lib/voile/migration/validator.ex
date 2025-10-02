@@ -6,7 +6,7 @@ defmodule Voile.Migration.Validator do
   import Ecto.Query
 
   alias Voile.Repo
-  alias Voile.Schema.Accounts.{User, UserRole, UserProfile}
+  alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.{MemberType, Creator, Publishers}
   alias Voile.Schema.System.Node
   alias Voile.Schema.Catalog.{Collection, Item}
@@ -31,14 +31,6 @@ defmodule Voile.Migration.Validator do
   defp check_master_data do
     IO.puts("\n1. MASTER DATA CHECK")
     IO.puts("-" |> String.duplicate(40))
-
-    # User Roles
-    roles = Repo.all(UserRole)
-    IO.puts("User Roles: #{length(roles)}")
-
-    Enum.each(roles, fn role ->
-      IO.puts("  - #{role.name}: #{role.description}")
-    end)
 
     # Member Types
     member_types = Repo.all(MemberType)
@@ -164,25 +156,6 @@ defmodule Voile.Migration.Validator do
     Enum.each(type_counts, fn {type_name, count} ->
       IO.puts("  - #{type_name}: #{count}")
     end)
-
-    # Users with profiles
-    profile_count = Repo.aggregate(UserProfile, :count, :id)
-    IO.puts("\nUser Profiles: #{profile_count}")
-
-    members_without_profiles =
-      from(u in User,
-        join: ur in assoc(u, :user_role),
-        left_join: up in assoc(u, :user_profile),
-        where: ur.name == "Member" and is_nil(up.id),
-        select: count(u.id)
-      )
-      |> Repo.one()
-
-    if members_without_profiles > 0 do
-      IO.puts("⚠️  Members without profiles: #{members_without_profiles}")
-    else
-      IO.puts("✅ All members have profiles")
-    end
   end
 
   defp check_data_integrity do
@@ -291,9 +264,9 @@ defmodule Voile.Migration.Validator do
 
     # Gender distribution
     gender_dist =
-      from(up in UserProfile,
-        group_by: up.gender,
-        select: {up.gender, count(up.id)}
+      from(u in User,
+        group_by: u.gender,
+        select: {u.gender, count(u.id)}
       )
       |> Repo.all()
 
@@ -311,36 +284,36 @@ defmodule Voile.Migration.Validator do
       IO.puts("  - #{gender_label}: #{count}")
     end)
 
-    # Profiles with birth dates
-    profiles_with_birth_date =
-      from(up in UserProfile,
-        where: not is_nil(up.birth_date),
-        select: count(up.id)
+    # Users with birth dates
+    users_with_birth_date =
+      from(u in User,
+        where: not is_nil(u.birth_date),
+        select: count(u.id)
       )
       |> Repo.one()
 
-    total_profiles = Repo.aggregate(UserProfile, :count, :id)
-    IO.puts("\nProfiles with birth date: #{profiles_with_birth_date}/#{total_profiles}")
+    total_users = Repo.aggregate(User, :count, :id)
+    IO.puts("\nUsers with birth date: #{users_with_birth_date}/#{total_users}")
 
-    # Profiles with phone numbers
-    profiles_with_phone =
-      from(up in UserProfile,
-        where: not is_nil(up.phone_number) and up.phone_number != "",
-        select: count(up.id)
+    # Users with phone numbers
+    users_with_phone =
+      from(u in User,
+        where: not is_nil(u.phone_number) and u.phone_number != "",
+        select: count(u.id)
       )
       |> Repo.one()
 
-    IO.puts("Profiles with phone: #{profiles_with_phone}/#{total_profiles}")
+    IO.puts("Users with phone: #{users_with_phone}/#{total_users}")
 
-    # Profiles with addresses
-    profiles_with_address =
-      from(up in UserProfile,
-        where: not is_nil(up.address) and up.address != "",
-        select: count(up.id)
+    # Users with addresses
+    users_with_address =
+      from(u in User,
+        where: not is_nil(u.address) and u.address != "",
+        select: count(u.id)
       )
       |> Repo.one()
 
-    IO.puts("Profiles with address: #{profiles_with_address}/#{total_profiles}")
+    IO.puts("Users with address: #{users_with_address}/#{total_users}")
   end
 
   defp check_sample_data do

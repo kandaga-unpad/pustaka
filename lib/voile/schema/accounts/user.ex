@@ -2,6 +2,10 @@ defmodule Voile.Schema.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Voile.Schema.Accounts.AuditLog
+  alias Voile.Schema.Accounts.CollectionPermission
+  alias Voile.Schema.Accounts.UserPermission
+  alias Voile.Schema.Accounts.UserRoleAssignment
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
@@ -23,8 +27,32 @@ defmodule Voile.Schema.Accounts.User do
     field :last_login, :utc_datetime
     field :last_login_ip, :string
 
+    # Profile fields (moved from UserProfile)
+    field :address, :string
+    field :phone_number, :string
+    field :birth_date, :date
+    field :birth_place, :string
+    field :gender, :string
+    field :registration_date, :date
+    field :expiry_date, :date
+    field :organization, :string
+    field :department, :string
+    field :position, :string
+
     belongs_to :user_type, MemberType, type: :binary_id
     belongs_to :node, Node
+
+    # RBAC Relationships
+    has_many :user_role_assignments, UserRoleAssignment
+    has_many :roles, through: [:user_role_assignments, :role]
+    has_many :user_permissions, UserPermission
+    has_many :permissions, through: [:user_permissions, :permission]
+
+    # Collection-specific permissions
+    has_many :collection_permissions, CollectionPermission
+
+    # Audit Trail
+    has_many :audit_logs, AuditLog
 
     field :twitter, :string, virtual: true
     field :facebook, :string, virtual: true
@@ -54,7 +82,19 @@ defmodule Voile.Schema.Accounts.User do
       :instagram,
       :website,
       :last_login,
-      :last_login_ip
+      :last_login_ip,
+      # Profile fields
+      :address,
+      :phone_number,
+      :birth_date,
+      :birth_place,
+      :gender,
+      :registration_date,
+      :expiry_date,
+      :photo,
+      :organization,
+      :department,
+      :position
     ])
     |> put_social_media
     |> validate_username(opts)
@@ -104,7 +144,19 @@ defmodule Voile.Schema.Accounts.User do
       :instagram,
       :website,
       :last_login,
-      :last_login_ip
+      :last_login_ip,
+      # Profile fields
+      :address,
+      :phone_number,
+      :birth_date,
+      :birth_place,
+      :gender,
+      :registration_date,
+      :expiry_date,
+      :photo,
+      :organization,
+      :department,
+      :position
     ])
     |> validate_email(opts)
     |> validate_password(opts)
@@ -130,7 +182,19 @@ defmodule Voile.Schema.Accounts.User do
       :instagram,
       :website,
       :last_login,
-      :last_login_ip
+      :last_login_ip,
+      # Profile fields
+      :address,
+      :phone_number,
+      :birth_date,
+      :birth_place,
+      :gender,
+      :registration_date,
+      :expiry_date,
+      :photo,
+      :organization,
+      :department,
+      :position
     ])
     |> validate_email(opts)
   end

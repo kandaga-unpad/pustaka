@@ -131,9 +131,17 @@ defmodule VoileWeb.UserAuth do
 
   # Do not renew session if the user is already logged in
   # to prevent CSRF errors or data being lost in tabs that are still open
-  defp renew_session(conn, user) when conn.assigns.current_scope.user.id == user.id do
-    conn
+  defp renew_session(conn, user) when is_struct(user) do
+    case conn.assigns do
+      %{current_scope: %{user: %{id: user_id}}} when user_id == user.id ->
+        conn
+
+      _ ->
+        do_renew_session(conn)
+    end
   end
+
+  defp renew_session(conn, _user), do: do_renew_session(conn)
 
   # This function renews the session ID and erases the whole
   # session to avoid fixation attacks. If there is any data
@@ -141,7 +149,7 @@ defmodule VoileWeb.UserAuth do
   # you must explicitly fetch the session data before clearing
   # and then immediately set it after clearing, for example:
   #
-  #     defp renew_session(conn, _user) do
+  #     defp do_renew_session(conn) do
   #       delete_csrf_token()
   #       preferred_locale = get_session(conn, :preferred_locale)
   #
@@ -151,7 +159,7 @@ defmodule VoileWeb.UserAuth do
   #       |> put_session(:preferred_locale, preferred_locale)
   #     end
   #
-  defp renew_session(conn, _user) do
+  defp do_renew_session(conn) do
     delete_csrf_token()
 
     conn
@@ -204,6 +212,12 @@ defmodule VoileWeb.UserAuth do
       on user_token.
       Redirects to login page if there's no logged user.
 
+    * `{:require_permission, "permission.name"}` - Requires both authentication
+      and a specific permission. Checks RBAC permissions.
+
+    * `{:require_permission, "permission.name", scope: {:collection, :id}}` -
+      Requires authentication and a scoped permission.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -220,6 +234,16 @@ defmodule VoileWeb.UserAuth do
 
       live_session :authenticated, on_mount: [{VoileWeb.UserAuth, :require_authenticated}] do
         live "/profile", ProfileLive, :index
+      end
+
+  For permission-based authorization in LiveViews:
+
+      live_session :admin_only,
+        on_mount: [
+          {VoileWeb.UserAuth, :require_authenticated},
+          {VoileWeb.UserAuth, {:require_permission, "system.settings"}}
+        ] do
+        live "/admin", AdminLive, :index
       end
   """
   def on_mount(:mount_current_scope, _params, session, socket) do
@@ -238,6 +262,39 @@ defmodule VoileWeb.UserAuth do
         |> Phoenix.LiveView.redirect(to: ~p"/login")
 
       {:halt, socket}
+    end
+  end
+
+  def on_mount({:require_permission, permission_name}, params, session, socket) do
+    on_mount({:require_permission, permission_name, []}, params, session, socket)
+  end
+
+  def on_mount({:require_permission, permission_name, opts}, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    case socket.assigns.current_scope do
+      %{user: user} when not is_nil(user) ->
+        if VoileWeb.Auth.Authorization.can?(user, permission_name, opts) do
+          {:cont, socket}
+        else
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              "You don't have permission to access this page."
+            )
+            |> Phoenix.LiveView.redirect(to: ~p"/")
+
+          {:halt, socket}
+        end
+
+      _ ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+        {:halt, socket}
     end
   end
 

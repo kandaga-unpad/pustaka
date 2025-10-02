@@ -1,0 +1,418 @@
+defmodule VoileWeb.Auth.PermissionManager do
+  @moduledoc """
+  Module for managing permissions and roles in the system.
+  Provides functions to create, update, and query permissions and roles.
+  """
+
+  import Ecto.Query
+  alias Voile.Repo
+
+  alias Voile.Schema.Accounts.{
+    Role,
+    Permission,
+    UserRoleAssignment,
+    UserPermission,
+    RolePermission
+  }
+
+  @doc """
+  List all available permissions.
+  """
+  def list_permissions do
+    Repo.all(Permission)
+  end
+
+  @doc """
+  List all roles.
+  """
+  def list_roles do
+    Repo.all(Role)
+  end
+
+  @doc """
+  Get a role by ID with preloaded permissions.
+  """
+  def get_role(id) do
+    Role
+    |> Repo.get(id)
+    |> Repo.preload(permissions: from(p in Permission, order_by: p.name))
+  end
+
+  @doc """
+  Get a permission by name.
+  """
+  def get_permission_by_name(name) do
+    Repo.get_by(Permission, name: name)
+  end
+
+  @doc """
+  Create a new role.
+  """
+  def create_role(attrs) do
+    %Role{}
+    |> Role.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Update a role.
+  """
+  def update_role(role, attrs) do
+    role
+    |> Role.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Delete a role.
+  """
+  def delete_role(role) do
+    Repo.delete(role)
+  end
+
+  @doc """
+  Create a new permission.
+  """
+  def create_permission(attrs) do
+    %Permission{}
+    |> Permission.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Update a permission.
+  """
+  def update_permission(permission, attrs) do
+    permission
+    |> Permission.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Delete a permission.
+  """
+  def delete_permission(permission) do
+    Repo.delete(permission)
+  end
+
+  @doc """
+  Add a permission to a role.
+  """
+  def add_permission_to_role(role_id, permission_id) do
+    %RolePermission{}
+    |> RolePermission.changeset(%{role_id: role_id, permission_id: permission_id})
+    |> Repo.insert()
+  end
+
+  @doc """
+  Remove a permission from a role.
+  """
+  def remove_permission_from_role(role_id, permission_id) do
+    query =
+      from rp in RolePermission,
+        where: rp.role_id == ^role_id and rp.permission_id == ^permission_id
+
+    Repo.delete_all(query)
+  end
+
+  @doc """
+  Set all permissions for a role, replacing existing ones.
+  """
+  def set_role_permissions(role_id, permission_ids) do
+    Repo.transaction(fn ->
+      # Remove existing permissions
+      from(rp in RolePermission, where: rp.role_id == ^role_id)
+      |> Repo.delete_all()
+
+      # Add new permissions
+      Enum.each(permission_ids, fn permission_id ->
+        %RolePermission{}
+        |> RolePermission.changeset(%{role_id: role_id, permission_id: permission_id})
+        |> Repo.insert!()
+      end)
+
+      get_role(role_id)
+    end)
+  end
+
+  @doc """
+  Get all users assigned to a role.
+  """
+  def list_users_with_role(role_id, opts \\ []) do
+    scope_type = Keyword.get(opts, :scope_type)
+    scope_id = Keyword.get(opts, :scope_id)
+
+    query =
+      from ura in UserRoleAssignment,
+        join: u in assoc(ura, :user),
+        where: ura.role_id == ^role_id,
+        where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+        preload: [user: u],
+        select: ura
+
+    query =
+      if scope_type do
+        from ura in query, where: ura.scope_type == ^scope_type
+      else
+        query
+      end
+
+    query =
+      if scope_id do
+        from ura in query, where: ura.scope_id == ^scope_id
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Get all roles assigned to a user.
+  """
+  def list_user_roles(user_id, opts \\ []) do
+    scope_type = Keyword.get(opts, :scope_type)
+    scope_id = Keyword.get(opts, :scope_id)
+
+    query =
+      from ura in UserRoleAssignment,
+        join: r in assoc(ura, :role),
+        where: ura.user_id == ^user_id,
+        where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+        preload: [role: r],
+        select: ura
+
+    query =
+      if scope_type do
+        from ura in query, where: ura.scope_type == ^scope_type
+      else
+        query
+      end
+
+    query =
+      if scope_id do
+        from ura in query, where: ura.scope_id == ^scope_id
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Get all direct permissions for a user.
+  """
+  def list_user_direct_permissions(user_id, opts \\ []) do
+    scope_type = Keyword.get(opts, :scope_type)
+    scope_id = Keyword.get(opts, :scope_id)
+
+    query =
+      from up in UserPermission,
+        join: p in assoc(up, :permission),
+        where: up.user_id == ^user_id,
+        where: is_nil(up.expires_at) or up.expires_at > ^DateTime.utc_now(),
+        preload: [permission: p],
+        select: up,
+        order_by: [desc: up.granted, asc: p.name]
+
+    query =
+      if scope_type do
+        from up in query, where: up.scope_type == ^scope_type
+      else
+        query
+      end
+
+    query =
+      if scope_id do
+        from up in query, where: up.scope_id == ^scope_id
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Seed default permissions for the system.
+  """
+  def seed_default_permissions do
+    permissions = [
+      # Collection permissions
+      %{name: "collections.create", description: "Create new collections"},
+      %{name: "collections.read", description: "View collections"},
+      %{name: "collections.update", description: "Edit collections"},
+      %{name: "collections.delete", description: "Delete collections"},
+      %{name: "collections.publish", description: "Publish collections"},
+      %{name: "collections.archive", description: "Archive collections"},
+
+      # Item permissions
+      %{name: "items.create", description: "Create new items"},
+      %{name: "items.read", description: "View items"},
+      %{name: "items.update", description: "Edit items"},
+      %{name: "items.delete", description: "Delete items"},
+      %{name: "items.export", description: "Export items"},
+      %{name: "items.import", description: "Import items"},
+
+      # Metadata permissions
+      %{name: "metadata.edit", description: "Edit metadata fields"},
+      %{name: "metadata.manage", description: "Manage metadata schemas"},
+
+      # User management permissions
+      %{name: "users.create", description: "Create new users"},
+      %{name: "users.read", description: "View users"},
+      %{name: "users.update", description: "Edit users"},
+      %{name: "users.delete", description: "Delete users"},
+      %{name: "users.manage_roles", description: "Manage user roles"},
+
+      # Role and permission management
+      %{name: "roles.create", description: "Create new roles"},
+      %{name: "roles.update", description: "Edit roles"},
+      %{name: "roles.delete", description: "Delete roles"},
+      %{name: "permissions.manage", description: "Manage permissions"},
+
+      # System permissions
+      %{name: "system.settings", description: "Manage system settings"},
+      %{name: "system.audit", description: "View audit logs"},
+      %{name: "system.backup", description: "Perform system backups"}
+    ]
+
+    Enum.each(permissions, fn attrs ->
+      case Repo.get_by(Permission, name: attrs.name) do
+        nil ->
+          %Permission{}
+          |> Permission.changeset(attrs)
+          |> Repo.insert()
+
+        _existing ->
+          :ok
+      end
+    end)
+  end
+
+  @doc """
+  Seed default roles for the system.
+  """
+  def seed_default_roles do
+    roles = [
+      %{
+        name: "super_admin",
+        description: "Full system access with all permissions",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit",
+          "metadata.manage",
+          "users.create",
+          "users.read",
+          "users.update",
+          "users.delete",
+          "users.manage_roles",
+          "roles.create",
+          "roles.update",
+          "roles.delete",
+          "permissions.manage",
+          "system.settings",
+          "system.audit",
+          "system.backup"
+        ]
+      },
+      %{
+        name: "admin",
+        description: "Administrative access without system settings",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit",
+          "users.create",
+          "users.read",
+          "users.update",
+          "users.manage_roles"
+        ]
+      },
+      %{
+        name: "editor",
+        description: "Can manage collections and items",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit"
+        ]
+      },
+      %{
+        name: "contributor",
+        description: "Can create and edit own content",
+        permissions: [
+          "collections.read",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.export"
+        ]
+      },
+      %{
+        name: "viewer",
+        description: "Read-only access to collections and items",
+        permissions: [
+          "collections.read",
+          "items.read",
+          "items.export"
+        ]
+      }
+    ]
+
+    Enum.each(roles, fn %{permissions: permission_names} = role_attrs ->
+      case Repo.get_by(Role, name: role_attrs.name) do
+        nil ->
+          # Create role
+          {:ok, role} =
+            %Role{}
+            |> Role.changeset(Map.delete(role_attrs, :permissions))
+            |> Repo.insert()
+
+          # Add permissions to role
+          Enum.each(permission_names, fn perm_name ->
+            if permission = Repo.get_by(Permission, name: perm_name) do
+              add_permission_to_role(role.id, permission.id)
+            end
+          end)
+
+        existing_role ->
+          # Update permissions for existing role
+          permission_ids =
+            permission_names
+            |> Enum.map(&Repo.get_by(Permission, name: &1))
+            |> Enum.reject(&is_nil/1)
+            |> Enum.map(& &1.id)
+
+          set_role_permissions(existing_role.id, permission_ids)
+      end
+    end)
+  end
+end

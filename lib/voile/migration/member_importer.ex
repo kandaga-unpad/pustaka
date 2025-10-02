@@ -10,7 +10,7 @@ defmodule Voile.Migration.MemberImporter do
   import Voile.Migration.Common
 
   alias Voile.Repo
-  alias Voile.Schema.Accounts.{User, UserRole, UserProfile}
+  alias Voile.Schema.Accounts.{User, UserRole}
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
@@ -147,8 +147,8 @@ defmodule Voile.Migration.MemberImporter do
         end
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status == :ok end)
-      |> Stream.map(fn {{:ok, {user_data, profile_data}}, line_num} ->
-        {user_data, profile_data, line_num}
+      |> Stream.map(fn {{:ok, user_data}, line_num} ->
+        {user_data, line_num}
       end)
       |> Stream.chunk_every(batch_size)
       # Process chunks immediately without delay
@@ -174,21 +174,18 @@ defmodule Voile.Migration.MemberImporter do
 
   # Process a batch of members with single transaction for optimal connection usage
   defp process_member_batch(batch, stats_ref) do
-    {users_data, profiles_data, _line_nums} =
+    {users_data, _line_nums} =
       batch
-      |> Enum.reduce({[], [], []}, fn {user_data, profile_data, line_num},
-                                      {users, profiles, lines} ->
-        {[user_data | users], [profile_data | profiles], [line_num | lines]}
+      |> Enum.reduce({[], []}, fn {user_data, line_num}, {users, lines} ->
+        {[user_data | users], [line_num | lines]}
       end)
 
-    # Use single transaction to minimize connection idle time and correctly
-    # associate profiles with existing users when inserts are skipped.
+    # Use single transaction to minimize connection idle time
     users_inserted =
       if length(users_data) > 0 do
         try do
           # Restore original input order
           users_in_order = Enum.reverse(users_data)
-          profiles_in_order = Enum.reverse(profiles_data)
 
           # Clean users (remove plain password) before any DB work
           users_clean = Enum.map(users_in_order, &remove_password_field/1)
@@ -238,57 +235,30 @@ defmodule Voile.Migration.MemberImporter do
               if ident, do: Map.put(acc, ident, id), else: acc
             end)
 
-          # Partition pairs into new users to insert and profiles that belong to existing users
-          {to_insert_users, profiles_for_new_users, profiles_for_existing} =
-            Enum.reduce(Enum.zip(users_clean, profiles_in_order), {[], [], []}, fn {u, p},
-                                                                                   {ui, pu, pe} ->
-              cond do
-                u.email && Map.has_key?(existing_by_email, u.email) ->
-                  pe = [Map.put(p, :user_id, existing_by_email[u.email]) | pe]
-                  {ui, pu, pe}
-
-                u.identifier && Map.has_key?(existing_by_ident, u.identifier) ->
-                  pe = [Map.put(p, :user_id, existing_by_ident[u.identifier]) | pe]
-                  {ui, pu, pe}
-
-                true ->
-                  {ui ++ [u], pu ++ [p], pe}
-              end
+          # Filter out users that already exist
+          to_insert_users =
+            users_clean
+            |> Enum.reject(fn u ->
+              (u.email && Map.has_key?(existing_by_email, u.email)) ||
+                (u.identifier && Map.has_key?(existing_by_ident, u.identifier))
             end)
 
           Repo.transaction(
             fn ->
-              # Insert new users (if any)
-              {count, inserted_rows} =
+              # Insert new users
+              count =
                 if to_insert_users != [] do
-                  Repo.insert_all(User, to_insert_users,
-                    on_conflict: :nothing,
-                    returning: [:id, :email, :identifier],
-                    timeout: :infinity
-                  )
+                  {count, _inserted_rows} =
+                    Repo.insert_all(User, to_insert_users,
+                      on_conflict: :nothing,
+                      returning: [:id],
+                      timeout: :infinity
+                    )
+
+                  count
                 else
-                  {0, []}
+                  0
                 end
-
-              # Prepare profiles for newly inserted users by zipping returned ids
-              profiles_from_inserted =
-                inserted_rows
-                |> Enum.zip(profiles_for_new_users)
-                |> Enum.map(fn {user_row, profile_data} ->
-                  Map.put(profile_data, :user_id, user_row.id)
-                end)
-
-              # Combine profiles for existing users and newly inserted users
-              profiles_to_insert = Enum.reverse(profiles_for_existing) ++ profiles_from_inserted
-
-              # Insert profiles if any
-              if profiles_to_insert != [] do
-                Repo.insert_all(UserProfile, profiles_to_insert,
-                  on_conflict: :nothing,
-                  returning: false,
-                  timeout: :infinity
-                )
-              end
 
               count
             end,
@@ -392,7 +362,7 @@ defmodule Voile.Migration.MemberImporter do
         parsed_member_since = safe_parse_date(member_since_date)
         parsed_expires_at = safe_parse_date(expire_date)
 
-        # Create user record data
+        # Create user record data with profile fields included
         user_attrs = %{
           username: username,
           identifier: parse_int(member_id),
@@ -407,15 +377,7 @@ defmodule Voile.Migration.MemberImporter do
             "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
           # Will be set during onboarding
           confirmed_at: nil,
-          inserted_at: parsed_register_date || now,
-          updated_at: now
-        }
-
-        # Create user profile record data (user_id will be set later)
-        profile_attrs = %{
-          # Will be set after user insert
-          user_id: nil,
-          full_name: clean_name,
+          # Profile fields (moved from separate profile table)
           gender: map_gender(gender),
           birth_date: parsed_birth_date,
           phone_number: safe_string_trim(member_phone),
@@ -423,11 +385,11 @@ defmodule Voile.Migration.MemberImporter do
           organization: safe_string_trim(inst_name),
           registration_date: parsed_member_since,
           expiry_date: parsed_expires_at,
-          inserted_at: now,
+          inserted_at: parsed_register_date || now,
           updated_at: now
         }
 
-        {:ok, {user_attrs, profile_attrs}}
+        {:ok, user_attrs}
     end
   rescue
     e ->

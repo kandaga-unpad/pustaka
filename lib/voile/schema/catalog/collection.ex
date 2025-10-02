@@ -2,13 +2,14 @@ defmodule Voile.Schema.Catalog.Collection do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Voile.Schema.Metadata.ResourceClass
-  alias Voile.Schema.Metadata.ResourceTemplate
-  alias Voile.Schema.Master.Creator
-  alias Voile.Schema.System.Node
+  alias Voile.Schema.Accounts.CollectionPermission
+  alias Voile.Schema.Catalog.Attachment
   alias Voile.Schema.Catalog.CollectionField
   alias Voile.Schema.Catalog.Item
-  alias Voile.Schema.Catalog.Attachment
+  alias Voile.Schema.Master.Creator
+  alias Voile.Schema.Metadata.ResourceClass
+  alias Voile.Schema.Metadata.ResourceTemplate
+  alias Voile.Schema.System.Node
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -41,6 +42,9 @@ defmodule Voile.Schema.Catalog.Collection do
       where: [attachable_type: "collection"],
       foreign_key: :attachable_id,
       on_delete: :delete_all
+
+    # RBAC Collection Permissions
+    has_many :collection_permissions, CollectionPermission
 
     timestamps(type: :utc_datetime)
   end

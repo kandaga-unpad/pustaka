@@ -160,7 +160,7 @@
       <:col :let={{_id, requisition}} label="Requested By">
         <div>
           <div class="text-sm font-medium text-gray-900">
-            {if requisition.requested_by, do: requisition.requested_by.full_name, else: "Unknown"}
+            {if requisition.requested_by, do: requisition.requested_by.fullname, else: "Unknown"}
           </div>
           
           <div class="text-sm text-gray-500">{format_date(requisition.request_date)}</div>
@@ -170,7 +170,7 @@
       <:col :let={{_id, requisition}} label="Assigned To">
         <div class="text-sm text-gray-900">
           {if requisition.assigned_to do
-            requisition.assigned_to.full_name
+            requisition.assigned_to.fullname
           else
             "-"
           end}

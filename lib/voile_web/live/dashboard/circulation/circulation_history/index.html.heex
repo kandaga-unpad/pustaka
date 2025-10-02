@@ -165,7 +165,7 @@
       <:col :let={{_id, entry}} label="Member">
         <div>
           <%= if entry.member do %>
-            <div class="text-sm font-medium text-gray-900">{entry.member.full_name}</div>
+            <div class="text-sm font-medium text-gray-900">{entry.member.fullname}</div>
             
             <div class="text-sm text-gray-500">ID: {entry.member_id}</div>
           <% else %>
@@ -197,7 +197,7 @@
       <:col :let={{_id, entry}} label="Processed By">
         <div>
           <%= if entry.processed_by do %>
-            <div class="text-sm font-medium text-gray-900">{entry.processed_by.full_name}</div>
+            <div class="text-sm font-medium text-gray-900">{entry.processed_by.fullname}</div>
             
             <div class="text-sm text-gray-500">
               {if entry.processed_by.role, do: entry.processed_by.role, else: "Staff"}

@@ -37,14 +37,14 @@ defmodule VoileWeb.Dashboard.Circulation.Components do
       <div class="flex-shrink-0 h-10 w-10">
         <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
           <span class="text-sm font-medium text-gray-700">
-            {if @member, do: String.first(@member.full_name || "?"), else: "?"}
+            {if @member, do: String.first(@member.fullname || "?"), else: "?"}
           </span>
         </div>
       </div>
       
       <div class="ml-4">
         <div class="text-sm font-medium text-gray-900">
-          {if @member, do: @member.full_name, else: "Unknown Member"}
+          {if @member, do: @member.fullname, else: "Unknown Member"}
         </div>
         
         <%= unless @compact do %>

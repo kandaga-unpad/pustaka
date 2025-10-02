@@ -212,14 +212,14 @@
               <div class="flex-shrink-0 h-12 w-12">
                 <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                   <span class="text-lg font-medium text-gray-700">
-                    {String.first(@history.member.full_name || "?")}
+                    {String.first(@history.member.fullname || "?")}
                   </span>
                 </div>
               </div>
               
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900 truncate">
-                  {@history.member.full_name}
+                  {@history.member.fullname}
                 </p>
                 
                 <p class="text-sm text-gray-500">Member ID: {@history.member_id}</p>
@@ -290,13 +290,13 @@
               <div class="flex-shrink-0 h-10 w-10">
                 <div class="h-10 w-10 rounded-full bg-indigo-200 flex items-center justify-center">
                   <span class="text-sm font-medium text-indigo-700">
-                    {String.first(@history.librarian.full_name || "?")}
+                    {String.first(@history.librarian.fullname || "?")}
                   </span>
                 </div>
               </div>
               
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">{@history.librarian.full_name}</p>
+                <p class="text-sm font-medium text-gray-900">{@history.librarian.fullname}</p>
                 
                 <p class="text-sm text-gray-500">Staff Member</p>
               </div>

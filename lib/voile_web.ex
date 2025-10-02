@@ -45,6 +45,9 @@ defmodule VoileWeb do
 
       import Plug.Conn
 
+      import VoileWeb.Auth.Authorization,
+        only: [can?: 3, authorize!: 3, authenticated?: 1, current_user: 1]
+
       unquote(verified_routes())
     end
   end
@@ -111,6 +114,10 @@ defmodule VoileWeb do
       # Core UI components
       import VoileWeb.CoreComponents
       import VoileWeb.VoileDashboardComponents
+
+      # Authorization helpers
+      import VoileWeb.Auth.Authorization,
+        only: [can?: 3, authorize!: 3, authenticated?: 1, current_user: 1]
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

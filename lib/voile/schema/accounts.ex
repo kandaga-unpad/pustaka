@@ -7,7 +7,6 @@ defmodule Voile.Schema.Accounts do
   alias Voile.Repo
 
   alias Voile.Schema.Accounts.{User, UserToken, UserNotifier}
-  alias Voile.Schema.Accounts.UserProfile
 
   # Helper to ensure returned user structs have common associations preloaded
   defp preload_user_assocs(nil), do: nil
@@ -169,72 +168,6 @@ defmodule Voile.Schema.Accounts do
   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
-  end
-
-  @doc """
-  Get the user profile record for a given user id, or nil if absent.
-  """
-  def get_user_profile(user_id) when is_binary(user_id) do
-    Repo.get_by(UserProfile, user_id: user_id)
-  end
-
-  @doc """
-  Upsert a user's profile. If a profile exists it's updated, otherwise a new profile is created.
-
-  Returns {:ok, profile} or {:error, changeset}.
-  """
-  def upsert_user_profile(%User{} = user, attrs) when is_map(attrs) do
-    attrs = Map.put(attrs, "user_id", user.id)
-
-    case get_user_profile(user.id) do
-      nil ->
-        %UserProfile{}
-        |> UserProfile.changeset(attrs)
-        |> Repo.insert()
-
-      profile ->
-        profile
-        |> UserProfile.changeset(attrs)
-        |> Repo.update()
-    end
-  end
-
-  @doc """
-  Atomically updates the user and upserts the user's profile using Ecto.Multi.
-
-  This ensures both the `users` update and the `user_profiles` insert/update
-  happen in a single transaction so we don't end up with inconsistent state
-  where the user's `user_image` is written but the profile isn't (or vice versa).
-
-  Returns `{:ok, %{user: user, profile: profile}}` on success or
-  `{:error, failed_operation, changeset, _changes_so_far}` on failure.
-  """
-  def update_user_and_profile(%User{} = user, user_attrs, profile_attrs)
-      when is_map(user_attrs) and is_map(profile_attrs) do
-    # Build the user update changeset and persist it. We intentionally avoid
-    # running a multi/transaction here: per request we only update the
-    # `users` table (persisting `user_image`). Return a consistent shape so
-    # callers that expect %{user: user, profile: profile} still match.
-    user_changeset = User.update_profile_changeset(user, user_attrs)
-
-    require Logger
-
-    Logger.debug(
-      "update_user_and_profile: updating user_id=#{inspect(user.id)} user_attrs=#{inspect(user_attrs)}"
-    )
-
-    case Repo.update(user_changeset) do
-      {:ok, updated_user} ->
-        Logger.debug("update_user_and_profile: user updated id=#{inspect(updated_user.id)}")
-        {:ok, %{user: updated_user, profile: nil}}
-
-      {:error, changeset} ->
-        Logger.debug(
-          "update_user_and_profile: user update failed errors=#{inspect(changeset.errors)}"
-        )
-
-        {:error, :user, changeset, %{}}
-    end
   end
 
   @doc """

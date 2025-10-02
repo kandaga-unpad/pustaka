@@ -2,7 +2,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   use VoileWeb, :live_view
 
   alias Voile.Schema.Accounts
-  alias Voile.Schema.Accounts.UserProfile
   alias Voile.Schema.Library.Circulation
   alias Client.Storage
 
@@ -16,16 +15,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     profile_changeset = Accounts.change_user(user)
     password_changeset = Accounts.change_user_password(user)
 
-    # load existing user_profile if present so we can prefill profile inputs
-    user_profile = Accounts.get_user_profile(user.id)
-
-    # prepare a changeset/form for user_profile and set `as: :user` so inputs submit as user[...] params
-    user_profile_changeset =
-      UserProfile.changeset(user_profile || %UserProfile{}, %{
-        "full_name" => user.fullname,
-        "photo" => user.user_image
-      })
-
+    # prepare a changeset/form for user profile and set `as: :user` so inputs submit as user[...] params
+    user_profile_changeset = Accounts.change_user(user)
     user_profile_form = to_form(user_profile_changeset, as: :user)
 
     # Load first page of loans and fines for the member
@@ -54,7 +45,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         current_password: nil,
         current_email: user.email,
         profile_form: to_form(profile_changeset),
-        user_profile: user_profile || %{},
         user_profile_form: user_profile_form,
         password_form: to_form(password_changeset),
         trigger_submit: false
@@ -274,9 +264,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   def handle_event("save_profile", %{"user" => user_params}, socket) do
     user = socket.assigns.current_scope.user
 
-    # Extract profile-specific fields for UserProfile upsert
-    user_profile_params = extract_user_profile_params(user_params)
-
     # If an uploaded image URL exists in the profile_form params (set by handle_progress),
     # ensure it's included in the submitted user params so the User record gets updated.
     uploaded_image =
@@ -287,18 +274,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     case Accounts.update_profile_user(user, user_params) do
       {:ok, user} ->
-        # Only upsert the user_profile record when at least one profile field is present
-        # Ensure full_name/photo sync with user
-        user_profile_params =
-          user_profile_params
-          |> Map.put("full_name", user.fullname)
-          |> Map.put("photo", user.user_image)
-
-        profile_non_empty =
-          user_profile_params
-          |> Map.values()
-          |> Enum.any?(fn v -> not (v == nil or v == "") end)
-
         # Update assigns so the UI (header/profile) reflects the saved user immediately
         socket =
           socket
@@ -306,19 +281,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)
           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, user))
 
-        if profile_non_empty do
-          case Accounts.upsert_user_profile(user, user_profile_params) do
-            {:ok, _profile} ->
-              {:noreply, socket}
-
-            {:error, _changeset} ->
-              {:noreply,
-               socket
-               |> put_flash(:error, "Profile updated but failed to save extended profile data")}
-          end
-        else
-          {:noreply, socket}
-        end
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, profile_form: to_form(changeset))}
@@ -408,23 +371,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     else
       {:noreply, socket}
     end
-  end
-
-  defp extract_user_profile_params(params) when is_map(params) do
-    Map.take(params, [
-      "full_name",
-      "address",
-      "phone_number",
-      "birth_date",
-      "birth_place",
-      "gender",
-      "registration_date",
-      "expiry_date",
-      "photo",
-      "organization",
-      "department",
-      "position"
-    ])
   end
 
   # Quick precheck for renewals to provide immediate UI feedback.
@@ -707,7 +653,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input
-                              field={@user_profile_form[:full_name]}
+                              field={@user_profile_form[:fullname]}
                               type="text"
                               label="Full name"
                             />
