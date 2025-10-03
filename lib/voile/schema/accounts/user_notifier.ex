@@ -88,35 +88,6 @@ defmodule Voile.Schema.Accounts.UserNotifier do
     end
   end
 
-  @doc """
-  Deliver onboarding instructions to migrated users.
-  """
-  def deliver_onboarding_instructions(user, url) do
-    deliver(user.email, "Welcome to Voile - Set Your Password", """
-
-    ==============================
-
-    Hi #{user.email},
-
-    Welcome to the new Voile system! Your account has been migrated from the previous system.
-
-    To complete your account setup and access your account, please click the link below to set your new password:
-
-    #{url}
-
-    This secure link will allow you to:
-    - Set your new password
-    - Confirm your account
-    - Access all your previous data
-
-    This link will expire in 24 hours for security reasons.
-
-    If you have any questions, please contact the system administrator.
-
-    ==============================
-    """)
-  end
-
   defp deliver_magic_link_instructions(user, url) do
     deliver(user.email, "Log in instructions", """
 

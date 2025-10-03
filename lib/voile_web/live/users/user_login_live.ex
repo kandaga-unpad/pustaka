@@ -209,30 +209,8 @@ defmodule VoileWeb.UserLoginLive do
   def handle_event("send_magic_link", %{"magic_link" => %{"email" => email}}, socket) do
     if email && String.trim(email) != "" do
       case Accounts.get_user_by_email(email) do
-        %Accounts.User{confirmed_at: nil} = user ->
-          # This is likely a migrated user who needs onboarding
-          case Accounts.deliver_onboarding_instructions(user, &url(~p"/users/onboarding/#{&1}")) do
-            {:ok, _} ->
-              {:noreply,
-               socket
-               |> put_flash(
-                 :info,
-                 "We've sent account setup instructions to #{email}. " <>
-                   "Please check your email and click the link to set your password and access your account."
-               )
-               |> redirect(to: ~p"/login")}
-
-            {:error, _} ->
-              {:noreply,
-               put_flash(
-                 socket,
-                 :error,
-                 "Unable to send email. Please try again or contact support."
-               )}
-          end
-
         %Accounts.User{} = user ->
-          # Regular confirmed user - send magic link
+          # Send magic link or confirmation instructions
           case Accounts.deliver_login_instructions(user, &url(~p"/users/login/#{&1}")) do
             {:ok, _} ->
               {:noreply,

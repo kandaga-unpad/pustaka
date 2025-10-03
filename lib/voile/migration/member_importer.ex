@@ -290,13 +290,13 @@ defmodule Voile.Migration.MemberImporter do
     end
   end
 
-  # Keep default password hash but mark as unconfirmed for onboarding
+  # Keep default password hash for migrated users
   defp remove_password_field(user_attrs) do
     user_attrs
     # Remove any plain text password if present
     |> Map.delete(:password)
     # Keep hashed_password as it contains our default hash
-    # Mark as not confirmed since they need to complete onboarding
+    # Mark as not confirmed since they need to confirm via email
     |> Map.put(:confirmed_at, nil)
   end
 
@@ -375,7 +375,7 @@ defmodule Voile.Migration.MemberImporter do
           # Default password: "changeme123"
           hashed_password:
             "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
-          # Will be set during onboarding
+          # Not confirmed - users need to confirm via email or SSO
           confirmed_at: nil,
           # Profile fields (moved from separate profile table)
           gender: map_gender(gender),

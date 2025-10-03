@@ -86,7 +86,6 @@ defmodule VoileWeb.Router do
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
-      live "/users/onboarding/:token", UserOnboardingLive, :edit
     end
 
     post "/users/log_in", UserSessionController, :create
@@ -270,7 +269,6 @@ defmodule VoileWeb.Router do
           live "/", Dashboard.Settings.SettingLive, :index
 
           live "/user_dashboard", Users.Manage.Dashboard, :index
-          live "/onboarding", Users.OnboardingManageLive, :index
 
           scope "/users" do
             live "/", Users.ManageLive, :index

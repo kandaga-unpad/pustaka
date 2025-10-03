@@ -242,7 +242,7 @@ defmodule Voile.Migration.UserImporter do
           # Default password: "changeme123"
           hashed_password:
             "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
-          # Users will complete onboarding later - NO CONFIRMATION
+          # Not confirmed - will be handled by SSO or email confirmation
           confirmed_at: nil,
           inserted_at: parse_datetime(input_date) || now,
           updated_at: parse_datetime(last_update) || now

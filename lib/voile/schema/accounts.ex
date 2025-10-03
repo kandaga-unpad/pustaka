@@ -494,45 +494,6 @@ defmodule Voile.Schema.Accounts do
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
   end
 
-  @doc """
-  Delivers the onboarding magic link instructions to the given migrated user.
-  This is specifically for users who were migrated from the old system and need
-  to set their password and confirm their account.
-  """
-  def deliver_onboarding_instructions(%User{} = user, onboarding_url_fun)
-      when is_function(onboarding_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "onboarding")
-    Repo.insert!(user_token)
-    UserNotifier.deliver_onboarding_instructions(user, onboarding_url_fun.(encoded_token))
-  end
-
-  @doc """
-  Gets the user by onboarding token for the onboarding process.
-  """
-  def get_user_by_onboarding_token(token) do
-    with {:ok, query} <- UserToken.verify_email_token_query(token, "onboarding"),
-         %User{} = user <- Repo.one(query) do
-      preload_user_assocs(user)
-    else
-      _ -> nil
-    end
-  end
-
-  @doc """
-  Completes the onboarding process for a migrated user by setting their new password
-  and confirming their account.
-  """
-  def complete_user_onboarding(user, attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.onboarding_changeset(user, attrs))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["onboarding"]))
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
-      {:error, :user, changeset, _} -> {:error, changeset}
-    end
-  end
-
   ## Confirmation
 
   @doc ~S"""

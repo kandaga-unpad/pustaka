@@ -11,5 +11,9 @@ defmodule Voile.Repo.Migrations.CreateRoles do
     end
 
     create unique_index(:roles, [:name])
+
+    alter table(:users) do
+      add :user_role_id, references(:roles, on_delete: :nilify_all)
+    end
   end
 end

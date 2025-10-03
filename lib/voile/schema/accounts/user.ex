@@ -91,7 +91,6 @@ defmodule Voile.Schema.Accounts.User do
       :gender,
       :registration_date,
       :expiry_date,
-      :photo,
       :organization,
       :department,
       :position
@@ -153,7 +152,6 @@ defmodule Voile.Schema.Accounts.User do
       :gender,
       :registration_date,
       :expiry_date,
-      :photo,
       :organization,
       :department,
       :position
@@ -191,7 +189,6 @@ defmodule Voile.Schema.Accounts.User do
       :gender,
       :registration_date,
       :expiry_date,
-      :photo,
       :organization,
       :department,
       :position
@@ -305,23 +302,6 @@ defmodule Voile.Schema.Accounts.User do
   def confirm_changeset(user) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
     change(user, confirmed_at: now)
-  end
-
-  @doc """
-  A user changeset for onboarding migrated users.
-
-  This changeset allows migrated users to set their new password
-  and confirms their account in one step during the onboarding process.
-  """
-  def onboarding_changeset(user, attrs, opts \\ []) do
-    user
-    |> cast(attrs, [:password])
-    |> validate_confirmation(:password, message: "does not match password")
-    |> validate_password(opts)
-    |> put_change(
-      :confirmed_at,
-      DateTime.utc_now() |> DateTime.truncate(:second)
-    )
   end
 
   @doc """

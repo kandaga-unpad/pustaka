@@ -12,12 +12,23 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :fullname, :string
       add :hashed_password, :string, null: false
       add :confirmed_at, :utc_datetime
-      add :user_type, :string
       add :user_image, :string
       add :social_media, :map, type: :jsonb
       add :groups, {:array, :string}
       add :last_login, :utc_datetime
       add :last_login_ip, :string
+
+      # Profile fields
+      add :address, :string
+      add :phone_number, :string
+      add :birth_date, :date
+      add :birth_place, :string
+      add :gender, :string
+      add :registration_date, :date
+      add :expiry_date, :date
+      add :organization, :string
+      add :department, :string
+      add :position, :string
 
       timestamps(type: :utc_datetime)
     end
@@ -29,7 +40,8 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     # Performance indexes
     create index(:users, [:confirmed_at])
     create index(:users, [:last_login])
-    create index(:users, [:identifier], where: "identifier IS NOT NULL")
+    create index(:users, [:user_type_id])
+    create index(:users, [:node_id])
 
     create table(:users_tokens) do
       add :user_id, references(:users, type: :uuid, on_delete: :delete_all), null: false

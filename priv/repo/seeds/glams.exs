@@ -31,6 +31,7 @@ defmodule GLAMSeeds do
     # Ensure we have the required resource classes and properties
     ensure_resource_classes()
     ensure_properties()
+    ensure_default_creator()
 
     # Get the Kandaga unit ID (assuming it exists)
     kandaga_unit =
@@ -50,7 +51,7 @@ defmodule GLAMSeeds do
       %{
         id: 50,
         local_name: "gallery",
-        glam_type: "gallery",
+        glam_type: "Gallery",
         name: "Gallery Collection",
         inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
         updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -58,7 +59,7 @@ defmodule GLAMSeeds do
       %{
         id: 51,
         local_name: "archive",
-        glam_type: "archive",
+        glam_type: "Archive",
         name: "Archive Collection",
         inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
         updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -66,7 +67,7 @@ defmodule GLAMSeeds do
       %{
         id: 52,
         local_name: "museum",
-        glam_type: "museum",
+        glam_type: "Museum",
         name: "Museum Collection",
         inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
         updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -169,6 +170,28 @@ defmodule GLAMSeeds do
           :ok
       end
     end)
+  end
+
+  defp ensure_default_creator do
+    alias Voile.Schema.Master.Creator
+
+    case Repo.get(Creator, 1) do
+      nil ->
+        Repo.insert!(
+          struct(Creator, %{
+            id: 1,
+            creator_name: "System",
+            creator_contact: "",
+            affiliation: "System",
+            type: "institution",
+            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          })
+        )
+
+      _ ->
+        :ok
+    end
   end
 
   defp seed_collections_from_csv(kandaga_unit) do
@@ -300,11 +323,12 @@ defmodule GLAMSeeds do
     |> Stream.drop(1)
     |> Enum.map(fn row ->
       [
-        id,
         _status,
         judul,
         pembuat_koleksi,
         tipe_koleksi,
+        id,
+        _user_created,
         _date_created,
         _user_updated,
         _date_updated,
@@ -314,8 +338,6 @@ defmodule GLAMSeeds do
         keywords,
         tanggal_dibuat,
         tanggal_publikasi,
-        _user_created_first_name,
-        _user_created_last_name,
         thumbnail_id
       ] = row
 
@@ -387,15 +409,12 @@ defmodule GLAMSeeds do
   defp insert_collections(collections, resource_class_id, unit, type_prefix) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    # Map GLAM types to their appropriate type_id
+    # Map GLAM types to their appropriate type_id (resource class IDs)
     type_id =
       case type_prefix do
-        # image
-        "GALLERY" -> 26
-        # document
-        "ARCHIVE" -> 49
-        # Physical Object
-        "MUSEUM" -> 32
+        "GALLERY" -> 50
+        "ARCHIVE" -> 51
+        "MUSEUM" -> 52
         _ -> resource_class_id
       end
 
@@ -505,7 +524,7 @@ defmodule GLAMSeeds do
     "COLLECTION-#{unit_abbr}-#{type_prefix}-#{timestamp}-#{String.pad_leading(to_string(index), 6, "0")}"
   end
 
-  defp create_default_item(collection, unit, now, index) do
+  defp create_default_item(collection, unit, now, _index) do
     # Get resource class data for the collection
     resource_class = Repo.get(ResourceClass, collection.type_id)
     resource_class_name = if resource_class, do: resource_class.local_name, else: "item"
@@ -559,7 +578,7 @@ defmodule GLAMSeeds do
       IO.puts("  📷 Downloading thumbnail: #{download_url}")
 
       # Download using Req
-      case Req.get(download_url, follow_redirects: true) do
+      case Req.get(download_url, redirect: true) do
         {:ok, %{status: 200, body: body, headers: headers}} ->
           # Determine content type and extension
           content_type = get_content_type_from_headers(headers)
@@ -618,9 +637,12 @@ defmodule GLAMSeeds do
     headers
     |> Enum.find(fn {key, _value} -> String.downcase(key) == "content-type" end)
     |> case do
-      {_key, content_type} -> String.split(content_type, ";") |> hd() |> String.trim()
+      {_key, content_type} when is_binary(content_type) ->
+        String.split(content_type, ";") |> hd() |> String.trim()
+
       # Default fallback
-      nil -> "image/jpeg"
+      _ ->
+        "image/jpeg"
     end
   end
 

@@ -44,6 +44,12 @@ defmodule Voile.Repo.Migrations.CreateMstMemberTypes do
       timestamps(type: :utc_datetime)
     end
 
+    alter table(:users) do
+      add :user_type_id, references(:mst_member_types, on_delete: :nilify_all, type: :binary_id)
+    end
+
+    # Add performance indexes for the new foreign keys
+    create index(:users, [:user_type_id])
     create index(:mst_member_types, [:is_active])
     create index(:mst_member_types, [:priority_level])
   end

@@ -42,6 +42,7 @@ npm-debug.log
 # Private Assets
 /priv/static/uploads/thumbnail/*
 /priv/static/uploads/files/*
+/priv/static/uploads/glams/*
 /priv/static/uploads/old_thumbnail/*
 /priv/static/uploads/media/*
 /priv/static/uploads/attachments/*
