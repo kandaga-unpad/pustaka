@@ -1,35 +1,74 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
-  <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
-    <.header>
-      Item {@item.id}
-      <:subtitle>This is a item record from your database.</:subtitle>
-
-      <:actions>
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Item #{@item.id}</h2>
+        
+        <p class="text-sm text-gray-500 mt-1">This is an item record from your database.</p>
+      </div>
+      
+      <div class="flex items-center gap-2">
         <.link patch={~p"/manage/catalog/items/#{@item}/show/edit"} phx-click={JS.push_focus()}>
-          <.button>Edit item</.button>
+          <.button class="bg-indigo-600">Edit item</.button>
         </.link>
-      </:actions>
-    </.header>
-
-    <.list>
-      <:item title="Item code">{@item.item_code || "-"}</:item>
-
-      <:item title="Collection">{@item.collection.title || "-"}</:item>
-
-      <:item title="Inventory code">{@item.inventory_code || "-"}</:item>
-
-      <:item title="Location">{@item.location || "-"}</:item>
-
-      <:item title="Status">{@item.status || "-"}</:item>
-
-      <:item title="Condition">{@item.condition || "-"}</:item>
-
-      <:item title="Availability">{@item.availability || "-"}</:item>
-    </.list>
-
-    <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>
-
+      </div>
+    </div>
+    
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="space-y-4">
+        <div>
+          <div class="text-xs text-gray-500">Item code</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.item_code || "-"}</div>
+        </div>
+        
+        <div>
+          <div class="text-xs text-gray-500">Collection</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">
+            {@item.collection.title || "-"}
+          </div>
+        </div>
+        
+        <div>
+          <div class="text-xs text-gray-500">Inventory code</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">
+            {@item.inventory_code || "-"}
+          </div>
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <div class="text-xs text-gray-500">Location</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.location || "-"}</div>
+        </div>
+        
+        <div>
+          <div class="text-xs text-gray-500">Status</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.status || "-"}</div>
+        </div>
+        
+        <div>
+          <div class="text-xs text-gray-500">Condition</div>
+          
+          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.condition || "-"}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 flex items-center gap-3">
+      <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>
+      
+      <div class="ml-auto text-sm text-gray-500">
+        Last updated: {Voile.Utils.DateHelper.display_datetime(@item.updated_at)}
+      </div>
+    </div>
+    
     <.modal
       :if={@live_action == :edit}
       id="item-modal"

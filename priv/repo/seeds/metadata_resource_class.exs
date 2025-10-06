@@ -876,19 +876,27 @@ resource_class = [
 ]
 
 for resource <- resource_class do
-  %ResourceClass{
-    label: resource[:label],
-    local_name: resource[:local_name],
-    information: resource[:information],
-    glam_type: resource[:glam_type],
-    vocabulary_id:
-      case resource[:vocabulary_id] do
-        1 -> vocabulary_1.id
-        2 -> vocabulary_2.id
-        3 -> vocabulary_3.id
-        4 -> vocabulary_4.id
-        _ -> 1
-      end
-  }
-  |> Repo.insert!()
+  # Check if resource class already exists by local_name
+  case Repo.get_by(ResourceClass, local_name: resource[:local_name]) do
+    nil ->
+      %ResourceClass{
+        label: resource[:label],
+        local_name: resource[:local_name],
+        information: resource[:information],
+        glam_type: resource[:glam_type],
+        vocabulary_id:
+          case resource[:vocabulary_id] do
+            1 -> vocabulary_1.id
+            2 -> vocabulary_2.id
+            3 -> vocabulary_3.id
+            4 -> vocabulary_4.id
+            _ -> 1
+          end
+      }
+      |> Repo.insert!()
+
+    _existing ->
+      # Resource class already exists, skip
+      :ok
+  end
 end

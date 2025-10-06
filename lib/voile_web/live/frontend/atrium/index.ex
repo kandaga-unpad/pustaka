@@ -11,6 +11,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     user = socket.assigns.current_scope.user
 
+    dbg(user)
+
     # Profile changeset (biodata + user_image handled as URL field for now)
     profile_changeset = Accounts.change_user(user)
     password_changeset = Accounts.change_user_password(user)
@@ -405,15 +407,35 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   end
 
   # Safe association helpers - avoid accessing NotLoaded associations directly in templates
-  defp role_name(%{user_role: %_{name: name}}), do: name
+  # Return the primary role name (prefer loaded `roles`, then `user_role_assignments`),
+  # or fallback to any id fields, or "-" if nothing available.
+  defp role_name(%{roles: [%{name: name} | _]}), do: name
+  defp role_name(%{user_role_assignments: [%{role: %{name: name}} | _]}), do: name
+
+  defp role_name(%{roles: roles}) when is_list(roles) and roles != [],
+    do: List.first(roles) |> Map.get(:name) |> to_string()
+
+  defp role_name(%{user_role_assignments: assignments})
+       when is_list(assignments) and assignments != [] do
+    assignments
+    |> List.first()
+    |> Map.get(:role)
+    |> case do
+      %{name: name} -> to_string(name)
+      _ -> "-"
+    end
+  end
+
   defp role_name(%{user_role_id: id}) when not is_nil(id), do: to_string(id)
   defp role_name(_), do: "-"
 
-  defp user_type_name(%{user_type: %_{name: name}}), do: name
+  # User type helper: prefer loaded struct then id
+  defp user_type_name(%{user_type: %{name: name}}), do: name
   defp user_type_name(%{user_type_id: id}) when not is_nil(id), do: to_string(id)
   defp user_type_name(_), do: "-"
 
-  defp node_name(%{node: %_{name: name}}), do: name
+  # Node helper: prefer loaded node struct then node_id
+  defp node_name(%{node: %{name: name}}), do: name
   defp node_name(%{node_id: id}) when not is_nil(id), do: to_string(id)
   defp node_name(_), do: "-"
 
@@ -595,7 +617,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         >
                           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input field={@profile_form[:fullname]} type="text" label="Full name" />
-                            <.input field={@profile_form[:username]} type="text" label="Username" />
+                            <.input
+                              field={@profile_form[:username]}
+                              type="text"
+                              label="Username"
+                              disabled
+                            />
                           </div>
                           
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />

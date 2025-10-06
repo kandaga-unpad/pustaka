@@ -9,7 +9,7 @@ defmodule Voile.Schema.Accounts.Permission do
     field :description, :string
 
     many_to_many :roles, Voile.Schema.Accounts.Role,
-      join_through: "roles_permissions",
+      join_through: "role_permissions",
       on_replace: :delete
 
     has_many :user_permissions, Voile.Schema.Accounts.UserPermission

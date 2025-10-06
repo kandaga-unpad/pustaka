@@ -117,7 +117,7 @@ defmodule VoileWeb do
 
       # Authorization helpers
       import VoileWeb.Auth.Authorization,
-        only: [can?: 3, authorize!: 3, authenticated?: 1, current_user: 1]
+        only: [can?: 2, can?: 3, authorize!: 2, authorize!: 3, authenticated?: 1, current_user: 1]
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

@@ -39,6 +39,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:node_location, node_location)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
+      |> assign(:search, "")
+      |> assign(:collections_count, length(collections))
+      |> assign(:collections_empty?, collections == [])
       |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
       |> assign(:time_identifier, time_identifier)
@@ -95,6 +98,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> stream_insert(:collections, collection, at: 0)
       |> assign(:tree_collections, tree_collections)
 
+    # update count
+    socket = assign(socket, :collections_count, (socket.assigns[:collections_count] || 0) + 1)
+
     {:noreply, socket}
   end
 
@@ -106,12 +112,35 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     # Refresh both views with limited tree collections
     tree_collections = Catalog.list_collections_tree(50)
 
+    # If a search is active, re-fetch current page with the search filter, otherwise just delete from stream
+    search = socket.assigns[:search] || ""
+
     socket =
       socket
-      |> stream_delete(:collections, collection)
       |> assign(:tree_collections, tree_collections)
 
-    {:noreply, socket}
+    if search != "" do
+      page = socket.assigns[:page] || 1
+      per_page = 10
+      {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, search)
+
+      socket =
+        socket
+        |> stream(:collections, collections, reset: true)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:collections_empty?, collections == [])
+        |> assign(:collections_count, length(collections))
+
+      {:noreply, socket}
+    else
+      socket =
+        socket
+        |> stream_delete(:collections, collection)
+        |> assign(:collections_count, max((socket.assigns[:collections_count] || 1) - 1, 0))
+
+      {:noreply, socket}
+    end
   end
 
   @impl true
@@ -135,6 +164,45 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     page = String.to_integer(page)
     per_page = 10
 
+    search = socket.assigns[:search] || ""
+
+    {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, search)
+
+    socket =
+      socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:collections_count, length(collections))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("search", %{"q" => q}, socket) do
+    page = 1
+    per_page = 10
+
+    {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, q)
+
+    socket =
+      socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+      |> assign(:search, q)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:collections_count, length(collections))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_search", _params, socket) do
+    # Clear filter and show initial unfiltered list
+    page = 1
+    per_page = 10
     {collections, total_pages} = Catalog.list_collections_paginated(page, per_page)
 
     socket =
@@ -142,6 +210,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> stream(:collections, collections, reset: true)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
+      |> assign(:search, "")
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:collections_count, length(collections))
 
     {:noreply, socket}
   end

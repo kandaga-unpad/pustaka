@@ -220,9 +220,14 @@ defmodule VoileWeb.VoileDashboardComponents do
   end
 
   @doc """
-  Render a sidebar for settings in the dashboard.
+  Renders the dashboard settings sidebar with navigation links.
+
+  ## Examples
+
+      <.dashboard_settings_sidebar current_user={@current_scope.user} current_path={@current_path} />
   """
-  attr :current_user, :map
+  attr :current_user, :map, required: false
+  attr :current_path, :string, default: nil
 
   def dashboard_settings_sidebar(assigns) do
     ~H"""
@@ -233,8 +238,14 @@ defmodule VoileWeb.VoileDashboardComponents do
       <ul class="space-y-6">
         <li>
           <.link
-            patch="/manage/settings/user_profile"
-            class="text-blue-600 dark:text-blue-200 hover:underline"
+            navigate="/manage/settings/user_profile"
+            class={[
+              "hover:underline",
+              if(String.starts_with?(@current_path || "", "/manage/settings/user_profile"),
+                do: "text-blue-700 dark:text-blue-400 font-semibold",
+                else: "text-blue-600 dark:text-blue-200"
+              )
+            ]}
           >
             User Profile
           </.link>
@@ -242,10 +253,33 @@ defmodule VoileWeb.VoileDashboardComponents do
         
         <li>
           <.link
-            patch="/manage/settings/users"
-            class="text-blue-600 dark:text-blue-200 hover:underline"
+            navigate="/manage/settings/users"
+            class={[
+              "hover:underline",
+              if(
+                String.starts_with?(@current_path || "", "/manage/settings/users") and
+                  not String.contains?(@current_path || "", "/manage/settings/user_profile"),
+                do: "text-blue-700 dark:text-blue-400 font-semibold",
+                else: "text-blue-600 dark:text-blue-200"
+              )
+            ]}
           >
             User Management
+          </.link>
+        </li>
+        
+        <li>
+          <.link
+            navigate="/manage/settings/roles"
+            class={[
+              "hover:underline",
+              if(String.starts_with?(@current_path || "", "/manage/settings/roles"),
+                do: "text-blue-700 dark:text-blue-400 font-semibold",
+                else: "text-blue-600 dark:text-blue-200"
+              )
+            ]}
+          >
+            Role Management
           </.link>
         </li>
       </ul>

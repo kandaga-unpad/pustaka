@@ -2,6 +2,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   use VoileWeb, :live_component
 
   alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.Item
   alias Ecto.Changeset
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper
@@ -786,12 +787,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       type="select"
                       label="Availability"
                       required_value={true}
-                      options={[
-                        {"Available", "available"},
-                        {"Checked Out", "checked_out"},
-                        {"Reserved", "reserved"},
-                        {"Maintenance", "maintenance"}
-                      ]}
+                      options={Item.availability_options()}
                     />
                   </div>
                 </.inputs_for>

@@ -8,6 +8,9 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
   def mount(_params, _session, socket) do
     page = 1
     per_page = 10
+    search = ""
+
+    # Load the first page of items on initial mount (restore previous behaviour)
     {items, total_pages} = Catalog.list_items_paginated(page, per_page)
 
     socket =
@@ -15,7 +18,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       |> stream(:items, items)
       |> assign(:page_title, "Listing Items")
       |> assign(:page, page)
+      |> assign(:search, search)
       |> assign(:total_pages, total_pages)
+      |> assign(:items_empty?, items == [])
+      |> assign(:items_count, length(items))
 
     {:ok, socket}
   end
@@ -45,7 +51,14 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
 
   @impl true
   def handle_info({VoileWeb.Dashboard.Catalog.ItemLive.FormComponent, {:saved, item}}, socket) do
-    {:noreply, stream_insert(socket, :items, item)}
+    # Only insert into the visible list if user has an active search
+    if socket.assigns[:search] && socket.assigns[:search] != "" do
+      socket = stream_insert(socket, :items, item)
+      items_count = (socket.assigns[:items_count] || 0) + 1
+      {:noreply, assign(socket, %{items_empty?: false, items_count: items_count})}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true
@@ -53,7 +66,27 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     item = Catalog.get_item!(id)
     {:ok, _} = Catalog.delete_item(item)
 
-    {:noreply, stream_delete(socket, :items, item)}
+    # If there is an active search, re-fetch the current page. Otherwise nothing to update.
+    search = socket.assigns[:search] || ""
+
+    if search != "" do
+      page = socket.assigns[:page] || 1
+      per_page = 10
+
+      {items, total_pages} = Catalog.list_items_paginated(page, per_page, search)
+
+      socket =
+        socket
+        |> stream(:items, items, reset: true)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:items_empty?, items == [])
+        |> assign(:items_count, length(items))
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true
@@ -66,13 +99,57 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       end
 
     per_page = 10
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page)
+    search = socket.assigns[:search] || ""
+
+    # Only paginate when the user has performed a search
+    if search == "" do
+      {:noreply, socket}
+    else
+      {items, total_pages} = Catalog.list_items_paginated(page, per_page, search)
+
+      socket =
+        socket
+        |> stream(:items, items, reset: true)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:items_empty?, items == [])
+        |> assign(:items_count, length(items))
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("search", %{"q" => q}, socket) do
+    page = 1
+    per_page = 10
+
+    # perform the search and show results
+    {items, total_pages} = Catalog.list_items_paginated(page, per_page, q)
 
     socket =
       socket
       |> stream(:items, items, reset: true)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
+      |> assign(:search, q)
+      |> assign(:items_empty?, items == [])
+      |> assign(:items_count, length(items))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_search", _params, socket) do
+    # Clear current filter and show no results
+    socket =
+      socket
+      |> stream(:items, [], reset: true)
+      |> assign(:page, 1)
+      |> assign(:total_pages, 0)
+      |> assign(:search, "")
+      |> assign(:items_empty?, true)
+      |> assign(:items_count, 0)
 
     {:noreply, socket}
   end

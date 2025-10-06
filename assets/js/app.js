@@ -31,6 +31,8 @@ import MobileNav from "./hooks/mobile_nav";
 import { ItemSearch } from "./hooks/item_search_hook";
 import { SearchDropdown } from "./hooks/search_dropdown_hook";
 import { SearchPanel } from "./hooks/search_panel_hook";
+import SearchFocus from "./hooks/search_focus";
+import SearchResultsLoading from "./hooks/search_results_loading";
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
@@ -46,6 +48,8 @@ const liveSocket = new LiveSocket("/live", Socket, {
     ItemSearch,
     SearchDropdown,
     SearchPanel,
+    SearchFocus,
+    SearchResultsLoading,
     ...colocatedHooks,
   },
 });

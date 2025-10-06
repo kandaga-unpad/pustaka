@@ -6,37 +6,58 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="space-y-4">
       <.header>
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-
-      <.form
-        for={@form}
-        id="item-form"
-        phx-target={@myself}
-        phx-change="validate"
-        phx-submit="save"
-      >
-        <.input field={@form[:item_code]} type="text" label="Item code" />
-        <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
-        <.input field={@form[:barcode]} type="text" label="Barcode" />
-        <.input field={@form[:location]} type="text" label="Location" />
-        <.input field={@form[:status]} type="text" label="Status" />
-        <.input field={@form[:condition]} type="text" label="Condition" />
-        <.input
-          field={@form[:availability]}
-          type="select"
-          options={[
-            {"Available", "available"},
-            {"Loaned", "loaned"},
-            {"Reserved", "reserved"},
-            {"Maintenance", "maintenance"}
-          ]}
-          label="Availability"
-        /> <.button phx-disable-with="Saving...">Save Item</.button>
-      </.form>
+      
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+        <.form
+          for={@form}
+          id="item-form"
+          phx-target={@myself}
+          phx-change="validate"
+          phx-submit="save"
+          class="space-y-6"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <.input field={@form[:item_code]} type="text" label="Item code" class="w-full" />
+            <.input field={@form[:inventory_code]} type="text" label="Inventory code" class="w-full" />
+            <.input field={@form[:barcode]} type="text" label="Barcode" class="w-full" />
+            <.input field={@form[:location]} type="text" label="Location" class="w-full" />
+            <.input field={@form[:status]} type="text" label="Status" class="w-full" />
+            <.input field={@form[:condition]} type="text" label="Condition" class="w-full" />
+            <.input
+              field={@form[:availability]}
+              type="select"
+              options={[
+                {"Available", "available"},
+                {"Loaned", "loaned"},
+                {"Reserved", "reserved"},
+                {"Maintenance", "maintenance"}
+              ]}
+              label="Availability"
+              class="w-full"
+            />
+          </div>
+          
+          <div class="flex items-center gap-3 pt-2">
+            <.button
+              phx-disable-with="Saving..."
+              class="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+            >
+              <.icon name="hero-check" class="w-4 h-4" /> Save
+            </.button>
+            <.link patch={@patch} class="inline-block">
+              <.button type="button" class="!bg-gray-100 !text-gray-900">Cancel</.button>
+            </.link>
+            <div class="ml-auto text-sm text-gray-500">
+              Tip: edit fields and click Save to persist changes.
+            </div>
+          </div>
+        </.form>
+      </div>
     </div>
     """
   end

@@ -522,7 +522,7 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.get!(id)
     |> Repo.preload([
       :member,
-      librarian: [:user_role],
+      librarian: [:roles],
       item: [:collection],
       collection: []
     ])
@@ -535,7 +535,7 @@ defmodule Voile.Schema.Library.Circulation do
   def get_transaction(id) do
     case Repo.get(Transaction, id) do
       %Transaction{} = t ->
-        Repo.preload(t, [:member, librarian: [:user_role], item: [:collection], collection: []])
+        Repo.preload(t, [:member, librarian: [:roles], item: [:collection], collection: []])
 
       nil ->
         nil

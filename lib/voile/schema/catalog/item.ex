@@ -32,7 +32,24 @@ defmodule Voile.Schema.Catalog.Item do
 
   @statuses ~w(active inactive lost damaged discarded)
   @conditions ~w(excellent good fair poor damaged)
-  @availabilities ~w(available loaned reserved maintenance)
+  @availabilities ~w(available loaned reserved reference_only non_circulating maintenance conservation in_processing exhibition restricted in_transit missing quarantine)
+
+  @doc """
+  Returns availability options suitable for form selects as {label, value} tuples.
+  Labels are humanized (underscores replaced with spaces and words capitalized).
+  """
+  def availability_options do
+    Enum.map(@availabilities, fn val ->
+      label =
+        val
+        |> String.replace("_", " ")
+        |> String.split(" ")
+        |> Enum.map(&String.capitalize/1)
+        |> Enum.join(" ")
+
+      {label, val}
+    end)
+  end
 
   @doc false
   def changeset(item, attrs) do

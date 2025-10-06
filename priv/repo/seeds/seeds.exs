@@ -190,3 +190,12 @@ end
 # Load GLAM Collections (Gallery, Library, Archive, Museum)
 IO.puts("🎨 Loading GLAM Collections...")
 Code.require_file("priv/repo/seeds/glams.exs")
+
+# Load Authorization System (Roles and Permissions)
+IO.puts("\n🔐 Loading Authorization System...")
+Code.require_file("priv/repo/seeds/authorization_seeds.ex")
+Voile.Repo.Seeds.AuthorizationSeeds.run()
+
+# Load Member Types and Admin User
+IO.puts("\n👥 Loading Member Types and Admin User...")
+Code.require_file("priv/repo/seeds/master.exs")

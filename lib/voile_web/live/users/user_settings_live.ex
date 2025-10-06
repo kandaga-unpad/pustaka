@@ -89,10 +89,10 @@ defmodule VoileWeb.UserSettingsLive do
              <.input field={@profile_form[:email]} type="email" label="Email" disabled />
             <label class="block text-sm font-medium text-gray-700 mb-2">Profile image</label>
             <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
-              <%= if @profile_image_preview || profile_image_url(@profile_form) do %>
+              <%= if @profile_image_preview || @current_scope.user.user_image do %>
                 <div class="flex items-center gap-4">
                   <img
-                    src={@profile_image_preview || profile_image_url(@profile_form)}
+                    src={@profile_image_preview || @current_scope.user.user_image}
                     class="w-20 h-20 rounded-full object-cover"
                   />
                   <div class="flex-1">
@@ -101,7 +101,7 @@ defmodule VoileWeb.UserSettingsLive do
                     <.button
                       type="button"
                       phx-click="delete_user_image"
-                      phx-value-image={@profile_image_preview || profile_image_url(@profile_form)}
+                      phx-value-image={@profile_image_preview || @current_scope.user.user_image}
                       phx-disable-with="Removing..."
                     >
                       Remove
@@ -125,14 +125,89 @@ defmodule VoileWeb.UserSettingsLive do
               <% end %>
             </div>
             
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <.input field={@user_profile_form[:website]} type="url" label="Website" />
-              <.input field={@user_profile_form[:phone_number]} type="text" label="Phone number" />
-            </div>
+            <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
+              <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+                Contact Information
+              </legend>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <.input field={@profile_form[:phone_number]} type="text" label="Phone number" />
+                <.input field={@profile_form[:website]} type="url" label="Website" />
+              </div>
+              
+              <div class="mt-3">
+                <.input field={@profile_form[:address]} type="text" label="Address" />
+              </div>
+            </fieldset>
             
-            <div class="mt-4 grid grid-cols-1 gap-3">
-              <.input field={@user_profile_form[:address]} type="text" label="Address" />
-            </div>
+            <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
+              <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+                Social Media
+              </legend>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <.input
+                  field={@profile_form[:twitter]}
+                  type="text"
+                  label="Twitter"
+                  placeholder="@username"
+                />
+                <.input
+                  field={@profile_form[:facebook]}
+                  type="text"
+                  label="Facebook"
+                  placeholder="profile-url"
+                />
+                <.input
+                  field={@profile_form[:linkedin]}
+                  type="text"
+                  label="LinkedIn"
+                  placeholder="profile-url"
+                />
+                <.input
+                  field={@profile_form[:instagram]}
+                  type="text"
+                  label="Instagram"
+                  placeholder="@username"
+                />
+              </div>
+            </fieldset>
+            
+            <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
+              <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+                Personal Information
+              </legend>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <.input field={@profile_form[:birth_date]} type="date" label="Birth date" />
+                <.input field={@profile_form[:birth_place]} type="text" label="Birth place" />
+              </div>
+              
+              <div class="mt-3">
+                <.input
+                  field={@profile_form[:gender]}
+                  type="select"
+                  label="Gender"
+                  options={[{"Male", "male"}, {"Female", "female"}, {"Other", "other"}]}
+                  prompt="Select gender"
+                />
+              </div>
+            </fieldset>
+            
+            <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
+              <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+                Organization Details
+              </legend>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <.input field={@profile_form[:organization]} type="text" label="Organization" />
+                <.input field={@profile_form[:department]} type="text" label="Department" />
+              </div>
+              
+              <div class="mt-3">
+                <.input field={@profile_form[:position]} type="text" label="Position" />
+              </div>
+            </fieldset>
              <hr class="my-4" />
             <div class="mt-3 grid grid-cols-1 gap-2">
               <.button phx-disable-with="Saving...">Save Profile</.button>
@@ -143,30 +218,6 @@ defmodule VoileWeb.UserSettingsLive do
     </div>
     """
   end
-
-  defp profile_image_url(%Phoenix.HTML.Form{} = form) do
-    params = form.params || %{}
-
-    # Support both nested params (e.g. %{"user" => %{...}}) and flat params
-    params =
-      case params do
-        %{} = p ->
-          case Map.to_list(p) do
-            [{_k, inner}] when is_map(inner) -> inner
-            _ -> p
-          end
-
-        other ->
-          other
-      end
-
-    case Map.get(params, "user_image") do
-      url when is_binary(url) and url != "" -> url
-      _ -> nil
-    end
-  end
-
-  defp profile_image_url(_), do: nil
 
   def mount(%{"token" => token}, _session, socket) do
     socket =
@@ -193,9 +244,6 @@ defmodule VoileWeb.UserSettingsLive do
 
     profile_changeset = Accounts.change_user(user)
 
-    user_profile_changeset = Accounts.change_user(user)
-    user_profile_form = to_form(user_profile_changeset, as: :user)
-
     socket =
       socket
       |> assign(:current_password, nil)
@@ -204,7 +252,6 @@ defmodule VoileWeb.UserSettingsLive do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:profile_form, to_form(profile_changeset))
-      |> assign(:user_profile_form, user_profile_form)
       |> assign(:profile_image_preview, nil)
       |> allow_upload(:user_image,
         accept: ~w(.jpg .jpeg .png .webp),
@@ -322,7 +369,8 @@ defmodule VoileWeb.UserSettingsLive do
       {:noreply,
        socket
        |> assign(:profile_image_preview, nil)
-       |> assign(:current_scope, current_scope)}
+       |> assign(:current_scope, current_scope)
+       |> put_flash(:info, "Image removed")}
     else
       case Storage.delete(image) do
         {:ok, _} -> :ok
@@ -332,12 +380,18 @@ defmodule VoileWeb.UserSettingsLive do
       user = socket.assigns.current_scope.user
 
       case Accounts.update_profile_user(user, %{"user_image" => nil}) do
-        {:ok, user} ->
-          current_scope = Map.put(socket.assigns.current_scope, :user, user)
-          {:noreply, assign(socket, :current_scope, current_scope)}
+        {:ok, updated_user} ->
+          current_scope = Map.put(socket.assigns.current_scope, :user, updated_user)
+          profile_changeset = Accounts.change_user(updated_user)
+
+          {:noreply,
+           socket
+           |> assign(:current_scope, current_scope)
+           |> assign(:profile_form, to_form(profile_changeset))
+           |> put_flash(:info, "Profile image deleted successfully")}
 
         {:error, _} ->
-          {:noreply, socket}
+          {:noreply, put_flash(socket, :error, "Failed to delete image")}
       end
     end
   end

@@ -47,102 +47,111 @@ defmodule GLAMSeeds do
   end
 
   defp ensure_resource_classes do
+    # Define the GLAM resource classes we need
     resource_classes = [
       %{
-        id: 50,
         local_name: "gallery",
+        label: "Gallery Collection",
         glam_type: "Gallery",
-        name: "Gallery Collection",
-        inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        information:
+          "Gallery collection items including visual arts, photographs, and exhibitions",
+        vocabulary_id: 5
       },
       %{
-        id: 51,
         local_name: "archive",
+        label: "Archive Collection",
         glam_type: "Archive",
-        name: "Archive Collection",
-        inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        information: "Archive collection items including historical documents and records",
+        vocabulary_id: 5
       },
       %{
-        id: 52,
         local_name: "museum",
+        label: "Museum Collection",
         glam_type: "Museum",
-        name: "Museum Collection",
-        inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        information: "Museum collection items including artifacts and cultural heritage objects",
+        vocabulary_id: 5
       }
     ]
 
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     Enum.each(resource_classes, fn rc ->
-      case Repo.get(ResourceClass, rc.id) do
-        nil -> Repo.insert!(struct(ResourceClass, rc))
-        _ -> :ok
+      # Check if resource class already exists by local_name
+      case Repo.get_by(ResourceClass, local_name: rc.local_name) do
+        nil ->
+          # Insert without hardcoded ID - let PostgreSQL auto-generate
+          Repo.insert!(
+            struct(
+              ResourceClass,
+              Map.merge(rc, %{
+                inserted_at: now,
+                updated_at: now
+              })
+            )
+          )
+
+          IO.puts("  ✓ Created resource class: #{rc.local_name}")
+
+        existing ->
+          IO.puts("  ✓ Resource class '#{rc.local_name}' already exists (ID: #{existing.id})")
       end
     end)
   end
 
   defp ensure_properties do
+    # Define the properties we need for GLAM collections
     properties = [
       %{
-        id: 300,
-        local_name: "creator",
+        local_name: "glam_creator",
         label: "Creator",
         type_value: "text",
         information: "Person or organization responsible for creating the collection item",
         vocabulary_id: 5
       },
       %{
-        id: 301,
-        local_name: "institution",
+        local_name: "glam_institution",
         label: "Institution",
         type_value: "text",
         information: "Institution or organization that holds or manages the collection",
         vocabulary_id: 5
       },
       %{
-        id: 302,
-        local_name: "location",
+        local_name: "glam_location",
         label: "Location",
         type_value: "text",
         information: "Physical or geographical location of the collection item",
         vocabulary_id: 5
       },
       %{
-        id: 303,
-        local_name: "type",
+        local_name: "glam_type",
         label: "Type",
         type_value: "text",
         information: "Classification or category type of the collection item",
         vocabulary_id: 5
       },
       %{
-        id: 304,
-        local_name: "keywords",
+        local_name: "glam_keywords",
         label: "Keywords",
         type_value: "text",
         information: "Descriptive keywords or tags associated with the collection item",
         vocabulary_id: 5
       },
       %{
-        id: 305,
-        local_name: "created_date",
+        local_name: "glam_created_date",
         label: "Created Date",
         type_value: "date",
         information: "Date when the original item was created",
         vocabulary_id: 5
       },
       %{
-        id: 306,
-        local_name: "publication_date",
+        local_name: "glam_publication_date",
         label: "Publication Date",
         type_value: "date",
         information: "Date when the item was published or made available",
         vocabulary_id: 5
       },
       %{
-        id: 307,
-        local_name: "directus_id",
+        local_name: "glam_directus_id",
         label: "Directus ID",
         type_value: "text",
         information: "Original identifier from the Directus content management system",
@@ -152,24 +161,43 @@ defmodule GLAMSeeds do
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    Enum.each(properties, fn prop ->
-      case Repo.get(Property, prop.id) do
-        nil ->
-          Repo.insert!(
-            struct(
-              Property,
-              Map.merge(prop, %{
-                # Default owner, adjust as needed
-                inserted_at: now,
-                updated_at: now
-              })
-            )
-          )
+    # Store property IDs for later use
+    property_map =
+      Enum.reduce(properties, %{}, fn prop, acc ->
+        # Check if property already exists by local_name
+        property =
+          case Repo.get_by(Property,
+                 local_name: prop.local_name,
+                 vocabulary_id: prop.vocabulary_id
+               ) do
+            nil ->
+              # Insert without hardcoded ID
+              inserted =
+                Repo.insert!(
+                  struct(
+                    Property,
+                    Map.merge(prop, %{
+                      inserted_at: now,
+                      updated_at: now
+                    })
+                  )
+                )
 
-        _ ->
-          :ok
-      end
-    end)
+              IO.puts("  ✓ Created property: #{prop.local_name}")
+              inserted
+
+            existing ->
+              IO.puts("  ✓ Property '#{prop.local_name}' already exists (ID: #{existing.id})")
+              existing
+          end
+
+        # Map the short name to property ID for easy lookup
+        short_name = String.replace_prefix(prop.local_name, "glam_", "")
+        Map.put(acc, short_name, property.id)
+      end)
+
+    # Store in process dictionary for use in insert_collection_fields
+    Process.put(:glam_property_ids, property_map)
   end
 
   defp ensure_default_creator do
@@ -177,51 +205,62 @@ defmodule GLAMSeeds do
 
     case Repo.get(Creator, 1) do
       nil ->
-        Repo.insert!(
-          struct(Creator, %{
-            id: 1,
-            creator_name: "System",
-            creator_contact: "",
-            affiliation: "System",
-            type: "institution",
-            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
-          })
-        )
+        case Repo.get_by(Creator, creator_name: "System") do
+          nil ->
+            Repo.insert!(
+              struct(Creator, %{
+                id: 1,
+                creator_name: "System",
+                creator_contact: "",
+                affiliation: "System",
+                type: "institution",
+                inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+                updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+              })
+            )
 
-      _ ->
-        :ok
+          existing ->
+            IO.puts("  ℹ️  System creator already exists with ID #{existing.id}")
+        end
+
+      _existing ->
+        IO.puts("  ✓ Default creator (ID 1) already exists")
     end
   end
 
   defp seed_collections_from_csv(kandaga_unit) do
+    # Get resource class IDs dynamically
+    gallery_rc = Repo.get_by(ResourceClass, local_name: "gallery")
+    archive_rc = Repo.get_by(ResourceClass, local_name: "archive")
+    museum_rc = Repo.get_by(ResourceClass, local_name: "museum")
+
     # Read and process Gallery CSV
     gallery_file = "scripts/csv_data/gallery/koleksi_gallery 20250917-3256.csv"
 
-    if File.exists?(gallery_file) do
+    if File.exists?(gallery_file) && gallery_rc do
       IO.puts("📸 Processing Gallery collections...")
       gallery_collections = parse_gallery_csv(gallery_file)
-      insert_collections(gallery_collections, 50, kandaga_unit, "GALLERY")
+      insert_collections(gallery_collections, gallery_rc.id, kandaga_unit, "GALLERY")
       IO.puts("✅ Processed #{length(gallery_collections)} gallery collections")
     end
 
     # Read and process Archive CSV
     archive_file = "scripts/csv_data/archive/koleksi_archive 20250917-32930.csv"
 
-    if File.exists?(archive_file) do
+    if File.exists?(archive_file) && archive_rc do
       IO.puts("📄 Processing Archive collections...")
       archive_collections = parse_archive_csv(archive_file)
-      insert_collections(archive_collections, 51, kandaga_unit, "ARCHIVE")
+      insert_collections(archive_collections, archive_rc.id, kandaga_unit, "ARCHIVE")
       IO.puts("✅ Processed #{length(archive_collections)} archive collections")
     end
 
     # Read and process Museum CSV
     museum_file = "scripts/csv_data/museum/koleksi_museum 20250917-32637.csv"
 
-    if File.exists?(museum_file) do
+    if File.exists?(museum_file) && museum_rc do
       IO.puts("🏛️  Processing Museum collections...")
       museum_collections = parse_museum_csv(museum_file)
-      insert_collections(museum_collections, 52, kandaga_unit, "MUSEUM")
+      insert_collections(museum_collections, museum_rc.id, kandaga_unit, "MUSEUM")
       IO.puts("✅ Processed #{length(museum_collections)} museum collections")
     end
   end
@@ -409,15 +448,6 @@ defmodule GLAMSeeds do
   defp insert_collections(collections, resource_class_id, unit, type_prefix) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    # Map GLAM types to their appropriate type_id (resource class IDs)
-    type_id =
-      case type_prefix do
-        "GALLERY" -> 50
-        "ARCHIVE" -> 51
-        "MUSEUM" -> 52
-        _ -> resource_class_id
-      end
-
     Enum.with_index(collections, 1)
     |> Enum.each(fn {collection_data, index} ->
       collection_code = generate_collection_code(unit.abbr, type_prefix, index)
@@ -433,7 +463,7 @@ defmodule GLAMSeeds do
         collection_code: collection_code,
         title: collection_data.title,
         description: collection_data.description,
-        type_id: type_id,
+        type_id: resource_class_id,
         unit_id: unit.id,
         status: "published",
         access_level: "public",
@@ -473,27 +503,37 @@ defmodule GLAMSeeds do
   end
 
   defp insert_collection_fields(collection_id, collection_data, now) do
+    # Get property IDs from process dictionary
+    property_ids = Process.get(:glam_property_ids, %{})
+
     fields = [
       # creator
-      {300, "creator", "Creator", collection_data.creator, "text", 1},
+      {Map.get(property_ids, "creator"), "glam_creator", "Creator", collection_data.creator,
+       "text", 1},
       # institution
-      {301, "institution", "Institution", collection_data.institution, "text", 2},
+      {Map.get(property_ids, "institution"), "glam_institution", "Institution",
+       collection_data.institution, "text", 2},
       # location
-      {302, "location", "Location", collection_data.location, "text", 3},
+      {Map.get(property_ids, "location"), "glam_location", "Location", collection_data.location,
+       "text", 3},
       # type
-      {303, "type", "Type", collection_data.type, "text", 4},
+      {Map.get(property_ids, "type"), "glam_type", "Type", collection_data.type, "text", 4},
       # keywords
-      {304, "keywords", "Keywords", format_keywords(collection_data.keywords), "text", 5},
+      {Map.get(property_ids, "keywords"), "glam_keywords", "Keywords",
+       format_keywords(collection_data.keywords), "text", 5},
       # created_date
-      {305, "created_date", "Created Date", collection_data.created_date, "date", 6},
+      {Map.get(property_ids, "created_date"), "glam_created_date", "Created Date",
+       collection_data.created_date, "date", 6},
       # publication_date
-      {306, "publication_date", "Publication Date", collection_data.publication_date, "date", 7},
+      {Map.get(property_ids, "publication_date"), "glam_publication_date", "Publication Date",
+       collection_data.publication_date, "date", 7},
       # directus_id
-      {307, "directus_id", "Directus ID", collection_data.directus_id, "text", 8}
+      {Map.get(property_ids, "directus_id"), "glam_directus_id", "Directus ID",
+       collection_data.directus_id, "text", 8}
     ]
 
     Enum.each(fields, fn {property_id, name, label, value, type_value, sort_order} ->
-      if value do
+      if value && property_id do
         field_data = %{
           id: Ecto.UUID.generate(),
           collection_id: collection_id,
@@ -558,7 +598,7 @@ defmodule GLAMSeeds do
       location: unit.name,
       status: "active",
       condition: "good",
-      availability: "available",
+      availability: "non_circulating",
       unit_id: unit.id,
       inserted_at: now,
       updated_at: now

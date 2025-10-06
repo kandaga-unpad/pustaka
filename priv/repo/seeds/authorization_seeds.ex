@@ -2,15 +2,15 @@ defmodule Voile.Repo.Seeds.AuthorizationSeeds do
   @moduledoc """
   Seeds for the authorization system.
   Run this to populate default permissions and roles.
-  
+
   ## Usage
-  
+
   In IEx or seeds.exs:
-  
+
       Voile.Repo.Seeds.AuthorizationSeeds.run()
-  
+
   Or run specific functions:
-  
+
       Voile.Repo.Seeds.AuthorizationSeeds.seed_permissions()
       Voile.Repo.Seeds.AuthorizationSeeds.seed_roles()
   """
@@ -21,12 +21,14 @@ defmodule Voile.Repo.Seeds.AuthorizationSeeds do
   Run all authorization seeds.
   """
   def run do
-    IO.puts("🔐 Seeding authorization system...")
-    
+    IO.puts("\n🔐 Seeding authorization system...")
+    IO.puts("=" |> String.duplicate(50))
+
     seed_permissions()
     seed_roles()
-    
-    IO.puts("✅ Authorization system seeded successfully!")
+
+    IO.puts("=" |> String.duplicate(50))
+    IO.puts("✅ Authorization system seeded successfully!\n")
   end
 
   @doc """
@@ -34,21 +36,32 @@ defmodule Voile.Repo.Seeds.AuthorizationSeeds do
   """
   def seed_permissions do
     IO.puts("  📋 Creating permissions...")
+
+    # Use the PermissionManager to create all default permissions
     PermissionManager.seed_default_permissions()
-    
+
     count = PermissionManager.list_permissions() |> length()
-    IO.puts("  ✓ #{count} permissions available")
+    IO.puts("  ✓ #{count} permissions created/verified")
   end
 
   @doc """
   Seed default roles only.
   """
   def seed_roles do
-    IO.puts("  👥 Creating roles...")
+    IO.puts("  👥 Creating roles with permissions...")
+
+    # Use the PermissionManager to create all default roles with their permissions
     PermissionManager.seed_default_roles()
-    
-    count = PermissionManager.list_roles() |> length()
-    IO.puts("  ✓ #{count} roles available")
+
+    # Display summary
+    roles = PermissionManager.list_roles()
+    IO.puts("  ✓ #{length(roles)} roles created/verified:")
+
+    Enum.each(roles, fn role ->
+      full_role = PermissionManager.get_role(role.id)
+      perm_count = length(full_role.permissions)
+      IO.puts("    • #{full_role.name}: #{perm_count} permissions")
+    end)
   end
 
   @doc """

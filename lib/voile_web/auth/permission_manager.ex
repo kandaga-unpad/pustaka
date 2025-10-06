@@ -238,50 +238,136 @@ defmodule VoileWeb.Auth.PermissionManager do
   def seed_default_permissions do
     permissions = [
       # Collection permissions
-      %{name: "collections.create", description: "Create new collections"},
-      %{name: "collections.read", description: "View collections"},
-      %{name: "collections.update", description: "Edit collections"},
-      %{name: "collections.delete", description: "Delete collections"},
-      %{name: "collections.publish", description: "Publish collections"},
-      %{name: "collections.archive", description: "Archive collections"},
+      %{
+        name: "collections.create",
+        resource: "collections",
+        action: "create",
+        description: "Create new collections"
+      },
+      %{
+        name: "collections.read",
+        resource: "collections",
+        action: "read",
+        description: "View collections"
+      },
+      %{
+        name: "collections.update",
+        resource: "collections",
+        action: "update",
+        description: "Edit collections"
+      },
+      %{
+        name: "collections.delete",
+        resource: "collections",
+        action: "delete",
+        description: "Delete collections"
+      },
+      %{
+        name: "collections.publish",
+        resource: "collections",
+        action: "publish",
+        description: "Publish collections"
+      },
+      %{
+        name: "collections.archive",
+        resource: "collections",
+        action: "archive",
+        description: "Archive collections"
+      },
 
       # Item permissions
-      %{name: "items.create", description: "Create new items"},
-      %{name: "items.read", description: "View items"},
-      %{name: "items.update", description: "Edit items"},
-      %{name: "items.delete", description: "Delete items"},
-      %{name: "items.export", description: "Export items"},
-      %{name: "items.import", description: "Import items"},
+      %{
+        name: "items.create",
+        resource: "items",
+        action: "create",
+        description: "Create new items"
+      },
+      %{name: "items.read", resource: "items", action: "read", description: "View items"},
+      %{name: "items.update", resource: "items", action: "update", description: "Edit items"},
+      %{name: "items.delete", resource: "items", action: "delete", description: "Delete items"},
+      %{name: "items.export", resource: "items", action: "export", description: "Export items"},
+      %{name: "items.import", resource: "items", action: "import", description: "Import items"},
 
       # Metadata permissions
-      %{name: "metadata.edit", description: "Edit metadata fields"},
-      %{name: "metadata.manage", description: "Manage metadata schemas"},
+      %{
+        name: "metadata.edit",
+        resource: "metadata",
+        action: "edit",
+        description: "Edit metadata fields"
+      },
+      %{
+        name: "metadata.manage",
+        resource: "metadata",
+        action: "manage",
+        description: "Manage metadata schemas"
+      },
 
       # User management permissions
-      %{name: "users.create", description: "Create new users"},
-      %{name: "users.read", description: "View users"},
-      %{name: "users.update", description: "Edit users"},
-      %{name: "users.delete", description: "Delete users"},
-      %{name: "users.manage_roles", description: "Manage user roles"},
+      %{
+        name: "users.create",
+        resource: "users",
+        action: "create",
+        description: "Create new users"
+      },
+      %{name: "users.read", resource: "users", action: "read", description: "View users"},
+      %{name: "users.update", resource: "users", action: "update", description: "Edit users"},
+      %{name: "users.delete", resource: "users", action: "delete", description: "Delete users"},
+      %{
+        name: "users.manage_roles",
+        resource: "users",
+        action: "manage_roles",
+        description: "Manage user roles"
+      },
 
       # Role and permission management
-      %{name: "roles.create", description: "Create new roles"},
-      %{name: "roles.update", description: "Edit roles"},
-      %{name: "roles.delete", description: "Delete roles"},
-      %{name: "permissions.manage", description: "Manage permissions"},
+      %{
+        name: "roles.create",
+        resource: "roles",
+        action: "create",
+        description: "Create new roles"
+      },
+      %{name: "roles.update", resource: "roles", action: "update", description: "Edit roles"},
+      %{name: "roles.delete", resource: "roles", action: "delete", description: "Delete roles"},
+      %{
+        name: "permissions.manage",
+        resource: "permissions",
+        action: "manage",
+        description: "Manage permissions"
+      },
 
       # System permissions
-      %{name: "system.settings", description: "Manage system settings"},
-      %{name: "system.audit", description: "View audit logs"},
-      %{name: "system.backup", description: "Perform system backups"}
+      %{
+        name: "system.settings",
+        resource: "system",
+        action: "settings",
+        description: "Manage system settings"
+      },
+      %{
+        name: "system.audit",
+        resource: "system",
+        action: "audit",
+        description: "View audit logs"
+      },
+      %{
+        name: "system.backup",
+        resource: "system",
+        action: "backup",
+        description: "Perform system backups"
+      }
     ]
 
     Enum.each(permissions, fn attrs ->
       case Repo.get_by(Permission, name: attrs.name) do
         nil ->
-          %Permission{}
-          |> Permission.changeset(attrs)
-          |> Repo.insert()
+          case %Permission{}
+               |> Permission.changeset(attrs)
+               |> Repo.insert() do
+            {:ok, _permission} ->
+              :ok
+
+            {:error, changeset} ->
+              IO.puts("Failed to insert permission #{attrs.name}: #{inspect(changeset.errors)}")
+          end
 
         _existing ->
           :ok

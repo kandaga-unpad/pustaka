@@ -76,7 +76,7 @@ defmodule VoileWeb.UserAuth do
   def fetch_current_scope_for_user(conn, _opts) do
     with {token, conn} <- ensure_user_token(conn),
          {user, token_inserted_at} <- Accounts.get_user_by_session_token(token) do
-      user = Voile.Repo.preload(user, [:user_role, :user_type])
+      user = Voile.Repo.preload(user, [:user_role_assignments, :roles, :user_type])
 
       conn
       |> assign(:current_scope, Scope.for_user(user))
@@ -384,7 +384,7 @@ defmodule VoileWeb.UserAuth do
           Accounts.get_user_by_session_token(user_token)
         end || {nil, nil}
 
-      user = Voile.Repo.preload(user, [:user_role, :user_type])
+      user = Voile.Repo.preload(user, [:roles, :user_type])
 
       Scope.for_user(user)
     end)

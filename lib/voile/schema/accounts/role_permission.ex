@@ -2,7 +2,7 @@ defmodule Voile.Schema.Accounts.RolePermission do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "roles_permissions" do
+  schema "role_permissions" do
     belongs_to :role, Voile.Schema.Accounts.Role
     belongs_to :permission, Voile.Schema.Accounts.Permission
 

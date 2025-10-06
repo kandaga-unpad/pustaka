@@ -13,13 +13,18 @@ defmodule VoileWeb.Users.ManageLive do
         <:subtitle>Manage system users and their roles</:subtitle>
         
         <:actions>
-          <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
+          <%= if can?(@current_scope.user, "users.create") do %>
+            <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
+          <% end %>
         </:actions>
       </.header>
       
       <div class="flex gap-4">
         <div class="w-full max-w-64 ">
-          <.dashboard_settings_sidebar current_user={@current_scope.user} />
+          <.dashboard_settings_sidebar
+            current_user={@current_scope.user}
+            current_path={@current_path}
+          />
         </div>
         
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
@@ -89,6 +94,24 @@ defmodule VoileWeb.Users.ManageLive do
             
             <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
             
+            <:col :let={{_id, user}} label="Roles">
+              <%= if Ecto.assoc_loaded?(user.roles) and length(user.roles) > 0 do %>
+                <div class="flex flex-wrap gap-1">
+                  <%= for role <- Enum.take(user.roles, 2) do %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                      {role.name}
+                    </span>
+                  <% end %>
+                  
+                  <%= if length(user.roles) > 2 do %>
+                    <span class="text-xs text-gray-500">+{length(user.roles) - 2}</span>
+                  <% end %>
+                </div>
+              <% else %>
+                <span class="text-xs text-gray-400">No roles</span>
+              <% end %>
+            </:col>
+            
             <:col :let={{_id, user}} label="Status">
               <%= if user.confirmed_at do %>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -106,16 +129,20 @@ defmodule VoileWeb.Users.ManageLive do
             </:action>
             
             <:action :let={{_id, user}}>
-              <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
+              <%= if can?(@current_scope.user, "users.update") do %>
+                <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
+              <% end %>
             </:action>
             
             <:action :let={{id, user}}>
-              <.link
-                phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
-                data-confirm="Are you sure?"
-              >
-                Delete
-              </.link>
+              <%= if can?(@current_scope.user, "users.delete") do %>
+                <.link
+                  phx-click={JS.push("delete", value: %{id: user.id}) |> hide("##{id}")}
+                  data-confirm="Are you sure?"
+                >
+                  Delete
+                </.link>
+              <% end %>
             </:action>
           </.table>
            <.pagination page={@page} total_pages={@total_pages} event="paginate" />
@@ -146,9 +173,15 @@ defmodule VoileWeb.Users.ManageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    current_user = socket.assigns.current_scope.user
+    # Check permission
+    authorize!(socket, "users.read")
+
     node_list = Voile.Schema.System.list_nodes()
     user_type = Voile.Schema.Master.list_mst_member_types()
+
+    # Load roles from new RBAC system
+    roles = VoileWeb.Auth.PermissionManager.list_roles()
+    user_role_options = Enum.map(roles, fn role -> {role.name, role.id} end)
 
     socket =
       socket
@@ -157,26 +190,19 @@ defmodule VoileWeb.Users.ManageLive do
       |> assign(:searching, false)
       |> assign(:last_query, nil)
       |> assign(:user_type_options, user_type)
+      |> assign(:user_role_options, user_role_options)
+      |> assign(current_path: "/manage/settings/users")
 
-    if current_user do
-      {users, total_pages} =
-        Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+    {users, total_pages} =
+      Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
 
-      socket =
-        socket
-        |> stream(:users, users)
-        |> assign(total_pages: total_pages)
-        |> assign(:search_timer, nil)
+    socket =
+      socket
+      |> stream(:users, users)
+      |> assign(total_pages: total_pages)
+      |> assign(:search_timer, nil)
 
-      {:ok, socket}
-    else
-      socket =
-        socket
-        |> put_flash(:error, "You don't have permission to access user management.")
-        |> redirect(to: ~p"/manage")
-
-      {:ok, socket}
-    end
+    {:ok, socket}
   end
 
   @impl true
@@ -185,11 +211,8 @@ defmodule VoileWeb.Users.ManageLive do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    current_user = socket.assigns.current_scope.user
-
     socket
     |> assign(:page_title, "Edit User")
-    |> assign(:current_user, current_user)
     |> assign(:user, Accounts.get_user!(id))
   end
 
@@ -207,6 +230,8 @@ defmodule VoileWeb.Users.ManageLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
+    authorize!(socket, "users.delete")
+
     user = Accounts.get_user!(id)
     {:ok, _} = Accounts.delete_user(user)
 
@@ -350,5 +375,13 @@ defmodule VoileWeb.Users.ManageLive do
   # allow timeout messages wrapped by monitor refs
   def handle_info({_, {:search_timeout, query}}, socket) do
     handle_info({:search_timeout, query}, socket)
+  end
+
+  # Handle :DOWN messages from async tasks (Task.Supervisor sends these)
+  @impl true
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
+    # Task completed or crashed, we can safely ignore this since we already
+    # handled the results via {:search_results, ...} or {:search_timeout, ...}
+    {:noreply, socket}
   end
 end

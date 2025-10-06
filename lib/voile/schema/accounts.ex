@@ -94,7 +94,7 @@ defmodule Voile.Schema.Accounts do
   Gets all users.
   """
   def list_users() do
-    Repo.all(from u in User, preload: [:user_role], order_by: [desc: u.inserted_at])
+    Repo.all(from u in User, preload: [:roles], order_by: [desc: u.inserted_at])
   end
 
   @doc """
@@ -105,7 +105,7 @@ defmodule Voile.Schema.Accounts do
 
     query =
       from u in User,
-        preload: [:user_role, :user_type],
+        preload: [:roles, :user_type],
         order_by: [desc: u.inserted_at],
         limit: ^per_page,
         offset: ^offset
@@ -144,7 +144,7 @@ defmodule Voile.Schema.Accounts do
   def get_user!(id) do
     User
     |> Repo.get!(id)
-    |> Repo.preload([:user_role, :user_type])
+    |> Repo.preload([:roles, :user_type])
   end
 
   @doc """
@@ -185,7 +185,7 @@ defmodule Voile.Schema.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, [:user_role, :user_type])}
+        {:ok, Repo.preload(user, [:roles, :user_type])}
 
       error ->
         error
@@ -218,7 +218,7 @@ defmodule Voile.Schema.Accounts do
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, [:user_role, :user_type])}
+        {:ok, Repo.preload(user, [:roles, :user_type])}
 
       error ->
         error
@@ -651,7 +651,7 @@ defmodule Voile.Schema.Accounts do
     query_string = Map.get(params, "query", "")
     search_term = "%#{query_string}%"
 
-    q = from(u in User, preload: [:user_type])
+    q = from(u in User, preload: [:user_type, :roles])
 
     q =
       if query_string != "" do
@@ -662,6 +662,36 @@ defmodule Voile.Schema.Accounts do
         )
       else
         q
+      end
+
+    # Filter by role (through user_role_assignments)
+    q =
+      case Map.get(params, "user_role_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        role_id when is_binary(role_id) ->
+          role_id_int = String.to_integer(role_id)
+
+          from(u in q,
+            join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+            on: ura.user_id == u.id,
+            where: ura.role_id == ^role_id_int,
+            where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+            distinct: true
+          )
+
+        role_id when is_integer(role_id) ->
+          from(u in q,
+            join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+            on: ura.user_id == u.id,
+            where: ura.role_id == ^role_id,
+            where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+            distinct: true
+          )
       end
 
     # optional filters: node_id, user_type_id
@@ -689,9 +719,9 @@ defmodule Voile.Schema.Accounts do
           q
 
         mt when is_binary(mt) ->
-          from(u in q, where: u.user_type_id == ^String.to_integer(mt))
+          from(u in q, where: u.user_type_id == ^mt)
 
-        mt when is_integer(mt) ->
+        mt ->
           from(u in q, where: u.user_type_id == ^mt)
       end
 

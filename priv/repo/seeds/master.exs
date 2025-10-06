@@ -218,15 +218,37 @@ admin_user_attrs = %{
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
 }
 
-case Repo.get_by(Accounts.User, email: "admin@voile.id") do
-  nil ->
-    %Accounts.User{}
-    |> Accounts.User.registration_changeset(admin_user_attrs,
-      hash_password: true,
-      validate_email: false
-    )
-    |> Repo.insert!()
+admin_user =
+  case Repo.get_by(Accounts.User, email: "admin@voile.id") do
+    nil ->
+      %Accounts.User{}
+      |> Accounts.User.registration_changeset(admin_user_attrs,
+        hash_password: true,
+        validate_email: false
+      )
+      |> Repo.insert!()
 
-  existing_user ->
-    existing_user
+    existing_user ->
+      existing_user
+  end
+
+# Assign super_admin role to the admin user
+alias Voile.Schema.Accounts.Role
+alias VoileWeb.Auth.Authorization
+
+super_admin_role = Repo.get_by(Role, name: "super_admin")
+
+if super_admin_role do
+  case Authorization.assign_role(admin_user.id, super_admin_role.id) do
+    {:ok, _assignment} ->
+      IO.puts("✅ Assigned super_admin role to #{admin_user.email}")
+
+    {:error, %Ecto.Changeset{errors: [role_id: {"has already been taken", _}]}} ->
+      IO.puts("ℹ️  Admin user already has super_admin role")
+
+    {:error, reason} ->
+      IO.puts("⚠️  Failed to assign super_admin role: #{inspect(reason)}")
+  end
+else
+  IO.puts("⚠️  super_admin role not found. Please run authorization seeds first.")
 end

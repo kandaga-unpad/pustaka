@@ -108,7 +108,7 @@ defmodule VoileWeb.Layouts do
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
-                    <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
+                    <%= if has_dashboard_access?(@current_scope.user) do %>
                       <.link navigate="/manage">
                         <.button class="default-btn">Dashboard</.button>
                       </.link>
@@ -147,7 +147,7 @@ defmodule VoileWeb.Layouts do
                     </p>
                     
                     <div class="mt-2 flex w-full gap-2 text-xs">
-                      <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
+                      <%= if has_dashboard_access?(@current_scope.user) do %>
                         <.link navigate="/manage" class="primary-btn w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
@@ -389,7 +389,7 @@ defmodule VoileWeb.Layouts do
               <p class="text-sm mb-2">Signed in as <strong>{@current_scope.user.fullname}</strong></p>
               
               <div class="flex flex-col gap-2">
-                <%= unless (Ecto.assoc_loaded?(@current_scope.user.user_role) && @current_scope.user.user_role.name in ["Member", "Admin"]) do %>
+                <%= if has_dashboard_access?(@current_scope.user) do %>
                   <.link navigate="/manage" class="primary-btn w-full text-center">Dashboard</.link>
                 <% else %>
                   <.link navigate="/atrium" class="primary-btn w-full text-center">Atrium</.link>
@@ -479,5 +479,30 @@ defmodule VoileWeb.Layouts do
       />
     </div>
     """
+  end
+
+  # Helper function to check if user has dashboard access
+  # Users with administrative roles (super_admin, admin, editor) or system permissions can access dashboard
+  defp has_dashboard_access?(user) do
+    alias VoileWeb.Auth.Authorization
+    alias Voile.Repo
+
+    # Preload roles if not already loaded
+    user = Repo.preload(user, [:roles])
+
+    # Check if user has admin/editor roles
+    has_admin_role? =
+      Enum.any?(user.roles, fn role ->
+        role.name in ["super_admin", "admin", "editor"]
+      end)
+
+    # Check if user has any administrative permissions
+    has_admin_permission? =
+      Authorization.can?(user, "system.settings") ||
+        Authorization.can?(user, "users.manage_roles") ||
+        Authorization.can?(user, "collections.delete") ||
+        Authorization.can?(user, "roles.create")
+
+    has_admin_role? || has_admin_permission?
   end
 end

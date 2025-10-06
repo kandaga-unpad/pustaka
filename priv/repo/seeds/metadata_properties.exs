@@ -1687,20 +1687,30 @@ properties_list = [
 ]
 
 for property <- properties_list do
-  %Property{
-    owner_id: property[:owner_id],
-    vocabulary_id:
-      case property[:vocabulary_id] do
-        1 -> vocabulary_1.id
-        2 -> vocabulary_2.id
-        3 -> vocabulary_3.id
-        4 -> vocabulary_4.id
-        5 -> vocabulary_5.id
-      end,
-    local_name: property[:local_name],
-    label: property[:label],
-    information: property[:comment],
-    type_value: property[:type_value]
-  }
-  |> Repo.insert!()
+  # Check if property already exists by local_name and vocabulary_id
+  vocabulary_id =
+    case property[:vocabulary_id] do
+      1 -> vocabulary_1.id
+      2 -> vocabulary_2.id
+      3 -> vocabulary_3.id
+      4 -> vocabulary_4.id
+      5 -> vocabulary_5.id
+    end
+
+  case Repo.get_by(Property, local_name: property[:local_name], vocabulary_id: vocabulary_id) do
+    nil ->
+      %Property{
+        owner_id: property[:owner_id],
+        vocabulary_id: vocabulary_id,
+        local_name: property[:local_name],
+        label: property[:label],
+        information: property[:comment],
+        type_value: property[:type_value]
+      }
+      |> Repo.insert!()
+
+    _existing ->
+      # Property already exists, skip
+      :ok
+  end
 end

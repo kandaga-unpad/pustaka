@@ -40,8 +40,6 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
     # Performance indexes
     create index(:users, [:confirmed_at])
     create index(:users, [:last_login])
-    create index(:users, [:user_type_id])
-    create index(:users, [:node_id])
 
     create table(:users_tokens) do
       add :user_id, references(:users, type: :uuid, on_delete: :delete_all), null: false

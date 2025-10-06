@@ -55,11 +55,17 @@ defmodule VoileWeb.Auth.Authorization do
     end
   end
 
-  def can?(%Phoenix.LiveView.Socket{} = socket, permission_name, opts) do
-    case socket.assigns[:current_scope] do
+  def can?(%Phoenix.LiveView.Socket{assigns: assigns}, permission_name, opts)
+      when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
       %{user: user} when not is_nil(user) -> can?(user, permission_name, opts)
       _ -> false
     end
+  end
+
+  def can?(%Phoenix.LiveView.Socket{}, _permission_name, _opts) do
+    # Socket without assigns map (shouldn't happen in normal flow)
+    false
   end
 
   def can?(%Plug.Conn{} = conn, permission_name, opts) do
@@ -90,8 +96,9 @@ defmodule VoileWeb.Auth.Authorization do
     end
   end
 
-  def authorize!(%Phoenix.LiveView.Socket{} = socket, permission_name, opts) do
-    case socket.assigns[:current_scope] do
+  def authorize!(%Phoenix.LiveView.Socket{assigns: assigns}, permission_name, opts)
+      when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
       %{user: user} when not is_nil(user) ->
         authorize!(user, permission_name, opts)
 
@@ -100,6 +107,12 @@ defmodule VoileWeb.Auth.Authorization do
           permission: permission_name,
           user_id: nil
     end
+  end
+
+  def authorize!(%Phoenix.LiveView.Socket{}, permission_name, _opts) do
+    raise __MODULE__.UnauthorizedError,
+      permission: permission_name,
+      user_id: nil
   end
 
   def authorize!(%Plug.Conn{} = conn, permission_name, opts) do
@@ -230,12 +243,14 @@ defmodule VoileWeb.Auth.Authorization do
   """
   def authenticated?(socket_or_conn)
 
-  def authenticated?(%Phoenix.LiveView.Socket{} = socket) do
-    case socket.assigns[:current_scope] do
+  def authenticated?(%Phoenix.LiveView.Socket{assigns: assigns}) when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
       %{user: user} when not is_nil(user) -> true
       _ -> false
     end
   end
+
+  def authenticated?(%Phoenix.LiveView.Socket{}), do: false
 
   def authenticated?(%Plug.Conn{} = conn) do
     case conn.assigns[:current_scope] do
@@ -256,12 +271,14 @@ defmodule VoileWeb.Auth.Authorization do
   """
   def current_user(socket_or_conn)
 
-  def current_user(%Phoenix.LiveView.Socket{} = socket) do
-    case socket.assigns[:current_scope] do
+  def current_user(%Phoenix.LiveView.Socket{assigns: assigns}) when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
       %{user: user} -> user
       _ -> nil
     end
   end
+
+  def current_user(%Phoenix.LiveView.Socket{}), do: nil
 
   def current_user(%Plug.Conn{} = conn) do
     case conn.assigns[:current_scope] do
@@ -326,7 +343,7 @@ defmodule VoileWeb.Auth.Authorization do
       from ura in UserRoleAssignment,
         join: r in Role,
         on: ura.role_id == r.id,
-        join: rp in "roles_permissions",
+        join: rp in "role_permissions",
         on: rp.role_id == r.id,
         join: p in Permission,
         on: rp.permission_id == p.id,
@@ -400,7 +417,7 @@ defmodule VoileWeb.Auth.Authorization do
       from ura in UserRoleAssignment,
         join: r in Role,
         on: ura.role_id == r.id,
-        join: rp in "roles_permissions",
+        join: rp in "role_permissions",
         on: rp.role_id == r.id,
         join: p in Permission,
         on: rp.permission_id == p.id,

@@ -3,30 +3,75 @@
   <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">Kembali</.back>
     
-    <.header>
-      Listing Collections
-      <:actions>
-        <div class="flex items-center gap-2">
-          <.button
-            phx-click="toggle_view_mode"
-            class={
-              if @view_mode == "tree",
-                do: "btn bg-voile-primary text-voile-surface",
-                else: "btn bg-voile-neutral dark:bg-voile-neutral-dark"
-            }
-          >
-            <%= if @view_mode == "tree" do %>
-              <.icon name="hero-list-bullet" class="w-4 h-4 mr-1" /> List View
-            <% else %>
-              <.icon name="hero-squares-2x2" class="w-4 h-4 mr-1" /> Tree View
-            <% end %>
-          </.button>
-          <.link patch={~p"/manage/catalog/collections/new"}>
-            <.button>New Collection</.button>
-          </.link>
-        </div>
-      </:actions>
-    </.header>
+    <div class="flex items-start md:items-center justify-between gap-4 mb-4">
+      <div class="flex items-center gap-3">
+        <.header>Listing Collections</.header>
+        
+        <%= if @search && @search != "" do %>
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
+            <span class="text-sm text-gray-600">Results</span>
+            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
+              {@collections_count || 0}
+            </span>
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <.button
+          phx-click="toggle_view_mode"
+          class={
+            if @view_mode == "tree",
+              do: "btn bg-voile-primary text-voile-surface",
+              else: "btn bg-voile-neutral dark:bg-voile-neutral-dark"
+          }
+        >
+          <%= if @view_mode == "tree" do %>
+            <.icon name="hero-list-bullet" class="w-4 h-4 mr-1" /> List View
+          <% else %>
+            <.icon name="hero-squares-2x2" class="w-4 h-4 mr-1" /> Tree View
+          <% end %>
+        </.button>
+        <.form
+          for={%{}}
+          as={:search}
+          phx-change="search"
+          phx-submit="noop"
+          autocomplete="off"
+          phx-hook="SearchFocus"
+        >
+          <div class="relative">
+            <input
+              type="text"
+              name="q"
+              value={@search || ""}
+              placeholder="Search collections..."
+              class="pl-10 pr-9 py-2 rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              phx-debounce="300"
+            />
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <.icon name="hero-magnifying-glass" class="w-4 h-4" />
+            </div>
+            
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <span class="hidden sm:inline text-xs text-gray-400">/</span>
+              <button
+                type="button"
+                class="text-gray-400 hover:text-gray-600"
+                phx-click="clear_search"
+                title="Clear search"
+              >
+                <.icon name="hero-x-mark" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </.form>
+        
+        <.link patch={~p"/manage/catalog/collections/new"}>
+          <.button>New Collection</.button>
+        </.link>
+      </div>
+    </div>
     
     <%= if @view_mode == "tree" do %>
       <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -49,77 +94,144 @@
         <% end %>
       </div>
     <% else %>
-      <.table
-        id="collections"
-        rows={@streams.collections}
-        row_click={
-          fn {_id, collection} -> JS.navigate(~p"/manage/catalog/collections/#{collection}") end
-        }
+      <div
+        id="collections-results"
+        class="overflow-x-auto relative"
+        phx-hook="SearchResultsLoading"
       >
-        <:col :let={{_id, collection}} label="Hierarchy">
-          <%= if collection.parent_id do %>
-            <div class="flex items-center text-sm text-gray-500">
-              <.icon name="hero-arrow-turn-down-right" class="w-4 h-4 mr-1" /> Child
-            </div>
-          <% else %>
-            <div class="flex items-center text-sm text-blue-600">
-              <.icon name="hero-folder" class="w-4 h-4 mr-1" /> Root
-            </div>
-          <% end %>
-        </:col>
-        
-        <:col :let={{_id, collection}} label="Thumbnail">
-          <%= if collection.thumbnail do %>
-            <img src={collection.thumbnail} class="w-16 h-16 object-cover" alt="Thumbnail" />
-          <% else %>
-            <img src="/images/v.png" class="w-16 h-16 object-cover" alt="No Thumbnail" />
-          <% end %>
-        </:col>
-        
-        <:col :let={{_id, collection}} label="Title">
-          <div>
-            <div class="font-medium" title={collection.title || "-"}>
-              {trim_text(collection.title || "-", 40)}
-            </div>
-            
-            <%= if collection.collection_type do %>
-              <div class="text-xs text-gray-500 capitalize">{collection.collection_type}</div>
-            <% end %>
-            
-            <%= if collection.sort_order do %>
-              <div class="text-xs text-gray-400">Order: {collection.sort_order}</div>
-            <% end %>
-          </div>
-        </:col>
-        
-        <:col :let={{_id, collection}} label="Author">
-          {(collection.mst_creator && collection.mst_creator.creator_name) || "-"}
-        </:col>
-        
-        <:col :let={{_id, collection}} label="Location">
-          {(collection.node && collection.node.name) || "-"}
-        </:col>
-        
-        <:col :let={{_id, collection}} label="Status">{collection.status || "-"}</:col>
-        
-        <:col :let={{_id, collection}} label="Access">{collection.access_level || "-"}</:col>
-        
-        <:action :let={{_id, collection}}>
-          <div class="sr-only">
-            <.link navigate={~p"/manage/catalog/collections/#{collection}"}>Show</.link>
-          </div>
-           <.link patch={~p"/manage/catalog/collections/#{collection}/edit"}>Edit</.link>
-        </:action>
-        
-        <:action :let={{id, collection}}>
-          <.link
-            phx-click={JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
+        <!-- overlay spinner for the results area, hidden by default -->
+        <div class="search-results-spinner hidden absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-black/40 z-10">
+          <svg
+            class="w-8 h-8 text-indigo-600 animate-spin"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
           >
-            Delete
-          </.link>
-        </:action>
-      </.table>
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            >
+            </circle>
+            
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+            </path>
+          </svg>
+        </div>
+        
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Hierarchy</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Thumbnail</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Title</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Author</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Location</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+              
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Access</th>
+              
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Actions</th>
+            </tr>
+          </thead>
+          
+          <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+            <%= if @collections_empty? do %>
+              <tr>
+                <td class="px-4 py-6 text-center text-sm text-gray-500" colspan="8">
+                  No collections found.
+                </td>
+              </tr>
+            <% else %>
+              <%= for {id, collection} <- @streams.collections do %>
+                <tr id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                  <td class="px-4 py-3 text-sm text-gray-700">
+                    <%= if collection.parent_id do %>
+                      <div class="flex items-center text-sm text-gray-500">
+                        <.icon name="hero-arrow-turn-down-right" class="w-4 h-4 mr-1" /> Child
+                      </div>
+                    <% else %>
+                      <div class="flex items-center text-sm text-blue-600">
+                        <.icon name="hero-folder" class="w-4 h-4 mr-1" /> Root
+                      </div>
+                    <% end %>
+                  </td>
+                  
+                  <td class="px-4 py-3 text-sm text-gray-700">
+                    <%= if collection.thumbnail do %>
+                      <img
+                        src={collection.thumbnail}
+                        class="w-16 h-16 object-cover"
+                        alt="Thumbnail"
+                      />
+                    <% else %>
+                      <img src="/images/v.png" class="w-16 h-16 object-cover" alt="No Thumbnail" />
+                    <% end %>
+                  </td>
+                  
+                  <td class="px-4 py-3 text-sm">
+                    <div class="font-medium" title={collection.title || "-"}>
+                      {trim_text(collection.title || "-", 40)}
+                    </div>
+                    
+                    <%= if collection.collection_type do %>
+                      <div class="text-xs text-gray-500 capitalize">
+                        {collection.collection_type}
+                      </div>
+                    <% end %>
+                    
+                    <%= if collection.sort_order do %>
+                      <div class="text-xs text-gray-400">Order: {collection.sort_order}</div>
+                    <% end %>
+                  </td>
+                  
+                  <td class="px-4 py-3 text-sm">
+                    {(collection.mst_creator && collection.mst_creator.creator_name) || "-"}
+                  </td>
+                  
+                  <td class="px-4 py-3 text-sm">
+                    {(collection.node && collection.node.name) || "-"}
+                  </td>
+                  
+                  <td class="px-4 py-3 text-sm">{collection.status || "-"}</td>
+                  
+                  <td class="px-4 py-3 text-sm">{collection.access_level || "-"}</td>
+                  
+                  <td class="px-4 py-3 text-sm text-right">
+                    <div class="inline-flex items-center gap-2">
+                      <.link
+                        patch={~p"/manage/catalog/collections/#{collection}/edit"}
+                        class="text-indigo-600 hover:underline"
+                        title="Edit"
+                      >
+                        <.icon name="hero-pencil" class="w-4 h-4" />
+                      </.link>
+                      <.link
+                        phx-click={
+                          JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")
+                        }
+                        data-confirm="Are you sure?"
+                        class="text-red-600 hover:underline"
+                        title="Delete"
+                      >
+                        <.icon name="hero-trash" class="w-4 h-4" />
+                      </.link>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
        <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <% end %>
     

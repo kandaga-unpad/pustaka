@@ -3,6 +3,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
 
   alias Voile.Schema.Accounts
   alias Client.Storage
+  import VoileWeb.Auth.Authorization, only: [can?: 2]
 
   @impl true
   def render(assigns) do
@@ -25,19 +26,14 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
             field={@form[:username]}
             type="text"
             label="Username"
-            disabled={@current_scope.user.user_role.id not in [1, 2, 3]}
+            disabled={not can?(@current_scope.user, "users.update")}
           /> <.input field={@form[:email]} type="email" label="Email" />
         </div>
         
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <.input field={@form[:fullname]} type="text" label="Full Name" />
-          <.input
-            field={@form[:user_role_id]}
-            type="select"
-            label="Role"
-            options={@role_options}
-            prompt="Select a role"
-          />
+          <%!-- TODO: Multi-role assignment will be handled in the role management page --%>
+          <%!-- For now, we don't show role selection in the user form --%>
         </div>
         
         <%= if @action == :new do %>

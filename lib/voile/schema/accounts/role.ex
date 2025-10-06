@@ -8,7 +8,7 @@ defmodule Voile.Schema.Accounts.Role do
     field :is_system_role, :boolean, default: false
 
     many_to_many :permissions, Voile.Schema.Accounts.Permission,
-      join_through: "roles_permissions",
+      join_through: "role_permissions",
       on_replace: :delete
 
     has_many :user_role_assignments, Voile.Schema.Accounts.UserRoleAssignment

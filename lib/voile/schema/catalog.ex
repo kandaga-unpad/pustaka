@@ -35,10 +35,10 @@ defmodule Voile.Schema.Catalog do
       iex> list_collections_paginated(page, per_page)
       {[%Collection{}, ...], total_pages}
   """
-  def list_collections_paginated(page \\ 1, per_page \\ 10) do
+  def list_collections_paginated(page \\ 1, per_page \\ 10, search \\ nil) do
     offset = (page - 1) * per_page
 
-    query =
+    base_query =
       from c in Collection,
         preload: [
           :resource_class,
@@ -48,17 +48,37 @@ defmodule Voile.Schema.Catalog do
           :collection_fields,
           :items
         ],
-        order_by: [desc: c.inserted_at, desc: c.id],
-        limit: ^per_page,
-        offset: ^offset
+        order_by: [desc: c.inserted_at, desc: c.id]
+
+    query =
+      base_query
+      |> maybe_search_collections(search)
+      |> limit(^per_page)
+      |> offset(^offset)
 
     collections = Repo.all(query)
 
-    total_count = Repo.aggregate(Collection, :count, :id)
+    total_count =
+      base_query
+      |> maybe_search_collections(search)
+      |> Repo.aggregate(:count, :id)
+
     total_pages = div(total_count + per_page - 1, per_page)
 
     {collections, total_pages}
   end
+
+  defp maybe_search_collections(query, nil), do: query
+
+  defp maybe_search_collections(query, search) when is_binary(search) and search != "" do
+    like = "%#{search}%"
+
+    from c in query,
+      where:
+        ilike(c.title, ^like) or ilike(c.description, ^like) or ilike(c.collection_type, ^like)
+  end
+
+  defp maybe_search_collections(query, _), do: query
 
   @doc """
   Gets a single collection.
@@ -408,26 +428,48 @@ defmodule Voile.Schema.Catalog do
     ])
   end
 
-  def list_items_paginated(page \\ 1, per_page \\ 10) do
+  def list_items_paginated(page \\ 1, per_page \\ 10, search \\ nil) do
     offset = (page - 1) * per_page
 
-    query =
+    base_query =
       from i in Item,
         preload: [
           :collection,
           :node
         ],
-        order_by: [desc: i.inserted_at, desc: i.id],
-        limit: ^per_page,
-        offset: ^offset
+        order_by: [desc: i.inserted_at, desc: i.id]
+
+    query =
+      base_query
+      |> maybe_search(search)
+      |> limit(^per_page)
+      |> offset(^offset)
 
     items = Repo.all(query)
 
-    total_count = Repo.aggregate(Item, :count, :id)
+    total_count =
+      base_query
+      |> maybe_search(search)
+      |> Repo.aggregate(:count, :id)
+
     total_pages = div(total_count + per_page - 1, per_page)
 
     {items, total_pages}
   end
+
+  defp maybe_search(query, nil), do: query
+
+  defp maybe_search(query, search) when is_binary(search) and search != "" do
+    like = "%#{search}%"
+
+    from i in query,
+      left_join: c in assoc(i, :collection),
+      where:
+        ilike(i.item_code, ^like) or ilike(i.inventory_code, ^like) or
+          ilike(i.location, ^like) or ilike(c.title, ^like)
+  end
+
+  defp maybe_search(query, _), do: query
 
   @doc """
   Creates a item.
