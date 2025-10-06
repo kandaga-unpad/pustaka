@@ -218,7 +218,47 @@ defmodule Voile.Migration.BiblioImporter do
 
   # All biblio records are books (type_id: 40)
   defp get_bibliographic_resource_type_id do
-    40
+    # Prefer the ResourceClass representing an actual Book label if available.
+    # Lookup order:
+    # 1) label == "Book"
+    # 2) local_name == "Book"
+    # 3) glam_type == "Library"
+    # 4) fallback to 40
+
+    case Repo.one(from(rc in ResourceClass, where: rc.label == "Book", select: rc.id)) do
+      id when is_integer(id) ->
+        IO.puts("✅ Using ResourceClass (label='Book') id=#{id} for bibliographic resources")
+        id
+
+      _ ->
+        case Repo.one(from(rc in ResourceClass, where: rc.local_name == "Book", select: rc.id)) do
+          id when is_integer(id) ->
+            IO.puts(
+              "✅ Using ResourceClass (local_name='Book') id=#{id} for bibliographic resources"
+            )
+
+            id
+
+          _ ->
+            case Repo.one(
+                   from(rc in ResourceClass, where: rc.glam_type == "Library", select: rc.id)
+                 ) do
+              id when is_integer(id) ->
+                IO.puts(
+                  "⚠️ Using ResourceClass with glam_type='Library' id=#{id} for bibliographic resources (label 'Book' not found)"
+                )
+
+                id
+
+              _ ->
+                IO.puts(
+                  "⚠️ Could not find ResourceClass for 'Book' or glam_type='Library'; falling back to id 40"
+                )
+
+                40
+            end
+        end
+    end
   end
 
   # Optimized file processing using streams and batching
