@@ -94,6 +94,7 @@ defmodule Voile.MixProject do
         "run priv/repo/seeds/seeds.exs",
         "run priv/repo/seeds/master.exs",
         "run priv/repo/seeds/metadata_resource_class.exs",
+        "run priv/repo/seeds/authorization_seeds_runner.exs",
         "run priv/repo/seeds/metadata_properties.exs",
         "run priv/repo/seeds/glams.exs"
       ],

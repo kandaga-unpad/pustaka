@@ -470,6 +470,83 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.read",
           "items.export"
         ]
+      },
+      # GLAM-specific curator roles
+      %{
+        name: "librarian",
+        description: "Library curator - can manage library collections and items",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit"
+        ]
+      },
+      %{
+        name: "archivist",
+        description: "Archive curator - can manage archive collections and items",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit"
+        ]
+      },
+      %{
+        name: "gallery_curator",
+        description: "Gallery curator - can manage gallery collections and items",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit"
+        ]
+      },
+      %{
+        name: "museum_curator",
+        description: "Museum curator - can manage museum collections and items",
+        permissions: [
+          "collections.create",
+          "collections.read",
+          "collections.update",
+          "collections.delete",
+          "collections.publish",
+          "collections.archive",
+          "items.create",
+          "items.read",
+          "items.update",
+          "items.delete",
+          "items.export",
+          "items.import",
+          "metadata.edit"
+        ]
       }
     ]
 

@@ -143,10 +143,27 @@ defmodule VoileWeb.Auth.Authorization do
 
   @doc """
   Assign a role to a user.
+
+  ## Options
+
+  * `:scope_type` - "global", "collection", or "item" (default: "global")
+  * `:scope_id` - ID of the scoped resource (required for collection/item scope)
+  * `:glam_type` - "Gallery", "Library", "Archive", or "Museum" (optional, for GLAM curator roles)
+  * `:assigned_by_id` - ID of the user assigning the role
+  * `:expires_at` - DateTime when the role assignment expires
+
+  ## Examples
+
+      # Assign librarian role for Library collections only
+      assign_role(user_id, librarian_role_id, glam_type: "Library")
+
+      # Assign role to specific collection
+      assign_role(user_id, role_id, scope_type: "collection", scope_id: collection_id)
   """
   def assign_role(user_id, role_id, opts \\ []) do
     scope_type = Keyword.get(opts, :scope_type, "global")
     scope_id = Keyword.get(opts, :scope_id)
+    glam_type = Keyword.get(opts, :glam_type)
     assigned_by_id = Keyword.get(opts, :assigned_by_id)
     expires_at = Keyword.get(opts, :expires_at)
 
@@ -155,6 +172,7 @@ defmodule VoileWeb.Auth.Authorization do
       role_id: role_id,
       scope_type: scope_type,
       scope_id: scope_id,
+      glam_type: glam_type,
       assigned_by_id: assigned_by_id,
       expires_at: expires_at
     }

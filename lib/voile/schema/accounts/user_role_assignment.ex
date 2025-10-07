@@ -8,6 +8,7 @@ defmodule Voile.Schema.Accounts.UserRoleAssignment do
 
     field :scope_type, :string
     field :scope_id, :binary_id
+    field :glam_type, :string
 
     belongs_to :assigned_by, Voile.Schema.Accounts.User, type: :binary_id
     field :assigned_at, :utc_datetime
@@ -15,6 +16,7 @@ defmodule Voile.Schema.Accounts.UserRoleAssignment do
   end
 
   @valid_scope_types ~w(global collection item)
+  @valid_glam_types ~w(Gallery Library Archive Museum)
 
   @doc false
   def changeset(assignment, attrs) do
@@ -24,12 +26,14 @@ defmodule Voile.Schema.Accounts.UserRoleAssignment do
       :role_id,
       :scope_type,
       :scope_id,
+      :glam_type,
       :assigned_by_id,
       :assigned_at,
       :expires_at
     ])
     |> validate_required([:user_id, :role_id, :scope_type])
     |> validate_inclusion(:scope_type, @valid_scope_types)
+    |> validate_inclusion(:glam_type, @valid_glam_types)
     |> validate_scope_id()
     |> put_assigned_at()
     |> foreign_key_constraint(:user_id)

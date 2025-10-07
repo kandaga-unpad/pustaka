@@ -48,6 +48,14 @@ defmodule VoileWeb do
       import VoileWeb.Auth.Authorization,
         only: [can?: 3, authorize!: 3, authenticated?: 1, current_user: 1]
 
+      import VoileWeb.Auth.GLAMAuthorization,
+        only: [
+          can_manage_glam_collection?: 2,
+          can_create_glam_collection?: 2,
+          get_user_glam_types: 1,
+          is_super_admin?: 1
+        ]
+
       unquote(verified_routes())
     end
   end
@@ -118,6 +126,20 @@ defmodule VoileWeb do
       # Authorization helpers
       import VoileWeb.Auth.Authorization,
         only: [can?: 2, can?: 3, authorize!: 2, authorize!: 3, authenticated?: 1, current_user: 1]
+
+      # GLAM-specific authorization helpers
+      import VoileWeb.Auth.GLAMAuthorization,
+        only: [
+          can_manage_glam_collection?: 2,
+          can_create_glam_collection?: 2,
+          get_user_glam_types: 1,
+          is_librarian?: 1,
+          is_archivist?: 1,
+          is_gallery_curator?: 1,
+          is_museum_curator?: 1,
+          is_super_admin?: 1,
+          scope_collections_by_glam_role: 2
+        ]
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

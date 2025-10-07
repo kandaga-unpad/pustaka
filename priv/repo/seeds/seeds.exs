@@ -187,15 +187,12 @@ for node <- node_list do
   end
 end
 
-# Load GLAM Collections (Gallery, Library, Archive, Museum)
-IO.puts("🎨 Loading GLAM Collections...")
-Code.require_file("priv/repo/seeds/glams.exs")
+## NOTE: The main `mix ecto.setup` alias runs multiple seed scripts in a specific order
+## (see `mix.exs` "ecto.setup" alias). Avoid requiring/ executing large seed files
+## here so the Mix alias can control ordering. The following seeds are run by the
+## alias in the desired order: master.exs, metadata_resource_class.exs,
+## metadata_properties.exs, glams.exs.
 
-# Load Authorization System (Roles and Permissions)
-IO.puts("\n🔐 Loading Authorization System...")
-Code.require_file("priv/repo/seeds/authorization_seeds.ex")
-Voile.Repo.Seeds.AuthorizationSeeds.run()
-
-# Load Member Types and Admin User
-IO.puts("\n👥 Loading Member Types and Admin User...")
-Code.require_file("priv/repo/seeds/master.exs")
+IO.puts(
+  "Seeds: core vocabulary and nodes loaded. Other seed scripts will be run by the `ecto.setup` alias in mix.exs."
+)
