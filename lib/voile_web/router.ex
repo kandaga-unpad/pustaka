@@ -150,6 +150,9 @@ defmodule VoileWeb.Router do
           end
 
           scope "/library" do
+            # Library index (overview) — mirrors gallery, archive, museum dashboards
+            live "/", Dashboard.Glam.Library.Index, :index
+
             scope "/circulation" do
               live "/", Dashboard.Glam.Library.Circulation.Index, :index
 

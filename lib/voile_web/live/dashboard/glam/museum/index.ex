@@ -3,9 +3,9 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
 
   alias Voile.Repo
   alias Voile.Schema.Catalog.Collection
+  alias Voile.Schema.Catalog.Item
 
   import Ecto.Query
-  import VoileWeb.Dashboard.Glam.Library.Circulation.Components, only: [circulation_breadcrumb: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -14,10 +14,18 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
     # Get museum-specific collections
     museum_collections = get_museum_collections()
 
+    # Compute global aggregates (not limited to the preview list)
+    total_collections = get_museum_total_collections()
+    total_items = get_museum_total_items()
+    published_collections = get_museum_published_collections()
+
     socket =
       socket
       |> assign(:page_title, "Museum Dashboard")
       |> assign(:museum_collections, museum_collections)
+      |> assign(:total_collections, total_collections)
+      |> assign(:total_items, total_items)
+      |> assign(:published_collections, published_collections)
       |> assign(:user, user)
 
     {:ok, socket}
@@ -28,13 +36,11 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
     ~H"""
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
-      <.circulation_breadcrumb
-        root_label="Manage"
-        root_path={~p"/manage"}
-        section_label="GLAM"
-        section_path={~p"/manage/glam"}
-        current_label="Museum"
-      /> <%!-- Page Header --%>
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "GLAM", path: ~p"/manage/glam"},
+        %{label: "Museum", path: nil}
+      ]} /> <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-purple-500 to-violet-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
@@ -109,23 +115,21 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {length(@museum_collections)}
+              {@total_collections}
             </div>
             
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
           </div>
           
           <div class="text-center">
-            <div class="text-3xl font-bold text-violet-600 dark:text-violet-400">
-              {count_total_items(@museum_collections)}
-            </div>
+            <div class="text-3xl font-bold text-violet-600 dark:text-violet-400">{@total_items}</div>
             
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
           </div>
           
           <div class="text-center">
             <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-              {count_public_collections(@museum_collections)}
+              {@published_collections}
             </div>
             
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
@@ -149,15 +153,29 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
     |> Repo.all()
   end
 
-  defp count_total_items(collections) do
-    Enum.reduce(collections, 0, fn collection, acc ->
-      acc + length(collection.items)
-    end)
+  # Aggregate helpers that count across the whole DB (not limited)
+  defp get_museum_total_collections do
+    from(c in Collection,
+      join: rc in assoc(c, :resource_class),
+      where: rc.glam_type == "Museum"
+    )
+    |> Repo.aggregate(:count, :id)
   end
 
-  defp count_public_collections(collections) do
-    Enum.count(collections, fn collection ->
-      collection.status == "published"
-    end)
+  defp get_museum_total_items do
+    from(i in Item,
+      join: c in assoc(i, :collection),
+      join: rc in assoc(c, :resource_class),
+      where: rc.glam_type == "Museum"
+    )
+    |> Repo.aggregate(:count, :id)
+  end
+
+  defp get_museum_published_collections do
+    from(c in Collection,
+      join: rc in assoc(c, :resource_class),
+      where: rc.glam_type == "Museum" and c.status == "published"
+    )
+    |> Repo.aggregate(:count, :id)
   end
 end

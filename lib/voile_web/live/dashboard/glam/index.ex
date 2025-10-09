@@ -7,7 +7,6 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   alias Voile.Schema.Metadata.ResourceClass
 
   import Ecto.Query
-  import VoileWeb.Dashboard.Glam.Library.Circulation.Components, only: [circulation_breadcrumb: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -34,11 +33,10 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     ~H"""
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
-      <.circulation_breadcrumb
-        root_label="Manage"
-        root_path={~p"/manage"}
-        current_label="GLAM"
-      /> <%!-- Page Header --%>
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "GLAM", path: nil}
+      ]} /> <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>

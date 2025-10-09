@@ -1,7 +1,6 @@
 defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Show do
   use VoileWeb, :live_view_dashboard
   import VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
-  import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
   alias Voile.Schema.Library.Circulation
 

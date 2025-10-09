@@ -646,6 +646,72 @@ defmodule VoileWeb.CoreComponents do
   end
 
   @doc """
+  Renders a universal breadcrumb navigation that works for any page depth.
+
+  Accepts a list of breadcrumb items, where each item is a map with:
+  - `:label` (required) - The text to display
+  - `:path` (optional) - The navigation path. If nil, renders as plain text
+
+  ## Examples
+
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "Library", path: ~p"/manage/glam/library"},
+        %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
+        %{label: "Transactions", path: nil}
+      ]} />
+
+      <.breadcrumb items={[
+        %{label: "Home", path: ~p"/"},
+        %{label: "Current Page", path: nil}
+      ]} />
+  """
+  attr :items, :list, required: true
+
+  def breadcrumb(assigns) do
+    ~H"""
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <%= for {item, index} <- Enum.with_index(@items) do %>
+          <li class={if index == 0, do: "inline-flex items-center", else: ""}>
+            <%= if index > 0 do %>
+              <div class="flex items-center">
+                <.icon name="hero-chevron-right" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <%= if item[:path] do %>
+                  <.link
+                    navigate={item[:path]}
+                    class="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  >
+                    {item[:label]}
+                  </.link>
+                <% else %>
+                  <span class="ml-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {item[:label]}
+                  </span>
+                <% end %>
+              </div>
+            <% else %>
+              <%= if item[:path] do %>
+                <.link
+                  navigate={item[:path]}
+                  class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <.icon name="hero-home" class="w-4 h-4 mr-2" /> {item[:label]}
+                </.link>
+              <% else %>
+                <div class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <.icon name="hero-home" class="w-4 h-4 mr-2" /> {item[:label]}
+                </div>
+              <% end %>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+    """
+  end
+
+  @doc """
   Renders a [Heroicon](https://heroicons.com).
 
   Heroicons come in three styles – outline, solid, and mini.

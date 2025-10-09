@@ -1,11 +1,12 @@
 <div class="px-4 py-6">
-  <.circulation_breadcrumb
-    root_label="Manage"
-    root_path={~p"/manage"}
-    section_label="GLAM > Library > Circulation > Reservations"
-    section_path={~p"/manage/glam/library/circulation/reservations"}
-    current_label="Details"
-  />
+  <.breadcrumb items={[
+    %{label: "Manage", path: ~p"/manage"},
+    %{label: "GLAM", path: ~p"/manage/glam"},
+    %{label: "Library", path: ~p"/manage/glam/library"},
+    %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
+    %{label: "Reservations", path: ~p"/manage/glam/library/circulation/reservations"},
+    %{label: "Details", path: nil}
+  ]} />
   <!-- Header -->
   <div class="mb-6">
     <div class="sm:flex sm:items-center sm:justify-between">

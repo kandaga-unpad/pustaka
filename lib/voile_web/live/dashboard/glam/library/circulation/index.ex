@@ -9,13 +9,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
   def render(assigns) do
     ~H"""
     <div class="px-4 py-6">
-      <.circulation_breadcrumb
-        root_label="Manage"
-        root_path={~p"/manage"}
-        section_label="GLAM"
-        section_path={~p"/manage/glam"}
-        current_label="Library Circulation"
-      />
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "GLAM", path: ~p"/manage/glam"},
+        %{label: "Library", path: ~p"/manage/glam/library"},
+        %{label: "Library Circulation", path: nil}
+      ]} />
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
           Library Circulation Dashboard

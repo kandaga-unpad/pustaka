@@ -267,10 +267,12 @@ defmodule VoileWeb.VoileDashboardComponents do
             <.link
               navigate={item.path}
               class={[
-                "hover:underline flex items-center gap-2",
+                "rounded-lg flex items-center gap-2",
                 if(is_menu_active?(@current_path, item),
-                  do: "bg-blue-200 text-blue-700 dark:text-blue-400 font-semibold p-2 rounded-lg",
-                  else: "text-blue-600 dark:text-blue-200 p-2"
+                  do:
+                    "bg-blue-100 text-blue-700 dark:text-blue-400 font-semibold p-2 rounded-lg hover:bg-blue-100",
+                  else:
+                    "hover:bg-gray-100 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-200 p-2"
                 )
               ]}
             >
@@ -564,7 +566,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         color="blue"
         count={@glam_stats.library.count}
         percentage={@glam_stats.library.percentage}
-        link="/manage/glam/library/circulation"
+        link="/manage/glam/library"
       />
       <.glam_type_card
         type="archive"
