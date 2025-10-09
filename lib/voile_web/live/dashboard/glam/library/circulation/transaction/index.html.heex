@@ -1,0 +1,252 @@
+<div class="px-4 py-6">
+  <.circulation_breadcrumb
+    root_label="Manage"
+    root_path={~p"/manage"}
+    section_label="GLAM > Library > Circulation"
+    section_path={~p"/manage/glam/library/circulation"}
+    current_label="Transactions"
+  />
+  <div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Library Transactions</h1>
+      
+      <p class="mt-2 text-sm text-gray-700">Manage book checkouts, returns, and renewals</p>
+    </div>
+    
+    <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
+      <.link
+        navigate={~p"/manage/glam/library/circulation/transactions/checkout"}
+        class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-voile-surface text-sm font-medium rounded-md"
+      >
+        <.icon name="hero-plus" class="w-4 h-4 mr-2" /> New Checkout
+      </.link>
+    </div>
+  </div>
+  <!-- Filters and Search -->
+  <div class="bg-voile-light dark:bg-gray-700 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-voile-light">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div class="flex space-x-4">
+          <.form :let={f} for={%{}} phx-change="filter" class="inline">
+            <.input
+              field={f[:status]}
+              type="select"
+              options={[
+                {"All Status", "all"},
+                {"Active", "active"},
+                {"Returned", "returned"},
+                {"Overdue", "overdue"},
+                {"Lost", "lost"},
+                {"Damaged", "damaged"},
+                {"Canceled", "canceled"}
+              ]}
+              value={@filter_status}
+              class="block w-40 text-sm border border-voile-muted rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              label=""
+            />
+          </.form>
+        </div>
+        
+        <div class="mt-3 sm:mt-0">
+          <form phx-change="search" phx-submit="search">
+            <input
+              type="text"
+              name="query"
+              value={@search_query}
+              placeholder="Search transactions..."
+              class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            />
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Quick Stats -->
+    <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-voile-primary">{@count_active_collection}</div>
+        
+        <div class="text-xs uppercase">Active</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-voile-warning">{@count_overdue_collection}</div>
+        
+        <div class="text-xs uppercase">Overdue</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold text-voile-success">{@count_returned_collection}</div>
+        
+        <div class="text-xs uppercase">Returned</div>
+      </div>
+      
+      <div class="text-center">
+        <div class="text-2xl font-semibold ">-</div>
+        
+        <div class="text-xs uppercase">Renewals</div>
+      </div>
+    </div>
+  </div>
+  <!-- Transactions Table -->
+  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
+    <.table id="transactions" rows={@streams.transactions}>
+      <:col :let={{_id, transaction}} label="Member">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 h-10 w-10">
+            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <span class="text-sm font-medium">
+                {if transaction.member,
+                  do: String.first(transaction.member.fullname || "?"),
+                  else: "?"}
+              </span>
+            </div>
+          </div>
+          
+          <div class="ml-4">
+            <div class="text-sm font-medium">
+              {if transaction.member, do: transaction.member.fullname, else: "Unknown Member"}
+            </div>
+            
+            <div class="text-sm text-gray-500">ID: {transaction.member.identifier}</div>
+          </div>
+        </div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Item">
+        <div>
+          <div class="text-sm font-medium">
+            {if transaction.item, do: transaction.item.item_code, else: "Unknown Item"}
+          </div>
+          
+          <p
+            class="text-sm"
+            title={if transaction.item, do: transaction.item.collection.title, else: ""}
+          >
+            {if transaction.item && transaction.item.collection do
+              limit_string(transaction.item.collection.title, 30)
+            else
+              "No collection"
+            end}
+          </p>
+        </div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Transaction Type">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{transaction_type_badge_class(transaction.transaction_type)}"}>
+          {String.capitalize(transaction.transaction_type)}
+        </span>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Status">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(transaction.status)}"}>
+          {String.capitalize(transaction.status)}
+        </span>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Due Date">
+        <div class="text-sm">
+          {if transaction.due_date do
+            format_date(transaction.due_date)
+          else
+            "-"
+          end}
+        </div>
+        
+        <%= if transaction.due_date && DateTime.compare(transaction.due_date, DateTime.utc_now()) == :lt && transaction.status == "active" do %>
+          <div class="text-xs text-red-500 font-medium">
+            {abs(DateTime.diff(DateTime.utc_now(), transaction.due_date, :day))} days overdue
+          </div>
+        <% end %>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Renewal Count">
+        <div class="text-sm">{transaction.renewal_count || 0}</div>
+      </:col>
+      
+      <:col :let={{_id, transaction}} label="Fine Amount">
+        <div class="text-sm">
+          Rp {Decimal.to_string(transaction.fine_amount || Decimal.new("0"))}
+        </div>
+      </:col>
+      
+      <:action :let={{_id, transaction}}>
+        <div class="flex space-x-2">
+          <%= if transaction.status == "active" do %>
+            <button
+              phx-click="show_return_modal"
+              phx-value-id={transaction.id}
+              class="text-green-600 hover:text-green-900 text-sm font-medium"
+            >
+              Return
+            </button>
+            <button
+              phx-click="show_renew_modal"
+              phx-value-id={transaction.id}
+              class="text-blue-600 hover:text-blue-900 text-sm font-medium"
+            >
+              Renew
+            </button>
+          <% end %>
+          
+          <.link
+            navigate={~p"/manage/glam/library/circulation/transactions/#{transaction.id}"}
+            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-200 hover:dark:text-indigo-100 text-sm font-medium"
+          >
+            View
+          </.link>
+        </div>
+      </:action>
+    </.table>
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 border-t border-voile-light sm:px-6">
+      <.pagination page={@page} total_pages={@total_pages} />
+    </div>
+  </div>
+</div>
+<!-- Checkout Modal -->
+<.modal
+  :if={@live_action == :checkout}
+  id="checkout-modal"
+  show
+  on_cancel={JS.patch(~p"/manage/glam/library/circulation/transactions")}
+>
+  <div class="space-y-4">
+    <h3 class="text-lg font-medium">New Checkout</h3>
+    
+    <.form
+      :let={f}
+      for={@checkout_changeset}
+      id="checkout-form"
+      phx-submit="checkout"
+    >
+      <.input
+        field={f[:member_id]}
+        label="Member ID"
+        placeholder="Enter member ID or scan barcode"
+        required
+      />
+      <.input
+        field={f[:item_id]}
+        label="Item Code"
+        placeholder="Enter item code or scan barcode"
+        required
+      /> <.button type="submit" class="w-full primary-btn">Check Out Item</.button>
+    </.form>
+  </div>
+</.modal>
+
+<.return_modal
+  return_modal_visible={assigns[:return_modal_visible] || false}
+  transaction={assigns[:transaction] || nil}
+  predicted_fine={assigns[:predicted_fine] || Decimal.new("0")}
+  payment_method={assigns[:payment_method] || "cash"}
+  return_transaction_id={assigns[:return_transaction_id] || nil}
+/>
+<.renew_modal
+  renew_modal_visible={assigns[:renew_modal_visible] || false}
+  transaction={assigns[:renew_transaction] || assigns[:transaction] || nil}
+  recommended_renew_days={assigns[:recommended_renew_days]}
+  preview_due_date={assigns[:preview_due_date]}
+  remaining_renewals={assigns[:remaining_renewals] || 0}
+  renew_transaction_id={assigns[:renew_transaction_id] || nil}
+/>

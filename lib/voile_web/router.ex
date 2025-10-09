@@ -142,41 +142,59 @@ defmodule VoileWeb.Router do
           end
         end
 
-        scope "/circulation" do
-          live "/", Dashboard.Circulation.Index, :index
+        scope "/glam" do
+          live "/", Dashboard.Glam.Index, :index
 
-          scope "/transactions" do
-            live "/", Dashboard.Circulation.Transaction.Index, :index
-            live "/checkout", Dashboard.Circulation.Transaction.Index, :checkout
-            live "/:id/return", Dashboard.Circulation.Transaction.Index, :return
-            live "/:id/renew", Dashboard.Circulation.Transaction.Index, :renew
-            live "/:id", Dashboard.Circulation.Transaction.Show, :show
+          scope "/gallery" do
+            live "/", Dashboard.Glam.Gallery.Index, :index
           end
 
-          scope "/reservations" do
-            live "/", Dashboard.Circulation.Reservation.Index, :index
-            live "/new", Dashboard.Circulation.Reservation.Index, :new
-            live "/:id", Dashboard.Circulation.Reservation.Show, :show
+          scope "/library" do
+            scope "/circulation" do
+              live "/", Dashboard.Glam.Library.Circulation.Index, :index
+
+              scope "/transactions" do
+                live "/", Dashboard.Glam.Library.Circulation.Transaction.Index, :index
+                live "/checkout", Dashboard.Glam.Library.Circulation.Transaction.Index, :checkout
+                live "/:id/return", Dashboard.Glam.Library.Circulation.Transaction.Index, :return
+                live "/:id/renew", Dashboard.Glam.Library.Circulation.Transaction.Index, :renew
+                live "/:id", Dashboard.Glam.Library.Circulation.Transaction.Show, :show
+              end
+
+              scope "/reservations" do
+                live "/", Dashboard.Glam.Library.Circulation.Reservation.Index, :index
+                live "/new", Dashboard.Glam.Library.Circulation.Reservation.Index, :new
+                live "/:id", Dashboard.Glam.Library.Circulation.Reservation.Show, :show
+              end
+
+              scope "/requisitions" do
+                live "/", Dashboard.Glam.Library.Circulation.Requisition.Index, :index
+                live "/new", Dashboard.Glam.Library.Circulation.Requisition.Index, :new
+                live "/:id", Dashboard.Glam.Library.Circulation.Requisition.Show, :show
+                live "/:id/edit", Dashboard.Glam.Library.Circulation.Requisition.Index, :edit
+              end
+
+              scope "/fines" do
+                live "/", Dashboard.Glam.Library.Circulation.Fine.Index, :index
+                live "/new", Dashboard.Glam.Library.Circulation.Fine.Index, :new
+                live "/:id", Dashboard.Glam.Library.Circulation.Fine.Show, :show
+                live "/:id/payment", Dashboard.Glam.Library.Circulation.Fine.Show, :payment
+                live "/:id/waive", Dashboard.Glam.Library.Circulation.Fine.Show, :waive
+              end
+
+              scope "/circulation_history" do
+                live "/", Dashboard.Glam.Library.Circulation.CirculationHistory.Index, :index
+                live "/:id", Dashboard.Glam.Library.Circulation.CirculationHistory.Show, :show
+              end
+            end
           end
 
-          scope "/requisitions" do
-            live "/", Dashboard.Circulation.Requisition.Index, :index
-            live "/new", Dashboard.Circulation.Requisition.Index, :new
-            live "/:id", Dashboard.Circulation.Requisition.Show, :show
-            live "/:id/edit", Dashboard.Circulation.Requisition.Index, :edit
+          scope "/archive" do
+            live "/", Dashboard.Glam.Archive.Index, :index
           end
 
-          scope "/fines" do
-            live "/", Dashboard.Circulation.Fine.Index, :index
-            live "/new", Dashboard.Circulation.Fine.Index, :new
-            live "/:id", Dashboard.Circulation.Fine.Show, :show
-            live "/:id/payment", Dashboard.Circulation.Fine.Show, :payment
-            live "/:id/waive", Dashboard.Circulation.Fine.Show, :waive
-          end
-
-          scope "/circulation_history" do
-            live "/", Dashboard.Circulation.CirculationHistory.Index, :index
-            live "/:id", Dashboard.Circulation.CirculationHistory.Show, :show
+          scope "/museum" do
+            live "/", Dashboard.Glam.Museum.Index, :index
           end
         end
 

@@ -542,6 +542,24 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
+  @doc """
+  Get the active transaction for a specific item.
+  Returns nil if no active transaction found.
+  """
+  def get_active_transaction_by_item(item_id) do
+    import Ecto.Query
+
+    Transaction
+    |> where([t], t.item_id == ^item_id and t.status == "active")
+    |> order_by([t], desc: t.transaction_date)
+    |> limit(1)
+    |> Repo.one()
+    |> case do
+      nil -> nil
+      t -> Repo.preload(t, [:member, librarian: [:roles], item: [:collection], collection: []])
+    end
+  end
+
   def create_transaction(attrs \\ %{}) do
     %Transaction{}
     |> Transaction.changeset(attrs)
@@ -1814,7 +1832,9 @@ defmodule Voile.Schema.Library.Circulation do
         on: ura.user_id == u.id,
         join: r in Voile.Schema.Accounts.Role,
         on: r.id == ura.role_id,
-        where: (r.slug == "admin" or r.id == 1) and (is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()),
+        where:
+          (r.slug == "admin" or r.id == 1) and
+            (is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()),
         select: u.id,
         limit: 1
 

@@ -9,12 +9,15 @@ defmodule VoileWeb.Users.Role.ManageLive do
     # Check permission
     authorize!(socket, "roles.create")
 
+    {roles, total_pages} = PermissionManager.list_roles_paginated(1, 10)
+
     socket =
       socket
       |> assign(page_title: "Role Management")
       |> assign(searching: false)
       |> assign(current_path: "/manage/settings/roles")
-      |> stream(:roles, list_roles())
+      |> assign(page: 1, per_page: 10, total_pages: total_pages)
+      |> stream(:roles, roles)
 
     {:ok, socket}
   end
@@ -48,17 +51,43 @@ defmodule VoileWeb.Users.Role.ManageLive do
   def handle_event("search", %{"query" => query}, socket) do
     socket = assign(socket, searching: true)
 
-    roles =
-      if query == "" do
-        list_roles()
-      else
-        search_roles(query)
-      end
+    if query == "" do
+      {roles, total_pages} = PermissionManager.list_roles_paginated(1, socket.assigns.per_page)
+
+      socket =
+        socket
+        |> stream(:roles, roles, reset: true)
+        |> assign(searching: false)
+        |> assign(page: 1)
+        |> assign(total_pages: total_pages)
+
+      {:noreply, socket}
+    else
+      roles = search_roles(query)
+
+      socket =
+        socket
+        |> stream(:roles, roles, reset: true)
+        |> assign(searching: false)
+        |> assign(page: 1)
+        |> assign(total_pages: 1)
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    per_page = socket.assigns.per_page
+
+    {roles, total_pages} = PermissionManager.list_roles_paginated(page, per_page)
 
     socket =
       socket
       |> stream(:roles, roles, reset: true)
-      |> assign(searching: false)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
 
     {:noreply, socket}
   end
@@ -201,6 +230,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
               <% end %>
             </:action>
           </.table>
+           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
     </div>
@@ -222,11 +252,6 @@ defmodule VoileWeb.Users.Role.ManageLive do
       />
     </.modal>
     """
-  end
-
-  defp list_roles do
-    PermissionManager.list_roles()
-    |> Enum.map(&Voile.Repo.preload(&1, :permissions))
   end
 
   defp search_roles(query) do

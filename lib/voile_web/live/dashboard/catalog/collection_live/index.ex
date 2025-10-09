@@ -14,17 +14,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     page = 1
-    per_page = 10
 
     # Get current user
     current_user = socket.assigns.current_scope.user
 
     # Initialize empty filters, then apply role-based filters
+    # Note: URL params will be applied in handle_params/apply_action
     filters = %{}
     filters = Catalog.apply_role_based_filters(current_user, filters)
 
-    # Get initial data with role-based filters applied
-    {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, nil, filters)
+    # Don't load collections here - let handle_params/apply_action do it
+    # This prevents loading collections without URL params, then reloading with URL params
+    # which causes duplicate items in the stream
 
     # Limit tree collections to prevent performance issues
     tree_collections = Catalog.list_collections_tree(50)
@@ -46,7 +47,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
     socket =
       socket
-      |> stream(:collections, collections)
+      # Don't stream collections here - will be done in apply_action
       |> assign(:tree_collections, tree_collections)
       # "list" or "tree"
       |> assign(:view_mode, "list")
@@ -58,10 +59,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:creator, creator)
       |> assign(:node_location, node_location)
       |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
+      |> assign(:total_pages, 0)
       |> assign(:search, "")
-      |> assign(:collections_count, length(collections))
-      |> assign(:collections_empty?, collections == [])
+      |> assign(:collections_count, 0)
+      |> assign(:collections_empty?, true)
       |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
       |> assign(:time_identifier, time_identifier)
@@ -130,13 +131,30 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:collection_properties, collection_properties)
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(socket, :index, params) do
     # When returning to index (e.g., after closing modal), always refresh collections
     # to ensure the stream is properly maintained
     page = socket.assigns.page
     per_page = 10
     search = socket.assigns.search
-    filters = socket.assigns.filters
+    current_user = socket.assigns.current_user
+
+    # Start with existing filters or empty map
+    filters = socket.assigns.filters || %{}
+
+    # Check if URL contains filter parameters and apply them
+    filters =
+      if params["glam_type"] do
+        Map.put(filters, :glam_type, params["glam_type"])
+      else
+        filters
+      end
+
+    # Re-apply role-based filters to ensure they're not overridden
+    filters = Catalog.apply_role_based_filters(current_user, filters)
+
+    # Count active filters
+    active_count = count_active_filters(filters)
 
     {collections, total_pages} =
       Catalog.list_collections_paginated(page, per_page, search, filters)
@@ -152,6 +170,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:total_pages, total_pages)
     |> assign(:page_title, "Listing Collections")
     |> assign(:collection, nil)
+    |> assign(:filters, filters)
+    |> assign(:filter_glam_type, filters[:glam_type] || "")
+    |> assign(:active_filters_count, active_count)
   end
 
   @impl true

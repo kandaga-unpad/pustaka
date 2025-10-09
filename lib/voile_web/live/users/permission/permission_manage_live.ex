@@ -9,12 +9,15 @@ defmodule VoileWeb.Users.Permission.ManageLive do
     # Check permission
     authorize!(socket, "permissions.manage")
 
+    {permissions, total_pages} = PermissionManager.list_permissions_paginated(1, 10)
+
     socket =
       socket
       |> assign(page_title: "Permission Management")
       |> assign(searching: false)
       |> assign(current_path: "/manage/settings/permissions")
-      |> stream(:permissions, list_permissions())
+      |> assign(page: 1, per_page: 10, total_pages: total_pages)
+      |> stream(:permissions, permissions)
 
     {:ok, socket}
   end
@@ -57,6 +60,22 @@ defmodule VoileWeb.Users.Permission.ManageLive do
   end
 
   @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    per_page = socket.assigns.per_page
+
+    {permissions, total_pages} = PermissionManager.list_permissions_paginated(page, per_page)
+
+    socket =
+      socket
+      |> stream(:permissions, permissions, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     permission = PermissionManager.get_permission(id)
 
@@ -80,17 +99,27 @@ defmodule VoileWeb.Users.Permission.ManageLive do
 
   @impl true
   def handle_info({:perform_search, query}, socket) do
-    permissions =
-      if query == "" do
-        list_permissions()
-      else
-        search_permissions(query)
-      end
+    if query == "" do
+      # If search is cleared, reload with pagination
+      {perms, total_pages} =
+        PermissionManager.list_permissions_paginated(1, socket.assigns.per_page)
 
-    {:noreply,
-     socket
-     |> assign(searching: false)
-     |> stream(:permissions, permissions, reset: true)}
+      {:noreply,
+       socket
+       |> assign(searching: false)
+       |> assign(page: 1)
+       |> assign(total_pages: total_pages)
+       |> stream(:permissions, perms, reset: true)}
+    else
+      permissions = search_permissions(query)
+
+      {:noreply,
+       socket
+       |> assign(searching: false)
+       |> assign(page: 1)
+       |> assign(total_pages: 1)
+       |> stream(:permissions, permissions, reset: true)}
+    end
   end
 
   @impl true
@@ -217,6 +246,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
               <% end %>
             </:action>
           </.table>
+           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
     </div>
@@ -238,11 +268,6 @@ defmodule VoileWeb.Users.Permission.ManageLive do
       />
     </.modal>
     """
-  end
-
-  defp list_permissions do
-    PermissionManager.list_permissions()
-    |> Enum.sort_by(& &1.name)
   end
 
   defp search_permissions(query) do

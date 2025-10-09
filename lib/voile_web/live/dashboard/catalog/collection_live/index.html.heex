@@ -329,7 +329,9 @@
               
               <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
               
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Access</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                Collection Type
+              </th>
               
               <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Actions</th>
             </tr>
@@ -346,7 +348,11 @@
             </tr>
             
             <%= for {id, collection} <- @streams.collections do %>
-              <tr id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <tr
+                id={id}
+                phx-click={JS.navigate(~p"/manage/catalog/collections/#{collection}")}
+                class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+              >
                 <td class="px-4 py-3 text-sm text-gray-700">
                   <%= if collection.parent_id do %>
                     <div class="flex items-center text-sm text-gray-500">
@@ -397,7 +403,9 @@
                 
                 <td class="px-4 py-3 text-sm">{collection.status || "-"}</td>
                 
-                <td class="px-4 py-3 text-sm">{collection.access_level || "-"}</td>
+                <td class="px-4 py-3 text-sm">
+                  {(collection.resource_class && collection.resource_class.glam_type) || "-"}
+                </td>
                 
                 <td class="px-4 py-3 text-sm text-right">
                   <div class="inline-flex items-center gap-2">

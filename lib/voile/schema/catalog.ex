@@ -614,6 +614,18 @@ defmodule Voile.Schema.Catalog do
     ])
   end
 
+  @doc """
+  Get a single item based on the item_code passed. Returns nil if not found.
+  """
+  def get_item_by_code(item_code) when is_binary(item_code) do
+    Item
+    |> Repo.get_by(item_code: item_code)
+    |> case do
+      nil -> nil
+      item -> Repo.preload(item, [:node, collection: [:mst_creator]])
+    end
+  end
+
   def list_items_paginated(page \\ 1, per_page \\ 10, search \\ nil) do
     offset = (page - 1) * per_page
 

@@ -252,3 +252,62 @@ if super_admin_role do
 else
   IO.puts("⚠️  super_admin role not found. Please run authorization seeds first.")
 end
+
+# Add Master Location for each items
+alias Voile.Schema.Master.Location
+
+list_locations = [
+  %{
+    location_code: "kandaga-sirkulasi",
+    location_name: "Ruang Sirkulasi, Kandaga",
+    location_place: "Gd. Grha Kandaga Lantai 3 Universitas Padjadjaran",
+    location_type: "circulation",
+    description: "Lokasi utama untuk sirkulasi koleksi fisik di Kandaga",
+    notes: "Hanya untuk koleksi fisik",
+    is_active: true,
+    node_id: 20
+  },
+  %{
+    location_code: "kandaga-referensi",
+    location_name: "Ruang Referensi, Kandaga",
+    location_place: "Gd. Grha Kandaga Lantai 4 Universitas Padjadjaran",
+    location_type: "reference",
+    description: "Lokasi untuk koleksi referensi di Kandaga",
+    notes: "Koleksi tidak boleh dipinjamkan",
+    is_active: true,
+    node_id: 20
+  },
+  %{
+    location_code: "kandaga-populer",
+    location_name: "Ruang Koleksi Populer, Kandaga",
+    location_place: "Gd. Grha Kandaga Lantai 4 Universitas Padjadjaran",
+    location_type: "popular",
+    description: "Lokasi untuk koleksi populer di Kandaga",
+    notes: "Koleksi populer untuk peminjaman cepat",
+    is_active: true,
+    node_id: 20
+  },
+  %{
+    location_code: "kandaga-lama",
+    location_name: "Ruang Koleksi Lama, Kandaga",
+    location_place: "Gd. Grha Kandaga Lantai 3 Universitas Padjadjaran",
+    location_type: "rare_collection",
+    description: "Lokasi untuk koleksi lama dan langka di Kandaga",
+    notes: "Akses terbatas, hubungi staf untuk bantuan",
+    is_active: true,
+    node_id: 20
+  }
+]
+
+Enum.each(list_locations, fn location_attrs ->
+  case Repo.get_by(Location, location_code: location_attrs.location_code) do
+    nil ->
+      %Location{}
+      |> Location.changeset(location_attrs)
+      |> Repo.insert!()
+      |> (fn _ -> IO.puts("✅ Created location #{location_attrs.location_code}") end).()
+
+    _existing_location ->
+      IO.puts("ℹ️  Location #{location_attrs.location_code} already exists")
+  end
+end)

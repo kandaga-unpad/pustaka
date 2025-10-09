@@ -5,6 +5,7 @@ defmodule Voile.Schema.Catalog.Item do
   alias Voile.Schema.System.Node
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Catalog.Attachment
+  alias Voile.Schema.Master.Location
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
@@ -21,6 +22,7 @@ defmodule Voile.Schema.Catalog.Item do
     field :rfid_tag, :string
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :node, Node, foreign_key: :unit_id
+    belongs_to :item_location, Location
 
     has_many :attachments, Attachment,
       where: [attachable_type: "item"],
@@ -68,7 +70,8 @@ defmodule Voile.Schema.Catalog.Item do
       :rfid_tag,
       :location,
       :collection_id,
-      :unit_id
+      :unit_id,
+      :item_location_id
     ])
     |> cast_assoc(:attachments, with: &Attachment.changeset/2, required: false)
     |> validate_required([

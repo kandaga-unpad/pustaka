@@ -406,7 +406,7 @@ defmodule Voile.Schema.Master do
     MemberType.changeset(member_type, attrs)
   end
 
-  alias Voile.Schema.Master.Locations
+  alias Voile.Schema.Master.Location
 
   @doc """
   Returns the list of mst_locations.
@@ -418,7 +418,7 @@ defmodule Voile.Schema.Master do
 
   """
   def list_mst_locations do
-    Repo.all(Locations)
+    Repo.all(Location)
   end
 
   @doc """
@@ -428,14 +428,14 @@ defmodule Voile.Schema.Master do
     offset = (page - 1) * per_page
 
     query =
-      from l in Locations,
+      from l in Location,
         order_by: [desc: l.id],
         limit: ^per_page,
         offset: ^offset
 
     locations = Repo.all(query)
 
-    total_count = Repo.aggregate(Locations, :count, :id)
+    total_count = Repo.aggregate(Location, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
     {locations, total_pages}
@@ -455,7 +455,7 @@ defmodule Voile.Schema.Master do
       ** (Ecto.NoResultsError)
 
   """
-  def get_locations!(id), do: Repo.get!(Locations, id)
+  def get_locations!(id), do: Repo.get!(Location, id)
 
   @doc """
   Creates a locations.
@@ -470,8 +470,8 @@ defmodule Voile.Schema.Master do
 
   """
   def create_locations(attrs \\ %{}) do
-    %Locations{}
-    |> Locations.changeset(attrs)
+    %Location{}
+    |> Location.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -487,9 +487,9 @@ defmodule Voile.Schema.Master do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_locations(%Locations{} = locations, attrs) do
-    locations
-    |> Locations.changeset(attrs)
+  def update_locations(%Location{} = location, attrs) do
+    location
+    |> Location.changeset(attrs)
     |> Repo.update()
   end
 
@@ -505,8 +505,8 @@ defmodule Voile.Schema.Master do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_locations(%Locations{} = locations) do
-    Repo.delete(locations)
+  def delete_locations(%Location{} = location) do
+    Repo.delete(location)
   end
 
   @doc """
@@ -518,8 +518,8 @@ defmodule Voile.Schema.Master do
       %Ecto.Changeset{data: %Locations{}}
 
   """
-  def change_locations(%Locations{} = locations, attrs \\ %{}) do
-    Locations.changeset(locations, attrs)
+  def change_locations(%Location{} = location, attrs \\ %{}) do
+    Location.changeset(location, attrs)
   end
 
   alias Voile.Schema.Master.Places

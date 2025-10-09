@@ -2,7 +2,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Index do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Master
-  alias Voile.Schema.Master.Locations
+  alias Voile.Schema.Master.Location
 
   @impl true
   def mount(_params, _session, socket) do
@@ -35,7 +35,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Index do
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Location")
-    |> assign(:location, %Locations{})
+    |> assign(:location, %Location{})
   end
 
   defp apply_action(socket, :index, _params) do

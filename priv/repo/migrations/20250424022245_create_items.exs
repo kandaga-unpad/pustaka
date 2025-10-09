@@ -17,6 +17,7 @@ defmodule Voile.Repo.Migrations.CreateItems do
       add :rfid_tag, :string
       add :unit_id, references(:nodes, on_delete: :nilify_all)
       add :collection_id, references(:collections, on_delete: :delete_all, type: :binary_id)
+      add :item_location_id, references(:mst_locations, on_delete: :nilify_all)
 
       timestamps(type: :utc_datetime)
     end

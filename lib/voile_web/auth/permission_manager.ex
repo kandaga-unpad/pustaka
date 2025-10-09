@@ -23,10 +23,51 @@ defmodule VoileWeb.Auth.PermissionManager do
   end
 
   @doc """
+  List permissions with pagination.
+  Returns a tuple of {permissions, total_pages}.
+  """
+  def list_permissions_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from p in Permission,
+        order_by: [asc: p.name],
+        limit: ^per_page,
+        offset: ^offset
+
+    permissions = Repo.all(query)
+
+    total_count = Repo.aggregate(Permission, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+    {permissions, total_pages}
+  end
+
+  @doc """
   List all roles.
   """
   def list_roles do
     Repo.all(Role)
+  end
+
+  @doc """
+  List roles with pagination.
+  Returns a tuple of {roles, total_pages}.
+  """
+  def list_roles_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from r in Role,
+        preload: [:permissions],
+        order_by: [asc: r.name],
+        limit: ^per_page,
+        offset: ^offset
+
+    roles = Repo.all(query)
+
+    total_count = Repo.aggregate(Role, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+    {roles, total_pages}
   end
 
   @doc """
@@ -360,6 +401,56 @@ defmodule VoileWeb.Auth.PermissionManager do
         resource: "system",
         action: "backup",
         description: "Perform system backups"
+      },
+
+      # Circulation permissions (Library-specific)
+      %{
+        name: "circulation.checkout",
+        resource: "circulation",
+        action: "checkout",
+        description: "Check out items to members"
+      },
+      %{
+        name: "circulation.return",
+        resource: "circulation",
+        action: "return",
+        description: "Process item returns"
+      },
+      %{
+        name: "circulation.renew",
+        resource: "circulation",
+        action: "renew",
+        description: "Renew item transactions"
+      },
+      %{
+        name: "circulation.view_transactions",
+        resource: "circulation",
+        action: "view_transactions",
+        description: "View circulation transactions"
+      },
+      %{
+        name: "circulation.manage_reservations",
+        resource: "circulation",
+        action: "manage_reservations",
+        description: "Manage item reservations"
+      },
+      %{
+        name: "circulation.manage_fines",
+        resource: "circulation",
+        action: "manage_fines",
+        description: "Manage fines and payments"
+      },
+      %{
+        name: "circulation.view_history",
+        resource: "circulation",
+        action: "view_history",
+        description: "View circulation history"
+      },
+      %{
+        name: "members.lookup",
+        resource: "members",
+        action: "lookup",
+        description: "Search and view member information"
       }
     ]
 
@@ -416,7 +507,15 @@ defmodule VoileWeb.Auth.PermissionManager do
           "permissions.manage",
           "system.settings",
           "system.audit",
-          "system.backup"
+          "system.backup",
+          "circulation.checkout",
+          "circulation.return",
+          "circulation.renew",
+          "circulation.view_transactions",
+          "circulation.manage_reservations",
+          "circulation.manage_fines",
+          "circulation.view_history",
+          "members.lookup"
         ],
         is_system_role: true
       },
@@ -500,7 +599,15 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.delete",
           "items.export",
           "items.import",
-          "metadata.edit"
+          "metadata.edit",
+          "circulation.checkout",
+          "circulation.return",
+          "circulation.renew",
+          "circulation.view_transactions",
+          "circulation.manage_reservations",
+          "circulation.manage_fines",
+          "circulation.view_history",
+          "members.lookup"
         ],
         is_system_role: false
       },
