@@ -39,6 +39,13 @@ defmodule VoileWeb.Auth.PermissionManager do
   end
 
   @doc """
+  Get a permission by ID.
+  """
+  def get_permission(id) do
+    Repo.get(Permission, id)
+  end
+
+  @doc """
   Get a permission by name.
   """
   def get_permission_by_name(name) do
@@ -410,7 +417,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "system.settings",
           "system.audit",
           "system.backup"
-        ]
+        ],
+        is_system_role: true
       },
       %{
         name: "admin",
@@ -433,7 +441,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "users.read",
           "users.update",
           "users.manage_roles"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "editor",
@@ -449,7 +458,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.export",
           "items.import",
           "metadata.edit"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "contributor",
@@ -460,7 +470,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.read",
           "items.update",
           "items.export"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "viewer",
@@ -469,7 +480,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "collections.read",
           "items.read",
           "items.export"
-        ]
+        ],
+        is_system_role: false
       },
       # GLAM-specific curator roles
       %{
@@ -489,7 +501,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.export",
           "items.import",
           "metadata.edit"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "archivist",
@@ -508,7 +521,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.export",
           "items.import",
           "metadata.edit"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "gallery_curator",
@@ -527,7 +541,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.export",
           "items.import",
           "metadata.edit"
-        ]
+        ],
+        is_system_role: false
       },
       %{
         name: "museum_curator",
@@ -546,7 +561,8 @@ defmodule VoileWeb.Auth.PermissionManager do
           "items.export",
           "items.import",
           "metadata.edit"
-        ]
+        ],
+        is_system_role: false
       }
     ]
 

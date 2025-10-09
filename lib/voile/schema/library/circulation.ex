@@ -565,6 +565,67 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   # ============================================================================
+  # FINE CALCULATION HELPERS
+  # ============================================================================
+
+  @doc """
+  Calculate the number of days a transaction is overdue.
+
+  Options:
+  - skip_holidays: boolean (default: false) - when true, counts ALL calendar days;
+    when false, excludes holidays/weekends
+
+  ## Examples
+
+      iex> calculate_days_for_fine(transaction, skip_holidays: true)
+      10  # All calendar days
+
+      iex> calculate_days_for_fine(transaction, skip_holidays: false)
+      7   # Business days only (excluding weekends/holidays)
+  """
+  def calculate_days_for_fine(%Transaction{} = transaction, opts \\ []) do
+    skip_holidays = Keyword.get(opts, :skip_holidays, false)
+    Transaction.calculate_days_overdue(transaction, skip_holidays)
+  end
+
+  @doc """
+  Calculate the fine amount for an overdue transaction.
+
+  Options:
+  - skip_holidays: boolean (default: false) - when true, counts ALL calendar days;
+    when false, excludes holidays/weekends
+
+  Returns the calculated fine amount as a Decimal, respecting the member type's
+  fine_per_day and max_fine settings.
+
+  ## Examples
+
+      iex> calculate_fine_amount(transaction, member_type, skip_holidays: true)
+      #Decimal<50000>  # 10 days × 5000/day
+
+      iex> calculate_fine_amount(transaction, member_type, skip_holidays: false)
+      #Decimal<35000>  # 7 business days × 5000/day
+  """
+  def calculate_fine_amount(%Transaction{} = transaction, %MemberType{} = member_type, opts \\ []) do
+    skip_holidays = Keyword.get(opts, :skip_holidays, false)
+
+    if Transaction.overdue?(transaction) do
+      days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
+      daily_fine = member_type.fine_per_day || Decimal.new("1.00")
+      fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
+
+      # Apply max fine limit if configured
+      if member_type.max_fine do
+        Decimal.min(fine_amount, member_type.max_fine)
+      else
+        fine_amount
+      end
+    else
+      Decimal.new("0")
+    end
+  end
+
+  # ============================================================================
   # TRANSACTIONS
   # ============================================================================
 
@@ -590,15 +651,22 @@ defmodule Voile.Schema.Library.Circulation do
 
   @doc """
   Returns an item (return).
+
+  Options:
+  - skip_holidays: boolean (default: false) - when true, counts ALL calendar days for fines;
+    when false, excludes holidays/weekends from fine calculation
   """
-  def return_item(transaction_id, librarian_id, attrs \\ %{}) do
+  def return_item(transaction_id, librarian_id, attrs \\ %{}, opts \\ []) do
+    skip_holidays = Keyword.get(opts, :skip_holidays, false)
+
     Repo.transaction(fn ->
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
            {:ok, transaction} <- complete_transaction(transaction, librarian_id, attrs),
            {:ok, _item} <- update_item_availability(transaction.item, "available"),
            {:ok, _history} <- record_circulation_history(transaction, "return"),
-           {:ok, _fine} <- calculate_and_create_fine_if_needed(transaction, member.user_type) do
+           {:ok, _fine} <-
+             calculate_and_create_fine_if_needed(transaction, member.user_type, skip_holidays) do
         transaction
         |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
       else
@@ -1532,10 +1600,11 @@ defmodule Voile.Schema.Library.Circulation do
 
   defp calculate_and_create_fine_if_needed(
          %Transaction{} = transaction,
-         %MemberType{} = member_type
+         %MemberType{} = member_type,
+         skip_holidays \\ false
        ) do
     if Transaction.overdue?(transaction) do
-      days_overdue = Transaction.days_overdue(transaction)
+      days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
       daily_fine = member_type.fine_per_day || Decimal.new("1.00")
       fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
 
@@ -1547,6 +1616,13 @@ defmodule Voile.Schema.Library.Circulation do
           fine_amount
         end
 
+      fine_description =
+        if skip_holidays do
+          "Late return fine - #{days_overdue} calendar days overdue at #{daily_fine}/day (all days counted)"
+        else
+          "Late return fine - #{days_overdue} business days overdue at #{daily_fine}/day (holidays excluded)"
+        end
+
       create_fine(%{
         member_id: transaction.member_id,
         item_id: transaction.item_id,
@@ -1556,7 +1632,7 @@ defmodule Voile.Schema.Library.Circulation do
         balance: final_amount,
         fine_date: DateTime.utc_now(),
         fine_status: "pending",
-        description: "Late return fine - #{days_overdue} days overdue at #{daily_fine}/day",
+        description: fine_description,
         processed_by_id: transaction.librarian_id
       })
     else
@@ -1730,12 +1806,18 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   def get_admin_id_for_self_renewal() do
-    # Return the id of a user with the admin role (user_role_id == 1), or nil
-    # if no such user exists. Use the aliased User schema.
-    User
-    |> where([u], u.user_role_id == 1)
-    |> select([u], u.id)
-    |> limit(1)
-    |> Repo.one()
+    # Find a user who has an active assignment to the admin role (slug or id)
+    # Prefer role.slug == "admin" if present, else fallback to role id == 1
+    query =
+      from u in User,
+        join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+        on: ura.user_id == u.id,
+        join: r in Voile.Schema.Accounts.Role,
+        on: r.id == ura.role_id,
+        where: (r.slug == "admin" or r.id == 1) and (is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()),
+        select: u.id,
+        limit: 1
+
+    Repo.one(query)
   end
 end

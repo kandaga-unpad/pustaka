@@ -92,18 +92,14 @@ defmodule Voile.MixProject do
         "ecto.create",
         "ecto.migrate",
         "run priv/repo/seeds/seeds.exs",
-        "run priv/repo/seeds/master.exs",
         "run priv/repo/seeds/metadata_resource_class.exs",
         "run priv/repo/seeds/authorization_seeds_runner.exs",
         "run priv/repo/seeds/metadata_properties.exs",
+        "run priv/repo/seeds/master.exs",
         "run priv/repo/seeds/glams.exs"
       ],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "ecto.importscript": [
-        "run scripts/import_biblio.exs --pattern \"scripts/biblio_*.csv\"",
-        "run scripts/import_items.exs --pattern \"scripts/item_*.csv\""
-      ],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind voile", "esbuild voile"],
       "assets.deploy": [

@@ -84,7 +84,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
           <.button
             type="button"
             phx-click={JS.patch(@patch)}
-            class="bg-gray-200 text-gray-700 hover:bg-gray-300"
+            class="cancel-btn"
           >
             Cancel
           </.button>

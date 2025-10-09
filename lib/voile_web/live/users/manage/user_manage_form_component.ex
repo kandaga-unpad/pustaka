@@ -32,8 +32,50 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <.input field={@form[:fullname]} type="text" label="Full Name" />
-          <%!-- TODO: Multi-role assignment will be handled in the role management page --%>
-          <%!-- For now, we don't show role selection in the user form --%>
+          <.input
+            field={@form[:identifier]}
+            type="text"
+            label="Member Identifier"
+            placeholder="Member ID or Student Number"
+          />
+        </div>
+        
+        <div class="grid grid-cols-1 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Assign Roles
+            </label>
+            <div class="space-y-2">
+              <%= for role <- @available_roles do %>
+                <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="user[role_ids][]"
+                    value={role.id}
+                    checked={role.id in (@selected_role_ids || [])}
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                      {role.name}
+                    </div>
+                    
+                    <%= if role.description do %>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                    <% end %>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+            
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Users can have multiple roles. Role-specific permissions can be managed in the
+              <.link navigate="/manage/settings/roles" class="text-blue-600 hover:underline">
+                Role Management
+              </.link>
+              page.
+            </p>
+          </div>
         </div>
         
         <%= if @action == :new do %>
@@ -137,9 +179,25 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
   def update(%{user: user} = assigns, socket) do
     changeset = Accounts.change_user(user)
 
+    # Load available roles
+    available_roles = VoileWeb.Auth.PermissionManager.list_roles()
+
+    # Get user's current role IDs
+    selected_role_ids =
+      if user.id do
+        user
+        |> Voile.Repo.preload(:roles)
+        |> Map.get(:roles, [])
+        |> Enum.map(& &1.id)
+      else
+        []
+      end
+
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:available_roles, available_roles)
+     |> assign(:selected_role_ids, selected_role_ids)
      |> allow_upload(:user_image,
        accept: ~w(.jpg .jpeg .png .webp),
        max_entries: 1,
@@ -154,16 +212,34 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
     # Convert groups string to array
     user_params = prepare_user_params(user_params)
 
+    # Extract and store role_ids for form state
+    # When checkboxes are unchecked, they're not sent in params, so we need to handle this
+    role_ids =
+      user_params
+      |> Map.get("role_ids", [])
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.map(fn
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+      end)
+
     changeset =
       socket.assigns.user
       |> Accounts.change_user(user_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply,
+     socket
+     |> assign(:selected_role_ids, role_ids)
+     |> assign_form(changeset)}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
     user_params = prepare_user_params(user_params)
+
+    # Extract role_ids from params
+    role_ids = Map.get(user_params, "role_ids", [])
+
     # Ensure any uploaded user image URL present in the form state is included
     uploaded_image = socket.assigns.form.params && socket.assigns.form.params["user_image"]
 
@@ -174,7 +250,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
         user_params
       end
 
-    save_user(socket, socket.assigns.action, user_params)
+    save_user(socket, socket.assigns.action, user_params, role_ids)
   end
 
   def handle_event("delete_user_image", %{"image" => image}, socket) do
@@ -271,10 +347,12 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
     end
   end
 
-  defp save_user(socket, :edit, user_params) do
+  defp save_user(socket, :edit, user_params, role_ids) do
     case Accounts.update_profile_user(socket.assigns.user, user_params) do
       {:ok, user} ->
-        dbg(user)
+        # Update role assignments
+        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+
         notify_parent({:saved, user})
 
         {:noreply,
@@ -283,14 +361,16 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
-  defp save_user(socket, :new, user_params) do
+  defp save_user(socket, :new, user_params, role_ids) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        # Assign roles to new user
+        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+
         notify_parent({:saved, user})
 
         {:noreply,
@@ -299,9 +379,47 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
+  end
+
+  # Helper to update user roles
+  defp update_user_roles(user, role_ids, assigned_by_id) do
+    alias VoileWeb.Auth.Authorization
+
+    # Get current role IDs
+    current_role_ids =
+      user
+      |> Voile.Repo.preload(:roles)
+      |> Map.get(:roles, [])
+      |> Enum.map(& &1.id)
+      |> MapSet.new()
+
+    # Convert role_ids to integers and create set
+    new_role_ids =
+      role_ids
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.map(fn
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+      end)
+      |> MapSet.new()
+
+    # Determine roles to add and remove
+    roles_to_add = MapSet.difference(new_role_ids, current_role_ids)
+    roles_to_remove = MapSet.difference(current_role_ids, new_role_ids)
+
+    # Add new roles
+    Enum.each(roles_to_add, fn role_id ->
+      Authorization.assign_role(user.id, role_id, assigned_by_id: assigned_by_id)
+    end)
+
+    # Remove old roles
+    Enum.each(roles_to_remove, fn role_id ->
+      Authorization.revoke_role(user.id, role_id)
+    end)
+
+    :ok
   end
 
   defp prepare_user_params(params) do

@@ -19,7 +19,7 @@ else
 
   nodes
   |> Enum.with_index(1)
-  |> Enum.each(fn {node, idx} ->
+  |> Enum.each(fn {node, _idx} ->
     node_abbr = (node.abbr || "node") |> String.downcase()
 
     # Email format: librarian_<node_abbr>@unpad.ac.id

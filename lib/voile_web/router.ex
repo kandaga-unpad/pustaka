@@ -287,6 +287,13 @@ defmodule VoileWeb.Router do
             live "/:id/edit", Users.Role.ManageLive.Edit, :edit
           end
 
+          scope "/permissions" do
+            live "/", Users.Permission.ManageLive, :index
+            live "/new", Users.Permission.ManageLive, :new
+            live "/:id", Users.Permission.ManageLive.Show, :show
+            live "/:id/edit", Users.Permission.ManageLive.Edit, :edit
+          end
+
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
           live "/holidays", Dashboard.Settings.HolidayLive, :index

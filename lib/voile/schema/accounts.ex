@@ -10,7 +10,9 @@ defmodule Voile.Schema.Accounts do
 
   # Helper to ensure returned user structs have common associations preloaded
   defp preload_user_assocs(nil), do: nil
-  defp preload_user_assocs(%User{} = user), do: Repo.preload(user, [:user_type])
+  # preload roles and assignments (we avoid relying on a single `user_role` FK)
+  defp preload_user_assocs(%User{} = user),
+    do: Repo.preload(user, [:user_type, :roles, :user_role_assignments])
 
   ## Database getters
 
@@ -66,7 +68,6 @@ defmodule Voile.Schema.Accounts do
             fullname: fullname,
             password: pw,
             user_image: profile_picture,
-            user_role_id: 16,
             confirmed_at:
               if(user["email_verified"], do: DateTime.utc_now() |> DateTime.to_naive(), else: nil)
           })
@@ -118,16 +119,6 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
-  Gets a single user.
-
-  Raises `Ecto.NoResultsError` if the User does not exist.
-
-      limit: ^per_page,
-      offset: ^offset
-    )
-  end
-
-  @doc \"""
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -185,7 +176,7 @@ defmodule Voile.Schema.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, [:roles, :user_type])}
+        {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments])}
 
       error ->
         error
@@ -218,7 +209,7 @@ defmodule Voile.Schema.Accounts do
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, [:roles, :user_type])}
+        {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments])}
 
       error ->
         error
@@ -727,4 +718,18 @@ defmodule Voile.Schema.Accounts do
 
     Repo.all(q)
   end
+
+  @doc """
+  Returns the primary role struct for the given user or nil.
+
+  Preference order:
+    1. first element of preloaded `roles` list
+    2. first `role` in preloaded `user_role_assignments`
+    3. nil
+  """
+  def primary_role(%User{roles: [role | _]}), do: role
+
+  def primary_role(%User{user_role_assignments: [%{role: role} | _]}), do: role
+
+  def primary_role(_), do: nil
 end

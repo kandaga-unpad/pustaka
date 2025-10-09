@@ -10,6 +10,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
     authorize!(socket, "users.read")
 
     user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node])
+    dbg(user.node)
 
     socket =
       socket
@@ -69,7 +70,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
               <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <%= if Ecto.assoc_loaded?(@user.roles) and length(@user.roles) > 0 do %>
                   <%= for role <- @user.roles do %>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 capitalize">
                       {role.name}
                     </span>
                   <% end %>
@@ -111,7 +112,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   </div>
                 <% end %>
                 
-                <%= if Ecto.assoc_loaded?(@user.user_type) do %>
+                <%= if Ecto.assoc_loaded?(@user.user_type) && @user.user_type do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">User Type</div>
                     
@@ -137,7 +138,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">Node ID</div>
                     
-                    <div class="font-medium">{@user.node_id}</div>
+                    <div class="font-medium">{@user.node.name}</div>
                   </div>
                 <% end %>
                 
@@ -231,7 +232,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    user = Accounts.get_user!(id)
+    user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node])
 
     # When the live action is :edit or :new (modal open), ensure the
     # component props expected by the modal are present in assigns so

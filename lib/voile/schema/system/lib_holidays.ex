@@ -138,62 +138,6 @@ defmodule Voile.Schema.System.LibHolidays do
     get_holidays_in_range(start_date, end_date)
   end
 
-  ## Holiday Import Functions
-
-  @doc """
-  Import common Indonesian public holidays for a given year.
-  """
-  def import_indonesian_holidays(year) do
-    holidays = [
-      # Fixed annual holidays
-      {Date.new!(year, 1, 1), "New Year's Day", "public"},
-      {Date.new!(year, 8, 17), "Indonesian Independence Day", "public"},
-      {Date.new!(year, 12, 25), "Christmas Day", "public"}
-
-      # Note: Religious holidays vary by year and should be added manually
-      # or imported from a reliable calendar API
-    ]
-
-    Enum.reduce(holidays, {0, 0}, fn {date, name, type}, {success, errors} ->
-      case create_holiday(%{
-             name: name,
-             holiday_date: date,
-             holiday_type: type,
-             description: "Indonesian public holiday",
-             is_active: true,
-             is_recurring: true
-           }) do
-        {:ok, _} -> {success + 1, errors}
-        {:error, _} -> {success, errors + 1}
-      end
-    end)
-  end
-
-  @doc """
-  Import common library holidays (e.g., inventory days, maintenance days).
-  """
-  def import_library_holidays(year) do
-    holidays = [
-      # Library inventory days (usually at year end)
-      {Date.new!(year, 12, 31), "Library Inventory Day", "library"}
-      # Add more library-specific holidays as needed
-    ]
-
-    Enum.reduce(holidays, {0, 0}, fn {date, name, type}, {success, errors} ->
-      case create_holiday(%{
-             name: name,
-             holiday_date: date,
-             holiday_type: type,
-             description: "Library operational holiday",
-             is_active: true,
-             is_recurring: true
-           }) do
-        {:ok, _} -> {success + 1, errors}
-        {:error, _} -> {success, errors + 1}
-      end
-    end)
-  end
-
   ## Utility Functions
 
   @doc """

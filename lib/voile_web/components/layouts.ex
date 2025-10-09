@@ -488,13 +488,15 @@ defmodule VoileWeb.Layouts do
     alias Voile.Repo
 
     # Preload roles if not already loaded
-    user = Repo.preload(user, [:roles])
+    user = Repo.preload(user, [:roles, :permissions])
 
     # Check if user has admin/editor roles
     has_admin_role? =
       Enum.any?(user.roles, fn role ->
         role.name in ["super_admin", "admin", "editor"]
       end)
+
+    dbg(user)
 
     # Check if user has any administrative permissions
     has_admin_permission? =

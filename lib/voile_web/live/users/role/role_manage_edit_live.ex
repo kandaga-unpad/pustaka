@@ -17,18 +17,76 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
        |> put_flash(:error, "System roles cannot be edited")
        |> push_navigate(to: ~p"/manage/settings/roles/#{role.id}")}
     else
+      all_permissions = PermissionManager.list_permissions()
+      grouped_permissions = group_permissions_by_resource(all_permissions)
+
       socket =
         socket
         |> assign(role: role)
         |> assign(page_title: "Edit Role - #{role.name}")
         |> assign(current_path: "/manage/settings/roles/#{id}/edit")
-        |> assign(:all_permissions, PermissionManager.list_permissions())
+        |> assign(:all_permissions, all_permissions)
+        |> assign(:grouped_permissions, grouped_permissions)
+        |> assign(:expanded_resources, MapSet.new())
         |> assign(searching_users: false)
         |> assign(search_results: [])
         |> assign(showing_add_user: false)
         |> load_role_users()
 
       {:ok, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("toggle_resource", %{"resource" => resource}, socket) do
+    expanded = socket.assigns.expanded_resources
+
+    expanded =
+      if MapSet.member?(expanded, resource) do
+        MapSet.delete(expanded, resource)
+      else
+        MapSet.put(expanded, resource)
+      end
+
+    {:noreply, assign(socket, expanded_resources: expanded)}
+  end
+
+  @impl true
+  def handle_event("toggle_all_resource_permissions", %{"resource" => resource}, socket) do
+    authorize!(socket, "permissions.manage")
+
+    role = socket.assigns.role
+    resource_permissions = Map.get(socket.assigns.grouped_permissions, resource, [])
+
+    # Check if all permissions in this resource are currently enabled
+    all_enabled? =
+      Enum.all?(resource_permissions, fn permission ->
+        Enum.any?(role.permissions, &(&1.id == permission.id))
+      end)
+
+    # Toggle all permissions in this resource
+    results =
+      Enum.map(resource_permissions, fn permission ->
+        if all_enabled? do
+          PermissionManager.remove_permission_from_role(role.id, permission.id)
+        else
+          PermissionManager.add_permission_to_role(role.id, permission.id)
+        end
+      end)
+
+    # Check if all operations succeeded
+    if Enum.all?(results, &match?({:ok, _}, &1)) do
+      # Reload role with updated permissions
+      role = PermissionManager.get_role(role.id)
+
+      socket =
+        socket
+        |> assign(role: role)
+        |> put_flash(:info, "Resource permissions updated successfully")
+
+      {:noreply, socket}
+    else
+      {:noreply, put_flash(socket, :error, "Failed to update some permissions")}
     end
   end
 
@@ -186,49 +244,106 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                   Manage Permissions
                 </h3>
                 
-                <div class="space-y-4">
-                  <%= for permission <- @all_permissions do %>
-                    <% has_permission? = Enum.any?(@role.permissions, &(&1.id == permission.id)) %>
-                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div class="flex-1">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">
-                          {permission.name}
-                        </div>
-                        
-                        <%= if permission.description do %>
-                          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {permission.description}
+                <div class="space-y-3">
+                  <%= for {resource, permissions} <- @grouped_permissions |> Enum.sort_by(fn {k, _} -> k end) do %>
+                    <% all_enabled? =
+                      Enum.all?(permissions, fn p ->
+                        Enum.any?(@role.permissions, &(&1.id == p.id))
+                      end) %> <% is_expanded = MapSet.member?(@expanded_resources, resource) %>
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                      <%!-- Resource Header --%>
+                      <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800">
+                        <div class="flex items-center gap-3 flex-1">
+                          <button
+                            type="button"
+                            phx-click="toggle_resource"
+                            phx-value-resource={resource}
+                            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          >
+                            <.icon
+                              name={
+                                if is_expanded, do: "hero-chevron-down", else: "hero-chevron-right"
+                              }
+                              class="w-5 h-5"
+                            />
+                          </button>
+                          <div class="flex-1">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white capitalize">
+                              {resource}
+                            </span>
+                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                              ({Enum.count(permissions, fn p ->
+                                Enum.any?(@role.permissions, &(&1.id == p.id))
+                              end)}/{length(permissions)} enabled)
+                            </span>
                           </div>
-                        <% end %>
-                        
-                        <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                          <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
-                            {permission.resource}
-                          </span>
-                          <span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded">
-                            {permission.action}
-                          </span>
                         </div>
+                         <%!-- Master Toggle for Resource --%>
+                        <button
+                          type="button"
+                          phx-click="toggle_all_resource_permissions"
+                          phx-value-resource={resource}
+                          class={[
+                            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+                            if(all_enabled?,
+                              do: "bg-blue-600",
+                              else: "bg-gray-200 dark:bg-gray-700"
+                            )
+                          ]}
+                          title={
+                            if all_enabled?,
+                              do: "Disable all #{resource} permissions",
+                              else: "Enable all #{resource} permissions"
+                          }
+                        >
+                          <span class="sr-only">Toggle all {resource} permissions</span>
+                          <span class={[
+                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                            if(all_enabled?, do: "translate-x-6", else: "translate-x-1")
+                          ]} />
+                        </button>
                       </div>
-                      
-                      <button
-                        type="button"
-                        phx-click="toggle_permission"
-                        phx-value-permission-id={permission.id}
-                        class={[
-                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500",
-                          if(has_permission?,
-                            do: "bg-green-600",
-                            else: "bg-gray-200 dark:bg-gray-700"
-                          )
-                        ]}
-                      >
-                        <span class="sr-only">Toggle permission</span>
-                        <span class={[
-                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                          if(has_permission?, do: "translate-x-6", else: "translate-x-1")
-                        ]} />
-                      </button>
+                       <%!-- Expanded Permissions List --%>
+                      <%= if is_expanded do %>
+                        <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                          <%= for permission <- permissions do %>
+                            <% has_permission? =
+                              Enum.any?(@role.permissions, &(&1.id == permission.id)) %>
+                            <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                              <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                  {permission.action}
+                                </div>
+                                
+                                <%= if permission.description do %>
+                                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {permission.description}
+                                  </div>
+                                <% end %>
+                              </div>
+                              
+                              <button
+                                type="button"
+                                phx-click="toggle_permission"
+                                phx-value-permission-id={permission.id}
+                                class={[
+                                  "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500",
+                                  if(has_permission?,
+                                    do: "bg-green-600",
+                                    else: "bg-gray-200 dark:bg-gray-700"
+                                  )
+                                ]}
+                              >
+                                <span class="sr-only">Toggle {permission.name}</span>
+                                <span class={[
+                                  "inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
+                                  if(has_permission?, do: "translate-x-5", else: "translate-x-1")
+                                ]} />
+                              </button>
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
                     </div>
                   <% end %>
                 </div>
@@ -369,5 +484,13 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
     )
     |> limit(10)
     |> Voile.Repo.all()
+  end
+
+  defp group_permissions_by_resource(permissions) do
+    permissions
+    |> Enum.group_by(& &1.resource)
+    |> Enum.into(%{}, fn {resource, perms} ->
+      {resource, Enum.sort_by(perms, & &1.action)}
+    end)
   end
 end

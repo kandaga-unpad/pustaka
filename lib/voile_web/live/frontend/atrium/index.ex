@@ -11,8 +11,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     user = socket.assigns.current_scope.user
 
-    dbg(user)
-
     # Profile changeset (biodata + user_image handled as URL field for now)
     profile_changeset = Accounts.change_user(user)
     password_changeset = Accounts.change_user_password(user)
@@ -409,24 +407,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   # Safe association helpers - avoid accessing NotLoaded associations directly in templates
   # Return the primary role name (prefer loaded `roles`, then `user_role_assignments`),
   # or fallback to any id fields, or "-" if nothing available.
-  defp role_name(%{roles: [%{name: name} | _]}), do: name
-  defp role_name(%{user_role_assignments: [%{role: %{name: name}} | _]}), do: name
+  # role_name helper prefers loaded roles then assignments. Fallthrough to "-".
+  defp role_name(%{roles: [%{name: name} | _]}), do: to_string(name)
 
-  defp role_name(%{roles: roles}) when is_list(roles) and roles != [],
-    do: List.first(roles) |> Map.get(:name) |> to_string()
+  defp role_name(%{user_role_assignments: [%{role: %{name: name}} | _]}), do: to_string(name)
 
-  defp role_name(%{user_role_assignments: assignments})
-       when is_list(assignments) and assignments != [] do
-    assignments
-    |> List.first()
-    |> Map.get(:role)
-    |> case do
-      %{name: name} -> to_string(name)
-      _ -> "-"
-    end
-  end
-
-  defp role_name(%{user_role_id: id}) when not is_nil(id), do: to_string(id)
   defp role_name(_), do: "-"
 
   # User type helper: prefer loaded struct then id

@@ -225,9 +225,36 @@ defmodule VoileWeb.VoileDashboardComponents do
   ## Examples
 
       <.dashboard_settings_sidebar current_user={@current_scope.user} current_path={@current_path} />
+
+      # With custom menu items
+      <.dashboard_settings_sidebar
+        current_path={@current_path}
+        menu_items={[
+          %{label: "Profile", path: "/manage/settings/user_profile"},
+          %{label: "Users", path: "/manage/settings/users"},
+          %{label: "System", path: "/manage/settings/system"}
+        ]}
+      />
   """
   attr :current_user, :map, required: false
   attr :current_path, :string, default: nil
+
+  attr :menu_items, :list,
+    default: [
+      %{label: "User Profile", path: "/manage/settings/user_profile", icon: "hero-user"},
+      %{label: "User Management", path: "/manage/settings/users", icon: "hero-users"},
+      %{label: "Role Management", path: "/manage/settings/roles", icon: "hero-shield-check"},
+      %{label: "Permission Management", path: "/manage/settings/permissions", icon: "hero-key"},
+      %{label: "Holidays", path: "/manage/settings/holidays", icon: "hero-calendar-days"},
+      %{label: "Member Types", path: "/manage/settings/member_types", icon: "hero-identification"}
+    ],
+    doc: """
+    List of menu items. Each item should be a map with:
+    - `label`: String - Display text for the menu item
+    - `path`: String - URL path for navigation
+    - `icon`: String (optional) - Heroicon name for the menu item
+    - `exclude_paths`: List (optional) - Paths to exclude from active state matching
+    """
 
   def dashboard_settings_sidebar(assigns) do
     ~H"""
@@ -235,56 +262,49 @@ defmodule VoileWeb.VoileDashboardComponents do
       <.link navigate="/manage/settings/">
         <h3 class="text-lg font-semibold mb-4">Settings</h3>
       </.link>
-      <ul class="space-y-6">
-        <li>
-          <.link
-            navigate="/manage/settings/user_profile"
-            class={[
-              "hover:underline",
-              if(String.starts_with?(@current_path || "", "/manage/settings/user_profile"),
-                do: "text-blue-700 dark:text-blue-400 font-semibold",
-                else: "text-blue-600 dark:text-blue-200"
-              )
-            ]}
-          >
-            User Profile
-          </.link>
-        </li>
-        
-        <li>
-          <.link
-            navigate="/manage/settings/users"
-            class={[
-              "hover:underline",
-              if(
-                String.starts_with?(@current_path || "", "/manage/settings/users") and
-                  not String.contains?(@current_path || "", "/manage/settings/user_profile"),
-                do: "text-blue-700 dark:text-blue-400 font-semibold",
-                else: "text-blue-600 dark:text-blue-200"
-              )
-            ]}
-          >
-            User Management
-          </.link>
-        </li>
-        
-        <li>
-          <.link
-            navigate="/manage/settings/roles"
-            class={[
-              "hover:underline",
-              if(String.starts_with?(@current_path || "", "/manage/settings/roles"),
-                do: "text-blue-700 dark:text-blue-400 font-semibold",
-                else: "text-blue-600 dark:text-blue-200"
-              )
-            ]}
-          >
-            Role Management
-          </.link>
-        </li>
+      <ul class="space-y-4 text-sm">
+        <%= for item <- @menu_items do %>
+          <li>
+            <.link
+              navigate={item.path}
+              class={[
+                "hover:underline flex items-center gap-2",
+                if(is_menu_active?(@current_path, item),
+                  do: "bg-blue-200 text-blue-700 dark:text-blue-400 font-semibold p-2 rounded-lg",
+                  else: "text-blue-600 dark:text-blue-200 p-2"
+                )
+              ]}
+            >
+              <%= if Map.get(item, :icon) do %>
+                <.icon name={item.icon} class="w-4 h-4" />
+              <% end %>
+               {item.label}
+            </.link>
+          </li>
+        <% end %>
       </ul>
     </.side_bar_dashboard>
     """
+  end
+
+  # Helper function to determine if a menu item is active
+  defp is_menu_active?(nil, _item), do: false
+
+  defp is_menu_active?(current_path, item) do
+    path = item.path
+    exclude_paths = Map.get(item, :exclude_paths, [])
+
+    # Check if current path starts with the menu item path
+    is_active = String.starts_with?(current_path, path)
+
+    # Check if current path matches any excluded paths
+    is_excluded =
+      Enum.any?(exclude_paths, fn excluded ->
+        String.starts_with?(current_path, excluded)
+      end)
+
+    # Active only if path matches and not in excluded paths
+    is_active and not is_excluded
   end
 
   @doc """

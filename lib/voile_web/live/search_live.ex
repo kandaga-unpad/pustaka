@@ -6,6 +6,7 @@ defmodule VoileWeb.SearchLive do
   use VoileWeb, :live_view
 
   alias Voile.Schema.Search
+  alias Voile.Schema.Accounts
 
   @impl true
   def mount(_params, _session, socket) do
@@ -488,11 +489,13 @@ defmodule VoileWeb.SearchLive do
       is_nil(current_user) ->
         "patron"
 
-      Ecto.assoc_loaded?(current_user.user_role) && current_user.user_role.name == "librarian" ->
+      # Prefer the preloaded roles or assignments; use Accounts.primary_role/1 helper
+      Accounts.primary_role(current_user) &&
+          Accounts.primary_role(current_user).name == "librarian" ->
         "librarian"
 
-      Ecto.assoc_loaded?(current_user.user_role) &&
-          current_user.user_role.name in ["admin", "superadmin"] ->
+      Accounts.primary_role(current_user) &&
+          Accounts.primary_role(current_user).name in ["admin", "superadmin"] ->
         "librarian"
 
       true ->

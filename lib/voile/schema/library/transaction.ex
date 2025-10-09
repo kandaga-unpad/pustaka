@@ -81,6 +81,10 @@ defmodule Voile.Schema.Library.Transaction do
 
   def overdue?(_), do: false
 
+  @doc """
+  Calculates days overdue using business days (excluding holidays and weekends).
+  This is the default calculation that respects the library's holiday calendar.
+  """
   def days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
     case DateTime.compare(due_date, DateTime.utc_now()) do
       :lt ->
@@ -94,4 +98,40 @@ defmodule Voile.Schema.Library.Transaction do
   end
 
   def days_overdue(_), do: 0
+
+  @doc """
+  Calculates days overdue using calendar days (ALL days, no holiday exclusion).
+  Use this when the library policy is to count every single day for fines,
+  regardless of whether it's a holiday or weekend.
+  """
+  def calendar_days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
+    case DateTime.compare(due_date, DateTime.utc_now()) do
+      :lt ->
+        # Calculate total calendar days between due_date and now
+        due_date_only = DateTime.to_date(due_date)
+        now_date = DateTime.utc_now() |> DateTime.to_date()
+        Date.diff(now_date, due_date_only)
+
+      _ ->
+        0
+    end
+  end
+
+  def calendar_days_overdue(_), do: 0
+
+  @doc """
+  Calculates days overdue with optional skip_holidays flag.
+
+  - When skip_holidays is true: counts ALL calendar days (no holiday exclusion)
+  - When skip_holidays is false (default): counts only business days (excludes holidays)
+
+  This allows flexible fine calculation based on library policy configuration.
+  """
+  def calculate_days_overdue(%__MODULE__{} = transaction, skip_holidays \\ false) do
+    if skip_holidays do
+      calendar_days_overdue(transaction)
+    else
+      days_overdue(transaction)
+    end
+  end
 end

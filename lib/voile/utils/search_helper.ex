@@ -58,12 +58,16 @@ defmodule Voile.Utils.SearchHelper do
   end
 
   defp get_user_role_from_user(nil), do: "patron"
-  defp get_user_role_from_user(%{user_role: %{name: "librarian"}}), do: "librarian"
 
-  defp get_user_role_from_user(%{user_role: %{name: name}}) when name in ["admin", "superadmin"],
-    do: "librarian"
+  defp get_user_role_from_user(user) when is_map(user) do
+    role = Voile.Schema.Accounts.primary_role(user)
 
-  defp get_user_role_from_user(_), do: "patron"
+    cond do
+      role && role.name == "librarian" -> "librarian"
+      role && role.name in ["admin", "superadmin"] -> "librarian"
+      true -> "patron"
+    end
+  end
 
   @doc """
   Sanitizes search query string

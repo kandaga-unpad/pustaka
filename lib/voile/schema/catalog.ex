@@ -29,39 +29,54 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
-  Return the list of collections for pagination.
+  Return the list of collections for pagination with comprehensive filtering.
   ## Examples
 
-      iex> list_collections_paginated(page, per_page)
+      iex> list_collections_paginated(page, per_page, search, filters)
       {[%Collection{}, ...], total_pages}
+
+  ## Filter options:
+    * `:status` - Filter by collection status (draft, pending, published, archived)
+    * `:access_level` - Filter by access level (public, private, restricted)
+    * `:collection_type` - Filter by collection type (series, book, movie, etc.)
+    * `:creator_id` - Filter by creator/author ID
+    * `:node_id` - Filter by node/location ID
+    * `:type_id` - Filter by resource class ID
+    * `:parent_filter` - Filter hierarchy: "root" (no parent), "child" (has parent), or "all"
   """
-  def list_collections_paginated(page \\ 1, per_page \\ 10, search \\ nil) do
+  def list_collections_paginated(page \\ 1, per_page \\ 10, search \\ nil, filters \\ %{}) do
     offset = (page - 1) * per_page
 
     base_query =
       from c in Collection,
-        preload: [
-          :resource_class,
-          :resource_template,
-          :mst_creator,
-          :node,
-          :collection_fields,
-          :items
-        ],
         order_by: [desc: c.inserted_at, desc: c.id]
 
     query =
       base_query
       |> maybe_search_collections(search)
+      |> apply_collection_filters(filters)
       |> limit(^per_page)
       |> offset(^offset)
 
-    collections = Repo.all(query)
+    # Only preload necessary associations for list view (not items or collection_fields)
+    collections =
+      Repo.all(query)
+      |> Repo.preload([
+        :resource_class,
+        :mst_creator,
+        :node
+      ])
+
+    # Count query without preloads for better performance
+    count_query =
+      from c in Collection,
+        select: count(c.id)
 
     total_count =
-      base_query
+      count_query
       |> maybe_search_collections(search)
-      |> Repo.aggregate(:count, :id)
+      |> apply_collection_filters(filters)
+      |> Repo.one()
 
     total_pages = div(total_count + per_page - 1, per_page)
 
@@ -74,11 +89,182 @@ defmodule Voile.Schema.Catalog do
     like = "%#{search}%"
 
     from c in query,
+      left_join: creator in assoc(c, :mst_creator),
+      left_join: node in assoc(c, :node),
+      left_join: rc in assoc(c, :resource_class),
       where:
-        ilike(c.title, ^like) or ilike(c.description, ^like) or ilike(c.collection_type, ^like)
+        ilike(c.title, ^like) or
+          ilike(c.description, ^like) or
+          ilike(c.collection_type, ^like) or
+          ilike(c.collection_code, ^like) or
+          ilike(c.status, ^like) or
+          ilike(c.access_level, ^like) or
+          ilike(creator.creator_name, ^like) or
+          ilike(node.name, ^like) or
+          ilike(rc.label, ^like)
   end
 
   defp maybe_search_collections(query, _), do: query
+
+  defp apply_collection_filters(query, filters) when filters == %{}, do: query
+
+  defp apply_collection_filters(query, filters) do
+    query
+    |> filter_by_status(filters[:status])
+    |> filter_by_access_level(filters[:access_level])
+    |> filter_by_glam_type(filters[:glam_type])
+    |> filter_by_node(filters[:node_id])
+  end
+
+  defp filter_by_status(query, nil), do: query
+  defp filter_by_status(query, ""), do: query
+
+  defp filter_by_status(query, status) when is_binary(status) do
+    from c in query, where: c.status == ^status
+  end
+
+  defp filter_by_access_level(query, nil), do: query
+  defp filter_by_access_level(query, ""), do: query
+
+  defp filter_by_access_level(query, access_level) when is_binary(access_level) do
+    from c in query, where: c.access_level == ^access_level
+  end
+
+  defp filter_by_glam_type(query, nil), do: query
+  defp filter_by_glam_type(query, ""), do: query
+
+  defp filter_by_glam_type(query, glam_type) when is_binary(glam_type) do
+    from c in query,
+      join: rc in assoc(c, :resource_class),
+      where: rc.glam_type == ^glam_type
+  end
+
+  defp filter_by_node(query, nil), do: query
+  defp filter_by_node(query, ""), do: query
+
+  defp filter_by_node(query, node_id) when is_binary(node_id) do
+    case Integer.parse(node_id) do
+      {id, ""} -> from c in query, where: c.unit_id == ^id
+      _ -> query
+    end
+  end
+
+  defp filter_by_node(query, node_id) when is_integer(node_id) do
+    from c in query, where: c.unit_id == ^node_id
+  end
+
+  @doc """
+  List collections with automatic role-based filtering.
+  This function applies filters based on the user's role and permissions:
+  - Staff/Librarians: Filter by their assigned node automatically
+  - Admins: See all collections
+  - Users with specific collection permissions: See only permitted collections
+
+  ## Examples
+
+      iex> list_collections_for_user(user, page, per_page, search, filters)
+      {[%Collection{}, ...], total_pages}
+  """
+  def list_collections_for_user(user, page \\ 1, per_page \\ 10, search \\ nil, filters \\ %{}) do
+    filters = apply_role_based_filters(user, filters)
+    list_collections_paginated(page, per_page, search, filters)
+  end
+
+  @doc """
+  Apply automatic filters based on user role and permissions.
+  Returns modified filters map with role-based restrictions applied.
+
+  Staff members are automatically filtered to:
+  - Their assigned node (location)
+  - Their role-specific GLAM type:
+    * Librarians → Library collections only
+    * Archivists → Archive collections only
+    * Gallery Curators → Gallery collections only
+    * Museum Curators → Museum collections only
+
+  ## Examples
+
+      iex> apply_role_based_filters(librarian_user, %{})
+      %{node_id: 5, glam_type: "Library"}  # librarian at node 5
+
+      iex> apply_role_based_filters(admin_user, %{})
+      %{}  # no additional filters for admin
+  """
+  def apply_role_based_filters(user, filters) do
+    is_admin = is_user_admin?(user)
+
+    cond do
+      # Admins can see everything - don't add automatic filters
+      is_admin ->
+        filters
+
+      # Staff members: apply node and role-based GLAM type filters
+      true ->
+        filters
+        |> maybe_apply_node_filter(user)
+        |> maybe_apply_glam_type_filter(user)
+    end
+  end
+
+  defp maybe_apply_node_filter(filters, user) do
+    # If user has a node assigned and no node filter is explicitly set, apply it
+    if user.node_id && is_nil(filters[:node_id]) do
+      Map.put(filters, :node_id, user.node_id)
+    else
+      filters
+    end
+  end
+
+  defp maybe_apply_glam_type_filter(filters, user) do
+    # If no GLAM type filter is explicitly set, apply role-based filter
+    if is_nil(filters[:glam_type]) do
+      glam_type = get_user_glam_type(user)
+
+      if glam_type do
+        Map.put(filters, :glam_type, glam_type)
+      else
+        filters
+      end
+    else
+      filters
+    end
+  end
+
+  defp get_user_glam_type(user) do
+    user_groups = user.groups || []
+
+    cond do
+      Enum.any?(user_groups, &(String.downcase(&1) in ["librarian", "library_staff"])) ->
+        "Library"
+
+      Enum.any?(user_groups, &(String.downcase(&1) in ["archivist", "archive_staff"])) ->
+        "Archive"
+
+      Enum.any?(user_groups, &(String.downcase(&1) in ["gallery_curator", "gallery_staff"])) ->
+        "Gallery"
+
+      Enum.any?(user_groups, &(String.downcase(&1) in ["museum_curator", "museum_staff"])) ->
+        "Museum"
+
+      true ->
+        nil
+    end
+  end
+
+  @doc """
+  Check if a user is an admin.
+  Admins can see all collections without restrictions.
+  """
+  def is_user_admin?(user) do
+    # Check if user belongs to admin groups
+    admin_groups = ["admin", "administrator", "super_admin", "system_admin"]
+
+    user_groups = user.groups || []
+
+    Enum.any?(user_groups, fn group ->
+      String.downcase(group) in admin_groups
+    end)
+  end
 
   @doc """
   Gets a single collection.

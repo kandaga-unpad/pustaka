@@ -209,6 +209,10 @@
   a {
     @apply text-violet-500 dark:text-violet-200;
   }
+
+  option {
+    @apply bg-white dark:bg-gray-700;
+  }
 }
 
 /* Component styles */
