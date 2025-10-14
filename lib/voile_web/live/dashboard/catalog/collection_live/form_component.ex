@@ -809,10 +809,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <% end %>
           
           <%= if @step == 3 do %>
+            <.button
+              type="button"
+              phx-click="save_as_draft"
+              phx-target={@myself}
+              phx-disable-with="Saving as draft..."
+              class="warning-btn w-full"
+            >
+              <.icon name="hero-document-text-solid" class="w-4 h-4" /> Save as Draft
+            </.button>
             <.button type="submit" phx-disable-with="Saving..." class="success-btn w-full">
-              Save
+              <.icon name="hero-check-circle-solid" class="w-4 h-4" /> Save
             </.button>
           <% else %>
+            <.button
+              type="button"
+              phx-click="save_as_draft"
+              phx-target={@myself}
+              phx-disable-with="Saving as draft..."
+              class="warning-btn w-full"
+            >
+              <.icon name="hero-document-text-solid" class="w-4 h-4" /> Save as Draft
+            </.button>
             <.button
               type="button"
               phx-click="next_step"
@@ -1134,6 +1152,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     end
   end
 
+  def handle_event("save_as_draft", _params, socket) do
+    collection_params = socket.assigns.form.params
+    save_collection_as_draft(socket, socket.assigns.action, collection_params)
+  end
+
   def handle_event("delete_thumbnail", %{"thumbnail" => thumbnail_path}, socket) do
     handle_delete_thumbnail(%{"thumbnail" => thumbnail_path}, socket)
   end
@@ -1200,8 +1223,4 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         nil
     end
   end
-
-  # defp error_to_string(:too_large), do: "Too large"
-  # defp error_to_string(:too_many_files), do: "You have selected too many files"
-  # defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end

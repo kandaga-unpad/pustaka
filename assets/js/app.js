@@ -90,6 +90,20 @@ topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" });
 window.addEventListener("phx:page-loading-start", (_info) => topbar.show(300));
 window.addEventListener("phx:page-loading-stop", (_info) => topbar.hide());
 
+// Handle CSV download events
+window.addEventListener("phx:download", (e) => {
+  const { filename, content, mime_type } = e.detail;
+  const blob = new Blob([content], { type: mime_type || "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+});
+
 // connect if there are any LiveViews on the page
 liveSocket.connect();
 

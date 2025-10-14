@@ -43,9 +43,16 @@
             <.icon name="hero-squares-2x2" class="w-4 h-4 mr-1" /> Tree View
           <% end %>
         </.button>
-        <.link patch={~p"/manage/catalog/collections/new"}>
-          <.button>New Collection</.button>
-        </.link>
+        <%= if can?(@current_scope.user, "collections.create") do %>
+          <.link navigate={~p"/manage/catalog/collections/import"}>
+            <.button class="btn btn-outline">
+              <.icon name="hero-arrow-up-tray" class="w-4 h-4 mr-1" /> Import CSV
+            </.button>
+          </.link>
+          <.link patch={~p"/manage/catalog/collections/new"}>
+            <.button>New Collection</.button>
+          </.link>
+        <% end %>
       </div>
     </div>
      <%!-- Full Width Search Bar --%>
@@ -409,21 +416,28 @@
                 
                 <td class="px-4 py-3 text-sm text-right">
                   <div class="inline-flex items-center gap-2">
-                    <.link
-                      patch={~p"/manage/catalog/collections/#{collection}/edit"}
-                      class="text-indigo-600 hover:underline"
-                      title="Edit"
-                    >
-                      <.icon name="hero-pencil" class="w-4 h-4" />
-                    </.link>
-                    <.link
-                      phx-click={JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")}
-                      data-confirm="Are you sure?"
-                      class="text-red-600 hover:underline"
-                      title="Delete"
-                    >
-                      <.icon name="hero-trash" class="w-4 h-4" />
-                    </.link>
+                    <%= if can?(@current_scope.user, "collections.update") do %>
+                      <.link
+                        patch={~p"/manage/catalog/collections/#{collection}/edit"}
+                        class="text-indigo-600 hover:underline"
+                        title="Edit"
+                      >
+                        <.icon name="hero-pencil" class="w-4 h-4" />
+                      </.link>
+                    <% end %>
+                    
+                    <%= if can?(@current_scope.user, "collections.delete") do %>
+                      <.link
+                        phx-click={
+                          JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")
+                        }
+                        data-confirm="Are you sure?"
+                        class="text-red-600 hover:underline"
+                        title="Delete"
+                      >
+                        <.icon name="hero-trash" class="w-4 h-4" />
+                      </.link>
+                    <% end %>
                   </div>
                 </td>
               </tr>

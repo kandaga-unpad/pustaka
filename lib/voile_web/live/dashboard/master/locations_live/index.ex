@@ -6,6 +6,9 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check permission for managing metadata/master data
+    authorize!(socket, "metadata.manage")
+
     page = 1
     per_page = 10
     {locations, total_pages} = Master.list_mst_locations_paginated(page, per_page)

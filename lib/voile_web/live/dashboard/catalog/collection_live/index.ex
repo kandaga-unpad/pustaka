@@ -13,6 +13,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check read permission for viewing collections
+    authorize!(socket, "collections.read")
+
     page = 1
 
     # Get current user
@@ -89,6 +92,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    # Check update permission for editing collections
+    authorize!(socket, "collections.update")
+
     # Load collection_properties only when form opens
     collection_properties =
       if socket.assigns.collection_properties == [] do
@@ -104,6 +110,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    # Check create permission for creating new collections
+    authorize!(socket, "collections.create")
+
     collection = %Collection{}
 
     collection =
@@ -196,6 +205,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
+    # Check delete permission before deleting
+    authorize!(socket, "collections.delete")
+
     collection = Catalog.get_collection!(id)
     {:ok, _} = Catalog.delete_collection(collection)
 

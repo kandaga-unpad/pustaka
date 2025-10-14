@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
       <:subtitle>
         Manage holidays, weekly schedules, and non-business days for fine calculations
       </:subtitle>
-
+      
       <:actions>
         <.button phx-click="new_holiday" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Holiday
@@ -21,6 +21,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         </.button>
       </:actions>
     </.header>
+
     <section class="flex gap-4">
       <div class="w-full max-w-64">
         <.dashboard_settings_sidebar
@@ -28,6 +29,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           current_path={@current_path}
         />
       </div>
+      
       <div class="space-y-6">
         <!-- Holiday Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -36,52 +38,52 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <div class="flex-shrink-0">
                 <.icon name="hero-calendar" class="h-8 w-8 text-blue-600" />
               </div>
-
+              
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.total_holidays}</div>
-
+                
                 <div class="text-sm font-medium">Total Holidays</div>
               </div>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-flag" class="h-8 w-8 text-green-600" />
               </div>
-
+              
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.public_holidays}</div>
-
+                
                 <div class="text-sm font-medium">Public Holidays</div>
               </div>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-building-library" class="h-8 w-8 text-purple-600" />
               </div>
-
+              
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.library_holidays}</div>
-
+                
                 <div class="text-sm font-medium">Library Holidays</div>
               </div>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-star" class="h-8 w-8 text-orange-600" />
               </div>
-
+              
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.custom_holidays}</div>
-
+                
                 <div class="text-sm font-medium">Custom Holidays</div>
               </div>
             </div>
@@ -93,7 +95,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
             <.icon name="hero-information-circle" class="h-5 w-5 text-blue-400" />
             <div class="ml-3">
               <h3 class="text-sm font-medium text-blue-800">Holiday Impact on Fines</h3>
-
+              
               <p class="mt-2 text-sm text-blue-700">
                 Non-business days (weekly schedule) and holidays defined here will be excluded from overdue fine calculations.
                 Only business days will count toward fine amounts. This ensures fair fine calculation during library closures.
@@ -106,11 +108,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
               <h3 class="text-lg leading-6 font-medium">Weekly Schedule</h3>
-
+              
               <div class="text-sm">Configure which days are business days</div>
             </div>
           </div>
-
+          
           <div class="px-4 py-5 sm:p-6">
             <div class="mb-4 flex items-center space-x-3">
               <label class="text-sm font-medium">Viewing schedule for</label>
@@ -120,7 +122,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   name="unit_id"
                 >
                   <option value="">System Wide</option>
-
+                  
                   <%= for node <- @nodes do %>
                     <option
                       value={node.id}
@@ -132,7 +134,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 </select>
               </form>
             </div>
-
+            
             <div class="grid grid-cols-2 md:grid-cols-7 gap-4">
               <%= for day <- @weekly_schedule do %>
                 <div
@@ -148,14 +150,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   phx-value-day={day.day_of_week}
                 >
                   <div class="text-sm font-medium text-gray-900">{day.day_name}</div>
-
+                  
                   <div class={[
                     "mt-2 text-xs font-semibold",
                     if(day.is_business_day, do: "text-green-700", else: "text-red-700")
                   ]}>
                     {if day.is_business_day, do: "Business Day", else: "Non-Business"}
                   </div>
-
+                  
                   <div class={[
                     "mt-1 inline-flex rounded-full px-2 py-1 text-xs font-medium",
                     if day.is_business_day do
@@ -169,10 +171,10 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 </div>
               <% end %>
             </div>
-
+            
             <div class="mt-6 flex items-center justify-between">
               <div class="text-sm">Click on any day to toggle its business status</div>
-
+              
               <div class="space-x-2">
                 <.button
                   phx-click="set_all_business"
@@ -204,48 +206,46 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
               <h3 class="text-lg leading-6 font-medium">Holidays List</h3>
-
+              
               <div class="text-sm">Current Year: {@holiday_stats.current_year}</div>
             </div>
           </div>
-
+          
           <div class="overflow-hidden">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <table class="min-w-full divide-y divide-gray-300">
                   <thead>
                     <tr>
-                      <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
-                        Holiday Name
-                      </th>
-
+                      <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">Holiday Name</th>
+                      
                       <th class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
-
+                      
                       <th class="px-3 py-3.5 text-left text-sm font-semibold">Type</th>
-
+                      
                       <th class="px-3 py-3.5 text-left text-sm font-semibold">Status</th>
-
+                      
                       <th class="relative py-3.5 pl-3 pr-4 text-right text-sm font-semibold">
                         Actions
                       </th>
                     </tr>
                   </thead>
-
+                  
                   <tbody class="divide-y divide-gray-200">
                     <%= for holiday <- @holidays do %>
                       <tr class={if holiday.is_active, do: "", else: "opacity-50"}>
                         <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
                           <div class="font-medium">{holiday.name}</div>
-
+                          
                           <%= if holiday.description do %>
                             <div class=" text-xs">{holiday.description}</div>
                           <% end %>
                         </td>
-
+                        
                         <td class="whitespace-nowrap px-3 py-4 text-sm ">
                           {Calendar.strftime(holiday.holiday_date, "%A, %B %d, %Y")}
                         </td>
-
+                        
                         <td class="whitespace-nowrap px-3 py-4 text-sm">
                           <span class={[
                             "inline-flex rounded-full px-2 text-xs font-semibold leading-5",
@@ -259,7 +259,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                             {String.capitalize(holiday.holiday_type)}
                           </span>
                         </td>
-
+                        
                         <td class="whitespace-nowrap px-3 py-4 text-sm">
                           <span class={[
                             "inline-flex rounded-full px-2 text-xs font-semibold leading-5",
@@ -272,7 +272,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                             {if holiday.is_active, do: "Active", else: "Inactive"}
                           </span>
                         </td>
-
+                        
                         <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium space-x-2">
                           <.button
                             phx-click="edit_holiday"
@@ -303,16 +303,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                         </td>
                       </tr>
                     <% end %>
-
+                    
                     <%= if length(@holidays) == 0 do %>
                       <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-sm">
                           <.icon name="hero-calendar-x" class="mx-auto h-12 w-12" />
                           <h3 class="mt-2 text-sm font-medium">No holidays configured</h3>
-
-                          <p class="mt-1 text-sm">
-                            Get started by adding a holiday.
-                          </p>
+                          
+                          <p class="mt-1 text-sm">Get started by adding a holiday.</p>
                         </td>
                       </tr>
                     <% end %>
@@ -331,7 +329,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <h3 class="text-lg font-medium mb-4">
             {if @form_holiday, do: "Edit Holiday", else: "Add New Holiday"}
           </h3>
-
+          
           <.form for={@form} id="holiday-form" phx-submit="save_holiday">
             <div class="mb-4">
               <label class="block text-sm font-medium mb-2">Unit (optional)</label>
@@ -340,7 +338,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 class="w-full border border-gray-300 rounded-md px-3 py-2"
               >
                 <option value="">System Wide</option>
-
+                
                 <%= for node <- @nodes do %>
                   <option value={node.id} selected={@form.params["unit_id"] == to_string(node.id)}>
                     {node.name} ({node.abbr})
@@ -348,7 +346,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 <% end %>
               </select>
             </div>
-            <.input field={@form[:name]} type="text" label="Holiday Name" required />
+             <.input field={@form[:name]} type="text" label="Holiday Name" required />
             <.input field={@form[:holiday_date]} type="date" label="Date" required />
             <.input
               field={@form[:holiday_type]}
@@ -385,6 +383,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
   end
 
   def mount(_params, _session, socket) do
+    # Check permission for managing system settings
+    authorize!(socket, "system.settings")
+
     holidays = LibHolidays.list_holidays()
     holiday_stats = LibHolidays.get_holiday_stats()
     # selected_unit_id controls which unit's weekly schedule is viewed/edited; nil = system-wide

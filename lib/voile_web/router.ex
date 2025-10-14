@@ -125,6 +125,7 @@ defmodule VoileWeb.Router do
           scope "/collections" do
             live "/", Dashboard.Catalog.CollectionLive.Index, :index
             live "/new", Dashboard.Catalog.CollectionLive.Index, :new
+            live "/import", Dashboard.Catalog.CollectionLive.Import, :import
             live "/:id/edit", Dashboard.Catalog.CollectionLive.Index, :edit
 
             live "/:id", Dashboard.Catalog.CollectionLive.Show, :show

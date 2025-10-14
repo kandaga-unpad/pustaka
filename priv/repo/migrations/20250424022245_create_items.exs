@@ -15,6 +15,7 @@ defmodule Voile.Repo.Migrations.CreateItems do
       add :last_inventory_date, :date
       add :last_circulated, :utc_datetime
       add :rfid_tag, :string
+      add :legacy_item_code, :text
       add :unit_id, references(:nodes, on_delete: :nilify_all)
       add :collection_id, references(:collections, on_delete: :delete_all, type: :binary_id)
       add :item_location_id, references(:mst_locations, on_delete: :nilify_all)
@@ -27,5 +28,6 @@ defmodule Voile.Repo.Migrations.CreateItems do
     create unique_index(:items, [:rfid_tag])
     create index(:items, [:collection_id])
     create index(:items, [:location])
+    create index(:items, [:legacy_item_code])
   end
 end

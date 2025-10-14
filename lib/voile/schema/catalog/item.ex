@@ -20,6 +20,7 @@ defmodule Voile.Schema.Catalog.Item do
     field :last_inventory_date, :date
     field :last_circulated, :utc_datetime
     field :rfid_tag, :string
+    field :legacy_item_code, :string
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :node, Node, foreign_key: :unit_id
     belongs_to :item_location, Location

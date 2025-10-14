@@ -8,6 +8,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check read permission for viewing collection details
+    authorize!(socket, "collections.read")
+
     collection_type = Metadata.list_resource_class()
     collection_properties = Metadata.list_metadata_properties_by_vocabulary()
     creator = Master.list_mst_creator()

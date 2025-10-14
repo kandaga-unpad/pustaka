@@ -642,7 +642,8 @@ defmodule GLAMSeeds do
           # Upload using Storage module with glams folder
           case Storage.upload(upload,
                  folder: "glams",
-                 generate_filename: false,
+                 unit_id: 20,
+                 generate_filename: true,
                  preserve_extension: true
                ) do
             {:ok, file_url} ->

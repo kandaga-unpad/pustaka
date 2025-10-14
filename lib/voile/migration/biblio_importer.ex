@@ -1149,8 +1149,8 @@ defmodule Voile.Migration.BiblioImporter do
   end
 
   defp ensure_upload_dir do
-    upload_dir = Path.join([:code.priv_dir(:voile), "static", "uploads", "old_thumbnail"])
-    File.mkdir_p!(upload_dir)
+    # No longer needed - Storage module handles directory creation
+    :ok
   end
 
   defp download_image(image_path, _unit_id) when image_path in [nil, "", "\"\""], do: {:ok, nil}
@@ -1163,52 +1163,44 @@ defmodule Voile.Migration.BiblioImporter do
       {:ok, nil}
     else
       try do
-        # Generate unique filename using biblio_id-based approach for better organization
+        # Determine file extension
         file_extension = Path.extname(cleaned_path) |> String.downcase()
-
-        # Default to .jpg if no extension
         file_extension = if file_extension == "", do: ".jpg", else: file_extension
 
-        # Extract original filename for better organization (remove directory path)
+        # Extract original filename for better organization
         original_filename = Path.basename(cleaned_path, Path.extname(cleaned_path))
 
-        # Create hash-based filename for uniqueness and collision avoidance
-        content_hash =
-          :crypto.hash(:sha256, cleaned_path) |> Base.encode16() |> String.slice(0, 16)
+        # Download to temporary file first
+        case download_to_temp_file(cleaned_path, original_filename, file_extension) do
+          {:ok, temp_path, content_type} ->
+            # Create filename for the upload (Storage will generate unique name)
+            temp_filename = "#{original_filename}#{file_extension}"
 
-        filename = "#{original_filename}_#{content_hash}#{file_extension}"
+            # Create Plug.Upload struct
+            upload = %Plug.Upload{
+              path: temp_path,
+              filename: temp_filename,
+              content_type: content_type
+            }
 
-        # Create unit-based directory structure instead of hash-based
-        upload_base_dir =
-          Path.join([:code.priv_dir(:voile), "static", "uploads", "old_thumbnail"])
+            # Upload using Storage module with old_thumbnail folder
+            case Client.Storage.upload(upload,
+                   folder: "old_thumbnail",
+                   unit_id: unit_id,
+                   generate_filename: true,
+                   preserve_extension: true
+                 ) do
+              {:ok, file_url} ->
+                # Clean up temp file
+                File.rm(temp_path)
+                {:ok, file_url}
 
-        upload_dir =
-          if unit_id do
-            Path.join(upload_base_dir, to_string(unit_id))
-          else
-            # Fallback to hash-based if no unit_id
-            shard = String.slice(content_hash, 0, 2)
-            Path.join(upload_base_dir, shard)
-          end
-
-        # Ensure the unit directory exists
-        File.mkdir_p!(upload_dir)
-
-        file_path = Path.join(upload_dir, filename)
-
-        # Try to download the image
-        case download_from_url(cleaned_path, file_path) do
-          :ok ->
-            # Return absolute path for storage in database (includes unit_id directory)
-            absolute_path =
-              if unit_id do
-                "/" <> Path.join(["uploads", "old_thumbnail", to_string(unit_id), filename])
-              else
-                shard = String.slice(content_hash, 0, 2)
-                "/" <> Path.join(["uploads", "old_thumbnail", shard, filename])
-              end
-
-            {:ok, absolute_path}
+              {:error, reason} ->
+                # Clean up temp file
+                File.rm(temp_path)
+                IO.puts("⚠️ Failed to upload image from #{cleaned_path}: #{reason}")
+                {:ok, nil}
+            end
 
           {:error, reason} ->
             IO.puts("⚠️ Failed to download image from #{cleaned_path}: #{reason}")
@@ -1222,18 +1214,30 @@ defmodule Voile.Migration.BiblioImporter do
     end
   end
 
-  # Download image from URL or copy from local path
-  defp download_from_url(url_or_path, destination) do
+  # Download image to temporary file and return path with content type
+  defp download_to_temp_file(url_or_path, _original_filename, file_extension) do
+    # Create temporary file
+    temp_dir = System.tmp_dir!()
+    temp_filename = "biblio_import_#{System.unique_integer([:positive])}#{file_extension}"
+    temp_path = Path.join(temp_dir, temp_filename)
+
     cond do
       # Handle HTTP/HTTPS URLs
       String.starts_with?(url_or_path, "http://") or String.starts_with?(url_or_path, "https://") ->
-        download_from_http(url_or_path, destination)
+        case download_from_http(url_or_path, temp_path) do
+          {:ok, content_type} -> {:ok, temp_path, content_type}
+          {:error, reason} -> {:error, reason}
+        end
 
       # Handle local file paths (relative to some base directory)
       File.exists?(url_or_path) ->
-        case File.cp(url_or_path, destination) do
-          :ok -> :ok
-          {:error, reason} -> {:error, "Failed to copy local file: #{reason}"}
+        case File.cp(url_or_path, temp_path) do
+          :ok ->
+            content_type = get_content_type_from_extension(file_extension)
+            {:ok, temp_path, content_type}
+
+          {:error, reason} ->
+            {:error, "Failed to copy local file: #{reason}"}
         end
 
       # Try to resolve relative paths (common in SLiMS) - construct full URL
@@ -1243,18 +1247,26 @@ defmodule Voile.Migration.BiblioImporter do
         full_url = base_url <> url_or_path
 
         IO.puts("📁 Trying to download from: #{full_url}")
-        download_from_http(full_url, destination)
+
+        case download_from_http(full_url, temp_path) do
+          {:ok, content_type} -> {:ok, temp_path, content_type}
+          {:error, reason} -> {:error, reason}
+        end
     end
   end
 
-  # Download image from HTTP URL
+  # Download image from HTTP URL and return content type
   defp download_from_http(url, destination) do
     # Use Req for HTTP downloads
     case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 30_000) do
-      {:ok, %Req.Response{status: 200, body: body}} ->
+      {:ok, %Req.Response{status: 200, body: body, headers: headers}} ->
         case File.write(destination, body) do
-          :ok -> :ok
-          {:error, reason} -> {:error, "Failed to write file: #{reason}"}
+          :ok ->
+            content_type = get_content_type_from_headers(headers)
+            {:ok, content_type}
+
+          {:error, reason} ->
+            {:error, "Failed to write file: #{reason}"}
         end
 
       {:ok, %Req.Response{status: status_code}} ->
@@ -1266,6 +1278,32 @@ defmodule Voile.Migration.BiblioImporter do
   rescue
     e ->
       {:error, "Exception during HTTP download: #{Exception.message(e)}"}
+  end
+
+  # Extract content type from response headers
+  defp get_content_type_from_headers(headers) do
+    headers
+    |> Enum.find(fn {key, _value} -> String.downcase(key) == "content-type" end)
+    |> case do
+      {_key, content_type} when is_binary(content_type) ->
+        String.split(content_type, ";") |> hd() |> String.trim()
+
+      _ ->
+        "image/jpeg"
+    end
+  end
+
+  # Get content type from file extension
+  defp get_content_type_from_extension(extension) do
+    case String.downcase(extension) do
+      ".jpg" -> "image/jpeg"
+      ".jpeg" -> "image/jpeg"
+      ".png" -> "image/png"
+      ".gif" -> "image/gif"
+      ".webp" -> "image/webp"
+      ".bmp" -> "image/bmp"
+      _ -> "image/jpeg"
+    end
   end
 
   # Build unit mappings for collection code generation

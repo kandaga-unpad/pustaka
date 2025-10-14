@@ -6,6 +6,9 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check read permission for viewing items
+    authorize!(socket, "items.read")
+
     page = 1
     per_page = 10
     search = ""
@@ -32,12 +35,18 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    # Check update permission for editing items
+    authorize!(socket, "items.update")
+
     socket
     |> assign(:page_title, "Edit Item")
     |> assign(:item, Catalog.get_item!(id))
   end
 
   defp apply_action(socket, :new, _params) do
+    # Check create permission for creating new items
+    authorize!(socket, "items.create")
+
     socket
     |> assign(:page_title, "New Item")
     |> assign(:item, %Item{})
@@ -63,6 +72,9 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
+    # Check delete permission before deleting
+    authorize!(socket, "items.delete")
+
     item = Catalog.get_item!(id)
     {:ok, _} = Catalog.delete_item(item)
 

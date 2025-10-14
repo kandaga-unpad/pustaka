@@ -475,6 +475,69 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     end
   end
 
+  def save_collection_as_draft(socket, :edit, collection_params) do
+    # Ensure status is set to draft
+    draft_params = Map.put(collection_params, "status", "draft")
+
+    case Catalog.update_collection(socket.assigns.original_collection, draft_params) do
+      {:ok, collection} ->
+        notify_parent({:saved, collection})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Collection saved as draft successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  def save_collection_as_draft(socket, :new, collection_params) do
+    get_unit_abbr =
+      if collection_params["unit_id"] do
+        case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
+          nil -> "UNK"
+          node -> node.abbr
+        end
+      else
+        "UNK"
+      end
+
+    get_collection_type =
+      if collection_params["type_id"] do
+        case Metadata.get_resource_class!(collection_params["type_id"]) do
+          nil -> "UNK"
+          rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
+        end
+      else
+        "UNK"
+      end
+
+    generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+
+    # Ensure status is set to draft and add generated code
+    draft_params =
+      collection_params
+      |> Map.put("collection_code", generated_code)
+      |> Map.put("status", "draft")
+
+    case Catalog.create_collection(draft_params) do
+      {:ok, collection} ->
+        notify_parent({:saved, collection})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Collection saved as draft successfully")
+         |> push_patch(
+           to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
+         )}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
   defp handle_delete_thumbnail_new(thumbnail_path, socket) do
     collection_attrs = Map.put(socket.assigns.form.params, "thumbnail", nil)
     changeset = Catalog.change_collection(%Catalog.Collection{}, collection_attrs)

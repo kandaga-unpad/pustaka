@@ -6,6 +6,9 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check permission for managing metadata/master data
+    authorize!(socket, "metadata.manage")
+
     page = 1
     per_page = 10
 

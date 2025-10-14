@@ -2,6 +2,9 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
   use VoileWeb, :live_view_dashboard
 
   def mount(_params, _session, socket) do
+    # Check permission for accessing system settings
+    authorize!(socket, "system.settings")
+
     current_user = socket.assigns.current_scope.user
 
     socket =
