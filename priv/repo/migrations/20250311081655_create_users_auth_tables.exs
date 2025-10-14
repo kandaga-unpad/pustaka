@@ -19,7 +19,7 @@ defmodule Voile.Repo.Migrations.CreateUsersAuthTables do
       add :last_login_ip, :string
 
       # Profile fields
-      add :address, :string
+      add :address, :text
       add :phone_number, :string
       add :birth_date, :date
       add :birth_place, :string

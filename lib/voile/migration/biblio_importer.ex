@@ -82,28 +82,44 @@ defmodule Voile.Migration.BiblioImporter do
     # Initialize cache with frequently accessed data
     cache = initialize_cache()
 
-    # Get bibliography files
-    files = get_csv_files("biblio")
+    # Get bibliography files - ONLY biblio_*.csv, NOT biblio_author_*.csv
+    files = get_specific_files("biblio", "biblio_[0-9]*.csv")
 
     if Enum.empty?(files) do
       IO.puts("⚠️ No bibliography files found")
       %{inserted: 0, skipped: 0, errors: 0}
     else
-      stats =
+      # Track problematic units
+      problematic_units = []
+
+      {stats, problematic_units} =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, errors: 0}, fn {file, index}, acc ->
+        |> Enum.reduce({%{inserted: 0, skipped: 0, errors: 0}, problematic_units}, fn {file,
+                                                                                       index},
+                                                                                      {acc,
+                                                                                       prob_units} ->
           IO.puts(
             "\n🔄 Processing bibliography file #{index}/#{length(files)}: #{Path.basename(file)}"
           )
 
           file_stats = process_biblio_file_optimized(file, batch_size, skip_images, cache)
 
-          %{
+          new_acc = %{
             inserted: acc.inserted + file_stats.inserted,
             skipped: acc.skipped + file_stats.skipped,
             errors: acc.errors + file_stats.errors
           }
+
+          # Track units with high skip rates
+          new_prob_units =
+            if file_stats.skipped > 100 do
+              [{file_stats.unit_id, file_stats.skipped, Path.basename(file)} | prob_units]
+            else
+              prob_units
+            end
+
+          {new_acc, new_prob_units}
         end)
 
       print_summary("BIBLIOGRAPHY IMPORT", %{
@@ -111,6 +127,17 @@ defmodule Voile.Migration.BiblioImporter do
         "Total Collections Skipped" => stats.skipped,
         "Total Errors" => stats.errors
       })
+
+      # Show problematic units
+      if length(problematic_units) > 0 do
+        IO.puts("\n⚠️ Units with high skip rates:")
+
+        problematic_units
+        |> Enum.reverse()
+        |> Enum.each(fn {unit_id, skip_count, filename} ->
+          IO.puts("  - Unit #{unit_id} (#{filename}): #{skip_count} rows skipped")
+        end)
+      end
 
       stats
     end
@@ -123,8 +150,8 @@ defmodule Voile.Migration.BiblioImporter do
     # Ensure upload directory exists
     ensure_upload_dir()
 
-    # Get bibliography files
-    files = get_csv_files("biblio")
+    # Get bibliography files - ONLY biblio_*.csv, NOT biblio_author_*.csv
+    files = get_specific_files("biblio", "biblio_[0-9]*.csv")
 
     if Enum.empty?(files) do
       IO.puts("⚠️ No bibliography files found")
@@ -181,9 +208,12 @@ defmodule Voile.Migration.BiblioImporter do
       Repo.all(Creator)
       |> Enum.into(%{}, fn creator -> {creator.creator_name, creator.id} end)
 
-    # Cache existing collections to avoid duplicates
+    # Cache existing collections to avoid duplicates - use composite key (unit_id, old_biblio_id)
     existing_collections =
-      from(c in Collection, select: c.old_biblio_id, where: not is_nil(c.old_biblio_id))
+      from(c in Collection,
+        select: {c.unit_id, c.old_biblio_id},
+        where: not is_nil(c.old_biblio_id)
+      )
       |> Repo.all()
       |> MapSet.new()
 
@@ -264,7 +294,8 @@ defmodule Voile.Migration.BiblioImporter do
   # Optimized file processing using streams and batching
   defp process_biblio_file_optimized(file_path, batch_size, skip_images, cache) do
     unit_id = extract_unit_id_from_filename(file_path)
-    IO.puts("📋 Processing unit ID: #{unit_id || "unknown"}")
+    filename = Path.basename(file_path)
+    IO.puts("📋 Processing unit ID: #{unit_id || "unknown"} (#{filename})")
 
     # Load specific author data for this unit from cache
     unit_author_mappings = Map.get(cache.author_mappings, unit_id, %{})
@@ -276,6 +307,9 @@ defmodule Voile.Migration.BiblioImporter do
     :ets.insert(stats_ref, {:fields_inserted, 0})
     :ets.insert(stats_ref, {:errors, 0})
     :ets.insert(stats_ref, {:skipped, 0})
+
+    # Track first few skipped rows for debugging
+    :ets.insert(stats_ref, {:sample_skipped, []})
 
     try do
       File.stream!(file_path)
@@ -296,12 +330,32 @@ defmodule Voile.Migration.BiblioImporter do
             {{:ok, {collection, fields}}, line_num}
 
           {:skip, reason} ->
-            IO.puts("⚠️ Skipping line #{line_num}: #{inspect(reason)}")
-            :ets.update_counter(stats_ref, :skipped, 1)
+            # Only print first 10 skipped rows to avoid spam
+            skip_count = :ets.update_counter(stats_ref, :skipped, 1)
+
+            if skip_count <= 10 do
+              IO.puts(
+                "⚠️ [Unit #{unit_id}] Skipping line #{line_num}: #{inspect(reason)} | Row columns: #{length(row)}"
+              )
+
+              # Store sample for summary
+              [{:sample_skipped, samples}] = :ets.lookup(stats_ref, :sample_skipped)
+
+              :ets.insert(
+                stats_ref,
+                {:sample_skipped, [{line_num, reason, length(row)} | samples]}
+              )
+            else
+              # After 10, only log every 1000th skip for monitoring
+              if rem(skip_count, 1000) == 0 do
+                IO.puts("⚠️ [Unit #{unit_id}] #{skip_count} rows skipped so far...")
+              end
+            end
+
             {{:skip, reason}, line_num}
 
           {:error, reason} ->
-            IO.puts("❌ Error on line #{line_num}: #{inspect(reason)}")
+            IO.puts("❌ [Unit #{unit_id}] Error on line #{line_num}: #{inspect(reason)}")
             :ets.update_counter(stats_ref, :errors, 1)
             {{:error, reason}, line_num}
         end
@@ -323,14 +377,26 @@ defmodule Voile.Migration.BiblioImporter do
       [{:fields_inserted, fields_inserted}] = :ets.lookup(stats_ref, :fields_inserted)
       [{:errors, errors}] = :ets.lookup(stats_ref, :errors)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
+      [{:sample_skipped, sample_skipped}] = :ets.lookup(stats_ref, :sample_skipped)
 
-      IO.puts("✅ File processed:")
+      IO.puts("\n✅ File processed: #{filename}")
+      IO.puts("  - Unit ID: #{unit_id}")
       IO.puts("  - Collections: #{collections_inserted}")
       IO.puts("  - Fields: #{fields_inserted}")
       IO.puts("  - Skipped: #{skipped}")
       IO.puts("  - Errors: #{errors}")
 
-      %{inserted: collections_inserted, skipped: skipped, errors: errors}
+      if skipped > 10 and length(sample_skipped) > 0 do
+        IO.puts("\n📊 Sample of skipped rows (first 10):")
+
+        sample_skipped
+        |> Enum.reverse()
+        |> Enum.each(fn {line, reason, col_count} ->
+          IO.puts("  Line #{line}: #{inspect(reason)} (#{col_count} columns)")
+        end)
+      end
+
+      %{inserted: collections_inserted, skipped: skipped, errors: errors, unit_id: unit_id}
     after
       :ets.delete(stats_ref)
     end
@@ -506,9 +572,9 @@ defmodule Voile.Migration.BiblioImporter do
       when length(row) >= 29 ->
         biblio_id_int = parse_int(biblio_id)
 
-        # Check if already exists using cache
-        if MapSet.member?(cache.existing_collections, biblio_id_int) do
-          {:skip, "Collection with biblio_id #{biblio_id_int} already exists"}
+        # Check if already exists using cache with composite key (unit_id, old_biblio_id)
+        if MapSet.member?(cache.existing_collections, {unit_id, biblio_id_int}) do
+          {:skip, "Collection with unit_id #{unit_id}, biblio_id #{biblio_id_int} already exists"}
         else
           now = DateTime.utc_now() |> DateTime.truncate(:second)
 

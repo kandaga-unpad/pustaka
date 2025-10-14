@@ -77,7 +77,7 @@ defmodule Voile.Migration.ItemImporter do
   defp initialize_cache do
     IO.puts("🔄 Initializing item cache...")
 
-    # Build biblio_id to collection_id mapping
+    # Build (unit_id, biblio_id) to collection_id mapping - composite key to handle duplicates across units
     biblio_map = build_biblio_map()
 
     # Build unit_id to unit data mapping
@@ -90,7 +90,7 @@ defmodule Voile.Migration.ItemImporter do
     collection_map = build_collection_map()
 
     IO.puts("✅ Cache initialized:")
-    IO.puts("  - Biblio mappings: #{map_size(biblio_map)}")
+    IO.puts("  - Biblio mappings (composite key): #{map_size(biblio_map)}")
     IO.puts("  - Unit mappings: #{map_size(unit_map)}")
     IO.puts("  - Resource class mappings: #{map_size(resource_class_map)}")
     IO.puts("  - Collection mappings: #{map_size(collection_map)}")
@@ -106,7 +106,8 @@ defmodule Voile.Migration.ItemImporter do
   # Optimized file processing using streams and batching
   defp process_item_file_optimized(file_path, batch_size, cache) do
     unit_id = extract_unit_id_from_filename(file_path)
-    IO.puts("📋 Processing unit ID: #{unit_id || "unknown"}")
+    filename = Path.basename(file_path)
+    IO.puts("📋 Processing unit ID: #{unit_id || "unknown"} (#{filename})")
 
     file_size = File.stat!(file_path).size
     IO.puts("📊 File size: #{Float.round(file_size / 1024 / 1024, 2)} MB")
@@ -117,6 +118,7 @@ defmodule Voile.Migration.ItemImporter do
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
     :ets.insert(stats_ref, {:skipped_biblio_ids, []})
+    :ets.insert(stats_ref, {:sample_errors, []})
 
     # Create state tracking ETS table for biblio indices and times
     state_ref = :ets.new(:item_state, [:set, :public])
@@ -127,7 +129,31 @@ defmodule Voile.Migration.ItemImporter do
       |> Stream.drop(1)
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
-        {prepare_item_data(row, cache, state_ref, unit_id), line_num}
+        result = prepare_item_data(row, cache, state_ref, unit_id)
+
+        # Log first 10 errors for debugging
+        case result do
+          {:error, reason} ->
+            skipped_count = :ets.update_counter(stats_ref, :skipped, {2, 0})
+
+            if skipped_count < 10 do
+              IO.puts(
+                "⚠️ [Unit #{unit_id}] Skipping line #{line_num}: #{inspect(reason)} | Row columns: #{length(row)}"
+              )
+
+              [{:sample_errors, samples}] = :ets.lookup(stats_ref, :sample_errors)
+
+              :ets.insert(
+                stats_ref,
+                {:sample_errors, [{line_num, reason, length(row)} | samples]}
+              )
+            end
+
+          _ ->
+            :ok
+        end
+
+        {result, line_num}
       end)
       |> Stream.filter(fn {{status, _}, _line_num} -> status in [:ok, :error] end)
       |> Stream.chunk_every(batch_size)
@@ -140,12 +166,24 @@ defmodule Voile.Migration.ItemImporter do
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
       [{:skipped_biblio_ids, skipped_biblio_ids}] = :ets.lookup(stats_ref, :skipped_biblio_ids)
+      [{:sample_errors, sample_errors}] = :ets.lookup(stats_ref, :sample_errors)
 
       end_time = System.monotonic_time(:millisecond)
       duration = end_time - start_time
 
-      IO.puts("\n✅ File processed in #{duration}ms")
+      IO.puts("\n✅ File processed: #{filename} in #{duration}ms")
+      IO.puts("  - Unit ID: #{unit_id}")
       IO.puts("📦 File stats - Inserted: #{inserted}, Skipped: #{skipped}")
+
+      if skipped > 10 and length(sample_errors) > 0 do
+        IO.puts("\n📊 Sample of skipped rows (first 10):")
+
+        sample_errors
+        |> Enum.reverse()
+        |> Enum.each(fn {line, reason, col_count} ->
+          IO.puts("  Line #{line}: #{inspect(reason)} (#{col_count} columns)")
+        end)
+      end
 
       %{
         inserted: inserted,
@@ -191,11 +229,13 @@ defmodule Voile.Migration.ItemImporter do
       error_biblio_ids =
         error_items
         |> Enum.map(fn
-          {{:error, {:missing_biblio_id, biblio_id}}, _line_num} ->
-            biblio_id
+          {{:error, {:missing_biblio_id, {unit_id, biblio_id}}}, _line_num} ->
+            "unit_#{unit_id}_biblio_#{biblio_id}"
+
+          {{:error, {:invalid_row, _reason}}, _line_num} ->
+            nil
 
           _other ->
-            # For other error shapes (e.g. invalid_row), return nil and filter out later
             nil
         end)
         |> Enum.reject(&is_nil/1)
@@ -232,7 +272,7 @@ defmodule Voile.Migration.ItemImporter do
            input_date,
            last_update,
            _uid
-         ],
+         ] = row,
          %{
            biblio_map: biblio_map,
            unit_map: unit_map,
@@ -241,14 +281,16 @@ defmodule Voile.Migration.ItemImporter do
          } = _cache,
          state_ref,
          unit_id
-       ) do
+       )
+       when length(row) >= 21 do
     id = Ecto.UUID.generate()
+    biblio_id_int = parse_int(biblio_id)
 
-    case Map.fetch(biblio_map, parse_int(biblio_id)) do
+    # Use composite key (unit_id, old_biblio_id) to lookup collection
+    case Map.fetch(biblio_map, {unit_id, biblio_id_int}) do
       {:ok, coll_id} ->
         # coll_id should already be binary
         collection_id = coll_id
-        biblio_id_int = parse_int(biblio_id)
 
         # Get and increment index for this biblio_id using ETS
         index =
@@ -319,24 +361,33 @@ defmodule Voile.Migration.ItemImporter do
          }}
 
       :error ->
-        {:error, {:missing_biblio_id, biblio_id}}
+        {:error, {:missing_biblio_id, {unit_id, biblio_id_int}}}
     end
   end
 
-  defp prepare_item_data(_invalid_row, _cache, _state_ref, _unit_id) do
-    {:error, {:invalid_row, "insufficient columns"}}
+  defp prepare_item_data(row, _cache, _state_ref, _unit_id) do
+    {:error, {:invalid_row, "Expected at least 21 columns, got #{length(row)}"}}
   end
 
   defp build_biblio_map do
-    from(c in Collection, select: {c.old_biblio_id, c.id})
+    # Use composite key (unit_id, old_biblio_id) to handle same biblio_id across different units
+    from(c in Collection, select: {c.unit_id, c.old_biblio_id, c.id})
     |> Repo.all()
-    |> Enum.into(%{}, fn {old_biblio_id, id} ->
+    |> Enum.reduce(%{}, fn {unit_id, old_biblio_id, id}, acc ->
       case old_biblio_id do
-        nil -> {nil, id}
-        val -> {parse_int(to_string(val)), id}
+        nil ->
+          acc
+
+        val ->
+          biblio_int = parse_int(to_string(val))
+
+          if biblio_int && unit_id do
+            Map.put(acc, {unit_id, biblio_int}, id)
+          else
+            acc
+          end
       end
     end)
-    |> Map.reject(fn {k, _v} -> k == nil end)
   end
 
   defp build_unit_map do

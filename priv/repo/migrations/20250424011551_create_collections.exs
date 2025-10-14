@@ -26,6 +26,13 @@ defmodule Voile.Repo.Migrations.CreateCollections do
     create index(:collections, [:unit_id])
     create unique_index(:collections, [:collection_code])
 
+    # Composite unique index to ensure old_biblio_id is unique per unit
+    # This prevents collisions when the same biblio_id exists in different units
+    create unique_index(:collections, [:unit_id, :old_biblio_id],
+             name: :collections_unit_id_old_biblio_id_index,
+             where: "old_biblio_id IS NOT NULL"
+           )
+
     alter table(:collections) do
       add :parent_id, references(:collections, type: :binary_id, on_delete: :nilify_all)
       add :sort_order, :integer

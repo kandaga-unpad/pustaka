@@ -10,7 +10,7 @@ defmodule Voile.Migration.MemberImporter do
   import Voile.Migration.Common
 
   alias Voile.Repo
-  alias Voile.Schema.Accounts.{User, UserRole}
+  alias Voile.Schema.Accounts.{User, Role, UserRoleAssignment}
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
@@ -61,7 +61,10 @@ defmodule Voile.Migration.MemberImporter do
       print_summary("MEMBER IMPORT", %{
         "Total Members Inserted" => stats.inserted,
         "Total Members Skipped" => stats.skipped,
-        "Total Errors" => stats.errors
+        "Total Errors" => stats.errors,
+        "└─ Member (Verified) - 12 digits" => stats.verified_students,
+        "└─ Member (Organization) - >12 digits" => stats.organizations,
+        "└─ Member (Affirmation) - fallback" => stats.general_members
       })
 
       stats
@@ -73,12 +76,17 @@ defmodule Voile.Migration.MemberImporter do
     IO.puts("🔄 Initializing member cache...")
 
     # Cache member role
-    member_role = Repo.get_by(UserRole, name: "Member")
+    member_role = Repo.get_by(Role, name: "viewer")
 
     # Cache all member types
     member_types =
       Repo.all(MemberType)
       |> Enum.into(%{}, fn mt -> {mt.id, mt} end)
+
+    # Cache specific member types by slug for identifier-based assignment
+    verified_student_type = Repo.get_by(MemberType, slug: "member_verified")
+    organization_type = Repo.get_by(MemberType, slug: "member_organization")
+    general_type = Repo.get_by(MemberType, slug: "member_affirmation")
 
     # Cache all nodes
     nodes =
@@ -105,6 +113,9 @@ defmodule Voile.Migration.MemberImporter do
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Member role: #{if member_role, do: "✓", else: "✗"}")
     IO.puts("  - Member types: #{map_size(member_types)}")
+    IO.puts("  - Verified Student type: #{if verified_student_type, do: "✓", else: "✗"}")
+    IO.puts("  - Organization type: #{if organization_type, do: "✓", else: "✗"}")
+    IO.puts("  - General type: #{if general_type, do: "✓", else: "✗"}")
     IO.puts("  - Nodes: #{map_size(nodes)}")
     IO.puts("  - Existing emails: #{MapSet.size(existing_emails)}")
     IO.puts("  - Existing usernames: #{MapSet.size(existing_usernames)}")
@@ -113,6 +124,9 @@ defmodule Voile.Migration.MemberImporter do
     %{
       member_role: member_role,
       member_types: member_types,
+      verified_student_type: verified_student_type,
+      organization_type: organization_type,
+      general_type: general_type,
       nodes: nodes,
       existing_emails: existing_emails,
       existing_usernames: existing_usernames,
@@ -128,6 +142,30 @@ defmodule Voile.Migration.MemberImporter do
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
     :ets.insert(stats_ref, {:errors, 0})
+    :ets.insert(stats_ref, {:verified_students, 0})
+    :ets.insert(stats_ref, {:organizations, 0})
+    :ets.insert(stats_ref, {:general_members, 0})
+    # Store member_role for use in batch processing
+    :ets.insert(stats_ref, {:member_role, cache.member_role})
+
+    # Store member type slugs for stats tracking
+    if cache.verified_student_type do
+      :ets.insert(
+        stats_ref,
+        {{:member_type_slug, cache.verified_student_type.id}, "member_verified"}
+      )
+    end
+
+    if cache.organization_type do
+      :ets.insert(
+        stats_ref,
+        {{:member_type_slug, cache.organization_type.id}, "member_organization"}
+      )
+    end
+
+    if cache.general_type do
+      :ets.insert(stats_ref, {{:member_type_slug, cache.general_type.id}, "member_affirmation"})
+    end
 
     try do
       File.stream!(file_path)
@@ -165,8 +203,18 @@ defmodule Voile.Migration.MemberImporter do
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
       [{:errors, errors}] = :ets.lookup(stats_ref, :errors)
+      [{:verified_students, verified_students}] = :ets.lookup(stats_ref, :verified_students)
+      [{:organizations, organizations}] = :ets.lookup(stats_ref, :organizations)
+      [{:general_members, general_members}] = :ets.lookup(stats_ref, :general_members)
 
-      %{inserted: inserted, skipped: skipped, errors: errors}
+      %{
+        inserted: inserted,
+        skipped: skipped,
+        errors: errors,
+        verified_students: verified_students,
+        organizations: organizations,
+        general_members: general_members
+      }
     after
       :ets.delete(stats_ref)
     end
@@ -179,6 +227,9 @@ defmodule Voile.Migration.MemberImporter do
       |> Enum.reduce({[], []}, fn {user_data, line_num}, {users, lines} ->
         {[user_data | users], [line_num | lines]}
       end)
+
+    # Get cached member role from stats_ref
+    [{:member_role, member_role}] = :ets.lookup(stats_ref, :member_role)
 
     # Use single transaction to minimize connection idle time
     users_inserted =
@@ -243,22 +294,62 @@ defmodule Voile.Migration.MemberImporter do
                 (u.identifier && Map.has_key?(existing_by_ident, u.identifier))
             end)
 
+          # Pre-count member types before insertion for stats tracking
+          {verified_student_count, organization_count, general_count} =
+            Enum.reduce(to_insert_users, {0, 0, 0}, fn user, {vs, org, gen} ->
+              # Look up the member type in cache
+              case :ets.lookup(stats_ref, {:member_type_slug, user.user_type_id}) do
+                [{_, "member_verified"}] -> {vs + 1, org, gen}
+                [{_, "member_organization"}] -> {vs, org + 1, gen}
+                _ -> {vs, org, gen + 1}
+              end
+            end)
+
           Repo.transaction(
             fn ->
               # Insert new users
-              count =
+              {count, inserted_users} =
                 if to_insert_users != [] do
-                  {count, _inserted_rows} =
-                    Repo.insert_all(User, to_insert_users,
-                      on_conflict: :nothing,
-                      returning: [:id],
-                      timeout: :infinity
-                    )
-
-                  count
+                  Repo.insert_all(User, to_insert_users,
+                    on_conflict: :nothing,
+                    returning: [:id],
+                    timeout: :infinity
+                  )
                 else
-                  0
+                  {0, []}
                 end
+
+              # Track member type categorization after successful insert
+              if count > 0 do
+                :ets.update_counter(stats_ref, :verified_students, verified_student_count)
+                :ets.update_counter(stats_ref, :organizations, organization_count)
+                :ets.update_counter(stats_ref, :general_members, general_count)
+              end
+
+              # Create role assignments for newly inserted users with "Member" role
+              if count > 0 and member_role do
+                now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+                role_assignments =
+                  inserted_users
+                  |> Enum.map(fn user ->
+                    %{
+                      user_id: user.id,
+                      role_id: member_role.id,
+                      scope_type: "global",
+                      scope_id: nil,
+                      glam_type: nil,
+                      assigned_at: now,
+                      expires_at: nil,
+                      assigned_by_id: nil
+                    }
+                  end)
+
+                Repo.insert_all(UserRoleAssignment, role_assignments,
+                  on_conflict: :nothing,
+                  timeout: :infinity
+                )
+              end
 
               count
             end,
@@ -300,6 +391,48 @@ defmodule Voile.Migration.MemberImporter do
     |> Map.put(:confirmed_at, nil)
   end
 
+  # Determine member type based on identifier digit count
+  # 12 digits = verified student
+  # >12 digits = organization
+  # Otherwise = general
+  defp determine_member_type_by_identifier(identifier, cache) when is_binary(identifier) do
+    # Count only digits in the identifier
+    digit_count =
+      identifier
+      |> String.graphemes()
+      |> Enum.count(&(&1 in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]))
+
+    cond do
+      digit_count == 12 and cache.verified_student_type ->
+        cache.verified_student_type.id
+
+      digit_count > 12 and cache.organization_type ->
+        cache.organization_type.id
+
+      cache.general_type ->
+        cache.general_type.id
+
+      true ->
+        # Fallback to first available member type
+        case Map.values(cache.member_types) |> List.first() do
+          nil -> nil
+          mt -> mt.id
+        end
+    end
+  end
+
+  defp determine_member_type_by_identifier(_identifier, cache) do
+    # No valid identifier, use general type
+    if cache.general_type do
+      cache.general_type.id
+    else
+      case Map.values(cache.member_types) |> List.first() do
+        nil -> nil
+        mt -> mt.id
+      end
+    end
+  end
+
   # Prepare member data using cached data (optimized version)
   defp prepare_member_data(row, node_id, cache) when length(row) >= 20 do
     [
@@ -307,7 +440,7 @@ defmodule Voile.Migration.MemberImporter do
       member_name,
       gender,
       birth_date,
-      member_type_id,
+      _member_type_id,
       member_address,
       member_mail_address,
       member_email,
@@ -351,7 +484,10 @@ defmodule Voile.Migration.MemberImporter do
         # Use original email (no need for uniqueness since we skip duplicates)
         final_email = clean_email
 
-        member_type = get_member_type_cached(member_type_id, cache.member_types)
+        # Determine member type based on identifier digit count
+        # This overrides the CSV member_type_id with our categorization logic
+        auto_member_type_id = determine_member_type_by_identifier(member_id, cache)
+        member_type = get_member_type_cached(auto_member_type_id, cache.member_types)
         node = get_node_cached(node_id, cache.nodes)
 
         now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -364,25 +500,25 @@ defmodule Voile.Migration.MemberImporter do
 
         # Create user record data with profile fields included
         user_attrs = %{
-          username: username,
+          id: Ecto.UUID.generate(),
+          username: safe_truncate(username, 255),
           identifier: parse_int(member_id),
-          email: final_email,
-          fullname: clean_name,
-          user_role_id: cache.member_role && cache.member_role.id,
+          email: safe_truncate(final_email, 255),
+          fullname: safe_truncate(clean_name, 255),
           user_type_id: member_type && member_type.id,
-          user_image: clean_image_name(member_image),
+          user_image: safe_truncate(clean_image_name(member_image), 255),
           node_id: node && node.id,
           # Default password: "changeme123"
           hashed_password:
-            "$pbkdf2-sha512$160000$OmHm5yQ4w.ZGpn7fvUcGzg$uBPzZQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
+            "$pbkdf2-sha512$160000$OmHm5yQ2UOQ2oZFJt9JQZhVqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.XqBZQv1.2qHZqJQa2wC9.X",
           # Not confirmed - users need to confirm via email or SSO
           confirmed_at: nil,
           # Profile fields (moved from separate profile table)
-          gender: map_gender(gender),
+          gender: safe_truncate(map_gender(gender), 255),
           birth_date: parsed_birth_date,
-          phone_number: safe_string_trim(member_phone),
-          address: combine_addresses(member_address, member_mail_address),
-          organization: safe_string_trim(inst_name),
+          phone_number: safe_truncate(safe_string_trim(member_phone), 255),
+          address: safe_truncate(combine_addresses(member_address, member_mail_address), 255),
+          organization: safe_truncate(safe_string_trim(inst_name), 255),
           registration_date: parsed_member_since,
           expiry_date: parsed_expires_at,
           inserted_at: parsed_register_date || now,
@@ -483,40 +619,38 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   defp setup_default_data do
-    # ensure_member_role()
     ensure_default_member_types()
     ensure_default_nodes()
   end
 
-  # defp ensure_member_role do
-  #   unless Repo.get_by(UserRole, name: "Member") do
-  #     %UserRole{}
-  #     |> UserRole.changeset(%{
-  #       name: "Member",
-  #       description: "Library member role",
-  #       permissions: %{
-  #         "catalog" => %{"read" => true},
-  #         "profile" => %{"read" => true, "update" => true}
-  #       }
-  #     })
-  #     |> Repo.insert!()
-  #   end
-  # end
-
   defp ensure_default_member_types do
-    # Create default member type if none exist
-    unless Repo.one(from(mt in MemberType, limit: 1)) do
-      IO.puts("Creating default member type...")
+    # Verify required member types exist (from database seeds)
+    # Uses: member_verified, member_organization, member_affirmation
 
-      %MemberType{}
-      |> MemberType.changeset(%{
-        name: "General",
-        loan_limit: 5,
-        loan_period: 14,
-        fine_per_day: 1000,
-        description: "General library member"
-      })
-      |> Repo.insert!()
+    IO.puts("🔄 Checking for required member types...")
+
+    verified = Repo.get_by(MemberType, slug: "member_verified")
+    organization = Repo.get_by(MemberType, slug: "member_organization")
+    affirmation = Repo.get_by(MemberType, slug: "member_affirmation")
+
+    cond do
+      is_nil(verified) ->
+        IO.puts("❌ ERROR: 'member_verified' type not found. Please run database seeds.")
+        raise "Missing required member type: member_verified"
+
+      is_nil(organization) ->
+        IO.puts("❌ ERROR: 'member_organization' type not found. Please run database seeds.")
+        raise "Missing required member type: member_organization"
+
+      is_nil(affirmation) ->
+        IO.puts("❌ ERROR: 'member_affirmation' type not found. Please run database seeds.")
+        raise "Missing required member type: member_affirmation"
+
+      true ->
+        IO.puts("✅ Member types ready:")
+        IO.puts("  - member_verified: #{verified.name} (12-digit identifiers)")
+        IO.puts("  - member_organization: #{organization.name} (>12-digit identifiers)")
+        IO.puts("  - member_affirmation: #{affirmation.name} (fallback)")
     end
   end
 
@@ -574,6 +708,24 @@ defmodule Voile.Migration.MemberImporter do
 
   defp clean_image_name(image) when image in [nil, "", "square-image.png", "person.png"], do: nil
   defp clean_image_name(image), do: safe_string_trim(image)
+
+  # Safely truncate string to max length (PostgreSQL VARCHAR default is 255)
+  defp safe_truncate(nil, _max_length), do: nil
+  defp safe_truncate("", _max_length), do: ""
+
+  defp safe_truncate(value, max_length) when is_binary(value) do
+    trimmed = String.trim(value)
+
+    if String.length(trimmed) > max_length do
+      truncated = String.slice(trimmed, 0, max_length)
+      IO.puts("⚠️ Truncated value from #{String.length(trimmed)} to #{max_length} chars")
+      truncated
+    else
+      trimmed
+    end
+  end
+
+  defp safe_truncate(value, _max_length), do: value
 
   # Safe parsing functions with error handling and logging
   defp safe_parse_datetime(val) do
