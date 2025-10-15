@@ -24,11 +24,14 @@ defmodule Voile.Migration.MemberImporter do
           existing_identifiers: MapSet.t()
         }
 
-  def import_all(batch_size \\ 1000) do
+  def import_all(batch_size \\ 1000, skip_images \\ false) do
     IO.puts("👥 Starting member data import...")
 
     # Setup default data
     setup_default_data()
+
+    # Ensure upload directory exists
+    ensure_upload_dir()
 
     # Initialize cache with frequently accessed data
     cache = initialize_cache()
@@ -43,20 +46,36 @@ defmodule Voile.Migration.MemberImporter do
       stats =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce(%{inserted: 0, skipped: 0, errors: 0}, fn {file, index}, acc ->
-          IO.puts("\n🔄 Processing member file #{index}/#{length(files)}: #{Path.basename(file)}")
-
-          # Extract node info from filename for member_N.csv files
-          node_id = extract_node_from_filename(file)
-
-          file_stats = process_member_file_optimized(file, batch_size, node_id, cache)
-
+        |> Enum.reduce(
           %{
-            inserted: acc.inserted + file_stats.inserted,
-            skipped: acc.skipped + file_stats.skipped,
-            errors: acc.errors + file_stats.errors
-          }
-        end)
+            inserted: 0,
+            skipped: 0,
+            errors: 0,
+            verified_students: 0,
+            organizations: 0,
+            general_members: 0
+          },
+          fn {file, index}, acc ->
+            IO.puts(
+              "\n🔄 Processing member file #{index}/#{length(files)}: #{Path.basename(file)}"
+            )
+
+            # Extract node info from filename for member_N.csv files
+            node_id = extract_node_from_filename(file)
+
+            file_stats =
+              process_member_file_optimized(file, batch_size, node_id, skip_images, cache)
+
+            %{
+              inserted: acc.inserted + file_stats.inserted,
+              skipped: acc.skipped + file_stats.skipped,
+              errors: acc.errors + file_stats.errors,
+              verified_students: acc.verified_students + file_stats.verified_students,
+              organizations: acc.organizations + file_stats.organizations,
+              general_members: acc.general_members + file_stats.general_members
+            }
+          end
+        )
 
       print_summary("MEMBER IMPORT", %{
         "Total Members Inserted" => stats.inserted,
@@ -113,9 +132,25 @@ defmodule Voile.Migration.MemberImporter do
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Member role: #{if member_role, do: "✓", else: "✗"}")
     IO.puts("  - Member types: #{map_size(member_types)}")
-    IO.puts("  - Verified Student type: #{if verified_student_type, do: "✓", else: "✗"}")
-    IO.puts("  - Organization type: #{if organization_type, do: "✓", else: "✗"}")
-    IO.puts("  - General type: #{if general_type, do: "✓", else: "✗"}")
+
+    if verified_student_type do
+      IO.puts("  - Verified Student type: ✓ (ID: #{verified_student_type.id})")
+    else
+      IO.puts("  - Verified Student type: ✗")
+    end
+
+    if organization_type do
+      IO.puts("  - Organization type: ✓ (ID: #{organization_type.id})")
+    else
+      IO.puts("  - Organization type: ✗")
+    end
+
+    if general_type do
+      IO.puts("  - General type: ✓ (ID: #{general_type.id})")
+    else
+      IO.puts("  - General type: ✗")
+    end
+
     IO.puts("  - Nodes: #{map_size(nodes)}")
     IO.puts("  - Existing emails: #{MapSet.size(existing_emails)}")
     IO.puts("  - Existing usernames: #{MapSet.size(existing_usernames)}")
@@ -135,8 +170,12 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   # Optimized file processing using streams and batching
-  defp process_member_file_optimized(file_path, batch_size, node_id, cache) do
+  defp process_member_file_optimized(file_path, batch_size, node_id, skip_images, cache) do
     IO.puts("📋 Processing for node: #{get_node_name(node_id)}")
+
+    if skip_images do
+      IO.puts("⚠️ Skipping image downloads (--skip-images flag enabled)")
+    end
 
     stats_ref = :ets.new(:member_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
@@ -175,7 +214,7 @@ defmodule Voile.Migration.MemberImporter do
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         try do
-          {prepare_member_data(row, node_id, cache), line_num}
+          {prepare_member_data(row, node_id, skip_images, cache), line_num}
         rescue
           e ->
             IO.puts("\n⚠️ Error processing line #{line_num}: #{Exception.message(e)}")
@@ -434,7 +473,7 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   # Prepare member data using cached data (optimized version)
-  defp prepare_member_data(row, node_id, cache) when length(row) >= 20 do
+  defp prepare_member_data(row, node_id, skip_images, cache) when length(row) >= 20 do
     [
       member_id,
       member_name,
@@ -486,8 +525,7 @@ defmodule Voile.Migration.MemberImporter do
 
         # Determine member type based on identifier digit count
         # This overrides the CSV member_type_id with our categorization logic
-        auto_member_type_id = determine_member_type_by_identifier(member_id, cache)
-        member_type = get_member_type_cached(auto_member_type_id, cache.member_types)
+        user_type_id = determine_member_type_by_identifier(member_id, cache)
         node = get_node_cached(node_id, cache.nodes)
 
         now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -498,6 +536,16 @@ defmodule Voile.Migration.MemberImporter do
         parsed_member_since = safe_parse_date(member_since_date)
         parsed_expires_at = safe_parse_date(expire_date)
 
+        # Handle image download
+        user_image_path =
+          if skip_images do
+            nil
+          else
+            case download_member_image(member_image, node_id) do
+              {:ok, path} -> path
+            end
+          end
+
         # Create user record data with profile fields included
         user_attrs = %{
           id: Ecto.UUID.generate(),
@@ -505,8 +553,8 @@ defmodule Voile.Migration.MemberImporter do
           identifier: parse_int(member_id),
           email: safe_truncate(final_email, 255),
           fullname: safe_truncate(clean_name, 255),
-          user_type_id: member_type && member_type.id,
-          user_image: safe_truncate(clean_image_name(member_image), 255),
+          user_type_id: user_type_id,
+          user_image: user_image_path,
           node_id: node && node.id,
           # Default password: "changeme123"
           hashed_password:
@@ -517,7 +565,7 @@ defmodule Voile.Migration.MemberImporter do
           gender: safe_truncate(map_gender(gender), 255),
           birth_date: parsed_birth_date,
           phone_number: safe_truncate(safe_string_trim(member_phone), 255),
-          address: safe_truncate(combine_addresses(member_address, member_mail_address), 255),
+          address: combine_addresses(member_address, member_mail_address),
           organization: safe_truncate(safe_string_trim(inst_name), 255),
           registration_date: parsed_member_since,
           expiry_date: parsed_expires_at,
@@ -535,7 +583,7 @@ defmodule Voile.Migration.MemberImporter do
       {:error, "Exception: #{Exception.message(e)}"}
   end
 
-  defp prepare_member_data(_invalid_row, _node_id, _cache) do
+  defp prepare_member_data(_invalid_row, _node_id, _skip_images, _cache) do
     {:skip, "Invalid row format - insufficient columns"}
   end
 
@@ -557,13 +605,6 @@ defmodule Voile.Migration.MemberImporter do
       "member_" <> String.slice(to_string(member_id), -6..-1//1)
     else
       base_username
-    end
-  end
-
-  defp get_member_type_cached(member_type_id, member_types_cache) do
-    case parse_int(member_type_id) do
-      nil -> nil
-      id -> Map.get(member_types_cache, id)
     end
   end
 
@@ -706,8 +747,105 @@ defmodule Voile.Migration.MemberImporter do
     end
   end
 
-  defp clean_image_name(image) when image in [nil, "", "square-image.png", "person.png"], do: nil
-  defp clean_image_name(image), do: safe_string_trim(image)
+  defp ensure_upload_dir do
+    # Ensure the base user_media directory exists
+    base_dir = Path.join(["priv", "static", "uploads", "user_media"])
+    File.mkdir_p!(base_dir)
+    :ok
+  end
+
+  defp download_member_image(image_name, _node_id)
+       when image_name in [nil, "", "square-image.png", "person.png"],
+       do: {:ok, nil}
+
+  defp download_member_image(image_name, node_id) do
+    # Clean up the image name
+    cleaned_name = String.trim(image_name)
+
+    if cleaned_name == "" do
+      {:ok, nil}
+    else
+      try do
+        # Construct the full URL for UNPAD library member images
+        base_url =
+          "https://lib.unpad.ac.id/lib/minigalnano/createthumb.php?filename=../../images/persons/"
+
+        full_url = base_url <> cleaned_name <> "&width=200"
+
+        # Determine file extension from the image name
+        file_extension = Path.extname(cleaned_name) |> String.downcase()
+        file_extension = if file_extension == "", do: ".png", else: file_extension
+
+        # Create node-specific directory
+        node_dir = Path.join(["priv", "static", "uploads", "user_media", to_string(node_id)])
+        File.mkdir_p!(node_dir)
+
+        # Generate filename - keep original filename for better organization
+        original_filename = Path.basename(cleaned_name, Path.extname(cleaned_name))
+        final_filename = "#{original_filename}#{file_extension}"
+        destination = Path.join(node_dir, final_filename)
+
+        # Download the image
+        case download_from_http(full_url, destination) do
+          {:ok, _content_type} ->
+            # Return the relative path that will be stored in the database
+            relative_path =
+              Path.join(["uploads", "user_media", to_string(node_id), final_filename])
+
+            {:ok, relative_path}
+
+          {:error, reason} ->
+            IO.puts("⚠️ Failed to download member image '#{cleaned_name}': #{inspect(reason)}")
+            {:ok, nil}
+        end
+      rescue
+        e ->
+          IO.puts(
+            "⚠️ Exception downloading member image '#{cleaned_name}': #{Exception.message(e)}"
+          )
+
+          {:ok, nil}
+      end
+    end
+  end
+
+  # Download image from HTTP URL and return content type
+  defp download_from_http(url, destination) do
+    # Use Req for HTTP downloads
+    case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 30_000) do
+      {:ok, %Req.Response{status: 200, body: body, headers: headers}} ->
+        case File.write(destination, body) do
+          :ok ->
+            content_type = get_content_type_from_headers(headers)
+            {:ok, content_type}
+
+          {:error, reason} ->
+            {:error, "Failed to write file: #{inspect(reason)}"}
+        end
+
+      {:ok, %Req.Response{status: status_code}} ->
+        {:error, "HTTP #{status_code}"}
+
+      {:error, reason} ->
+        {:error, "HTTP request failed: #{inspect(reason)}"}
+    end
+  rescue
+    e ->
+      {:error, "Exception during HTTP download: #{Exception.message(e)}"}
+  end
+
+  # Extract content type from response headers
+  defp get_content_type_from_headers(headers) do
+    headers
+    |> Enum.find(fn {key, _value} -> String.downcase(key) == "content-type" end)
+    |> case do
+      {_key, content_type} when is_binary(content_type) ->
+        String.split(content_type, ";") |> hd() |> String.trim()
+
+      _ ->
+        "image/png"
+    end
+  end
 
   # Safely truncate string to max length (PostgreSQL VARCHAR default is 255)
   defp safe_truncate(nil, _max_length), do: nil
@@ -724,8 +862,6 @@ defmodule Voile.Migration.MemberImporter do
       trimmed
     end
   end
-
-  defp safe_truncate(value, _max_length), do: value
 
   # Safe parsing functions with error handling and logging
   defp safe_parse_datetime(val) do

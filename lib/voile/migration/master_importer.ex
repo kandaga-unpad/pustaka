@@ -146,6 +146,10 @@ defmodule Voile.Migration.MasterImporter do
     stats_ref = :ets.new(:creator_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
+    # Initialize skip reason counters
+    :ets.insert(stats_ref, {:skip_duplicate, 0})
+    :ets.insert(stats_ref, {:skip_empty, 0})
+    :ets.insert(stats_ref, {:skip_invalid, 0})
     # Create a separate ETS table to store seen names as individual keys.
     # This avoids repeatedly copying a large MapSet into ETS per row.
     seen_table = :ets.new(:seen_creator_names, [:set, :private])
@@ -176,6 +180,17 @@ defmodule Voile.Migration.MasterImporter do
       # Return final stats
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
+      [{:skip_duplicate, skip_duplicate}] = :ets.lookup(stats_ref, :skip_duplicate)
+      [{:skip_empty, skip_empty}] = :ets.lookup(stats_ref, :skip_empty)
+      [{:skip_invalid, skip_invalid}] = :ets.lookup(stats_ref, :skip_invalid)
+
+      # Print skip breakdown
+      if skipped > 0 do
+        IO.puts("\n  Skip breakdown:")
+        IO.puts("    - Duplicate names: #{skip_duplicate}")
+        IO.puts("    - Empty names: #{skip_empty}")
+        IO.puts("    - Invalid format: #{skip_invalid}")
+      end
 
       # Extract final seen names from the seen_table ETS and return as MapSet
       seen_table_tid =
@@ -214,6 +229,10 @@ defmodule Voile.Migration.MasterImporter do
     stats_ref = :ets.new(:publisher_import_stats, [:set, :public])
     :ets.insert(stats_ref, {:inserted, 0})
     :ets.insert(stats_ref, {:skipped, 0})
+    # Initialize skip reason counters
+    :ets.insert(stats_ref, {:skip_duplicate, 0})
+    :ets.insert(stats_ref, {:skip_empty, 0})
+    :ets.insert(stats_ref, {:skip_invalid, 0})
     # Create ETS table for publisher seen names to avoid copying MapSet repeatedly
     seen_table = :ets.new(:seen_publisher_names, [:set, :private])
 
@@ -243,6 +262,17 @@ defmodule Voile.Migration.MasterImporter do
       # Return final stats
       [{:inserted, inserted}] = :ets.lookup(stats_ref, :inserted)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
+      [{:skip_duplicate, skip_duplicate}] = :ets.lookup(stats_ref, :skip_duplicate)
+      [{:skip_empty, skip_empty}] = :ets.lookup(stats_ref, :skip_empty)
+      [{:skip_invalid, skip_invalid}] = :ets.lookup(stats_ref, :skip_invalid)
+
+      # Print skip breakdown
+      if skipped > 0 do
+        IO.puts("\n  Skip breakdown:")
+        IO.puts("    - Duplicate names: #{skip_duplicate}")
+        IO.puts("    - Empty names: #{skip_empty}")
+        IO.puts("    - Invalid format: #{skip_invalid}")
+      end
 
       seen_table_tid =
         case :ets.lookup(stats_ref, :seen_table) do
@@ -340,6 +370,7 @@ defmodule Voile.Migration.MasterImporter do
       case seen_table_tid do
         nil ->
           :ets.update_counter(stats_ref, :skipped, 1)
+          update_skip_reason(stats_ref, "duplicate name")
           {:skip, "duplicate name"}
 
         tid ->
@@ -360,17 +391,20 @@ defmodule Voile.Migration.MasterImporter do
 
             false ->
               :ets.update_counter(stats_ref, :skipped, 1)
+              update_skip_reason(stats_ref, "duplicate name")
               {:skip, "duplicate name"}
           end
       end
     else
       :ets.update_counter(stats_ref, :skipped, 1)
+      update_skip_reason(stats_ref, "empty name")
       {:skip, "empty name"}
     end
   end
 
   defp prepare_creator_data(_invalid_row, _now, stats_ref) do
     :ets.update_counter(stats_ref, :skipped, 1)
+    update_skip_reason(stats_ref, "invalid row format")
     {:skip, "invalid row format"}
   end
 
@@ -390,6 +424,7 @@ defmodule Voile.Migration.MasterImporter do
       case seen_table_tid do
         nil ->
           :ets.update_counter(stats_ref, :skipped, 1)
+          update_skip_reason(stats_ref, "duplicate name")
           {:skip, "duplicate name"}
 
         tid ->
@@ -408,17 +443,20 @@ defmodule Voile.Migration.MasterImporter do
 
             false ->
               :ets.update_counter(stats_ref, :skipped, 1)
+              update_skip_reason(stats_ref, "duplicate name")
               {:skip, "duplicate name"}
           end
       end
     else
       :ets.update_counter(stats_ref, :skipped, 1)
+      update_skip_reason(stats_ref, "empty name")
       {:skip, "empty name"}
     end
   end
 
   defp prepare_publisher_data(_invalid_row, _now, stats_ref) do
     :ets.update_counter(stats_ref, :skipped, 1)
+    update_skip_reason(stats_ref, "invalid row format")
     {:skip, "invalid row format"}
   end
 
@@ -452,4 +490,14 @@ defmodule Voile.Migration.MasterImporter do
   end
 
   defp map_authority_to_type(_), do: "Person"
+
+  # Helper function to track skip reasons
+  defp update_skip_reason(stats_ref, reason) do
+    case reason do
+      "duplicate name" -> :ets.update_counter(stats_ref, :skip_duplicate, 1)
+      "empty name" -> :ets.update_counter(stats_ref, :skip_empty, 1)
+      "invalid row format" -> :ets.update_counter(stats_ref, :skip_invalid, 1)
+      _ -> :ok
+    end
+  end
 end
