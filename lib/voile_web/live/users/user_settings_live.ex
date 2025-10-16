@@ -71,6 +71,13 @@ defmodule VoileWeb.UserSettingsLive do
               required
             /> <.button phx-disable-with="Changing...">Change Password</.button>
           </.form>
+          
+          <div class="mt-3">
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              Can't remember your current password? We'll email you a secure link so you can set a new password.
+            </p>
+             <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
+          </div>
         </div>
         
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
@@ -395,6 +402,18 @@ defmodule VoileWeb.UserSettingsLive do
           {:noreply, put_flash(socket, :error, "Failed to delete image")}
       end
     end
+  end
+
+  def handle_event("send_set_password_link", _params, socket) do
+    user = socket.assigns.current_scope.user
+
+    Accounts.deliver_user_reset_password_instructions(
+      user,
+      &url(~p"/users/set_initial_password/#{&1}")
+    )
+
+    {:noreply,
+     put_flash(socket, :info, "A link to set your password has been sent to your email.")}
   end
 
   def handle_event("validate_password", params, socket) do

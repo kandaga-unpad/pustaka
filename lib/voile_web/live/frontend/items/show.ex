@@ -39,7 +39,7 @@ defmodule VoileWeb.Frontend.Items.Show do
          |> assign(:related_items, related_items)
          |> assign(
            :page_title,
-           "#{item.item_code} - #{if item.collection && item.collection.title, do: item.collection.title, else: ""}"
+           "Item - #{if item.collection && item.collection.title, do: item.collection.title, else: ""}"
          )
          |> assign(:loading, false)}
 
@@ -194,21 +194,19 @@ defmodule VoileWeb.Frontend.Items.Show do
                 <div class="lg:col-span-8">
                   <!-- Item Header -->
                   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
-                    <div class="flex flex-col sm:flex-row gap-6">
+                    <div class="flex flex-col">
                       <!-- Item Visual -->
-                      <div class="sm:w-48 flex-shrink-0">
-                        <div class="w-full h-64 sm:h-64 bg-gradient-to-br from-voile-info to-voile-primary dark:from-voile-primary dark:to-voile-dark rounded-lg flex items-center justify-center">
+                      <div class="w-full flex flex-col sm:flex-row gap-6">
+                        <div class="w-full h-72 sm:w-128 bg-gradient-to-br from-voile-info to-voile-primary dark:from-voile-primary dark:to-voile-dark rounded-lg flex items-center justify-center">
                           <div class="text-center">
                             <.icon
                               name="hero-document-solid"
                               class="w-16 h-16 mx-auto text-white mb-2"
                             />
-                            <div class="text-sm font-medium text-white">{@item.item_code}</div>
+                            <div class="text-sm font-medium text-white p-3">{@item.item_code}</div>
                           </div>
                         </div>
-                      </div>
-                      <!-- Details -->
-                      <div class="flex-1 min-w-0">
+                        
                         <div class="flex items-start justify-between">
                           <div class="flex-1">
                             <h1 class="text-2xl sm:text-3xl font-bold mb-2">{@item.item_code}</h1>
@@ -243,102 +241,150 @@ defmodule VoileWeb.Frontend.Items.Show do
                             </span>
                           </div>
                         </div>
+                      </div>
+                      <!-- Details -->
+                      <div class="flex-1 min-w-0">
                         <!-- Item Metadata Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mt-6">
-                          <div class="flex items-center">
-                            <.icon
-                              name="hero-hashtag-solid"
-                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Item Code:</span>
-                            <span class="font-medium text-gray-900 dark:text-white">
-                              {@item.item_code}
-                            </span>
+                          <div class="flex items-center justify-center">
+                            <div class="flex items-center">
+                              <.icon
+                                name="hero-hashtag-solid"
+                                class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                              />
+                            </div>
+                            
+                            <div class="flex flex-col">
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">Item Code:</span>
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {@item.item_code}
+                              </span>
+                            </div>
                           </div>
                           
                           <%= if @item.inventory_code do %>
                             <div class="flex items-center">
-                              <.icon
-                                name="hero-identification-solid"
-                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              />
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">
-                                Inventory Code:
-                              </span>
-                              <span class="font-medium text-gray-900 dark:text-white">
-                                {@item.inventory_code}
-                              </span>
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-identification-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+                              
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  Inventory Code:
+                                </span>
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  {@item.inventory_code}
+                                </span>
+                              </div>
                             </div>
                           <% end %>
                           
                           <div class="flex items-center">
-                            <.icon
-                              name="hero-map-pin-solid"
-                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Location:</span>
-                            <span class="font-medium text-gray-900 dark:text-white">
-                              {@item.location}
-                            </span>
+                            <div class="flex items-center">
+                              <.icon
+                                name="hero-map-pin-solid"
+                                class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                              />
+                            </div>
+                            
+                            <div class="flex flex-col">
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">Location:</span>
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {@item.location}
+                              </span>
+                            </div>
                           </div>
                           
                           <%= if @item.node do %>
                             <div class="flex items-center">
-                              <.icon
-                                name="hero-building-library-solid"
-                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Library:</span>
-                              <span class="font-medium text-gray-900 dark:text-white">
-                                {@item.node.name}
-                              </span>
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-building-library-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+                              
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">Library:</span>
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  {@item.node.name}
+                                </span>
+                              </div>
                             </div>
                           <% end %>
                           
                           <%= if @item.price do %>
                             <div class="flex items-center">
-                              <.icon
-                                name="hero-currency-dollar-solid"
-                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Price:</span>
-                              <span class="font-medium text-gray-900 dark:text-white">
-                                ${@item.price}
-                              </span>
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-currency-dollar-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+                               <span class="text-gray-500 dark:text-gray-400 mr-2">Price:</span>
+                              <div class="flex flex-col">
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  ${@item.price}
+                                </span>
+                              </div>
                             </div>
                           <% end %>
                           
                           <%= if @item.acquisition_date do %>
                             <div class="flex items-center">
-                              <.icon
-                                name="hero-calendar-days-solid"
-                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Acquired:</span>
-                              <span class="font-medium text-gray-900 dark:text-white">
-                                {Calendar.strftime(@item.acquisition_date, "%B %d, %Y")}
-                              </span>
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-calendar-days-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+                              
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">Acquired:</span>
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  {Calendar.strftime(@item.acquisition_date, "%B %d, %Y")}
+                                </span>
+                              </div>
                             </div>
                           <% end %>
                           
                           <%= if @item.last_circulated do %>
                             <div class="flex items-center">
-                              <.icon
-                                name="hero-arrow-path-solid"
-                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              />
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">
-                                Last Circulated:
-                              </span>
-                              <span class="font-medium text-gray-900 dark:text-white">
-                                {Calendar.strftime(@item.last_circulated, "%B %d, %Y")}
-                              </span>
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-arrow-path-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+                              
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  Last Circulated:
+                                </span>
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  {Calendar.strftime(@item.last_circulated, "%B %d, %Y")}
+                                </span>
+                              </div>
                             </div>
                           <% end %>
                           
                           <div class="flex items-center">
-                            <.icon
-                              name="hero-calendar-solid"
-                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Added:</span>
-                            <span class="font-medium text-gray-900 dark:text-white">
-                              {Calendar.strftime(@item.inserted_at, "%B %d, %Y")}
-                            </span>
+                            <div class="flex items-center">
+                              <.icon
+                                name="hero-calendar-solid"
+                                class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                              />
+                            </div>
+                            
+                            <div class="flex flex-col">
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">Added:</span>
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {Calendar.strftime(@item.inserted_at, "%B %d, %Y")}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

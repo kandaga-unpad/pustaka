@@ -50,9 +50,6 @@ VOILE is more than just a library management system—it’s a digital sanctuary
 - Phoenix `v1.17.20`
 - Erlang (BEAM VM) `OTP 27.1`
 - PostgreSQL `14 or newer` (Recommended and Optimized),
-  - SQLite (Not Optimized)
-  - MySQL / MariaDB (Not Optimized)
-  - MicrosoftSQL Server (Not Optimized)
 
 **Client:**
 

@@ -452,14 +452,14 @@ defmodule Voile.Schema.Accounts do
 
     case Repo.one(query) do
       # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
-      {%User{confirmed_at: nil, hashed_password: hash}, _token} when not is_nil(hash) ->
-        raise """
-        magic link log in is not allowed for unconfirmed users with a password set!
+      {%User{confirmed_at: nil, hashed_password: hash} = user, token} when not is_nil(hash) ->
+        # Instead of raising, return an actionable error tuple so the caller can
+        # guide the user to set a password (for example, using the reset password flow).
+        # Build a reset password token so the user can safely set their password.
+        {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
+        Repo.insert!(user_token)
 
-        This cannot happen with the default implementation, which indicates that you
-        might have adapted the code to a different use case. Please make sure to read the
-        "Mixing magic link and password registration" section of `mix help phx.gen.auth`.
-        """
+        {:error, {:unconfirmed_with_password, encoded_token, preload_user_assocs(user)}}
 
       {%User{confirmed_at: nil} = user, _token} ->
         user
@@ -584,13 +584,27 @@ defmodule Voile.Schema.Accounts do
 
   """
   def reset_user_password(user, attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.password_changeset(user, attrs))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, :all))
-    |> Repo.transaction()
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.update(:user, User.password_changeset(user, attrs))
+
+    # If the user is not confirmed, also confirm them as part of the reset flow.
+    multi =
+      if is_nil(user.confirmed_at) do
+        Ecto.Multi.update(multi, :confirm, User.confirm_changeset(user))
+      else
+        multi
+      end
+
+    multi =
+      Ecto.Multi.delete_all(multi, :tokens, UserToken.by_user_and_contexts_query(user, :all))
+
+    Repo.transaction(multi)
     |> case do
       {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
+      {:ok, %{confirm: _confirmed, user: user}} -> {:ok, preload_user_assocs(user)}
       {:error, :user, changeset, _} -> {:error, changeset}
+      {:error, :confirm, changeset, _} -> {:error, changeset}
     end
   end
 
