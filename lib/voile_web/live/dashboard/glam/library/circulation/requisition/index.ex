@@ -137,7 +137,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
     page = String.to_integer(page)
     per_page = 15
 
-    {requisitions, total_pages} = Circulation.list_requisitions_paginated(page, per_page)
+    filters = %{
+      status: socket.assigns.filter_status,
+      type: socket.assigns.filter_type
+    }
+
+    {requisitions, total_pages} =
+      Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
 
     socket =
       socket
@@ -151,7 +157,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
   defp reload_requisitions(socket) do
     page = 1
     per_page = 15
-    {requisitions, total_pages} = Circulation.list_requisitions_paginated(page, per_page)
+
+    filters = %{
+      status: socket.assigns.filter_status,
+      type: socket.assigns.filter_type
+    }
+
+    {requisitions, total_pages} =
+      Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
 
     socket
     |> stream(:requisitions, requisitions, reset: true)

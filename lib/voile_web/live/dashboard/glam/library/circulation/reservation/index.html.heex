@@ -6,9 +6,11 @@
     %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
     %{label: "Reservations", path: nil}
   ]} />
-  <div class="sm:flex sm:items-center sm:justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Library Reservations</h1>
+  <div class="sm:flex sm:items-center sm:justify-between my-16">
+    <.back navigate="/manage/glam/library/circulation">Back</.back>
+    
+    <div class="text-center">
+      <h1 class="text-2xl font-bold">Library Reservations</h1>
       
       <p class="mt-2 text-sm text-gray-700">Manage item reservations and queue system</p>
     </div>
@@ -23,32 +25,32 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-voile-surface shadow rounded-lg mb-6">
+  <div class="bg-white dark:bg-gray-700 shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="flex space-x-4">
-          <select
-            phx-change="filter"
-            name="status"
-            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="all" selected={@filter_status == "all"}>All Status</option>
-            
-            <option value="pending" selected={@filter_status == "pending"}>Pending</option>
-            
-            <option value="available" selected={@filter_status == "available"}>Available</option>
-            
-            <option value="picked_up" selected={@filter_status == "picked_up"}>Picked Up</option>
-            
-            <option value="expired" selected={@filter_status == "expired"}>Expired</option>
-            
-            <option value="cancelled" selected={@filter_status == "cancelled"}>Cancelled</option>
-          </select>
+          <.form :let={f} for={%{}} phx-change="filter" class="inline">
+            <.input
+              field={f[:status]}
+              type="select"
+              options={[
+                {"All Status", "all"},
+                {"Pending", "pending"},
+                {"Available", "available"},
+                {"Picked Up", "picked_up"},
+                {"Expired", "expired"},
+                {"Cancelled", "cancelled"}
+              ]}
+              value={@filter_status}
+              class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              label=""
+            />
+          </.form>
         </div>
       </div>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="bg-white dark:bg-gray-700 px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">-</div>
         
@@ -75,7 +77,7 @@
     </div>
   </div>
   <!-- Reservations Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
     <.table id="reservations" rows={@streams.reservations}>
       <:col :let={{_id, reservation}} label="Member">
         <div class="flex items-center">
@@ -211,7 +213,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-voile-light sm:px-6">
+    <div class="bg-white dark:bg-gray-700 px-4 py-3 border-t border-voile-light sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

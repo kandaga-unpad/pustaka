@@ -6,9 +6,11 @@
     %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
     %{label: "Requisitions", path: nil}
   ]} />
-  <div class="sm:flex sm:items-center sm:justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Library Requisitions</h1>
+  <div class="sm:flex sm:items-center sm:justify-between my-16">
+    <.back navigate="/manage/glam/library/circulation">Back</.back>
+    
+    <div class="text-center">
+      <h1 class="text-2xl font-bold">Library Requisitions</h1>
       
       <p class="mt-2 text-sm text-gray-700">Manage member requests and special services</p>
     </div>
@@ -23,73 +25,45 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-white shadow rounded-lg mb-6">
+  <div class="bg-white dark:bg-gray-700 shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
-      <form phx-change="filter">
+      <.form :let={f} for={%{}} phx-change="filter">
         <div class="sm:flex sm:items-center sm:space-x-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="all" selected={@filter_status == "all"}>All Status</option>
-              
-              <option value="submitted" selected={@filter_status == "submitted"}>
-                Submitted
-              </option>
-              
-              <option value="reviewing" selected={@filter_status == "reviewing"}>
-                Reviewing
-              </option>
-              
-              <option value="approved" selected={@filter_status == "approved"}>Approved</option>
-              
-              <option value="rejected" selected={@filter_status == "rejected"}>Rejected</option>
-              
-              <option value="fulfilled" selected={@filter_status == "fulfilled"}>
-                Fulfilled
-              </option>
-              
-              <option value="cancelled" selected={@filter_status == "cancelled"}>
-                Cancelled
-              </option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select
-              name="type"
-              class="block w-48 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
-            >
-              <option value="all" selected={@filter_type == "all"}>All Types</option>
-              
-              <option value="purchase_request" selected={@filter_type == "purchase_request"}>
-                Purchase Request
-              </option>
-              
-              <option value="interlibrary_loan" selected={@filter_type == "interlibrary_loan"}>
-                Interlibrary Loan
-              </option>
-              
-              <option
-                value="digitization_request"
-                selected={@filter_type == "digitization_request"}
-              >
-                Digitization Request
-              </option>
-              
-              <option value="reference_question" selected={@filter_type == "reference_question"}>
-                Reference Question
-              </option>
-            </select>
-          </div>
+          <.input
+            field={f[:status]}
+            type="select"
+            options={[
+              {"All Status", "all"},
+              {"Submitted", "submitted"},
+              {"Reviewing", "reviewing"},
+              {"Approved", "approved"},
+              {"Rejected", "rejected"},
+              {"Fulfilled", "fulfilled"},
+              {"Cancelled", "cancelled"}
+            ]}
+            value={@filter_status}
+            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+            label=""
+          />
+          <.input
+            field={f[:type]}
+            type="select"
+            options={[
+              {"All Types", "all"},
+              {"Purchase Request", "purchase_request"},
+              {"Interlibrary Loan", "interlibrary_loan"},
+              {"Digitization Request", "digitization_request"},
+              {"Reference Question", "reference_question"}
+            ]}
+            value={@filter_type}
+            class="block w-48 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+            label=""
+          />
         </div>
-      </form>
+      </.form>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
+    <div class="bg-white dark:bg-gray-700 px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">-</div>
         
@@ -122,7 +96,7 @@
     </div>
   </div>
   <!-- Requisitions Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
     <.table id="requisitions" rows={@streams.requisitions}>
       <:col :let={{_id, requisition}} label="Title & Author">
         <div>
@@ -264,7 +238,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+    <div class="bg-white dark:bg-gray-700 px-4 py-3 border-t border-gray-200 sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

@@ -6,8 +6,10 @@
     %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
     %{label: "Fines", path: nil}
   ]} />
-  <div class="sm:flex sm:items-center sm:justify-between mb-6">
-    <div>
+  <div class="sm:flex sm:items-center sm:justify-between my-16">
+    <.back navigate="/manage/glam/library/circulation">Back</.back>
+    
+    <div class="text-center">
       <h1 class="text-2xl font-bold text-surface-dark">Library Fines</h1>
       
       <p class="mt-2 text-sm text-gray-700">Manage fines, payments, and waivers</p>
@@ -23,56 +25,43 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-voile-neutral dark:bg-voile-neutral-dark shadow rounded-lg mb-6">
+  <div class="bg-white dark:bg-gray-700 shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
-      <form phx-change="filter">
+      <.form :let={f} for={%{}} phx-change="filter">
         <div class="sm:flex sm:items-center sm:space-x-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="all" selected={@filter_status == "all"}>All Status</option>
-              
-              <option value="pending" selected={@filter_status == "pending"}>Pending</option>
-              
-              <option value="partial_paid" selected={@filter_status == "partial_paid"}>
-                Partial Paid
-              </option>
-              
-              <option value="paid" selected={@filter_status == "paid"}>Paid</option>
-              
-              <option value="waived" selected={@filter_status == "waived"}>Waived</option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select
-              name="type"
-              class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="all" selected={@filter_type == "all"}>All Types</option>
-              
-              <option value="overdue" selected={@filter_type == "overdue"}>Overdue</option>
-              
-              <option value="lost_item" selected={@filter_type == "lost_item"}>Lost Item</option>
-              
-              <option value="damaged_item" selected={@filter_type == "damaged_item"}>
-                Damaged Item
-              </option>
-              
-              <option value="processing" selected={@filter_type == "processing"}>
-                Processing
-              </option>
-            </select>
-          </div>
+          <.input
+            field={f[:status]}
+            type="select"
+            options={[
+              {"All Status", "all"},
+              {"Pending", "pending"},
+              {"Partial Paid", "partial_paid"},
+              {"Paid", "paid"},
+              {"Waived", "waived"}
+            ]}
+            value={@filter_status}
+            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+            label=""
+          />
+          <.input
+            field={f[:type]}
+            type="select"
+            options={[
+              {"All Types", "all"},
+              {"Overdue", "overdue"},
+              {"Lost Item", "lost_item"},
+              {"Damaged Item", "damaged_item"},
+              {"Processing Fee", "processing"}
+            ]}
+            value={@filter_type}
+            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+            label=""
+          />
         </div>
-      </form>
+      </.form>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-voile-neutral dark:bg-voile-neutral-dark grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="bg-white dark:bg-gray-700 px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
         
@@ -99,7 +88,7 @@
     </div>
   </div>
   <!-- Fines Table -->
-  <div class="bg-voile-neutral dark:bg-voile-neutral-dark shadow overflow-hidden sm:rounded-md">
+  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
     <.table id="fines" rows={@streams.fines}>
       <:col :let={{_id, fine}} label="Member">
         <div class="flex items-center">
@@ -196,7 +185,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-voile-light sm:px-6">
+    <div class="bg-white dark:bg-gray-700 px-4 py-3 border-t border-voile-light sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

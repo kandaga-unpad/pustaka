@@ -152,7 +152,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
     page = String.to_integer(page)
     per_page = 15
 
-    {reservations, total_pages} = Circulation.list_reservations_paginated(page, per_page)
+    filters = %{status: socket.assigns.filter_status}
+
+    {reservations, total_pages} =
+      Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
 
     socket =
       socket
@@ -166,7 +169,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
   defp reload_reservations(socket) do
     page = 1
     per_page = 15
-    {reservations, total_pages} = Circulation.list_reservations_paginated(page, per_page)
+    filters = %{status: socket.assigns.filter_status}
+
+    {reservations, total_pages} =
+      Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
 
     socket
     |> stream(:reservations, reservations, reset: true)

@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
         %{label: "Manage", path: ~p"/manage"},
         %{label: "GLAM", path: ~p"/manage/glam"},
         %{label: "Library", path: ~p"/manage/glam/library"},
-        %{label: "Library Circulation", path: nil}
+        %{label: "Circulation", path: nil}
       ]} />
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">

@@ -23,7 +23,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           <!-- Collection Type Specific Hints -->
           <%= if @upload_hints do %>
             <div class="mb-4 p-3 bg-voile-info border border-voile-primary rounded-md">
-              <p class="text-sm text-voile-primary">
+              <p class="text-sm text-white">
                 <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fill-rule="evenodd"
@@ -45,10 +45,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             >
               <div class="space-y-1 text-center flex flex-col items-center">
                 {collection_type_icon(@collection_type)}
-                <div class="flex text-sm text-voile-dark dark:text-voile-surface">
+                <div class="flex text-sm">
                   <label
                     for={@uploads.attachments.ref}
-                    class="relative cursor-pointer bg-voile-surface dark:bg-voile-neutral-dark rounded-md font-medium text-voile-primary hover:text-voile-primary dark:text-voile-surface dark:hover:text-voile-surface focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-voile-primary"
+                    class="relative cursor-pointer rounded-md font-medium text-voile-secondary"
                   >
                     <span>Upload files</span>
                     <.live_file_input upload={@uploads.attachments} class="sr-only" />
@@ -56,7 +56,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   <p class="pl-1">or drag and drop</p>
                 </div>
                 <!-- Dynamic file type hints -->
-                <p class="text-xs text-voile-dark dark:text-voile-surface">
+                <p class="text-xs text-gray-500 dark:text-gray-300">
                   {format_allowed_types(@allowed_types)} up to 100MB each
                 </p>
               </div>
@@ -160,7 +160,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                 No attachments
               </h3>
               
-              <p class="mt-1 text-sm text-voile-dark dark:text-voile-dark">
+              <p class="mt-1 text-xs italic">
                 Start by uploading your first {if @collection_type, do: @collection_type, else: "file"}.
               </p>
             </div>

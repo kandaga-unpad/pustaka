@@ -79,7 +79,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
     page = String.to_integer(page)
     per_page = 20
 
-    {history, total_pages} = Circulation.list_circulation_history_paginated(page, per_page)
+    filters = %{
+      event_type: socket.assigns.filter_event_type,
+      query: Map.get(socket.assigns, :search_query, ""),
+      from: Map.get(socket.assigns, :date_from),
+      to: Map.get(socket.assigns, :date_to)
+    }
+
+    {history, total_pages} =
+      Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
 
     socket =
       socket

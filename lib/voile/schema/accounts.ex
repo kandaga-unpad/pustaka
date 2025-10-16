@@ -452,7 +452,7 @@ defmodule Voile.Schema.Accounts do
 
     case Repo.one(query) do
       # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
-      {%User{confirmed_at: nil, hashed_password: hash} = user, token} when not is_nil(hash) ->
+      {%User{confirmed_at: nil, hashed_password: hash} = user, _token} when not is_nil(hash) ->
         # Instead of raising, return an actionable error tuple so the caller can
         # guide the user to set a password (for example, using the reset password flow).
         # Build a reset password token so the user can safely set their password.
