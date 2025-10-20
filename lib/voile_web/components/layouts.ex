@@ -496,8 +496,6 @@ defmodule VoileWeb.Layouts do
         role.name in ["super_admin", "admin", "editor"]
       end)
 
-    dbg(user)
-
     # Check if user has any administrative permissions
     has_admin_permission? =
       Authorization.can?(user, "system.settings") ||

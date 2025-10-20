@@ -192,6 +192,11 @@ defmodule VoileWeb.Router do
                 live "/:id", Dashboard.Glam.Library.Circulation.CirculationHistory.Show, :show
               end
             end
+
+            scope "/ledger" do
+              live "/", Dashboard.Glam.Library.Ledger.Index, :index
+              live "/transact/:id", Dashboard.Glam.Library.Ledger.Transact, :transact
+            end
           end
 
           scope "/archive" do

@@ -18,6 +18,8 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     # Get recent activity across all GLAM types
     recent_collections = get_recent_collections(5)
 
+    dbg(glam_stats)
+
     socket =
       socket
       |> assign(:page_title, "GLAM Dashboard")
@@ -158,7 +160,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   end
 
   defp calculate_percentage(_count, 0), do: 0
-  defp calculate_percentage(count, total), do: round(count / total * 100)
+  defp calculate_percentage(count, total), do: Float.round(count / total * 100, 3)
 
   defp get_recent_collections(limit) do
     from(c in Collection,

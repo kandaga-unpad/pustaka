@@ -3,6 +3,7 @@ defmodule Voile.Schema.Catalog.Collection do
   import Ecto.Changeset
 
   alias Voile.Schema.Accounts.CollectionPermission
+  alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.Attachment
   alias Voile.Schema.Catalog.CollectionField
   alias Voile.Schema.Catalog.Item
@@ -29,6 +30,8 @@ defmodule Voile.Schema.Catalog.Collection do
     belongs_to :resource_template, ResourceTemplate, foreign_key: :template_id, type: :integer
     belongs_to :mst_creator, Creator, foreign_key: :creator_id, type: :integer
     belongs_to :node, Node, foreign_key: :unit_id, type: :integer
+    belongs_to :created_by, User, foreign_key: :created_by_id, type: :binary_id
+    belongs_to :updated_by, User, foreign_key: :updated_by_id, type: :binary_id
 
     has_many :children, __MODULE__, foreign_key: :parent_id
     has_many :collection_fields, CollectionField, on_replace: :delete
@@ -69,7 +72,9 @@ defmodule Voile.Schema.Catalog.Collection do
       :unit_id,
       :parent_id,
       :sort_order,
-      :collection_type
+      :collection_type,
+      :created_by_id,
+      :updated_by_id
     ])
     |> cast_assoc(:collection_fields, with: &CollectionField.changeset/2, required: false)
     |> cast_assoc(:items, with: &Item.changeset/2, required: false)

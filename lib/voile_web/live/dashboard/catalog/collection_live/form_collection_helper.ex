@@ -419,6 +419,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def save_collection(socket, :edit, collection_params) do
+    updated_by = socket.assigns.current_scope.user.id
+    collection_params = Map.put(collection_params, "updated_by_id", updated_by)
+
     case Catalog.update_collection(socket.assigns.original_collection, collection_params) do
       {:ok, collection} ->
         notify_parent({:saved, collection})
@@ -455,9 +458,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       end
 
     generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+    created_by = socket.assigns.current_scope.user.id
 
     collection_params =
-      Map.put(collection_params, "collection_code", generated_code)
+      collection_params
+      |> Map.put("collection_code", generated_code)
+      |> Map.put("created_by_id", created_by)
 
     case Catalog.create_collection(collection_params) do
       {:ok, collection} ->
@@ -476,7 +482,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def save_collection_as_draft(socket, :edit, collection_params) do
-    # Ensure status is set to draft
+    updated_by = socket.assigns.current_scope.user.id
+    collection_params = Map.put(collection_params, "updated_by_id", updated_by)
     draft_params = Map.put(collection_params, "status", "draft")
 
     case Catalog.update_collection(socket.assigns.original_collection, draft_params) do
@@ -515,12 +522,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       end
 
     generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+    created_by = socket.assigns.current_scope.user.id
 
     # Ensure status is set to draft and add generated code
     draft_params =
       collection_params
       |> Map.put("collection_code", generated_code)
       |> Map.put("status", "draft")
+      |> Map.put("created_by_id", created_by)
 
     case Catalog.create_collection(draft_params) do
       {:ok, collection} ->

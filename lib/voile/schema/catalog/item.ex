@@ -2,6 +2,7 @@ defmodule Voile.Schema.Catalog.Item do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Voile.Schema.Accounts.User
   alias Voile.Schema.System.Node
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Catalog.Attachment
@@ -24,6 +25,8 @@ defmodule Voile.Schema.Catalog.Item do
     belongs_to :collection, Collection, type: :binary_id
     belongs_to :node, Node, foreign_key: :unit_id
     belongs_to :item_location, Location
+    belongs_to :created_by, User, foreign_key: :created_by_id, type: :binary_id
+    belongs_to :updated_by, User, foreign_key: :updated_by_id, type: :binary_id
 
     has_many :attachments, Attachment,
       where: [attachable_type: "item"],
@@ -72,7 +75,9 @@ defmodule Voile.Schema.Catalog.Item do
       :location,
       :collection_id,
       :unit_id,
-      :item_location_id
+      :item_location_id,
+      :created_by_id,
+      :updated_by_id
     ])
     |> cast_assoc(:attachments, with: &Attachment.changeset/2, required: false)
     |> validate_required([
