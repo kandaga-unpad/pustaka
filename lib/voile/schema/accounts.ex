@@ -734,6 +734,106 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Search users with pagination. Returns {users, total_pages}.
+  Accepts page, per_page, and the same params map as `search_users/1`.
+  """
+  def search_users_paginated(page \\ 1, per_page \\ 10, %{} = params) do
+    offset = (page - 1) * per_page
+
+    query_string = Map.get(params, "query", "")
+    search_term = "%#{query_string}%"
+
+    q = from(u in User, preload: [:user_type, :roles])
+
+    q =
+      if query_string != "" do
+        from(u in q,
+          where:
+            ilike(u.username, ^search_term) or ilike(u.email, ^search_term) or
+              ilike(u.fullname, ^search_term)
+        )
+      else
+        q
+      end
+
+    # role filter
+    q =
+      case Map.get(params, "user_role_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        role_id when is_binary(role_id) ->
+          role_id_int = String.to_integer(role_id)
+
+          from(u in q,
+            join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+            on: ura.user_id == u.id,
+            where: ura.role_id == ^role_id_int,
+            where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+            distinct: true
+          )
+
+        role_id when is_integer(role_id) ->
+          from(u in q,
+            join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+            on: ura.user_id == u.id,
+            where: ura.role_id == ^role_id,
+            where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+            distinct: true
+          )
+      end
+
+    # node filter
+    q =
+      case Map.get(params, "node_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        node_id when is_binary(node_id) ->
+          from(u in q, where: u.node_id == ^String.to_integer(node_id))
+
+        node_id when is_integer(node_id) ->
+          from(u in q, where: u.node_id == ^node_id)
+      end
+
+    # user_type filter
+    q =
+      case Map.get(params, "user_type_id") do
+        nil ->
+          q
+
+        "" ->
+          q
+
+        mt when is_binary(mt) ->
+          from(u in q, where: u.user_type_id == ^mt)
+
+        mt ->
+          from(u in q, where: u.user_type_id == ^mt)
+      end
+
+    total_count = Repo.aggregate(q, :count, :id)
+
+    query =
+      from(u in q,
+        order_by: [desc: u.inserted_at],
+        limit: ^per_page,
+        offset: ^offset
+      )
+
+    users = Repo.all(query)
+
+    total_pages = div(total_count + per_page - 1, per_page)
+    {users, total_pages}
+  end
+
+  @doc """
   Returns the primary role struct for the given user or nil.
 
   Preference order:

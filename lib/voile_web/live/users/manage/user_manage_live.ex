@@ -264,7 +264,19 @@ defmodule VoileWeb.Users.ManageLive do
     page = String.to_integer(page)
     per_page = 10
 
-    {users, total_pages} = Accounts.list_users_paginated(page, per_page)
+    # If a search/filter is active, page through the filtered results
+    last_query = Map.get(socket.assigns, :last_search_params, %{})
+
+    {users, total_pages} =
+      if last_query != %{} and last_query != nil and
+           (Map.get(last_query, "query", "") != "" or
+              Enum.any?(~w(node_id user_role_id user_type_id), fn k ->
+                Map.get(last_query, k) not in [nil, ""]
+              end)) do
+        Accounts.search_users_paginated(page, per_page, last_query)
+      else
+        Accounts.list_users_paginated(page, per_page)
+      end
 
     socket =
       socket
@@ -314,8 +326,10 @@ defmodule VoileWeb.Users.ManageLive do
         params_copy = params
 
         Task.Supervisor.async_nolink(Voile.TaskSupervisor, fn ->
-          users = Accounts.search_users(params_copy)
-          send(caller, {:search_results, params_copy, users})
+          {users, total_pages} =
+            Accounts.search_users_paginated(1, socket.assigns.per_page, params_copy)
+
+          send(caller, {:search_results, params_copy, users, total_pages})
         end)
 
         # schedule a timeout in case the worker doesn't respond in time
@@ -330,7 +344,7 @@ defmodule VoileWeb.Users.ManageLive do
   end
 
   @impl true
-  def handle_info({:search_results, query, users}, socket) do
+  def handle_info({:search_results, query, users, total_pages}, socket) do
     # Ignore stale results if another query was issued after this one
     if socket.assigns[:last_query] == query do
       # cancel the scheduled timeout if present
@@ -343,6 +357,7 @@ defmodule VoileWeb.Users.ManageLive do
         |> stream(:users, users, reset: true)
         |> assign(:searching, false)
         |> assign(:search_timer, nil)
+        |> assign(:total_pages, total_pages)
 
       {:noreply, socket}
     else
@@ -352,8 +367,9 @@ defmodule VoileWeb.Users.ManageLive do
   end
 
   # Some supervisors/wrappers send messages wrapped with a monitor reference
-  def handle_info({_, {:search_results, query, users}}, socket) do
-    handle_info({:search_results, query, users}, socket)
+  # Some supervisors/wrappers send messages wrapped with a monitor reference
+  def handle_info({_, {:search_results, query, users, total_pages}}, socket) do
+    handle_info({:search_results, query, users, total_pages}, socket)
   end
 
   @impl true

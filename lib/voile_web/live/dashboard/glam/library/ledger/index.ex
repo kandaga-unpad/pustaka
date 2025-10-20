@@ -76,7 +76,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
   end
 
   def handle_event("continue_transaction", %{"member_id" => member_id}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/manage/glam/library/ledger/transact/#{member_id}")}
+    case Repo.get(User, member_id) do
+      nil ->
+        {:noreply, put_flash(socket, :error, "Member not found")}
+
+      member ->
+        if is_member_expired?(member) do
+          {:noreply, put_flash(socket, :error, "Cannot continue: Member has expired")}
+        else
+          {:noreply,
+           push_navigate(socket, to: ~p"/manage/glam/library/ledger/transact/#{member_id}")}
+        end
+    end
+  end
+
+  defp is_member_expired?(member) do
+    case member.expiry_date do
+      nil -> false
+      expiry_date -> Date.compare(expiry_date, Date.utc_today()) == :lt
+    end
   end
 
   defp search_members(query) do
@@ -359,6 +377,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
           </div>
            <%!-- Action Buttons --%>
           <div class="px-8 py-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <%= if @selected_member.expiry_date && Date.compare(@selected_member.expiry_date, Date.utc_today()) == :lt do %>
+              <div class="rounded-md bg-red-50 dark:bg-red-900/20 p-4 mb-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-red-400" />
+                  </div>
+                  
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Member Expired</h3>
+                    
+                    <p class="mt-1 text-sm text-red-700 dark:text-red-300">
+                      This member's account expired on {Calendar.strftime(
+                        @selected_member.expiry_date,
+                        "%B %d, %Y"
+                      )}.
+                      You cannot continue with transactions for expired members.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            
             <div class="flex gap-4 justify-end">
               <.button
                 phx-click="clear_selection"
@@ -369,7 +409,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <.button
                 phx-click="continue_transaction"
                 phx-value-member_id={@selected_member.id}
-                class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg"
+                disabled={
+                  @selected_member.expiry_date &&
+                    Date.compare(@selected_member.expiry_date, Date.utc_today()) == :lt
+                }
+                class={[
+                  "px-8 py-3 rounded-lg font-semibold shadow-lg",
+                  if(
+                    @selected_member.expiry_date &&
+                      Date.compare(@selected_member.expiry_date, Date.utc_today()) == :lt,
+                    do: "bg-gray-400 cursor-not-allowed text-gray-200",
+                    else: "bg-green-600 hover:bg-green-700 text-white"
+                  )
+                ]}
               >
                 <.icon name="hero-arrow-right" class="w-5 h-5 mr-2" /> Continue to Transaction
               </.button>

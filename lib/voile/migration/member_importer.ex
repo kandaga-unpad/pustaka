@@ -24,7 +24,12 @@ defmodule Voile.Migration.MemberImporter do
           existing_identifiers: MapSet.t()
         }
 
-  def import_all(batch_size \\ 1000, skip_images \\ false) do
+  def import_all(
+        batch_size \\ 1000,
+        skip_images \\ false,
+        allow_missing_email \\ false,
+        allow_missing_name \\ false
+      ) do
     IO.puts("👥 Starting member data import...")
 
     # Setup default data
@@ -64,7 +69,15 @@ defmodule Voile.Migration.MemberImporter do
             node_id = extract_node_from_filename(file)
 
             file_stats =
-              process_member_file_optimized(file, batch_size, node_id, skip_images, cache)
+              process_member_file_optimized(
+                file,
+                batch_size,
+                node_id,
+                skip_images,
+                cache,
+                allow_missing_email,
+                allow_missing_name
+              )
 
             %{
               inserted: acc.inserted + file_stats.inserted,
@@ -170,7 +183,15 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   # Optimized file processing using streams and batching
-  defp process_member_file_optimized(file_path, batch_size, node_id, skip_images, cache) do
+  defp process_member_file_optimized(
+         file_path,
+         batch_size,
+         node_id,
+         skip_images,
+         cache,
+         allow_missing_email,
+         allow_missing_name
+       ) do
     IO.puts("📋 Processing for node: #{get_node_name(node_id)}")
 
     if skip_images do
@@ -214,9 +235,47 @@ defmodule Voile.Migration.MemberImporter do
       |> Stream.with_index(1)
       |> Stream.map(fn {row, line_num} ->
         try do
-          {prepare_member_data(row, node_id, skip_images, cache), line_num}
+          case prepare_member_data(
+                 row,
+                 node_id,
+                 skip_images,
+                 cache,
+                 allow_missing_email,
+                 allow_missing_name
+               ) do
+            {:ok, user_attrs} ->
+              {{:ok, user_attrs}, line_num}
+
+            {:skip, reason} ->
+              # increment skipped counter for each skipped row
+              :ets.update_counter(stats_ref, :skipped, 1)
+              # increment per-reason counter (initialize to 0 if missing)
+              :ets.update_counter(
+                stats_ref,
+                {:skip_reason, reason},
+                1,
+                {{:skip_reason, reason}, 0}
+              )
+
+              IO.puts("⚠️ Skipping line #{line_num}: #{reason}")
+              {{:skip, reason}, line_num}
+
+            {:error, reason} ->
+              :ets.update_counter(stats_ref, :errors, 1)
+
+              :ets.update_counter(
+                stats_ref,
+                {:error_reason, reason},
+                1,
+                {{:error_reason, reason}, 0}
+              )
+
+              IO.puts("⚠️ Error preparing line #{line_num}: #{reason}")
+              {{:error, reason}, line_num}
+          end
         rescue
           e ->
+            :ets.update_counter(stats_ref, :errors, 1)
             IO.puts("\n⚠️ Error processing line #{line_num}: #{Exception.message(e)}")
             # Show first 5 columns for debugging
             IO.puts("   Row data: #{inspect(Enum.take(row, 5))}...")
@@ -245,6 +304,21 @@ defmodule Voile.Migration.MemberImporter do
       [{:verified_students, verified_students}] = :ets.lookup(stats_ref, :verified_students)
       [{:organizations, organizations}] = :ets.lookup(stats_ref, :organizations)
       [{:general_members, general_members}] = :ets.lookup(stats_ref, :general_members)
+
+      # Print top skip reasons (helpful for diagnosing why rows were skipped)
+      skip_reasons =
+        :ets.tab2list(stats_ref)
+        |> Enum.filter(fn
+          {{:skip_reason, _reason}, _count} -> true
+          _ -> false
+        end)
+        |> Enum.map(fn {{:skip_reason, reason}, count} -> {reason, count} end)
+        |> Enum.sort_by(fn {_r, c} -> -c end)
+
+      if skip_reasons != [] do
+        IO.puts("\nTop skip reasons:")
+        skip_reasons |> Enum.take(10) |> Enum.each(fn {r, c} -> IO.puts("  - #{r}: #{c}") end)
+      end
 
       %{
         inserted: inserted,
@@ -332,6 +406,20 @@ defmodule Voile.Migration.MemberImporter do
               (u.email && Map.has_key?(existing_by_email, u.email)) ||
                 (u.identifier && Map.has_key?(existing_by_ident, u.identifier))
             end)
+
+          # Count how many were skipped due to existing email/identifier and update stats
+          duplicate_skipped_count = length(users_clean) - length(to_insert_users)
+
+          if duplicate_skipped_count > 0 do
+            :ets.update_counter(stats_ref, :skipped, duplicate_skipped_count)
+
+            :ets.update_counter(
+              stats_ref,
+              {:skip_reason, "duplicate"},
+              duplicate_skipped_count,
+              {{:skip_reason, "duplicate"}, 0}
+            )
+          end
 
           # Pre-count member types before insertion for stats tracking
           {verified_student_count, organization_count, general_count} =
@@ -473,7 +561,15 @@ defmodule Voile.Migration.MemberImporter do
   end
 
   # Prepare member data using cached data (optimized version)
-  defp prepare_member_data(row, node_id, skip_images, cache) when length(row) >= 20 do
+  defp prepare_member_data(
+         row,
+         node_id,
+         skip_images,
+         cache,
+         allow_missing_email,
+         allow_missing_name
+       )
+       when length(row) >= 20 do
     [
       member_id,
       member_name,
@@ -501,27 +597,53 @@ defmodule Voile.Migration.MemberImporter do
     clean_name = safe_string_trim(member_name)
     clean_email = safe_string_trim(member_email)
 
+    # Parse identifier and normalize to Decimal to match DB stored type
+    parsed_identifier = parse_int(member_id)
+
+    decimal_identifier =
+      if parsed_identifier != nil, do: Decimal.new(parsed_identifier), else: nil
+
+    # Allow placeholders if the caller opted in via flags
+    placeholder_email = fn ->
+      # Use identifier-based email or uuid@example.local
+      case parse_int(member_id) do
+        nil -> "import+" <> Ecto.UUID.generate() <> "@import.local"
+        id -> "import+" <> to_string(id) <> "@import.local"
+      end
+    end
+
+    placeholder_name = fn ->
+      case parse_int(member_id) do
+        nil -> "Unknown"
+        id -> "Member " <> to_string(id)
+      end
+    end
+
     cond do
-      is_nil(clean_name) or clean_name == "" ->
+      (is_nil(clean_name) or clean_name == "") and not allow_missing_name ->
         {:skip, "Missing member name"}
 
-      is_nil(clean_email) or clean_email == "" ->
+      (is_nil(clean_email) or clean_email == "") and not allow_missing_email ->
         {:skip, "Missing member email"}
 
       # Check for existing email in database - SKIP if found
       MapSet.member?(cache.existing_emails, clean_email) ->
         {:skip, "User with email #{clean_email} already exists"}
 
-      # Check for existing identifier - SKIP if found
-      parse_int(member_id) != nil and
-          MapSet.member?(cache.existing_identifiers, parse_int(member_id)) ->
+      # Check for existing identifier - SKIP if found (compare as Decimal)
+      decimal_identifier != nil and MapSet.member?(cache.existing_identifiers, decimal_identifier) ->
         {:skip, "User with identifier #{member_id} already exists"}
 
       true ->
+        # If missing name/email but allowed, generate safe placeholders
+        final_name =
+          if is_nil(clean_name) or clean_name == "", do: placeholder_name.(), else: clean_name
+
+        final_email =
+          if is_nil(clean_email) or clean_email == "", do: placeholder_email.(), else: clean_email
+
         # Generate username from name (no need for uniqueness check since we skip duplicates)
-        username = generate_simple_username(clean_name, member_id)
-        # Use original email (no need for uniqueness since we skip duplicates)
-        final_email = clean_email
+        username = generate_simple_username(final_name, member_id)
 
         # Determine member type based on identifier digit count
         # This overrides the CSV member_type_id with our categorization logic
@@ -550,9 +672,10 @@ defmodule Voile.Migration.MemberImporter do
         user_attrs = %{
           id: Ecto.UUID.generate(),
           username: safe_truncate(username, 255),
-          identifier: parse_int(member_id),
+          # Store identifier as Decimal to match DB column type
+          identifier: decimal_identifier,
           email: safe_truncate(final_email, 255),
-          fullname: safe_truncate(clean_name, 255),
+          fullname: safe_truncate(final_name, 255),
           user_type_id: user_type_id,
           user_image: user_image_path,
           node_id: node && node.id,
@@ -583,7 +706,14 @@ defmodule Voile.Migration.MemberImporter do
       {:error, "Exception: #{Exception.message(e)}"}
   end
 
-  defp prepare_member_data(_invalid_row, _node_id, _skip_images, _cache) do
+  defp prepare_member_data(
+         _invalid_row,
+         _node_id,
+         _skip_images,
+         _cache,
+         _allow_missing_email,
+         _allow_missing_name
+       ) do
     {:skip, "Invalid row format - insufficient columns"}
   end
 
