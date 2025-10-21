@@ -14,28 +14,30 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
 
   setup do
     # Create librarian
-    librarian = user_fixture(%{
-      email: "librarian@test.com",
-      username: "librarian",
-      fullname: "Test Librarian"
-    })
+    librarian =
+      user_fixture(%{
+        email: "librarian@test.com",
+        username: "librarian",
+        fullname: "Test Librarian"
+      })
 
     # Get or create member type
     member_type = get_or_create_member_type()
 
     # Create member
-    member = create_test_member(
-      %{
-        email: "member@test.com",
-        fullname: "John Doe",
-        identifier: Decimal.new("12345"),
-        phone_number: "123-456-7890",
-        organization: "Test Org",
-        registration_date: ~D[2024-01-01],
-        expiry_date: ~D[2026-12-31]
-      },
-      member_type
-    )
+    member =
+      create_test_member(
+        %{
+          email: "member@test.com",
+          fullname: "John Doe",
+          identifier: Decimal.new("12345"),
+          phone_number: "123-456-7890",
+          organization: "Test Org",
+          registration_date: ~D[2024-01-01],
+          expiry_date: ~D[2026-12-31]
+        },
+        member_type
+      )
 
     # Use existing fixtures to create library items
     item1 = ensure_item_with_barcode("ITEM001")
@@ -67,7 +69,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       fake_id = Ecto.UUID.generate()
 
       assert {:error, {:redirect, %{to: path}}} =
-        live(conn, ~p"/manage/glam/library/ledger/transact/#{fake_id}")
+               live(conn, ~p"/manage/glam/library/ledger/transact/#{fake_id}")
 
       assert path == "/manage/glam/library/ledger"
     end

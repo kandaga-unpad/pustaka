@@ -12,51 +12,55 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
 
   setup do
     # Create a librarian user with appropriate roles
-    librarian = user_fixture(%{
-      email: "librarian@test.com",
-      username: "librarian",
-      fullname: "Test Librarian"
-    })
+    librarian =
+      user_fixture(%{
+        email: "librarian@test.com",
+        username: "librarian",
+        fullname: "Test Librarian"
+      })
 
     # Get or create member type
     member_type = get_or_create_member_type()
 
     # Create test members with identifiers
-    member1 = create_test_member(
-      %{
-        email: "member1@test.com",
-        fullname: "John Doe",
-        identifier: Decimal.new("12345"),
-        phone_number: "123-456-7890",
-        organization: "Test Org",
-        registration_date: ~D[2024-01-01],
-        expiry_date: ~D[2026-12-31]
-      },
-      member_type
-    )
+    member1 =
+      create_test_member(
+        %{
+          email: "member1@test.com",
+          fullname: "John Doe",
+          identifier: Decimal.new("12345"),
+          phone_number: "123-456-7890",
+          organization: "Test Org",
+          registration_date: ~D[2024-01-01],
+          expiry_date: ~D[2026-12-31]
+        },
+        member_type
+      )
 
-    member2 = create_test_member(
-      %{
-        email: "member2@test.com",
-        fullname: "Jane Smith",
-        identifier: Decimal.new("67890"),
-        phone_number: "098-765-4321",
-        organization: "Another Org",
-        registration_date: ~D[2024-06-01],
-        expiry_date: ~D[2025-06-30]
-      },
-      member_type
-    )
+    member2 =
+      create_test_member(
+        %{
+          email: "member2@test.com",
+          fullname: "Jane Smith",
+          identifier: Decimal.new("67890"),
+          phone_number: "098-765-4321",
+          organization: "Another Org",
+          registration_date: ~D[2024-06-01],
+          expiry_date: ~D[2025-06-30]
+        },
+        member_type
+      )
 
-    member3 = create_test_member(
-      %{
-        email: "expired@test.com",
-        fullname: "Expired Member",
-        identifier: Decimal.new("11111"),
-        expiry_date: ~D[2024-01-01]
-      },
-      member_type
-    )
+    member3 =
+      create_test_member(
+        %{
+          email: "expired@test.com",
+          fullname: "Expired Member",
+          identifier: Decimal.new("11111"),
+          expiry_date: ~D[2024-01-01]
+        },
+        member_type
+      )
 
     %{
       conn: log_in_user(build_conn(), librarian),
