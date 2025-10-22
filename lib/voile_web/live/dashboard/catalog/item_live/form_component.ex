@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-      
+
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
@@ -22,12 +22,12 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
           class="space-y-6"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <.input field={@form[:item_code]} type="text" label="Item code" class="w-full" />
-            <.input field={@form[:inventory_code]} type="text" label="Inventory code" class="w-full" />
-            <.input field={@form[:barcode]} type="text" label="Barcode" class="w-full" />
-            <.input field={@form[:location]} type="text" label="Location" class="w-full" />
-            <.input field={@form[:status]} type="text" label="Status" class="w-full" />
-            <.input field={@form[:condition]} type="text" label="Condition" class="w-full" />
+            <.input field={@form[:item_code]} type="text" label="Item code" />
+            <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
+            <.input field={@form[:barcode]} type="text" label="Barcode" />
+            <.input field={@form[:location]} type="text" label="Location" />
+            <.input field={@form[:status]} type="text" label="Status" />
+            <.input field={@form[:condition]} type="text" label="Condition" />
             <.input
               field={@form[:availability]}
               type="select"
@@ -38,19 +38,18 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 {"Maintenance", "maintenance"}
               ]}
               label="Availability"
-              class="w-full"
             />
           </div>
-          
+
           <div class="flex items-center gap-3 pt-2">
             <.button
               phx-disable-with="Saving..."
-              class="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+              class="success-btn"
             >
               <.icon name="hero-check" class="w-4 h-4" /> Save
             </.button>
             <.link patch={@patch} class="inline-block">
-              <.button type="button" class="!bg-gray-100 !text-gray-900">Cancel</.button>
+              <.button type="button" class="cancel-btn">Cancel</.button>
             </.link>
             <div class="ml-auto text-sm text-gray-500">
               Tip: edit fields and click Save to persist changes.

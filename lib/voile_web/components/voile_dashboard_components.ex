@@ -43,7 +43,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
         </.link>
       </div>
-      
+
       <div class="w-full text-voile-primary flex gap-4">
         <.link
           patch="/manage"
@@ -60,7 +60,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         <% end %>
       </div>
-      
+
       <div class="w-full flex justify-end gap-3">
         <Layouts.theme_toggle />
         <.link
@@ -101,10 +101,10 @@ defmodule VoileWeb.VoileDashboardComponents do
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
           <h5>Halo, {@user.fullname}!</h5>
-          
+
           <p>Data Koleksi bisa kamu cek disini</p>
         </div>
-        
+
         <div class="flex gap-2">
           <.link
             patch="/manage/catalog/collections"
@@ -128,7 +128,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         </div>
       </div>
-      
+
       <div><.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" /></div>
     </div>
     """
@@ -144,7 +144,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.icon name="hero-magnifying-glass" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Search</h3>
       </div>
-      
+
       <.search_bar
         placeholder="Search collections, items, authors..."
         show_filters={true}
@@ -182,7 +182,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.icon name="hero-chart-bar" class="w-6 h-6 text-green-600 dark:text-green-400" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Statistics</h3>
       </div>
-      
+
       <div class="space-y-4">
         <!-- Total searches today -->
         <div class="flex justify-between items-center">
@@ -194,7 +194,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <!-- Popular queries -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Popular Queries</h4>
-          
+
           <div class="space-y-1">
             <%= for {query, count} <- Enum.take(@stats.popular_queries, 3) do %>
               <div class="flex justify-between text-xs">
@@ -207,7 +207,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <!-- Recent activity -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Activity</h4>
-          
+
           <div class="space-y-1">
             <%= for activity <- Enum.take(@stats.recent_activity, 3) do %>
               <div class="text-xs text-gray-600 dark:text-gray-400">{activity}</div>
@@ -279,7 +279,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               <%= if Map.get(item, :icon) do %>
                 <.icon name={item.icon} class="w-4 h-4" />
               <% end %>
-               {item.label}
+              {item.label}
             </.link>
           </li>
         <% end %>
@@ -371,7 +371,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -388,10 +388,10 @@ defmodule VoileWeb.VoileDashboardComponents do
     <.modal id={@id}>
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-semibold">Delete Confirmation</h3>
-        
+
         <p>Are you sure you want to delete this item?</p>
       </div>
-      
+
       <div class="flex justify-end gap-2 mt-4">
         <.button phx-click={JS.exec("data-cancel", to: "#delete-modal")}>Cancel</.button>
         <.button phx-click={JS.exec("data-confirm", to: "#delete-modal")}>Delete</.button>
@@ -420,7 +420,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       <% else %>
         <.button class="disabled-btn" disabled>Prev</.button>
       <% end %>
-      
+
       <%= for p <- pagination_range(@page, @total_pages) do %>
         <%= if is_integer(p) do %>
           <%= if p == @page do %>
@@ -440,7 +440,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <button class="disabled-btn" disabled>{p}</button>
         <% end %>
       <% end %>
-      
+
       <%= if @page < @total_pages do %>
         <%= if @path do %>
           <.link patch={"#{@path}?#{build_query_string(assigns, @page + 1)}"} class="primary-btn">
@@ -618,30 +618,30 @@ defmodule VoileWeb.VoileDashboardComponents do
           <div class={["p-3 rounded-lg", get_glam_icon_bg(@color)]}>
             <.icon name={@icon} class="w-8 h-8 text-white" />
           </div>
-          
+
           <div class="text-right">
             <div class="text-3xl font-bold text-white">{@count}</div>
-            
+
             <div class="text-xs text-white/80">collections</div>
           </div>
         </div>
-        
+
         <h3 class="text-xl font-bold text-white mb-1">{@title}</h3>
-        
+
         <p class="text-white/90 text-sm mb-3">{@description}</p>
-        
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="text-xs text-white/80">{@percentage}% of total</div>
           </div>
-          
+
           <.icon
             name="hero-arrow-right"
             class="w-5 h-5 text-white transform group-hover:translate-x-1 transition-transform"
           />
         </div>
       </div>
-       <%!-- Decorative background pattern --%>
+      <%!-- Decorative background pattern --%>
       <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
         <.icon name={@icon} class="w-full h-full text-white" />
       </div>
@@ -667,14 +667,14 @@ defmodule VoileWeb.VoileDashboardComponents do
         <div class={["p-3 rounded-lg", get_stat_icon_bg(@color)]}>
           <.icon name={@icon} class={"w-6 h-6 #{@icon_color_class}"} />
         </div>
-        
+
         <%= if @trend do %>
           <span class="text-xs font-semibold text-green-600 dark:text-green-400">{@trend}</span>
         <% end %>
       </div>
-      
+
       <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{@title}</h3>
-      
+
       <p class="text-3xl font-bold text-gray-900 dark:text-white">{@value}</p>
     </div>
     """
@@ -700,12 +700,12 @@ defmodule VoileWeb.VoileDashboardComponents do
           class="w-6 h-6 text-white"
         />
       </div>
-      
+
       <div class="flex-1 min-w-0">
         <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
           {@collection.title}
         </h4>
-        
+
         <div class="flex items-center gap-2 mt-1">
           <span class={[
             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -720,7 +720,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
         </div>
       </div>
-       <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
+      <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
     </.link>
     """
   end

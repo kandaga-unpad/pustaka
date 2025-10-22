@@ -1,88 +1,340 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
-  <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Item #{@item.id}</h2>
-        
-        <p class="text-sm text-gray-500 mt-1">This is an item record from your database.</p>
+  <.back navigate={~p"/manage/catalog/items"}>
+    Back to items
+  </.back>
+  <%!-- Hero Section with Collection Info --%>
+  <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-md overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+      <%!-- Collection Thumbnail --%>
+      <div class="lg:col-span-1">
+        <div class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-lg">
+          <%= if @item.collection.thumbnail do %>
+            <img
+              src={@item.collection.thumbnail}
+              alt={@item.collection.title}
+              class="w-full h-full object-cover"
+            />
+          <% else %>
+            <div class="w-full h-full flex items-center justify-center">
+              <.icon name="hero-photo" class="w-24 h-24 text-gray-400" />
+            </div>
+          <% end %>
+        </div>
       </div>
-      
-      <div class="flex items-center gap-2">
-        <.link patch={~p"/manage/catalog/items/#{@item}/show/edit"} phx-click={JS.push_focus()}>
-          <.button class="bg-indigo-600">Edit item</.button>
+      <%!-- Main Info --%>
+      <div class="lg:col-span-2 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class={[
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  status_badge_class(@item.status)
+                ]}>
+                  {@item.status || "unknown"}
+                </span>
+                <span class={[
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  condition_badge_class(@item.condition)
+                ]}>
+                  {@item.condition || "unknown"}
+                </span>
+                <span class={[
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  availability_badge_class(@item.availability)
+                ]}>
+                  {@item.availability || "unknown"}
+                </span>
+              </div>
+
+              <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                {@item.collection.title}
+              </h1>
+
+              <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                {@item.collection.description}
+              </p>
+            </div>
+
+            <.link
+              patch={~p"/manage/catalog/items/#{@item}/show/edit"}
+              phx-click={JS.push_focus()}
+            >
+              <.button class="flex items-center gap-2">
+                <.icon name="hero-pencil-square" class="w-4 h-4" /> Edit
+              </.button>
+            </.link>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <.icon name="hero-building-library" class="w-4 h-4" /> Library Unit
+              </div>
+
+              <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {@item.node.name} ({@item.node.abbr})
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <.icon name="hero-user" class="w-4 h-4" /> Creator
+              </div>
+
+              <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {@item.collection.mst_creator.creator_name}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%!-- Item Details Cards --%>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <%!-- Item Information Card --%>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <.icon name="hero-identification" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Item Information</h2>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Item Code</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.item_code || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Inventory Code</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.inventory_code || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Collection Code</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.collection.collection_code || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">RFID Tag</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.rfid_tag || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Legacy Item Code</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.legacy_item_code || "-"}
+          </span>
+        </div>
+      </div>
+    </div>
+    <%!-- Location & Status Card --%>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <.icon name="hero-map-pin" class="w-5 h-5 text-green-600 dark:text-green-400" />
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Location & Availability
+        </h2>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Current Location</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {@item.location || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Item Status</span>
+          <span class={[
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            status_badge_class(@item.status)
+          ]}>
+            {@item.status || "unknown"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Condition</span>
+          <span class={[
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            condition_badge_class(@item.condition)
+          ]}>
+            {@item.condition || "unknown"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Availability</span>
+          <span class={[
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            availability_badge_class(@item.availability)
+          ]}>
+            {@item.availability || "unknown"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Price</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <%= if @item.price do %>
+              Rp {format_price(@item.price)}
+            <% else %>
+              -
+            <% end %>
+          </span>
+        </div>
+      </div>
+    </div>
+    <%!-- Dates & History Card --%>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <.icon name="hero-calendar-days" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dates & History</h2>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Acquisition Date</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <%= if @item.acquisition_date do %>
+              {Voile.Utils.DateHelper.to_local_date(@item.acquisition_date)}
+            <% else %>
+              -
+            <% end %>
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Last Inventory</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <%= if @item.last_inventory_date do %>
+              {Voile.Utils.DateHelper.to_local_date(@item.last_inventory_date)}
+            <% else %>
+              -
+            <% end %>
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Last Circulated</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <%= if @item.last_circulated do %>
+              {Voile.Utils.DateHelper.display_datetime(@item.last_circulated)}
+            <% else %>
+              Never
+            <% end %>
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Created</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {Voile.Utils.DateHelper.display_datetime(@item.inserted_at)}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Last Updated</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {Voile.Utils.DateHelper.display_datetime(@item.updated_at)}
+          </span>
+        </div>
+      </div>
+    </div>
+    <%!-- Collection Details Card --%>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <.icon name="hero-book-open" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Collection Details</h2>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Collection Status</span>
+          <span class={[
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            status_badge_class(@item.collection.status)
+          ]}>
+            {@item.collection.status || "unknown"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Access Level</span>
+          <span class={[
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+            access_level_badge_class(@item.collection.access_level)
+          ]}>
+            {@item.collection.access_level || "unknown"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Type ID</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {@item.collection.type_id || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Creator Type</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+            {@item.collection.mst_creator.type || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Creator Affiliation</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {@item.collection.mst_creator.affiliation || "-"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%!-- Action Bar --%>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <div class="flex items-center justify-between">
+      <.back navigate={~p"/manage/catalog/items"}>
+        Back to items
+      </.back>
+
+      <div class="flex items-center gap-3 mt-3">
+        <.link
+          navigate={~p"/manage/catalog/collections/#{@item.collection.id}"}
+          class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+        >
+          <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> View Full Collection
         </.link>
       </div>
     </div>
-    
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="space-y-4">
-        <div>
-          <div class="text-xs text-gray-500">Item code</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.item_code || "-"}</div>
-        </div>
-        
-        <div>
-          <div class="text-xs text-gray-500">Collection</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">
-            {@item.collection.title || "-"}
-          </div>
-        </div>
-        
-        <div>
-          <div class="text-xs text-gray-500">Inventory code</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">
-            {@item.inventory_code || "-"}
-          </div>
-        </div>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <div class="text-xs text-gray-500">Location</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.location || "-"}</div>
-        </div>
-        
-        <div>
-          <div class="text-xs text-gray-500">Status</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.status || "-"}</div>
-        </div>
-        
-        <div>
-          <div class="text-xs text-gray-500">Condition</div>
-          
-          <div class="text-sm text-gray-900 dark:text-gray-100">{@item.condition || "-"}</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="mt-6 flex items-center gap-3">
-      <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>
-      
-      <div class="ml-auto text-sm text-gray-500">
-        Last updated: {Voile.Utils.DateHelper.display_datetime(@item.updated_at)}
-      </div>
-    </div>
-    
-    <.modal
-      :if={@live_action == :edit}
-      id="item-modal"
-      show
-      on_cancel={JS.patch(~p"/manage/catalog/items/#{@item}")}
-    >
-      <.live_component
-        module={VoileWeb.Dashboard.Catalog.ItemLive.FormComponent}
-        id={@item.id}
-        title={@page_title}
-        action={@live_action}
-        item={@item}
-        patch={~p"/manage/catalog/items/#{@item}"}
-      />
-    </.modal>
   </div>
+  <%!-- Edit Modal --%>
+  <.modal
+    :if={@live_action == :edit}
+    id="item-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/catalog/items/#{@item}")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Catalog.ItemLive.FormComponent}
+      id={@item.id}
+      title={@page_title}
+      action={@live_action}
+      item={@item}
+      patch={~p"/manage/catalog/items/#{@item}"}
+    />
+  </.modal>
 </section>
