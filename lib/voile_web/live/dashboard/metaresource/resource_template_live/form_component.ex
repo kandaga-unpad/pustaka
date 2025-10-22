@@ -163,7 +163,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
           >
             {if @resource_template.id, do: "Update Template", else: "Create Template"}
           </.button>
-           <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
+          <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
         </div>
       </.form>
     </div>
