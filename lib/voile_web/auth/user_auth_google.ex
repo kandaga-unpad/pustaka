@@ -6,10 +6,8 @@ defmodule VoileWeb.UserAuthGoogle do
 
   # /auth/google
   def request(conn) do
-    Application.get_env(:assent, :google)
-    |> Google.authorize_url()
-    |> IO.inspect(label: "authorize_url")
-    |> case do
+    case Application.get_env(:assent, :google)
+         |> Google.authorize_url() do
       {:ok, %{url: url, session_params: session_params}} ->
         # Session params (used for OAuth 2.0 and OIDC strategies) will be
         # retrieved when user returns for the callback phase
@@ -42,16 +40,12 @@ defmodule VoileWeb.UserAuthGoogle do
     # request phase will be used in the callback phase
     session_params = get_session(conn, :session_params)
 
-    Application.get_env(:assent, :google)
-    # Session params should be added to the config so the strategi can use them
-    |> Keyword.put(:session_params, session_params)
-    |> Google.callback(params)
-    |> IO.inspect(label: "Callback Params")
-    |> case do
+    case Application.get_env(:assent, :google)
+         # Session params should be added to the config so the strategi can use them
+         |> Keyword.put(:session_params, session_params)
+         |> Google.callback(params) do
       {:ok, %{user: user, token: token}} ->
         # Authorization successful
-        IO.inspect({user, token}, label: "User and Token")
-
         user_record = Voile.Schema.Accounts.get_user_by_email_or_register(user)
 
         conn
@@ -61,9 +55,7 @@ defmodule VoileWeb.UserAuthGoogle do
         |> Phoenix.Controller.redirect(to: "/")
 
       {:error, error} ->
-        # Authorizaiton failed
-        IO.inspect(error, label: "error")
-
+        # Authorization failed
         conn
         |> put_resp_content_type("text/plain")
         |> send_resp(500, inspect(error, pretty: true))

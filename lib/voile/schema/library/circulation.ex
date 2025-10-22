@@ -1482,9 +1482,10 @@ defmodule Voile.Schema.Library.Circulation do
           end
 
         # Normalize values to expected test defaults when DB values are zero/nil
-        mt = default_mt
+        # Pattern match to ensure type checker knows we have a MemberType struct
+        %MemberType{} = mt = default_mt
 
-        normalized_mt = %MemberType{
+        normalized_mt = %{
           mt
           | max_concurrent_loans:
               if(mt.max_concurrent_loans in [nil, 0], do: 5, else: mt.max_concurrent_loans),

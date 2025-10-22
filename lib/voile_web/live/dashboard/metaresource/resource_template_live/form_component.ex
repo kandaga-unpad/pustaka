@@ -210,12 +210,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
     # Handle forwarded reorder event
     %{"old_index" => old_index, "new_index" => new_index} = params
 
-    IO.inspect({old_index, new_index}, label: "Reorder indices")
-    IO.inspect(socket.assigns.selected_properties, label: "Before reorder")
-
     selected = reorder_by_index(socket.assigns.selected_properties, old_index, new_index)
-
-    IO.inspect(selected, label: "After reorder")
 
     {:ok,
      socket
@@ -297,8 +292,6 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
     # Only update if the value actually changed
     if current_value != value do
-      IO.inspect({id_int, current_value, value}, label: "Label changed")
-
       # Update the selected_properties list
       selected =
         Enum.map(socket.assigns.selected_properties, fn
@@ -354,7 +347,6 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
          |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset.errors, label: "Changeset errors")
         {:noreply, assign(socket, :form, to_form(changeset))}
     end
   end
