@@ -79,6 +79,64 @@ defmodule Voile.Schema.Accounts do
     end
   end
 
+  @doc """
+  Creates a user from OAuth provider data (Google, PAuS, etc).
+
+  This function handles user creation from various OAuth providers.
+  If the user already exists, it updates their last login information.
+
+  ## Examples
+
+      iex> create_user_from_oauth(%{email: "user@example.com", name: "John Doe", auth_provider: "google"})
+      {:ok, %User{}}
+
+      iex> create_user_from_oauth(%{email: "invalid", name: "John"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_user_from_oauth(attrs) when is_map(attrs) do
+    # Generate a secure random password for OAuth users
+    random_password = :crypto.strong_rand_bytes(30) |> Base.encode64(padding: false)
+
+    # Extract username from email if not provided
+    username =
+      attrs[:username] ||
+        (attrs[:email] && String.split(attrs[:email], "@") |> hd()) ||
+        attrs[:npm] ||
+        "user_#{:crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)}"
+
+    # Build user attributes
+    user_attrs =
+      %{
+        email: attrs[:email],
+        username: username,
+        fullname: attrs[:name] || attrs[:fullname],
+        password: random_password,
+        user_image: attrs[:user_image] || attrs[:picture] || "/images/default_profile.png",
+        confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        last_login: DateTime.utc_now() |> DateTime.truncate(:second)
+      }
+      |> maybe_put(:identifier, attrs[:npm])
+      |> maybe_put(:groups, attrs[:groups])
+      |> maybe_put(:user_type_id, attrs[:user_type_id])
+      |> maybe_put(:node_id, attrs[:node_id])
+
+    %User{}
+    |> User.registration_changeset(user_attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        {:ok, preload_user_assocs(user)}
+
+      error ->
+        error
+    end
+  end
+
+  # Helper to conditionally put values in a map
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
   def get_user_by_identifier(nil), do: nil
 
   def get_user_by_identifier(identifier) when is_binary(identifier) do

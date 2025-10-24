@@ -208,6 +208,67 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     end
   end
 
+  def handle_event("request_payment_link", %{"fine_id" => fine_id}, socket) do
+    member = socket.assigns.current_scope.user
+
+    # Check if payment link already exists
+    case Circulation.get_pending_payment_for_fine(fine_id) do
+      {:ok, _payment} ->
+        # Reload fines to show payment status
+        {fines, fines_total_pages} =
+          Circulation.list_member_unpaid_fines_paginated(
+            member.id,
+            socket.assigns.fines_page || 1,
+            10
+          )
+
+        {:noreply,
+         socket
+         |> assign(fines: fines, fines_total_pages: fines_total_pages)
+         |> put_flash(
+           :info,
+           "Payment link already exists. Check your email or contact library staff."
+         )}
+
+      {:error, :not_found} ->
+        # Create new payment link
+        case Circulation.create_payment_link_for_fine(
+               fine_id,
+               member.id,
+               success_redirect_url: url(~p"/atrium?payment=success"),
+               failure_redirect_url: url(~p"/atrium?payment=failed")
+             ) do
+          {:ok, _payment} ->
+            {fines, fines_total_pages} =
+              Circulation.list_member_unpaid_fines_paginated(
+                member.id,
+                socket.assigns.fines_page || 1,
+                10
+              )
+
+            {:noreply,
+             socket
+             |> assign(fines: fines, fines_total_pages: fines_total_pages, payment_link: nil)
+             |> put_flash(:info, "Payment link created! You can now proceed to pay online.")}
+
+          {:error, reason} ->
+            {:noreply,
+             socket |> put_flash(:error, "Failed to create payment link: #{inspect(reason)}")}
+        end
+    end
+  end
+
+  def handle_event("open_payment_link", %{"fine_id" => fine_id}, socket) do
+    case Circulation.get_pending_payment_for_fine(fine_id) do
+      {:ok, payment} ->
+        # The actual redirect will be handled by JS on client side
+        {:noreply, socket |> push_event("redirect", %{url: payment.payment_url})}
+
+      {:error, _} ->
+        {:noreply, socket |> put_flash(:error, "Payment link not found")}
+    end
+  end
+
   def handle_event("delete_user_image", %{"image" => image}, socket) do
     # Cancel any pending uploads
     uploads = socket.assigns.uploads || %{}
@@ -425,7 +486,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   defp node_name(_), do: "-"
 
   @impl true
-  def handle_params(_params, _uri, socket) do
+  def handle_params(params, _uri, socket) do
     # Load member-specific data when LiveView mounts or params change
     member = socket.assigns.current_scope.user
 
@@ -439,6 +500,23 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     {fines, fines_total_pages} =
       Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, per_page)
+
+    # Check for payment status in URL params
+    socket =
+      case params["payment"] do
+        "success" ->
+          socket
+          |> put_flash(:info, "Payment successful! Your fine has been paid.")
+          |> assign(:active_tab, :circulation)
+
+        "failed" ->
+          socket
+          |> put_flash(:error, "Payment failed. Please try again or contact library staff.")
+          |> assign(:active_tab, :circulation)
+
+        _ ->
+          socket
+      end
 
     {:noreply,
      assign(socket,
@@ -474,11 +552,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             />
             <div>
               <h1 class="text-2xl font-semibold">Welcome back, {@current_scope.user.fullname}</h1>
-              
+
               <p class="mt-1 text-sm opacity-90">
                 This is your Atrium — a personalized member dashboard.
               </p>
-              
+
               <div class="mt-3 flex items-center gap-3 text-sm">
                 <span class="px-3 py-1 bg-white/20 rounded-full">
                   Loans: <strong class="ml-1">{length(@loans || [])}</strong>
@@ -490,7 +568,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             </div>
           </div>
         </header>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left column: profile card -->
           <div class="lg:col-span-1">
@@ -503,36 +581,36 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 />
                 <div>
                   <div class="text-lg font-medium">{@current_scope.user.fullname}</div>
-                  
+
                   <div class="text-sm mt-1">{role_name(@current_scope.user)}</div>
                 </div>
               </div>
-              
+
               <div class="mt-4 text-sm space-y-2">
                 <div><strong>Email:</strong> {@current_scope.user.email}</div>
-                
+
                 <div><strong>Member type:</strong> {user_type_name(@current_scope.user)}</div>
-                
+
                 <div><strong>Node:</strong> {node_name(@current_scope.user)}</div>
               </div>
-              
+
               <div class="mt-6">
                 <h6 class="text-sm font-medium text-voile-muted mb-3">Circulation Summary</h6>
-                
+
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Active Loans</div>
-                    
+
                     <div class="text-lg font-semibold">{@total_loans}</div>
                   </div>
-                  
+
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Unpaid Fines</div>
-                    
+
                     <div class="text-lg font-semibold">{@total_unpaid_fines}</div>
                   </div>
                 </div>
-                
+
                 <div class="mt-4">
                   <.button
                     type="button"
@@ -570,7 +648,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   </button>
                 <% end %>
               </nav>
-              
+
               <div id="atrium-tabpanels" class="space-y-6">
                 <%= if @active_tab == :collections do %>
                   <div
@@ -578,20 +656,20 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-2">Collections</h4>
-                    
+
                     <p class="text-sm">
                       Your collections will be shown here — curated and simple to browse.
                     </p>
                   </div>
                 <% end %>
-                
+
                 <%= if @active_tab == :settings do %>
                   <div
                     id="tab-settings"
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-4">Account Settings</h4>
-                    
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div class="space-y-4">
                         <.form
@@ -609,7 +687,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               disabled
                             />
                           </div>
-                          
+
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />
                           <label class="block text-sm font-medium text-gray-700 mb-2">
                             Profile image
@@ -623,7 +701,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 />
                                 <div class="flex-1">
                                   <p class="text-sm text-voile-muted">Uploaded</p>
-                                  
+
                                   <.button
                                     type="button"
                                     phx-click="delete_user_image"
@@ -637,7 +715,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <% else %>
                               <div class="border border-dashed rounded p-4 text-center">
                                 <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
-                                 <.live_file_input upload={@uploads.user_image} class="hidden" />
+                                <.live_file_input upload={@uploads.user_image} class="hidden" />
                                 <label
                                   for={@uploads.user_image.ref}
                                   class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
@@ -652,7 +730,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               </div>
                             <% end %>
                           </div>
-                          
+
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input field={@profile_form[:website]} type="url" label="Website" />
                             <.input
@@ -662,7 +740,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               placeholder="@username"
                             />
                           </div>
-                          
+
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input
                               field={@user_profile_form[:fullname]}
@@ -714,29 +792,29 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               label="Position"
                             />
                           </div>
-                           <hr class="my-4" />
+                          <hr class="my-4" />
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
-                          
+
                           <div class="text-sm text-voile-muted mb-3 space-y-1">
                             <p>Role: {role_name(@current_scope.user)}</p>
-                            
+
                             <p>Member type: {user_type_name(@current_scope.user)}</p>
-                            
+
                             <p>Node: {node_name(@current_scope.user)}</p>
-                            
+
                             <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
-                            
+
                             <p>
                               Last login: {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
                             </p>
                           </div>
-                          
+
                           <div class="mt-3 grid grid-cols-1 gap-2">
                             <.button phx-disable-with="Saving...">Save Profile</.button>
                           </div>
                         </.form>
                       </div>
-                      
+
                       <div>
                         <.form
                           for={@password_form}
@@ -789,17 +867,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Your Active Loans</h4>
-                          
+
                           <div class="text-sm text-voile-muted mt-1">
                             Active loans: <strong>{length(@loans || [])}</strong>
                           </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-3">
                           <div class="text-sm text-voile-muted">
                             Page {@loans_page || 1} of {@loans_total_pages || 1}
                           </div>
-                          
+
                           <.button
                             phx-click="loans_prev"
                             disabled={@loans_page <= 1}
@@ -816,7 +894,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </.button>
                         </div>
                       </div>
-                      
+
                       <div class="mt-4">
                         <%= if @loans == [] do %>
                           <p class="text-sm text-voile-muted">You have no active loans.</p>
@@ -836,17 +914,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </div>
                                   <% end %>
                                 </div>
-                                
+
                                 <div class="flex-1 text-sm">
                                   <div class="font-medium">
                                     {if tx.collection && tx.collection.title,
                                       do: tx.collection.title,
                                       else: tx.item.item_code}
                                   </div>
-                                  
+
                                   <div class="text-xs text-voile-muted">Due: {tx.due_date}</div>
                                 </div>
-                                
+
                                 <div class="flex-shrink-0">
                                   <% can_renew_type =
                                     @current_scope.user.user_type &&
@@ -874,17 +952,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Outstanding Fines</h4>
-                          
+
                           <div class="text-sm text-voile-muted mt-1">
                             Unpaid fines: <strong>{length(@fines || [])}</strong>
                           </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-3">
                           <div class="text-sm text-voile-muted">
                             Page {@fines_page || 1} of {@fines_total_pages || 1}
                           </div>
-                          
+
                           <.button
                             phx-click="fines_prev"
                             disabled={@fines_page <= 1}
@@ -901,14 +979,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </.button>
                         </div>
                       </div>
-                      
+
                       <div class="mt-4">
                         <%= if @fines == [] do %>
                           <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
                         <% else %>
                           <ul class="space-y-3">
                             <%= for f <- @fines do %>
-                              <li class="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                              <% pending_payment =
+                                case Circulation.get_pending_payment_for_fine(f.id) do
+                                  {:ok, payment} -> payment
+                                  _ -> nil
+                                end %>
+                              <li class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                                 <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
                                   <%= if f.item && f.item.collection && f.item.collection.thumbnail do %>
                                     <img
@@ -916,28 +999,82 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       class="w-full h-full object-cover"
                                     />
                                   <% else %>
-                                    Fine
+                                    <.icon name="hero-currency-dollar" class="w-6 h-6" />
                                   <% end %>
                                 </div>
-                                
-                                <div class="flex-1 text-sm">
-                                  <div class="font-medium">
-                                    {f.description || (f.item && f.item.title) || "Fine"}
+
+                                <div class="flex-1 text-sm space-y-2">
+                                  <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    {f.description ||
+                                      (f.item && f.item.collection && f.item.collection.title) ||
+                                      "Library Fine"}
                                   </div>
-                                  
-                                  <div class="text-xs text-voile-muted">Balance: {f.balance}</div>
+
+                                  <div class="flex items-center gap-4 text-xs text-voile-muted">
+                                    <span>
+                                      Type:
+                                      <strong class="text-gray-700 dark:text-gray-300">
+                                        {String.upcase(f.fine_type || "")}
+                                      </strong>
+                                    </span>
+                                    <span>
+                                      Balance:
+                                      <strong class="text-red-600 dark:text-red-400">
+                                        Rp {f.balance}
+                                      </strong>
+                                    </span>
+                                    <%= if f.fine_date do %>
+                                      <span>Date: {Calendar.strftime(f.fine_date, "%Y-%m-%d")}</span>
+                                    <% end %>
+                                  </div>
+
+                                  <%= if pending_payment do %>
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-2 mt-2">
+                                      <div class="flex items-center justify-between">
+                                        <div class="text-xs text-blue-800 dark:text-blue-200">
+                                          <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
+                                          Payment link available
+                                        </div>
+                                        <a
+                                          href={pending_payment.payment_url}
+                                          target="_blank"
+                                          class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                                        >
+                                          Pay Now
+                                          <.icon
+                                            name="hero-arrow-top-right-on-square"
+                                            class="w-3 h-3 inline ml-1"
+                                          />
+                                        </a>
+                                      </div>
+                                    </div>
+                                  <% end %>
                                 </div>
-                                
-                                <div class="flex-shrink-0">
-                                  <form phx-submit="pay_fine" class="flex items-center gap-2">
-                                    <input type="hidden" name="fine_id" value={f.id} />
-                                    <input
-                                      type="text"
-                                      name="amount"
-                                      value={f.balance}
-                                      class="px-2 py-1 rounded border text-sm"
-                                    /> <.button type="submit">Pay</.button>
-                                  </form>
+
+                                <div class="flex-shrink-0 flex flex-col gap-2">
+                                  <%= if pending_payment do %>
+                                    <a
+                                      href={pending_payment.payment_url}
+                                      target="_blank"
+                                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded text-center"
+                                    >
+                                      <.icon name="hero-credit-card" class="w-4 h-4 inline mr-1" />
+                                      Pay Online
+                                    </a>
+                                  <% else %>
+                                    <button
+                                      phx-click="request_payment_link"
+                                      phx-value-fine_id={f.id}
+                                      class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded"
+                                    >
+                                      <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
+                                      Get Payment Link
+                                    </button>
+                                  <% end %>
+
+                                  <div class="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
+                                    or pay in person at library
+                                  </div>
                                 </div>
                               </li>
                             <% end %>

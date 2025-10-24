@@ -7,11 +7,12 @@ defmodule VoileWeb.UserAuthPaus do
   import Plug.Conn
   import Phoenix.Controller
 
+  # Import verified routes for ~p sigil
+  use VoileWeb, :verified_routes
+
   alias Voile.Schema.Accounts
-  alias Voile.Schema.Accounts.User
 
   @user_scopes ["user.basic"]
-  @application_scopes ["application.basic"]
 
   @authorization_url "https://paus.unpad.ac.id/oauth"
   @access_token_url "https://paus.unpad.ac.id/oauth/access-token"
@@ -190,13 +191,17 @@ defmodule VoileWeb.UserAuthPaus do
     }
 
     headers = [
-      {"Content-Type", "application/x-www-form-urlencoded"},
-      {"User-Agent", "Voile PAuS Client/1.0"}
+      {"content-type", "application/x-www-form-urlencoded"},
+      {"user-agent", "Voile PAuS Client/1.0"}
     ]
 
     body = URI.encode_query(params)
 
-    case Req.post(@access_token_url, body, headers, recv_timeout: 30_000) do
+    case Req.post(@access_token_url,
+           body: body,
+           headers: headers,
+           receive_timeout: 30_000
+         ) do
       {:ok, %Req.Response{status: 200, body: response_body}} ->
         case Jason.decode(response_body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in} = token_data} ->
@@ -219,7 +224,7 @@ defmodule VoileWeb.UserAuthPaus do
       {:ok, %Req.Response{status: status, body: body}} ->
         {:error, {:http_error, status, body}}
 
-      {:error, %Req.Error{reason: reason}} ->
+      {:error, reason} ->
         {:error, {:request_failed, reason}}
     end
   end
@@ -228,24 +233,24 @@ defmodule VoileWeb.UserAuthPaus do
     url = "#{@api_url}/user/profile?access_token=#{token.access_token}"
 
     headers = [
-      {"User-Agent", "Voile PAuS Client/1.0"},
-      {"Accept", "application/json"}
+      {"user-agent", "Voile PAuS Client/1.0"},
+      {"accept", "application/json"}
     ]
 
-    case HTTPoison.get(url, headers, recv_timeout: 30_000) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case Req.get(url, headers: headers, receive_timeout: 30_000) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, user_data} -> {:ok, user_data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
 
-      {:ok, %HTTPoison.Response{status_code: 401}} ->
+      {:ok, %Req.Response{status: 401}} ->
         {:error, :unauthorized}
 
-      {:ok, %HTTPoison.Response{status_code: status, body: body}} ->
+      {:ok, %Req.Response{status: status, body: body}} ->
         {:error, {:http_error, status, body}}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, reason} ->
         {:error, {:request_failed, reason}}
     end
   end
@@ -254,17 +259,17 @@ defmodule VoileWeb.UserAuthPaus do
     # GET request
     url = "#{@api_url}#{path}?access_token=#{access_token}"
 
-    case HTTPoison.get(url, [], recv_timeout: 30_000) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case Req.get(url, receive_timeout: 30_000) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, data} -> {:ok, data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
 
-      {:ok, %HTTPoison.Response{status_code: status}} ->
+      {:ok, %Req.Response{status: status}} ->
         {:error, {:http_error, status}}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, reason} ->
         {:error, reason}
     end
   end
@@ -273,33 +278,32 @@ defmodule VoileWeb.UserAuthPaus do
     # POST request
     url = "#{@api_url}#{path}?access_token=#{access_token}"
     body = URI.encode_query(params)
-    headers = [{"Content-Type", "application/x-www-form-urlencoded"}]
+    headers = [{"content-type", "application/x-www-form-urlencoded"}]
 
-    case HTTPoison.post(url, body, headers, recv_timeout: 30_000) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+    case Req.post(url, body: body, headers: headers, receive_timeout: 30_000) do
+      {:ok, %Req.Response{status: 200, body: response_body}} ->
         case Jason.decode(response_body) do
           {:ok, data} -> {:ok, data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
 
-      {:ok, %HTTPoison.Response{status_code: status}} ->
+      {:ok, %Req.Response{status: status}} ->
         {:error, {:http_error, status}}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, reason} ->
         {:error, reason}
     end
   end
 
   defp get_or_create_user_from_paus(paus_user) do
     # Map PAuS user data to your User schema
-    # Adjust this based on what PAuS returns and your User schema
-
+    # PAuS may return different field names, adjust based on actual response
     email = paus_user["email"] || paus_user["user_email"]
-    name = paus_user["name"] || paus_user["full_name"]
-    npm = paus_user["npm"] || paus_user["student_id"]
+    name = paus_user["name"] || paus_user["full_name"] || paus_user["fullname"]
+    npm = paus_user["npm"] || paus_user["student_id"] || paus_user["identifier"]
+    picture = paus_user["picture"] || paus_user["user_image"] || paus_user["photo"]
 
     # Check if user exists or create new one
-    # Adjust this to match your Accounts context functions
     case Accounts.get_user_by_email(email) do
       nil ->
         # Create new user from PAuS data
@@ -307,9 +311,7 @@ defmodule VoileWeb.UserAuthPaus do
           email: email,
           name: name,
           npm: npm,
-          # Add other fields based on PAuS response
-          authenticated_at: DateTime.utc_now(),
-          # You might want to set a flag indicating this is a PAuS user
+          picture: picture,
           auth_provider: "paus"
         }
 
@@ -323,11 +325,10 @@ defmodule VoileWeb.UserAuthPaus do
         end
 
       user ->
-        # Update last login
+        # Update last login timestamp
         {:ok, user} =
-          Accounts.update_user(user, %{
-            authenticated_at: DateTime.utc_now(),
-            last_login: DateTime.utc_now()
+          Accounts.update_user_login(user, %{
+            last_login: DateTime.utc_now() |> DateTime.truncate(:second)
           })
 
         user

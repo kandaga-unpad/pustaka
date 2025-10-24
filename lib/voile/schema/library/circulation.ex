@@ -5,7 +5,17 @@ defmodule Voile.Schema.Library.Circulation do
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.Catalog.Item
-  alias Voile.Schema.Library.{CirculationHistory, Fine, Requisition, Reservation, Transaction}
+
+  alias Voile.Schema.Library.{
+    CirculationHistory,
+    Fine,
+    Payment,
+    Requisition,
+    Reservation,
+    Transaction
+  }
+
+  alias Client.Xendit
 
   # Circulation History Base CRUD
   def list_circulation_history_paginated(page \\ 1, per_page \\ 10) do
@@ -2012,4 +2022,363 @@ defmodule Voile.Schema.Library.Circulation do
 
     Repo.one(query)
   end
+
+  # ============================================================================
+  # PAYMENT GATEWAY INTEGRATION
+  # ============================================================================
+
+  @doc """
+  Creates a payment link for a fine using Xendit.
+
+  ## Options
+  - `:success_redirect_url` - URL to redirect after successful payment
+  - `:failure_redirect_url` - URL to redirect after failed payment
+
+  ## Examples
+
+      iex> create_payment_link_for_fine(fine_id, processed_by_id)
+      {:ok, %Payment{payment_url: "https://checkout.xendit.co/...", status: "pending"}}
+  """
+  def create_payment_link_for_fine(fine_id, processed_by_id, opts \\ []) do
+    with {:ok, fine} <- get_fine_for_payment(fine_id),
+         {:ok, member} <- get_member_with_contact(fine.member_id),
+         {:ok, payment} <- create_payment_record(fine, member, processed_by_id, opts),
+         {:ok, xendit_response} <- create_xendit_payment_link(payment, fine, member, opts),
+         {:ok, updated_payment} <- update_payment_with_xendit_response(payment, xendit_response) do
+      {:ok, updated_payment}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Gets a payment by ID with preloaded associations.
+  """
+  def get_payment!(id) do
+    Payment
+    |> Repo.get!(id)
+    |> Repo.preload([:fine, :member, :processed_by])
+  end
+
+  @doc """
+  Gets a payment by external_id.
+  """
+  def get_payment_by_external_id(external_id) do
+    Payment
+    |> where([p], p.external_id == ^external_id)
+    |> Repo.one()
+    |> case do
+      nil -> {:error, :not_found}
+      payment -> {:ok, Repo.preload(payment, [:fine, :member, :processed_by])}
+    end
+  end
+
+  @doc """
+  Lists payments for a fine.
+  """
+  def list_fine_payments(fine_id) do
+    Payment
+    |> where([p], p.fine_id == ^fine_id)
+    |> order_by([p], desc: p.inserted_at)
+    |> preload([:member, :processed_by])
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists payments for a member.
+  """
+  def list_member_payments(member_id, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 50)
+
+    Payment
+    |> where([p], p.member_id == ^member_id)
+    |> order_by([p], desc: p.inserted_at)
+    |> limit(^limit)
+    |> preload([:fine, :processed_by])
+    |> Repo.all()
+  end
+
+  @doc """
+  Handles Xendit webhook callback for payment updates.
+
+  ## Examples
+
+      iex> handle_payment_webhook(%{
+        "external_id" => "payment_123",
+        "status" => "PAID",
+        "paid_amount" => 50000
+      })
+      {:ok, %Payment{status: "paid"}}
+  """
+  def handle_payment_webhook(webhook_payload) do
+    with {:ok, parsed} <- Xendit.parse_webhook_payload(webhook_payload),
+         {:ok, payment} <- get_payment_by_external_id(parsed.external_id),
+         {:ok, updated_payment} <- update_payment_from_webhook(payment, parsed),
+         {:ok, _fine} <- update_fine_from_payment(updated_payment) do
+      {:ok, updated_payment}
+    else
+      {:error, :not_found} = error ->
+        require Logger
+
+        Logger.warning(
+          "Payment not found for webhook: #{inspect(webhook_payload["external_id"])}"
+        )
+
+        error
+
+      {:error, reason} ->
+        require Logger
+        Logger.error("Payment webhook handling failed: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Manually marks a payment as paid (for in-person cash payments).
+  """
+  def mark_payment_as_paid(payment_id, processed_by_id) do
+    case Repo.get(Payment, payment_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Payment{status: "paid"} = payment ->
+        {:ok, payment}
+
+      %Payment{} = payment ->
+        attrs = %{
+          status: "paid",
+          paid_amount: payment.amount,
+          payment_date: DateTime.utc_now(),
+          payment_method: "cash",
+          processed_by_id: processed_by_id
+        }
+
+        with {:ok, updated_payment} <- update_payment(payment, attrs),
+             {:ok, _fine} <- update_fine_from_payment(updated_payment) do
+          {:ok, updated_payment}
+        end
+    end
+  end
+
+  @doc """
+  Cancels a pending payment.
+  """
+  def cancel_payment(payment_id, reason \\ nil) do
+    case Repo.get(Payment, payment_id) do
+      nil ->
+        {:error, :not_found}
+
+      %Payment{status: status} when status in ["paid", "cancelled"] ->
+        {:error, "Payment is already #{status}"}
+
+      %Payment{} = payment ->
+        payment
+        |> Payment.changeset(%{
+          status: "cancelled",
+          failure_reason: reason || "Cancelled by user"
+        })
+        |> Repo.update()
+    end
+  end
+
+  @doc """
+  Gets pending payments for a fine.
+  """
+  def get_pending_payment_for_fine(fine_id) do
+    Payment
+    |> where([p], p.fine_id == ^fine_id and p.status == "pending")
+    |> order_by([p], desc: p.inserted_at)
+    |> limit(1)
+    |> Repo.one()
+    |> case do
+      nil -> {:error, :not_found}
+      payment -> {:ok, Repo.preload(payment, [:fine, :member])}
+    end
+  end
+
+  # Private payment helper functions
+
+  defp get_fine_for_payment(fine_id) do
+    case Repo.get(Fine, fine_id) |> Repo.preload([:member, :transaction, item: [:collection]]) do
+      nil -> {:error, :fine_not_found}
+      %Fine{fine_status: status} when status in ["paid", "waived"] -> {:error, :fine_already_paid}
+      fine -> {:ok, fine}
+    end
+  end
+
+  defp get_member_with_contact(member_id) do
+    case Repo.get(User, member_id) do
+      nil -> {:error, :member_not_found}
+      member -> {:ok, member}
+    end
+  end
+
+  defp create_payment_record(fine, member, processed_by_id, _opts) do
+    timestamp = System.system_time(:millisecond)
+    random = :crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)
+    external_id = "fine_#{fine.id}_#{timestamp}_#{random}"
+
+    # Determine amount to pay (use balance if partial payment exists)
+    amount_to_pay = fine.balance || fine.amount
+
+    attrs = %{
+      fine_id: fine.id,
+      member_id: member.id,
+      payment_gateway: "xendit",
+      external_id: external_id,
+      amount: amount_to_pay,
+      currency: "IDR",
+      status: "pending",
+      description: build_payment_description(fine),
+      processed_by_id: processed_by_id,
+      metadata: %{
+        fine_type: fine.fine_type,
+        fine_date: fine.fine_date
+      }
+    }
+
+    %Payment{}
+    |> Payment.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp build_payment_description(fine) do
+    base = "Library Fine Payment"
+
+    detail =
+      case fine do
+        %{item: %{collection: %{title: title}}} when not is_nil(title) ->
+          " - #{String.slice(title, 0, 50)}"
+
+        _ ->
+          ""
+      end
+
+    "#{base}#{detail}"
+  end
+
+  defp create_xendit_payment_link(payment, fine, member, opts) do
+    # Build app URLs for redirects
+    app_url = VoileWeb.Endpoint.url()
+    success_url = Keyword.get(opts, :success_redirect_url, "#{app_url}/atrium?payment=success")
+    failure_url = Keyword.get(opts, :failure_redirect_url, "#{app_url}/atrium?payment=failed")
+
+    customer = %{
+      given_names: member.fullname || "Library Member",
+      email: member.email
+    }
+
+    # Add mobile number if available
+    customer =
+      if member.phone_number do
+        Map.put(customer, :mobile_number, member.phone_number)
+      else
+        customer
+      end
+
+    amount = payment.amount |> Decimal.to_integer()
+
+    items = [
+      %{
+        name: "Library Fine",
+        quantity: 1,
+        price: amount,
+        category: fine.fine_type
+      }
+    ]
+
+    Xendit.create_payment_link(
+      external_id: payment.external_id,
+      amount: amount,
+      description: payment.description,
+      customer: customer,
+      success_redirect_url: success_url,
+      failure_redirect_url: failure_url,
+      items: items
+    )
+  end
+
+  defp update_payment_with_xendit_response(payment, xendit_response) do
+    attrs = %{
+      payment_link_id: xendit_response["id"],
+      payment_url: xendit_response["invoice_url"],
+      expired_at:
+        if(xendit_response["expiry_date"],
+          do: parse_xendit_datetime(xendit_response["expiry_date"]),
+          else: nil
+        )
+    }
+
+    payment
+    |> Payment.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp update_payment_from_webhook(payment, parsed_webhook) do
+    status = normalize_xendit_status(parsed_webhook.status)
+
+    paid_amount =
+      if parsed_webhook.paid_amount, do: Decimal.new(parsed_webhook.paid_amount), else: nil
+
+    attrs = %{
+      status: status,
+      paid_amount: paid_amount,
+      payment_date:
+        if(parsed_webhook.paid_at, do: parse_xendit_datetime(parsed_webhook.paid_at), else: nil),
+      payment_method: parsed_webhook.payment_method,
+      payment_channel: parsed_webhook.payment_method,
+      failure_reason: parsed_webhook.failure_reason,
+      callback_data: parsed_webhook
+    }
+
+    payment
+    |> Payment.webhook_changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp update_payment(payment, attrs) do
+    payment
+    |> Payment.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp update_fine_from_payment(%Payment{status: "paid", fine_id: fine_id} = payment)
+       when not is_nil(fine_id) do
+    case Repo.get(Fine, fine_id) do
+      nil ->
+        {:error, :fine_not_found}
+
+      _fine ->
+        # Use the existing pay_fine function to update the fine
+        pay_fine(
+          fine_id,
+          payment.paid_amount,
+          payment.payment_method || "online",
+          payment.processed_by_id,
+          payment.external_id
+        )
+    end
+  end
+
+  defp update_fine_from_payment(_payment) do
+    # No action needed for non-paid statuses or payments without fines
+    {:ok, nil}
+  end
+
+  defp normalize_xendit_status("PAID"), do: "paid"
+  defp normalize_xendit_status("PENDING"), do: "pending"
+  defp normalize_xendit_status("EXPIRED"), do: "expired"
+  defp normalize_xendit_status("FAILED"), do: "failed"
+  defp normalize_xendit_status(status), do: String.downcase(status)
+
+  defp parse_xendit_datetime(nil), do: nil
+
+  defp parse_xendit_datetime(datetime_string) when is_binary(datetime_string) do
+    case DateTime.from_iso8601(datetime_string) do
+      {:ok, datetime, _} -> datetime
+      _ -> nil
+    end
+  end
+
+  defp parse_xendit_datetime(_), do: nil
 end

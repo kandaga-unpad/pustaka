@@ -20,6 +20,13 @@ defmodule VoileWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Webhook endpoints (no CSRF protection needed)
+  scope "/webhooks", VoileWeb do
+    pipe_through :api
+
+    post "/xendit/payment", XenditWebhookController, :payment_callback
+  end
+
   scope "/", VoileWeb do
     pipe_through :browser
     # Convert home and about pages to LiveView for better UX

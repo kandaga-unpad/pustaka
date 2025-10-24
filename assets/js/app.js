@@ -80,6 +80,33 @@ document.addEventListener("voile:set-active-tab", (e) => {
   }
 });
 
+// Handle copy to clipboard
+document.addEventListener("voile:copy-to-clipboard", (e) => {
+  try {
+    const targetSelector = e.detail?.to;
+    const successMessage = e.detail?.success_message || "Copied!";
+
+    if (targetSelector) {
+      const input = document.querySelector(targetSelector);
+      if (input) {
+        input.select();
+        document.execCommand("copy");
+
+        // Show temporary success feedback
+        const originalText = e.target?.textContent;
+        if (e.target) {
+          e.target.textContent = successMessage;
+          setTimeout(() => {
+            if (originalText) e.target.textContent = originalText;
+          }, 2000);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error handling voile:copy-to-clipboard", err);
+  }
+});
+
 let header = document.getElementById("navigationHeader");
 let sticky = header?.offsetTop;
 
