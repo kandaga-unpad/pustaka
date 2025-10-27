@@ -42,6 +42,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         total_loans: total_loans,
         total_unpaid_fines: total_unpaid_fines,
         paying: nil,
+        renewing_loan_id: nil,
+        show_renewal_modal: false,
+        renewal_transaction: nil,
         current_password: nil,
         current_email: user.email,
         profile_form: to_form(profile_changeset),
@@ -121,19 +124,15 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   end
 
   @impl true
-  def handle_event("renew_loan", %{"transaction_id" => tx_id}, socket) do
+  def handle_event("open_renewal_modal", %{"transaction_id" => tx_id}, socket) do
     member = socket.assigns.current_scope.user
-    # Quick client-side friendly checks based on member type entitlements so
-    # the user gets immediate feedback without an unnecessary server call.
     user_type = Map.get(member, :user_type)
-    get_admin_id = Circulation.get_admin_id_for_self_renewal()
 
     case can_renew_transaction_precheck(tx_id, member, user_type) do
       {:error, msg} ->
         {:noreply, socket |> put_flash(:error, msg)}
 
       {:ok} ->
-        # Verify transaction belongs to current member and attempt renewal.
         case Circulation.get_transaction(tx_id) do
           nil ->
             {:noreply, socket |> put_flash(:error, "Transaction not found")}
@@ -142,28 +141,91 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             if tx.member_id != member.id do
               {:noreply, socket |> put_flash(:error, "You can only renew your own loans")}
             else
-              # Attempt to renew via Circulation. Use admin id (if found) or nil for self-service.
-              case Circulation.renew_transaction(tx_id, get_admin_id, %{}) do
-                {:ok, _transaction} ->
-                  {loans, loans_total_pages} =
-                    Circulation.list_member_active_transactions_paginated(
-                      member.id,
-                      socket.assigns.loans_page || 1,
-                      10
-                    )
-
-                  {:noreply,
-                   socket
-                   |> put_flash(:info, "Loan renewed")
-                   |> assign(loans: loans, loans_total_pages: loans_total_pages)}
-
-                {:error, reason} ->
-                  {:noreply,
-                   socket |> put_flash(:error, "Could not renew loan: #{inspect(reason)}")}
-              end
+              {:noreply,
+               socket
+               |> assign(:show_renewal_modal, true)
+               |> assign(:renewal_transaction, tx)}
             end
         end
     end
+  end
+
+  def handle_event("close_renewal_modal", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_renewal_modal, false)
+     |> assign(:renewal_transaction, nil)}
+  end
+
+  def handle_event("confirm_renew_loan", _params, socket) do
+    tx = socket.assigns.renewal_transaction
+
+    if tx do
+      member = socket.assigns.current_scope.user
+      get_admin_id = Circulation.get_admin_id_for_self_renewal()
+
+      # Set renewing state
+      socket =
+        socket
+        |> assign(:renewing_loan_id, tx.id)
+        |> assign(:show_renewal_modal, false)
+        |> assign(:renewal_transaction, nil)
+
+      # Attempt to renew via Circulation
+      case Circulation.renew_transaction(tx.id, get_admin_id, %{}) do
+        {:ok, updated_transaction} ->
+          {loans, loans_total_pages} =
+            Circulation.list_member_active_transactions_paginated(
+              member.id,
+              socket.assigns.loans_page || 1,
+              10
+            )
+
+          # Format the new due date for user-friendly display
+          new_due_date =
+            if updated_transaction.due_date do
+              Calendar.strftime(updated_transaction.due_date, "%B %d, %Y")
+            else
+              "N/A"
+            end
+
+          {:noreply,
+           socket
+           |> assign(:renewing_loan_id, nil)
+           |> put_flash(
+             :info,
+             "Loan renewed successfully! New due date: #{new_due_date}"
+           )
+           |> assign(loans: loans, loans_total_pages: loans_total_pages)}
+
+        {:error, reason} ->
+          error_message =
+            case reason do
+              :max_renewals_reached ->
+                "Maximum renewals reached for this item"
+
+              :overdue ->
+                "Cannot renew overdue items. Please return or contact library staff"
+
+              :has_holds ->
+                "Cannot renew - this item has pending reservations"
+
+              _ ->
+                "Could not renew loan: #{inspect(reason)}"
+            end
+
+          {:noreply, socket |> assign(:renewing_loan_id, nil) |> put_flash(:error, error_message)}
+      end
+    else
+      {:noreply, socket |> put_flash(:error, "Transaction not found")}
+    end
+  end
+
+  @impl true
+  def handle_event("renew_loan", %{"transaction_id" => tx_id}, socket) do
+    # This event is now just a redirect to open the modal
+    send(self(), {:open_renewal_modal, tx_id})
+    {:noreply, socket}
   end
 
   @impl true
@@ -379,6 +441,33 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     end
   end
 
+  @impl true
+  def handle_info({:open_renewal_modal, tx_id}, socket) do
+    member = socket.assigns.current_scope.user
+    user_type = Map.get(member, :user_type)
+
+    case can_renew_transaction_precheck(tx_id, member, user_type) do
+      {:error, msg} ->
+        {:noreply, socket |> put_flash(:error, msg)}
+
+      {:ok} ->
+        case Circulation.get_transaction(tx_id) do
+          nil ->
+            {:noreply, socket |> put_flash(:error, "Transaction not found")}
+
+          tx ->
+            if tx.member_id != member.id do
+              {:noreply, socket |> put_flash(:error, "You can only renew your own loans")}
+            else
+              {:noreply,
+               socket
+               |> assign(:show_renewal_modal, true)
+               |> assign(:renewal_transaction, tx)}
+            end
+        end
+    end
+  end
+
   defp handle_progress(:user_image, entry, socket) do
     if entry.done? do
       # If there is an existing image in form params, attempt to delete it
@@ -459,7 +548,25 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           if tx.renewal_count >= max_renewals do
             {:error, "Maximum renewals (#{max_renewals}) reached for your member type"}
           else
-            {:ok}
+            # Check renewal window: 3 days before due to 1 day before due
+            if tx.due_date do
+              days_until_due = Date.diff(tx.due_date, Date.utc_today())
+
+              cond do
+                days_until_due <= 1 ->
+                  {:error,
+                   "Too late to renew. Items must be renewed at least 1 day before due date"}
+
+                days_until_due > 3 ->
+                  {:error,
+                   "Too early to renew. You can renew starting 3 days before the due date"}
+
+                true ->
+                  {:ok}
+              end
+            else
+              {:ok}
+            end
           end
       end
     end
@@ -537,6 +644,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       else: url <> "?t=" <> Integer.to_string(ts)
   end
 
+  # Calculate the new due date after renewal based on member type
+  defp calculate_new_due_date(current_due_date, member) do
+    max_days =
+      if member.user_type && member.user_type.max_days do
+        member.user_type.max_days
+      else
+        21
+      end
+
+    Date.add(current_due_date, max_days)
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -552,11 +671,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             />
             <div>
               <h1 class="text-2xl font-semibold">Welcome back, {@current_scope.user.fullname}</h1>
-
+              
               <p class="mt-1 text-sm opacity-90">
                 This is your Atrium — a personalized member dashboard.
               </p>
-
+              
               <div class="mt-3 flex items-center gap-3 text-sm">
                 <span class="px-3 py-1 bg-white/20 rounded-full">
                   Loans: <strong class="ml-1">{length(@loans || [])}</strong>
@@ -568,7 +687,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             </div>
           </div>
         </header>
-
+        
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left column: profile card -->
           <div class="lg:col-span-1">
@@ -581,36 +700,36 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 />
                 <div>
                   <div class="text-lg font-medium">{@current_scope.user.fullname}</div>
-
+                  
                   <div class="text-sm mt-1">{role_name(@current_scope.user)}</div>
                 </div>
               </div>
-
+              
               <div class="mt-4 text-sm space-y-2">
                 <div><strong>Email:</strong> {@current_scope.user.email}</div>
-
+                
                 <div><strong>Member type:</strong> {user_type_name(@current_scope.user)}</div>
-
+                
                 <div><strong>Node:</strong> {node_name(@current_scope.user)}</div>
               </div>
-
+              
               <div class="mt-6">
                 <h6 class="text-sm font-medium text-voile-muted mb-3">Circulation Summary</h6>
-
+                
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Active Loans</div>
-
+                    
                     <div class="text-lg font-semibold">{@total_loans}</div>
                   </div>
-
+                  
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Unpaid Fines</div>
-
+                    
                     <div class="text-lg font-semibold">{@total_unpaid_fines}</div>
                   </div>
                 </div>
-
+                
                 <div class="mt-4">
                   <.button
                     type="button"
@@ -648,7 +767,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   </button>
                 <% end %>
               </nav>
-
+              
               <div id="atrium-tabpanels" class="space-y-6">
                 <%= if @active_tab == :collections do %>
                   <div
@@ -656,20 +775,20 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-2">Collections</h4>
-
+                    
                     <p class="text-sm">
                       Your collections will be shown here — curated and simple to browse.
                     </p>
                   </div>
                 <% end %>
-
+                
                 <%= if @active_tab == :settings do %>
                   <div
                     id="tab-settings"
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-4">Account Settings</h4>
-
+                    
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div class="space-y-4">
                         <.form
@@ -687,7 +806,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               disabled
                             />
                           </div>
-
+                          
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />
                           <label class="block text-sm font-medium text-gray-700 mb-2">
                             Profile image
@@ -701,7 +820,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 />
                                 <div class="flex-1">
                                   <p class="text-sm text-voile-muted">Uploaded</p>
-
+                                  
                                   <.button
                                     type="button"
                                     phx-click="delete_user_image"
@@ -715,7 +834,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <% else %>
                               <div class="border border-dashed rounded p-4 text-center">
                                 <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
-                                <.live_file_input upload={@uploads.user_image} class="hidden" />
+                                 <.live_file_input upload={@uploads.user_image} class="hidden" />
                                 <label
                                   for={@uploads.user_image.ref}
                                   class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
@@ -730,7 +849,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               </div>
                             <% end %>
                           </div>
-
+                          
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input field={@profile_form[:website]} type="url" label="Website" />
                             <.input
@@ -740,7 +859,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               placeholder="@username"
                             />
                           </div>
-
+                          
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input
                               field={@user_profile_form[:fullname]}
@@ -792,29 +911,29 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               label="Position"
                             />
                           </div>
-                          <hr class="my-4" />
+                           <hr class="my-4" />
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
-
+                          
                           <div class="text-sm text-voile-muted mb-3 space-y-1">
                             <p>Role: {role_name(@current_scope.user)}</p>
-
+                            
                             <p>Member type: {user_type_name(@current_scope.user)}</p>
-
+                            
                             <p>Node: {node_name(@current_scope.user)}</p>
-
+                            
                             <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
-
+                            
                             <p>
                               Last login: {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
                             </p>
                           </div>
-
+                          
                           <div class="mt-3 grid grid-cols-1 gap-2">
                             <.button phx-disable-with="Saving...">Save Profile</.button>
                           </div>
                         </.form>
                       </div>
-
+                      
                       <div>
                         <.form
                           for={@password_form}
@@ -867,79 +986,199 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Your Active Loans</h4>
-
+                          
                           <div class="text-sm text-voile-muted mt-1">
                             Active loans: <strong>{length(@loans || [])}</strong>
                           </div>
                         </div>
-
-                        <div class="flex items-center gap-3">
-                          <div class="text-sm text-voile-muted">
-                            Page {@loans_page || 1} of {@loans_total_pages || 1}
+                        
+                        <%= if length(@loans) > 10 do %>
+                          <div class="flex items-center gap-3">
+                            <div class="text-sm text-voile-muted">
+                              Page {@loans_page || 1} of {@loans_total_pages || 1}
+                            </div>
+                            
+                            <.button
+                              phx-click="loans_prev"
+                              disabled={@loans_page <= 1}
+                            >
+                              Prev
+                            </.button>
+                            <.button
+                              phx-click="loans_next"
+                              disabled={@loans_page >= @loans_total_pages}
+                            >
+                              Next
+                            </.button>
                           </div>
-
-                          <.button
-                            phx-click="loans_prev"
-                            disabled={@loans_page <= 1}
-                            class="px-2 py-1"
-                          >
-                            Prev
-                          </.button>
-                          <.button
-                            phx-click="loans_next"
-                            disabled={@loans_page >= @loans_total_pages}
-                            class="px-2 py-1"
-                          >
-                            Next
-                          </.button>
-                        </div>
+                        <% end %>
                       </div>
-
+                      
                       <div class="mt-4">
                         <%= if @loans == [] do %>
                           <p class="text-sm text-voile-muted">You have no active loans.</p>
                         <% else %>
                           <ul class="space-y-3">
                             <%= for tx <- @loans do %>
-                              <li class="flex items-center gap-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral">
+                              <% can_renew_type =
+                                @current_scope.user.user_type &&
+                                  @current_scope.user.user_type.can_renew %> <% max_renewals =
+                                (@current_scope.user.user_type &&
+                                   @current_scope.user.user_type.max_renewals) || 0 %> <% days_until_due =
+                                if tx.due_date do
+                                  Date.diff(tx.due_date, Date.utc_today())
+                                else
+                                  nil
+                                end %> <% is_overdue = days_until_due && days_until_due < 0 %> <% is_due_soon =
+                                days_until_due && days_until_due >= 0 && days_until_due <= 3 %> <% in_renewal_window =
+                                days_until_due && days_until_due >= 2 && days_until_due <= 3 %> <% too_early_to_renew =
+                                days_until_due && days_until_due > 3 %> <% too_late_to_renew =
+                                days_until_due && days_until_due <= 1 %> <% renew_disabled =
+                                not can_renew_type or tx.renewal_count >= max_renewals or
+                                  too_early_to_renew or too_late_to_renew or is_overdue %> <% is_renewing =
+                                @renewing_loan_id == tx.id %>
+                              <li class={"flex items-center gap-4 p-3 rounded-lg shadow-sm transition-all " <> (if is_overdue, do: "bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800", else: if(is_due_soon, do: "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800", else: "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"))}>
+                                <div class="w-16 h-20 shrink-0 rounded overflow-hidden bg-voile-neutral shadow-sm">
                                   <%= if tx.item && tx.item.collection && tx.item.collection.thumbnail do %>
                                     <img
                                       src={tx.item.collection.thumbnail}
                                       class="w-full h-full object-cover"
+                                      alt="Book cover"
                                     />
                                   <% else %>
-                                    <div class="w-full h-full flex items-center justify-center text-xs text-voile-muted text-center">
-                                      No image
+                                    <div class="w-full h-full flex items-center justify-center text-xs text-voile-muted text-center p-2">
+                                      <.icon name="hero-book-open" class="w-8 h-8" />
                                     </div>
                                   <% end %>
                                 </div>
-
-                                <div class="flex-1 text-sm">
-                                  <div class="font-medium">
+                                
+                                <div class="flex-1 min-w-0">
+                                  <div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
                                     {if tx.collection && tx.collection.title,
                                       do: tx.collection.title,
                                       else: tx.item.item_code}
                                   </div>
-
-                                  <div class="text-xs text-voile-muted">Due: {tx.due_date}</div>
+                                  
+                                  <div class="flex flex-wrap items-center gap-3 text-xs">
+                                    <%= cond do %>
+                                      <% is_overdue -> %>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 font-medium">
+                                          <.icon name="hero-exclamation-circle" class="w-3 h-3 mr-1" />
+                                          Overdue by {abs(days_until_due)} day(s)
+                                        </span>
+                                      <% is_due_soon -> %>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-medium">
+                                          <.icon name="hero-clock" class="w-3 h-3 mr-1" />
+                                          Due in {days_until_due} day(s)
+                                        </span>
+                                      <% true -> %>
+                                        <span class="text-voile-muted">
+                                          <.icon
+                                            name="hero-calendar"
+                                            class="w-3 h-3 inline mr-1"
+                                          /> Due: {Calendar.strftime(tx.due_date, "%b %d, %Y")}
+                                        </span>
+                                    <% end %>
+                                    
+                                    <span class="text-voile-muted">
+                                      <.icon name="hero-arrow-path" class="w-3 h-3 inline mr-1" />
+                                      Renewed: {tx.renewal_count}/{max_renewals}
+                                    </span>
+                                    <%= if tx.transaction_date do %>
+                                      <span class="text-voile-muted">
+                                        Borrowed: {Calendar.strftime(tx.transaction_date, "%b %d")}
+                                      </span>
+                                    <% end %>
+                                  </div>
+                                  
+                                  <%= if renew_disabled do %>
+                                    <div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                                      <%= cond do %>
+                                        <% is_overdue -> %>
+                                          <span class="inline-flex items-center text-red-600 dark:text-red-400">
+                                            <.icon name="hero-x-circle" class="w-3 h-3 mr-1" />
+                                            Cannot renew overdue items
+                                          </span>
+                                        <% not can_renew_type -> %>
+                                          <span class="inline-flex items-center text-gray-500">
+                                            <.icon name="hero-no-symbol" class="w-3 h-3 mr-1" />
+                                            Renewals not available for your member type
+                                          </span>
+                                        <% tx.renewal_count >= max_renewals -> %>
+                                          <span class="inline-flex items-center text-gray-500">
+                                            <.icon name="hero-no-symbol" class="w-3 h-3 mr-1" />
+                                            Maximum renewals reached
+                                          </span>
+                                        <% too_late_to_renew -> %>
+                                          <span class="inline-flex items-center text-amber-600 dark:text-amber-400">
+                                            <.icon name="hero-clock" class="w-3 h-3 mr-1" />
+                                            Too late to renew (must renew at least 1 day before due)
+                                            <br /> Please contact library staff for assistance.
+                                          </span>
+                                        <% too_early_to_renew -> %>
+                                          <span class="inline-flex items-center text-blue-600 dark:text-blue-400">
+                                            <.icon
+                                              name="hero-information-circle"
+                                              class="w-3 h-3 mr-1"
+                                            /> Available for renewal in {days_until_due - 3} day(s)
+                                          </span>
+                                        <% true -> %>
+                                          <span>Cannot renew this item</span>
+                                      <% end %>
+                                    </div>
+                                  <% else %>
+                                    <%= if in_renewal_window do %>
+                                      <div class="mt-2 text-xs text-green-600 dark:text-green-400">
+                                        <span class="inline-flex items-center">
+                                          <.icon name="hero-check-circle" class="w-3 h-3 mr-1" />
+                                          Renewal available now
+                                        </span>
+                                      </div>
+                                    <% end %>
+                                  <% end %>
                                 </div>
-
+                                
                                 <div class="flex-shrink-0">
-                                  <% can_renew_type =
-                                    @current_scope.user.user_type &&
-                                      @current_scope.user.user_type.can_renew %> <% max_renewals =
-                                    (@current_scope.user.user_type &&
-                                       @current_scope.user.user_type.max_renewals) || 0 %> <% renew_disabled =
-                                    not can_renew_type or tx.renewal_count >= max_renewals %>
-                                  <.button
-                                    class="primary-btn text-xs"
-                                    phx-click="renew_loan"
-                                    phx-value-transaction_id={tx.id}
-                                    disabled={renew_disabled}
-                                  >
-                                    Renew
-                                  </.button>
+                                  <%= if is_renewing do %>
+                                    <button
+                                      disabled
+                                      class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 cursor-not-allowed"
+                                    >
+                                      <svg
+                                        class="animate-spin -ml-1 mr-2 h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <circle
+                                          class="opacity-25"
+                                          cx="12"
+                                          cy="12"
+                                          r="10"
+                                          stroke="currentColor"
+                                          stroke-width="4"
+                                        >
+                                        </circle>
+                                        
+                                        <path
+                                          class="opacity-75"
+                                          fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        >
+                                        </path>
+                                      </svg>
+                                      Renewing...
+                                    </button>
+                                  <% else %>
+                                    <button
+                                      phx-click="renew_loan"
+                                      phx-value-transaction_id={tx.id}
+                                      disabled={renew_disabled}
+                                      class={"inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors " <> (if renew_disabled, do: "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed", else: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md")}
+                                    >
+                                      <.icon name="hero-arrow-path" class="w-4 h-4 mr-1.5" /> Renew
+                                    </button>
+                                  <% end %>
                                 </div>
                               </li>
                             <% end %>
@@ -952,34 +1191,34 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Outstanding Fines</h4>
-
+                          
                           <div class="text-sm text-voile-muted mt-1">
                             Unpaid fines: <strong>{length(@fines || [])}</strong>
                           </div>
                         </div>
-
-                        <div class="flex items-center gap-3">
-                          <div class="text-sm text-voile-muted">
-                            Page {@fines_page || 1} of {@fines_total_pages || 1}
+                        
+                        <%= if length(@fines) > 10 do %>
+                          <div class="flex items-center gap-3">
+                            <div class="text-sm text-voile-muted">
+                              Page {@fines_page || 1} of {@fines_total_pages || 1}
+                            </div>
+                            
+                            <.button
+                              phx-click="fines_prev"
+                              disabled={@fines_page <= 1}
+                            >
+                              Prev
+                            </.button>
+                            <.button
+                              phx-click="fines_next"
+                              disabled={@fines_page >= @fines_total_pages}
+                            >
+                              Next
+                            </.button>
                           </div>
-
-                          <.button
-                            phx-click="fines_prev"
-                            disabled={@fines_page <= 1}
-                            class="px-2 py-1"
-                          >
-                            Prev
-                          </.button>
-                          <.button
-                            phx-click="fines_next"
-                            disabled={@fines_page >= @fines_total_pages}
-                            class="px-2 py-1"
-                          >
-                            Next
-                          </.button>
-                        </div>
+                        <% end %>
                       </div>
-
+                      
                       <div class="mt-4">
                         <%= if @fines == [] do %>
                           <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
@@ -1002,14 +1241,14 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     <.icon name="hero-currency-dollar" class="w-6 h-6" />
                                   <% end %>
                                 </div>
-
+                                
                                 <div class="flex-1 text-sm space-y-2">
                                   <div class="font-medium text-gray-900 dark:text-gray-100">
                                     {f.description ||
                                       (f.item && f.item.collection && f.item.collection.title) ||
                                       "Library Fine"}
                                   </div>
-
+                                  
                                   <div class="flex items-center gap-4 text-xs text-voile-muted">
                                     <span>
                                       Type:
@@ -1027,7 +1266,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       <span>Date: {Calendar.strftime(f.fine_date, "%Y-%m-%d")}</span>
                                     <% end %>
                                   </div>
-
+                                  
                                   <%= if pending_payment do %>
                                     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-2 mt-2">
                                       <div class="flex items-center justify-between">
@@ -1035,6 +1274,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
                                           Payment link available
                                         </div>
+                                        
                                         <a
                                           href={pending_payment.payment_url}
                                           target="_blank"
@@ -1050,7 +1290,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </div>
                                   <% end %>
                                 </div>
-
+                                
                                 <div class="flex-shrink-0 flex flex-col gap-2">
                                   <%= if pending_payment do %>
                                     <a
@@ -1071,7 +1311,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       Get Payment Link
                                     </button>
                                   <% end %>
-
+                                  
                                   <div class="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
                                     or pay in person at library
                                   </div>
@@ -1089,6 +1329,176 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           </div>
         </div>
       </div>
+       <%!-- Renewal Confirmation Modal --%>
+      <.modal
+        :if={@show_renewal_modal && @renewal_transaction}
+        id="renewal-modal"
+        show
+        on_cancel={JS.push("close_renewal_modal")}
+      >
+        <% tx = @renewal_transaction %> <% member = @current_scope.user %> <% current_due =
+          if tx.due_date do
+            case tx.due_date do
+              %Date{} = date -> date
+              %DateTime{} = datetime -> DateTime.to_date(datetime)
+              _ -> Date.utc_today()
+            end
+          else
+            Date.utc_today()
+          end %> <% new_due = calculate_new_due_date(current_due, member) %> <% loan_period_days =
+          if member.user_type && member.user_type.max_days,
+            do: member.user_type.max_days,
+            else: 21 %> <% days_until_current_due = Date.diff(current_due, Date.utc_today()) %>
+        <!-- Header -->
+        <div class="mb-6">
+          <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            Confirm Loan Renewal
+          </h3>
+          
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Please review the details before confirming
+          </p>
+        </div>
+        <!-- Book Info -->
+        <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+          <div class="flex gap-4">
+            <div class="w-20 h-28 shrink-0 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-md">
+              <%= if tx.item && tx.item.collection && tx.item.collection.thumbnail do %>
+                <img
+                  src={tx.item.collection.thumbnail}
+                  class="w-full h-full object-cover"
+                  alt="Book cover"
+                />
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center">
+                  <.icon name="hero-book-open" class="w-8 h-8 text-gray-400" />
+                </div>
+              <% end %>
+            </div>
+            
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                {if tx.collection && tx.collection.title,
+                  do: tx.collection.title,
+                  else: tx.item && tx.item.item_code}
+              </h4>
+              
+              <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <%= if tx.item do %>
+                  <p><span class="font-medium">Item Code:</span> {tx.item.item_code}</p>
+                  
+                  <%= if tx.item.location do %>
+                    <p><span class="font-medium">Location:</span> {tx.item.location}</p>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Renewal Details -->
+        <div class="mb-6 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Current Due Date -->
+            <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div class="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                Current Due Date
+              </div>
+              
+              <div class="text-lg font-semibold text-red-700 dark:text-red-300">
+                {Calendar.strftime(current_due, "%b %d, %Y")}
+              </div>
+              
+              <div class="text-xs text-red-600 dark:text-red-400 mt-1">
+                <%= if days_until_current_due > 0 do %>
+                  {days_until_current_due} days remaining
+                <% else %>
+                  Due today
+                <% end %>
+              </div>
+            </div>
+            <!-- New Due Date -->
+            <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                New Due Date
+              </div>
+              
+              <div class="text-lg font-semibold text-green-700 dark:text-green-300">
+                {Calendar.strftime(new_due, "%b %d, %Y")}
+              </div>
+              
+              <div class="text-xs text-green-600 dark:text-green-400 mt-1">
+                +{loan_period_days} days extension
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h5 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3">
+              Transaction Details
+            </h5>
+            
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-blue-600 dark:text-blue-400">Transaction Date:</span>
+                <div class="font-medium text-blue-900 dark:text-blue-100">
+                  {Calendar.strftime(tx.transaction_date, "%b %d, %Y")}
+                </div>
+              </div>
+              
+              <div>
+                <span class="text-blue-600 dark:text-blue-400">Renewal Count:</span>
+                <div class="font-medium text-blue-900 dark:text-blue-100">
+                  {tx.renewal_count} / {(member.user_type && member.user_type.max_renewals) || 0}
+                </div>
+              </div>
+              
+              <div>
+                <span class="text-blue-600 dark:text-blue-400">Status:</span>
+                <div class="font-medium text-blue-900 dark:text-blue-100 capitalize">{tx.status}</div>
+              </div>
+              
+              <div>
+                <span class="text-blue-600 dark:text-blue-400">Member Type:</span>
+                <div class="font-medium text-blue-900 dark:text-blue-100">
+                  {(member.user_type && member.user_type.name) || "Standard"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Important Notice -->
+        <div class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div class="flex gap-3">
+            <.icon
+              name="hero-information-circle"
+              class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+            />
+            <div class="text-sm text-amber-800 dark:text-amber-200">
+              <p class="font-medium mb-1">Important Information:</p>
+              
+              <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-300">
+                <li>This renewal will extend your loan period by {loan_period_days} days</li>
+                
+                <li>
+                  You will have {(member.user_type &&
+                                    member.user_type.max_renewals - tx.renewal_count - 1) || 0} renewal(s) left after this
+                </li>
+                
+                <li>Late returns may result in fines</li>
+                
+                <li>This action cannot be undone</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div class="mt-6 flex gap-3 justify-end">
+          <.button type="button" phx-click="close_renewal_modal">Cancel</.button>
+          <.button type="button" phx-click="confirm_renew_loan">
+            <.icon name="hero-check-circle" class="w-5 h-5 mr-2" /> Confirm Renewal
+          </.button>
+        </div>
+      </.modal>
     </Layouts.app>
     """
   end

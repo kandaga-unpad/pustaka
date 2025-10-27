@@ -251,11 +251,11 @@
   on_cancel={JS.patch(~p"/manage/glam/library/circulation/requisitions")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">New Requisition</h3>
+    <h3 class="text-lg font-medium">New Requisition</h3>
     
-    <.form for={%{}} id="requisition-form" phx-submit="create_requisition">
+    <.form :let={f} for={%{}} id="requisition-form" phx-submit="create_requisition">
       <.input
-        name="request_type"
+        field={f[:request_type]}
         type="select"
         label="Request Type"
         options={[
@@ -267,34 +267,34 @@
         required
       />
       <.input
-        name="title"
+        field={f[:title]}
         label="Title"
         placeholder="Enter title of requested item"
         required
       />
       <.input
-        name="author"
+        field={f[:author]}
         label="Author"
         placeholder="Enter author name"
       />
       <.input
-        name="publisher"
+        field={f[:publisher]}
         label="Publisher"
         placeholder="Enter publisher name"
       />
       <.input
-        name="isbn"
+        field={f[:isbn]}
         label="ISBN"
         placeholder="Enter ISBN (10 or 13 digits)"
       />
       <.input
-        name="publication_year"
+        field={f[:publication_year]}
         type="number"
         label="Publication Year"
         placeholder="Enter publication year"
       />
       <.input
-        name="priority"
+        field={f[:priority]}
         type="select"
         label="Priority"
         options={[
@@ -302,29 +302,28 @@
           {"High", "high"},
           {"Urgent", "urgent"}
         ]}
-        value="normal"
       />
       <.input
-        name="estimated_cost"
+        field={f[:estimated_cost]}
         type="number"
         step="1"
         label="Estimated Cost (Rp )"
         placeholder="0"
       />
       <.input
-        name="description"
+        field={f[:description]}
         type="textarea"
         label="Description"
         placeholder="Describe the request in detail"
         rows="3"
       />
       <.input
-        name="justification"
+        field={f[:justification]}
         type="textarea"
         label="Justification"
         placeholder="Explain why this request is needed"
         rows="3"
-      /> <.button type="submit" class="w-full">Create Requisition</.button>
+      /> <.button type="submit">Create Requisition</.button>
     </.form>
   </div>
 </.modal>

@@ -166,8 +166,8 @@
                 <p class="text-sm font-medium ">{@transaction.librarian.fullname}</p>
                 
                 <p class="text-sm text-gray-500">
-                  {if Ecto.assoc_loaded?(@transaction.librarian.user_role),
-                    do: @transaction.librarian.user_role.name,
+                  {if Ecto.assoc_loaded?(@transaction.librarian.roles),
+                    do: Enum.map(@transaction.librarian.roles, & &1.name) |> Enum.join(", "),
                     else: "-"}
                 </p>
               </div>

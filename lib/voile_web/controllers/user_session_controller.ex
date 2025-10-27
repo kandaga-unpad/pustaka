@@ -21,16 +21,33 @@ defmodule VoileWeb.UserSessionController do
   defp create(conn, %{"user" => user_params}, info) do
     %{"email" => login, "password" => password} = user_params
 
-    if user = Accounts.get_user_by_login_and_password(login, password) do
-      conn
-      |> put_flash(:info, info)
-      |> UserAuth.log_in_user(user, user_params)
-    else
-      # In order to prevent user enumeration attacks, don't disclose whether the login is registered.
-      conn
-      |> put_flash(:error, "Invalid email/username/identifier or password")
-      |> put_flash(:email, String.slice(login, 0, 160))
-      |> redirect(to: ~p"/login")
+    try do
+      if user = Accounts.get_user_by_login_and_password(login, password) do
+        conn
+        |> put_flash(:info, info)
+        |> UserAuth.log_in_user(user, user_params)
+      else
+        # In order to prevent user enumeration attacks, don't disclose whether the login is registered.
+        conn
+        |> put_flash(:error, "Invalid email/username/identifier or password")
+        |> put_flash(:email, String.slice(login, 0, 160))
+        |> redirect(to: ~p"/login")
+      end
+    rescue
+      e in MatchError ->
+        require Logger
+
+        Logger.error(
+          "Password verification failed with MatchError for login: #{login} - #{inspect(e)}"
+        )
+
+        conn
+        |> put_flash(
+          :error,
+          "Account authentication error. Please reset your password or contact support."
+        )
+        |> put_flash(:email, String.slice(login, 0, 160))
+        |> redirect(to: ~p"/login")
     end
   end
 

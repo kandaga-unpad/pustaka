@@ -618,13 +618,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <button
               type="button"
               phx-click="cancel_return"
-              class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+              class="cancel-btn"
             >
               Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 text-white">
-              Return
-            </button>
+            </button> <button type="submit" class="success-btn">Return</button>
           </div>
           
           <input
@@ -713,7 +710,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               min="1"
               label="Renewal Duration (days)"
               value={@recommended_renew_days || 1}
-              class="w-40"
             />
             <div class="ml-auto flex items-center space-x-3">
               <div class="text-sm text-gray-600 dark:text-gray-300">Remaining</div>
@@ -728,7 +724,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <button
               type="button"
               phx-click="cancel_renew"
-              class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+              class="cancel-btn"
             >
               Cancel
             </button>

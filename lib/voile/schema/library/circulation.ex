@@ -2006,8 +2006,8 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   def get_admin_id_for_self_renewal() do
-    # Find a user who has an active assignment to the admin role (slug or id)
-    # Prefer role.slug == "admin" if present, else fallback to role id == 1
+    # Find a user who has an active assignment to the admin role (name or id)
+    # Prefer role.name == "admin" if present, else fallback to role id == 1
     query =
       from u in User,
         join: ura in Voile.Schema.Accounts.UserRoleAssignment,
@@ -2015,7 +2015,7 @@ defmodule Voile.Schema.Library.Circulation do
         join: r in Voile.Schema.Accounts.Role,
         on: r.id == ura.role_id,
         where:
-          (r.slug == "admin" or r.id == 1) and
+          (r.name == "admin" or r.id == 1) and
             (is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()),
         select: u.id,
         limit: 1

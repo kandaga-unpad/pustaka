@@ -312,7 +312,19 @@ defmodule Voile.Schema.Accounts.User do
   """
   def valid_password?(%Voile.Schema.Accounts.User{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
-    Pbkdf2.verify_pass(password, hashed_password)
+    try do
+      Pbkdf2.verify_pass(password, hashed_password)
+    rescue
+      MatchError ->
+        # Handle legacy or malformed password hashes
+        require Logger
+
+        Logger.warning(
+          "Invalid password hash format for user - hash may be corrupted or from legacy system"
+        )
+
+        false
+    end
   end
 
   def valid_password?(_, _) do
