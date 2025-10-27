@@ -29,6 +29,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           |> assign(:temp_loans, [])
           |> assign(:temp_reservations, [])
           |> assign(:item_search_query, "")
+          |> assign(:use_legacy_code, false)
           |> assign(:collection_search_query, "")
           |> assign(:current_loans, load_current_loans(member_id))
           |> assign(:unpaid_fines, load_unpaid_fines(member_id))
@@ -36,6 +37,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           |> assign(:loan_history, load_loan_history(member_id))
           |> assign(:show_modal, nil)
           |> assign(:modal_data, %{})
+          |> assign(:pending_item, nil)
 
         {:noreply, socket}
 
@@ -55,6 +57,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     {:noreply, assign(socket, :active_tab, tab)}
   end
 
+  def handle_event("toggle_legacy_code", params, socket) do
+    use_legacy = Map.has_key?(params, "value")
+    {:noreply, assign(socket, :use_legacy_code, use_legacy)}
+  end
+
   # Loan tab events
   def handle_event("search_item", %{"item_code" => item_code}, socket) do
     item_code = String.trim(item_code)
@@ -62,31 +69,35 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     if item_code == "" do
       {:noreply, put_flash(socket, :error, "Please enter an item code")}
     else
-      case find_item_by_code(item_code) do
+      case find_item_by_code(item_code, socket.assigns.use_legacy_code) do
         nil ->
-          {:noreply, put_flash(socket, :error, "Item not found with code: #{item_code}")}
+          code_type = if socket.assigns.use_legacy_code, do: "legacy item code", else: "item code"
+          {:noreply, put_flash(socket, :error, "Item not found with #{code_type}: #{item_code}")}
 
         item ->
           # Check if item is already in temp_loans
           if Enum.any?(socket.assigns.temp_loans, fn loan -> loan.item.id == item.id end) do
             {:noreply, put_flash(socket, :error, "Item already added to loan list")}
           else
-            # Add to temporary loans
-            temp_loan = %{
-              item: item,
-              loan_date: Date.utc_today(),
-              due_date: calculate_due_date(socket.assigns.member)
-            }
+            # Check if item is from different unit location
+            if socket.assigns.temp_loans != [] &&
+                 has_different_unit?(item, socket.assigns.temp_loans) do
+              # Show warning modal
+              socket =
+                socket
+                |> assign(:show_modal, "different_unit_warning")
+                |> assign(:pending_item, item)
+                |> assign(:modal_data, %{
+                  item: item,
+                  existing_units: get_existing_units(socket.assigns.temp_loans)
+                })
 
-            updated_temp_loans = socket.assigns.temp_loans ++ [temp_loan]
-
-            socket =
-              socket
-              |> assign(:temp_loans, updated_temp_loans)
-              |> assign(:item_search_query, "")
-              |> put_flash(:info, "Item added to loan list")
-
-            {:noreply, socket}
+              {:noreply, socket}
+            else
+              # Add to temporary loans directly
+              socket = add_item_to_temp_loans(socket, item)
+              {:noreply, socket}
+            end
           end
       end
     end
@@ -97,6 +108,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       Enum.reject(socket.assigns.temp_loans, fn loan -> loan.item.id == item_id end)
 
     {:noreply, assign(socket, :temp_loans, temp_loans)}
+  end
+
+  def handle_event("confirm_add_different_unit", _params, socket) do
+    case socket.assigns.pending_item do
+      nil ->
+        {:noreply, put_flash(socket, :error, "No pending item to add")}
+
+      item ->
+        socket =
+          socket
+          |> add_item_to_temp_loans(item)
+          |> assign(:show_modal, nil)
+          |> assign(:pending_item, nil)
+
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("cancel_add_different_unit", _params, socket) do
+    socket =
+      socket
+      |> assign(:show_modal, nil)
+      |> assign(:pending_item, nil)
+      |> put_flash(:info, "Item not added to loan list")
+
+    {:noreply, socket}
   end
 
   # Current Loans tab events
@@ -415,19 +452,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
   # Helper functions
   defp load_member_data(member_id) do
-    case Repo.get(User, member_id) |> Repo.preload([:user_type]) do
+    case Repo.get(User, member_id) |> Repo.preload([:user_type, :node]) do
       nil -> {:error, :not_found}
       member -> {:ok, member}
     end
   end
 
-  defp find_item_by_code(item_code) do
-    Item
-    |> where([i], i.item_code == ^item_code)
-    |> where([i], i.status == "active" and i.availability == "available")
-    |> preload([:collection])
-    |> limit(1)
-    |> Repo.one()
+  defp find_item_by_code(item_code, use_legacy_code) do
+    query =
+      Item
+      |> where([i], i.status == "active" and i.availability == "available")
+      |> preload([:collection, :node])
+      |> limit(1)
+
+    query =
+      if use_legacy_code do
+        where(query, [i], i.legacy_item_code == ^item_code)
+      else
+        where(query, [i], i.item_code == ^item_code)
+      end
+
+    Repo.one(query)
   end
 
   defp load_current_loans(member_id) do
@@ -451,6 +496,37 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
   defp calculate_due_date(member) do
     days = (member.user_type && member.user_type.max_days) || 14
     Date.add(Date.utc_today(), days)
+  end
+
+  defp has_different_unit?(item, temp_loans) do
+    existing_node_ids =
+      temp_loans
+      |> Enum.map(fn loan -> loan.item.unit_id end)
+      |> Enum.uniq()
+
+    !Enum.member?(existing_node_ids, item.unit_id)
+  end
+
+  defp get_existing_units(temp_loans) do
+    temp_loans
+    |> Enum.map(fn loan -> loan.item.node.name end)
+    |> Enum.uniq()
+    |> Enum.join(", ")
+  end
+
+  defp add_item_to_temp_loans(socket, item) do
+    temp_loan = %{
+      item: item,
+      loan_date: Date.utc_today(),
+      due_date: calculate_due_date(socket.assigns.member)
+    }
+
+    updated_temp_loans = socket.assigns.temp_loans ++ [temp_loan]
+
+    socket
+    |> assign(:temp_loans, updated_temp_loans)
+    |> assign(:item_search_query, "")
+    |> put_flash(:info, "Item added to loan list")
   end
 
   defp format_currency(amount) when is_struct(amount, Decimal) do
@@ -547,10 +623,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unit Location</p>
 
             <p class="mt-1 text-base text-gray-900 dark:text-white">
-              {@member.organization || "N/A"}
+              {@member.node.name || "N/A"}
             </p>
           </div>
 
@@ -577,7 +653,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">{@member.address || "N/A"}</p>
+            <p class="mt-1 text-base text-gray-900 dark:text-white">
+              {@member.address || "N/A"}
+            </p>
           </div>
         </div>
       </div>
@@ -691,17 +769,34 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Search Item by Code
         </label>
-        <form phx-submit="search_item" class="flex gap-2">
-          <input
-            type="text"
-            name="item_code"
-            value={@item_search_query}
-            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Enter item code..."
-          />
-          <.button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2">
-            Loan
-          </.button>
+        <form phx-submit="search_item" class="space-y-3">
+          <div class="flex gap-2">
+            <input
+              type="text"
+              name="item_code"
+              value={@item_search_query}
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Enter item code..."
+            />
+            <.button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2">
+              Loan
+            </.button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="use-legacy-code"
+              phx-click="toggle_legacy_code"
+              checked={@use_legacy_code}
+              class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+            />
+            <label
+              for="use-legacy-code"
+              class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+            >
+              Use Legacy Item Code?
+            </label>
+          </div>
         </form>
       </div>
 
@@ -716,35 +811,53 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             <p>No items added yet. Search and add items above.</p>
           </div>
         <% else %>
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div
+            class="overflow-x-auto overflow-y-visible scrollbar-visible border border-gray-200 dark:border-gray-700 rounded-lg"
+            style="scrollbar-width: thin;"
+          >
+            <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+              <colgroup>
+                <col class="w-20" />
+                <col class="w-1/5" />
+                <col class="w-1/5" />
+                <col class="w-1/5" />
+                <col class="w-1/5" />
+                <col class="w-1/5" />
+              </colgroup>
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Remove
                   </th>
 
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Item Code
                   </th>
 
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Title
                   </th>
 
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
+                    Unit Location
+                  </th>
+
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Loan Date
                   </th>
 
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
                     Due Date
                   </th>
                 </tr>
               </thead>
 
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                <tr :for={loan <- @temp_loans}>
-                  <td class="px-6 py-4">
+                <tr
+                  :for={loan <- @temp_loans}
+                  class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                >
+                  <td class="px-4 py-3 border-r border-gray-200 dark:border-gray-700">
                     <button
                       phx-click="remove_temp_loan"
                       phx-value-item_id={loan.item.id}
@@ -754,19 +867,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     </button>
                   </td>
 
-                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <td
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-mono"
+                    title={loan.item.item_code}
+                  >
                     {loan.item.item_code}
                   </td>
 
-                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <td
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-medium"
+                    title={loan.item.collection.title}
+                  >
                     {loan.item.collection.title}
                   </td>
 
-                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <td
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700"
+                    title={loan.item.node.name}
+                  >
+                    {loan.item.node.name || "N/A"}
+                  </td>
+
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">
                     {Calendar.strftime(loan.loan_date, "%B %d, %Y")}
                   </td>
 
-                  <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words whitespace-nowrap">
                     {Calendar.strftime(loan.due_date, "%B %d, %Y")}
                   </td>
                 </tr>
@@ -1384,6 +1510,77 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </.button>
               </div>
             </form>
+          </div>
+        <% @show_modal == "different_unit_warning" -> %>
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                <.icon
+                  name="hero-exclamation-triangle"
+                  class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+                />
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Different Unit Location Warning
+              </h3>
+            </div>
+
+            <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+                <strong>Warning:</strong>
+                You are trying to add an item from a different unit location.
+              </p>
+
+              <div class="space-y-2 text-sm">
+                <div>
+                  <span class="font-medium text-yellow-900 dark:text-yellow-100">
+                    Current units in loan:
+                  </span>
+                  <span class="ml-2 text-yellow-800 dark:text-yellow-200">
+                    {@modal_data.existing_units}
+                  </span>
+                </div>
+                <div>
+                  <span class="font-medium text-yellow-900 dark:text-yellow-100">New item unit:</span>
+                  <span class="ml-2 text-yellow-800 dark:text-yellow-200">
+                    {@modal_data.item.node.name}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item details:</p>
+              <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                  <span class="font-medium">Item Code:</span>
+                  <span class="ml-2">{@modal_data.item.item_code}</span>
+                </div>
+                <div>
+                  <span class="font-medium">Title:</span>
+                  <span class="ml-2">{@modal_data.item.collection.title}</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Loaning items from different unit locations at the same time may complicate the collection process. Do you want to proceed anyway?
+            </p>
+
+            <div class="flex gap-2 justify-end">
+              <.button
+                phx-click="cancel_add_different_unit"
+                class="default-btn"
+              >
+                <.icon name="hero-x-mark" class="w-4 h-4 mr-1" /> Cancel
+              </.button>
+              <.button
+                phx-click="confirm_add_different_unit"
+                class="warning-btn"
+              >
+                <.icon name="hero-check" class="w-4 h-4 mr-1" /> Proceed Anyway
+              </.button>
+            </div>
           </div>
         <% @show_modal == "finish_transaction" -> %>
           <div>

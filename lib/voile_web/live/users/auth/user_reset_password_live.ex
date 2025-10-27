@@ -10,12 +10,12 @@ defmodule VoileWeb.UserResetPasswordLive do
         <div class="w-full max-w-md bg-white/80 dark:bg-gray-800/70 backdrop-blur rounded-lg shadow-md p-6">
           <div class="mb-4 text-center">
             <.header>Reset your password</.header>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
               Enter a new password below. Make it long and unique.
             </p>
           </div>
-          
+
           <.form
             for={@form}
             id="reset_password_form"
@@ -28,14 +28,12 @@ defmodule VoileWeb.UserResetPasswordLive do
               type="password"
               label="New password"
               required
-              class="input-lg"
             />
             <.input
               field={@form[:password_confirmation]}
               type="password"
               label="Confirm new password"
               required
-              class="input-lg"
             />
             <div class="pt-2">
               <.button phx-disable-with="Resetting..." class="w-full primary-btn">
@@ -43,7 +41,7 @@ defmodule VoileWeb.UserResetPasswordLive do
               </.button>
             </div>
           </.form>
-          
+
           <div class="mt-5 text-center text-sm text-gray-600 dark:text-gray-300">
             <.link href={~p"/register"} class="underline mr-2">Register</.link>
             <span class="mx-1">·</span>

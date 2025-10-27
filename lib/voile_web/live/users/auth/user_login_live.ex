@@ -96,8 +96,9 @@ defmodule VoileWeb.UserLoginLive do
               <.form for={@form} id="login_form" action={~p"/users/log_in"} class="space-y-4">
                 <.input
                   field={@form[:email]}
-                  type="email"
-                  label="Email"
+                  type="text"
+                  label="Email, Username, or Identifier"
+                  placeholder="Enter your email, username, or identifier"
                   required
                   class="default-input"
                 />

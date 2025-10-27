@@ -51,6 +51,50 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Gets a user by login (email, username, or identifier) and password.
+
+  This function attempts to find a user by checking:
+  1. Email match
+  2. Username match
+  3. Identifier match (if the login can be parsed as a number)
+
+  ## Examples
+
+      iex> get_user_by_login_and_password("foo@example.com", "correct_password")
+      %User{}
+
+      iex> get_user_by_login_and_password("username", "correct_password")
+      %User{}
+
+      iex> get_user_by_login_and_password("12345", "correct_password")
+      %User{}
+
+      iex> get_user_by_login_and_password("foo@example.com", "invalid_password")
+      nil
+
+  """
+  def get_user_by_login_and_password(login, password)
+      when is_binary(login) and is_binary(password) do
+    user =
+      cond do
+        # Try email first (contains @)
+        String.contains?(login, "@") ->
+          Repo.get_by(User, email: login)
+
+        # Try identifier if it's numeric
+        match?({_id, ""}, Integer.parse(login)) ->
+          {id, ""} = Integer.parse(login)
+          Repo.get_by(User, identifier: id) || Repo.get_by(User, username: login)
+
+        # Default to username
+        true ->
+          Repo.get_by(User, username: login)
+      end
+
+    if User.valid_password?(user, password), do: preload_user_assocs(user)
+  end
+
+  @doc """
   Get a user by email or register it it's doesn't exist.
   """
   def get_user_by_email_or_register(user) when is_map(user) do
