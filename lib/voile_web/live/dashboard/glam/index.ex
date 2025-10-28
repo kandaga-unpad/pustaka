@@ -18,8 +18,6 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     # Get recent activity across all GLAM types
     recent_collections = get_recent_collections(5)
 
-    dbg(glam_stats)
-
     socket =
       socket
       |> assign(:page_title, "GLAM Dashboard")
@@ -43,18 +41,18 @@ defmodule VoileWeb.Dashboard.Glam.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">GLAM Management Dashboard</h1>
-            
+
             <p class="text-purple-100 text-lg">
               Gallery, Library, Archive & Museum - Unified Collections Management
             </p>
           </div>
-          
+
           <div class="hidden md:block">
             <.icon name="hero-building-library" class="w-24 h-24 opacity-20" />
           </div>
         </div>
       </div>
-       <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
+      <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <.stat_card
@@ -84,14 +82,14 @@ defmodule VoileWeb.Dashboard.Glam.Index do
           color="orange"
         />
       </div>
-       <%!-- Recent Activity --%>
+      <%!-- Recent Activity --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Collections</h2>
           </div>
-          
+
           <.link
             navigate="/manage/catalog/collections"
             class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
@@ -99,7 +97,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
             View All →
           </.link>
         </div>
-        
+
         <div class="space-y-3">
           <%= for collection <- @recent_collections do %>
             <.recent_collection_item collection={collection} />

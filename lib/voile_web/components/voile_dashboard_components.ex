@@ -7,7 +7,6 @@ defmodule VoileWeb.VoileDashboardComponents do
   alias VoileWeb.Layouts
 
   import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1]
-  import VoileWeb.Components.SearchBar
 
   @doc """
   Navigation Bar Component for GLAM (Gallery, Library, Archive, Museum)
@@ -135,8 +134,13 @@ defmodule VoileWeb.VoileDashboardComponents do
   end
 
   @doc """
-  Dashboard search widget component
+  Dashboard search widget component with inline results
   """
+  attr :id, :string, default: "dashboard-search-widget"
+  attr :search_query, :string, default: ""
+  attr :search_results, :list, default: []
+  attr :searching, :boolean, default: false
+
   def dashboard_search_widget(assigns) do
     ~H"""
     <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
@@ -144,24 +148,204 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.icon name="hero-magnifying-glass" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Search</h3>
       </div>
+      
+    <!-- Debug info (remove after testing) -->
+      <div class="text-xs text-gray-500 mb-2">
+        Query: {@search_query} | Searching: {inspect(@searching)} | Results: {length(@search_results)}
+      </div>
 
-      <.search_bar
-        placeholder="Search collections, items, authors..."
-        show_filters={true}
-        size="default"
-        class="w-full"
-      />
-      <div class="mt-4 flex gap-2">
+      <form phx-change="search" phx-submit="search" class="mb-4">
+        <div class="relative">
+          <input
+            type="text"
+            name="query"
+            value={@search_query}
+            placeholder="Search collections, items, authors..."
+            class="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            phx-debounce="300"
+          />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              class="h-5 w-5 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              >
+              </path>
+            </svg>
+          </div>
+        </div>
+      </form>
+
+      <%= if @searching do %>
+        <div class="flex items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Searching...</span>
+        </div>
+      <% else %>
+        <%= if @search_query != "" do %>
+          <div class="max-h-96 overflow-y-auto">
+            <%= if length(@search_results) > 0 do %>
+              <div class="space-y-2">
+                <%= for result <- @search_results do %>
+                  <.link
+                    navigate={get_result_path(result)}
+                    class="block p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <div class="flex items-start gap-3">
+                      <div class={[
+                        "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center",
+                        get_result_bg_class(result)
+                      ]}>
+                        <.icon name={get_result_icon(result)} class="w-5 h-5 text-white" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {get_result_title(result)}
+                        </h4>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class={[
+                            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                            get_result_badge_class(result)
+                          ]}>
+                            {get_result_type(result)}
+                          </span>
+                          <%= if creator_name = get_creator_name(result) do %>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              by {creator_name}
+                            </span>
+                          <% end %>
+                        </div>
+                        <%= if desc = get_result_description(result) do %>
+                          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                            {desc}
+                          </p>
+                        <% end %>
+                      </div>
+                    </div>
+                  </.link>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-8">
+                <.icon name="hero-magnifying-glass" class="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                <p class="text-sm text-gray-500 dark:text-gray-400">No results found</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  Try a different search term
+                </p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex gap-2">
         <.link
           href="/search/advanced"
           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
         >
           Advanced Search →
         </.link>
+        <%= if @search_query != "" && length(@search_results) > 0 do %>
+          <.link
+            href={"/search?q=#{URI.encode_www_form(@search_query)}"}
+            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+          >
+            View All Results →
+          </.link>
+        <% end %>
       </div>
     </div>
     """
   end
+
+  # Helper functions for search results display
+  defp get_result_path(%{__struct__: Voile.Schema.Catalog.Collection, id: id}),
+    do: "/manage/catalog/collections/#{id}"
+
+  defp get_result_path(%{__struct__: Voile.Schema.Catalog.Item, id: id}),
+    do: "/manage/catalog/items/#{id}"
+
+  defp get_result_path(_), do: "#"
+
+  defp get_result_type(%{__struct__: Voile.Schema.Catalog.Collection}), do: "Collection"
+  defp get_result_type(%{__struct__: Voile.Schema.Catalog.Item}), do: "Item"
+  defp get_result_type(_), do: "Unknown"
+
+  defp get_result_icon(%{__struct__: Voile.Schema.Catalog.Collection, resource_class: rc})
+       when not is_nil(rc) do
+    get_glam_type_icon(rc.glam_type)
+  end
+
+  defp get_result_icon(%{__struct__: Voile.Schema.Catalog.Collection}), do: "hero-folder"
+  defp get_result_icon(%{__struct__: Voile.Schema.Catalog.Item}), do: "hero-document"
+  defp get_result_icon(_), do: "hero-cube"
+
+  defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Collection, resource_class: rc})
+       when not is_nil(rc) do
+    get_glam_badge_bg(rc.glam_type)
+  end
+
+  defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Collection}),
+    do: "bg-gradient-to-br from-blue-500 to-indigo-500"
+
+  defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Item}),
+    do: "bg-gradient-to-br from-gray-500 to-gray-600"
+
+  defp get_result_bg_class(_), do: "bg-gradient-to-br from-gray-500 to-gray-600"
+
+  defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Collection, resource_class: rc})
+       when not is_nil(rc) do
+    get_glam_badge_class(rc.glam_type)
+  end
+
+  defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Collection}),
+    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200"
+
+  defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Item}),
+    do: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200"
+
+  defp get_result_badge_class(_),
+    do: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200"
+
+  # Add a helper to safely get creator name
+  defp get_creator_name(%{mst_creator: %{creator_name: name}}) when not is_nil(name), do: name
+
+  defp get_creator_name(%{collection: %{mst_creator: %{creator_name: name}}})
+       when not is_nil(name), do: name
+
+  defp get_creator_name(_), do: nil
+
+  # Helper to get title from either Collection or Item
+  defp get_result_title(%{__struct__: Voile.Schema.Catalog.Collection, title: title}), do: title
+
+  defp get_result_title(%{__struct__: Voile.Schema.Catalog.Item, collection: %{title: title}}),
+    do: title
+
+  defp get_result_title(%{__struct__: Voile.Schema.Catalog.Item, item_code: code}), do: code
+  defp get_result_title(_), do: "Untitled"
+
+  # Helper to get description from either Collection or Item
+  defp get_result_description(%{__struct__: Voile.Schema.Catalog.Collection, description: desc})
+       when not is_nil(desc) and desc != "" do
+    String.trim(desc)
+  end
+
+  defp get_result_description(%{
+         __struct__: Voile.Schema.Catalog.Item,
+         collection: %{description: desc}
+       })
+       when not is_nil(desc) and desc != "" do
+    String.trim(desc)
+  end
+
+  defp get_result_description(_), do: nil
 
   @doc """
   Search statistics widget for dashboard

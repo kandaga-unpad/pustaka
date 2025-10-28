@@ -76,12 +76,15 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
 
     # Check if all operations succeeded
     if Enum.all?(results, &match?({:ok, _}, &1)) do
+      # Add a small delay to ensure DB transactions are committed
+      Process.sleep(50)
+
       # Reload role with updated permissions
-      role = PermissionManager.get_role(role.id)
+      updated_role = PermissionManager.get_role(role.id)
 
       socket =
         socket
-        |> assign(role: role)
+        |> assign(role: updated_role)
         |> put_flash(:info, "Resource permissions updated successfully")
 
       {:noreply, socket}
@@ -175,15 +178,35 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
 
     case result do
       {:ok, _} ->
+        # Add a small delay to ensure DB transaction is committed
+        Process.sleep(50)
+
         # Reload role with updated permissions
-        role = PermissionManager.get_role(role.id)
+        updated_role = PermissionManager.get_role(role.id)
 
         socket =
           socket
-          |> assign(role: role)
+          |> assign(role: updated_role)
           |> put_flash(:info, "Permission updated successfully")
 
         {:noreply, socket}
+
+      {count, _} when is_integer(count) and count > 0 ->
+        # Handle delete_all result from remove_permission_from_role
+        Process.sleep(50)
+
+        # Reload role with updated permissions
+        updated_role = PermissionManager.get_role(role.id)
+
+        socket =
+          socket
+          |> assign(role: updated_role)
+          |> put_flash(:info, "Permission updated successfully")
+
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to update permission")}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to update permission")}
@@ -206,7 +229,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
         Edit Role
         <:subtitle>Update role information and manage permissions</:subtitle>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -214,19 +237,19 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full">
           <div class="mb-4">
             <.back navigate={~p"/manage/settings/roles/#{@role.id}"}>Back to Role</.back>
           </div>
-          
+
           <div class="space-y-8">
             <%!-- Role Basic Information --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
                 Basic Information
               </h3>
-              
+
               <.live_component
                 module={VoileWeb.Users.Role.ManageLive.FormComponent}
                 id={@role.id}
@@ -237,13 +260,13 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                 current_scope={@current_scope}
               />
             </div>
-             <%!-- Permissions Management --%>
+            <%!-- Permissions Management --%>
             <%= if can?(@current_scope.user, "permissions.manage") do %>
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
                   Manage Permissions
                 </h3>
-                
+
                 <div class="space-y-3">
                   <%= for {resource, permissions} <- @grouped_permissions |> Enum.sort_by(fn {k, _} -> k end) do %>
                     <% all_enabled? =
@@ -278,7 +301,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                             </span>
                           </div>
                         </div>
-                         <%!-- Master Toggle for Resource --%>
+                        <%!-- Master Toggle for Resource --%>
                         <button
                           type="button"
                           phx-click="toggle_all_resource_permissions"
@@ -303,7 +326,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                           ]} />
                         </button>
                       </div>
-                       <%!-- Expanded Permissions List --%>
+                      <%!-- Expanded Permissions List --%>
                       <%= if is_expanded do %>
                         <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                           <%= for permission <- permissions do %>
@@ -314,14 +337,14 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                                   {permission.action}
                                 </div>
-                                
+
                                 <%= if permission.description do %>
                                   <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                     {permission.description}
                                   </div>
                                 <% end %>
                               </div>
-                              
+
                               <button
                                 type="button"
                                 phx-click="toggle_permission"
@@ -349,19 +372,19 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                 </div>
               </div>
             <% end %>
-             <%!-- User Assignment --%>
+            <%!-- User Assignment --%>
             <%= if can?(@current_scope.user, "roles.update") do %>
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     Assigned Users ({length(@role_users)})
                   </h3>
-                  
+
                   <.button phx-click="toggle_add_user" class="secondary-btn">
                     <.icon name="hero-plus" class="w-4 h-4 mr-1" /> Add User
                   </.button>
                 </div>
-                
+
                 <%= if @showing_add_user do %>
                   <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <.form for={%{}} as={:user_search} phx-change="search_users">
@@ -372,21 +395,21 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                         value=""
                       />
                     </.form>
-                    
+
                     <%= if @searching_users do %>
                       <div class="mt-2 text-sm text-gray-500">Searching...</div>
                     <% end %>
-                    
+
                     <%= if length(@search_results) > 0 do %>
                       <div class="mt-2 space-y-1">
                         <%= for user <- @search_results do %>
                           <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded">
                             <div>
                               <div class="text-sm font-medium">{user.fullname || user.username}</div>
-                              
+
                               <div class="text-xs text-gray-500">{user.email}</div>
                             </div>
-                            
+
                             <.button
                               phx-click="add_user_to_role"
                               phx-value-user-id={user.id}
@@ -400,7 +423,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                     <% end %>
                   </div>
                 <% end %>
-                
+
                 <%= if length(@role_users) > 0 do %>
                   <div class="space-y-2">
                     <%= for user <- @role_users do %>
@@ -418,16 +441,16 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                               {String.first(user.fullname || user.username) |> String.upcase()}
                             </div>
                           <% end %>
-                          
+
                           <div>
                             <div class="text-sm font-medium text-gray-900 dark:text-white">
                               {user.fullname || user.username}
                             </div>
-                            
+
                             <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
                           </div>
                         </div>
-                        
+
                         <.button
                           phx-click="remove_user_from_role"
                           phx-value-user-id={user.id}

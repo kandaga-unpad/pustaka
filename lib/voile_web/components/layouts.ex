@@ -65,7 +65,7 @@ defmodule VoileWeb.Layouts do
             <% end %>
           </nav>
         </div>
-        
+
         <div>
           <div class="flex lg:hidden">
             <.button
@@ -88,7 +88,7 @@ defmodule VoileWeb.Layouts do
               <.icon name="hero-bars-3" />
             </.button>
           </div>
-          
+
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
               <.button
@@ -104,7 +104,8 @@ defmodule VoileWeb.Layouts do
                 class="p-2 bg-transparent border-0"
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
-              </.button> <Layouts.theme_toggle />
+              </.button>
+              <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
@@ -115,7 +116,7 @@ defmodule VoileWeb.Layouts do
                     <% else %>
                       <.link navigate="/atrium"><.button class="default-btn">Atrium</.button></.link>
                     <% end %>
-                    
+
                     <button
                       data-panel-anchor
                       aria-expanded="false"
@@ -137,39 +138,48 @@ defmodule VoileWeb.Layouts do
                       <% end %>
                     </button>
                   </div>
-                  
+
                   <div
                     data-position-panel
                     class="sticky hidden bg-voile-light dark:bg-voile-dark max-w-sm right-8 p-4 mt-1 rounded-md shadow-xl text-right"
                   >
                     <p class="text-sm">
-                      Signed in as <strong>{@current_scope.user.fullname}</strong>
+                      Hello, <strong>{@current_scope.user.fullname}!</strong>
                     </p>
-                    
+
                     <div class="mt-2 flex w-full gap-2 text-xs">
                       <%= if has_dashboard_access?(@current_scope.user) do %>
-                        <.link navigate="/manage" class="primary-btn w-full text-center">
+                        <.link navigate="/manage" class="primary-btn flex flex-col w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
-                          </span> <span>Dashboard</span>
+                          </span>
+                          <span>Dashboard</span>
+                        </.link>
+                        <.link navigate="/atrium" class="primary-btn flex flex-col w-full text-center">
+                          <span>
+                            <.icon name="hero-home" class="size-5 inline-block mr-1" />
+                          </span>
+                          <span>Atrium</span>
                         </.link>
                         <.link
                           href="/users/log_out"
                           method="delete"
-                          class="cancel-btn w-full text-center"
+                          class="cancel-btn flex flex-col w-full text-center"
                         >
                           <span>
                             <.icon
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>Logout</span>
+                          </span>
+                          <span>Logout</span>
                         </.link>
                       <% else %>
-                        <.link navigate="/atrium" class="primary-btn w-full text-center">
+                        <.link navigate="/atrium" class="primary-btn hero-home w-full text-center">
                           <span>
-                            <.icon name="hero-cog-6-tooth" class="size-5 inline-block mr-1" />
-                          </span> <span>Settings</span>
+                            <.icon name="hero-home" class="size-5 inline-block mr-1" />
+                          </span>
+                          <span>Atrium</span>
                         </.link>
                         <.link
                           href="/users/log_out"
@@ -181,7 +191,8 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>Logout</span>
+                          </span>
+                          <span>Logout</span>
                         </.link>
                       <% end %>
                     </div>
@@ -206,7 +217,7 @@ defmodule VoileWeb.Layouts do
         &copy; Voile - Curatorian Developer | 2024 - {get_year()}
       </div>
     </footer>
-     <.flash_group flash={@flash} />
+    <.flash_group flash={@flash} />
     """
   end
 
@@ -368,7 +379,7 @@ defmodule VoileWeb.Layouts do
             <.icon name="hero-x-mark" />
           </button>
         </div>
-        
+
         <nav class="p-4">
           <ul class="flex flex-col gap-3">
             <%= for item <- @nav_items do %>
@@ -383,18 +394,18 @@ defmodule VoileWeb.Layouts do
               </li>
             <% end %>
           </ul>
-          
+
           <div class="mt-6">
             <%= if @current_scope do %>
               <p class="text-sm mb-2">Signed in as <strong>{@current_scope.user.fullname}</strong></p>
-              
+
               <div class="flex flex-col gap-2">
                 <%= if has_dashboard_access?(@current_scope.user) do %>
                   <.link navigate="/manage" class="primary-btn w-full text-center">Dashboard</.link>
                 <% else %>
                   <.link navigate="/atrium" class="primary-btn w-full text-center">Atrium</.link>
                 <% end %>
-                
+
                 <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
                   Logout
                 </.link>
@@ -445,7 +456,7 @@ defmodule VoileWeb.Layouts do
                   />
                 </form>
               </div>
-              
+
               <button
                 phx-click={
                   JS.toggle(
@@ -493,7 +504,15 @@ defmodule VoileWeb.Layouts do
     # Check if user has admin/editor roles
     has_admin_role? =
       Enum.any?(user.roles, fn role ->
-        role.name in ["super_admin", "admin", "editor"]
+        role.name in [
+          "super_admin",
+          "admin",
+          "editor",
+          "librarian",
+          "gallery_curator",
+          "archivist",
+          "museum_curator"
+        ]
       end)
 
     # Check if user has any administrative permissions

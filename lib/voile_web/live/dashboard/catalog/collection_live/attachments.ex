@@ -82,14 +82,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check read permission for viewing collection attachments
+    authorize!(socket, "collections.read")
+
     {:ok, socket}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
-    {:noreply,
-     socket
-     |> assign(:collection, Catalog.get_collection!(id))}
+    collection = Catalog.get_collection!(id)
+    current_user = socket.assigns.current_scope.user
+
+    # Verify user has access to this collection's unit
+    if Catalog.is_user_admin?(current_user) or collection.unit_id == current_user.node_id do
+      {:noreply,
+       socket
+       |> assign(:collection, collection)}
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "Access Denied: You don't have permission to view this collection")
+       |> push_navigate(to: ~p"/manage/catalog/collections")}
+    end
   end
 
   @impl true

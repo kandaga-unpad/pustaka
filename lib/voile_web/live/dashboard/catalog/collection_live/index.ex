@@ -7,6 +7,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
   alias Voile.Schema.System
+  alias VoileWeb.Auth.Authorization
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents
   import VoileWeb.Utils.StringHelper, only: [trim_text: 2]
@@ -14,76 +15,83 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     # Check read permission for viewing collections
-    authorize!(socket, "collections.read")
+    unless Authorization.can?(socket, "collections.read") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access collections")
+        |> push_navigate(to: ~p"/manage")
 
-    page = 1
+      {:ok, socket}
+    else
+      page = 1
 
-    # Get current user
-    current_user = socket.assigns.current_scope.user
+      # Get current user
+      current_user = socket.assigns.current_scope.user
 
-    # Initialize empty filters, then apply role-based filters
-    # Note: URL params will be applied in handle_params/apply_action
-    filters = %{}
-    filters = Catalog.apply_role_based_filters(current_user, filters)
+      # Initialize empty filters, then apply role-based filters
+      # Note: URL params will be applied in handle_params/apply_action
+      filters = %{}
+      filters = Catalog.apply_role_based_filters(current_user, filters)
 
-    # Don't load collections here - let handle_params/apply_action do it
-    # This prevents loading collections without URL params, then reloading with URL params
-    # which causes duplicate items in the stream
+      # Don't load collections here - let handle_params/apply_action do it
+      # This prevents loading collections without URL params, then reloading with URL params
+      # which causes duplicate items in the stream
 
-    # Limit tree collections to prevent performance issues
-    tree_collections = Catalog.list_collections_tree(50)
+      # Limit tree collections to prevent performance issues
+      tree_collections = Catalog.list_collections_tree(50)
 
-    # Get dropdown options (limit for performance)
-    collection_type = Metadata.list_resource_class()
-    # Limit to 100 most recent creators for dropdown
-    creator = Master.list_mst_creator() |> Enum.take(100)
-    # All nodes (usually not many)
-    node_location = System.list_nodes()
+      # Get dropdown options (limit for performance)
+      collection_type = Metadata.list_resource_class()
+      # Limit to 100 most recent creators for dropdown
+      creator = Master.list_mst_creator() |> Enum.take(100)
+      # All nodes (usually not many)
+      node_location = System.list_nodes()
 
-    time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+      time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
 
-    # Get user's node for automatic filtering
-    user_node_id = current_user.node_id
+      # Get user's node for automatic filtering
+      user_node_id = current_user.node_id
 
-    # Count active filters (excluding auto-applied role-based filters for display)
-    active_count = count_active_filters(filters)
+      # Count active filters (excluding auto-applied role-based filters for display)
+      active_count = count_active_filters(filters)
 
-    socket =
-      socket
-      # Don't stream collections here - will be done in apply_action
-      |> assign(:tree_collections, tree_collections)
-      # "list" or "tree"
-      |> assign(:view_mode, "list")
-      # track whether creator search UI is active (used by form_component)
-      |> assign(:creator_searching, false)
-      |> assign(:collection_type, collection_type)
-      # Don't load collection_properties on mount - load only when form opens
-      |> assign(:collection_properties, [])
-      |> assign(:creator, creator)
-      |> assign(:node_location, node_location)
-      |> assign(:page, page)
-      |> assign(:total_pages, 0)
-      |> assign(:search, "")
-      |> assign(:collections_count, 0)
-      |> assign(:collections_empty?, true)
-      |> assign(:step, 1)
-      |> assign(:show_add_collection_field, true)
-      |> assign(:time_identifier, time_identifier)
-      # Filter-related assigns (set from applied role-based filters)
-      |> assign(:filters, filters)
-      |> assign(:user_node_id, user_node_id)
-      |> assign(:filter_status, filters[:status] || "")
-      |> assign(:filter_access_level, filters[:access_level] || "")
-      |> assign(:filter_glam_type, filters[:glam_type] || "")
-      |> assign(
-        :filter_node_id,
-        if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
-      )
-      |> assign(:active_filters_count, active_count)
-      |> assign(:is_staff, !Catalog.is_user_admin?(current_user))
-      |> assign(:current_user, current_user)
+      socket =
+        socket
+        # Don't stream collections here - will be done in apply_action
+        |> assign(:tree_collections, tree_collections)
+        # "list" or "tree"
+        |> assign(:view_mode, "list")
+        # track whether creator search UI is active (used by form_component)
+        |> assign(:creator_searching, false)
+        |> assign(:collection_type, collection_type)
+        # Don't load collection_properties on mount - load only when form opens
+        |> assign(:collection_properties, [])
+        |> assign(:creator, creator)
+        |> assign(:node_location, node_location)
+        |> assign(:page, page)
+        |> assign(:total_pages, 0)
+        |> assign(:search, "")
+        |> assign(:collections_count, 0)
+        |> assign(:collections_empty?, true)
+        |> assign(:step, 1)
+        |> assign(:show_add_collection_field, true)
+        |> assign(:time_identifier, time_identifier)
+        # Filter-related assigns (set from applied role-based filters)
+        |> assign(:filters, filters)
+        |> assign(:user_node_id, user_node_id)
+        |> assign(:filter_status, filters[:status] || "")
+        |> assign(:filter_access_level, filters[:access_level] || "")
+        |> assign(:filter_glam_type, filters[:glam_type] || "")
+        |> assign(
+          :filter_node_id,
+          if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
+        )
+        |> assign(:active_filters_count, active_count)
+        |> assign(:is_staff, !Catalog.is_user_admin?(current_user))
+        |> assign(:current_user, current_user)
 
-    {:ok, socket}
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -95,18 +103,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     # Check update permission for editing collections
     authorize!(socket, "collections.update")
 
-    # Load collection_properties only when form opens
-    collection_properties =
-      if socket.assigns.collection_properties == [] do
-        Metadata.list_metadata_properties_by_vocabulary()
-      else
-        socket.assigns.collection_properties
-      end
+    collection = Catalog.get_collection!(id)
+    current_user = socket.assigns.current_user
 
-    socket
-    |> assign(:page_title, "Edit Collection")
-    |> assign(:collection, Catalog.get_collection!(id))
-    |> assign(:collection_properties, collection_properties)
+    # Verify user has access to this collection's unit
+    if Catalog.is_user_admin?(current_user) or collection.unit_id == current_user.node_id do
+      # Load collection_properties only when form opens
+      collection_properties =
+        if socket.assigns.collection_properties == [] do
+          Metadata.list_metadata_properties_by_vocabulary()
+        else
+          socket.assigns.collection_properties
+        end
+
+      socket
+      |> assign(:page_title, "Edit Collection")
+      |> assign(:collection, collection)
+      |> assign(:collection_properties, collection_properties)
+    else
+      socket
+      |> put_flash(:error, "Access Denied: You don't have permission to edit this collection")
+      |> push_navigate(to: ~p"/manage/catalog/collections")
+    end
   end
 
   defp apply_action(socket, :new, _params) do
@@ -209,43 +227,52 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     authorize!(socket, "collections.delete")
 
     collection = Catalog.get_collection!(id)
-    {:ok, _} = Catalog.delete_collection(collection)
+    current_user = socket.assigns.current_user
 
-    # Refresh both views with limited tree collections
-    tree_collections = Catalog.list_collections_tree(50)
+    # Verify user has access to this collection's unit
+    if Catalog.is_user_admin?(current_user) or collection.unit_id == current_user.node_id do
+      {:ok, _} = Catalog.delete_collection(collection)
 
-    # If a search or filters are active, re-fetch current page with the filters, otherwise just delete from stream
-    search = socket.assigns[:search] || ""
-    filters = socket.assigns.filters
-    has_active_filters = search != "" || map_size(filters) > 0
+      # Refresh both views with limited tree collections
+      tree_collections = Catalog.list_collections_tree(50)
 
-    socket =
-      socket
-      |> assign(:tree_collections, tree_collections)
-
-    if has_active_filters do
-      page = socket.assigns[:page] || 1
-      per_page = 10
-
-      {collections, total_pages} =
-        Catalog.list_collections_paginated(page, per_page, search, filters)
+      # If a search or filters are active, re-fetch current page with the filters, otherwise just delete from stream
+      search = socket.assigns[:search] || ""
+      filters = socket.assigns.filters
+      has_active_filters = search != "" || map_size(filters) > 0
 
       socket =
         socket
-        |> stream(:collections, collections, reset: true)
-        |> assign(:page, page)
-        |> assign(:total_pages, total_pages)
-        |> assign(:collections_empty?, collections == [])
-        |> assign(:collections_count, length(collections))
+        |> assign(:tree_collections, tree_collections)
 
-      {:noreply, socket}
+      if has_active_filters do
+        page = socket.assigns[:page] || 1
+        per_page = 10
+
+        {collections, total_pages} =
+          Catalog.list_collections_paginated(page, per_page, search, filters)
+
+        socket =
+          socket
+          |> stream(:collections, collections, reset: true)
+          |> assign(:page, page)
+          |> assign(:total_pages, total_pages)
+          |> assign(:collections_empty?, collections == [])
+          |> assign(:collections_count, length(collections))
+
+        {:noreply, socket}
+      else
+        socket =
+          socket
+          |> stream_delete(:collections, collection)
+          |> assign(:collections_count, max((socket.assigns[:collections_count] || 1) - 1, 0))
+
+        {:noreply, socket}
+      end
     else
-      socket =
-        socket
-        |> stream_delete(:collections, collection)
-        |> assign(:collections_count, max((socket.assigns[:collections_count] || 1) - 1, 0))
-
-      {:noreply, socket}
+      {:noreply,
+       socket
+       |> put_flash(:error, "Access Denied: You don't have permission to delete this collection")}
     end
   end
 

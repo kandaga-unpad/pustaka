@@ -17,5 +17,9 @@ defmodule Voile.Repo.Migrations.CreateResourceClass do
 
     create index(:resource_class, [:owner_id])
     create index(:resource_class, [:vocabulary_id])
+
+    # Add GIN trigram index for fast ILIKE pattern matching on label
+    execute "CREATE INDEX resource_class_label_trgm_idx ON resource_class USING gin (label gin_trgm_ops)",
+            "DROP INDEX IF EXISTS resource_class_label_trgm_idx"
   end
 end

@@ -207,10 +207,13 @@ defmodule Voile.Schema.Catalog do
   end
 
   defp maybe_apply_node_filter(filters, user) do
-    # If user has a node assigned and no node filter is explicitly set, apply it
-    if user.node_id && is_nil(filters[:node_id]) do
+    # For non-admin users, ALWAYS force their node restriction
+    # Admin users can select any node
+    if user.node_id && !is_user_admin?(user) do
+      # Force the user's node_id, ignoring any user-selected node
       Map.put(filters, :node_id, user.node_id)
     else
+      # For admins, respect their node selection or leave it empty
       filters
     end
   end
@@ -258,12 +261,36 @@ defmodule Voile.Schema.Catalog do
   def is_user_admin?(user) do
     # Check if user belongs to admin groups
     admin_groups = ["admin", "administrator", "super_admin", "system_admin"]
-
     user_groups = user.groups || []
 
-    Enum.any?(user_groups, fn group ->
-      String.downcase(group) in admin_groups
-    end)
+    has_admin_group? =
+      Enum.any?(user_groups, fn group ->
+        String.downcase(group) in admin_groups
+      end)
+
+    # Also check if user has admin role via RBAC
+    has_admin_role? =
+      case Ecto.assoc_loaded?(user.roles) do
+        true ->
+          Enum.any?(user.roles || [], fn role ->
+            String.downcase(role.name) in admin_groups or
+              String.contains?(String.downcase(role.name), "admin")
+          end)
+
+        false ->
+          # If roles not preloaded, check via database query
+          Voile.Repo.exists?(
+            from ur in Voile.Schema.Accounts.UserRoleAssignment,
+              join: r in assoc(ur, :role),
+              where:
+                ur.user_id == ^user.id and
+                  (is_nil(ur.expires_at) or ur.expires_at > ^DateTime.utc_now()) and
+                  (fragment("LOWER(?)", r.name) in ^admin_groups or
+                     fragment("LOWER(?) LIKE '%admin%'", r.name))
+          )
+      end
+
+    has_admin_group? or has_admin_role?
   end
 
   @doc """
@@ -626,48 +653,134 @@ defmodule Voile.Schema.Catalog do
     end
   end
 
-  def list_items_paginated(page \\ 1, per_page \\ 10, search \\ nil) do
+  @doc """
+  List items with pagination, search, and filters.
+
+  ## Examples
+
+      iex> list_items_paginated(1, 10, "book", %{node_id: 5})
+      {[%Item{}, ...], 3}
+
+      iex> list_items_paginated(1, 10, nil, %{status: "active"})
+      {[%Item{}, ...], 5}
+  """
+  def list_items_paginated(page \\ 1, per_page \\ 10, search \\ nil, filters \\ %{}) do
     offset = (page - 1) * per_page
 
+    # Build the base query for items
     base_query =
       from i in Item,
-        preload: [
-          :collection,
-          :node
-        ],
         order_by: [desc: i.inserted_at, desc: i.id]
 
+    # Apply search and filters
     query =
       base_query
-      |> maybe_search(search)
-      |> limit(^per_page)
-      |> offset(^offset)
+      |> maybe_search_items(search)
+      |> apply_item_filters(filters)
 
-    items = Repo.all(query)
+    # Get item IDs first (fast, no preloads)
+    item_ids_query = query |> select([i], i.id) |> limit(^per_page) |> offset(^offset)
+    item_ids = Repo.all(item_ids_query)
 
-    total_count =
-      base_query
-      |> maybe_search(search)
-      |> Repo.aggregate(:count, :id)
+    # Fetch full items with preloads only for the limited IDs
+    items =
+      if item_ids == [] do
+        []
+      else
+        from(i in Item,
+          where: i.id in ^item_ids,
+          order_by: [desc: i.inserted_at, desc: i.id],
+          preload: [:collection, :node]
+        )
+        |> Repo.all()
+      end
 
-    total_pages = div(total_count + per_page - 1, per_page)
+    # Only count if we actually need pagination info
+    total_pages =
+      if page == 1 and length(items) < per_page do
+        1
+      else
+        # Simple count without preloads or complex joins
+        total_count =
+          query
+          |> select([i], count(i.id))
+          |> Repo.one()
+
+        div(total_count + per_page - 1, per_page)
+      end
 
     {items, total_pages}
   end
 
-  defp maybe_search(query, nil), do: query
+  defp maybe_search_items(query, nil), do: query
 
-  defp maybe_search(query, search) when is_binary(search) and search != "" do
+  defp maybe_search_items(query, search) when is_binary(search) and search != "" do
+    search = String.trim(search)
     like = "%#{search}%"
 
     from i in query,
-      left_join: c in assoc(i, :collection),
+      as: :item,
       where:
-        ilike(i.item_code, ^like) or ilike(i.inventory_code, ^like) or
-          ilike(i.location, ^like) or ilike(c.title, ^like)
+        ilike(i.item_code, ^like) or
+          ilike(i.inventory_code, ^like) or
+          ilike(i.location, ^like) or
+          exists(
+            from c in Collection,
+              where: c.id == parent_as(:item).collection_id and ilike(c.title, ^like),
+              select: 1
+          )
   end
 
-  defp maybe_search(query, _), do: query
+  defp maybe_search_items(query, _), do: query
+
+  defp apply_item_filters(query, filters) when filters == %{}, do: query
+
+  defp apply_item_filters(query, filters) do
+    Enum.reduce(filters, query, fn
+      {:node_id, nil}, q ->
+        q
+
+      {:node_id, ""}, q ->
+        q
+
+      {:node_id, node_id}, q when is_binary(node_id) ->
+        node_id = String.to_integer(node_id)
+        from i in q, where: i.unit_id == ^node_id
+
+      {:node_id, node_id}, q when is_integer(node_id) ->
+        from i in q, where: i.unit_id == ^node_id
+
+      {:status, nil}, q ->
+        q
+
+      {:status, ""}, q ->
+        q
+
+      {:status, status}, q ->
+        from i in q, where: i.status == ^status
+
+      {:availability, nil}, q ->
+        q
+
+      {:availability, ""}, q ->
+        q
+
+      {:availability, availability}, q ->
+        from i in q, where: i.availability == ^availability
+
+      {:condition, nil}, q ->
+        q
+
+      {:condition, ""}, q ->
+        q
+
+      {:condition, condition}, q ->
+        from i in q, where: i.condition == ^condition
+
+      _, q ->
+        q
+    end)
+  end
 
   @doc """
   Creates a item.

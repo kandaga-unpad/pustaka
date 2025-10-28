@@ -14,17 +14,30 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Check read permission for viewing item details
+    authorize!(socket, "items.read")
+
     {:ok, socket}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
-    dbg(Catalog.get_item!(id))
+    item = Catalog.get_item!(id)
 
-    {:noreply,
-     socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:item, Catalog.get_item!(id))}
+    # Verify user has access to this item's unit
+    current_user = socket.assigns.current_scope.user
+
+    if Catalog.is_user_admin?(current_user) or item.unit_id == current_user.node_id do
+      {:noreply,
+       socket
+       |> assign(:page_title, page_title(socket.assigns.live_action))
+       |> assign(:item, item)}
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "Access Denied: You don't have permission to view this item")
+       |> push_navigate(to: ~p"/manage/catalog/items")}
+    end
   end
 
   defp page_title(:show), do: "Show Item"

@@ -26,6 +26,19 @@ defmodule Voile.Repo.Migrations.CreateCollections do
     create index(:collections, [:unit_id])
     create unique_index(:collections, [:collection_code])
 
+    # Add GIN trigram indexes for fast ILIKE pattern matching searches
+    execute "CREATE INDEX collections_title_trgm_idx ON collections USING gin (title gin_trgm_ops)",
+            "DROP INDEX IF EXISTS collections_title_trgm_idx"
+
+    execute "CREATE INDEX collections_description_trgm_idx ON collections USING gin (description gin_trgm_ops)",
+            "DROP INDEX IF EXISTS collections_description_trgm_idx"
+
+    execute "CREATE INDEX collections_code_trgm_idx ON collections USING gin (collection_code gin_trgm_ops)",
+            "DROP INDEX IF EXISTS collections_code_trgm_idx"
+
+    execute "CREATE INDEX collections_type_trgm_idx ON collections USING gin (collection_type gin_trgm_ops)",
+            "DROP INDEX IF EXISTS collections_type_trgm_idx"
+
     # Composite unique index to ensure old_biblio_id is unique per unit
     # This prevents collisions when the same biblio_id exists in different units
     create unique_index(:collections, [:unit_id, :old_biblio_id],

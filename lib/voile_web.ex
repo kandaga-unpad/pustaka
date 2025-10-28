@@ -88,6 +88,9 @@ defmodule VoileWeb do
         layout: {VoileWeb.Layouts, :dashboard}
 
       unquote(html_helpers())
+
+      # Import helper to wrap mount with error handling
+      import VoileWeb.Live.AuthHooks, only: [handle_mount_errors: 1]
     end
   end
 
@@ -123,9 +126,13 @@ defmodule VoileWeb do
       import VoileWeb.CoreComponents
       import VoileWeb.VoileDashboardComponents
 
-      # Authorization helpers
+      # Authorization helpers for LiveViews (only authorize functions)
+      import VoileWeb.Auth.LiveHelpers,
+        only: [authorize: 2, authorize: 3, authorize!: 2, authorize!: 3]
+
+      # Authorization helpers for general use
       import VoileWeb.Auth.Authorization,
-        only: [can?: 2, can?: 3, authorize!: 2, authorize!: 3, authenticated?: 1, current_user: 1]
+        only: [can?: 2, can?: 3, authenticated?: 1, current_user: 1]
 
       # GLAM-specific authorization helpers
       import VoileWeb.Auth.GLAMAuthorization,

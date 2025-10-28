@@ -3,6 +3,11 @@ defmodule VoileWeb.Auth.LiveHelpers do
   Helper functions for authorization in Phoenix LiveView.
   """
 
+  use Phoenix.VerifiedRoutes,
+    endpoint: VoileWeb.Endpoint,
+    router: VoileWeb.Router,
+    statics: VoileWeb.static_paths()
+
   alias VoileWeb.Auth.Authorization
 
   @doc """
@@ -41,6 +46,10 @@ defmodule VoileWeb.Auth.LiveHelpers do
   @doc """
   Authorize a user and raise an error if unauthorized.
 
+  This function is typically used in mount/3 callbacks. It will redirect
+  the user with a flash message if they don't have permission, rather than
+  raising an error.
+
   ## Examples
 
       def mount(%{"id" => id}, _session, socket) do
@@ -49,29 +58,55 @@ defmodule VoileWeb.Auth.LiveHelpers do
       end
   """
   def authorize!(socket, permission, opts \\ []) do
-    user = socket.assigns[:current_user]
+    user = socket.assigns.current_scope.user
 
     if user do
-      Authorization.authorize!(user, permission, opts)
-      socket
+      case Authorization.can?(user, permission, opts) do
+        true ->
+          socket
+
+        false ->
+          # Instead of raising an error, redirect with a flash message
+          throw(
+            {:unauthorized_redirect,
+             socket
+             |> Phoenix.LiveView.put_flash(
+               :error,
+               "Access Denied: You don't have permission to access this page"
+             )
+             |> Phoenix.LiveView.push_navigate(to: ~p"/manage")}
+          )
+      end
     else
-      raise Authorization.UnauthorizedError,
-        permission: permission,
-        user_id: nil
+      throw(
+        {:unauthorized_redirect,
+         socket
+         |> Phoenix.LiveView.put_flash(:error, "You must be logged in to access this page")
+         |> Phoenix.LiveView.push_navigate(to: ~p"/login")}
+      )
     end
   end
 
   @doc """
-  Check if the current user has a permission.
+  Check if the current user in the socket has a permission.
 
   ## Examples
 
-      <%= if can?(@socket, "collections.update", scope: {:collection, @collection.id}) do %>
+      <%= if can?(assigns, "collections.update", scope: {:collection, @collection.id}) do %>
         <.button>Edit</.button>
       <% end %>
   """
-  def can?(socket, permission, opts \\ []) do
+  def can?(assigns_or_socket, permission, opts \\ [])
+
+  def can?(%Phoenix.LiveView.Socket{} = socket, permission, opts) do
     case socket.assigns[:current_user] do
+      nil -> false
+      user -> Authorization.can?(user, permission, opts)
+    end
+  end
+
+  def can?(%{} = assigns, permission, opts) when is_map(assigns) do
+    case assigns[:current_user] do
       nil -> false
       user -> Authorization.can?(user, permission, opts)
     end

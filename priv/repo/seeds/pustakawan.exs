@@ -1,6 +1,7 @@
 alias Voile.Repo
 alias Voile.Schema.Accounts
 alias Voile.Schema.System
+alias Voile.Schema.Master.MemberType
 alias VoileWeb.Auth.Authorization
 
 import Ecto.Query, warn: false
@@ -24,6 +25,26 @@ else
     |> Enum.map(&{&1.name, &1})
     |> Map.new()
 
+  # Get all member types from database
+  member_types_map =
+    Repo.all(MemberType)
+    |> Enum.map(&{&1.slug, &1})
+    |> Map.new()
+
+  # Get default member types for role assignments
+  staff_member_type = Map.get(member_types_map, "staff")
+  admin_member_type = Map.get(member_types_map, "administrator")
+
+  # Fallback to first available member type if specific ones not found
+  default_member_type =
+    admin_member_type || staff_member_type ||
+      member_types_map |> Map.values() |> List.first()
+
+  if is_nil(default_member_type) do
+    IO.puts("⚠️  No member types found. Run master seeds to create member types first.")
+    System.halt(1)
+  end
+
   # ============================================================================
   # STEP 1: Create ONE Super Admin account (oversees all nodes)
   # ============================================================================
@@ -41,6 +62,7 @@ else
     username: super_admin_username,
     password: pw,
     node_id: nil,
+    user_type_id: admin_member_type.id,
     confirmed_at: confirmed_at
   }
 
@@ -57,14 +79,13 @@ else
         user
 
       existing ->
-        # Update existing super admin (ensure node_id is nil)
-        {:ok, user} =
-          existing
-          |> Accounts.User.changeset(%{node_id: nil})
-          |> Repo.update()
+        # Update existing super admin (ensure node_id is nil and user_type_id is set)
+        existing
+        |> Ecto.Changeset.change(%{node_id: nil, user_type_id: admin_member_type.id})
+        |> Repo.update!()
 
         IO.puts("   🔁 Updated #{super_admin_email} (Global)")
-        user
+        existing
     end
 
   # Assign super_admin role
@@ -99,16 +120,16 @@ else
   IO.puts("\n📍 Creating node-specific role accounts...\n")
 
   # Define node-specific roles (excluding super_admin)
-  # Format: {role_name, display_name, glam_type (optional)}
+  # Format: {role_name, display_name, glam_type (optional), member_type_slug}
   node_roles_config = [
-    {"admin", "Admin", nil},
-    {"editor", "Editor", nil},
-    {"contributor", "Contributor", nil},
-    {"viewer", "Viewer", nil},
-    {"librarian", "Librarian", "Library"},
-    {"archivist", "Archivist", "Archive"},
-    {"gallery_curator", "Gallery Curator", "Gallery"},
-    {"museum_curator", "Museum Curator", "Museum"}
+    {"admin", "Admin", nil, "administrator"},
+    {"editor", "Editor", nil, "staff"},
+    {"contributor", "Contributor", nil, "staff"},
+    {"viewer", "Viewer", nil, "member_verified"},
+    {"librarian", "Librarian", "Library", "staff"},
+    {"archivist", "Archivist", "Archive", "staff"},
+    {"gallery_curator", "Gallery Curator", "Gallery", "staff"},
+    {"museum_curator", "Museum Curator", "Museum", "staff"}
   ]
 
   # Create accounts for each node and role combination
@@ -119,7 +140,7 @@ else
     IO.puts("📍 Node: #{node.name} (#{node_abbr})")
 
     node_roles_config
-    |> Enum.each(fn {role_name, display_name, glam_type} ->
+    |> Enum.each(fn {role_name, display_name, glam_type, member_type_slug} ->
       # Email format: {role}_{node_abbr}@unpad.ac.id
       email = "#{role_name}_#{node_abbr}@unpad.ac.id"
       username = String.slice(email |> String.split("@") |> hd, 0, 30)
@@ -127,12 +148,16 @@ else
 
       confirmed_at = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
 
+      # Get member type for this role, fallback to default
+      role_member_type = Map.get(member_types_map, member_type_slug, default_member_type)
+
       attrs = %{
         email: email,
         fullname: fullname,
         username: username,
         password: pw,
         node_id: node.id,
+        user_type_id: role_member_type.id,
         confirmed_at: confirmed_at
       }
 
@@ -150,13 +175,12 @@ else
 
           existing ->
             # Update existing user
-            {:ok, user} =
-              existing
-              |> Accounts.User.changeset(%{node_id: node.id})
-              |> Repo.update()
+            existing
+            |> Ecto.Changeset.change(%{node_id: node.id, user_type_id: role_member_type.id})
+            |> Repo.update!()
 
             IO.puts("   🔁 Updated #{email}")
-            user
+            existing
         end
 
       # Assign role to user if role exists in database
@@ -233,10 +257,20 @@ else
   IO.puts("   • super_admin: Super Admin (1 account, oversees all nodes)")
 
   node_roles_config
-  |> Enum.each(fn {role_name, display_name, glam_type} ->
+  |> Enum.each(fn {role_name, display_name, glam_type, _member_type_slug} ->
     glam_info = if glam_type, do: " (#{glam_type} only)", else: ""
     IO.puts("   • #{role_name}: #{display_name}#{glam_info} (per node)")
   end)
+
+  IO.puts("\n👥 Member Type Assignments:")
+  IO.puts("   • super_admin → Administrator")
+  IO.puts("   • admin → Administrator")
+
+  IO.puts(
+    "   • editor, contributor, librarian, archivist, gallery_curator, museum_curator → Staff"
+  )
+
+  IO.puts("   • viewer → Member (Verified)")
 
   IO.puts("\n" <> String.duplicate("=", 80))
 end

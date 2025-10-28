@@ -3,48 +3,63 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
 
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
+  alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
-    socket =
-      socket
-      |> assign(:page_title, "Library Ledger")
-      |> assign(:search_query, "")
-      |> assign(:search_results, [])
-      |> assign(:show_dropdown, false)
-      |> assign(:selected_member, nil)
-      |> assign(:search_error, nil)
-
-    {:ok, socket}
-  end
-
-  @impl true
-  def handle_event("search_input", %{"value" => query}, socket) do
-    query = String.trim(query)
-
-    if query == "" do
+    # Check if user has permission to access ledger/circulation
+    unless Authorization.can?(socket, "circulation.checkout") do
       socket =
         socket
+        |> put_flash(:error, "You don't have permission to access the library ledger")
+        |> push_navigate(to: ~p"/manage/glam/library")
+
+      {:ok, socket}
+    else
+      socket =
+        socket
+        |> assign(:page_title, "Library Ledger")
         |> assign(:search_query, "")
         |> assign(:search_results, [])
         |> assign(:show_dropdown, false)
         |> assign(:selected_member, nil)
         |> assign(:search_error, nil)
 
-      {:noreply, socket}
+      {:ok, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("search_input", %{"value" => query}, socket) do
+    unless Authorization.can?(socket, "members.lookup") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to search members")}
     else
-      results = search_members(query)
+      query = String.trim(query)
 
-      socket =
-        socket
-        |> assign(:search_query, query)
-        |> assign(:search_results, results)
-        |> assign(:show_dropdown, true)
-        |> assign(:search_error, if(results == [], do: "No members found", else: nil))
+      if query == "" do
+        socket =
+          socket
+          |> assign(:search_query, "")
+          |> assign(:search_results, [])
+          |> assign(:show_dropdown, false)
+          |> assign(:selected_member, nil)
+          |> assign(:search_error, nil)
 
-      {:noreply, socket}
+        {:noreply, socket}
+      else
+        results = search_members(query)
+
+        socket =
+          socket
+          |> assign(:search_query, query)
+          |> assign(:search_results, results)
+          |> assign(:show_dropdown, true)
+          |> assign(:search_error, if(results == [], do: "No members found", else: nil))
+
+        {:noreply, socket}
+      end
     end
   end
 
@@ -76,17 +91,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
   end
 
   def handle_event("continue_transaction", %{"member_id" => member_id}, socket) do
-    case Repo.get(User, member_id) do
-      nil ->
-        {:noreply, put_flash(socket, :error, "Member not found")}
+    unless Authorization.can?(socket, "circulation.checkout") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to start transactions")}
+    else
+      case Repo.get(User, member_id) do
+        nil ->
+          {:noreply, put_flash(socket, :error, "Member not found")}
 
-      member ->
-        if is_member_expired?(member) do
-          {:noreply, put_flash(socket, :error, "Cannot continue: Member has expired")}
-        else
-          {:noreply,
-           push_navigate(socket, to: ~p"/manage/glam/library/ledger/transact/#{member_id}")}
-        end
+        member ->
+          if is_member_expired?(member) do
+            {:noreply, put_flash(socket, :error, "Cannot continue: Member has expired")}
+          else
+            {:noreply,
+             push_navigate(socket, to: ~p"/manage/glam/library/ledger/transact/#{member_id}")}
+          end
+      end
     end
   end
 

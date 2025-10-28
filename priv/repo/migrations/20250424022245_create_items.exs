@@ -2,6 +2,9 @@ defmodule Voile.Repo.Migrations.CreateItems do
   use Ecto.Migration
 
   def change do
+    # Enable pg_trgm extension for faster ILIKE searches with trigram indexes
+    execute "CREATE EXTENSION IF NOT EXISTS pg_trgm", "DROP EXTENSION IF EXISTS pg_trgm"
+
     create table(:items, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
       add :item_code, :text
@@ -29,5 +32,15 @@ defmodule Voile.Repo.Migrations.CreateItems do
     create index(:items, [:collection_id])
     create index(:items, [:location])
     create index(:items, [:legacy_item_code])
+
+    # Add GIN trigram indexes for fast ILIKE pattern matching searches
+    execute "CREATE INDEX items_item_code_trgm_idx ON items USING gin (item_code gin_trgm_ops)",
+            "DROP INDEX IF EXISTS items_item_code_trgm_idx"
+
+    execute "CREATE INDEX items_inventory_code_trgm_idx ON items USING gin (inventory_code gin_trgm_ops)",
+            "DROP INDEX IF EXISTS items_inventory_code_trgm_idx"
+
+    execute "CREATE INDEX items_location_trgm_idx ON items USING gin (location gin_trgm_ops)",
+            "DROP INDEX IF EXISTS items_location_trgm_idx"
   end
 end
