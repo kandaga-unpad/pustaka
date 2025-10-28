@@ -865,10 +865,12 @@ defmodule Voile.Schema.Library.Circulation do
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
            # Check if overdue BEFORE completing the transaction
-           {:ok, fine_data} <- prepare_fine_if_overdue(transaction, member.user_type, skip_holidays),
+           {:ok, fine_data} <-
+             prepare_fine_if_overdue(transaction, member.user_type, skip_holidays),
            # Extract fine_amount from fine_data to store in transaction
            fine_amount <- extract_fine_amount(fine_data),
-           {:ok, transaction} <- complete_transaction(transaction, librarian_id, attrs, fine_amount),
+           {:ok, transaction} <-
+             complete_transaction(transaction, librarian_id, attrs, fine_amount),
            {:ok, _item} <- update_item_availability(transaction.item, "available"),
            {:ok, _history} <- record_circulation_history(transaction, "return"),
            # Create the fine if it was prepared

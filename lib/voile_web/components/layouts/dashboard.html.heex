@@ -97,7 +97,6 @@
     </section>
   </section>
 </main>
-
 <!-- Reservation notifications for staff (rendered by NotificationHook) -->
 <.live_component
   :if={String.starts_with?(@current_uri, "/manage") && assigns[:notifications]}
@@ -105,7 +104,6 @@
   id="notification-component"
   notifications={@notifications}
 />
-
 <footer class="flex flex-col items-center bg-gray-700 dark:bg-gray-800 text-white">
   <div class="py-5">
     <p class="font-semibold">Voile - Curatorian Developer | 2024 - {Date.utc_today().year}</p>

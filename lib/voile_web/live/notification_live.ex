@@ -54,31 +54,31 @@ defmodule VoileWeb.NotificationComponent do
                     New Reservation Request
                   </h4>
                 </div>
-
+                
                 <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                   <p class="flex items-center gap-2">
                     <.icon name="hero-user" class="w-4 h-4" />
                     <span class="font-medium">{notification.member_name}</span>
                   </p>
-
+                  
                   <p class="flex items-center gap-2">
                     <.icon name="hero-bookmark" class="w-4 h-4" />
                     <span>{notification.item_code}</span>
                   </p>
-
+                  
                   <%= if notification.collection_title do %>
                     <p class="text-xs text-gray-500 dark:text-gray-400 ml-6">
                       {notification.collection_title}
                     </p>
                   <% end %>
-
+                  
                   <%= if notification.notes && String.trim(notification.notes) != "" do %>
                     <p class="text-xs text-gray-500 dark:text-gray-400 italic ml-6">
                       "{notification.notes}"
                     </p>
                   <% end %>
                 </div>
-
+                
                 <div class="mt-3 flex items-center gap-2">
                   <.link
                     navigate={~p"/manage/glam/library/circulation/reservations/#{notification.id}"}
@@ -88,7 +88,7 @@ defmodule VoileWeb.NotificationComponent do
                   </.link>
                 </div>
               </div>
-
+              
               <button
                 phx-click="dismiss_notification"
                 phx-value-index={index}
@@ -100,7 +100,7 @@ defmodule VoileWeb.NotificationComponent do
             </div>
           </div>
         <% end %>
-
+        
         <%= if length(@notifications) > 1 do %>
           <button
             phx-click="dismiss_all"

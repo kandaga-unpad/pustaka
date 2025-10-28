@@ -310,16 +310,12 @@ defmodule Voile.Migration.BiblioImporter do
       _ ->
         case Repo.one(from(rc in ResourceClass, where: rc.local_name == "Thesis", select: rc.id)) do
           id when is_integer(id) ->
-            IO.puts(
-              "✅ Using ResourceClass (local_name='Thesis') id=#{id} for thesis records"
-            )
+            IO.puts("✅ Using ResourceClass (local_name='Thesis') id=#{id} for thesis records")
 
             id
 
           _ ->
-            IO.puts(
-              "⚠️ Could not find ResourceClass for 'Thesis'; will use Book type as fallback"
-            )
+            IO.puts("⚠️ Could not find ResourceClass for 'Thesis'; will use Book type as fallback")
 
             nil
         end
@@ -330,13 +326,15 @@ defmodule Voile.Migration.BiblioImporter do
   # Handles variations like: SKRIPSI, [SKRIPSI], [ TESIS ], etc.
   defp is_thesis_title?(title) when is_binary(title) do
     # Remove common delimiters and extra spaces, then check for keywords
-    cleaned_title = 
+    cleaned_title =
       title
       |> String.upcase()
-      |> String.replace(~r/[\[\]\(\)\{\}]/, " ")  # Replace brackets with spaces
-      |> String.replace(~r/\s+/, " ")              # Normalize multiple spaces
+      # Replace brackets with spaces
+      |> String.replace(~r/[\[\]\(\)\{\}]/, " ")
+      # Normalize multiple spaces
+      |> String.replace(~r/\s+/, " ")
       |> String.trim()
-    
+
     # Check if any thesis keyword appears as a word (not just substring)
     String.match?(cleaned_title, ~r/\b(SKRIPSI|TESIS|DISERTASI)\b/)
   end
