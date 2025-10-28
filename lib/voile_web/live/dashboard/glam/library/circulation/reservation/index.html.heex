@@ -83,7 +83,7 @@
         <div class="flex items-center">
           <div class="flex-shrink-0 h-10 w-10">
             <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span class="text-sm font-medium text-gray-700">
+              <span class="text-sm font-medium">
                 {if reservation.member,
                   do: String.first(reservation.member.fullname || "?"),
                   else: "?"}
@@ -92,11 +92,11 @@
           </div>
           
           <div class="ml-4">
-            <div class="text-sm font-medium text-gray-900">
+            <div class="text-sm font-medium">
               {if reservation.member, do: reservation.member.fullname, else: "Unknown Member"}
             </div>
             
-            <div class="text-sm text-gray-500">ID: {reservation.member_id}</div>
+            <div class="text-sm">ID: {reservation.member_id}</div>
           </div>
         </div>
       </:col>
@@ -104,17 +104,17 @@
       <:col :let={{_id, reservation}} label="Item/Collection">
         <div>
           <%= if reservation.item do %>
-            <div class="text-sm font-medium text-gray-900">{reservation.item.item_code}</div>
+            <div class="text-sm font-medium">{reservation.item.item_code}</div>
             
-            <div class="text-sm text-gray-500">
+            <div class="text-sm">
               {if reservation.item.collection,
                 do: reservation.item.collection.title,
                 else: "No collection"}
             </div>
           <% else %>
-            <div class="text-sm font-medium text-gray-900">Collection Reservation</div>
+            <div class="text-sm font-medium">Collection Reservation</div>
             
-            <div class="text-sm text-gray-500">
+            <div class="text-sm">
               {if reservation.collection,
                 do: reservation.collection.title,
                 else: "Unknown collection"}
@@ -131,7 +131,7 @@
       
       <:col :let={{_id, reservation}} label="Priority">
         <div class="flex items-center">
-          <span class="text-sm text-gray-900">{reservation.priority || 1}</span>
+          <span class="text-sm">{reservation.priority || 1}</span>
           <%= if reservation.priority && reservation.priority > 1 do %>
             <.icon name="hero-exclamation-triangle" class="w-4 h-4 ml-1 text-yellow-500" />
           <% end %>
@@ -139,11 +139,11 @@
       </:col>
       
       <:col :let={{_id, reservation}} label="Reserved Date">
-        <div class="text-sm text-gray-900">{format_datetime(reservation.reservation_date)}</div>
+        <div class="text-sm">{format_datetime(reservation.reservation_date)}</div>
       </:col>
       
       <:col :let={{_id, reservation}} label="Expiry Date">
-        <div class="text-sm text-gray-900">
+        <div class="text-sm">
           {if reservation.expiry_date do
             format_datetime(reservation.expiry_date)
           else
@@ -226,21 +226,23 @@
   on_cancel={JS.patch(~p"/manage/glam/library/circulation/reservations")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">New Reservation</h3>
+    <h3 class="text-lg font-medium">New Reservation</h3>
     
-    <.form for={%{}} id="reservation-form" phx-submit="create_reservation">
+    <.form for={@form} id="reservation-form" phx-submit="create_reservation">
       <.input
+        field={@form[:member_id]}
         name="member_id"
         label="Member ID"
         placeholder="Enter member ID"
         required
       />
       <.input
+        field={@form[:item_id]}
         name="item_id"
         label="Item Code"
         placeholder="Enter item code to reserve"
         required
-      /> <.button type="submit" class="w-full">Create Reservation</.button>
+      /> <.button type="submit">Create Reservation</.button>
     </.form>
   </div>
 </.modal>

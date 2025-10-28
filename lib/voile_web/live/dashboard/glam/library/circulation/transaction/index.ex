@@ -350,27 +350,39 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
           socket
           |> stream_insert(:transactions, transaction)
 
-        # If there's a fine and payment amount > 0, attempt payment
+        # Handle fine payment or inform about outstanding fine
         socket =
-          if fine && Decimal.compare(payment_amount_decimal, Decimal.new("0")) == :gt do
-            case Circulation.pay_fine(
-                   fine.id,
-                   payment_amount_decimal,
-                   payment_method,
-                   current_user_id
-                 ) do
-              {:ok, _updated_fine} ->
-                put_flash(socket, :info, "Item returned and fine paid successfully")
+          cond do
+            # Fine exists and payment amount provided
+            fine && Decimal.compare(payment_amount_decimal, Decimal.new("0")) == :gt ->
+              case Circulation.pay_fine(
+                     fine.id,
+                     payment_amount_decimal,
+                     payment_method,
+                     current_user_id
+                   ) do
+                {:ok, _updated_fine} ->
+                  put_flash(socket, :info, "Item returned and fine paid successfully")
 
-              {:error, changeset} ->
-                put_flash(
-                  socket,
-                  :error,
-                  "Returned, but failed to pay fine: #{inspect(changeset)}"
-                )
-            end
-          else
-            put_flash(socket, :info, "Item returned successfully")
+                {:error, _changeset} ->
+                  put_flash(
+                    socket,
+                    :warning,
+                    "Item returned, but failed to process payment. Fine of Rp #{Decimal.to_string(fine.amount)} remains unpaid."
+                  )
+              end
+
+            # Fine exists but no payment provided
+            fine ->
+              put_flash(
+                socket,
+                :warning,
+                "Item returned successfully. Outstanding fine: Rp #{Decimal.to_string(fine.amount)}"
+              )
+
+            # No fine
+            true ->
+              put_flash(socket, :info, "Item returned successfully")
           end
 
         socket =

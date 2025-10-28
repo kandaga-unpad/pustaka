@@ -688,4 +688,20 @@
   .gradient-btn-outline {
     @apply border-2 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 font-medium px-6 py-3 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-300;
   }
+
+  /* Notification animation */
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+  }
 }

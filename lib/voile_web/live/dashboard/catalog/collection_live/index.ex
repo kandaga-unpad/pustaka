@@ -57,6 +57,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
       socket =
         socket
+        # Initialize empty stream to prevent errors when modal opens
+        |> stream(:collections, [])
         # Don't stream collections here - will be done in apply_action
         |> assign(:tree_collections, tree_collections)
         # "list" or "tree"

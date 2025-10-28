@@ -331,13 +331,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             field={@form[:status]}
             type="select"
             label="Status"
-            options={[
-              {"Draft", "draft"},
-              {"Pending", "pending"},
-              {"Published", "published"},
-              {"Archived", "archived"}
-            ]}
+            options={get_status_options(@current_scope)}
             required_value={true}
+            disabled={not can_edit_status?(@current_scope)}
           />
           <.input
             field={@form[:access_level]}
@@ -1123,6 +1119,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   def handle_event("save", _params, socket) do
     collection_params = socket.assigns.form.params
 
+    # RBAC: Auto-set status to "pending" for non-reviewers when saving (not draft)
+    collection_params =
+      if not can?(socket.assigns.current_scope.user, "collections.publish") and
+           collection_params["status"] not in ["draft", "pending"] do
+        Map.put(collection_params, "status", "pending")
+      else
+        collection_params
+      end
+
     cond do
       # Check if collection fields are empty
       is_nil(collection_params["collection_fields"]) ||
@@ -1222,5 +1227,35 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       _ ->
         nil
     end
+  end
+
+  # RBAC: Get status options based on user permissions
+  defp get_status_options(current_scope) do
+    user = current_scope.user
+
+    cond do
+      # Reviewer or admin can access all statuses
+      can?(user, "collections.publish") ->
+        [
+          {"Draft", "draft"},
+          {"Pending", "pending"},
+          {"Published", "published"},
+          {"Archived", "archived"}
+        ]
+
+      # Librarian, curator, archivist can only use draft and pending
+      true ->
+        [
+          {"Draft", "draft"},
+          {"Pending", "pending"}
+        ]
+    end
+  end
+
+  # RBAC: Check if user can edit status field
+  defp can_edit_status?(current_scope) do
+    user = current_scope.user
+    # Only reviewer (with collections.publish) can freely edit status
+    can?(user, "collections.publish")
   end
 end

@@ -34,6 +34,19 @@ import { SearchPanel } from "./hooks/search_panel_hook";
 import SearchFocus from "./hooks/search_focus";
 import SearchResultsLoading from "./hooks/search_results_loading";
 
+// Notification Sound Hook for reservation notifications
+const NotificationSound = {
+  mounted() {
+    this.handleEvent("play_notification_sound", () => {
+      // Play custom reservation notification sound
+      const audio = new Audio('/sfx/reservation.mp3');
+      audio.play().catch(e => console.log('Audio play failed:', e));
+      
+      console.log("🔔 New reservation notification");
+    });
+  },
+};
+
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
@@ -50,6 +63,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     SearchPanel,
     SearchFocus,
     SearchResultsLoading,
+    NotificationSound,
     ...colocatedHooks,
   },
 });

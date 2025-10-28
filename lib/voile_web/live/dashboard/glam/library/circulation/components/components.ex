@@ -602,7 +602,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               name="payment_amount"
               type="text"
               label="Payment Amount"
-              value={Decimal.to_string(@predicted_fine || Decimal.new("0"))}
+              value="0"
             />
             <.input
               field={f[:payment_method]}

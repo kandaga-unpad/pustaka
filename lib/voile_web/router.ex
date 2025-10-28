@@ -122,7 +122,8 @@ defmodule VoileWeb.Router do
       on_mount: [
         {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
-        {VoileWeb.Utils.SideBarMenuMaster, :master_menu}
+        {VoileWeb.Utils.SideBarMenuMaster, :master_menu},
+        {VoileWeb.Live.Hooks.NotificationHook, :default}
       ] do
       scope "/manage" do
         live "/", DashboardLive, :index

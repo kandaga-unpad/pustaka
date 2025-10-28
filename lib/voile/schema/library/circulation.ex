@@ -814,10 +814,13 @@ defmodule Voile.Schema.Library.Circulation do
       fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
 
       # Apply max fine limit if configured
-      if member_type.max_fine do
-        Decimal.min(fine_amount, member_type.max_fine)
-      else
+      # nil or Decimal.new("0") = no cap, use full calculated amount
+      # any other positive value = cap at that amount
+      if is_nil(member_type.max_fine) or
+           Decimal.compare(member_type.max_fine, Decimal.new("0")) == :eq do
         fine_amount
+      else
+        Decimal.min(fine_amount, member_type.max_fine)
       end
     else
       Decimal.new("0")
@@ -861,11 +864,15 @@ defmodule Voile.Schema.Library.Circulation do
     Repo.transaction(fn ->
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
-           {:ok, transaction} <- complete_transaction(transaction, librarian_id, attrs),
+           # Check if overdue BEFORE completing the transaction
+           {:ok, fine_data} <- prepare_fine_if_overdue(transaction, member.user_type, skip_holidays),
+           # Extract fine_amount from fine_data to store in transaction
+           fine_amount <- extract_fine_amount(fine_data),
+           {:ok, transaction} <- complete_transaction(transaction, librarian_id, attrs, fine_amount),
            {:ok, _item} <- update_item_availability(transaction.item, "available"),
            {:ok, _history} <- record_circulation_history(transaction, "return"),
-           {:ok, _fine} <-
-             calculate_and_create_fine_if_needed(transaction, member.user_type, skip_holidays) do
+           # Create the fine if it was prepared
+           {:ok, _fine} <- create_prepared_fine(fine_data, transaction) do
         transaction
         |> Repo.preload(member: [], librarian: [], item: [:collection], collection: [])
       else
@@ -969,6 +976,8 @@ defmodule Voile.Schema.Library.Circulation do
     with {:ok, member} <- get_member_with_type(member_id),
          {:ok, _} <- validate_reservation_eligibility(member),
          {:ok, reservation} <- create_item_reservation(member, item_id, attrs) do
+      # Broadcast notification to staff/admin
+      Voile.Notifications.ReservationNotifier.broadcast_new_reservation(reservation)
       {:ok, reservation}
     else
       {:error, reason} -> {:error, reason}
@@ -982,6 +991,8 @@ defmodule Voile.Schema.Library.Circulation do
     with {:ok, member} <- get_member_with_type(member_id),
          {:ok, _} <- validate_reservation_eligibility(member),
          {:ok, reservation} <- create_collection_level_reservation(member, collection_id, attrs) do
+      # Broadcast notification to staff/admin
+      Voile.Notifications.ReservationNotifier.broadcast_new_reservation(reservation)
       {:ok, reservation}
     else
       {:error, reason} -> {:error, reason}
@@ -994,13 +1005,22 @@ defmodule Voile.Schema.Library.Circulation do
   def cancel_reservation(reservation_id, reason \\ nil) do
     case Repo.get(Reservation, reservation_id) do
       %Reservation{} = reservation ->
-        reservation
-        |> Reservation.changeset(%{
-          status: "cancelled",
-          cancelled_date: DateTime.utc_now(),
-          cancellation_reason: reason
-        })
-        |> Repo.update()
+        result =
+          reservation
+          |> Reservation.changeset(%{
+            status: "cancelled",
+            cancelled_date: DateTime.utc_now(),
+            cancellation_reason: reason
+          })
+          |> Repo.update()
+
+        case result do
+          {:ok, reservation} ->
+            {:ok, Repo.preload(reservation, [:member, :item, :collection])}
+
+          error ->
+            error
+        end
 
       nil ->
         {:error, "Reservation not found"}
@@ -1013,13 +1033,22 @@ defmodule Voile.Schema.Library.Circulation do
   def mark_reservation_available(reservation_id, processed_by_id) do
     case Repo.get(Reservation, reservation_id) do
       %Reservation{status: "pending"} = reservation ->
-        reservation
-        |> Reservation.changeset(%{
-          status: "available",
-          processed_by_id: processed_by_id,
-          notification_sent: false
-        })
-        |> Repo.update()
+        result =
+          reservation
+          |> Reservation.changeset(%{
+            status: "available",
+            processed_by_id: processed_by_id,
+            notification_sent: false
+          })
+          |> Repo.update()
+
+        case result do
+          {:ok, reservation} ->
+            {:ok, Repo.preload(reservation, [:member, :item, :collection])}
+
+          error ->
+            error
+        end
 
       %Reservation{} ->
         {:error, "Reservation is not in pending status"}
@@ -1756,13 +1785,21 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp complete_transaction(%Transaction{} = transaction, librarian_id, attrs) do
+  defp complete_transaction(%Transaction{} = transaction, librarian_id, attrs, fine_amount) do
     return_attrs =
       Map.merge(attrs, %{
         return_date: DateTime.utc_now(),
         status: "returned",
         librarian_id: librarian_id
       })
+
+    # Add fine_amount if it was calculated
+    return_attrs =
+      if fine_amount do
+        Map.put(return_attrs, :fine_amount, fine_amount)
+      else
+        return_attrs
+      end
 
     transaction
     |> Transaction.changeset(return_attrs)
@@ -1809,11 +1846,14 @@ defmodule Voile.Schema.Library.Circulation do
       fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
 
       # Apply max fine limit if configured
+      # nil or Decimal.new("0") = no cap, use full calculated amount
+      # any other positive value = cap at that amount
       final_amount =
-        if member_type.max_fine do
-          Decimal.min(fine_amount, member_type.max_fine)
-        else
+        if is_nil(member_type.max_fine) or
+             Decimal.compare(member_type.max_fine, Decimal.new("0")) == :eq do
           fine_amount
+        else
+          Decimal.min(fine_amount, member_type.max_fine)
         end
 
       fine_description =
@@ -1839,6 +1879,68 @@ defmodule Voile.Schema.Library.Circulation do
       {:ok, nil}
     end
   end
+
+  # Prepare fine data before transaction is completed (while return_date is still nil)
+  defp prepare_fine_if_overdue(
+         %Transaction{} = transaction,
+         %MemberType{} = member_type,
+         skip_holidays
+       ) do
+    if Transaction.overdue?(transaction) do
+      days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
+      daily_fine = member_type.fine_per_day || Decimal.new("1.00")
+      fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
+
+      # Apply max fine limit if configured
+      # nil or Decimal.new("0") = no cap, use full calculated amount
+      # any other positive value = cap at that amount
+      final_amount =
+        if is_nil(member_type.max_fine) or
+             Decimal.compare(member_type.max_fine, Decimal.new("0")) == :eq do
+          fine_amount
+        else
+          Decimal.min(fine_amount, member_type.max_fine)
+        end
+
+      fine_description =
+        if skip_holidays do
+          "Late return fine - #{days_overdue} calendar days overdue at #{daily_fine}/day (all days counted)"
+        else
+          "Late return fine - #{days_overdue} business days overdue at #{daily_fine}/day (holidays excluded)"
+        end
+
+      {:ok,
+       %{
+         member_id: transaction.member_id,
+         item_id: transaction.item_id,
+         fine_type: "overdue",
+         amount: final_amount,
+         balance: final_amount,
+         fine_date: DateTime.utc_now(),
+         fine_status: "pending",
+         description: fine_description
+       }}
+    else
+      {:ok, nil}
+    end
+  end
+
+  # Create fine after transaction is completed (using prepared data)
+  defp create_prepared_fine(nil, _transaction), do: {:ok, nil}
+
+  defp create_prepared_fine(fine_data, %Transaction{} = transaction) do
+    fine_attrs =
+      Map.merge(fine_data, %{
+        transaction_id: transaction.id,
+        processed_by_id: transaction.librarian_id
+      })
+
+    create_fine(fine_attrs)
+  end
+
+  # Extract fine_amount from fine_data map
+  defp extract_fine_amount(nil), do: nil
+  defp extract_fine_amount(%{amount: amount}), do: amount
 
   defp get_available_reservation(reservation_id) do
     case Repo.get(Reservation, reservation_id)

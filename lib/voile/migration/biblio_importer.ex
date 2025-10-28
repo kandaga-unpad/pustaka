@@ -225,6 +225,7 @@ defmodule Voile.Migration.BiblioImporter do
 
     # Cache the Bibliographic Resource type ID
     bibliographic_resource_type_id = get_bibliographic_resource_type_id()
+    thesis_resource_type_id = get_thesis_resource_type_id()
 
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Author mappings: #{map_size(author_mappings)} units")
@@ -234,6 +235,7 @@ defmodule Voile.Migration.BiblioImporter do
     IO.puts("  - Units: #{map_size(unit_map)}")
     IO.puts("  - Resource classes: #{map_size(resource_class_map)}")
     IO.puts("  - Bibliographic Resource type ID: #{bibliographic_resource_type_id}")
+    IO.puts("  - Thesis Resource type ID: #{thesis_resource_type_id}")
 
     %{
       author_mappings: author_mappings,
@@ -242,11 +244,13 @@ defmodule Voile.Migration.BiblioImporter do
       existing_collections: existing_collections,
       unit_map: unit_map,
       resource_class_map: resource_class_map,
-      bibliographic_resource_type_id: bibliographic_resource_type_id
+      bibliographic_resource_type_id: bibliographic_resource_type_id,
+      thesis_resource_type_id: thesis_resource_type_id
     }
   end
 
-  # All biblio records are books (type_id: 40)
+  # Get the default bibliographic resource type ID (Book)
+  # Note: Thesis records are detected separately based on title keywords
   defp get_bibliographic_resource_type_id do
     # Prefer the ResourceClass representing an actual Book label if available.
     # Lookup order:
@@ -290,6 +294,54 @@ defmodule Voile.Migration.BiblioImporter do
         end
     end
   end
+
+  # Get Thesis resource type ID
+  defp get_thesis_resource_type_id do
+    # Lookup order:
+    # 1) label == "Thesis"
+    # 2) local_name == "Thesis"
+    # 3) fallback to nil (will use book type as fallback)
+
+    case Repo.one(from(rc in ResourceClass, where: rc.label == "Thesis", select: rc.id)) do
+      id when is_integer(id) ->
+        IO.puts("✅ Using ResourceClass (label='Thesis') id=#{id} for thesis records")
+        id
+
+      _ ->
+        case Repo.one(from(rc in ResourceClass, where: rc.local_name == "Thesis", select: rc.id)) do
+          id when is_integer(id) ->
+            IO.puts(
+              "✅ Using ResourceClass (local_name='Thesis') id=#{id} for thesis records"
+            )
+
+            id
+
+          _ ->
+            IO.puts(
+              "⚠️ Could not find ResourceClass for 'Thesis'; will use Book type as fallback"
+            )
+
+            nil
+        end
+    end
+  end
+
+  # Detect if a title indicates a thesis based on keywords
+  # Handles variations like: SKRIPSI, [SKRIPSI], [ TESIS ], etc.
+  defp is_thesis_title?(title) when is_binary(title) do
+    # Remove common delimiters and extra spaces, then check for keywords
+    cleaned_title = 
+      title
+      |> String.upcase()
+      |> String.replace(~r/[\[\]\(\)\{\}]/, " ")  # Replace brackets with spaces
+      |> String.replace(~r/\s+/, " ")              # Normalize multiple spaces
+      |> String.trim()
+    
+    # Check if any thesis keyword appears as a word (not just substring)
+    String.match?(cleaned_title, ~r/\b(SKRIPSI|TESIS|DISERTASI)\b/)
+  end
+
+  defp is_thesis_title?(_), do: false
 
   # Optimized file processing using streams and batching
   defp process_biblio_file_optimized(file_path, batch_size, skip_images, cache) do
@@ -613,8 +665,16 @@ defmodule Voile.Migration.BiblioImporter do
           # Get unit and resource class data for collection code generation
           unit_data = Map.get(cache.unit_map, unit_id, %{abbr: "UNK"})
 
+          # Determine resource type based on title
+          resource_type_id =
+            if is_thesis_title?(title) and cache.thesis_resource_type_id do
+              cache.thesis_resource_type_id
+            else
+              cache.bibliographic_resource_type_id
+            end
+
           resource_class_data =
-            Map.get(cache.resource_class_map, cache.bibliographic_resource_type_id, %{
+            Map.get(cache.resource_class_map, resource_type_id, %{
               glam_type: "Library"
             })
 
@@ -636,8 +696,8 @@ defmodule Voile.Migration.BiblioImporter do
             old_biblio_id: biblio_id_int,
             creator_id: creator_id,
             collection_code: collection_code,
-            # Use the cached Bibliographic Resource type ID
-            type_id: cache.bibliographic_resource_type_id,
+            # Use the determined resource type ID (Book or Thesis)
+            type_id: resource_type_id,
             unit_id: unit_id,
             inserted_at: now,
             updated_at: now

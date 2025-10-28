@@ -17,6 +17,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
       |> assign(:filter_status, "all")
+      |> assign(:form, to_form(%{}))
 
     {:ok, socket}
   end
@@ -86,7 +87,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
 
   @impl true
   def handle_event("mark_available", %{"id" => id}, socket) do
-    current_user_id = socket.assigns.current_user.id
+    current_user_id = socket.assigns.current_scope.user.id
 
     case Circulation.mark_reservation_available(id, current_user_id) do
       {:ok, reservation} ->
@@ -108,7 +109,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
 
   @impl true
   def handle_event("fulfill_reservation", %{"id" => id}, socket) do
-    current_user_id = socket.assigns.current_user.id
+    current_user_id = socket.assigns.current_scope.user.id
 
     case Circulation.fulfill_reservation(id, current_user_id) do
       {:ok, transaction} ->

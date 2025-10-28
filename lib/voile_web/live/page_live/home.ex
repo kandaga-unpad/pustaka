@@ -230,20 +230,25 @@ defmodule VoileWeb.PageLive.Home do
             <%= if length(@dashboard_stats.node_collections) > 0 do %>
               <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-8">
                 <%= for node <- @dashboard_stats.node_collections do %>
-                  <div class="group cursor-pointer">
-                    <div class="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                      <div class={"absolute inset-0 bg-gradient-to-br opacity-90 #{node.color}"}>
-                      </div>
-                      
-                      <div class="relative p-6 text-center text-white">
-                        <div class="text-2xl font-bold mb-1">{node.collection_count}</div>
+                  <.link
+                    navigate={"/collections?unit_id=#{node.id}"}
+                    class="block"
+                  >
+                    <div class="group cursor-pointer">
+                      <div class="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class={"absolute inset-0 bg-gradient-to-br opacity-90 #{node.color}"}>
+                        </div>
                         
-                        <div class="text-sm opacity-90 truncate">{node.name}</div>
-                        
-                        <div class="text-lg opacity-75 mt-1">{node.abbr}</div>
+                        <div class="relative p-6 text-center text-white">
+                          <div class="text-2xl font-bold mb-1">{node.collection_count}</div>
+                          
+                          <div class="text-sm opacity-90 truncate">{node.name}</div>
+                          
+                          <div class="text-lg opacity-75 mt-1">{node.abbr}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </.link>
                 <% end %>
               </div>
             <% end %>
