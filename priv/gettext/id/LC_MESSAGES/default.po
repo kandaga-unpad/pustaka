@@ -572,3 +572,51 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "filters"
 msgstr ""
+
+msgid "Login with Email Link"
+msgstr "Masuk dengan tautan email"
+
+msgid "Enter your email and we'll send a secure login link. No password required."
+msgstr "Masukkan email Anda dan kami akan mengirimkan tautan masuk yang aman. Tidak perlu kata sandi."
+
+msgid "Send Login Link"
+msgstr "Kirim tautan masuk"
+
+msgid "Welcome back to Voile"
+msgstr "Selamat datang kembali di Voile"
+
+msgid "Sign in to access your dashboard, manage content, and explore features built for creators and teams."
+msgstr "Masuk untuk mengakses dasbor Anda, mengelola konten, dan menjelajahi fitur yang dibuat untuk kreator dan tim."
+
+msgid "Fast, secure login"
+msgstr "Login cepat dan aman"
+
+msgid "Passwordless and social auth"
+msgstr "Otorisasi sosial dan tanpa kata sandi"
+
+msgid "Accessible & responsive"
+msgstr "Dapat diakses & responsif"
+
+msgid "Sign in to your account"
+msgstr "Masuk ke akun Anda"
+
+msgid "Don't have an account?"
+msgstr "Belum punya akun?"
+
+msgid "Create one"
+msgstr "Buat disini"
+
+msgid "Forgot your password?"
+msgstr "Lupa kata sandi Anda?"
+
+msgid "Log in"
+msgstr "Masuk"
+
+msgid "Login with "
+msgstr "Masuk dengan "
+
+msgid "Login passwordless"
+msgstr "Masuk tanpa kata sandi"
+
+msgid "Enter your email, username, or identifier"
+msgstr "Masukkan email, nama pengguna, atau nomor pengenal Anda"

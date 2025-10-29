@@ -23,10 +23,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     fine = Circulation.get_fine!(id)
+    total_user_fines = Circulation.get_total_fine_by_user(fine.member_id)
+    count_active_fines = Circulation.count_active_fines_by_user(fine.member_id)
 
     socket =
       socket
       |> assign(:fine, fine)
+      |> assign(:total_user_fines, total_user_fines)
+      |> assign(:count_active_fines, count_active_fines)
       |> assign(:page_title, "Fine Details")
 
     case socket.assigns.live_action do

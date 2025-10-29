@@ -207,8 +207,11 @@ defmodule Voile.Schema.Library.Circulation do
 
     count_query =
       case Map.get(filters, :from) do
-        %Date{} = from -> where(count_query, [ch, _i], fragment("DATE(?)", ch.event_date) >= ^from)
-        _ -> count_query
+        %Date{} = from ->
+          where(count_query, [ch, _i], fragment("DATE(?)", ch.event_date) >= ^from)
+
+        _ ->
+          count_query
       end
 
     count_query =
@@ -445,6 +448,24 @@ defmodule Voile.Schema.Library.Circulation do
     ])
   end
 
+  def get_total_fine_by_user(user_id) do
+    query =
+      from f in Fine,
+        where: f.member_id == ^user_id and f.fine_status == "pending",
+        select: sum(f.balance)
+
+    Repo.one(query) || Decimal.new(0)
+  end
+
+  def count_active_fines_by_user(user_id) do
+    query =
+      from f in Fine,
+        where: f.member_id == ^user_id and f.fine_status == "pending",
+        select: count(f.id)
+
+    Repo.one(query) || 0
+  end
+
   def create_fine(attrs \\ %{}) do
     %Fine{}
     |> Fine.changeset(attrs)
@@ -574,7 +595,12 @@ defmodule Voile.Schema.Library.Circulation do
     {requisitions, total_pages}
   end
 
-  def list_requisitions_paginated_with_filters_by_node(page \\ 1, per_page \\ 10, filters \\ %{}, node_id) do
+  def list_requisitions_paginated_with_filters_by_node(
+        page \\ 1,
+        per_page \\ 10,
+        filters \\ %{},
+        node_id
+      ) do
     offset = (page - 1) * per_page
 
     query =

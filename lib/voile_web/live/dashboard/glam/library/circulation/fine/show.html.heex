@@ -38,9 +38,9 @@
               <.icon name="hero-ellipsis-horizontal" class="w-4 h-4" /> More Actions
             </summary>
             
-            <div class="dropdown-content bg-white rounded-lg shadow-lg border border-voile-light mt-2 w-48">
+            <div class="dropdown-content bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-voile-light mt-2 w-48">
               <div class="p-4">
-                <h4 class="text-sm font-medium text-gray-900 mb-3">Partial Payment</h4>
+                <h4 class="text-sm font-medium mb-3">Partial Payment</h4>
                 
                 <form phx-submit="partial_pay" class="space-y-3">
                   <input type="hidden" name="_id" value={@fine.id} />
@@ -70,7 +70,7 @@
   </div>
   <!-- Fine Summary Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-error/20 rounded-full flex items-center justify-center">
@@ -81,12 +81,12 @@
         <div class="ml-4">
           <h3 class="text-sm font-medium text-voile-muted">Fine Amount</h3>
           
-          <p class="text-lg font-semibold text-voile">{format_currency(@fine.amount)}</p>
+          <p class="text-lg font-semibold">{format_currency(@fine.amount)}</p>
         </div>
       </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-success/20 rounded-full flex items-center justify-center">
@@ -97,12 +97,12 @@
         <div class="ml-4">
           <h3 class="text-sm font-medium text-voile-muted">Paid Amount</h3>
           
-          <p class="text-lg font-semibold text-voile">{format_currency(@fine.paid_amount)}</p>
+          <p class="text-lg font-semibold">{format_currency(@fine.paid_amount)}</p>
         </div>
       </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-warning/20 rounded-full flex items-center justify-center">
@@ -120,18 +120,18 @@
       </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white  dark:bg-gray-700 rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-info rounded-full flex items-center justify-center">
-            <.icon name="hero-calendar-days" class="w-4 h-4 text-voile-primary" />
+            <.icon name="hero-calendar-days" class="w-4 h-4 text-white" />
           </div>
         </div>
         
         <div class="ml-4">
           <h3 class="text-sm font-medium text-voile-muted">Days Outstanding</h3>
           
-          <p class="text-lg font-semibold text-voile">
+          <p class="text-lg font-semibold">
             {DateTime.diff(DateTime.utc_now(), @fine.fine_date, :day)}
           </p>
         </div>
@@ -142,9 +142,9 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Main Fine Details -->
     <div class="lg:col-span-2">
-      <div class="bg-white shadow rounded-lg">
+      <div class="bg-white  dark:bg-gray-700 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-voile-light">
-          <h3 class="text-lg font-medium text-voile">Fine Information</h3>
+          <h3 class="text-lg font-medium">Fine Information</h3>
         </div>
         
         <div class="px-6 py-4 space-y-4">
@@ -172,7 +172,7 @@
             <div>
               <dt class="text-sm font-medium text-voile-muted">Assessment Date</dt>
               
-              <dd class="mt-1 text-sm text-voile">{format_datetime(@fine.fine_date)}</dd>
+              <dd class="mt-1 text-sm">{format_datetime(@fine.fine_date)}</dd>
             </div>
             
             <div>
@@ -180,9 +180,7 @@
               
               <dd class="mt-1">
                 <%= if @fine.transaction && @fine.transaction.due_date do %>
-                  <div class="text-sm text-gray-900">
-                    {format_datetime(@fine.transaction.due_date)}
-                  </div>
+                  <div class="text-sm">{format_datetime(@fine.transaction.due_date)}</div>
                   
                   <%= if @fine.transaction.due_date && DateTime.compare(@fine.transaction.due_date, DateTime.utc_now()) == :lt && @fine.fine_status in ["pending", "partial_paid"] do %>
                     <div class="text-xs text-voile-error font-medium mt-1">
@@ -216,11 +214,9 @@
             <% end %>
             
             <div>
-              <dt class="text-sm font-medium text-gray-500">Payment Method</dt>
+              <dt class="text-sm font-medium">Payment Method</dt>
               
-              <dd class="mt-1 text-sm text-gray-900">
-                {@fine.payment_method || "Not specified"}
-              </dd>
+              <dd class="mt-1 text-sm">{@fine.payment_method || "Not specified"}</dd>
             </div>
           </div>
           
@@ -228,7 +224,7 @@
             <div class="pt-4 border-t border-voile-light">
               <dt class="text-sm font-medium text-gray-500">Description</dt>
               
-              <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{@fine.description}</dd>
+              <dd class="mt-1 text-sm whitespace-pre-wrap">{@fine.description}</dd>
             </div>
           <% end %>
           
@@ -247,9 +243,9 @@
     <!-- Member & Transaction Info -->
     <div class="space-y-6">
       <!-- Member Information -->
-      <div class="bg-white shadow rounded-lg">
+      <div class="bg-white  dark:bg-gray-700 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
+          <h3 class="text-lg font-medium">Member Information</h3>
         </div>
         
         <div class="px-6 py-4">
@@ -264,50 +260,56 @@
               </div>
               
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">
+                <p class="text-sm font-medium truncate">
                   {@fine.member.fullname || @fine.member.username || "Unknown Member"}
                 </p>
                 
-                <p class="text-sm text-gray-500">Member ID: {@fine.member.identifier}</p>
+                <p class="text-sm">
+                  Member ID: <span class="text-gray-400">{@fine.member.identifier}</span>
+                </p>
                 
-                <p class="text-sm text-gray-500">Email: {@fine.member.email}</p>
+                <p class="text-sm">
+                  Email: <span class="text-gray-400">{@fine.member.email}</span>
+                </p>
                 
-                <p class="text-sm text-gray-500">Username: {@fine.member.username}</p>
+                <p class="text-sm">
+                  Username: <span class="text-gray-400">{@fine.member.username}</span>
+                </p>
               </div>
             </div>
             <!-- Member Fine Stats -->
             <div class="mt-4 pt-4 border-t border-gray-200">
               <div class="grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <div class="text-xl font-bold text-red-600">Rp 0</div>
+                  <div class="text-xl font-bold text-red-600">Rp {@total_user_fines}</div>
                   
-                  <div class="text-xs text-gray-500">Total Outstanding</div>
+                  <div class="text-xs">Total Outstanding</div>
                 </div>
                 
                 <div>
-                  <div class="text-xl font-bold text-gray-900">0</div>
+                  <div class="text-xl font-bold">{@count_active_fines}</div>
                   
-                  <div class="text-xs text-gray-500">Active Fines</div>
+                  <div class="text-xs">Active Fines</div>
                 </div>
               </div>
             </div>
           <% else %>
-            <p class="text-sm text-gray-500">Member information not available</p>
+            <p class="text-sm">Member information not available</p>
           <% end %>
         </div>
       </div>
       <!-- Related Transaction -->
       <%= if @fine.transaction do %>
-        <div class="bg-white shadow rounded-lg">
+        <div class="bg-white  dark:bg-gray-700 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Related Transaction</h3>
+            <h3 class="text-lg font-medium">Related Transaction</h3>
           </div>
           
           <div class="px-6 py-4 space-y-3">
             <div>
               <dt class="text-xs font-medium text-gray-500 uppercase">Transaction ID</dt>
               
-              <dd class="mt-1 text-sm font-medium text-gray-900">
+              <dd class="mt-1 text-sm font-medium">
                 <.link
                   navigate={
                     ~p"/manage/glam/library/circulation/transactions/#{@fine.transaction.id}"
@@ -323,25 +325,21 @@
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Item</dt>
                 
-                <dd class="mt-1 text-sm text-gray-900">{@fine.transaction.item.item_code}</dd>
+                <dd class="mt-1 text-sm">{@fine.transaction.item.item_code}</dd>
               </div>
             <% end %>
             
             <div>
               <dt class="text-xs font-medium text-gray-500 uppercase">Transaction Date</dt>
               
-              <dd class="mt-1 text-sm text-gray-900">
-                {format_datetime(@fine.transaction.transaction_date)}
-              </dd>
+              <dd class="mt-1 text-sm">{format_datetime(@fine.transaction.transaction_date)}</dd>
             </div>
             
             <%= if @fine.transaction.due_date do %>
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Due Date</dt>
                 
-                <dd class="mt-1 text-sm text-gray-900">
-                  {format_datetime(@fine.transaction.due_date)}
-                </dd>
+                <dd class="mt-1 text-sm">{format_datetime(@fine.transaction.due_date)}</dd>
               </div>
             <% end %>
           </div>
@@ -349,9 +347,9 @@
       <% end %>
       <!-- Processing Staff -->
       <%= if @fine.processed_by do %>
-        <div class="bg-white shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
+            <h3 class="text-lg font-medium">Processed By</h3>
           </div>
           
           <div class="px-6 py-4">
@@ -367,7 +365,7 @@
               </div>
               
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">
+                <p class="text-sm font-medium">
                   {@fine.processed_by.fullname || @fine.processed_by.username || "Unknown Staff"}
                 </p>
                 
@@ -380,9 +378,9 @@
     </div>
   </div>
   <!-- Payment History -->
-  <div class="bg-white shadow rounded-lg">
+  <div class="bg-white  dark:bg-gray-700 shadow rounded-lg">
     <div class="px-6 py-4 border-b border-voile-light">
-      <h3 class="text-lg font-medium text-gray-900">Payment History</h3>
+      <h3 class="text-lg font-medium">Payment History</h3>
     </div>
     
     <div class="px-6 py-4">
@@ -412,9 +410,7 @@
                       Fine assessed - {String.capitalize(@fine.fine_type)}
                     </p>
                     
-                    <p class="text-sm font-medium text-gray-900">
-                      {format_currency(@fine.amount)}
-                    </p>
+                    <p class="text-sm font-medium">{format_currency(@fine.amount)}</p>
                   </div>
                   
                   <div class="text-right text-sm whitespace-nowrap text-gray-500">
@@ -447,9 +443,7 @@
                     <div>
                       <p class="text-sm text-gray-500">Partial payment received</p>
                       
-                      <p class="text-sm font-medium text-gray-900">
-                        {format_currency(@fine.paid_amount)}
-                      </p>
+                      <p class="text-sm font-medium">{format_currency(@fine.paid_amount)}</p>
                     </div>
                     
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
@@ -529,29 +523,29 @@
   on_cancel={JS.patch(~p"/manage/glam/library/circulation/fines/#{@fine.id}")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">Process Payment</h3>
+    <h3 class="text-lg font-medium">Process Payment</h3>
     
-    <div class="bg-gray-50 rounded-md p-4">
+    <div class="bg-gray-200 dark:bg-gray-500 rounded-md p-4">
       <div class="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <span class="font-medium text-gray-700">Member:</span>
+          <span class="font-medium">Member:</span>
           <span class="ml-2">{if @fine.member, do: @fine.member.fullname, else: "Unknown"}</span>
         </div>
         
         <div>
-          <span class="font-medium text-gray-700">Fine Type:</span>
+          <span class="font-medium">Fine Type:</span>
           <span class="ml-2">
             {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
           </span>
         </div>
         
         <div>
-          <span class="font-medium text-gray-700">Total Amount:</span>
+          <span class="font-medium">Total Amount:</span>
           <span class="ml-2">{format_currency(@fine.amount)}</span>
         </div>
         
         <div>
-          <span class="font-medium text-gray-700">Outstanding:</span>
+          <span class="font-medium">Outstanding:</span>
           <span class="ml-2 font-semibold text-red-600">
             {format_currency(calculate_balance(@fine))}
           </span>
@@ -582,7 +576,7 @@
           {"Online Payment", "online"}
         ]}
         required
-      /> <.button type="submit" class="w-full">Process Payment</.button>
+      /> <.button type="submit" class="success-btn w-full">Process Payment</.button>
     </.form>
   </div>
 </.modal>
@@ -594,24 +588,24 @@
   on_cancel={JS.patch(~p"/manage/glam/library/circulation/fines/#{@fine.id}")}
 >
   <div class="space-y-4">
-    <h3 class="text-lg font-medium text-gray-900">Waive Fine</h3>
+    <h3 class="text-lg font-medium">Waive Fine</h3>
     
-    <div class="bg-gray-50 rounded-md p-4">
+    <div class="bg-gray-200 dark:bg-gray-500 rounded-md p-4">
       <div class="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <span class="font-medium text-gray-700">Member:</span>
+          <span class="font-medium">Member:</span>
           <span class="ml-2">{if @fine.member, do: @fine.member.fullname, else: "Unknown"}</span>
         </div>
         
         <div>
-          <span class="font-medium text-gray-700">Fine Type:</span>
+          <span class="font-medium">Fine Type:</span>
           <span class="ml-2">
             {@fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
           </span>
         </div>
         
         <div class="col-span-2">
-          <span class="font-medium text-gray-700">Amount to Waive:</span>
+          <span class="font-medium">Amount to Waive:</span>
           <span class="ml-2 font-semibold text-red-600">
             {format_currency(calculate_balance(@fine))}
           </span>
@@ -628,7 +622,7 @@
         rows="3"
         value={"Waived by #{@current_scope.user.username}"}
         required
-      /> <.button type="submit" class="w-full bg-blue-600 hover:bg-blue-700">Waive Fine</.button>
+      /> <.button type="submit" class="w-full cancel-btn">Waive Fine</.button>
     </.form>
   </div>
 </.modal>

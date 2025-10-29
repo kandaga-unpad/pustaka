@@ -678,6 +678,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         |> assign(:current_loans, load_current_loans(socket.assigns.member_id))
         |> assign(:loan_history, load_loan_history(socket.assigns.member_id))
         |> assign(:show_modal, nil)
+        |> push_navigate(to: ~p"/manage/glam/library/ledger")
         |> put_flash(
           :info,
           "Transaction completed: #{loan_successes} loans, #{reservation_successes} reservations"
@@ -822,7 +823,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <.icon name="hero-check-circle" class="w-5 h-5 mr-2" /> Finish Transaction
         </.button>
       </div>
-      <%!-- Member Biodata --%>
+       <%!-- Member Biodata --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Member Information</h2>
 
@@ -896,7 +897,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </div>
         </div>
       </div>
-      <%!-- Tabs --%>
+       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <%!-- Tab Headers --%>
         <div class="border-b border-gray-200 dark:border-gray-700">
@@ -968,7 +969,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             </button>
           </nav>
         </div>
-        <%!-- Tab Content --%>
+         <%!-- Tab Content --%>
         <div class="p-6">
           <%= if @active_tab == "loan" do %>
             {render_loan_tab(assigns)}
@@ -992,7 +993,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         </div>
       </div>
     </div>
-    <%!-- Modals --%>
+     <%!-- Modals --%>
     <%= if @show_modal do %>
       {render_modal(assigns)}
     <% end %>
@@ -1569,8 +1570,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   class="cancel-btn"
                 >
                   Cancel
-                </.button>
-                 <.button type="submit" class="primary-btn">Create Fine</.button>
+                </.button> <.button type="submit" class="primary-btn">Create Fine</.button>
               </div>
             </form>
           </div>
@@ -1714,13 +1714,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <.button
                   type="button"
                   phx-click="close_modal"
-                  class="bg-gray-500 hover:bg-gray-600 text-white"
+                  class="warning-btn"
                 >
                   Cancel
-                </.button>
-                <.button type="submit" class="bg-green-600 hover:bg-green-700 text-white">
-                  Process Payment
-                </.button>
+                </.button> <.button type="submit" class="success-btn">Process Payment</.button>
               </div>
             </form>
           </div>

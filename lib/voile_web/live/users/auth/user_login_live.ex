@@ -7,12 +7,12 @@ defmodule VoileWeb.UserLoginLive do
     ~H"""
     <.modal id="magic-link-modal">
       <div class="p-6 sm:p-8 rounded-lg max-w-md mx-auto">
-        <h3 class="text-xl sm:text-2xl font-semibold mb-2">Login with Email Link</h3>
-
+        <h3 class="text-xl sm:text-2xl font-semibold mb-2">{gettext("Login with Email Link")}</h3>
+        
         <p class="text-sm text-voile-muted mb-4">
-          Enter your email and we'll send a secure login link. No password required.
+          {gettext("Enter your email and we'll send a secure login link. No password required.")}
         </p>
-
+        
         <.form for={@magic_link_form} phx-submit="send_magic_link">
           <.input
             field={@magic_link_form[:email]}
@@ -28,14 +28,14 @@ defmodule VoileWeb.UserLoginLive do
               phx-click={hide_modal("magic-link-modal")}
               class="px-4 py-2 hover:text-voile-primary bg-voile-neutral rounded-md"
             >
-              Cancel
+              {gettext("Cancel")}
             </.button>
             <.button
               type="submit"
               phx-disable-with="Sending..."
               class="default-btn px-6"
             >
-              Send Login Link
+              {gettext("Send Login Link")}
             </.button>
           </div>
         </.form>
@@ -48,29 +48,35 @@ defmodule VoileWeb.UserLoginLive do
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <!-- Left: Brand / Illustration -->
             <div class="hidden lg:flex flex-col justify-center items-start px-6 py-8 bg-gradient-to-br from-voile-gradient to-library-gradient rounded-xl text-voile-surface">
-              <h1 class="text-3xl font-extrabold mb-2 voile-text-gradient">Welcome back to Voile</h1>
-
+              <h1 class="text-3xl font-extrabold mb-2 voile-text-gradient">
+                {gettext("Welcome back to Voile")}
+              </h1>
+              
               <p class="text-voile-dark/90 dark:text-voile-light max-w-prose mb-6">
-                Sign in to access your dashboard, manage content, and explore features built for creators and teams.
+                {gettext(
+                  "Sign in to access your dashboard, manage content, and explore features built for creators and teams."
+                )}
               </p>
-
+              
               <ul class="space-y-3">
                 <li class="flex items-center gap-3">
                   <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
-                  <span class="text-voile-dark/90 dark:text-voile-light">Fast, secure login</span>
-                </li>
-
-                <li class="flex items-center gap-3">
-                  <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
                   <span class="text-voile-dark/90 dark:text-voile-light">
-                    Passwordless and social auth
+                    {gettext("Fast, secure login")}
                   </span>
                 </li>
-
+                
                 <li class="flex items-center gap-3">
                   <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
                   <span class="text-voile-dark/90 dark:text-voile-light">
-                    Accessible & responsive
+                    {gettext("Passwordless and social auth")}
+                  </span>
+                </li>
+                
+                <li class="flex items-center gap-3">
+                  <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
+                  <span class="text-voile-dark/90 dark:text-voile-light">
+                    {gettext("Accessible & responsive")}
                   </span>
                 </li>
               </ul>
@@ -79,26 +85,26 @@ defmodule VoileWeb.UserLoginLive do
             <div class="default-card rounded-xl shadow-md p-6 sm:p-8">
               <div class="flex items-center justify-between mb-6">
                 <div>
-                  <h2 class="text-2xl font-bold">Sign in to your account</h2>
-
+                  <h2 class="text-2xl font-bold">{gettext("Sign in to your account")}</h2>
+                  
                   <p class="text-sm italic">
-                    Don't have an account?
+                    {gettext("Don't have an account?")}
                     <.link
                       navigate={~p"/register"}
                       class="font-semibold hover:underline"
                     >
-                      Create one
+                      {gettext("Create one")}
                     </.link>
                   </p>
                 </div>
               </div>
-
+              
               <.form for={@form} id="login_form" action={~p"/users/log_in"} class="space-y-4">
                 <.input
                   field={@form[:email]}
                   type="text"
                   label="Email, Username, or Identifier"
-                  placeholder="Enter your email, username, or identifier"
+                  placeholder={gettext("Enter your email, username, or identifier")}
                   required
                   class="default-input"
                 />
@@ -115,51 +121,49 @@ defmodule VoileWeb.UserLoginLive do
                     href={~p"/users/reset_password"}
                     class="text-sm font-semibold hover:underline"
                   >
-                    Forgot your password?
+                    {gettext("Forgot your password?")}
                   </.link>
                 </div>
-
+                
                 <.button phx-disable-with="Logging in..." class="default-btn w-full">
-                  Log in <span aria-hidden="true">→</span>
+                  {gettext("Log in")} <span aria-hidden="true">→</span>
                 </.button>
               </.form>
-
+              
               <div class="my-4 flex items-center gap-3">
                 <hr class="flex-1 border-voile-muted" />
                 <span class="text-sm text-voile-muted">or</span>
                 <hr class="flex-1 border-voile-muted" />
               </div>
-
+              
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <.button
                   phx-click="google_auth"
-                  class="btn border-voile-primary bg-white text-voile-primary hover:shadow-md"
+                  class="btn border-voile-primary text-xs bg-white text-voile-primary hover:shadow-md"
                 >
-                  <span class="hidden sm:inline">Login with </span>
+                  <span class="hidden sm:inline">{gettext("Login with ")}</span>
                   <span>
                     <img
                       src={~p"/images/google_img.png"}
                       class="inline h-5 w-5"
                       alt="Google logo"
                     />
-                  </span>
-                   <span>Google</span>
+                  </span> <span>Google</span>
                 </.button>
                 <.button
                   type="button"
                   phx-click={show_modal("magic-link-modal")}
-                  class="btn bg-voile-primary text-sm text-white"
+                  class="btn bg-voile-primary text-xs text-white"
                 >
                   <span>
                     <.icon
                       name="hero-link"
                       class="size-4 opacity-75 hover:opacity-100"
                     />
-                  </span>
-                   <span>Login passwordless</span>
+                  </span> <span>{gettext("Login passwordless")}</span>
                 </.button>
               </div>
-
+              
               <div class="mt-4 text-center w-full">
                 <.button
                   phx-click="paus_auth"
@@ -168,8 +172,7 @@ defmodule VoileWeb.UserLoginLive do
                 >
                   <span>
                     <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
-                  </span>
-                   <span>PAuS ID</span>
+                  </span> <span>PAuS ID</span>
                 </.button>
               </div>
             </div>

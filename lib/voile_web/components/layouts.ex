@@ -44,7 +44,7 @@ defmodule VoileWeb.Layouts do
     </div>
 
     <header
-      class="px-4 sm:px-6 lg:px-8 bg-voile-surface/60 dark:bg-gray-700/60 backdrop-blur-sm z-[100] w-full sticky top-0"
+      class="px-4 sm:px-6 lg:px-8 bg-voile-surface/60 dark:bg-gray-700/60 backdrop-blur-sm z-[20] w-full sticky top-0"
       id="navigationHeader"
     >
       <div class="flex items-center justify-between py-3 text-sm">
