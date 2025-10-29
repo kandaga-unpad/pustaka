@@ -12,6 +12,7 @@ defmodule VoileWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_scope_for_user
+    plug VoileWeb.Plugs.Locale
     plug VoileWeb.Plugs.GetCurrentPath
     plug VoileWeb.Utils.SideBarMenuMaster
   end
@@ -40,7 +41,10 @@ defmodule VoileWeb.Router do
     get "/api/search", SearchController, :api_search
 
     live_session :public_with_scope,
-      on_mount: [{VoileWeb.UserAuth, :mount_current_scope}] do
+      on_mount: [
+        {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
+        {VoileWeb.UserAuth, :mount_current_scope}
+      ] do
       # Search dashboard (admin only)
       live "/", PageLive.Home, :index
 
@@ -86,7 +90,10 @@ defmodule VoileWeb.Router do
     pipe_through [:browser]
 
     live_session :current_user,
-      on_mount: [{VoileWeb.UserAuth, :mount_current_scope}] do
+      on_mount: [
+        {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
+        {VoileWeb.UserAuth, :mount_current_scope}
+      ] do
       live "/register", UserRegistrationLive, :new
       live "/login", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -106,6 +113,7 @@ defmodule VoileWeb.Router do
 
     live_session :require_authenticated_and_verified_member,
       on_mount: [
+        {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_member},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.UserAuth, :mount_current_scope}
@@ -120,6 +128,7 @@ defmodule VoileWeb.Router do
 
     live_session :require_authenticated_user_and_verified_staff_user,
       on_mount: [
+        {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu},
@@ -333,6 +342,10 @@ defmodule VoileWeb.Router do
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
           live "/holidays", Dashboard.Settings.HolidayLive, :index
+
+          live "/reservation_notifications",
+               Dashboard.Settings.ReservationNotificationLive,
+               :index
         end
       end
     end

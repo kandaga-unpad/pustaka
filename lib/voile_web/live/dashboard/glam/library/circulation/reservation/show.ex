@@ -3,10 +3,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Show do
   import VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
 
   alias Voile.Schema.Library.Circulation
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    # Check permission for managing reservations
+    unless Authorization.can?(socket, "circulation.manage_reservations") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access reservation details")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
+
+      {:ok, socket}
+    else
+      {:ok, socket}
+    end
   end
 
   @impl true

@@ -5,23 +5,45 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Fine
   alias Voile.Schema.Catalog
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    page = 1
-    per_page = 15
-    filters = %{status: "all", type: "all"}
-    {fines, total_pages} = Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+    # Check permission for managing fines
+    unless Authorization.can?(socket, "circulation.manage_fines") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access fine management")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    socket =
-      socket
-      |> stream(:fines, fines)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filter_status, "all")
-      |> assign(:filter_type, "all")
+      {:ok, socket}
+    else
+      user = socket.assigns.current_scope.user
+      is_super_admin = Authorization.is_super_admin?(user)
+      node_id = user.node_id
+      page = 1
+      per_page = 15
+      filters = %{status: "all", type: "all"}
 
-    {:ok, socket}
+      {fines, total_pages} =
+        if is_super_admin do
+          Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+        else
+          Circulation.list_fines_paginated_with_filters_by_node(page, per_page, filters, node_id)
+        end
+
+      socket =
+        socket
+        |> stream(:fines, fines)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:filter_status, "all")
+        |> assign(:filter_type, "all")
+        |> assign(:node_id, node_id)
+        |> assign(:is_super_admin, is_super_admin)
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -131,13 +153,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{
       status: socket.assigns.filter_status,
       type: socket.assigns.filter_type
     }
 
-    {fines, total_pages} = Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+    {fines, total_pages} =
+      if is_super_admin do
+        Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_fines_paginated_with_filters_by_node(page, per_page, filters, node_id)
+      end
 
     socket =
       socket
@@ -151,13 +180,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
   defp reload_fines(socket) do
     page = 1
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{
       status: socket.assigns.filter_status,
       type: socket.assigns.filter_type
     }
 
-    {fines, total_pages} = Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+    {fines, total_pages} =
+      if is_super_admin do
+        Circulation.list_fines_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_fines_paginated_with_filters_by_node(page, per_page, filters, node_id)
+      end
 
     socket
     |> stream(:fines, fines, reset: true)

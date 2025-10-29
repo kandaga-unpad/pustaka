@@ -3,24 +3,51 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
   import VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
 
   alias Voile.Schema.Library.Circulation
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    page = 1
-    per_page = 20
-    {history, total_pages} = Circulation.list_circulation_history_paginated(page, per_page)
+    # Check permission for viewing circulation history
+    unless Authorization.can?(socket, "circulation.view_history") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access circulation history")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    socket =
-      socket
-      |> stream(:history, history)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filter_event_type, "all")
-      |> assign(:search_query, "")
-      |> assign(:date_from, nil)
-      |> assign(:date_to, nil)
+      {:ok, socket}
+    else
+      user = socket.assigns.current_scope.user
+      is_super_admin = Authorization.is_super_admin?(user)
+      node_id = user.node_id
+      page = 1
+      per_page = 20
 
-    {:ok, socket}
+      {history, total_pages} =
+        if is_super_admin do
+          Circulation.list_circulation_history_paginated(page, per_page)
+        else
+          Circulation.list_circulation_history_paginated_with_filters_by_node(
+            page,
+            per_page,
+            %{event_type: "all", query: "", from: nil, to: nil},
+            node_id
+          )
+        end
+
+      socket =
+        socket
+        |> stream(:history, history)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:filter_event_type, "all")
+        |> assign(:search_query, "")
+        |> assign(:date_from, nil)
+        |> assign(:date_to, nil)
+        |> assign(:node_id, node_id)
+        |> assign(:is_super_admin, is_super_admin)
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -78,6 +105,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 20
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{
       event_type: socket.assigns.filter_event_type,
@@ -87,7 +116,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
     }
 
     {history, total_pages} =
-      Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
+      if is_super_admin do
+        Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_circulation_history_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket =
       socket
@@ -101,7 +139,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
   defp reload_history(socket) do
     page = 1
     per_page = 20
-    {history, total_pages} = Circulation.list_circulation_history_paginated(page, per_page)
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
+
+    filters = %{
+      event_type: socket.assigns.filter_event_type,
+      query: Map.get(socket.assigns, :search_query, ""),
+      from: Map.get(socket.assigns, :date_from),
+      to: Map.get(socket.assigns, :date_to)
+    }
+
+    {history, total_pages} =
+      if is_super_admin do
+        Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_circulation_history_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket
     |> stream(:history, history, reset: true)

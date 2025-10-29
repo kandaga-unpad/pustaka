@@ -4,34 +4,45 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Show do
   import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
   alias Voile.Schema.Library.Circulation
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    transaction = Circulation.get_transaction!(id)
+    # Check permission for viewing transactions
+    unless Authorization.can?(socket, "circulation.view_transactions") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access transaction details")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    fine =
-      case Circulation.get_fine_by_transaction(transaction.id) do
-        {:ok, f} -> f
-        _ -> nil
-      end
+      {:ok, socket}
+    else
+      transaction = Circulation.get_transaction!(id)
 
-    socket =
-      socket
-      |> assign(:transaction, transaction)
-      |> assign(:transaction_fine, fine)
-      |> assign(:page_title, "Transaction Details")
-      |> assign(:return_modal_visible, false)
-      |> assign(:return_transaction_id, nil)
-      |> assign(:predicted_fine, Decimal.new("0"))
-      |> assign(:payment_method, "cash")
-      |> assign(:renew_modal_visible, false)
-      |> assign(:renew_transaction_id, nil)
-      |> assign(:renew_transaction, nil)
-      |> assign(:recommended_renew_days, nil)
-      |> assign(:preview_due_date, nil)
-      |> assign(:remaining_renewals, 0)
+      fine =
+        case Circulation.get_fine_by_transaction(transaction.id) do
+          {:ok, f} -> f
+          _ -> nil
+        end
 
-    {:ok, socket}
+      socket =
+        socket
+        |> assign(:transaction, transaction)
+        |> assign(:transaction_fine, fine)
+        |> assign(:page_title, "Transaction Details")
+        |> assign(:return_modal_visible, false)
+        |> assign(:return_transaction_id, nil)
+        |> assign(:predicted_fine, Decimal.new("0"))
+        |> assign(:payment_method, "cash")
+        |> assign(:renew_modal_visible, false)
+        |> assign(:renew_transaction_id, nil)
+        |> assign(:renew_transaction, nil)
+        |> assign(:recommended_renew_days, nil)
+        |> assign(:preview_due_date, nil)
+        |> assign(:remaining_renewals, 0)
+
+      {:ok, socket}
+    end
   end
 
   @impl true

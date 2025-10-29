@@ -44,7 +44,7 @@ defmodule VoileWeb.Layouts do
     </div>
 
     <header
-      class="px-4 sm:px-6 lg:px-8 bg-voile-surface/60 dark:bg-gray-700/60 backdrop-blur-sm z-10 w-full"
+      class="px-4 sm:px-6 lg:px-8 bg-voile-surface/60 dark:bg-gray-700/60 backdrop-blur-sm z-[100] w-full sticky top-0"
       id="navigationHeader"
     >
       <div class="flex items-center justify-between py-3 text-sm">
@@ -100,20 +100,23 @@ defmodule VoileWeb.Layouts do
                     display: "block"
                   )
                 }
-                aria-label="Open search"
+                aria-label={gettext("Open search")}
                 class="p-2 bg-transparent border-0"
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
-              </.button> <Layouts.theme_toggle />
+              </.button> <.locale_switcher current_path={assigns[:current_path] || "/"} />
+              <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
                     <%= if has_dashboard_access?(@current_scope.user) do %>
                       <.link navigate="/manage">
-                        <.button class="default-btn">Dashboard</.button>
+                        <.button class="default-btn">{gettext("Dashboard")}</.button>
                       </.link>
                     <% else %>
-                      <.link navigate="/atrium"><.button class="default-btn">Atrium</.button></.link>
+                      <.link navigate="/atrium">
+                        <.button class="default-btn">{gettext("Atrium")}</.button>
+                      </.link>
                     <% end %>
                     
                     <button
@@ -129,7 +132,7 @@ defmodule VoileWeb.Layouts do
                         />
                       <% else %>
                         <img
-                          src={"/#{@current_scope.user.user_image}"}
+                          src={"#{@current_scope.user.user_image}"}
                           class="w-8 h-8 rounded-full border-2 border-voile-primary"
                           alt="User avatar"
                           referrerpolicy="no-referrer"
@@ -142,18 +145,20 @@ defmodule VoileWeb.Layouts do
                     data-position-panel
                     class="sticky hidden bg-voile-light dark:bg-voile-dark max-w-sm right-8 p-4 mt-1 rounded-md shadow-xl text-right"
                   >
-                    <p class="text-sm">Hello, <strong>{@current_scope.user.fullname}!</strong></p>
+                    <p class="text-sm">
+                      {gettext("Hello, %{name}!", name: @current_scope.user.fullname)}
+                    </p>
                     
                     <div class="mt-2 flex w-full gap-2 text-xs">
                       <%= if has_dashboard_access?(@current_scope.user) do %>
                         <.link navigate="/manage" class="primary-btn flex flex-col w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
-                          </span> <span>Dashboard</span>
+                          </span> <span>{gettext("Dashboard")}</span>
                         </.link>
                         <.link navigate="/atrium" class="primary-btn flex flex-col w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
-                          <span>Atrium</span>
+                          <span>{gettext("Atrium")}</span>
                         </.link>
                         <.link
                           href="/users/log_out"
@@ -165,12 +170,12 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>Logout</span>
+                          </span> <span>{gettext("Log out")}</span>
                         </.link>
                       <% else %>
                         <.link navigate="/atrium" class="primary-btn hero-home w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
-                          <span>Atrium</span>
+                          <span>{gettext("Atrium")}</span>
                         </.link>
                         <.link
                           href="/users/log_out"
@@ -182,14 +187,16 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>Logout</span>
+                          </span> <span>{gettext("Log out")}</span>
                         </.link>
                       <% end %>
                     </div>
                   </div>
                 </div>
               <% else %>
-                <.link navigate="/login"><.button class="ml-2 default-btn">Masuk</.button></.link>
+                <.link navigate="/login">
+                  <.button class="ml-2 default-btn">{gettext("Sign in")}</.button>
+                </.link>
               <% end %>
             </div>
           </div>
@@ -254,9 +261,9 @@ defmodule VoileWeb.Layouts do
 
   defp assign_nav_items(assigns) do
     nav_items = [
-      %{label: "Beranda", href: "/"},
-      %{label: "Tentang", href: "/about"},
-      %{label: "Koleksi", href: "/collections"}
+      %{label: gettext("Home"), href: "/"},
+      %{label: gettext("About"), href: "/about"},
+      %{label: gettext("Collections"), href: "/collections"}
     ]
 
     assign(assigns, :nav_items, nav_items)
@@ -387,21 +394,27 @@ defmodule VoileWeb.Layouts do
           
           <div class="mt-6">
             <%= if @current_scope do %>
-              <p class="text-sm mb-2">Signed in as <strong>{@current_scope.user.fullname}</strong></p>
+              <p class="text-sm mb-2">
+                {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
+              </p>
               
               <div class="flex flex-col gap-2">
                 <%= if has_dashboard_access?(@current_scope.user) do %>
-                  <.link navigate="/manage" class="primary-btn w-full text-center">Dashboard</.link>
+                  <.link navigate="/manage" class="primary-btn w-full text-center">
+                    {gettext("Dashboard")}
+                  </.link>
                 <% else %>
-                  <.link navigate="/atrium" class="primary-btn w-full text-center">Atrium</.link>
+                  <.link navigate="/atrium" class="primary-btn w-full text-center">
+                    {gettext("Atrium")}
+                  </.link>
                 <% end %>
                 
                 <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
-                  Logout
+                  {gettext("Log out")}
                 </.link>
               </div>
             <% else %>
-              <.link navigate="/login" class="default-btn w-full">Masuk</.link>
+              <.link navigate="/login" class="default-btn w-full">{gettext("Sign in")}</.link>
             <% end %>
           </div>
         </nav>
@@ -412,9 +425,9 @@ defmodule VoileWeb.Layouts do
 
   defp mobile_nav_items do
     [
-      %{label: "Beranda", href: "/"},
-      %{label: "Tentang", href: "/about"},
-      %{label: "Koleksi", href: "/collections"}
+      %{label: gettext("Home"), href: "/"},
+      %{label: gettext("About"), href: "/about"},
+      %{label: gettext("Collections"), href: "/collections"}
     ]
   end
 
@@ -440,7 +453,7 @@ defmodule VoileWeb.Layouts do
                   <input
                     type="text"
                     name="q"
-                    placeholder="Search collections..."
+                    placeholder={gettext("Search collections...")}
                     class="block w-full pl-3 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     autocomplete="off"
                   />
@@ -456,7 +469,7 @@ defmodule VoileWeb.Layouts do
                     display: "block"
                   )
                 }
-                aria-label="Close search"
+                aria-label={gettext("Close search")}
                 class="p-2"
               >
                 <.icon name="hero-x-mark" />

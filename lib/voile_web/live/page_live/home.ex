@@ -170,9 +170,9 @@ defmodule VoileWeb.PageLive.Home do
   def render(assigns) do
     ~H"""
     <.modal id="advanced-search">
-      <h5>Pencarian Lanjutan</h5>
+      <h5>{gettext("Advanced Search")}</h5>
       
-      <div><.input type="text" name="keyword" value="" label="Keyword" /></div>
+      <div><.input type="text" name="keyword" value="" label={gettext("Keyword")} /></div>
     </.modal>
 
     <Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
@@ -181,7 +181,7 @@ defmodule VoileWeb.PageLive.Home do
           <img
             src="/images/default_bg.webp"
             class="absolute w-full h-[600px] md:max-h-[600px] object-cover"
-            alt="Cover Background"
+            alt={gettext("Cover Background")}
           />
         </div>
         
@@ -189,10 +189,12 @@ defmodule VoileWeb.PageLive.Home do
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col items-center justify-center gap-3 pb-16 pt-4 relative z-5 bg-white/80 dark:bg-gray-800/80 rounded-b-xl">
               <img src="/images/v.png" alt="" class="h-full w-32" />
-              <h5 class="text-center">Voile, the Magic Library</h5>
+              <h5 class="text-center">{gettext("Voile, the Magic Library")}</h5>
               
               <p class="max-w-3xl mx-auto text-center text-sm">
-                Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment.
+                {gettext(
+                  "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+                )}
               </p>
             </div>
             
@@ -208,10 +210,10 @@ defmodule VoileWeb.PageLive.Home do
                 />
                 <div class="flex gap-2">
                   <.link navigate="/collections" class="w-full">
-                    <.button class="w-full dashboard-menu-btn">Semua Koleksi</.button>
+                    <.button class="w-full dashboard-menu-btn">{gettext("All Collections")}</.button>
                   </.link>
                   <.button class="w-full default-btn" phx-click={show_modal("advanced-search")}>
-                    Pencarian Lanjutan
+                    {gettext("Advanced Search")}
                   </.button>
                 </div>
               </div>
@@ -221,10 +223,12 @@ defmodule VoileWeb.PageLive.Home do
         <!-- Dashboard Highlights Section -->
         <section class="max-w-7xl mx-auto py-16 px-4">
           <div class="text-center mb-12">
-            <h2 class="voile-text-gradient mb-4">Collection Highlights</h2>
+            <h2 class="voile-text-gradient mb-4">{gettext("Collection Highlights")}</h2>
             
             <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-              Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections.
+              {gettext(
+                "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
+              )}
             </p>
             <!-- Node Collection Stats -->
             <%= if length(@dashboard_stats.node_collections) > 0 do %>
@@ -269,13 +273,17 @@ defmodule VoileWeb.PageLive.Home do
                   {@dashboard_stats.node_collection_count}
                 </div>
                 
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Collections</p>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {gettext("Total Collections")}
+                </p>
                 
                 <div class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 mb-2 mt-4">
                   {@dashboard_stats.total_item_count}
                 </div>
                 
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Items</p>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  {gettext("Total Items")}
+                </p>
               </div>
             </div>
             <!-- Collection Categories -->
@@ -289,7 +297,7 @@ defmodule VoileWeb.PageLive.Home do
                 </div>
                 
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
-                  Collection Categories
+                  {gettext("Collection Categories")}
                 </h4>
                 
                 <div class="space-y-2">
@@ -317,7 +325,7 @@ defmodule VoileWeb.PageLive.Home do
                 </div>
                 
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
-                  New Additions
+                  {gettext("New Additions")}
                 </h4>
                 
                 <div class="space-y-2">
@@ -326,7 +334,7 @@ defmodule VoileWeb.PageLive.Home do
                       <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                         {if item.collection && item.collection.title,
                           do: item.collection.title,
-                          else: "Untitled"}
+                          else: gettext("Untitled")}
                       </p>
                       
                       <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -337,7 +345,7 @@ defmodule VoileWeb.PageLive.Home do
                   
                   <%= if length(@dashboard_stats.new_books) == 0 do %>
                     <p class="text-sm text-gray-500 italic text-center py-2">
-                      No new additions this week
+                      {gettext("No new additions this week")}
                     </p>
                   <% end %>
                 </div>
@@ -354,7 +362,7 @@ defmodule VoileWeb.PageLive.Home do
                 </div>
                 
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
-                  Active Users
+                  {gettext("Active Users")}
                 </h4>
                 
                 <div class="space-y-2">
@@ -381,7 +389,7 @@ defmodule VoileWeb.PageLive.Home do
                           </p>
                           
                           <p class="text-xs text-gray-500 dark:text-gray-400">
-                            Joined {Calendar.strftime(user.inserted_at, "%b %d")}
+                            {gettext("Joined")} {Calendar.strftime(user.inserted_at, "%b %d")}
                           </p>
                         </div>
                       </div>
@@ -389,7 +397,9 @@ defmodule VoileWeb.PageLive.Home do
                   <% end %>
                   
                   <%= if length(@dashboard_stats.most_active_users) == 0 do %>
-                    <p class="text-sm text-gray-500 italic text-center py-2">No active users</p>
+                    <p class="text-sm text-gray-500 italic text-center py-2">
+                      {gettext("No active users")}
+                    </p>
                   <% end %>
                 </div>
               </div>
@@ -408,10 +418,12 @@ defmodule VoileWeb.PageLive.Home do
                   </div>
                   
                   <div>
-                    <h4 class="text-gray-800 dark:text-gray-100 mb-1">Featured Collections</h4>
+                    <h4 class="text-gray-800 dark:text-gray-100 mb-1">
+                      {gettext("Featured Collections")}
+                    </h4>
                     
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Recently added to our library
+                      {gettext("Recently added to our library")}
                     </p>
                   </div>
                 </div>
@@ -484,11 +496,11 @@ defmodule VoileWeb.PageLive.Home do
                       </div>
                       
                       <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">
-                        No collections available yet
+                        {gettext("No collections available yet")}
                       </p>
                       
                       <p class="text-sm text-gray-400 dark:text-gray-500">
-                        Start building your digital library
+                        {gettext("Start building your digital library")}
                       </p>
                     </div>
                   <% end %>
@@ -499,7 +511,7 @@ defmodule VoileWeb.PageLive.Home do
                     navigate="/collections"
                     class="block w-full text-center py-3 px-6 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    Explore All Collections
+                    {gettext("Explore All Collections")}
                   </.link>
                 </div>
               </div>
@@ -515,10 +527,10 @@ defmodule VoileWeb.PageLive.Home do
                   </div>
                   
                   <div>
-                    <h4 class="text-gray-800 dark:text-gray-100 mb-1">Quick Access</h4>
+                    <h4 class="text-gray-800 dark:text-gray-100 mb-1">{gettext("Quick Access")}</h4>
                     
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Navigate the digital sanctuary
+                      {gettext("Navigate the digital sanctuary")}
                     </p>
                   </div>
                 </div>
@@ -535,7 +547,7 @@ defmodule VoileWeb.PageLive.Home do
                       </p>
                       
                       <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                        {category.category} collections
+                        {category.category} {gettext("collections")}
                       </p>
                     </div>
                   <% end %>
@@ -546,13 +558,13 @@ defmodule VoileWeb.PageLive.Home do
                     navigate="/collections"
                     class="block w-full text-center py-3 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    Browse Collections
+                    {gettext("Browse Collections")}
                   </.link>
                   <.link
                     navigate="/search/advanced"
                     class="block w-full text-center py-3 px-6 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-medium hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300"
                   >
-                    Advanced Search
+                    {gettext("Advanced Search")}
                   </.link>
                 </div>
               </div>

@@ -919,8 +919,9 @@ defmodule Voile.Migration.MemberImporter do
         case download_from_http(full_url, destination) do
           {:ok, _content_type} ->
             # Return the relative path that will be stored in the database
+            # Include leading "/" to be consistent with existing image uploads
             relative_path =
-              Path.join(["uploads", "user_media", to_string(node_id), final_filename])
+              "/" <> Path.join(["uploads", "user_media", to_string(node_id), final_filename])
 
             {:ok, relative_path}
 

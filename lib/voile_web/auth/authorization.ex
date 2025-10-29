@@ -305,6 +305,47 @@ defmodule VoileWeb.Auth.Authorization do
     end
   end
 
+  @doc """
+  Check if a user has the super_admin role.
+
+  Super admins have unrestricted access to all resources across all nodes/units.
+
+  ## Examples
+
+      iex> is_super_admin?(user)
+      true
+
+      iex> is_super_admin?(socket)
+      false
+  """
+  def is_super_admin?(user_or_socket_or_conn)
+
+  def is_super_admin?(%User{} = user) do
+    user = Repo.preload(user, :roles)
+
+    Enum.any?(user.roles, fn role ->
+      role.name == "super_admin"
+    end)
+  end
+
+  def is_super_admin?(%Phoenix.LiveView.Socket{assigns: assigns}) when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
+      %{user: user} when not is_nil(user) -> is_super_admin?(user)
+      _ -> false
+    end
+  end
+
+  def is_super_admin?(%Phoenix.LiveView.Socket{}), do: false
+
+  def is_super_admin?(%Plug.Conn{} = conn) do
+    case conn.assigns[:current_scope] do
+      %{user: user} when not is_nil(user) -> is_super_admin?(user)
+      _ -> false
+    end
+  end
+
+  def is_super_admin?(nil), do: false
+
   # Private functions
 
   defp has_explicit_permission?(user_id, permission_name, scope) do

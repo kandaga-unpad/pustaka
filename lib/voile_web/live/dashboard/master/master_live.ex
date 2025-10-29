@@ -4,7 +4,7 @@ defmodule VoileWeb.Dashboard.Master.MasterLive do
   def render(assigns) do
     ~H"""
     <div class="">
-      <h5>Master Dashboard</h5>
+      <h5>{gettext("Master Dashboard")}</h5>
     </div>
     """
   end
@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Master.MasterLive do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page_title, "Master Component")
+      |> assign(:page_title, gettext("Master Component"))
 
     {:ok, socket}
   end

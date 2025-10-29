@@ -26,7 +26,7 @@ defmodule Voile.Schema.Library.Requisition do
 
     belongs_to :requested_by, User, foreign_key: :requested_by_id, type: :binary_id
     belongs_to :assigned_to, User, foreign_key: :assigned_to_id, type: :binary_id
-    belongs_to :unit, Node, foreign_key: :unit_id, type: :binary_id
+    belongs_to :unit, Node, foreign_key: :unit_id
 
     timestamps(type: :utc_datetime)
   end

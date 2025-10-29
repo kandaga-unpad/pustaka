@@ -4,22 +4,49 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
 
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Reservation
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    page = 1
-    per_page = 15
-    {reservations, total_pages} = Circulation.list_reservations_paginated(page, per_page)
+    # Check permission for managing reservations
+    unless Authorization.can?(socket, "circulation.manage_reservations") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access reservation management")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    socket =
-      socket
-      |> stream(:reservations, reservations)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filter_status, "all")
-      |> assign(:form, to_form(%{}))
+      {:ok, socket}
+    else
+      user = socket.assigns.current_scope.user
+      is_super_admin = Authorization.is_super_admin?(user)
+      node_id = user.node_id
+      page = 1
+      per_page = 15
 
-    {:ok, socket}
+      {reservations, total_pages} =
+        if is_super_admin do
+          Circulation.list_reservations_paginated(page, per_page)
+        else
+          Circulation.list_reservations_paginated_with_filters_by_node(
+            page,
+            per_page,
+            %{status: "all"},
+            node_id
+          )
+        end
+
+      socket =
+        socket
+        |> stream(:reservations, reservations)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:filter_status, "all")
+        |> assign(:node_id, node_id)
+        |> assign(:is_super_admin, is_super_admin)
+        |> assign(:form, to_form(%{}))
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -152,11 +179,22 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{status: socket.assigns.filter_status}
 
     {reservations, total_pages} =
-      Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
+      if is_super_admin do
+        Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_reservations_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket =
       socket
@@ -170,10 +208,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
   defp reload_reservations(socket) do
     page = 1
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
     filters = %{status: socket.assigns.filter_status}
 
     {reservations, total_pages} =
-      Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
+      if is_super_admin do
+        Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_reservations_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket
     |> stream(:reservations, reservations, reset: true)

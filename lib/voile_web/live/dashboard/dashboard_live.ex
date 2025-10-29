@@ -8,15 +8,14 @@ defmodule VoileWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <section>
-      <h6 class="text-center py-5">Manage your Collection with Voile</h6>
+      <h6 class="text-center py-5">{gettext("Manage your Collection with Voile")}</h6>
       <!-- Search Dashboard Section -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <.dashboard_search_widget
           search_query={@search_query}
           search_results={@search_results}
           searching={@searching}
-        />
-        <.search_stats_widget stats={@search_stats} />
+        /> <.search_stats_widget stats={@search_stats} />
       </div>
     </section>
     """
@@ -25,7 +24,7 @@ defmodule VoileWeb.DashboardLive do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page_title, "Dashboard")
+      |> assign(:page_title, gettext("Dashboard"))
       |> assign(:search_stats, SearchAnalytics.get_search_stats())
       |> assign(:search_query, "")
       |> assign(:search_results, [])

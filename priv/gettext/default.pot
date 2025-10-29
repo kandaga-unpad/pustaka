@@ -1,0 +1,572 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:260
+#: lib/voile_web/components/layouts.ex:418
+#, elixir-autogen, elixir-format
+msgid "About"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:570
+#: lib/voile_web/live/example_i18n_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:81
+#: lib/voile_web/live/example_i18n_live.ex:140
+#, elixir-autogen, elixir-format
+msgid "Active"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:357
+#, elixir-autogen, elixir-format
+msgid "Active Users"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:173
+#: lib/voile_web/live/page_live/home.ex:214
+#: lib/voile_web/live/page_live/home.ex:555
+#, elixir-autogen, elixir-format
+msgid "Advanced Search"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:211
+#, elixir-autogen, elixir-format
+msgid "All Collections"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "All systems operational"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:127
+#: lib/voile_web/live/example_i18n_live.ex:108
+#, elixir-autogen, elixir-format
+msgid "Are you sure?"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:118
+#: lib/voile_web/components/layouts.ex:158
+#: lib/voile_web/components/layouts.ex:175
+#: lib/voile_web/components/layouts.ex:398
+#, elixir-autogen, elixir-format
+msgid "Atrium"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:275
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:549
+#, elixir-autogen, elixir-format
+msgid "Browse Collections"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:185
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:32
+#, elixir-autogen, elixir-format
+msgid "Catalog"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:325
+#, elixir-autogen, elixir-format
+msgid "Catalog Dashboard"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:461
+#, elixir-autogen, elixir-format
+msgid "Close search"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:292
+#, elixir-autogen, elixir-format
+msgid "Collection Categories"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:224
+#, elixir-autogen, elixir-format
+msgid "Collection Highlights"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:261
+#: lib/voile_web/components/layouts.ex:419
+#: lib/voile_web/components/voile_dashboard_components.ex:116
+#: lib/voile_web/live/dashboard/catalog/index.ex:218
+#, elixir-autogen, elixir-format
+msgid "Collections"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:184
+#, elixir-autogen, elixir-format
+msgid "Cover Background"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:115
+#: lib/voile_web/components/layouts.ex:154
+#: lib/voile_web/components/layouts.ex:396
+#: lib/voile_web/components/voile_dashboard_components.ex:51
+#: lib/voile_web/live/dashboard/dashboard_live.ex:28
+#: lib/voile_web/live/example_i18n_live.ex:13
+#: lib/voile_web/live/example_i18n_live.ex:23
+#, elixir-autogen, elixir-format
+msgid "Dashboard"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:171
+#, elixir-autogen, elixir-format
+msgid "Data refreshed"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:72
+#: lib/voile_web/live/example_i18n_live.ex:145
+#, elixir-autogen, elixir-format
+msgid "Date"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:128
+#: lib/voile_web/live/example_i18n_live.ex:107
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:227
+#, elixir-autogen, elixir-format
+msgid "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:99
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:183
+#, elixir-autogen, elixir-format
+msgid "Editing item %{id}"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:266
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:502
+#, elixir-autogen, elixir-format
+msgid "Explore All Collections"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:44
+#, elixir-autogen, elixir-format
+msgid "Export"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:164
+#, elixir-autogen, elixir-format
+msgid "Export started"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:411
+#, elixir-autogen, elixir-format
+msgid "Featured Collections"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:287
+#, elixir-autogen, elixir-format
+msgid "Hang in there while we get back on track"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:147
+#: lib/voile_web/components/voile_dashboard_components.ex:102
+#, elixir-autogen, elixir-format
+msgid "Hello, %{name}!"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:259
+#: lib/voile_web/components/layouts.ex:417
+#: lib/voile_web/components/voile_dashboard_components.ex:73
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:126
+#: lib/voile_web/live/dashboard/catalog/index.ex:117
+#: lib/voile_web/live/dashboard/catalog/index.ex:272
+#, elixir-autogen, elixir-format
+msgid "Items"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:384
+#, elixir-autogen, elixir-format
+msgid "Joined"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:175
+#, elixir-autogen, elixir-format
+msgid "Keyword"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:87
+#: lib/voile_web/live/dashboard/catalog/index.ex:145
+#: lib/voile_web/live/dashboard/catalog/index.ex:245
+#: lib/voile_web/live/dashboard/catalog/index.ex:299
+#, elixir-autogen, elixir-format
+msgid "Loading"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:186
+#, elixir-autogen, elixir-format
+msgid "Loading nodes..."
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:170
+#: lib/voile_web/components/layouts.ex:187
+#: lib/voile_web/components/layouts.ex:402
+#, elixir-autogen, elixir-format
+msgid "Log out"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:70
+#, elixir-autogen, elixir-format
+msgid "Logout"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/dashboard_live.ex:11
+#, elixir-autogen, elixir-format
+msgid "Manage your Collection with Voile"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/master_live.ex:15
+#, elixir-autogen, elixir-format
+msgid "Master Component"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/master_live.ex:7
+#, elixir-autogen, elixir-format
+msgid "Master Dashboard"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:521
+#, elixir-autogen, elixir-format
+msgid "Navigate the digital sanctuary"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:320
+#, elixir-autogen, elixir-format
+msgid "New Additions"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:392
+#, elixir-autogen, elixir-format
+msgid "No active users"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:487
+#, elixir-autogen, elixir-format
+msgid "No collections available yet"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "No data available"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:340
+#, elixir-autogen, elixir-format
+msgid "No new additions this week"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:240
+#, elixir-autogen, elixir-format
+msgid "No results found"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:103
+#, elixir-autogen, elixir-format
+msgid "Open search"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:160
+#, elixir-autogen, elixir-format
+msgid "Per Node Statistics"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:56
+#, elixir-autogen, elixir-format
+msgid "Products"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:518
+#, elixir-autogen, elixir-format
+msgid "Quick Access"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:149
+#, elixir-autogen, elixir-format
+msgid "Quick Search"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:414
+#, elixir-autogen, elixir-format
+msgid "Recently added to our library"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "Refresh"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:162
+#, elixir-autogen, elixir-format
+msgid "Search collections, items, authors..."
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:445
+#, elixir-autogen, elixir-format
+msgid "Search collections..."
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:188
+#, elixir-autogen, elixir-format
+msgid "Searching..."
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Showing %{start} to %{end} of %{total} entries"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:194
+#: lib/voile_web/components/layouts.ex:406
+#, elixir-autogen, elixir-format
+msgid "Sign in"
+msgstr ""
+
+#: lib/voile_web/components/layouts.ex:392
+#, elixir-autogen, elixir-format
+msgid "Signed in as %{name}"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:282
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:491
+#, elixir-autogen, elixir-format
+msgid "Start building your digital library"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:71
+#: lib/voile_web/live/example_i18n_live.ex:139
+#, elixir-autogen, elixir-format
+msgid "Status"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:265
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "Successfully created"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "Successfully deleted"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "Today"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:133
+#, elixir-autogen, elixir-format
+msgid "Total"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:58
+#: lib/voile_web/live/page_live/home.ex:272
+#, elixir-autogen, elixir-format
+msgid "Total Collections"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:278
+#, elixir-autogen, elixir-format
+msgid "Total Items"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Total items"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:243
+#, elixir-autogen, elixir-format
+msgid "Try a different search term"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:329
+#, elixir-autogen, elixir-format
+msgid "Untitled"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "View"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:177
+#, elixir-autogen, elixir-format
+msgid "Viewing item %{id}"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:195
+#, elixir-autogen, elixir-format
+msgid "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:192
+#, elixir-autogen, elixir-format
+msgid "Voile, the Magic Library"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:270
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr ""
+
+#: lib/voile_web/live/example_i18n_live.ex:31
+#, elixir-autogen, elixir-format
+msgid "Welcome, %{name}!"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:104
+#, elixir-autogen, elixir-format
+msgid "You can check your collection data here"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:222
+#, elixir-autogen, elixir-format
+msgid "by %{creator}"
+msgstr ""
+
+#: lib/voile_web/components/core_components.ex:92
+#: lib/voile_web/components/core_components.ex:244
+#: lib/voile_web/components/voile_dashboard_components.ex:561
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:538
+#, elixir-autogen, elixir-format
+msgid "collections"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:94
+#, elixir-autogen, elixir-format
+msgid "collections across nodes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/index.ex:152
+#, elixir-autogen, elixir-format
+msgid "items across nodes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:87
+#, elixir-autogen, elixir-format
+msgid "Clear search"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:49
+#, elixir-autogen, elixir-format
+msgid "Import CSV"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:41
+#, elixir-autogen, elixir-format
+msgid "List View"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Listing Collections"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:53
+#, elixir-autogen, elixir-format
+msgid "New Collection"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:92
+#, elixir-autogen, elixir-format
+msgid "Press / to search"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:12
+#, elixir-autogen, elixir-format
+msgid "Results"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:73
+#, elixir-autogen, elixir-format
+msgid "Search collections by title, description, code, status, creator, location, or resource class..."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "Tree View"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "Viewing collections based on your role"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:112
+#, elixir-autogen, elixir-format
+msgid "You are currently viewing collections filtered by your assigned location and collection type. This ensures you see only the collections relevant to your responsibilities."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "filter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:25
+#, elixir-autogen, elixir-format
+msgid "filters"
+msgstr ""

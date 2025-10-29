@@ -6,18 +6,20 @@ defmodule VoileWeb.Live.Hooks.NotificationHook do
   import Phoenix.Component
 
   alias Voile.Notifications.ReservationNotifier
+  alias Voile.Schema.System
 
   def on_mount(:default, _params, _session, socket) do
     socket =
       if connected?(socket) do
         current_user = socket.assigns[:current_scope] && socket.assigns.current_scope.user
 
-        # Only subscribe if user is staff/admin
-        if current_user && is_staff?(current_user) do
+        # Only subscribe if user is staff/admin AND notifications are enabled
+        if current_user && is_staff?(current_user) && notifications_enabled?() do
           ReservationNotifier.subscribe_to_reservations()
 
           socket
           |> assign(:notifications, [])
+          |> assign(:notification_sound_enabled, sound_enabled?())
           |> attach_hook(:reservation_notifications, :handle_info, fn
             {:new_reservation, notification_data}, socket ->
               # Add notification to the list
@@ -28,7 +30,14 @@ defmodule VoileWeb.Live.Hooks.NotificationHook do
               socket =
                 socket
                 |> assign(:notifications, notifications)
-                |> push_event("play_notification_sound", %{})
+
+              # Play sound only if enabled
+              socket =
+                if socket.assigns[:notification_sound_enabled] do
+                  push_event(socket, "play_notification_sound", %{})
+                else
+                  socket
+                end
 
               {:halt, socket}
 
@@ -62,5 +71,15 @@ defmodule VoileWeb.Live.Hooks.NotificationHook do
         "museum_curator"
       ]
     end)
+  end
+
+  # Check if notifications are enabled in settings
+  defp notifications_enabled? do
+    System.get_setting_value("reservation_notifications_enabled", "true") == "true"
+  end
+
+  # Check if sound notifications are enabled in settings
+  defp sound_enabled? do
+    System.get_setting_value("reservation_notifications_sound", "true") == "true"
   end
 end

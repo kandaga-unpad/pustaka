@@ -126,6 +126,103 @@ defmodule Voile.Schema.Library.Circulation do
     {circulation_history, total_pages}
   end
 
+  @doc """
+  List circulation history paginated with filters and node filtering.
+  Only returns history for items belonging to the specified node.
+  """
+  def list_circulation_history_paginated_with_filters_by_node(
+        page \\ 1,
+        per_page \\ 10,
+        filters \\ %{},
+        node_id
+      ) do
+    offset = (page - 1) * per_page
+
+    query =
+      from ch in CirculationHistory,
+        left_join: i in assoc(ch, :item),
+        where: is_nil(i.id) or i.unit_id == ^node_id,
+        preload: [
+          :member,
+          :item,
+          :transaction,
+          :reservation,
+          :fine,
+          :processed_by
+        ]
+
+    # event_type filter
+    query =
+      case Map.get(filters, :event_type, "all") do
+        "all" -> query
+        et -> where(query, [ch, _i], ch.event_type == ^et)
+      end
+
+    # search filter (description)
+    query =
+      case Map.get(filters, :query, "") do
+        "" -> query
+        q -> where(query, [ch, _i], ilike(ch.description, ^"%#{q}%"))
+      end
+
+    # date range filter
+    query =
+      case Map.get(filters, :from) do
+        %Date{} = from -> where(query, [ch, _i], fragment("DATE(?)", ch.event_date) >= ^from)
+        _ -> query
+      end
+
+    query =
+      case Map.get(filters, :to) do
+        %Date{} = to -> where(query, [ch, _i], fragment("DATE(?)", ch.event_date) <= ^to)
+        _ -> query
+      end
+
+    # ordering & pagination
+    query =
+      query
+      |> order_by([ch], desc: ch.event_date)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    circulation_history = Repo.all(query)
+
+    # count with same filters
+    count_query =
+      from ch in CirculationHistory,
+        left_join: i in assoc(ch, :item),
+        where: is_nil(i.id) or i.unit_id == ^node_id
+
+    count_query =
+      case Map.get(filters, :event_type, "all") do
+        "all" -> count_query
+        et -> where(count_query, [ch, _i], ch.event_type == ^et)
+      end
+
+    count_query =
+      case Map.get(filters, :query, "") do
+        "" -> count_query
+        q -> where(count_query, [ch, _i], ilike(ch.description, ^"%#{q}%"))
+      end
+
+    count_query =
+      case Map.get(filters, :from) do
+        %Date{} = from -> where(count_query, [ch, _i], fragment("DATE(?)", ch.event_date) >= ^from)
+        _ -> count_query
+      end
+
+    count_query =
+      case Map.get(filters, :to) do
+        %Date{} = to -> where(count_query, [ch, _i], fragment("DATE(?)", ch.event_date) <= ^to)
+        _ -> count_query
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {circulation_history, total_pages}
+  end
+
   def get_circulation_history!(id) do
     CirculationHistory
     |> Repo.get!(id)
@@ -256,6 +353,78 @@ defmodule Voile.Schema.Library.Circulation do
       case Map.get(filters, :type, "all") do
         "all" -> count_query
         type -> where(count_query, [f], f.fine_type == ^type)
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {fines, total_pages}
+  end
+
+  @doc """
+  List fines paginated with filters and node filtering.
+  Only returns fines for items belonging to the specified node.
+  """
+  def list_fines_paginated_with_filters_by_node(
+        page \\ 1,
+        per_page \\ 10,
+        filters \\ %{},
+        node_id
+      ) do
+    offset = (page - 1) * per_page
+
+    query =
+      from f in Fine,
+        join: i in assoc(f, :item),
+        where: i.unit_id == ^node_id,
+        preload: [
+          :member,
+          :transaction,
+          :processed_by,
+          :waived_by,
+          item: [:collection]
+        ]
+
+    # Apply status filter
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        status -> where(query, [f, _i], f.fine_status == ^status)
+      end
+
+    # Apply type filter
+    query =
+      case Map.get(filters, :type, "all") do
+        "all" -> query
+        type -> where(query, [f, _i], f.fine_type == ^type)
+      end
+
+    # Add pagination and ordering
+    query =
+      query
+      |> order_by([f], desc: f.inserted_at, desc: f.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    fines = Repo.all(query)
+
+    # Count total with same filters for pagination
+    count_query =
+      from f in Fine,
+        join: i in assoc(f, :item),
+        where: i.unit_id == ^node_id
+
+    # Apply same filters for count
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        status -> where(count_query, [f, _i], f.fine_status == ^status)
+      end
+
+    count_query =
+      case Map.get(filters, :type, "all") do
+        "all" -> count_query
+        type -> where(count_query, [f, _i], f.fine_type == ^type)
       end
 
     total_count = Repo.aggregate(count_query, :count, :id)
@@ -405,6 +574,55 @@ defmodule Voile.Schema.Library.Circulation do
     {requisitions, total_pages}
   end
 
+  def list_requisitions_paginated_with_filters_by_node(page \\ 1, per_page \\ 10, filters \\ %{}, node_id) do
+    offset = (page - 1) * per_page
+
+    query =
+      from r in Requisition,
+        where: r.unit_id == ^node_id,
+        preload: [:requested_by, :assigned_to, :unit]
+
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        s -> where(query, [r], r.status == ^s)
+      end
+
+    query =
+      case Map.get(filters, :type, "all") do
+        "all" -> query
+        t -> where(query, [r], r.request_type == ^t)
+      end
+
+    query =
+      query
+      |> order_by([r], desc: r.inserted_at, desc: r.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    requisitions = Repo.all(query)
+
+    # count with filters
+    count_query = from(r in Requisition, where: r.unit_id == ^node_id)
+
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        s -> where(count_query, [r], r.status == ^s)
+      end
+
+    count_query =
+      case Map.get(filters, :type, "all") do
+        "all" -> count_query
+        t -> where(count_query, [r], r.request_type == ^t)
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {requisitions, total_pages}
+  end
+
   def get_requisition!(id) do
     Requisition
     |> Repo.get!(id)
@@ -513,6 +731,60 @@ defmodule Voile.Schema.Library.Circulation do
     reservations = Repo.all(query)
 
     count_query = from(r in Reservation)
+
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        s -> where(count_query, [r], r.status == ^s)
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {reservations, total_pages}
+  end
+
+  @doc """
+  List reservations paginated with filters and node filtering.
+  Only returns reservations for items belonging to the specified node.
+  """
+  def list_reservations_paginated_with_filters_by_node(
+        page \\ 1,
+        per_page \\ 10,
+        filters \\ %{},
+        node_id
+      ) do
+    offset = (page - 1) * per_page
+
+    query =
+      from r in Reservation,
+        join: i in assoc(r, :item),
+        where: i.unit_id == ^node_id,
+        preload: [
+          {:item, [:collection]},
+          :member,
+          :collection,
+          :processed_by
+        ]
+
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        s -> where(query, [r], r.status == ^s)
+      end
+
+    query =
+      query
+      |> order_by([r], desc: r.inserted_at, desc: r.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    reservations = Repo.all(query)
+
+    count_query =
+      from r in Reservation,
+        join: i in assoc(r, :item),
+        where: i.unit_id == ^node_id
 
     count_query =
       case Map.get(filters, :status, "all") do
@@ -660,6 +932,106 @@ defmodule Voile.Schema.Library.Circulation do
         join: l in assoc(t, :librarian),
         join: i in assoc(t, :item),
         left_join: c in assoc(i, :collection)
+
+    count_query =
+      case Map.get(filters, :status, "all") do
+        "all" -> count_query
+        status -> where(count_query, [t, _m, _l, _i, _c], t.status == ^status)
+      end
+
+    count_query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [t, m, _l, i, c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+          )
+      end
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {transactions, total_pages}
+  end
+
+  @doc """
+  List transactions paginated with filters and node filtering.
+  Only returns transactions for items belonging to the specified node.
+  """
+  def list_transaction_paginated_with_filter_by_node(
+        page \\ 1,
+        per_page \\ 10,
+        filters \\ %{},
+        node_id
+      ) do
+    offset = (page - 1) * per_page
+
+    # Base query with joins for search and node filtering
+    query =
+      from t in Transaction,
+        join: m in assoc(t, :member),
+        join: l in assoc(t, :librarian),
+        join: i in assoc(t, :item),
+        left_join: c in assoc(i, :collection),
+        where: i.unit_id == ^node_id,
+        preload: [
+          member: m,
+          librarian: l,
+          item: {i, collection: c}
+        ]
+
+    # Apply status filter
+    query =
+      case Map.get(filters, :status, "all") do
+        "all" -> query
+        status -> where(query, [t, _m, _l, _i, _c], t.status == ^status)
+      end
+
+    # Apply search filter
+    query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            query,
+            [t, m, _l, i, c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+          )
+      end
+
+    # Add ordering, offset, and limit
+    query =
+      query
+      |> order_by([t], desc: t.inserted_at, desc: t.id)
+      |> offset(^offset)
+      |> limit(^per_page)
+
+    transactions = Repo.all(query)
+
+    # Count query with same filters
+    count_query =
+      from t in Transaction,
+        join: m in assoc(t, :member),
+        join: l in assoc(t, :librarian),
+        join: i in assoc(t, :item),
+        left_join: c in assoc(i, :collection),
+        where: i.unit_id == ^node_id
 
     count_query =
       case Map.get(filters, :status, "all") do

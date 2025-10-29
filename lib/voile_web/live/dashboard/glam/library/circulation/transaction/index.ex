@@ -7,41 +7,68 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Transaction
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    page = 1
-    per_page = 15
-    {transactions, total_pages} = Circulation.list_transactions_paginated(page, per_page)
+    # Check permission for viewing transactions
+    unless Authorization.can?(socket, "circulation.view_transactions") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access circulation transactions")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    count_active_collection = Circulation.count_of_collection_based_on_status("active")
-    count_overdue_collection = Circulation.count_of_collection_based_on_status("overdue")
-    count_returned_collection = Circulation.count_of_collection_based_on_status("returned")
+      {:ok, socket}
+    else
+      user = socket.assigns.current_scope.user
+      is_super_admin = Authorization.is_super_admin?(user)
+      node_id = user.node_id
+      page = 1
+      per_page = 15
 
-    checkout_changeset = Transaction.changeset(%Transaction{}, %{})
+      {transactions, total_pages} =
+        if is_super_admin do
+          Circulation.list_transactions_paginated(page, per_page)
+        else
+          Circulation.list_transaction_paginated_with_filter_by_node(
+            page,
+            per_page,
+            %{status: "all", query: ""},
+            node_id
+          )
+        end
 
-    socket =
-      socket
-      |> stream(:transactions, transactions)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:search_query, "")
-      |> assign(:filter_status, "all")
-      |> assign(:checkout_changeset, checkout_changeset)
-      |> assign(:transaction, nil)
-      |> assign(:renew_transaction, nil)
-      |> assign(:count_active_collection, count_active_collection)
-      |> assign(:count_overdue_collection, count_overdue_collection)
-      |> assign(:count_returned_collection, count_returned_collection)
-      |> assign(:return_modal_visible, false)
-      |> assign(:return_transaction_id, nil)
-      |> assign(:predicted_fine, Decimal.new("0"))
-      |> assign(:payment_method, "cash")
-      |> assign(:renew_modal_visible, false)
-      |> assign(:renew_transaction_id, nil)
-      |> assign(:recommended_renew_days, nil)
+      count_active_collection = Circulation.count_of_collection_based_on_status("active")
+      count_overdue_collection = Circulation.count_of_collection_based_on_status("overdue")
+      count_returned_collection = Circulation.count_of_collection_based_on_status("returned")
 
-    {:ok, socket}
+      checkout_changeset = Transaction.changeset(%Transaction{}, %{})
+
+      socket =
+        socket
+        |> stream(:transactions, transactions)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:search_query, "")
+        |> assign(:filter_status, "all")
+        |> assign(:node_id, node_id)
+        |> assign(:is_super_admin, is_super_admin)
+        |> assign(:checkout_changeset, checkout_changeset)
+        |> assign(:transaction, nil)
+        |> assign(:renew_transaction, nil)
+        |> assign(:count_active_collection, count_active_collection)
+        |> assign(:count_overdue_collection, count_overdue_collection)
+        |> assign(:count_returned_collection, count_returned_collection)
+        |> assign(:return_modal_visible, false)
+        |> assign(:return_transaction_id, nil)
+        |> assign(:predicted_fine, Decimal.new("0"))
+        |> assign(:payment_method, "cash")
+        |> assign(:renew_modal_visible, false)
+        |> assign(:renew_transaction_id, nil)
+        |> assign(:recommended_renew_days, nil)
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -80,73 +107,83 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
 
   @impl true
   def handle_event("checkout", params, socket) do
-    # Support both nested params under "transaction" (from the form)
-    # and flat params sent directly as %{"member_id" => ..., "item_id" => ...}.
-    transaction = Map.get(params, "transaction", params)
-    member_id = Map.get(transaction, "member_id")
-    item_id = Map.get(transaction, "item_id")
+    # Check permission for checkout
+    unless Authorization.can?(socket, "circulation.checkout") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to checkout items")}
+    else
+      # Support both nested params under "transaction" (from the form)
+      # and flat params sent directly as %{"member_id" => ..., "item_id" => ...}.
+      transaction = Map.get(params, "transaction", params)
+      member_id = Map.get(transaction, "member_id")
+      item_id = Map.get(transaction, "item_id")
 
-    cond do
-      is_nil(member_id) or member_id == "" ->
-        socket = put_flash(socket, :error, "Member identifier is required")
-        {:noreply, socket}
+      cond do
+        is_nil(member_id) or member_id == "" ->
+          socket = put_flash(socket, :error, "Member identifier is required")
+          {:noreply, socket}
 
-      is_nil(item_id) or item_id == "" ->
-        socket = put_flash(socket, :error, "Item ID is required")
-        {:noreply, socket}
+        is_nil(item_id) or item_id == "" ->
+          socket = put_flash(socket, :error, "Item ID is required")
+          {:noreply, socket}
 
-      true ->
-        case Accounts.get_user_by_identifier(member_id) do
-          nil ->
-            socket = put_flash(socket, :error, "Member not found")
-            {:noreply, socket}
+        true ->
+          case Accounts.get_user_by_identifier(member_id) do
+            nil ->
+              socket = put_flash(socket, :error, "Member not found")
+              {:noreply, socket}
 
-          member ->
-            item = Catalog.get_item_by_code!(item_id)
-            librarian = socket.assigns.current_scope.user.id
+            member ->
+              item = Catalog.get_item_by_code!(item_id)
+              librarian = socket.assigns.current_scope.user.id
 
-            case Circulation.checkout_item(member.id, item.id, librarian) do
-              {:ok, transaction} ->
-                socket =
-                  socket
-                  |> stream_insert(:transactions, transaction, at: 0)
-                  |> put_flash(:info, "Item checked out successfully")
+              case Circulation.checkout_item(member.id, item.id, librarian) do
+                {:ok, transaction} ->
+                  socket =
+                    socket
+                    |> stream_insert(:transactions, transaction, at: 0)
+                    |> put_flash(:info, "Item checked out successfully")
 
-                {:noreply, socket}
+                  {:noreply, socket}
 
-              {:error, changeset} ->
-                socket =
-                  socket
-                  |> put_flash(
-                    :error,
-                    "Failed to checkout item: #{extract_error_message(changeset)}"
-                  )
+                {:error, changeset} ->
+                  socket =
+                    socket
+                    |> put_flash(
+                      :error,
+                      "Failed to checkout item: #{extract_error_message(changeset)}"
+                    )
 
-                {:noreply, socket}
-            end
-        end
+                  {:noreply, socket}
+              end
+          end
+      end
     end
   end
 
   @impl true
   def handle_event("return", %{"id" => id}, socket) do
-    current_user_id = socket.assigns.current_scope.user.id
+    # Check permission for return
+    unless Authorization.can?(socket, "circulation.return") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
+    else
+      current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.return_item(id, current_user_id) do
-      {:ok, transaction} ->
-        socket =
-          socket
-          |> stream_insert(:transactions, transaction)
-          |> put_flash(:info, "Item returned successfully")
+      case Circulation.return_item(id, current_user_id) do
+        {:ok, transaction} ->
+          socket =
+            socket
+            |> stream_insert(:transactions, transaction)
+            |> put_flash(:info, "Item returned successfully")
 
-        {:noreply, socket}
+          {:noreply, socket}
 
-      {:error, changeset} ->
-        socket =
-          socket
-          |> put_flash(:error, "Failed to return item: #{extract_error_message(changeset)}")
+        {:error, changeset} ->
+          socket =
+            socket
+            |> put_flash(:error, "Failed to return item: #{extract_error_message(changeset)}")
 
-        {:noreply, socket}
+          {:noreply, socket}
+      end
     end
   end
 
@@ -403,23 +440,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
 
   @impl true
   def handle_event("renew", %{"id" => id}, socket) do
-    current_user_id = socket.assigns.current_scope.user.id
+    # Check permission for renew
+    unless Authorization.can?(socket, "circulation.renew") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to renew items")}
+    else
+      current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.renew_transaction(id, current_user_id) do
-      {:ok, transaction} ->
-        socket =
-          socket
-          |> stream_insert(:transactions, transaction)
-          |> put_flash(:info, "Item renewed successfully")
+      case Circulation.renew_transaction(id, current_user_id) do
+        {:ok, transaction} ->
+          socket =
+            socket
+            |> stream_insert(:transactions, transaction)
+            |> put_flash(:info, "Item renewed successfully")
 
-        {:noreply, socket}
+          {:noreply, socket}
 
-      {:error, changeset} ->
-        socket =
-          socket
-          |> put_flash(:error, "Failed to renew item: #{extract_error_message(changeset)}")
+        {:error, changeset} ->
+          socket =
+            socket
+            |> put_flash(:error, "Failed to renew item: #{extract_error_message(changeset)}")
 
-        {:noreply, socket}
+          {:noreply, socket}
+      end
     end
   end
 
@@ -462,16 +504,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
   defp reload_transactions(socket) do
     page = 1
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
     filter_status = Map.get(socket.assigns, :filter_status, "all")
     search_query = Map.get(socket.assigns, :search_query, "")
     filters = %{status: filter_status, query: search_query}
 
     {transactions, total_pages} =
-      Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(
-        page,
-        per_page,
-        filters
-      )
+      if is_super_admin do
+        Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(
+          page,
+          per_page,
+          filters
+        )
+      else
+        Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket
     |> stream(:transactions, transactions, reset: true)

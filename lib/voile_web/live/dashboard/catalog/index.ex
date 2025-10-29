@@ -29,7 +29,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       <div><.dashboard_menu_bar user={@current_scope.user} /></div>
       
       <div class="flex flex-col gap-4 p-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
-        <h1 class="text-2xl font-bold">Catalog</h1>
+        <h1 class="text-2xl font-bold">{gettext("Catalog")}</h1>
         
         <div class="w-full">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,7 +55,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
               
               <div class="flex-1">
                 <div class="text-sm text-gray-500 dark:text-gray-300 font-semibold">
-                  Total Collections
+                  {gettext("Total Collections")}
                 </div>
                 
                 <div class="mt-1 flex items-center gap-3">
@@ -84,14 +84,19 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                           >
                           </path>
-                        </svg> <span class="text-sm text-gray-500 dark:text-gray-300">Loading</span>
+                        </svg>
+                        <span class="text-sm text-gray-500 dark:text-gray-300">
+                          {gettext("Loading")}
+                        </span>
                       </span>
                     <% else %>
                       {@count_collections}
                     <% end %>
                   </div>
                   
-                  <div class="text-xs text-gray-500 dark:text-gray-400">collections across nodes</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {gettext("collections across nodes")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -114,7 +119,9 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
               </div>
               
               <div class="flex-1">
-                <div class="text-sm text-gray-500 dark:text-gray-300 font-semibold">Items</div>
+                <div class="text-sm text-gray-500 dark:text-gray-300 font-semibold">
+                  {gettext("Items")}
+                </div>
                 
                 <div class="mt-1 flex items-center gap-3">
                   <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
@@ -142,14 +149,19 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                           >
                           </path>
-                        </svg> <span class="text-sm text-gray-500 dark:text-gray-300">Loading</span>
+                        </svg>
+                        <span class="text-sm text-gray-500 dark:text-gray-300">
+                          {gettext("Loading")}
+                        </span>
                       </span>
                     <% else %>
                       {@count_items}
                     <% end %>
                   </div>
                   
-                  <div class="text-xs text-gray-500 dark:text-gray-400">items across nodes</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {gettext("items across nodes")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -157,7 +169,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
         </div>
          <hr class="my-4 text-gray-200 dark:text-gray-700" />
         <div class="w-full">
-          <h3 class="text-lg font-semibold mb-2">Per Node Statistics</h3>
+          <h3 class="text-lg font-semibold mb-2">{gettext("Per Node Statistics")}</h3>
           
           <%= if @count_all_nodes == [] do %>
             <div class="flex items-center justify-center p-4">
@@ -183,7 +195,8 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                 >
                 </path>
-              </svg> <span class="ml-2 text-gray-600 dark:text-gray-300">Loading nodes...</span>
+              </svg>
+              <span class="ml-2 text-gray-600 dark:text-gray-300">{gettext("Loading nodes...")}</span>
             </div>
           <% else %>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -215,7 +228,9 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                       </div>
                       
                       <div>
-                        <div class="text-xs text-gray-500 dark:text-gray-300">Collections</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-300">
+                          {gettext("Collections")}
+                        </div>
                         
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_collections) do %>
@@ -242,7 +257,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                                 >
                                 </path>
-                              </svg> <span class="text-sm">Loading</span>
+                              </svg> <span class="text-sm">{gettext("Loading")}</span>
                             </span>
                           <% else %>
                             {node.count_collections}
@@ -269,7 +284,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                       </div>
                       
                       <div>
-                        <div class="text-xs text-gray-500 dark:text-gray-300">Items</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-300">{gettext("Items")}</div>
                         
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_items) do %>
@@ -296,7 +311,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                                 >
                                 </path>
-                              </svg> <span class="text-sm">Loading</span>
+                              </svg> <span class="text-sm">{gettext("Loading")}</span>
                             </span>
                           <% else %>
                             {node.count_items}
@@ -322,7 +337,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       |> assign(:count_collections, nil)
       |> assign(:count_items, nil)
       |> assign(:count_all_nodes, [])
-      |> assign(:page_title, "Catalog Dashboard")
+      |> assign(:page_title, gettext("Catalog Dashboard"))
 
     # Defer loading counts to handle_info so UI mounts fast
     if connected?(socket), do: send(self(), :load_counts)

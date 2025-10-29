@@ -814,4 +814,67 @@ defmodule VoileWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  @doc """
+  Renders a language/locale switcher dropdown.
+
+  ## Examples
+
+      <.locale_switcher />
+      <.locale_switcher class="my-custom-class" />
+
+  """
+  attr :class, :string, default: ""
+  attr :current_path, :string, default: "/"
+
+  def locale_switcher(assigns) do
+    ~H"""
+    <div class={["relative inline-block", @class]} id="locale-switcher">
+      <button
+        type="button"
+        phx-click={
+          JS.toggle(
+            to: "#locale-dropdown",
+            in: "opacity-100 scale-100",
+            out: "opacity-0 scale-95",
+            display: "block"
+          )
+        }
+        class="btn btn-ghost btn-sm gap-2"
+      >
+        <.icon name="hero-language" class="h-5 w-5" />
+        <span class="hidden sm:inline">
+          {VoileWeb.Utils.Locale.locale_flag(VoileWeb.Utils.Locale.get_locale())} {VoileWeb.Utils.Locale.locale_name(
+            VoileWeb.Utils.Locale.get_locale()
+          )}
+        </span> <.icon name="hero-chevron-down" class="h-4 w-4" />
+      </button>
+      <div
+        id="locale-dropdown"
+        phx-click-away={
+          JS.hide(
+            to: "#locale-dropdown",
+            transition: "opacity-0 scale-95"
+          )
+        }
+        class="hidden absolute right-0 mt-2 w-52 origin-top-right rounded-md bg-base-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-[9999] transition-all duration-100 ease-out"
+      >
+        <div class="py-1" role="menu" aria-orientation="vertical">
+          <a
+            :for={locale <- VoileWeb.Utils.Locale.all_locales()}
+            href={"#{@current_path}?locale=#{locale.code}"}
+            class={[
+              "flex items-center gap-3 px-4 py-2 text-sm hover:bg-base-200 transition-colors",
+              VoileWeb.Utils.Locale.get_locale() == locale.code &&
+                "bg-base-200 font-semibold"
+            ]}
+            role="menuitem"
+          >
+            <span class="text-lg">{locale.flag}</span> <span>{locale.name}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    """
+  end
 end

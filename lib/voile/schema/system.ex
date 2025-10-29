@@ -200,6 +200,57 @@ defmodule Voile.Schema.System do
   end
 
   @doc """
+  Gets a setting by its name.
+
+  ## Examples
+
+      iex> get_setting_by_name("reservation_notifications_enabled")
+      %Setting{}
+
+      iex> get_setting_by_name("nonexistent")
+      nil
+
+  """
+  def get_setting_by_name(name) do
+    Repo.get_by(Setting, setting_name: name)
+  end
+
+  @doc """
+  Gets a setting value by name, returns default if not found.
+
+  ## Examples
+
+      iex> get_setting_value("reservation_notifications_enabled", "false")
+      "true"
+
+  """
+  def get_setting_value(name, default \\ nil) do
+    case get_setting_by_name(name) do
+      %Setting{setting_value: value} -> value
+      nil -> default
+    end
+  end
+
+  @doc """
+  Creates or updates a setting by name.
+
+  ## Examples
+
+      iex> upsert_setting("reservation_notifications_enabled", "true")
+      {:ok, %Setting{}}
+
+  """
+  def upsert_setting(name, value) do
+    case get_setting_by_name(name) do
+      nil ->
+        create_setting(%{setting_name: name, setting_value: value})
+
+      setting ->
+        update_setting(setting, %{setting_value: value})
+    end
+  end
+
+  @doc """
   Returns the list of system_logs.
 
   ## Examples

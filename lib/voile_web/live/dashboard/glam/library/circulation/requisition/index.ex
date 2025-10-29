@@ -4,22 +4,50 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
 
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Requisition
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    page = 1
-    per_page = 15
-    {requisitions, total_pages} = Circulation.list_requisitions_paginated(page, per_page)
+    # Check permission for viewing transactions (requisitions are part of circulation)
+    unless Authorization.can?(socket, "circulation.view_transactions") do
+      socket =
+        socket
+        |> put_flash(:error, "You don't have permission to access requisition management")
+        |> push_navigate(to: ~p"/manage/glam/library/circulation")
 
-    socket =
-      socket
-      |> stream(:requisitions, requisitions)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filter_status, "all")
-      |> assign(:filter_type, "all")
+      {:ok, socket}
+    else
+      user = socket.assigns.current_scope.user
+      is_super_admin = Authorization.is_super_admin?(user)
+      node_id = user.node_id
+      page = 1
+      per_page = 15
+      filters = %{status: "all", type: "all"}
 
-    {:ok, socket}
+      {requisitions, total_pages} =
+        if is_super_admin do
+          Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
+        else
+          Circulation.list_requisitions_paginated_with_filters_by_node(
+            page,
+            per_page,
+            filters,
+            node_id
+          )
+        end
+
+      socket =
+        socket
+        |> stream(:requisitions, requisitions)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+        |> assign(:filter_status, "all")
+        |> assign(:filter_type, "all")
+        |> assign(:node_id, node_id)
+        |> assign(:is_super_admin, is_super_admin)
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -136,6 +164,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{
       status: socket.assigns.filter_status,
@@ -143,7 +173,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
     }
 
     {requisitions, total_pages} =
-      Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
+      if is_super_admin do
+        Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_requisitions_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket =
       socket
@@ -157,6 +196,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
   defp reload_requisitions(socket) do
     page = 1
     per_page = 15
+    is_super_admin = socket.assigns.is_super_admin
+    node_id = socket.assigns.node_id
 
     filters = %{
       status: socket.assigns.filter_status,
@@ -164,7 +205,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
     }
 
     {requisitions, total_pages} =
-      Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
+      if is_super_admin do
+        Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
+      else
+        Circulation.list_requisitions_paginated_with_filters_by_node(
+          page,
+          per_page,
+          filters,
+          node_id
+        )
+      end
 
     socket
     |> stream(:requisitions, requisitions, reset: true)
