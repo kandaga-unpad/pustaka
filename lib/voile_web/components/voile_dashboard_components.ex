@@ -42,7 +42,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
         </.link>
       </div>
-      
+
       <div class="w-full text-voile-primary flex gap-4">
         <.link
           patch="/manage"
@@ -59,13 +59,13 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         <% end %>
       </div>
-      
+
       <div class="w-full flex justify-end gap-3">
         <Layouts.theme_toggle />
         <.link
           href="/users/log_out"
           method="delete"
-          class="default-menu bg-red-400 hover:bg-red-500 text-white"
+          class="default-menu bg-voile-error text-white hover:bg-voile-error/80"
         >
           <.icon name="hero-x-circle" class="h-5 w-5" /> {gettext("Logout")}
         </.link>
@@ -100,10 +100,10 @@ defmodule VoileWeb.VoileDashboardComponents do
       <div class="flex flex-col items-start justify-between gap-10 w-full">
         <div>
           <h5>{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
-          
+
           <p>{gettext("You can check your collection data here")}</p>
         </div>
-        
+
         <div class="flex gap-2">
           <.link
             patch="/manage/catalog/collections"
@@ -127,7 +127,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         </div>
       </div>
-      
+
       <div><.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" /></div>
     </div>
     """
@@ -145,14 +145,14 @@ defmodule VoileWeb.VoileDashboardComponents do
     ~H"""
     <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
       <div class="flex items-center gap-3 mb-4">
-        <.icon name="hero-magnifying-glass" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <.icon name="hero-magnifying-glass" class="w-6 h-6 text-voile-info dark:text-voile-info" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Quick Search")}</h3>
       </div>
       <!-- Debug info (remove after testing) -->
       <div class="text-xs text-gray-500 mb-2">
         Query: {@search_query} | Searching: {inspect(@searching)} | Results: {length(@search_results)}
       </div>
-      
+
       <form phx-change="search" phx-submit="search" class="mb-4">
         <div class="relative">
           <input
@@ -160,7 +160,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             name="query"
             value={@search_query}
             placeholder={gettext("Search collections, items, authors...")}
-            class="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-voile-primary focus:border-voile-primary"
             phx-debounce="300"
           />
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -181,11 +181,11 @@ defmodule VoileWeb.VoileDashboardComponents do
           </div>
         </div>
       </form>
-      
+
       <%= if @searching do %>
         <div class="flex items-center justify-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-voile-info"></div>
+
           <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{gettext("Searching...")}</span>
         </div>
       <% else %>
@@ -205,12 +205,12 @@ defmodule VoileWeb.VoileDashboardComponents do
                       ]}>
                         <.icon name={get_result_icon(result)} class="w-5 h-5 text-white" />
                       </div>
-                      
+
                       <div class="flex-1 min-w-0">
                         <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                           {get_result_title(result)}
                         </h4>
-                        
+
                         <div class="flex items-center gap-2 mt-1">
                           <span class={[
                             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -224,7 +224,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                             </span>
                           <% end %>
                         </div>
-                        
+
                         <%= if desc = get_result_description(result) do %>
                           <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                             {desc}
@@ -239,7 +239,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               <div class="text-center py-8">
                 <.icon name="hero-magnifying-glass" class="w-12 h-12 mx-auto text-gray-400 mb-2" />
                 <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No results found")}</p>
-                
+
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   {gettext("Try a different search term")}
                 </p>
@@ -248,18 +248,18 @@ defmodule VoileWeb.VoileDashboardComponents do
           </div>
         <% end %>
       <% end %>
-      
+
       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex gap-2">
         <.link
           href="/search/advanced"
-          class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+          class="text-sm text-voile-info dark:text-voile-info hover:text-voile-info/80 font-medium"
         >
           Advanced Search →
         </.link>
         <%= if @search_query != "" && length(@search_results) > 0 do %>
           <.link
             href={"/search?q=#{URI.encode_www_form(@search_query)}"}
-            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+            class="text-sm text-voile-info dark:text-voile-info hover:text-voile-info/80 font-medium"
           >
             View All Results →
           </.link>
@@ -297,12 +297,11 @@ defmodule VoileWeb.VoileDashboardComponents do
   end
 
   defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Collection}),
-    do: "bg-gradient-to-br from-blue-500 to-indigo-500"
+    do: "voile-gradient"
 
-  defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Item}),
-    do: "bg-gradient-to-br from-gray-500 to-gray-600"
+  defp get_result_bg_class(%{__struct__: Voile.Schema.Catalog.Item}), do: "voile-gradient"
 
-  defp get_result_bg_class(_), do: "bg-gradient-to-br from-gray-500 to-gray-600"
+  defp get_result_bg_class(_), do: "voile-gradient"
 
   defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Collection, resource_class: rc})
        when not is_nil(rc) do
@@ -310,7 +309,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   end
 
   defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Collection}),
-    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200"
+    do: "bg-voile-info/10 text-voile-info dark:bg-voile-info/30 dark:text-voile-info/80"
 
   defp get_result_badge_class(%{__struct__: Voile.Schema.Catalog.Item}),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200"
@@ -367,22 +366,22 @@ defmodule VoileWeb.VoileDashboardComponents do
     ~H"""
     <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full">
       <div class="flex items-center gap-3 mb-4">
-        <.icon name="hero-chart-bar" class="w-6 h-6 text-green-600 dark:text-green-400" />
+        <.icon name="hero-chart-bar" class="w-6 h-6 text-voile-success dark:text-voile-success" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Statistics</h3>
       </div>
-      
+
       <div class="space-y-4">
         <!-- Total searches today -->
         <div class="flex justify-between items-center">
           <span class="text-sm text-gray-600 dark:text-gray-300">Searches Today</span>
-          <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <span class="text-2xl font-bold text-voile-info dark:text-voile-info/60">
             {@stats.total_searches}
           </span>
         </div>
         <!-- Popular queries -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Popular Queries</h4>
-          
+
           <div class="space-y-1">
             <%= for {query, count} <- Enum.take(@stats.popular_queries, 3) do %>
               <div class="flex justify-between text-xs">
@@ -395,7 +394,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <!-- Recent activity -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Activity</h4>
-          
+
           <div class="space-y-1">
             <%= for activity <- Enum.take(@stats.recent_activity, 3) do %>
               <div class="text-xs text-gray-600 dark:text-gray-400">{activity}</div>
@@ -429,6 +428,7 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   attr :menu_items, :list,
     default: [
+      %{label: "Application Settings", path: "/manage/settings/apps", icon: "hero-cog-solid"},
       %{label: "User Profile", path: "/manage/settings/user_profile", icon: "hero-user"},
       %{label: "User Management", path: "/manage/settings/users", icon: "hero-users"},
       %{label: "Role Management", path: "/manage/settings/roles", icon: "hero-shield-check"},
@@ -463,16 +463,16 @@ defmodule VoileWeb.VoileDashboardComponents do
                 "rounded-lg flex items-center gap-2",
                 if(is_menu_active?(@current_path, item),
                   do:
-                    "bg-blue-100 text-blue-700 dark:text-blue-400 font-semibold p-2 rounded-lg hover:bg-blue-100",
+                    "bg-voile-info/10 text-voile-info dark:text-voile-info/60 font-semibold p-2 rounded-lg hover:bg-voile-info/10",
                   else:
-                    "hover:bg-gray-100 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-200 p-2"
+                    "hover:bg-gray-100 dark:hover:bg-gray-600 text-voile-info dark:text-voile-info/60 p-2"
                 )
               ]}
             >
               <%= if Map.get(item, :icon) do %>
-                <.icon name={item.icon} class="w-4 h-4" />
+                <.icon name={item.icon} class="w-5 h-5" />
               <% end %>
-               {item.label}
+              {item.label}
             </.link>
           </li>
         <% end %>
@@ -564,7 +564,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -581,10 +581,10 @@ defmodule VoileWeb.VoileDashboardComponents do
     <.modal id={@id}>
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-semibold">Delete Confirmation</h3>
-        
+
         <p>Are you sure you want to delete this item?</p>
       </div>
-      
+
       <div class="flex justify-end gap-2 mt-4">
         <.button phx-click={JS.exec("data-cancel", to: "#delete-modal")}>Cancel</.button>
         <.button phx-click={JS.exec("data-confirm", to: "#delete-modal")}>Delete</.button>
@@ -613,7 +613,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       <% else %>
         <.button class="disabled-btn" disabled>Prev</.button>
       <% end %>
-      
+
       <%= for p <- pagination_range(@page, @total_pages) do %>
         <%= if is_integer(p) do %>
           <%= if p == @page do %>
@@ -633,7 +633,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <button class="disabled-btn" disabled>{p}</button>
         <% end %>
       <% end %>
-      
+
       <%= if @page < @total_pages do %>
         <%= if @path do %>
           <.link patch={"#{@path}?#{build_query_string(assigns, @page + 1)}"} class="primary-btn">
@@ -811,30 +811,30 @@ defmodule VoileWeb.VoileDashboardComponents do
           <div class={["p-3 rounded-lg", get_glam_icon_bg(@color)]}>
             <.icon name={@icon} class="w-8 h-8 text-white" />
           </div>
-          
+
           <div class="text-right">
             <div class="text-3xl font-bold text-white">{@count}</div>
-            
+
             <div class="text-xs text-white/80">collections</div>
           </div>
         </div>
-        
+
         <h3 class="text-xl font-bold text-white mb-1">{@title}</h3>
-        
+
         <p class="text-white/90 text-sm mb-3">{@description}</p>
-        
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="text-xs text-white/80">{@percentage}% of total</div>
           </div>
-          
+
           <.icon
             name="hero-arrow-right"
             class="w-5 h-5 text-white transform group-hover:translate-x-1 transition-transform"
           />
         </div>
       </div>
-       <%!-- Decorative background pattern --%>
+      <%!-- Decorative background pattern --%>
       <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
         <.icon name={@icon} class="w-full h-full text-white" />
       </div>
@@ -860,14 +860,14 @@ defmodule VoileWeb.VoileDashboardComponents do
         <div class={["p-3 rounded-lg", get_stat_icon_bg(@color)]}>
           <.icon name={@icon} class={"w-6 h-6 #{@icon_color_class}"} />
         </div>
-        
+
         <%= if @trend do %>
           <span class="text-xs font-semibold text-green-600 dark:text-green-400">{@trend}</span>
         <% end %>
       </div>
-      
+
       <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{@title}</h3>
-      
+
       <p class="text-3xl font-bold text-gray-900 dark:text-white">{@value}</p>
     </div>
     """
@@ -893,12 +893,12 @@ defmodule VoileWeb.VoileDashboardComponents do
           class="w-6 h-6 text-white"
         />
       </div>
-      
+
       <div class="flex-1 min-w-0">
         <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
           {@collection.title}
         </h4>
-        
+
         <div class="flex items-center gap-2 mt-1">
           <span class={[
             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -913,7 +913,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
         </div>
       </div>
-       <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
+      <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
     </.link>
     """
   end
@@ -930,26 +930,26 @@ defmodule VoileWeb.VoileDashboardComponents do
     do: "bg-gradient-to-br from-amber-500 to-orange-600 dark:from-amber-600 dark:to-orange-700"
 
   defp get_glam_card_gradient("purple"),
-    do: "bg-gradient-to-br from-purple-500 to-violet-600 dark:from-purple-600 dark:to-violet-700"
+    do: "museum-gradient"
 
   defp get_glam_card_gradient(_), do: "bg-gradient-to-br from-gray-500 to-gray-600"
 
-  defp get_glam_icon_bg("pink"), do: "bg-pink-600/20"
-  defp get_glam_icon_bg("blue"), do: "bg-blue-600/20"
-  defp get_glam_icon_bg("amber"), do: "bg-amber-600/20"
-  defp get_glam_icon_bg("purple"), do: "bg-purple-600/20"
+  defp get_glam_icon_bg("pink"), do: "bg-voile-accent/20"
+  defp get_glam_icon_bg("blue"), do: "bg-voile-info/20"
+  defp get_glam_icon_bg("amber"), do: "bg-voile-warning/20"
+  defp get_glam_icon_bg("purple"), do: "bg-voile-primary/20"
   defp get_glam_icon_bg(_), do: "bg-gray-600/20"
 
-  defp get_stat_icon_bg("blue"), do: "bg-blue-100 dark:bg-blue-900/30"
-  defp get_stat_icon_bg("green"), do: "bg-green-100 dark:bg-green-900/30"
-  defp get_stat_icon_bg("purple"), do: "bg-purple-100 dark:bg-purple-900/30"
-  defp get_stat_icon_bg("orange"), do: "bg-orange-100 dark:bg-orange-900/30"
+  defp get_stat_icon_bg("blue"), do: "bg-voile-info/10 dark:bg-voile-info/30"
+  defp get_stat_icon_bg("green"), do: "bg-voile-success/10 dark:bg-voile-success/30"
+  defp get_stat_icon_bg("purple"), do: "bg-voile-primary/10 dark:bg-voile-primary/30"
+  defp get_stat_icon_bg("orange"), do: "bg-voile-warning/10 dark:bg-voile-warning/30"
   defp get_stat_icon_bg(_), do: "bg-gray-100 dark:bg-gray-900/30"
 
-  defp get_stat_icon_color("blue"), do: "text-blue-600 dark:text-blue-400"
-  defp get_stat_icon_color("green"), do: "text-green-600 dark:text-green-400"
-  defp get_stat_icon_color("purple"), do: "text-purple-600 dark:text-purple-400"
-  defp get_stat_icon_color("orange"), do: "text-orange-600 dark:text-orange-400"
+  defp get_stat_icon_color("blue"), do: "text-voile-info dark:text-voile-info"
+  defp get_stat_icon_color("green"), do: "text-voile-success dark:text-voile-success"
+  defp get_stat_icon_color("purple"), do: "text-voile-primary dark:text-voile-primary"
+  defp get_stat_icon_color("orange"), do: "text-voile-warning dark:text-voile-warning"
   defp get_stat_icon_color(_), do: "text-gray-600 dark:text-gray-400"
 
   defp get_glam_type_icon("Gallery"), do: "hero-photo"
@@ -959,23 +959,23 @@ defmodule VoileWeb.VoileDashboardComponents do
   defp get_glam_type_icon(_), do: "hero-cube"
 
   defp get_glam_badge_class("Gallery"),
-    do: "bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200"
+    do: "bg-voile-accent/10 text-voile-accent dark:bg-voile-accent/30 dark:text-voile-accent"
 
   defp get_glam_badge_class("Library"),
-    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200"
+    do: "bg-voile-info/10 text-voile-info dark:bg-voile-info/30 dark:text-voile-info"
 
   defp get_glam_badge_class("Archive"),
-    do: "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
+    do: "bg-voile-warning/10 text-voile-warning dark:bg-voile-warning/30 dark:text-voile-warning"
 
   defp get_glam_badge_class("Museum"),
-    do: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200"
+    do: "bg-voile-primary/10 text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary"
 
   defp get_glam_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200"
 
-  defp get_glam_badge_bg("Gallery"), do: "bg-gradient-to-br from-pink-500 to-rose-500"
-  defp get_glam_badge_bg("Library"), do: "bg-gradient-to-br from-blue-500 to-indigo-500"
-  defp get_glam_badge_bg("Archive"), do: "bg-gradient-to-br from-amber-500 to-orange-500"
-  defp get_glam_badge_bg("Museum"), do: "bg-gradient-to-br from-purple-500 to-violet-500"
-  defp get_glam_badge_bg(_), do: "bg-gradient-to-br from-gray-500 to-gray-600"
+  defp get_glam_badge_bg("Gallery"), do: "voile-gradient"
+  defp get_glam_badge_bg("Library"), do: "voile-gradient"
+  defp get_glam_badge_bg("Archive"), do: "voile-gradient"
+  defp get_glam_badge_bg("Museum"), do: "museum-gradient"
+  defp get_glam_badge_bg(_), do: "voile-gradient"
 end

@@ -42,7 +42,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
           <div>
             <h1 class="text-3xl font-bold mb-2">GLAM Management Dashboard</h1>
 
-            <p class="text-purple-100 text-lg">
+            <p class="text-white text-lg">
               Gallery, Library, Archive & Museum - Unified Collections Management
             </p>
           </div>
@@ -92,7 +92,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
 
           <.link
             navigate="/manage/catalog/collections"
-            class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
           >
             View All →
           </.link>

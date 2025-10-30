@@ -74,8 +74,18 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
         end
       end)
 
-    # Check if all operations succeeded
-    if Enum.all?(results, &match?({:ok, _}, &1)) do
+    # Check if all operations succeeded. PermissionManager may return either
+    # `{:ok, _}` for single-row operations or `{count, _}` for delete_all-style
+    # operations. Treat both as success so UI doesn't incorrectly show failure
+    # while the DB changes actually applied.
+    success? =
+      Enum.all?(results, fn
+        {:ok, _} -> true
+        {count, _} when is_integer(count) and count >= 0 -> true
+        _ -> false
+      end)
+
+    if success? do
       # Add a small delay to ensure DB transactions are committed
       Process.sleep(50)
 

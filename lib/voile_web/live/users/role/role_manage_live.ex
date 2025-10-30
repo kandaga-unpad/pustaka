@@ -6,20 +6,25 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # Check permission
-    authorize!(socket, "roles.create")
+    handle_mount_errors do
+      # Check permission: require explicit RBAC `roles.read` to view this page
+      authorize!(socket, "roles.read")
 
-    {roles, total_pages} = PermissionManager.list_roles_paginated(1, 10)
+      is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
 
-    socket =
-      socket
-      |> assign(page_title: "Role Management")
-      |> assign(searching: false)
-      |> assign(current_path: "/manage/settings/roles")
-      |> assign(page: 1, per_page: 10, total_pages: total_pages)
-      |> stream(:roles, roles)
+      {roles, total_pages} = PermissionManager.list_roles_paginated(1, 10)
 
-    {:ok, socket}
+      socket =
+        socket
+        |> assign(page_title: "Role Management")
+        |> assign(searching: false)
+        |> assign(current_path: "/manage/settings/roles")
+        |> assign(page: 1, per_page: 10, total_pages: total_pages)
+        |> assign(:is_super_admin, is_super_admin)
+        |> stream(:roles, roles)
+
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -94,27 +99,30 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    authorize!(socket, "roles.delete")
+    # Only super_admins can delete roles
+    if not socket.assigns[:is_super_admin] do
+      {:noreply, put_flash(socket, :error, "Only super admins can delete roles")}
+    else
+      role = PermissionManager.get_role(id)
 
-    role = PermissionManager.get_role(id)
+      case can_delete_role?(role) do
+        {:ok, _} ->
+          case PermissionManager.delete_role(role) do
+            {:ok, _} ->
+              {:noreply,
+               socket
+               |> put_flash(:info, "Role deleted successfully")
+               |> stream_delete(:roles, role)}
 
-    case can_delete_role?(role) do
-      {:ok, _} ->
-        case PermissionManager.delete_role(role) do
-          {:ok, _} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Role deleted successfully")
-             |> stream_delete(:roles, role)}
+            {:error, _changeset} ->
+              {:noreply,
+               socket
+               |> put_flash(:error, "Failed to delete role")}
+          end
 
-          {:error, _changeset} ->
-            {:noreply,
-             socket
-             |> put_flash(:error, "Failed to delete role")}
-        end
-
-      {:error, reason} ->
-        {:noreply, put_flash(socket, :error, reason)}
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, reason)}
+      end
     end
   end
 
@@ -130,14 +138,14 @@ defmodule VoileWeb.Users.Role.ManageLive do
       <.header>
         Role Management
         <:subtitle>Manage system roles and their permissions</:subtitle>
-        
+
         <:actions>
-          <%= if can?(@current_scope.user, "roles.create") do %>
+          <%= if @is_super_admin do %>
             <.link patch={~p"/manage/settings/roles/new"}><.button>New Role</.button></.link>
           <% end %>
         </:actions>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -145,7 +153,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
@@ -169,20 +177,21 @@ defmodule VoileWeb.Users.Role.ManageLive do
                         stroke-width="4"
                       >
                       </circle>
-                      
+
                       <path
                         class="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                       >
                       </path>
-                    </svg> <span class="text-sm text-gray-500">Searching...</span>
+                    </svg>
+                    <span class="text-sm text-gray-500">Searching...</span>
                   </div>
                 <% end %>
               </div>
             </.form>
           </div>
-          
+
           <.table
             id="roles"
             rows={@streams.roles}
@@ -192,35 +201,35 @@ defmodule VoileWeb.Users.Role.ManageLive do
               <div class="flex items-center gap-2">
                 <span class="font-medium">{role.name}</span>
                 <%= if role.is_system_role do %>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-info/10 text-voile-info">
                     System
                   </span>
                 <% end %>
               </div>
             </:col>
-            
+
             <:col :let={{_id, role}} label="Description">{role.description || "-"}</:col>
-            
+
             <:col :let={{_id, role}} label="Permissions">
               <span class="text-sm text-gray-500">{length(role.permissions || [])} permissions</span>
             </:col>
-            
+
             <:col :let={{_id, role}} label="Users">
               <span class="text-sm text-gray-500">{count_users_with_role(role.id)} users</span>
             </:col>
-            
+
             <:action :let={{_id, role}}>
               <div class="sr-only">
                 <.link navigate={~p"/manage/settings/roles/#{role}"}>Show</.link>
               </div>
-              
-              <%= if can?(@current_scope.user, "roles.update") do %>
+
+              <%= if @is_super_admin do %>
                 <.link patch={~p"/manage/settings/roles/#{role}/edit"}>Edit</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{id, role}}>
-              <%= if can?(@current_scope.user, "roles.delete") and not role.is_system_role do %>
+              <%= if @is_super_admin and not role.is_system_role do %>
                 <.link
                   phx-click={JS.push("delete", value: %{id: role.id}) |> hide("##{id}")}
                   data-confirm="Are you sure you want to delete this role?"
@@ -230,7 +239,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
               <% end %>
             </:action>
           </.table>
-           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
     </div>

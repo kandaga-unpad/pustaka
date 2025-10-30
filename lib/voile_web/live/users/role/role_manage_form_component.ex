@@ -18,7 +18,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
           <% end %>
         </:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="role-form"
@@ -58,18 +58,18 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
                     <div class="text-sm font-medium text-gray-900 dark:text-white">
                       {permission.name}
                     </div>
-                    
+
                     <%= if permission.description do %>
                       <div class="text-xs text-gray-500 dark:text-gray-400">
                         {permission.description}
                       </div>
                     <% end %>
-                    
+
                     <div class="mt-1 flex items-center gap-2">
-                      <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
+                      <span class="text-xs px-2 py-0.5 bg-voile-info/10 text-voile-info rounded">
                         {permission.resource}
                       </span>
-                      <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 rounded">
+                      <span class="text-xs px-2 py-0.5 bg-voile-primary/10 text-voile-primary rounded">
                         {permission.action}
                       </span>
                     </div>
@@ -79,11 +79,11 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
             </div>
           </div>
         <% end %>
-        
+
         <div class="mt-6 flex items-center justify-end gap-x-4">
           <.button
             type="button"
-            phx-click={JS.patch(@patch)}
+            phx-click={JS.navigate(@patch)}
             class="cancel-btn"
           >
             Cancel
@@ -129,7 +129,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Role updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -159,7 +159,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Role created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

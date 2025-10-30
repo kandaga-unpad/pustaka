@@ -196,3 +196,47 @@ end
 IO.puts(
   "Seeds: core vocabulary and nodes loaded. Other seed scripts will be run by the `ecto.setup` alias in mix.exs."
 )
+
+## Application profile & theme defaults (Patchouli-inspired)
+## These defaults will be upserted into the `settings` table so the
+## application picks up a sensible identity and runtime theme on first run.
+
+alias Voile.Schema.System
+
+IO.puts("Seeding default application profile and theme...")
+
+# App identity
+System.upsert_setting("app_name", "Voile — the Magic Library")
+
+System.upsert_setting(
+  "app_description",
+  "A gentle digital sanctuary for libraries, museums, and archives — curated for discovery and wonder."
+)
+
+System.upsert_setting("app_contact_email", "support@example.org")
+System.upsert_setting("app_website", "https://example.org")
+System.upsert_setting("app_address", "123 Library Avenue, Knowledge City")
+
+# Logo (default to packaged icon)
+System.upsert_setting("app_logo_url", "/images/v.png")
+
+# Storage adapter default
+System.upsert_setting("storage_adapter", "local")
+
+# Theme colors (Patchouli-inspired)
+# Primary: deep violet — good for primary buttons, icons, and strong accents
+System.upsert_setting("app_main_color", "#6B21A8")
+# Secondary: soft lavender for accents and highlights
+System.upsert_setting("app_secondary_color", "#A78BFA")
+# Surface: very light violet for surfaces (panels, cards)
+System.upsert_setting("app_surface_color", "#F6F3FF")
+# Surface variant: slightly darker surface for active tabs/badges
+System.upsert_setting("app_surface_variant", "#EFE9FF")
+# Surface dark (for dark mode surfaces)
+System.upsert_setting("app_surface_dark", "#0F0820")
+# Accent / highlight
+System.upsert_setting("app_accent_color", "#C4B5FD")
+
+IO.puts(
+  "Seeded: app_name, app_description, contact, website, address, logo, storage_adapter, and theme colors."
+)

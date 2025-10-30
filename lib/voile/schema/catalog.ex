@@ -700,11 +700,11 @@ defmodule Voile.Schema.Catalog do
       if page == 1 and length(items) < per_page do
         1
       else
-        # Simple count without preloads or complex joins
-        total_count =
-          query
-          |> select([i], count(i.id))
-          |> Repo.one()
+        # Simple count without preloads or complex joins.
+        # Use Repo.aggregate/3 which avoids propagating ORDER BY into the
+        # generated COUNT SQL (Postgres errors if ORDER BY is present on a
+        # plain aggregate query without GROUP BY).
+        total_count = Repo.aggregate(query, :count, :id)
 
         div(total_count + per_page - 1, per_page)
       end

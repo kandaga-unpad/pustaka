@@ -7,6 +7,28 @@
     <.live_title default="Voile" suffix=" · the Magic Library">
       {assigns[:page_title]}
     </.live_title>
+    <%!-- Inject brand color CSS variables early so Tailwind/daisyUI and other CSS
+        can pick them up on first paint (before `app.css` is loaded). --%>
+    <% app_main_color = Voile.Schema.System.get_setting_value("app_main_color", nil) %>
+    <% app_secondary_color = Voile.Schema.System.get_setting_value("app_secondary_color", nil) %>
+    <% app_surface_color = Voile.Schema.System.get_setting_value("app_surface_color", nil) %>
+    <% app_surface_variant = Voile.Schema.System.get_setting_value("app_surface_variant", nil) %>
+    <% app_surface_dark = Voile.Schema.System.get_setting_value("app_surface_dark", nil) %>
+    <% app_accent_color = Voile.Schema.System.get_setting_value("app_accent_color", nil) %>
+
+    <%= if app_main_color || app_secondary_color || app_surface_color || app_surface_variant || app_surface_dark || app_accent_color do %>
+      <style>
+        :root {
+        <%= if app_main_color do %>--color-voile-primary: <%= app_main_color %>;<% end %>
+        <%= if app_secondary_color do %>--color-voile-secondary: <%= app_secondary_color %>;<% end %>
+        <%= if app_surface_color do %>--color-voile-surface: <%= app_surface_color %>;<% end %>
+        <%= if app_surface_variant do %>--color-voile-surface-variant: <%= app_surface_variant %>;<% end %>
+        <%= if app_surface_dark do %>--color-voile-surface-dark: <%= app_surface_dark %>;<% end %>
+        <%= if app_accent_color do %>--color-voile-accent: <%= app_accent_color %>;<% end %>
+        }
+      </style>
+    <% end %>
+
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

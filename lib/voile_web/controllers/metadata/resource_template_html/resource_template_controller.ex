@@ -3,6 +3,11 @@ defmodule VoileWeb.ResourceTemplateController do
 
   alias Voile.Schema.Metadata
 
+  plug VoileWeb.Plugs.Authorize,
+    permissions: %{
+      delete: ["metadata.manage"]
+    }
+
   def index(conn, _params) do
     page = Map.get(conn.params, "page", "1") |> String.to_integer()
     per_page = 10

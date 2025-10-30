@@ -79,7 +79,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
     assigns = %{}
 
     ~H"""
-    <svg class="h-15 w-15 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+    <svg class="h-15 w-15 text-voile-primary" fill="currentColor" viewBox="0 0 20 20">
       <path
         fill-rule="evenodd"
         d="M2 6a2 2 0 012-2h6a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"
@@ -158,7 +158,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   defp badge_color("document"), do: "bg-green-100 text-green-700"
   defp badge_color("video"), do: "bg-red-100 text-red-700"
   defp badge_color("audio"), do: "bg-yellow-100 text-yellow-700"
-  defp badge_color("software"), do: "bg-purple-100 text-purple-700"
+  defp badge_color("software"), do: "bg-voile-primary/10 text-voile-primary"
   defp badge_color("archive"), do: "bg-orange-100 text-orange-700"
   defp badge_color(_), do: "bg-gray-100 text-gray-700"
 

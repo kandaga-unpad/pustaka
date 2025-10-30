@@ -4,6 +4,15 @@ defmodule VoileWeb.ResourceClassController do
   alias Voile.Schema.Metadata
   alias Voile.Schema.Metadata.ResourceClass
 
+  plug VoileWeb.Plugs.Authorize,
+    permissions: %{
+      new: ["metadata.manage"],
+      create: ["metadata.manage"],
+      edit: ["metadata.manage", "metadata.edit"],
+      update: ["metadata.manage", "metadata.edit"],
+      delete: ["metadata.manage"]
+    }
+
   def index(conn, _params) do
     page = Map.get(conn.params, "page", "1") |> String.to_integer()
     per_page = 10

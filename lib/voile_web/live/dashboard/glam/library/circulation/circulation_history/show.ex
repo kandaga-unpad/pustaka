@@ -34,10 +34,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Show do
   # defdelegate status_badge_class(status), to: VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
   # defdelegate format_datetime(datetime), to: VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
 
-  def action_badge_class("checkout"), do: "bg-blue-100 text-blue-800"
-  def action_badge_class("return"), do: "bg-green-100 text-green-800"
-  def action_badge_class("renewal"), do: "bg-yellow-100 text-yellow-800"
-  def action_badge_class("reservation"), do: "bg-purple-100 text-purple-800"
-  def action_badge_class("cancel"), do: "bg-red-100 text-red-800"
+  def action_badge_class("checkout"), do: "bg-voile-info/10 text-voile-info"
+  def action_badge_class("return"), do: "bg-voile-success/10 text-voile-success"
+  def action_badge_class("renewal"), do: "bg-voile-warning/10 text-voile-warning"
+  def action_badge_class("reservation"), do: "bg-voile-primary/10 text-voile-primary"
+  def action_badge_class("cancel"), do: "bg-voile-error/10 text-voile-error"
   def action_badge_class(_), do: "bg-gray-100 text-gray-800"
 end

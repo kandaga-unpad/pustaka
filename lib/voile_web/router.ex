@@ -315,6 +315,8 @@ defmodule VoileWeb.Router do
 
           live "/user_dashboard", Users.Manage.Dashboard, :index
 
+          live "/apps", Dashboard.Settings.AppProfileSettingsLive, :index
+
           scope "/users" do
             live "/", Users.ManageLive, :index
             live "/new", Users.ManageLive, :new

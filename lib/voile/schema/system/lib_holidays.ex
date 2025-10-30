@@ -28,9 +28,19 @@ defmodule Voile.Schema.System.LibHolidays do
   @doc """
   Returns the list of all holidays.
   """
-  def list_holidays do
-    LibHoliday
-    |> where([h], h.schedule_type == "holiday")
+  def list_holidays(unit_id \\ nil) do
+    query =
+      LibHoliday
+      |> where([h], h.schedule_type == "holiday")
+
+    query =
+      if unit_id do
+        from(h in query, where: h.unit_id == ^unit_id)
+      else
+        query
+      end
+
+    query
     |> order_by([h], desc: h.holiday_date)
     |> Repo.all()
   end
@@ -38,7 +48,7 @@ defmodule Voile.Schema.System.LibHolidays do
   @doc """
   Returns the list of holidays with pagination.
   """
-  def list_holidays_paginated(page \\ 1, per_page \\ 20) do
+  def list_holidays_paginated(page \\ 1, per_page \\ 20, unit_id \\ nil) do
     offset = (page - 1) * per_page
 
     query =
@@ -48,11 +58,26 @@ defmodule Voile.Schema.System.LibHolidays do
         offset: ^offset,
         limit: ^per_page
 
+    query =
+      if unit_id do
+        from(h in query, where: h.unit_id == ^unit_id)
+      else
+        query
+      end
+
     holidays = Repo.all(query)
 
-    total_count =
+    total_count_query =
       from(h in LibHoliday, where: h.schedule_type == "holiday")
-      |> Repo.aggregate(:count, :id)
+
+    total_count_query =
+      if unit_id do
+        from(h in total_count_query, where: h.unit_id == ^unit_id)
+      else
+        total_count_query
+      end
+
+    total_count = Repo.aggregate(total_count_query, :count, :id)
 
     total_pages = div(total_count + per_page - 1, per_page)
 
@@ -188,14 +213,24 @@ defmodule Voile.Schema.System.LibHolidays do
   @doc """
   Get holiday statistics for reporting.
   """
-  def get_holiday_stats do
+  def get_holiday_stats(unit_id \\ nil) do
     current_year = Date.utc_today().year
 
-    query =
+    base_query =
       from h in LibHoliday,
         where:
           fragment("EXTRACT(year FROM ?)", h.holiday_date) == ^current_year and
-            h.schedule_type == "holiday",
+            h.schedule_type == "holiday"
+
+    base_query =
+      if unit_id do
+        from(h in base_query, where: h.unit_id == ^unit_id)
+      else
+        base_query
+      end
+
+    query =
+      from h in base_query,
         group_by: h.holiday_type,
         select: {h.holiday_type, count(h.id)}
 

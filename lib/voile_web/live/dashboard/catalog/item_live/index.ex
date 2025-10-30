@@ -26,6 +26,13 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     # Get user's node for automatic filtering
     user_node_id = current_user.node_id
 
+    # Load nodes and master locations once in the LiveView so the component
+    # does not need to make DB calls. We'll pass these assigns into the
+    # form component when rendering the modal.
+    nodes = Voile.Schema.System.list_nodes()
+    node_options = Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", n.id} end)
+    all_locations = Voile.Schema.Master.list_mst_locations()
+
     socket =
       socket
       |> stream(:items, items, reset: false)
@@ -38,6 +45,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       |> assign(:filters, filters)
       |> assign(:user_node_id, user_node_id)
       |> assign(:current_user, current_user)
+      |> assign(:nodes, node_options)
+      |> assign(:all_locations, all_locations)
 
     {:ok, socket}
   end

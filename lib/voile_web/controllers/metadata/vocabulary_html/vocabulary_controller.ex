@@ -4,6 +4,15 @@ defmodule VoileWeb.VocabularyController do
   alias Voile.Schema.Metadata
   alias Voile.Schema.Metadata.Vocabulary
 
+  plug VoileWeb.Plugs.Authorize,
+    permissions: %{
+      new: ["metadata.manage"],
+      create: ["metadata.manage"],
+      edit: ["metadata.manage", "metadata.edit"],
+      update: ["metadata.manage", "metadata.edit"],
+      delete: ["metadata.manage"]
+    }
+
   def index(conn, _params) do
     metadata_vocabularies = Metadata.list_metadata_vocabularies()
     render(conn, :index, metadata_vocabularies: metadata_vocabularies)

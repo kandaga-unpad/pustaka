@@ -29,7 +29,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
               class="object-cover w-96 h-96 border border-1 border-gray-50"
             />
           <% else %>
-            <div class="w-full min-h-96 flex items-center justify-center border-1 border rounded border-violet-500 dark:border-gray-200">
+            <div class="w-full min-h-96 flex items-center justify-center border-1 border rounded border-voile-primary dark:border-gray-200">
               <p>No thumbnail available</p>
             </div>
           <% end %>
@@ -50,7 +50,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
             <.link
               navigate={@collection.thumbnail}
               target="_blank"
-              class="text-violet-600 hover:underline"
+              class="text-voile-primary hover:underline"
             >
               View
             </.link>

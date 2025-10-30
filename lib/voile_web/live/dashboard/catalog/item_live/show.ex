@@ -28,10 +28,17 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Show do
     current_user = socket.assigns.current_scope.user
 
     if Catalog.is_user_admin?(current_user) or item.unit_id == current_user.node_id do
+      # Provide nodes and locations to the form component when editing
+      nodes = Voile.Schema.System.list_nodes()
+      node_options = Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", n.id} end)
+      all_locations = Voile.Schema.Master.list_mst_locations()
+
       {:noreply,
        socket
        |> assign(:page_title, page_title(socket.assigns.live_action))
-       |> assign(:item, item)}
+       |> assign(:item, item)
+       |> assign(:nodes, node_options)
+       |> assign(:all_locations, all_locations)}
     else
       {:noreply,
        socket

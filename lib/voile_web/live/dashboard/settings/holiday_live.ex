@@ -36,7 +36,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <.icon name="hero-calendar" class="h-8 w-8 text-blue-600" />
+                <.icon name="hero-calendar" class="h-8 w-8 text-voile-info" />
               </div>
 
               <div class="ml-4">
@@ -50,7 +50,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <.icon name="hero-flag" class="h-8 w-8 text-green-600" />
+                <.icon name="hero-flag" class="h-8 w-8 text-voile-success" />
               </div>
 
               <div class="ml-4">
@@ -64,7 +64,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <.icon name="hero-building-library" class="h-8 w-8 text-purple-600" />
+                <.icon name="hero-building-library" class="h-8 w-8 text-voile-primary" />
               </div>
 
               <div class="ml-4">
@@ -78,7 +78,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <.icon name="hero-star" class="h-8 w-8 text-orange-600" />
+                <.icon name="hero-star" class="h-8 w-8 text-voile-warning" />
               </div>
 
               <div class="ml-4">
@@ -90,13 +90,13 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </div>
         </div>
         <!-- Info Panel -->
-        <div class="bg-blue-50 dark:bg-blue-100 border border-blue-200 rounded-lg p-4">
+        <div class="bg-voile-info/10 dark:bg-voile-info/20 border border-voile-info/30 rounded-lg p-4">
           <div class="flex">
-            <.icon name="hero-information-circle" class="h-5 w-5 text-blue-400" />
+            <.icon name="hero-information-circle" class="h-5 w-5 text-voile-info" />
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-blue-800">Holiday Impact on Fines</h3>
+              <h3 class="text-sm font-medium text-voile-info">Holiday Impact on Fines</h3>
 
-              <p class="mt-2 text-sm text-blue-700">
+              <p class="mt-2 text-sm text-voile-info">
                 Non-business days (weekly schedule) and holidays defined here will be excluded from overdue fine calculations.
                 Only business days will count toward fine amounts. This ensures fair fine calculation during library closures.
               </p>
@@ -118,8 +118,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <label class="text-sm font-medium">Viewing schedule for</label>
               <form phx-change="select_unit">
                 <select
-                  class="border border-gray-300 rounded-md px-2 py-1"
+                  class="border border-gray-300 rounded-md px-2 py-1 bg-white dark:bg-gray-700"
                   name="unit_id"
+                  disabled={not @is_super_admin}
+                  title={
+                    if @is_super_admin,
+                      do: "Select unit to view/edit schedule",
+                      else: "Only super admins can switch units"
+                  }
                 >
                   <option value="">System Wide</option>
 
@@ -141,9 +147,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   class={[
                     "border-2 rounded-lg p-4 text-center cursor-pointer transition-all duration-200",
                     if day.is_business_day do
-                      "border-green-300 bg-green-50 hover:bg-green-100"
+                      "border-voile-success bg-voile-success/10 hover:bg-voile-success/20"
                     else
-                      "border-red-300 bg-red-50 hover:bg-red-100"
+                      "border-voile-error bg-voile-error/10 hover:bg-voile-error/20"
                     end
                   ]}
                   phx-click="toggle_day_schedule"
@@ -153,7 +159,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
                   <div class={[
                     "mt-2 text-xs font-semibold",
-                    if(day.is_business_day, do: "text-green-700", else: "text-red-700")
+                    if(day.is_business_day, do: "text-voile-success", else: "text-voile-error")
                   ]}>
                     {if day.is_business_day, do: "Business Day", else: "Non-Business"}
                   </div>
@@ -161,9 +167,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   <div class={[
                     "mt-1 inline-flex rounded-full px-2 py-1 text-xs font-medium",
                     if day.is_business_day do
-                      "bg-green-100 text-green-800"
+                      "bg-voile-success/10 text-voile-success"
                     else
-                      "bg-red-100 text-red-800"
+                      "bg-voile-error/10 text-voile-error"
                     end
                   ]}>
                     {if day.is_business_day, do: "Open", else: "Closed"}
@@ -250,9 +256,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                           <span class={[
                             "inline-flex rounded-full px-2 text-xs font-semibold leading-5",
                             case holiday.holiday_type do
-                              "public" -> "bg-green-100 text-green-800"
-                              "library" -> "bg-purple-100 text-purple-800"
-                              "custom" -> "bg-orange-100 text-orange-800"
+                              "public" -> "bg-voile-success/10 text-voile-success"
+                              "library" -> "bg-voile-primary/10 text-voile-primary"
+                              "custom" -> "bg-voile-warning/10 text-voile-warning"
                               _ -> "bg-gray-100 text-gray-800"
                             end
                           ]}>
@@ -264,9 +270,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                           <span class={[
                             "inline-flex rounded-full px-2 text-xs font-semibold leading-5",
                             if holiday.is_active do
-                              "bg-green-100 text-green-800"
+                              "bg-voile-success/10 text-voile-success"
                             else
-                              "bg-red-100 text-red-800"
+                              "bg-voile-error/10 text-voile-error"
                             end
                           ]}>
                             {if holiday.is_active, do: "Active", else: "Inactive"}
@@ -277,7 +283,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                           <.button
                             phx-click="edit_holiday"
                             phx-value-id={holiday.id}
-                            class="bg-blue-600 hover:bg-blue-700"
+                            class="primary-btn"
                           >
                             Edit
                           </.button>
@@ -286,8 +292,8 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                             phx-value-id={holiday.id}
                             class={
                               if holiday.is_active,
-                                do: "bg-yellow-600 hover:bg-yellow-700",
-                                else: "bg-green-600 hover:bg-green-700"
+                                do: "warning-btn",
+                                else: "success-btn"
                             }
                           >
                             {if holiday.is_active, do: "Disable", else: "Enable"}
@@ -296,7 +302,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                             phx-click="delete_holiday"
                             phx-value-id={holiday.id}
                             data-confirm="Are you sure you want to delete this holiday?"
-                            class="bg-red-600 hover:bg-red-700"
+                            class="cancel-btn"
                           >
                             Delete
                           </.button>
@@ -387,10 +393,20 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
       # Check permission for managing system settings
       authorize!(socket, "system.settings")
 
-      holidays = LibHolidays.list_holidays()
-      holiday_stats = LibHolidays.get_holiday_stats()
-      # selected_unit_id controls which unit's weekly schedule is viewed/edited; nil = system-wide
-      selected_unit_id = nil
+      # Determine default unit scoping for admins: non-super-admins should be scoped to their node
+      current_user = socket.assigns.current_scope.user
+      is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
+
+      selected_unit_id =
+        if is_super_admin do
+          nil
+        else
+          # scope to user's node_id by default
+          current_user && current_user.node_id
+        end
+
+      holidays = LibHolidays.list_holidays(selected_unit_id)
+      holiday_stats = LibHolidays.get_holiday_stats(selected_unit_id)
       weekly_schedule = LibHolidays.get_weekly_schedule(selected_unit_id)
       current_year = Date.utc_today().year
 
@@ -404,6 +420,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         |> assign(:weekly_schedule, weekly_schedule)
         |> assign(:current_year, current_year)
         |> assign(:selected_unit_id, selected_unit_id)
+        |> assign(:is_super_admin, is_super_admin)
         |> assign(:show_form, false)
         |> assign(:form_holiday, nil)
         |> assign(:current_path, "/manage/settings/holidays")
@@ -444,8 +461,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
              socket
              |> put_flash(:info, "Holiday created successfully")
              |> assign(:show_form, false)
-             |> assign(:holidays, LibHolidays.list_holidays())
-             |> assign(:holiday_stats, LibHolidays.get_holiday_stats())}
+             |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+             |> assign(
+               :holiday_stats,
+               LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id)
+             )}
 
           {:error, changeset} ->
             {:noreply, assign(socket, :form, to_form(changeset))}
@@ -458,8 +478,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
              socket
              |> put_flash(:info, "Holiday updated successfully")
              |> assign(:show_form, false)
-             |> assign(:holidays, LibHolidays.list_holidays())
-             |> assign(:holiday_stats, LibHolidays.get_holiday_stats())}
+             |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+             |> assign(
+               :holiday_stats,
+               LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id)
+             )}
 
           {:error, changeset} ->
             {:noreply, assign(socket, :form, to_form(changeset))}
@@ -478,8 +501,8 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
     {:noreply,
      socket
      |> put_flash(:info, "Holiday deleted successfully")
-     |> assign(:holidays, LibHolidays.list_holidays())
-     |> assign(:holiday_stats, LibHolidays.get_holiday_stats())}
+     |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+     |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
   end
 
   def handle_event("toggle_holiday", %{"id" => id}, socket) do
@@ -493,8 +516,8 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         {:noreply,
          socket
          |> put_flash(:info, "Holiday #{status_text} successfully")
-         |> assign(:holidays, LibHolidays.list_holidays())
-         |> assign(:holiday_stats, LibHolidays.get_holiday_stats())}
+         |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+         |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
 
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to update holiday status")}
@@ -580,15 +603,20 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
   end
 
   def handle_event("select_unit", %{"unit_id" => unit_id_str}, socket) do
-    unit_id =
-      case unit_id_str do
-        "" -> nil
-        val -> String.to_integer(val)
-      end
+    # Only super admins can change the selected unit; ignore changes from non-super-admins
+    if not socket.assigns[:is_super_admin] do
+      {:noreply, socket}
+    else
+      unit_id =
+        case unit_id_str do
+          "" -> nil
+          val -> String.to_integer(val)
+        end
 
-    {:noreply,
-     socket
-     |> assign(:selected_unit_id, unit_id)
-     |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
+      {:noreply,
+       socket
+       |> assign(:selected_unit_id, unit_id)
+       |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
+    end
   end
 end

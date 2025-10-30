@@ -46,7 +46,7 @@ defmodule VoileWeb.SearchDashboardLive do
 
         <.link
           href="/search"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-voile-surface bg-voile-primary hover:bg-voile-primary/80 dark:bg-voile-primary dark:hover:bg-voile-primary/80"
         >
           <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" /> New Search
         </.link>
@@ -69,7 +69,7 @@ defmodule VoileWeb.SearchDashboardLive do
               <div class="flex items-center justify-between">
                 <.link
                   href={"/search?q=#{URI.encode_www_form(query)}"}
-                  class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate"
+                  class="text-sm text-voile-info dark:text-voile-info/60 hover:text-voile-info/80 dark:hover:text-voile-info/80 truncate"
                 >
                   {query}
                 </.link>
@@ -96,7 +96,7 @@ defmodule VoileWeb.SearchDashboardLive do
           <%= for hour <- 0..23 do %>
             <div class="flex flex-col items-center justify-end">
               <div
-                class="bg-blue-200 dark:bg-blue-800 rounded-t w-full"
+                class="bg-voile-info/10 dark:bg-voile-info/30 rounded-t w-full"
                 style={"height: #{get_hour_percentage(@search_trends, hour)}%"}
               >
               </div>
@@ -112,7 +112,7 @@ defmodule VoileWeb.SearchDashboardLive do
       <!-- Recent Search Activity -->
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
-          <.icon name="hero-clock" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <.icon name="hero-clock" class="w-6 h-6 text-voile-primary dark:text-voile-primary" />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
         </div>
 

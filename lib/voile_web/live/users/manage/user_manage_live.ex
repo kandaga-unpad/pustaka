@@ -11,14 +11,14 @@ defmodule VoileWeb.Users.ManageLive do
       <.header>
         Users Management
         <:subtitle>Manage system users and their roles</:subtitle>
-        
+
         <:actions>
           <%= if can?(@current_scope.user, "users.create") do %>
             <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
           <% end %>
         </:actions>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64 ">
           <.dashboard_settings_sidebar
@@ -26,29 +26,29 @@ defmodule VoileWeb.Users.ManageLive do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
               <div class="flex items-center gap-2 w-full">
                 <.input name="query" phx-debounce="300" placeholder="Search users..." value="" />
-                <select name="node_id" id="node-filter" class="w-48">
+                <select name="node_id" id="node-filter" class="w-48" disabled={@node_select_disabled}>
                   <option value="">All nodes</option>
-                  
+
                   <%= for node <- @node_list do %>
                     <option value={node.id}>{node.name}</option>
                   <% end %>
                 </select>
                 <select name="user_role_id" id="role-filter" class="w-48">
                   <option value="">All roles</option>
-                  
+
                   <%= for {label, id} <- @user_role_options do %>
                     <option value={id}>{label}</option>
                   <% end %>
                 </select>
                 <select name="user_type_id" id="member-type-filter" class="w-48">
                   <option value="">All member types</option>
-                  
+
                   <%= for t <- @user_type_options do %>
                     <option value={t.id}>{t.name}</option>
                   <% end %>
@@ -71,29 +71,30 @@ defmodule VoileWeb.Users.ManageLive do
                         stroke-width="4"
                       >
                       </circle>
-                      
+
                       <path
                         class="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                       >
                       </path>
-                    </svg> <span class="text-sm text-gray-500">Searching...</span>
+                    </svg>
+                     <span class="text-sm text-gray-500">Searching...</span>
                   </div>
                 <% end %>
               </div>
             </.form>
           </div>
-          
+
           <.table
             id="users"
             rows={@streams.users}
             row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
           >
             <:col :let={{_id, user}} label="Username">{user.username}</:col>
-            
+
             <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
-            
+
             <:col :let={{_id, user}} label="Roles">
               <%= if Ecto.assoc_loaded?(user.roles) and length(user.roles) > 0 do %>
                 <div class="flex flex-wrap gap-1">
@@ -102,7 +103,7 @@ defmodule VoileWeb.Users.ManageLive do
                       {role.name}
                     </span>
                   <% end %>
-                  
+
                   <%= if length(user.roles) > 2 do %>
                     <span class="text-xs text-gray-500">+{length(user.roles) - 2}</span>
                   <% end %>
@@ -111,7 +112,7 @@ defmodule VoileWeb.Users.ManageLive do
                 <span class="text-xs text-gray-400">No roles</span>
               <% end %>
             </:col>
-            
+
             <:col :let={{_id, user}} label="Status">
               <%= if user.confirmed_at do %>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -123,17 +124,17 @@ defmodule VoileWeb.Users.ManageLive do
                 </span>
               <% end %>
             </:col>
-            
+
             <:action :let={{_id, user}}>
               <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
             </:action>
-            
+
             <:action :let={{_id, user}}>
               <%= if can?(@current_scope.user, "users.update") do %>
                 <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{id, user}}>
               <%= if can?(@current_scope.user, "users.delete") do %>
                 <.link
@@ -145,10 +146,10 @@ defmodule VoileWeb.Users.ManageLive do
               <% end %>
             </:action>
           </.table>
-           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
-      
+
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"
@@ -183,6 +184,18 @@ defmodule VoileWeb.Users.ManageLive do
     roles = VoileWeb.Auth.PermissionManager.list_roles()
     user_role_options = Enum.map(roles, fn role -> {role.name, role.id} end)
 
+    # Determine if current user is super admin. If not, enforce node scoping
+    current_user = socket.assigns.current_scope.user
+    is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
+
+    enforced_node_filter =
+      if is_super_admin do
+        nil
+      else
+        # scope to user's node_id (unit_id)
+        current_user && current_user.node_id && to_string(current_user.node_id)
+      end
+
     socket =
       socket
       |> assign(page: 1, per_page: 10, total_pages: 1)
@@ -192,9 +205,17 @@ defmodule VoileWeb.Users.ManageLive do
       |> assign(:user_type_options, user_type)
       |> assign(:user_role_options, user_role_options)
       |> assign(current_path: "/manage/settings/users")
+      |> assign(:enforced_node_filter, enforced_node_filter)
+      |> assign(:node_select_disabled, not is_super_admin)
 
     {users, total_pages} =
-      Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+      if enforced_node_filter do
+        Accounts.search_users_paginated(1, socket.assigns.per_page, %{
+          "node_id" => enforced_node_filter
+        })
+      else
+        Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+      end
 
     socket =
       socket
@@ -273,9 +294,19 @@ defmodule VoileWeb.Users.ManageLive do
               Enum.any?(~w(node_id user_role_id user_type_id), fn k ->
                 Map.get(last_query, k) not in [nil, ""]
               end)) do
-        Accounts.search_users_paginated(page, per_page, last_query)
+        # Merge enforced node filter for non-super-admins
+        params =
+          case socket.assigns[:enforced_node_filter] do
+            nil -> last_query
+            node_id -> Map.put_new(last_query, "node_id", node_id)
+          end
+
+        Accounts.search_users_paginated(page, per_page, params)
       else
-        Accounts.list_users_paginated(page, per_page)
+        case socket.assigns[:enforced_node_filter] do
+          nil -> Accounts.list_users_paginated(page, per_page)
+          node_id -> Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
+        end
       end
 
     socket =
@@ -306,7 +337,11 @@ defmodule VoileWeb.Users.ManageLive do
 
     cond do
       no_filters? ->
-        {users, total_pages} = Accounts.list_users_paginated(page, per_page)
+        {users, total_pages} =
+          case socket.assigns[:enforced_node_filter] do
+            nil -> Accounts.list_users_paginated(page, per_page)
+            node_id -> Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
+          end
 
         socket =
           socket
@@ -324,6 +359,13 @@ defmodule VoileWeb.Users.ManageLive do
         # Run search under Task.Supervisor and let the worker send results back
         caller = self()
         params_copy = params
+
+        # Apply enforced node filter for non-super-admins
+        params_copy =
+          case socket.assigns[:enforced_node_filter] do
+            nil -> params_copy
+            node_id -> Map.put_new(params_copy, "node_id", node_id)
+          end
 
         Task.Supervisor.async_nolink(Voile.TaskSupervisor, fn ->
           {users, total_pages} =

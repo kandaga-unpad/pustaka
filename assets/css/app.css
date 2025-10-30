@@ -133,7 +133,11 @@
     accessible text contrast. */
 
   /* Light mode neutrals */
-  --color-voile-surface: oklch(98% 0 0);
+  /* Make surface a soft, light violet so panels show a gentle brand tint */
+  --color-voile-surface: oklch(96.5% 0.05 292.5);
+  /* Slightly darker surface variant used for active states so it reads
+    clearly against the main surface while keeping a soft violet hue. */
+  --color-voile-surface-variant: oklch(94% 0.08 292.5);
   --color-voile-neutral: oklch(96% 0.02 280);
   --color-voile-text: oklch(18% 0.05 260);
 
@@ -207,7 +211,13 @@
   }
 
   a {
-    @apply text-violet-500 dark:text-violet-200;
+    /* Use the Voile primary token so links follow runtime branding */
+    color: var(--color-voile-primary);
+  }
+
+  /* Ensure links remain themed when using daisyUI's data-theme="dark" */
+  :where([data-theme="dark"], [data-theme="dark"] *) a {
+    color: var(--color-voile-primary);
   }
 
   option {
@@ -288,7 +298,20 @@
   }
 
   .active-tab-item {
-    @apply p-2 bg-brand-200 dark:bg-gray-800;
+    @apply p-2 rounded-md;
+    /* Solid soft-violet background that is clearly distinct from the main surface */
+    background-color: var(--color-voile-surface-variant);
+    color: var(--color-voile-text);
+    border: 1px solid rgba(99, 102, 241, 0.06); /* subtle outline */
+    box-shadow: 0 6px 12px rgba(15, 23, 42, 0.04);
+  }
+
+  :where([data-theme="dark"], [data-theme="dark"] *) .active-tab-item {
+    /* In dark mode use a slightly lighter neutral so the active tab stands out */
+    background-color: var(--color-voile-neutral-dark);
+    color: var(--color-voile-surface);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 6px 12px rgba(2, 6, 23, 0.6);
   }
 
   .input-main-search {
@@ -376,7 +399,18 @@
   }
 
   .default-menu {
-    @apply px-3 py-2 rounded-lg transition-all text-brand-500 dark:text-brand-100 hover:bg-brand-100 dark:hover:bg-gray-100 dark:hover:text-brand-500 transition-all;
+    @apply px-3 py-2 rounded-lg transition-all;
+    /* Use Voile primary for text and surface for hover so runtime brand is applied */
+    color: var(--color-voile-primary);
+  }
+  .default-menu:hover {
+    background-color: var(--color-voile-surface);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .default-menu {
+    color: var(--color-voile-primary);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .default-menu:hover {
+    background-color: var(--color-voile-surface-dark);
   }
 
   .active-menu {
@@ -682,11 +716,25 @@
 
   /* Modern gradient buttons */
   .gradient-btn {
-    @apply bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+    /* Use the Voile gradient so runtime brand colors apply */
+    @apply text-white font-medium px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+    background: linear-gradient(
+      to right,
+      var(--color-voile-primary),
+      var(--color-voile-secondary)
+    );
+    color: var(--color-voile-surface);
   }
 
   .gradient-btn-outline {
-    @apply border-2 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 font-medium px-6 py-3 rounded-2xl hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-300;
+    /* Outline variant that uses voile tokens instead of hardcoded violet */
+    @apply border-2 font-medium px-6 py-3 rounded-2xl transition-all duration-300;
+    border-color: color-mix(
+      in oklab,
+      var(--color-voile-primary) 10%,
+      var(--color-voile-muted)
+    );
+    color: var(--color-voile-primary);
   }
 
   /* Notification animation */

@@ -8,17 +8,17 @@
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
     <.back navigate="/manage/glam/library/circulation">Back</.back>
-    
+
     <div class="text-center">
       <h1 class="text-2xl font-bold">Library Requisitions</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage member requests and special services</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/glam/library/circulation/requisitions/new"}
-        class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md"
+        class="primary-btn inline-flex items-center px-4 py-2 text-sm font-medium"
       >
         <.icon name="hero-plus" class="w-4 h-4 mr-2" /> New Requisition
       </.link>
@@ -42,7 +42,7 @@
               {"Cancelled", "cancelled"}
             ]}
             value={@filter_status}
-            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+            class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             label=""
           />
           <.input
@@ -56,7 +56,7 @@
               {"Reference Question", "reference_question"}
             ]}
             value={@filter_type}
-            class="block w-48 text-sm border-voile-muted rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+            class="block w-48 text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             label=""
           />
         </div>
@@ -65,32 +65,32 @@
     <!-- Quick Stats -->
     <div class="bg-white dark:bg-gray-700 px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
-        <div class="text-2xl font-semibold text-blue-600">-</div>
-        
+        <div class="text-2xl font-semibold text-voile-info">-</div>
+
         <div class="text-xs text-gray-500 uppercase">Submitted</div>
       </div>
-      
+
       <div class="text-center">
-        <div class="text-2xl font-semibold text-yellow-600">-</div>
-        
+        <div class="text-2xl font-semibold text-voile-warning">-</div>
+
         <div class="text-xs text-gray-500 uppercase">Reviewing</div>
       </div>
-      
+
       <div class="text-center">
-        <div class="text-2xl font-semibold text-green-600">-</div>
-        
+        <div class="text-2xl font-semibold text-voile-success">-</div>
+
         <div class="text-xs text-gray-500 uppercase">Approved</div>
       </div>
-      
+
       <div class="text-center">
-        <div class="text-2xl font-semibold text-red-600">-</div>
-        
+        <div class="text-2xl font-semibold text-voile-error">-</div>
+
         <div class="text-xs text-gray-500 uppercase">Rejected</div>
       </div>
-      
+
       <div class="text-center">
-        <div class="text-2xl font-semibold text-purple-600">-</div>
-        
+        <div class="text-2xl font-semibold text-voile-primary">-</div>
+
         <div class="text-xs text-gray-500 uppercase">Fulfilled</div>
       </div>
     </div>
@@ -101,46 +101,46 @@
       <:col :let={{_id, requisition}} label="Title & Author">
         <div>
           <div class="text-sm font-medium text-gray-900">{requisition.title}</div>
-          
+
           <%= if requisition.author do %>
             <div class="text-sm text-gray-500">by {requisition.author}</div>
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Type">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_type_badge_class(requisition.request_type)}"}>
           {requisition.request_type |> String.replace("_", " ") |> String.capitalize()}
         </span>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_status_badge_class(requisition.status)}"}>
           {String.capitalize(requisition.status)}
         </span>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Priority">
         <div class="flex items-center">
           <span class={"text-sm font-medium #{priority_text_class(requisition.priority)}"}>
             {String.capitalize(requisition.priority || "normal")}
           </span>
           <%= if requisition.priority in ["high", "urgent"] do %>
-            <.icon name="hero-exclamation-triangle" class="w-4 h-4 ml-1 text-red-500" />
+            <.icon name="hero-exclamation-triangle" class="w-4 h-4 ml-1 text-voile-error" />
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Requested By">
         <div>
           <div class="text-sm font-medium text-gray-900">
             {if requisition.requested_by, do: requisition.requested_by.fullname, else: "Unknown"}
           </div>
-          
+
           <div class="text-sm text-gray-500">{format_date(requisition.request_date)}</div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Assigned To">
         <div class="text-sm text-gray-900">
           {if requisition.assigned_to do
@@ -150,7 +150,7 @@
           end}
         </div>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Due Date">
         <div class="text-sm text-gray-900">
           {if requisition.due_date do
@@ -159,12 +159,12 @@
             "-"
           end}
         </div>
-        
+
         <%= if requisition.due_date && Date.compare(requisition.due_date, Date.utc_today()) == :lt && requisition.status not in ["fulfilled", "cancelled", "rejected"] do %>
-          <div class="text-xs text-red-500 font-medium">Overdue</div>
+          <div class="text-xs text-voile-error font-medium">Overdue</div>
         <% end %>
       </:col>
-      
+
       <:col :let={{_id, requisition}} label="Estimated Cost">
         <div class="text-sm text-gray-900">
           {if requisition.estimated_cost do
@@ -174,7 +174,7 @@
           end}
         </div>
       </:col>
-      
+
       <:action :let={{_id, requisition}}>
         <div class="flex space-x-2">
           <%= if requisition.status == "submitted" do %>
@@ -182,18 +182,18 @@
               phx-click="update_status"
               phx-value-id={requisition.id}
               phx-value-status="reviewing"
-              class="text-yellow-600 hover:text-yellow-900 text-sm font-medium"
+              class="text-voile-warning hover:text-voile-warning/80 text-sm font-medium"
             >
               Review
             </button>
           <% end %>
-          
+
           <%= if requisition.status == "reviewing" do %>
             <button
               phx-click="update_status"
               phx-value-id={requisition.id}
               phx-value-status="approved"
-              class="text-green-600 hover:text-green-900 text-sm font-medium"
+              class="text-voile-success hover:text-voile-success/80 text-sm font-medium"
             >
               Approve
             </button>
@@ -201,26 +201,26 @@
               phx-click="update_status"
               phx-value-id={requisition.id}
               phx-value-status="rejected"
-              class="text-red-600 hover:text-red-900 text-sm font-medium"
+              class="text-voile-error hover:text-voile-error/80 text-sm font-medium"
             >
               Reject
             </button>
           <% end %>
-          
+
           <%= if requisition.status == "approved" do %>
             <button
               phx-click="update_status"
               phx-value-id={requisition.id}
               phx-value-status="fulfilled"
-              class="text-purple-600 hover:text-purple-900 text-sm font-medium"
+              class="text-voile-primary hover:text-voile-primary/80 text-sm font-medium"
             >
               Fulfill
             </button>
           <% end %>
-          
+
           <.link
             navigate={~p"/manage/glam/library/circulation/requisitions/#{requisition.id}"}
-            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+            class="text-voile-primary hover:text-voile-primary/80 text-sm font-medium"
           >
             View
           </.link>
@@ -228,7 +228,7 @@
             <button
               phx-click="delete"
               phx-value-id={requisition.id}
-              class="text-red-600 hover:text-red-900 text-sm font-medium"
+              class="text-voile-error hover:text-voile-error/80 text-sm font-medium"
               data-confirm="Are you sure you want to delete this requisition?"
             >
               Delete
@@ -252,7 +252,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium">New Requisition</h3>
-    
+
     <.form :let={f} for={%{}} id="requisition-form" phx-submit="create_requisition">
       <.input
         field={f[:request_type]}

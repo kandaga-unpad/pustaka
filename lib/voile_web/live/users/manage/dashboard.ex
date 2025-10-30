@@ -46,9 +46,12 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <.header>
         Admin Dashboard
         <:subtitle>System overview and management</:subtitle>
-        
+
         <:actions>
-          <.button phx-click="refresh_stats" class="bg-blue-600 hover:bg-blue-700">
+          <.button
+            phx-click="refresh_stats"
+            class="bg-voile-primary hover:bg-voile-primary/80 text-voile-surface"
+          >
             <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Refresh Stats
           </.button>
         </:actions>
@@ -61,7 +64,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg
-                  class="h-6 w-6 text-blue-400"
+                  class="h-6 w-6 text-voile-info"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -74,11 +77,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                   />
                 </svg>
               </div>
-              
+
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                  
+
                   <dd class="text-lg font-medium text-gray-900">{@stats.total_users}</dd>
                 </dl>
               </div>
@@ -104,11 +107,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                   />
                 </svg>
               </div>
-              
+
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Active Users</dt>
-                  
+
                   <dd class="text-lg font-medium text-gray-900">{@stats.confirmed_users}</dd>
                 </dl>
               </div>
@@ -134,11 +137,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                   />
                 </svg>
               </div>
-              
+
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Pending Users</dt>
-                  
+
                   <dd class="text-lg font-medium text-gray-900">{@stats.unconfirmed_users}</dd>
                 </dl>
               </div>
@@ -151,7 +154,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg
-                  class="h-6 w-6 text-purple-400"
+                  class="h-6 w-6 text-voile-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -164,11 +167,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                   />
                 </svg>
               </div>
-              
+
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Total Roles</dt>
-                  
+
                   <dd class="text-lg font-medium text-gray-900">{map_size(@stats.users_by_role)}</dd>
                 </dl>
               </div>
@@ -180,7 +183,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Users by Role</h3>
-          
+
           <div class="space-y-3">
             <%= for {role, count} <- @stats.users_by_role do %>
               <div class="flex items-center justify-between">
@@ -189,16 +192,16 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                     {role}
                   </span>
                 </div>
-                
+
                 <div class="flex items-center">
                   <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
                     <div
-                      class="bg-blue-600 h-2 rounded-full"
+                      class="bg-voile-info h-2 rounded-full"
                       style={"width: #{if @stats.total_users > 0, do: (count / @stats.total_users * 100), else: 0}%"}
                     >
                     </div>
                   </div>
-                   <span class="text-sm font-medium text-gray-900">{count}</span>
+                  <span class="text-sm font-medium text-gray-900">{count}</span>
                 </div>
               </div>
             <% end %>
@@ -209,11 +212,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
-          
+
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <.link
               navigate={~p"/manage/settings/users/new"}
-              class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-voile-info focus:border-voile-info"
             >
               <svg
                 class="mx-auto h-8 w-8 text-gray-400 group-hover:text-gray-600"
@@ -255,7 +258,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 </span>
               </.link>
             <% end %>
-            
+
             <%= if @current_user do %>
               <.link
                 navigate={~p"/manage/settings/users"}
@@ -279,7 +282,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 </span>
               </.link>
             <% end %>
-            
+
             <%= if @current_user do %>
               <.link
                 navigate={~p"/manage/settings/users/roles"}
@@ -310,7 +313,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Users</h3>
-          
+
           <div class="flow-root">
             <ul role="list" class="-my-5 divide-y divide-gray-200">
               <%= for user <- @recent_users do %>
@@ -327,22 +330,22 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                         </div>
                       <% end %>
                     </div>
-                    
+
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-                      
+
                       <p class="text-sm text-gray-500 truncate">
                         Joined {Calendar.strftime(user.inserted_at, "%B %d, %Y")}
                       </p>
                     </div>
-                    
+
                     <div class="flex items-center space-x-2">
                       <%= for role <- user.roles do %>
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
                           {role.name}
                         </span>
                       <% end %>
-                      
+
                       <%= if user.confirmed_at do %>
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           Active
@@ -358,12 +361,12 @@ defmodule VoileWeb.Users.Manage.Dashboard do
               <% end %>
             </ul>
           </div>
-          
+
           <%= if @current_user do %>
             <div class="mt-6">
               <.link
                 navigate={~p"/manage/settings/users"}
-                class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-voile-info focus:border-voile-info"
               >
                 View all users
               </.link>
@@ -375,17 +378,17 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">System Information</h3>
-          
+
           <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div>
               <dt class="text-sm font-medium text-gray-500">Current User</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">{@current_user.email}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Your Role</dt>
-              
+
               <dd class="mt-1">
                 <%= for role <- @current_user.roles do %>
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-1">
@@ -394,10 +397,10 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 <% end %>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Last Login</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">
                 <%= if @current_user.current_sign_in_at do %>
                   {Calendar.strftime(@current_user.current_sign_in_at, "%B %d, %Y at %I:%M %p")}
@@ -406,10 +409,10 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 <% end %>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Account Status</dt>
-              
+
               <dd class="mt-1">
                 <%= if @current_user.confirmed_at do %>
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">

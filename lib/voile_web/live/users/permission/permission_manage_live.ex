@@ -6,20 +6,22 @@ defmodule VoileWeb.Users.Permission.ManageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # Check permission
-    authorize!(socket, "permissions.manage")
+    handle_mount_errors do
+      # Check permission
+      authorize!(socket, "permissions.manage")
 
-    {permissions, total_pages} = PermissionManager.list_permissions_paginated(1, 10)
+      {permissions, total_pages} = PermissionManager.list_permissions_paginated(1, 10)
 
-    socket =
-      socket
-      |> assign(page_title: "Permission Management")
-      |> assign(searching: false)
-      |> assign(current_path: "/manage/settings/permissions")
-      |> assign(page: 1, per_page: 10, total_pages: total_pages)
-      |> stream(:permissions, permissions)
+      socket =
+        socket
+        |> assign(page_title: "Permission Management")
+        |> assign(searching: false)
+        |> assign(current_path: "/manage/settings/permissions")
+        |> assign(page: 1, per_page: 10, total_pages: total_pages)
+        |> stream(:permissions, permissions)
 
-    {:ok, socket}
+      {:ok, socket}
+    end
   end
 
   @impl true
@@ -140,7 +142,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
       <.header>
         Permission Management
         <:subtitle>Manage system permissions and access controls</:subtitle>
-        
+
         <:actions>
           <%= if can?(@current_scope.user, "permissions.manage") do %>
             <.link patch={~p"/manage/settings/permissions/new"}>
@@ -149,7 +151,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
           <% end %>
         </:actions>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -157,7 +159,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} phx-change="search" id="search-form">
@@ -186,7 +188,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
                         stroke-width="4"
                       >
                       </circle>
-                      
+
                       <path
                         class="opacity-75"
                         fill="currentColor"
@@ -199,7 +201,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
               </div>
             </.form>
           </div>
-          
+
           <.table
             id="permissions"
             rows={@streams.permissions}
@@ -210,31 +212,31 @@ defmodule VoileWeb.Users.Permission.ManageLive do
             <:col :let={{_id, permission}} label="Name">
               <span class="font-medium font-mono text-sm">{permission.name}</span>
             </:col>
-            
+
             <:col :let={{_id, permission}} label="Resource">
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 {permission.resource}
               </span>
             </:col>
-            
+
             <:col :let={{_id, permission}} label="Action">
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                 {permission.action}
               </span>
             </:col>
-            
+
             <:col :let={{_id, permission}} label="Description">{permission.description || "-"}</:col>
-            
+
             <:action :let={{_id, permission}}>
               <div class="sr-only">
                 <.link navigate={~p"/manage/settings/permissions/#{permission}"}>Show</.link>
               </div>
-              
+
               <%= if can?(@current_scope.user, "permissions.manage") do %>
                 <.link navigate={~p"/manage/settings/permissions/#{permission}/edit"}>Edit</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{id, permission}}>
               <%= if can?(@current_scope.user, "permissions.manage") do %>
                 <.link
@@ -246,7 +248,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
               <% end %>
             </:action>
           </.table>
-           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
     </div>

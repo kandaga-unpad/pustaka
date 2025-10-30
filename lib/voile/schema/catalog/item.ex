@@ -57,6 +57,26 @@ defmodule Voile.Schema.Catalog.Item do
     end)
   end
 
+  @doc """
+  Returns status options for form selects as {label, value} tuples.
+  """
+  def status_options do
+    Enum.map(@statuses, fn val ->
+      label = val |> String.replace("_", " ") |> String.capitalize()
+      {label, val}
+    end)
+  end
+
+  @doc """
+  Returns condition options for form selects as {label, value} tuples.
+  """
+  def condition_options do
+    Enum.map(@conditions, fn val ->
+      label = val |> String.replace("_", " ") |> String.capitalize()
+      {label, val}
+    end)
+  end
+
   @doc false
   def changeset(item, attrs) do
     item

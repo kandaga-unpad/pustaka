@@ -29,22 +29,27 @@ defmodule VoileWeb.Auth.Authorization do
   def can?(%User{} = user, permission_name, opts) do
     scope = Keyword.get(opts, :scope)
 
-    cond do
-      # Check explicit user permissions first (including denies)
-      has_explicit_permission?(user.id, permission_name, scope) ->
-        is_granted = get_explicit_permission_grant(user.id, permission_name, scope)
-        is_granted
+    # Super admins bypass all permission checks
+    if is_super_admin?(user) do
+      true
+    else
+      cond do
+        # Check explicit user permissions first (including denies)
+        has_explicit_permission?(user.id, permission_name, scope) ->
+          is_granted = get_explicit_permission_grant(user.id, permission_name, scope)
+          is_granted
 
-      # Then check role-based permissions
-      has_role_permission?(user.id, permission_name, scope) ->
-        true
+        # Then check role-based permissions
+        has_role_permission?(user.id, permission_name, scope) ->
+          true
 
-      # Check collection-level permissions
-      scope && has_collection_permission?(user.id, permission_name, scope) ->
-        true
+        # Check collection-level permissions
+        scope && has_collection_permission?(user.id, permission_name, scope) ->
+          true
 
-      true ->
-        false
+        true ->
+          false
+      end
     end
   end
 
@@ -462,8 +467,11 @@ defmodule VoileWeb.Auth.Authorization do
 
   defp map_permission_to_level(permission_name) do
     case permission_name do
-      name when name in ~w(collections.delete items.delete) -> "owner"
+      # Owner level permissions (can delete / full manage)
+      name when name in ~w(collections.delete items.delete metadata.manage) -> "owner"
+      # Editor level permissions (can create/update content)
       name when name in ~w(collections.update items.update items.create metadata.edit) -> "editor"
+      # Viewer level permissions (read/export)
       name when name in ~w(collections.read items.read items.export) -> "viewer"
       _ -> nil
     end
@@ -536,6 +544,51 @@ defmodule VoileWeb.Auth.Authorization do
   defp parse_scope({:collection, id}), do: {"collection", id}
   defp parse_scope({:item, id}), do: {"item", id}
   defp parse_scope({scope_type, id}), do: {to_string(scope_type), id}
+
+  @doc """
+  Authorize that at least one permission in the list is granted for the given
+  subject (user, conn, or socket) or raise `UnauthorizedError`.
+
+  Example:
+      Authorization.authorize_any!(conn, ["metadata.manage", "metadata.edit"])
+  """
+  def authorize_any!(user_or_conn_or_socket, permission_names) when is_list(permission_names) do
+    if authorize_any?(user_or_conn_or_socket, permission_names) do
+      :ok
+    else
+      user_id =
+        case user_or_conn_or_socket do
+          %User{} = user ->
+            user.id
+
+          %Phoenix.LiveView.Socket{assigns: assigns} when is_map(assigns) ->
+            assigns[:current_scope] && assigns[:current_scope].user &&
+              assigns[:current_scope].user.id
+
+          %Plug.Conn{} = conn ->
+            conn.assigns[:current_scope] && conn.assigns[:current_scope].user &&
+              conn.assigns[:current_scope].user.id
+
+          id when is_binary(id) ->
+            id
+
+          _ ->
+            nil
+        end
+
+      raise __MODULE__.UnauthorizedError,
+        permission: Enum.join(permission_names, ", "),
+        user_id: user_id
+    end
+  end
+
+  @doc """
+  Returns `true` if any of the given permission names are granted for the
+  provided subject (user, conn, or socket).
+  """
+  def authorize_any?(user_or_conn_or_socket, permission_names) when is_list(permission_names) do
+    Enum.any?(permission_names, fn perm -> can?(user_or_conn_or_socket, perm) end)
+  end
 
   # Exception module
   defmodule UnauthorizedError do

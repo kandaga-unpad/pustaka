@@ -2,6 +2,9 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   use VoileWeb, :live_component
 
   alias Voile.Schema.Catalog
+  alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.System
+  alias Voile.Schema.Master
 
   @impl true
   def render(assigns) do
@@ -25,18 +28,38 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <.input field={@form[:item_code]} type="text" label="Item code" />
             <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
             <.input field={@form[:barcode]} type="text" label="Barcode" />
-            <.input field={@form[:location]} type="text" label="Location" />
-            <.input field={@form[:status]} type="text" label="Status" />
-            <.input field={@form[:condition]} type="text" label="Condition" />
+
+            <.input
+              field={@form[:unit_id]}
+              type="select"
+              options={@nodes || []}
+              label="Unit / Node"
+            />
+
+            <.input
+              field={@form[:item_location_id]}
+              type="select"
+              options={@locations || []}
+              label="Location"
+            />
+
+            <.input
+              field={@form[:status]}
+              type="select"
+              options={Item.status_options()}
+              label="Status"
+            />
+            <.input
+              field={@form[:condition]}
+              type="select"
+              options={Item.condition_options()}
+              label="Condition"
+            />
+
             <.input
               field={@form[:availability]}
               type="select"
-              options={[
-                {"Available", "available"},
-                {"Loaned", "loaned"},
-                {"Reserved", "reserved"},
-                {"Maintenance", "maintenance"}
-              ]}
+              options={Item.availability_options()}
               label="Availability"
             />
           </div>
@@ -63,9 +86,31 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
   @impl true
   def update(%{item: item} = assigns, socket) do
+    # Load nodes and locations. Filter locations by the item's unit_id when present.
+    nodes = System.list_nodes()
+    node_options = Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", n.id} end)
+
+    all_locations = Master.list_mst_locations()
+    # Decide which node to use for filtering locations:
+    # 1. item.unit_id (when editing)
+    # 2. passed in assigns user_node_id (when creating a new item)
+    # 3. nil -> no locations shown
+    selected_node_id = item.unit_id || assigns[:user_node_id]
+
+    filtered_locations =
+      if selected_node_id do
+        Enum.filter(all_locations, &(&1.node_id == selected_node_id))
+      else
+        []
+      end
+
+    location_options = Enum.map(filtered_locations, &{&1.location_name, &1.id})
+
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:nodes, node_options)
+     |> assign(:locations, location_options)
      |> assign_new(:form, fn ->
        to_form(Catalog.change_item(item))
      end)}
@@ -74,7 +119,43 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   @impl true
   def handle_event("validate", %{"item" => item_params}, socket) do
     changeset = Catalog.change_item(socket.assigns.item, item_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+
+    # If unit_id changed, update the locations list to show only locations for that node
+    unit_id =
+      case item_params["unit_id"] do
+        nil ->
+          socket.assigns.item.unit_id
+
+        "" ->
+          nil
+
+        id when is_binary(id) ->
+          case Integer.parse(id) do
+            {int, _} -> int
+            :error -> id
+          end
+
+        id ->
+          id
+      end
+
+    all_locations = socket.assigns[:all_locations] || []
+
+    locations =
+      case unit_id do
+        nil ->
+          []
+
+        id ->
+          all_locations
+          |> Enum.filter(&(&1.node_id == id))
+          |> Enum.map(&{&1.location_name, &1.id})
+      end
+
+    {:noreply,
+     socket
+     |> assign(:locations, locations)
+     |> assign(:form, to_form(changeset, action: :validate))}
   end
 
   def handle_event("save", %{"item" => item_params}, socket) do

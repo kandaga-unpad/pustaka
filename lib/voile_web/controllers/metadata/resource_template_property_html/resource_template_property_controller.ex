@@ -4,6 +4,15 @@ defmodule VoileWeb.ResourceTemplatePropertyController do
   alias Voile.Schema.Metadata
   alias Voile.Schema.Metadata.ResourceTemplateProperty
 
+  plug VoileWeb.Plugs.Authorize,
+    permissions: %{
+      new: ["metadata.manage"],
+      create: ["metadata.manage"],
+      edit: ["metadata.manage", "metadata.edit"],
+      update: ["metadata.manage", "metadata.edit"],
+      delete: ["metadata.manage"]
+    }
+
   def index(conn, _params) do
     resource_template_property = Metadata.list_resource_template_property()
     render(conn, :index, resource_template_property_collection: resource_template_property)

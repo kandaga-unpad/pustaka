@@ -200,7 +200,10 @@
     <%!-- Dates & History Card --%>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
-        <.icon name="hero-calendar-days" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <.icon
+          name="hero-calendar-days"
+          class="w-5 h-5 text-voile-primary dark:text-voile-primary"
+        />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dates & History</h2>
       </div>
 
@@ -334,6 +337,7 @@
       title={@page_title}
       action={@live_action}
       item={@item}
+      user_node_id={@current_scope.user.node_id}
       patch={~p"/manage/catalog/items/#{@item}"}
     />
   </.modal>
