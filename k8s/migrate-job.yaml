@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: voile-migrate
+  namespace: voile
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          # Replace image with the same image you deploy for the app
+          image: registry.example.com/voile:1.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: voile-secrets
+          # IMPORTANT: update the command below to call your release migration function.
+          # Common pattern: ./bin/<app> eval "MyApp.Release.migrate"
+          # Replace 'Voile.Release' with your release module name.
+          command: ["/bin/sh", "-c", "if [ -x ./bin/voile ]; then ./bin/voile eval 'Voile.Release.migrate'; else echo 'Release binary not found'; exit 1; fi"]
+  backoffLimit: 4

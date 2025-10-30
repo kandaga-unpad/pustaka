@@ -1,0 +1,102 @@
+name: CI — Build, Push, Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  MIX_ENV: prod
+
+jobs:
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir and OTP
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.15'
+          otp-version: '26'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install build dependencies
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get --only $MIX_ENV
+          npm ci --prefix assets
+
+      - name: Build assets
+        run: |
+          npm run deploy --prefix assets || true
+
+      - name: Compile and build release
+        run: |
+          mix deps.compile
+          mix compile
+          mix release --overwrite
+
+      - name: Log in to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push image
+        id: push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Containerfile
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/voile:${{ github.sha }}
+            ${{ secrets.REGISTRY_URL }}/voile:latest
+          build-args: |
+            MIX_ENV=prod
+        
+      - name: Set output image
+        run: echo "image=${{ secrets.REGISTRY_URL }}/voile:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to k3s (kubernetes)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout (for manifests)
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > $HOME/.kube/config
+
+      - name: Update deployment image and apply manifests
+        env:
+          IMAGE: ${{ secrets.REGISTRY_URL }}/voile:${{ github.sha }}
+        run: |
+          kubectl -n voile set image deployment/voile voile=$IMAGE --record || true
+          kubectl apply -f k8s/namespace.yaml || true
+          kubectl apply -f k8s/secrets.yaml || true
+          kubectl apply -f k8s/postgres-deployment.yaml || true
+          kubectl apply -f k8s/pdb.yaml || true
+          kubectl apply -f k8s/voile-deployment.yaml || true
+          kubectl apply -f k8s/voile-service.yaml || true
+          kubectl apply -f k8s/voile-ingress.yaml || true

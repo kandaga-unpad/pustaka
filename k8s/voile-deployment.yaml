@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voile
+  namespace: voile
+  labels:
+    app: voile
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: voile
+  template:
+    metadata:
+      labels:
+        app: voile
+    spec:
+      # Security: run as non-root user (UID 1000) and set fsGroup so volumes are usable.
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+      containers:
+        - name: voile
+          # Replace the image below with your registry/image:tag (use immutable tags)
+          image: registry.example.com/voile:1.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: voile-secrets
+          env:
+            - name: PORT
+              value: "4000"
+            - name: DATABASE_HOST
+              value: "voile-postgres"
+          ports:
+            - containerPort: 4000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
