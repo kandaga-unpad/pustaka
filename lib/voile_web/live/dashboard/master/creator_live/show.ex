@@ -2,10 +2,22 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Show do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Master
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    user = socket.assigns.current_scope.user
+
+    unless Authorization.can?(user, "metadata.manage") do
+      socket =
+        socket
+        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> push_navigate(to: ~p"/manage/master")
+
+      {:ok, socket}
+    else
+      {:ok, socket}
+    end
   end
 
   @impl true

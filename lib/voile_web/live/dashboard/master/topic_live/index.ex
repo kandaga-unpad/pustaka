@@ -3,25 +3,34 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Index do
 
   alias Voile.Schema.Master
   alias Voile.Schema.Master.Topic
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
-    # Check permission for managing metadata/master data
-    authorize!(socket, "metadata.manage")
+    user = socket.assigns.current_scope.user
 
-    page = 1
-    per_page = 10
-    {topics, total_pages} = Master.list_mst_topics_paginated(page, per_page)
+    unless Authorization.can?(user, "metadata.manage") do
+      socket =
+        socket
+        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> push_navigate(to: ~p"/manage/master")
 
-    socket =
-      socket
-      |> assign(:page_title, "Listing Topics")
-      |> assign(:live_action, :index)
-      |> assign(:topics, topics)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
+      {:ok, socket}
+    else
+      page = 1
+      per_page = 10
+      {topics, total_pages} = Master.list_mst_topics_paginated(page, per_page)
 
-    {:ok, socket}
+      socket =
+        socket
+        |> assign(:page_title, "Listing Topics")
+        |> assign(:live_action, :index)
+        |> assign(:topics, topics)
+        |> assign(:page, page)
+        |> assign(:total_pages, total_pages)
+
+      {:ok, socket}
+    end
   end
 
   @impl true

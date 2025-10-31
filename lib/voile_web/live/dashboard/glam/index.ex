@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.Metadata.ResourceClass
+  alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
 
@@ -12,27 +13,78 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
 
-    # Get statistics for each GLAM type
-    glam_stats = get_glam_statistics()
-
-    # Get recent activity across all GLAM types
-    recent_collections = get_recent_collections(5)
+    is_super_admin = Authorization.is_super_admin?(user)
 
     socket =
       socket
       |> assign(:page_title, "GLAM Dashboard")
-      |> assign(:glam_stats, glam_stats)
-      |> assign(:recent_collections, recent_collections)
       |> assign(:user, user)
+      |> assign(:is_super_admin, is_super_admin)
+
+    socket =
+      if is_super_admin do
+        nodes = Voile.Schema.System.list_nodes()
+
+        socket |> assign(:nodes, nodes) |> assign(:selected_node_id, nil)
+      else
+        socket |> assign(:nodes, []) |> assign(:selected_node_id, user.node_id)
+      end
+
+    # compute initial stats scoped by user/node and recent collections
+    socket =
+      socket
+      |> assign(:glam_stats, get_glam_statistics(user))
+      |> assign(:recent_collections, get_recent_collections(5, user))
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
+    node_id = if node_id_str in [nil, "all", ""], do: nil, else: String.to_integer(node_id_str)
+
+    socket = assign(socket, :selected_node_id, node_id)
+
+    # Determine user context for stats (override node for super_admin when a node is selected)
+    user = socket.assigns.user
+
+    user_for_stats =
+      if Authorization.is_super_admin?(user) and not is_nil(node_id) do
+        Map.put(user, :node_id, node_id)
+      else
+        user
+      end
+
+    socket =
+      socket
+      |> assign(:glam_stats, get_glam_statistics(user_for_stats))
+      |> assign(:recent_collections, get_recent_collections(5, user_for_stats))
+
+    {:noreply, socket}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="space-y-6">
-      <%!-- Breadcrumb --%>
+      <%= if @is_super_admin do %>
+        <div class="mb-4">
+          <.form :let={f} for={%{}} phx-change="select_node">
+            <.input
+              field={f[:node_id]}
+              type="select"
+              options={
+                [{"All Nodes", "all"}] ++
+                  Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+              }
+              value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+              class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
+              label="Filter node"
+            />
+          </.form>
+        </div>
+      <% end %>
+       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: "Manage", path: ~p"/manage"},
         %{label: "GLAM", path: nil}
@@ -41,18 +93,18 @@ defmodule VoileWeb.Dashboard.Glam.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">GLAM Management Dashboard</h1>
-
+            
             <p class="text-white text-lg">
               Gallery, Library, Archive & Museum - Unified Collections Management
             </p>
           </div>
-
+          
           <div class="hidden md:block">
             <.icon name="hero-building-library" class="w-24 h-24 opacity-20" />
           </div>
         </div>
       </div>
-      <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
+       <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <.stat_card
@@ -82,14 +134,14 @@ defmodule VoileWeb.Dashboard.Glam.Index do
           color="orange"
         />
       </div>
-      <%!-- Recent Activity --%>
+       <%!-- Recent Activity --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Collections</h2>
           </div>
-
+          
           <.link
             navigate="/manage/catalog/collections"
             class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
@@ -97,7 +149,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
             View All →
           </.link>
         </div>
-
+        
         <div class="space-y-3">
           <%= for collection <- @recent_collections do %>
             <.recent_collection_item collection={collection} />
@@ -110,15 +162,24 @@ defmodule VoileWeb.Dashboard.Glam.Index do
 
   # Private helper functions
 
-  defp get_glam_statistics do
-    gallery_count = count_collections_by_glam("Gallery")
-    library_count = count_collections_by_glam("Library")
-    archive_count = count_collections_by_glam("Archive")
-    museum_count = count_collections_by_glam("Museum")
+  defp get_glam_statistics(user) do
+    gallery_count = count_collections_by_glam("Gallery", user)
+    library_count = count_collections_by_glam("Library", user)
+    archive_count = count_collections_by_glam("Archive", user)
+    museum_count = count_collections_by_glam("Museum", user)
 
     total_collections = gallery_count + library_count + archive_count + museum_count
 
-    total_items = Repo.aggregate(Item, :count, :id)
+    total_items =
+      if Authorization.is_super_admin?(user) do
+        Repo.aggregate(Item, :count, :id)
+      else
+        Repo.aggregate(
+          from(i in Item, join: c in assoc(i, :collection), where: c.unit_id == ^user.node_id),
+          :count,
+          :id
+        )
+      end
 
     # Count all nodes (no is_active field in the schema)
     total_nodes = Repo.aggregate(Voile.Schema.System.Node, :count, :id)
@@ -149,24 +210,42 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     }
   end
 
-  defp count_collections_by_glam(glam_type) do
-    from(c in Collection,
-      join: rc in assoc(c, :resource_class),
-      where: rc.glam_type == ^glam_type
-    )
-    |> Repo.aggregate(:count, :id)
+  defp count_collections_by_glam(glam_type, user) do
+    base =
+      from(c in Collection,
+        join: rc in assoc(c, :resource_class),
+        where: rc.glam_type == ^glam_type
+      )
+
+    query =
+      if Authorization.is_super_admin?(user) do
+        base
+      else
+        from(c in base, where: c.unit_id == ^user.node_id)
+      end
+
+    Repo.aggregate(query, :count, :id)
   end
 
   defp calculate_percentage(_count, 0), do: 0
   defp calculate_percentage(count, total), do: Float.round(count / total * 100, 3)
 
-  defp get_recent_collections(limit) do
-    from(c in Collection,
-      join: rc in assoc(c, :resource_class),
-      order_by: [desc: c.inserted_at],
-      limit: ^limit,
-      preload: [:resource_class, :mst_creator]
-    )
-    |> Repo.all()
+  defp get_recent_collections(limit, user) do
+    base =
+      from(c in Collection,
+        join: rc in assoc(c, :resource_class),
+        order_by: [desc: c.inserted_at],
+        limit: ^limit,
+        preload: [:resource_class, :mst_creator]
+      )
+
+    query =
+      if Authorization.is_super_admin?(user) do
+        base
+      else
+        from(c in base, where: c.unit_id == ^user.node_id)
+      end
+
+    Repo.all(query)
   end
 end

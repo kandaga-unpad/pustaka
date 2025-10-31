@@ -8,15 +8,15 @@
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
     <.back navigate="/manage/glam/library/circulation">Back</.back>
-
+    
     <div class="text-center">
       <h1 class="text-2xl font-bold text-gray-900">Circulation History</h1>
-
+      
       <p class="mt-2 text-sm text-gray-700">
         View detailed logs and audit trails of all circulation activities
       </p>
     </div>
-
+    
     <div class="mt-4 sm:mt-0">
       <button
         phx-click="export"
@@ -29,7 +29,7 @@
   <!-- Filters -->
   <div class="bg-white shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-gray-200">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
           <.form :let={f} for={%{}} phx-change="filter">
@@ -55,7 +55,7 @@
             />
           </.form>
         </div>
-
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
           <form phx-change="search" phx-submit="search">
@@ -68,7 +68,7 @@
             />
           </form>
         </div>
-
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
           <form phx-change="date_filter">
@@ -80,7 +80,7 @@
             />
           </form>
         </div>
-
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
           <form phx-change="date_filter">
@@ -92,37 +92,57 @@
             />
           </form>
         </div>
+        
+        <%= if @is_super_admin do %>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Node</label>
+            <.form :let={f} for={%{}} phx-change="select_node">
+              <.input
+                field={f[:node_id]}
+                type="select"
+                options={
+                  [
+                    {"All Nodes", "all"}
+                  ] ++ Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+                class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
+                label=""
+              />
+            </.form>
+          </div>
+        <% end %>
       </div>
     </div>
     <!-- Quick Stats -->
     <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-info">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Today's Events</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-success">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Loans</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-primary">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Returns</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-warning">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Renewals</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-error">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Fines</div>
       </div>
     </div>
@@ -133,34 +153,34 @@
       <:col :let={{_id, entry}} label="Event">
         <div class="flex items-center">
           <div class={"w-3 h-3 rounded-full mr-3 #{event_type_color(entry.event_type)}"}></div>
-
+          
           <div>
             <div class="text-sm font-medium text-gray-900">
               {entry.event_type |> String.replace("_", " ") |> String.capitalize()}
             </div>
-
+            
             <div class="text-xs text-gray-500">{format_datetime(entry.event_date)}</div>
           </div>
         </div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="Member">
         <div>
           <%= if entry.member do %>
             <div class="text-sm font-medium text-gray-900">{entry.member.fullname}</div>
-
+            
             <div class="text-sm text-gray-500">ID: {entry.member_id}</div>
           <% else %>
             <div class="text-sm text-gray-500">-</div>
           <% end %>
         </div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="Item">
         <div>
           <%= if entry.item do %>
             <div class="text-sm font-medium text-gray-900">{entry.item.item_code}</div>
-
+            
             <%= if entry.item.collection do %>
               <div class="text-sm text-gray-500">{entry.item.collection.title}</div>
             <% end %>
@@ -169,18 +189,18 @@
           <% end %>
         </div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="Description">
         <div class="max-w-xs">
           <div class="text-sm text-gray-900 truncate">{entry.description}</div>
         </div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="Processed By">
         <div>
           <%= if entry.processed_by do %>
             <div class="text-sm font-medium text-gray-900">{entry.processed_by.fullname}</div>
-
+            
             <div class="text-sm text-gray-500">
               {if entry.processed_by.role, do: entry.processed_by.role, else: "Staff"}
             </div>
@@ -189,11 +209,11 @@
           <% end %>
         </div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="IP Address">
         <div class="text-sm text-gray-500 font-mono">{entry.ip_address || "-"}</div>
       </:col>
-
+      
       <:col :let={{_id, entry}} label="Related">
         <div class="flex flex-col space-y-1">
           <%= if entry.transaction_id do %>
@@ -201,13 +221,13 @@
               Transaction
             </span>
           <% end %>
-
+          
           <%= if entry.reservation_id do %>
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-success/10 text-voile-success">
               Reservation
             </span>
           <% end %>
-
+          
           <%= if entry.fine_id do %>
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-error/10 text-voile-error">
               Fine
@@ -215,7 +235,7 @@
           <% end %>
         </div>
       </:col>
-
+      
       <:action :let={{_id, entry}}>
         <.link
           navigate={~p"/manage/glam/library/circulation/circulation_history/#{entry.id}"}

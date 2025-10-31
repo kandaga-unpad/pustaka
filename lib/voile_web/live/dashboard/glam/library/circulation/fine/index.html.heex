@@ -57,6 +57,22 @@
             class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
             label=""
           />
+          <%= if @is_super_admin do %>
+            <.form :let={f2} for={%{}} phx-change="select_node">
+              <.input
+                field={f2[:node_id]}
+                type="select"
+                options={
+                  [
+                    {"All Nodes", "all"}
+                  ] ++ Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+                class="block w-40 text-sm border-voile-muted rounded-md shadow-sm"
+                label=""
+              />
+            </.form>
+          <% end %>
         </div>
       </.form>
     </div>

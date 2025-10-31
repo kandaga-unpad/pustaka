@@ -8,6 +8,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Transaction
   alias VoileWeb.Auth.Authorization
+  alias Voile.Schema.System
+  alias Voile.Repo
+  import Ecto.Query, only: [from: 2]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,25 +25,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
     else
       user = socket.assigns.current_scope.user
       is_super_admin = Authorization.is_super_admin?(user)
-      node_id = user.node_id
+
+      # For non-super-admins we scope to the user's node_id. For super_admin
+      # we'll allow selecting a node (nil means all nodes).
+      selected_node_id = if is_super_admin, do: nil, else: user.node_id
+      node_id = selected_node_id
+      nodes = if is_super_admin, do: System.list_nodes(), else: []
       page = 1
       per_page = 15
 
       {transactions, total_pages} =
-        if is_super_admin do
-          Circulation.list_transactions_paginated(page, per_page)
-        else
-          Circulation.list_transaction_paginated_with_filter_by_node(
-            page,
-            per_page,
-            %{status: "all", query: ""},
-            node_id
-          )
-        end
+        reload_transactions_for(node_id, is_super_admin, page, per_page)
 
-      count_active_collection = Circulation.count_of_collection_based_on_status("active")
-      count_overdue_collection = Circulation.count_of_collection_based_on_status("overdue")
-      count_returned_collection = Circulation.count_of_collection_based_on_status("returned")
+      {count_active_collection, count_overdue_collection, count_returned_collection} =
+        get_counts(node_id)
 
       checkout_changeset = Transaction.changeset(%Transaction{}, %{})
 
@@ -52,6 +50,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
         |> assign(:search_query, "")
         |> assign(:filter_status, "all")
         |> assign(:node_id, node_id)
+        |> assign(:nodes, nodes)
+        |> assign(:selected_node_id, selected_node_id)
         |> assign(:is_super_admin, is_super_admin)
         |> assign(:checkout_changeset, checkout_changeset)
         |> assign(:transaction, nil)
@@ -501,6 +501,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
+    # node_id_str == "all" means no node filter (super_admin sees all)
+    node_id = if node_id_str in [nil, "all", ""], do: nil, else: String.to_integer(node_id_str)
+
+    socket =
+      socket
+      |> assign(:node_id, node_id)
+      |> assign(:selected_node_id, node_id)
+      |> reload_transactions()
+
+    {a, b, c} = get_counts(node_id)
+
+    socket =
+      socket
+      |> assign(:count_active_collection, a)
+      |> assign(:count_overdue_collection, b)
+      |> assign(:count_returned_collection, c)
+
+    {:noreply, socket}
+  end
+
   defp reload_transactions(socket) do
     page = 1
     per_page = 15
@@ -511,25 +533,112 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
     filters = %{status: filter_status, query: search_query}
 
     {transactions, total_pages} =
-      if is_super_admin do
-        Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(
-          page,
-          per_page,
-          filters
-        )
-      else
-        Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter_by_node(
-          page,
-          per_page,
-          filters,
-          node_id
-        )
+      cond do
+        is_super_admin and is_nil(node_id) ->
+          Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(
+            page,
+            per_page,
+            filters
+          )
+
+        is_super_admin and not is_nil(node_id) ->
+          Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter_by_node(
+            page,
+            per_page,
+            filters,
+            node_id
+          )
+
+        true ->
+          Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter_by_node(
+            page,
+            per_page,
+            filters,
+            node_id
+          )
       end
 
     socket
     |> stream(:transactions, transactions, reset: true)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
+  end
+
+  # Helper used on mount to load the first page according to node filter
+  defp reload_transactions_for(node_id, is_super_admin, page, per_page) do
+    if is_super_admin do
+      if is_nil(node_id) do
+        Circulation.list_transactions_paginated(page, per_page)
+      else
+        Circulation.list_transaction_paginated_with_filter_by_node(
+          page,
+          per_page,
+          %{status: "all", query: ""},
+          node_id
+        )
+      end
+    else
+      Circulation.list_transaction_paginated_with_filter_by_node(
+        page,
+        per_page,
+        %{status: "all", query: ""},
+        node_id
+      )
+    end
+  end
+
+  # Counts (active, overdue, returned) optionally filtered by node
+  defp get_counts(node_id) do
+    now = DateTime.utc_now()
+
+    if is_nil(node_id) do
+      count_active =
+        Repo.aggregate(from(t in Transaction, where: t.status == "active"), :count, :id)
+
+      count_overdue =
+        Repo.aggregate(
+          from(t in Transaction, where: t.status == "active" and t.due_date < ^now),
+          :count,
+          :id
+        )
+
+      count_returned =
+        Repo.aggregate(from(t in Transaction, where: t.status == "returned"), :count, :id)
+
+      {count_active, count_overdue, count_returned}
+    else
+      count_active =
+        Repo.aggregate(
+          from(t in Transaction,
+            join: i in assoc(t, :item),
+            where: i.unit_id == ^node_id and t.status == "active"
+          ),
+          :count,
+          :id
+        )
+
+      count_overdue =
+        Repo.aggregate(
+          from(t in Transaction,
+            join: i in assoc(t, :item),
+            where: i.unit_id == ^node_id and t.status == "active" and t.due_date < ^now
+          ),
+          :count,
+          :id
+        )
+
+      count_returned =
+        Repo.aggregate(
+          from(t in Transaction,
+            join: i in assoc(t, :item),
+            where: i.unit_id == ^node_id and t.status == "returned"
+          ),
+          :count,
+          :id
+        )
+
+      {count_active, count_overdue, count_returned}
+    end
   end
 
   defp extract_error_message(changeset) do

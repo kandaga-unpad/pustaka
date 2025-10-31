@@ -3,16 +3,28 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Edit do
 
   alias Voile.Schema.Master
   alias VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    member_type = Master.get_member_type!(id)
+    user = socket.assigns.current_scope.user
 
-    {:ok,
-     socket
-     |> assign(:member_type, member_type)
-     |> assign(:page_title, "Edit Member Type")
-     |> assign(:live_action, :edit)}
+    unless Authorization.can?(user, "metadata.manage") do
+      socket =
+        socket
+        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> push_navigate(to: ~p"/manage/master")
+
+      {:ok, socket}
+    else
+      member_type = Master.get_member_type!(id)
+
+      {:ok,
+       socket
+       |> assign(:member_type, member_type)
+       |> assign(:page_title, "Edit Member Type")
+       |> assign(:live_action, :edit)}
+    end
   end
 
   @impl true

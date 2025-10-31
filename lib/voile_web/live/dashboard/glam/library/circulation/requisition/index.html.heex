@@ -8,13 +8,13 @@
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
     <.back navigate="/manage/glam/library/circulation">Back</.back>
-
+    
     <div class="text-center">
       <h1 class="text-2xl font-bold">Library Requisitions</h1>
-
+      
       <p class="mt-2 text-sm text-gray-700">Manage member requests and special services</p>
     </div>
-
+    
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/glam/library/circulation/requisitions/new"}
@@ -59,6 +59,22 @@
             class="block w-48 text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             label=""
           />
+          <%= if @is_super_admin do %>
+            <.form :let={f2} for={%{}} phx-change="select_node">
+              <.input
+                field={f2[:node_id]}
+                type="select"
+                options={
+                  [
+                    {"All Nodes", "all"}
+                  ] ++ Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+                class="block w-40 text-sm border-voile-muted rounded-md shadow-sm"
+                label=""
+              />
+            </.form>
+          <% end %>
         </div>
       </.form>
     </div>
@@ -66,31 +82,31 @@
     <div class="bg-white dark:bg-gray-700 px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-info">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Submitted</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-warning">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Reviewing</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-success">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Approved</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-error">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Rejected</div>
       </div>
-
+      
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-primary">-</div>
-
+        
         <div class="text-xs text-gray-500 uppercase">Fulfilled</div>
       </div>
     </div>
@@ -101,25 +117,25 @@
       <:col :let={{_id, requisition}} label="Title & Author">
         <div>
           <div class="text-sm font-medium text-gray-900">{requisition.title}</div>
-
+          
           <%= if requisition.author do %>
             <div class="text-sm text-gray-500">by {requisition.author}</div>
           <% end %>
         </div>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Type">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_type_badge_class(requisition.request_type)}"}>
           {requisition.request_type |> String.replace("_", " ") |> String.capitalize()}
         </span>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_status_badge_class(requisition.status)}"}>
           {String.capitalize(requisition.status)}
         </span>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Priority">
         <div class="flex items-center">
           <span class={"text-sm font-medium #{priority_text_class(requisition.priority)}"}>
@@ -130,17 +146,17 @@
           <% end %>
         </div>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Requested By">
         <div>
           <div class="text-sm font-medium text-gray-900">
             {if requisition.requested_by, do: requisition.requested_by.fullname, else: "Unknown"}
           </div>
-
+          
           <div class="text-sm text-gray-500">{format_date(requisition.request_date)}</div>
         </div>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Assigned To">
         <div class="text-sm text-gray-900">
           {if requisition.assigned_to do
@@ -150,7 +166,7 @@
           end}
         </div>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Due Date">
         <div class="text-sm text-gray-900">
           {if requisition.due_date do
@@ -159,12 +175,12 @@
             "-"
           end}
         </div>
-
+        
         <%= if requisition.due_date && Date.compare(requisition.due_date, Date.utc_today()) == :lt && requisition.status not in ["fulfilled", "cancelled", "rejected"] do %>
           <div class="text-xs text-voile-error font-medium">Overdue</div>
         <% end %>
       </:col>
-
+      
       <:col :let={{_id, requisition}} label="Estimated Cost">
         <div class="text-sm text-gray-900">
           {if requisition.estimated_cost do
@@ -174,7 +190,7 @@
           end}
         </div>
       </:col>
-
+      
       <:action :let={{_id, requisition}}>
         <div class="flex space-x-2">
           <%= if requisition.status == "submitted" do %>
@@ -187,7 +203,7 @@
               Review
             </button>
           <% end %>
-
+          
           <%= if requisition.status == "reviewing" do %>
             <button
               phx-click="update_status"
@@ -206,7 +222,7 @@
               Reject
             </button>
           <% end %>
-
+          
           <%= if requisition.status == "approved" do %>
             <button
               phx-click="update_status"
@@ -217,7 +233,7 @@
               Fulfill
             </button>
           <% end %>
-
+          
           <.link
             navigate={~p"/manage/glam/library/circulation/requisitions/#{requisition.id}"}
             class="text-voile-primary hover:text-voile-primary/80 text-sm font-medium"
@@ -252,7 +268,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium">New Requisition</h3>
-
+    
     <.form :let={f} for={%{}} id="requisition-form" phx-submit="create_requisition">
       <.input
         field={f[:request_type]}

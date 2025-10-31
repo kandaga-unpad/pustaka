@@ -3,16 +3,28 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Edit do
 
   alias Voile.Schema.Master
   alias VoileWeb.Dashboard.Master.TopicLive.FormComponent
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    topic = Master.get_topic!(id)
+    user = socket.assigns.current_scope.user
 
-    {:ok,
-     socket
-     |> assign(:topic, topic)
-     |> assign(:page_title, "Edit Topic")
-     |> assign(:live_action, :edit)}
+    unless Authorization.can?(user, "metadata.manage") do
+      socket =
+        socket
+        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> push_navigate(to: ~p"/manage/master")
+
+      {:ok, socket}
+    else
+      topic = Master.get_topic!(id)
+
+      {:ok,
+       socket
+       |> assign(:topic, topic)
+       |> assign(:page_title, "Edit Topic")
+       |> assign(:live_action, :edit)}
+    end
   end
 
   @impl true

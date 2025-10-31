@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.Library.Requisition
   alias VoileWeb.Auth.Authorization
+  alias Voile.Schema.System
 
   @impl true
   def mount(_params, _session, socket) do
@@ -19,7 +20,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
     else
       user = socket.assigns.current_scope.user
       is_super_admin = Authorization.is_super_admin?(user)
-      node_id = user.node_id
+
+      {node_id, nodes, selected_node_id} =
+        if is_super_admin do
+          {nil, System.list_nodes(), nil}
+        else
+          {user.node_id, [], user.node_id}
+        end
+
       page = 1
       per_page = 15
       filters = %{status: "all", type: "all"}
@@ -45,6 +53,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
         |> assign(:filter_type, "all")
         |> assign(:node_id, node_id)
         |> assign(:is_super_admin, is_super_admin)
+        |> assign(:nodes, nodes)
+        |> assign(:selected_node_id, selected_node_id)
 
       {:ok, socket}
     end
@@ -155,6 +165,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
       socket
       |> assign(:filter_status, status)
       |> assign(:filter_type, type)
+      |> reload_requisitions()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
+    node_id = if node_id_str in [nil, "all", ""], do: nil, else: String.to_integer(node_id_str)
+
+    socket =
+      socket
+      |> assign(:node_id, node_id)
+      |> assign(:selected_node_id, node_id)
       |> reload_requisitions()
 
     {:noreply, socket}

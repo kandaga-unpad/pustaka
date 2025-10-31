@@ -66,24 +66,18 @@ defmodule VoileWeb.Auth.LiveHelpers do
           socket
 
         false ->
-          # Instead of raising an error, redirect with a flash message
-          throw(
-            {:unauthorized_redirect,
-             socket
-             |> Phoenix.LiveView.put_flash(
-               :error,
-               "Access Denied: You don't have permission to access this page"
-             )
-             |> Phoenix.LiveView.push_navigate(to: ~p"/manage")}
+          # Redirect with a flash message and return the socket so mount can finish.
+          socket
+          |> Phoenix.LiveView.put_flash(
+            :error,
+            "Access Denied: You don't have permission to access this page"
           )
+          |> Phoenix.LiveView.push_navigate(to: ~p"/manage")
       end
     else
-      throw(
-        {:unauthorized_redirect,
-         socket
-         |> Phoenix.LiveView.put_flash(:error, "You must be logged in to access this page")
-         |> Phoenix.LiveView.push_navigate(to: ~p"/login")}
-      )
+      socket
+      |> Phoenix.LiveView.put_flash(:error, "You must be logged in to access this page")
+      |> Phoenix.LiveView.push_navigate(to: ~p"/login")
     end
   end
 

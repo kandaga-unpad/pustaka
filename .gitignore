@@ -48,6 +48,7 @@ npm-debug.log
 /priv/static/uploads/attachments/*
 /priv/static/uploads/user_image/*
 /priv/static/uploads/user_media/*
+/priv/static/uploads/app_logo/*
 
 # Except Thumbnail sample
 !/priv/static/uploads/thumbnail/upload.txt

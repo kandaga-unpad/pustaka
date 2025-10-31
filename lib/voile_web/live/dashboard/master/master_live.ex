@@ -1,5 +1,6 @@
 defmodule VoileWeb.Dashboard.Master.MasterLive do
   use VoileWeb, :live_view_dashboard
+  alias VoileWeb.Auth.Authorization
 
   def render(assigns) do
     ~H"""
@@ -10,10 +11,21 @@ defmodule VoileWeb.Dashboard.Master.MasterLive do
   end
 
   def mount(_params, _session, socket) do
-    socket =
-      socket
-      |> assign(:page_title, gettext("Master Component"))
+    user = socket.assigns.current_scope.user
 
-    {:ok, socket}
+    unless Authorization.can?(user, "metadata.manage") do
+      socket =
+        socket
+        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> push_navigate(to: ~p"/manage")
+
+      {:ok, socket}
+    else
+      socket =
+        socket
+        |> assign(:page_title, gettext("Master Component"))
+
+      {:ok, socket}
+    end
   end
 end
