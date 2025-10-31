@@ -3,7 +3,7 @@
 # Multi-stage Containerfile that builds a production release with Mix and
 # builds assets with npm (assumes a standard Phoenix assets folder).
 
-FROM elixir:1.15-slim AS build
+FROM elixir:1.19-slim AS build
 
 ARG MIX_ENV=prod
 ENV MIX_ENV=${MIX_ENV}
