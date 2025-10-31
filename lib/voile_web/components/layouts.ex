@@ -50,7 +50,7 @@ defmodule VoileWeb.Layouts do
     assigns = assign(assigns, :app_secondary_color, app_secondary_color)
 
     ~H"""
-    <div class="bg-voile-surface dark:bg-voile-surface-dark px-3 py-1 text-sm font-semibold">
+    <div class="bg-voile-primary text-gray-700 px-3 py-1 text-sm font-semibold">
       <p>If you need information about [Redacted]</p>
     </div>
 

@@ -39,7 +39,15 @@ defmodule VoileWeb.VoileDashboardComponents do
     <div class="w-full bg-white dark:bg-gray-700 flex items-center my-5 p-5 rounded-lg gap-6">
       <div class="nav-bar-logo">
         <.link patch="/manage#">
-          <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
+          <%= if Voile.Schema.System.get_setting_value("app_logo_url", nil) do %>
+            <img
+              src={Voile.Schema.System.get_setting_value("app_logo_url", nil)}
+              class="h-10 w-auto"
+              alt="App Logo"
+            />
+          <% else %>
+            <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
+          <% end %>
         </.link>
       </div>
 

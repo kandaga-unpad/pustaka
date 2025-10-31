@@ -1,21 +1,35 @@
 <.flash_group flash={@flash} />
 <main class="w-full min-h-screen h-full flex flex-col bg-voile-light dark:bg-voile-dark">
   <section class="voile-gradient text-white py-24 px-5">
-    <div class="max-w-7xl mx-auto">
-      <h3>Voile Dashboard</h3>
-      
-      <%= if @current_scope.user do %>
-        <div>
-          <p>Hello, {@current_scope.user.username}!</p>
-        </div>
-      <% else %>
-        <div>
-          <p>Hello, Guest!</p>
-        </div>
-      <% end %>
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div>
+        <h3>
+          {assigns[:app_name] || Voile.Schema.System.get_setting_value("app_name", "Voile")} Dashboard
+        </h3>
+
+        <%= if @current_scope.user do %>
+          <div class="flex items-center gap-3 mt-2">
+            <div>
+              <img
+                src={@current_scope.user.user_image}
+                alt="User Avatar"
+                class="w-10 h-10 rounded-full"
+              />
+            </div>
+            <p>Hello, {@current_scope.user.username}!</p>
+          </div>
+        <% else %>
+          <div>
+            <p>Hello, Guest!</p>
+          </div>
+        <% end %>
+      </div>
+      <div class="bg-gray-700 rounded-full p-4">
+        <p class="text-voile-primary font-bold">{@current_scope.user.user_type.name}</p>
+      </div>
     </div>
   </section>
-  
+
   <section class="w-full h-full flex flex-col max-w-7xl mx-auto">
     <div class="-mt-24">
       <div class="max-w-7xl mx-auto flex gap-2 items-end justify-end w-full text-white">
@@ -39,9 +53,9 @@
           Metadata
         </.link>
       </div>
-       <.nav_bar active_nav={@current_uri} />
+      <.nav_bar active_nav={@current_uri} />
     </div>
-    
+
     <section>
       <div class="pb-10 px-4 xl:px-0">
         <%= if String.contains?(@current_uri, "master") or String.contains?(@current_uri, "metaresource") do %>
@@ -50,7 +64,7 @@
               <%= if String.contains?(@current_uri, "master") do %>
                 <.side_bar_dashboard>
                   <h6>Master Data</h6>
-                  
+
                   <div class="flex flex-col gap-2">
                     <%= for item <- @master_menu do %>
                       <.link
@@ -66,11 +80,11 @@
                   </div>
                 </.side_bar_dashboard>
               <% end %>
-              
+
               <%= if String.contains?(@current_uri, "metaresource") do %>
                 <.side_bar_dashboard>
                   <h6>Metaresource Data</h6>
-                  
+
                   <div class="flex flex-col gap-2">
                     <%= for item <- @metaresource_menu do %>
                       <.link
@@ -87,7 +101,7 @@
                 </.side_bar_dashboard>
               <% end %>
             </div>
-            
+
             <div class="default-card">{@inner_content}</div>
           </div>
         <% else %>
@@ -106,6 +120,8 @@
 />
 <footer class="flex flex-col items-center bg-gray-700 dark:bg-gray-800 text-white">
   <div class="py-5">
-    <p class="font-semibold">Voile - Curatorian Developer | 2024 - {Date.utc_today().year}</p>
+    <p class="font-semibold">
+      {assigns[:app_name] || Voile.Schema.System.get_setting_value("app_name", "Voile")} - Curatorian Developer | 2024 - {Date.utc_today().year}
+    </p>
   </div>
 </footer>

@@ -30,7 +30,7 @@ defmodule VoileWeb.VoileComponents do
 
     ~H"""
     <div class="relative">
-      <div class="search-tab">
+      <div class="search-tab bg-voile-surface rounded-t-lg">
         <%= for tab <- @glam_tabs do %>
           <button
             id={"tab-#{tab.type}"}
@@ -55,7 +55,7 @@ defmodule VoileWeb.VoileComponents do
         <% end %>
       </div>
 
-      <div class="p-5 rounded-bl-lg rounded-br-lg bg-voile-surface">
+      <div class="p-5 rounded-bl-lg rounded-br-lg bg-voile-surface-variant">
         <%= if @live_action do %>
           <!-- LiveView Form -->
           <form phx-submit="search" phx-change="search_change" class="flex gap-2">

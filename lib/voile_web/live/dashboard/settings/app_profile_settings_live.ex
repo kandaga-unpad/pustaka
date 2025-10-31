@@ -45,13 +45,13 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
     ~H"""
     <.header>
       <h4>App Profile Settings</h4>
-      
+
       <:subtitle>Manage the application profile</:subtitle>
     </.header>
 
     <div class="flex gap-4">
       <div class="w-full max-w-64"><.dashboard_settings_sidebar current_user={@current_user} /></div>
-      
+
       <div class="w-full bg-white dark:bg-gray-700 p-4 rounded-lg">
         <.form for={%{}} phx-submit="save" phx-change="validate">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -78,9 +78,29 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                     <div class="w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border">
                       No logo
                     </div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Application Logo</label>
+              <div phx-drop-target={@uploads.app_logo.ref} class="flex items-center gap-4">
+                <%= if @app_logo_preview do %>
+                  <img src={@app_logo_preview} class="w-20 h-20 rounded object-cover" />
+                <% else %>
+                  <div class="w-20 h-20 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-500">
+                    No logo
+                  </div>
+                <% end %>
+
+                <div>
+                  <.live_file_input upload={@uploads.app_logo} class="hidden" />
+                  <label
+                    for={@uploads.app_logo.ref}
+                    class="inline-flex items-center px-3 py-2 border rounded cursor-pointer"
+                  >
+                    Choose logo
+                  </label>
+                  <%= for entry <- @uploads.app_logo.entries do %>
+                    <div class="mt-2 text-sm text-voile-muted">Uploading... {entry.progress}%</div>
                   <% end %>
                 </div>
-                
+
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <.live_file_input upload={@uploads.app_logo} class="sr-only" />
@@ -94,19 +114,19 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                       {if @app_logo_preview, do: "Current logo", else: "No file"}
                     </span>
                   </div>
-                  
+
                   <div class="mt-2">
                     <div :for={entry <- @uploads.app_logo.entries} class="flex items-center gap-2">
                       <.live_img_preview entry={entry} class="w-10 h-10 rounded object-cover" />
                       <div class="flex-1 min-w-0">
                         <div class="text-sm truncate">{entry.client_name}</div>
-                        
+
                         <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
                           <div class="bg-blue-600 h-1 rounded" style={"width: #{entry.progress}%"}>
                           </div>
                         </div>
                       </div>
-                      
+
                       <button
                         type="button"
                         phx-click="cancel-upload"
@@ -116,7 +136,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                         Cancel
                       </button>
                     </div>
-                    
+
                     <p
                       :for={err <- upload_errors(@uploads.app_logo)}
                       class="mt-1 text-xs text-red-600"
@@ -127,7 +147,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 </div>
               </div>
             </div>
-            
+
             <div>
               <.input
                 name="app_name"
@@ -135,7 +155,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_name", "")}
               />
             </div>
-            
+
             <div>
               <.input
                 name="app_contact_email"
@@ -144,7 +164,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_contact_email", "")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 type="textarea"
@@ -154,7 +174,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_description", "")}
               />
             </div>
-            
+
             <div>
               <.input
                 type="color"
@@ -163,7 +183,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_main_color", "#1d4ed8")}
               />
             </div>
-            
+
             <div>
               <.input
                 type="color"
@@ -172,7 +192,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_secondary_color", "#06b6d4")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 name="app_website"
@@ -180,7 +200,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_website", "")}
               />
             </div>
-            
+
             <div>
               <.input
                 type="select"
@@ -190,7 +210,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("storage_adapter", "local")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 name="app_address"
@@ -199,7 +219,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               />
             </div>
           </div>
-          
+
           <div class="mt-6 flex items-center gap-3">
             <button type="submit" class="btn btn-primary">Save Settings</button>
             <span class="text-sm text-gray-500">
