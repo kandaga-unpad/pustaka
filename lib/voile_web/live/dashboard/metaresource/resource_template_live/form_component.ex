@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
       <h1 class="text-2xl font-bold mb-6">
         {if @resource_template.id, do: "Edit Resource Template", else: "Create New Resource Template"}
       </h1>
-
+      
       <.form
         :let={f}
         for={@form}
@@ -24,7 +24,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
         <!-- Template Name -->
         <div>
           <.label>Template <span class="text-brand">{@resource_template.label}</span></.label>
-
+          
           <.input
             field={f[:label]}
             type="text"
@@ -51,7 +51,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
         <!-- Property Search -->
         <div class="space-y-2">
           <.label>Add Properties</.label>
-
+          
           <div class="relative">
             <input
               type="text"
@@ -82,7 +82,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                   You can add other properties by searching for them on the search box.
               <% end %>
             </div>
-
+            
             <%= for property <- @properties do %>
               <div
                 class="p-3 hover:bg-gray-100 cursor-pointer border-b"
@@ -91,7 +91,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                 phx-target={@myself}
               >
                 <div class="font-medium">{property.label}</div>
-
+                
                 <div class="text-sm text-gray-600">{property.local_name}</div>
               </div>
             <% end %>
@@ -100,7 +100,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
         <!-- Selected Properties -->
         <div :if={!Enum.empty?(@selected_properties)} class="space-y-4">
           <.label>Selected Properties</.label>
-
+          
           <div
             id={"selected-properties-#{@myself}"}
             class="space-y-3"
@@ -116,7 +116,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
               <div class="cursor-move pt-1">
                 <.icon name="hero-arrows-pointing-in" class="w-5 h-5 text-gray-400" />
               </div>
-
+              
               <div class="flex-1">
                 <div class="font-medium text-gray-900">
                   <%= if is_map(prop) && Map.has_key?(prop, :override_label) do %>
@@ -125,12 +125,12 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                     {prop.label}
                   <% end %>
                 </div>
-
+                
                 <div class="text-sm text-gray-300">{prop.local_name}</div>
-
+                
                 <div class="mt-6">
                   <.label>Custom Label :</.label>
-
+                  
                   <input
                     type="text"
                     value={if is_map(prop), do: prop[:override_label] || "", else: ""}
@@ -142,7 +142,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                   />
                 </div>
               </div>
-
+              
               <button
                 type="button"
                 class="text-red-500 hover:text-red-700 mt-1"
@@ -162,8 +162,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
             phx-disable-with={if @resource_template.id, do: "Updating...", else: "Creating..."}
           >
             {if @resource_template.id, do: "Update Template", else: "Create Template"}
-          </.button>
-          <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
+          </.button> <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
         </div>
       </.form>
     </div>

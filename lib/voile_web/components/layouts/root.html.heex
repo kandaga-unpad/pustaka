@@ -7,15 +7,15 @@
     <.live_title default="Voile" suffix=" · the Magic Library">
       {assigns[:page_title]}
     </.live_title>
+    
     <%!-- Inject brand color CSS variables early so Tailwind/daisyUI and other CSS
-        can pick them up on first paint (before `app.css` is loaded). --%>
-    <% app_main_color = Voile.Schema.System.get_setting_value("app_main_color", nil) %>
-    <% app_secondary_color = Voile.Schema.System.get_setting_value("app_secondary_color", nil) %>
-    <% app_surface_color = Voile.Schema.System.get_setting_value("app_surface_color", nil) %>
-    <% app_surface_variant = Voile.Schema.System.get_setting_value("app_surface_variant", nil) %>
-    <% app_surface_dark = Voile.Schema.System.get_setting_value("app_surface_dark", nil) %>
-    <% app_accent_color = Voile.Schema.System.get_setting_value("app_accent_color", nil) %>
-
+        can pick them up on first paint (before `app.css` is loaded). --%> <% app_main_color =
+      Voile.Schema.System.get_setting_value("app_main_color", nil) %> <% app_secondary_color =
+      Voile.Schema.System.get_setting_value("app_secondary_color", nil) %> <% app_surface_color =
+      Voile.Schema.System.get_setting_value("app_surface_color", nil) %> <% app_surface_variant =
+      Voile.Schema.System.get_setting_value("app_surface_variant", nil) %> <% app_surface_dark =
+      Voile.Schema.System.get_setting_value("app_surface_dark", nil) %> <% app_accent_color =
+      Voile.Schema.System.get_setting_value("app_accent_color", nil) %>
     <%= if app_main_color || app_secondary_color || app_surface_color || app_surface_variant || app_surface_dark || app_accent_color do %>
       <style>
         :root {
@@ -28,8 +28,7 @@
         }
       </style>
     <% end %>
-
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -39,7 +38,7 @@
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-
+    
     <script>
       (() => {
         const setTheme = (theme) => {
@@ -59,10 +58,10 @@
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js">
     </script>
   </head>
-
+  
   <body class="anti-aliased w-full">{@inner_content}</body>
 </html>

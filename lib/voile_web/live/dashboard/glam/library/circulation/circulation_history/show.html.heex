@@ -12,12 +12,12 @@
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Circulation History Details</h1>
-
+        
         <p class="mt-2 text-sm text-gray-700">
           Complete information about this circulation activity
         </p>
       </div>
-
+      
       <div class="mt-4 sm:mt-0">
         <span class={"inline-flex items-center px-3 py-1 rounded-full text-sm font-medium #{action_badge_class(@history.action)}"}>
           <.icon name="hero-clock" class="w-4 h-4 mr-2" /> {String.capitalize(@history.action)}
@@ -33,57 +33,57 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Activity Information</h3>
         </div>
-
+        
         <div class="px-6 py-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt class="text-sm font-medium text-gray-500">Action</dt>
-
+              
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{action_badge_class(@history.action)}"}>
                   {String.capitalize(@history.action)}
                 </span>
               </dd>
             </div>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">Status</dt>
-
+              
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.status)}"}>
                   {String.capitalize(@history.status)}
                 </span>
               </dd>
             </div>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">Action Date</dt>
-
+              
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.action_date)}</dd>
             </div>
-
+            
             <%= if @history.due_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Due Date (at time)</dt>
-
+                
                 <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.due_date)}</dd>
               </div>
             <% end %>
-
+            
             <%= if @history.return_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Return Date</dt>
-
+                
                 <dd class="mt-1 text-sm text-gray-900">
                   {format_datetime(@history.return_date)}
                 </dd>
               </div>
             <% end %>
-
+            
             <%= if @history.fine_amount do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Fine Amount</dt>
-
+                
                 <dd class="mt-1">
                   <span class={"text-sm font-medium #{if Decimal.equal?(@history.fine_amount, 0), do: "text-gray-900", else: "text-red-600"}"}>
                     ${Float.round(Decimal.to_float(@history.fine_amount), 2)}
@@ -91,24 +91,24 @@
                 </dd>
               </div>
             <% end %>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">Record ID</dt>
-
+              
               <dd class="mt-1 text-xs text-gray-500 font-mono">#{@history.id}</dd>
             </div>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">Created</dt>
-
+              
               <dd class="mt-1 text-sm text-gray-500">{format_datetime(@history.inserted_at)}</dd>
             </div>
           </div>
-
+          
           <%= if @history.notes do %>
             <div class="pt-4 border-t border-gray-200">
               <dt class="text-sm font-medium text-gray-500">Notes</dt>
-
+              
               <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{@history.notes}</dd>
             </div>
           <% end %>
@@ -120,7 +120,7 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Transaction Context</h3>
           </div>
-
+          
           <div class="px-6 py-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <%= if @history.action == "checkout" do %>
@@ -131,12 +131,12 @@
                         <.icon name="hero-arrow-right" class="w-4 h-4 text-blue-600" />
                       </div>
                     </div>
-
+                    
                     <div class="flex-1">
                       <p class="font-medium text-gray-900">Item Checkout</p>
-
+                      
                       <p class="text-gray-500">Item was checked out to member</p>
-
+                      
                       <%= if @history.due_date do %>
                         <p class="text-xs text-gray-400 mt-1">
                           Due: {format_datetime(@history.due_date)}
@@ -146,7 +146,7 @@
                   </div>
                 </div>
               <% end %>
-
+              
               <%= if @history.action == "return" do %>
                 <div class="col-span-2">
                   <div class="flex items-start space-x-3">
@@ -155,12 +155,12 @@
                         <.icon name="hero-arrow-left" class="w-4 h-4 text-green-600" />
                       </div>
                     </div>
-
+                    
                     <div class="flex-1">
                       <p class="font-medium text-gray-900">Item Return</p>
-
+                      
                       <p class="text-gray-500">Item was returned by member</p>
-
+                      
                       <%= if @history.return_date && @history.due_date && DateTime.compare(@history.return_date, @history.due_date) == :gt do %>
                         <p class="text-xs text-red-500 mt-1">
                           Returned {DateTime.diff(@history.return_date, @history.due_date, :day)} days late
@@ -170,7 +170,7 @@
                   </div>
                 </div>
               <% end %>
-
+              
               <%= if @history.action == "renewal" do %>
                 <div class="col-span-2">
                   <div class="flex items-start space-x-3">
@@ -179,12 +179,12 @@
                         <.icon name="hero-arrow-path" class="w-4 h-4 text-yellow-600" />
                       </div>
                     </div>
-
+                    
                     <div class="flex-1">
                       <p class="font-medium text-gray-900">Item Renewal</p>
-
+                      
                       <p class="text-gray-500">Member renewed their checkout</p>
-
+                      
                       <%= if @history.due_date do %>
                         <p class="text-xs text-gray-400 mt-1">
                           New due date: {format_datetime(@history.due_date)}
@@ -206,7 +206,7 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
         </div>
-
+        
         <div class="px-6 py-4">
           <%= if @history.member do %>
             <div class="flex items-center space-x-4">
@@ -217,14 +217,14 @@
                   </span>
                 </div>
               </div>
-
+              
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900 truncate">
                   {@history.member.fullname}
                 </p>
-
+                
                 <p class="text-sm text-gray-500">Member ID: {@history.member_id}</p>
-
+                
                 <p class="text-sm text-gray-500">Email: {@history.member.email}</p>
               </div>
             </div>
@@ -238,35 +238,35 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">Item Information</h3>
         </div>
-
+        
         <div class="px-6 py-4">
           <%= if @history.item do %>
             <div class="space-y-3">
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Item Code</dt>
-
+                
                 <dd class="mt-1 text-sm font-medium text-gray-900">{@history.item.item_code}</dd>
               </div>
-
+              
               <%= if @history.item.collection do %>
                 <div>
                   <dt class="text-xs font-medium text-gray-500 uppercase">Collection</dt>
-
+                  
                   <dd class="mt-1 text-sm text-gray-900">{@history.item.collection.title}</dd>
                 </div>
               <% end %>
-
+              
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Location</dt>
-
+                
                 <dd class="mt-1 text-sm text-gray-900">
                   {@history.item.location || "Not specified"}
                 </dd>
               </div>
-
+              
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Current Status</dt>
-
+                
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.item.status)}"}>
                     {String.capitalize(@history.item.status)}
@@ -285,7 +285,7 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
           </div>
-
+          
           <div class="px-6 py-4">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-10 w-10">
@@ -295,10 +295,10 @@
                   </span>
                 </div>
               </div>
-
+              
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">{@history.librarian.fullname}</p>
-
+                
                 <p class="text-sm text-gray-500">Staff Member</p>
               </div>
             </div>
@@ -311,12 +311,12 @@
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Related Transaction</h3>
           </div>
-
+          
           <div class="px-6 py-4">
             <div class="space-y-3">
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Transaction ID</dt>
-
+                
                 <dd class="mt-1">
                   <.link
                     navigate={
@@ -328,18 +328,18 @@
                   </.link>
                 </dd>
               </div>
-
+              
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Type</dt>
-
+                
                 <dd class="mt-1 text-sm text-gray-900">
                   {String.capitalize(@history.transaction.transaction_type)}
                 </dd>
               </div>
-
+              
               <div>
                 <dt class="text-xs font-medium text-gray-500 uppercase">Status</dt>
-
+                
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.transaction.status)}"}>
                     {String.capitalize(@history.transaction.status)}
@@ -355,24 +355,24 @@
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-medium text-gray-900">System Information</h3>
         </div>
-
+        
         <div class="px-6 py-4">
           <dl class="space-y-3">
             <div>
               <dt class="text-sm font-medium text-gray-500">Record Created</dt>
-
+              
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.inserted_at)}</dd>
             </div>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
-
+              
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.updated_at)}</dd>
             </div>
-
+            
             <div>
               <dt class="text-sm font-medium text-gray-500">History ID</dt>
-
+              
               <dd class="mt-1 text-xs text-gray-500 font-mono">{@history.id}</dd>
             </div>
           </dl>
@@ -385,7 +385,7 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <h3 class="text-lg font-medium text-gray-900">Activity Timeline</h3>
     </div>
-
+    
     <div class="px-6 py-4">
       <div class="relative">
         <div class="flex items-center space-x-4">
@@ -413,10 +413,10 @@
                   _ -> String.capitalize(@history.action)
                 end}
               </p>
-
+              
               <p class="text-sm text-gray-500">{format_datetime(@history.action_date)}</p>
             </div>
-
+            
             <%= if @history.notes do %>
               <p class="text-sm text-gray-500 mt-1">{@history.notes}</p>
             <% end %>

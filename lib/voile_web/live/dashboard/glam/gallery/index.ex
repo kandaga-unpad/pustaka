@@ -45,16 +45,16 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">Gallery Management</h1>
-
+            
             <p class="text-voile-accent text-lg">
               Manage visual arts, photographs, and artistic collections
             </p>
           </div>
-
+          
           <div class="hidden md:block"><.icon name="hero-photo" class="w-24 h-24 opacity-20" /></div>
         </div>
       </div>
-      <%!-- Quick Actions --%>
+       <%!-- Quick Actions --%>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <.link
           navigate="/manage/catalog/collections?glam_type=Gallery"
@@ -67,10 +67,10 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
                 class="w-6 h-6 text-voile-accent dark:text-voile-accent/60"
               />
             </div>
-
+            
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">View Collections</h3>
-
+              
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all gallery collections</p>
             </div>
           </div>
@@ -86,10 +86,10 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
                 class="w-6 h-6 text-voile-success dark:text-voile-success/60"
               />
             </div>
-
+            
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">New Collection</h3>
-
+              
               <p class="text-sm text-gray-600 dark:text-gray-400">Create a new gallery collection</p>
             </div>
           </div>
@@ -102,41 +102,41 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
             <div class="p-3 rounded-lg bg-voile-info/10 dark:bg-voile-info/30">
               <.icon name="hero-cube" class="w-6 h-6 text-voile-info dark:text-voile-info/60" />
             </div>
-
+            
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">View Items</h3>
-
+              
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all gallery items</p>
             </div>
           </div>
         </.link>
       </div>
-      <%!-- Statistics --%>
+       <%!-- Statistics --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Gallery Statistics</h2>
-
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-voile-accent dark:text-voile-accent/60">
               {@total_collections}
             </div>
-
+            
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
           </div>
-
+          
           <div class="text-center">
             <div class="text-3xl font-bold text-voile-accent dark:text-voile-accent/60">
               {@total_items}
             </div>
-
+            
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
           </div>
-
+          
           <div class="text-center">
             <div class="text-3xl font-bold text-voile-primary dark:text-voile-primary">
               {@published_collections}
             </div>
-
+            
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
           </div>
         </div>

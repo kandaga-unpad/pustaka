@@ -1,29 +1,29 @@
 <section class="flex flex-col gap-4">
   <.back navigate="/manage/master">Kembali</.back>
-
+  
   <.header>
     Listing Topics
     <:actions>
       <.link patch={~p"/manage/master/topics/new"}><.button>New Topic</.button></.link>
     </:actions>
   </.header>
-
+  
   <.table
     id="topics"
     rows={@topics || []}
     row_click={fn topic -> JS.navigate(~p"/manage/master/topics/#{topic.id}") end}
   >
     <:col :let={t} label="Name">{t.name}</:col>
+    
     <:col :let={t} label="Type">{t.type}</:col>
+    
     <:col :let={t} label="Description">{t.description}</:col>
-
+    
     <:action :let={t}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/topics/#{t.id}"}>Show</.link>
-      </div>
-      <.link patch={~p"/manage/master/topics/#{t.id}/edit"}>Edit</.link>
+      <div class="sr-only"><.link navigate={~p"/manage/master/topics/#{t.id}"}>Show</.link></div>
+       <.link patch={~p"/manage/master/topics/#{t.id}/edit"}>Edit</.link>
     </:action>
-
+    
     <:action :let={t}>
       <.link
         phx-click={JS.push("delete", value: %{id: t.id}) |> hide("##{t.id}")}
@@ -33,9 +33,7 @@
       </.link>
     </:action>
   </.table>
-
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-
+   <.pagination page={@page} total_pages={@total_pages} event="paginate" />
   <.modal
     :if={@live_action in [:new, :edit]}
     id="topic-modal"

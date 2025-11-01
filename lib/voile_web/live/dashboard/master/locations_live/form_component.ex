@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.FormComponent do
         {@title}
         <:subtitle>Manage location records.</:subtitle>
       </.header>
-
+      
       <.form
         for={@form}
         id="location-form"
@@ -22,7 +22,6 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.FormComponent do
         <.input field={@form[:location_code]} type="text" label="Code" required_value={true} />
         <.input field={@form[:location_name]} type="text" label="Name" required_value={true} />
         <.input field={@form[:location_place]} type="text" label="Place" required_value={true} />
-
         <%!-- Node / Unit select --%>
         <.input
           field={@form[:node_id]}
@@ -30,16 +29,11 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.FormComponent do
           options={@nodes || []}
           label="Node / Unit"
           required_value={true}
-        />
-
-        <%!-- Location type (free text for now) --%>
+        /> <%!-- Location type (free text for now) --%>
         <.input field={@form[:location_type]} type="text" label="Location type" />
-
         <%!-- Description and notes as textareas --%>
         <.input field={@form[:description]} type="textarea" label="Description" />
-        <.input field={@form[:notes]} type="textarea" label="Notes" />
-
-        <%!-- Active checkbox --%>
+        <.input field={@form[:notes]} type="textarea" label="Notes" /> <%!-- Active checkbox --%>
         <.input field={@form[:is_active]} type="checkbox" label="Active" />
         <div class="mt-4 flex gap-3">
           <.button phx-disable-with="Saving...">Save Location</.button>

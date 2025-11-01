@@ -53,7 +53,6 @@ defmodule VoileWeb.Layouts do
     <div class="bg-voile-primary text-gray-700 px-3 py-1 text-sm font-semibold">
       <p>If you need information about [Redacted]</p>
     </div>
-
     <!-- Inject CSS variables for brand colors so Tailwind/daisyUI tokens can be overridden -->
     <%= if @app_main_color || @app_secondary_color do %>
       <style>
@@ -76,6 +75,7 @@ defmodule VoileWeb.Layouts do
             <% else %>
               <img src={~p"/images/v.png"} width="36" />
             <% end %>
+            
             <h5 style={if @app_main_color, do: "color: #{@app_main_color}", else: nil}>
               {@app_name}
             </h5>
@@ -92,7 +92,7 @@ defmodule VoileWeb.Layouts do
             <% end %>
           </nav>
         </div>
-
+        
         <div>
           <div class="flex lg:hidden">
             <.button
@@ -115,7 +115,7 @@ defmodule VoileWeb.Layouts do
               <.icon name="hero-bars-3" />
             </.button>
           </div>
-
+          
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
               <.button
@@ -131,8 +131,7 @@ defmodule VoileWeb.Layouts do
                 class="p-2 bg-transparent border-0"
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
-              </.button>
-              <.locale_switcher current_path={assigns[:current_path] || "/"} />
+              </.button> <.locale_switcher current_path={assigns[:current_path] || "/"} />
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
@@ -146,7 +145,7 @@ defmodule VoileWeb.Layouts do
                         <.button class="default-btn">{gettext("Atrium")}</.button>
                       </.link>
                     <% end %>
-
+                    
                     <button
                       data-panel-anchor
                       aria-expanded="false"
@@ -174,7 +173,7 @@ defmodule VoileWeb.Layouts do
                       <% end %>
                     </button>
                   </div>
-
+                  
                   <div
                     data-position-panel
                     class="sticky hidden bg-voile-light dark:bg-voile-dark max-w-sm right-8 p-4 mt-1 rounded-md shadow-xl text-right"
@@ -182,14 +181,13 @@ defmodule VoileWeb.Layouts do
                     <p class="text-sm">
                       {gettext("Hello, %{name}!", name: @current_scope.user.fullname)}
                     </p>
-
+                    
                     <div class="mt-2 flex w-full gap-2 text-xs">
                       <%= if has_dashboard_access?(@current_scope.user) do %>
                         <.link navigate="/manage" class="primary-btn flex flex-col w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
-                          </span>
-                          <span>{gettext("Dashboard")}</span>
+                          </span> <span>{gettext("Dashboard")}</span>
                         </.link>
                         <.link navigate="/atrium" class="primary-btn flex flex-col w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
@@ -205,8 +203,7 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span>
-                          <span>{gettext("Log out")}</span>
+                          </span> <span>{gettext("Log out")}</span>
                         </.link>
                       <% else %>
                         <.link navigate="/atrium" class="primary-btn hero-home w-full text-center">
@@ -223,8 +220,7 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span>
-                          <span>{gettext("Log out")}</span>
+                          </span> <span>{gettext("Log out")}</span>
                         </.link>
                       <% end %>
                     </div>
@@ -251,7 +247,7 @@ defmodule VoileWeb.Layouts do
         &copy; Voile - Curatorian Developer | 2024 - {get_year()}
       </div>
     </footer>
-    <.flash_group flash={@flash} />
+     <.flash_group flash={@flash} />
     """
   end
 
@@ -413,7 +409,7 @@ defmodule VoileWeb.Layouts do
             <.icon name="hero-x-mark" />
           </button>
         </div>
-
+        
         <nav class="p-4">
           <ul class="flex flex-col gap-3">
             <%= for item <- @nav_items do %>
@@ -428,13 +424,13 @@ defmodule VoileWeb.Layouts do
               </li>
             <% end %>
           </ul>
-
+          
           <div class="mt-6">
             <%= if @current_scope do %>
               <p class="text-sm mb-2">
                 {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
               </p>
-
+              
               <div class="flex flex-col gap-2">
                 <%= if has_dashboard_access?(@current_scope.user) do %>
                   <.link navigate="/manage" class="primary-btn w-full text-center">
@@ -445,7 +441,7 @@ defmodule VoileWeb.Layouts do
                     {gettext("Atrium")}
                   </.link>
                 <% end %>
-
+                
                 <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
                   {gettext("Log out")}
                 </.link>
@@ -496,7 +492,7 @@ defmodule VoileWeb.Layouts do
                   />
                 </form>
               </div>
-
+              
               <button
                 phx-click={
                   JS.toggle(

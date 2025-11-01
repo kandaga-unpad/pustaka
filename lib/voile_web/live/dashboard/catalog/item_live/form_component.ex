@@ -14,7 +14,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-
+      
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
@@ -28,21 +28,18 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <.input field={@form[:item_code]} type="text" label="Item code" />
             <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
             <.input field={@form[:barcode]} type="text" label="Barcode" />
-
             <.input
               field={@form[:unit_id]}
               type="select"
               options={@nodes || []}
               label="Unit / Node"
             />
-
             <.input
               field={@form[:item_location_id]}
               type="select"
               options={@locations || []}
               label="Location"
             />
-
             <.input
               field={@form[:status]}
               type="select"
@@ -55,7 +52,6 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               options={Item.condition_options()}
               label="Condition"
             />
-
             <.input
               field={@form[:availability]}
               type="select"
@@ -63,7 +59,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               label="Availability"
             />
           </div>
-
+          
           <div class="flex items-center gap-3 pt-2">
             <.button
               phx-disable-with="Saving..."
