@@ -122,6 +122,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:page_title, "Edit Collection")
       |> assign(:collection, collection)
       |> assign(:collection_properties, collection_properties)
+      |> assign(:patch, ~p"/manage/catalog/collections")
     else
       socket
       |> put_flash(:error, "Access Denied: You don't have permission to edit this collection")
@@ -158,6 +159,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:page_title, "New Collection")
     |> assign(:collection, collection)
     |> assign(:collection_properties, collection_properties)
+    |> assign(:patch, ~p"/manage/catalog/collections")
   end
 
   defp apply_action(socket, :index, params) do

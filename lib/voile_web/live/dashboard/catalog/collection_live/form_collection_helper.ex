@@ -57,19 +57,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     current_params = socket.assigns.form.params || %{}
     existing_fields = current_params["collection_fields"] || %{}
 
-    # Safely get collection data
-    collection = socket.assigns.collection || %{unit_id: nil, type_id: nil}
-    collection_id = socket.assigns.form.params["id"]
+    # Get collection data from form params (step 1 data)
+    collection_id = current_params["id"]
+    unit_id = current_params["unit_id"]
+    type_id = current_params["type_id"]
+    collection_title = current_params["title"]
+
+    IO.inspect(current_params, label: "ADD_ITEM - current_params")
+    IO.inspect(unit_id, label: "ADD_ITEM - unit_id from params")
 
     # Safely get unit and type data
     unit_data =
-      if collection.unit_id,
-        do: Voile.Schema.System.get_node!(collection.unit_id) || %{abbr: "UNK"},
-        else: %{abbr: "UNK"}
+      if unit_id && unit_id != "",
+        do: Voile.Schema.System.get_node!(unit_id) || %{abbr: "UNK", name: "Unknown"},
+        else: %{abbr: "UNK", name: "Unknown"}
 
     type_data =
-      if collection.type_id,
-        do: Metadata.get_resource_class!(collection.type_id) || %{local_name: "UNK"},
+      if type_id && type_id != "",
+        do: Metadata.get_resource_class!(type_id) || %{local_name: "UNK"},
         else: %{local_name: "UNK"}
 
     dbg(
@@ -95,14 +100,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         generate_inventory_code(
           unit_data.abbr,
           type_data.local_name,
-          collection.title,
+          collection_title,
           to_string(new_index + 1)
         ),
       "location" => unit_data.name,
       "status" => "active",
       "condition" => "new",
       "availability" => "available",
-      "unit_id" => collection.unit_id
+      "unit_id" => unit_id
     }
 
     # Add new item
@@ -122,7 +127,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def assign_selected_creator(id, socket) do
-    case Enum.find(socket.assigns.creator_list, fn c -> to_string(c.id) == id end) do
+    # First try to find in suggestions (most recent search results)
+    # Then try creator_list (preloaded creators)
+    # Finally, fetch from database if not found
+    selected =
+      Enum.find(socket.assigns.creator_suggestions, fn c -> to_string(c.id) == id end) ||
+        Enum.find(socket.assigns.creator_list, fn c -> to_string(c.id) == id end) ||
+        try do
+          Master.get_creator!(id)
+        rescue
+          _ -> nil
+        end
+
+    case selected do
       nil ->
         socket
         |> assign(:creator_input, "")
@@ -139,10 +156,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         socket
         |> assign(:creator_input, selected.creator_name)
         |> assign(:creator_suggestions, [])
-        |> assign(:collection, %{
-          socket.assigns.collection
-          | creator_id: selected.id
-        })
+        # Don't update collection.mst_creator here - let it be loaded by Ecto when needed
         |> assign(:form, to_form(changeset, action: :validate))
     end
   end
@@ -184,9 +198,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def clear_selected_creator(socket) do
+    # Get current form params
+    current_params = socket.assigns.form.params || %{}
+    # Remove creator_id from form params
+    updated_params = Map.put(current_params, "creator_id", nil)
+    # Create updated changeset
+    changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
+
     socket
     |> assign(:creator_input, nil)
-    |> assign(:collection, %{socket.assigns.collection | creator_id: nil})
+    |> assign(:form, to_form(changeset, action: :validate))
   end
 
   def delete_unsaved_field_at(index_str, socket) do

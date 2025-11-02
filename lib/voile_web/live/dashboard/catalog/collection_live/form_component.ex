@@ -14,37 +14,37 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       <%= if msg = @flash["error"] do %>
         <.flash kind={:error} class="mb-4">{msg}</.flash>
       <% end %>
-      
+
       <%= if msg = @flash["info"] do %>
         <.flash kind={:info} class="mb-4">{msg}</.flash>
       <% end %>
-      
+
       <.modal id="col_field_delete_confirmation">
         <div class="text-center">
           <h5>Are you sure want to delete this field ?</h5>
-          
+
           <p class="text-sm text-voile-dark">
             This action cannot be undone. Please confirm your action.
           </p>
-          
+
           <p class="text-sm italic font-semibold text-voile-error">You will delete this property :</p>
-          
+
           <div class="my-4">
             <h6 class="text-voile-primary">
               {(@chosen_collection_field && @chosen_collection_field.label) || ""}
             </h6>
-            
+
             <p class="text-xs">with value :</p>
-            
+
             <h5 class="font-bold text-voile-dark dark:text-voile">
               {(@chosen_collection_field && @chosen_collection_field.value) || ""}
             </h5>
-            
+
             <p class="text-xs">from this collection :</p>
-            
+
             <h6 class="text-voile-warning">{@collection.title}</h6>
           </div>
-          
+
           <div class="flex items-center w-full my-5 gap-5">
             <.button
               class="w-full cancel-btn"
@@ -66,28 +66,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </div>
         </div>
       </.modal>
-      
+
       <.modal id="item_delete_confirmation">
         <div class="text-center">
           <h5>Are you sure want to delete this item data?</h5>
-          
+
           <p class="text-sm text-voile-dark">
             This action cannot be undone. Please confirm your action and make sure this item is not in use.
           </p>
-          
+
           <div class="my-4">
             <p class="text-xs">Item Code :</p>
-            
+
             <h6 class="text-voile-primary">
               {(@chosen_item_field && @chosen_item_field.item_code) || ""}
             </h6>
           </div>
-          
+
           <p class="text-sm">will be deleted forever from this collection :</p>
-          
+
           <h6 class="text-voile-warning">{@collection.title}</h6>
         </div>
-        
+
         <div class="flex items-center w-full my-5 gap-5">
           <.button
             class="w-full cancel-btn"
@@ -106,16 +106,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           </.button>
         </div>
       </.modal>
-      
+
       <.header>
         {@title}
         <:subtitle>Use this form to manage collection records in your database.</:subtitle>
       </.header>
-      
+
       <div class="text-xs italic">
         {if @action == :edit, do: "Edit Collection", else: "New Collection"} - Step {@step} of 3
       </div>
-      
+
       <div class="mb-12">
         <%= case @step do %>
           <% 1 -> %>
@@ -130,7 +130,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             </p>
         <% end %>
       </div>
-      
+
       <.form
         for={@form}
         id="collection-form-1"
@@ -180,7 +180,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       phx-value-title={collection.title}
                     >
                       <div class="font-medium text-voile">{collection.title}</div>
-                      
+
                       <div class="text-sm text-voile-muted">
                         by {(collection.mst_creator && collection.mst_creator.creator_name) ||
                           "Unknown"}
@@ -189,7 +189,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   <% end %>
                 </div>
               <% end %>
-              
+
               <%= if @form.params["parent_id"] && @form.params["parent_id"] != "" do %>
                 <div class="mt-2 px-3 py-2 bg-voile-info border border-voile-light rounded-md flex items-center justify-between">
                   <span class="text-sm text-voile-primary">
@@ -207,7 +207,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% end %>
             </div>
           </div>
-          
+
           <.input
             field={@form[:collection_type]}
             label="Collection Type"
@@ -221,23 +221,37 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             type="number"
             placeholder="1"
           />
-          <.input
-            field={@form[:unit_id]}
-            label="Collection Location"
-            type="select"
-            options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
-            prompt="Select Collection Location"
-            required_value={true}
-          /> <.input field={@form[:title]} type="text" label="Title" required_value={true} />
+
+          <%= if can_select_unit?(@current_scope) do %>
+            <.input
+              field={@form[:unit_id]}
+              label="Collection Location"
+              type="select"
+              options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
+              prompt="Select Collection Location"
+              required_value={true}
+            />
+          <% else %>
+            <input type="hidden" name={@form[:unit_id].name} value={@current_scope.user.node_id} />
+            <.input
+              field={@form[:unit_id]}
+              label="Collection Location (Your Unit)"
+              type="select"
+              options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
+              prompt="Select Collection Location"
+              required_value={true}
+              disabled={true}
+            />
+          <% end %>
+
+          <.input field={@form[:title]} type="text" label="Title" required_value={true} />
           <div class="relative" phx-hook="SearchDropdown" id={"creator-search-#{@form[:id].value}"}>
             <.input
               type="text"
               name="creator"
-              value={
-                (@collection.mst_creator && @collection.mst_creator.creator_name) || @creator_input
-              }
+              value={@creator_input || ""}
               label="Creator"
-              disabled={@creator_input != "" and @collection.creator_id !== nil}
+              disabled={@creator_input not in [nil, ""] and @form[:creator_id].value not in [nil, ""]}
               required_value={true}
               autocomplete="off"
               phx-change="search_creator"
@@ -270,14 +284,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     stroke-width="4"
                   >
                   </circle>
-                  
+
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
                   </path>
                 </svg>
               </div>
             <% end %>
-            
-            <%= if @creator_input != "" and @creator_suggestions != [] and @collection.creator_id == nil do %>
+
+            <%= if @creator_input not in [nil, ""] and @creator_suggestions != [] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
               <div class="absolute z-10 w-full mt-1 bg-voile-surface border border-voile-muted rounded-md shadow-lg max-h-60 overflow-auto">
                 <ul role="listbox" aria-label="Creator suggestions">
                   <%= for creator <- @creator_suggestions do %>
@@ -289,15 +303,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       phx-value-id={creator.id}
                     >
                       <div class="font-medium">{creator.creator_name}</div>
-                      
+
                       <div class="text-xs">{Map.get(creator, :affiliation, "")}</div>
                     </li>
                   <% end %>
                 </ul>
               </div>
             <% end %>
-            
-            <%= if @creator_input != nil and @creator_suggestions == [] and @collection.creator_id == nil do %>
+
+            <%= if @creator_input not in [nil, ""] and @creator_suggestions == [] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
               <div class="mt-2 flex items-center gap-3">
                 <.button
                   type="button"
@@ -314,38 +328,59 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               </div>
             <% end %>
           </div>
-          
-          <%= if @collection.creator_id != nil do %>
+
+          <%= if @form[:creator_id].value not in [nil, ""] do %>
             <.button type="button" phx-click="delete_creator" phx-target={@myself} class="cancel-btn">
               Delete Author
             </.button>
           <% end %>
-          
+
           <.input
             field={@form[:description]}
             type="textarea"
             label="Description"
             required_value={true}
           />
-          <.input
-            field={@form[:status]}
-            type="select"
-            label="Status"
-            options={get_status_options(@current_scope)}
-            required_value={true}
-            disabled={not can_edit_status?(@current_scope)}
-          />
-          <.input
-            field={@form[:access_level]}
-            type="select"
-            label="Access Level"
-            options={[
-              {"Public", "public"},
-              {"Private", "private"},
-              {"Restricted", "restricted"}
-            ]}
-            required_value={true}
-          /> <.input field={@form[:thumbnail]} type="text" label="Thumbnail" disabled="true" />
+          <%= if is_super_admin?(@current_scope.user) do %>
+            <.input
+              field={@form[:status]}
+              type="select"
+              label="Status"
+              options={get_status_options(@current_scope)}
+              required_value={true}
+            />
+            <.input
+              field={@form[:access_level]}
+              type="select"
+              label="Access Level"
+              options={[
+                {"Public", "public"},
+                {"Private", "private"},
+                {"Restricted", "restricted"}
+              ]}
+              required_value={true}
+            />
+          <% else %>
+            <input type="hidden" name={@form[:status].name} value="draft" />
+            <.input
+              field={@form[:status]}
+              type="select"
+              label="Status (Auto-set to Draft)"
+              options={[{"Draft", "draft"}]}
+              required_value={true}
+              disabled={true}
+            />
+            <input type="hidden" name={@form[:access_level].name} value="private" />
+            <.input
+              field={@form[:access_level]}
+              type="select"
+              label="Access Level (Auto-set to Private)"
+              options={[{"Private", "private"}]}
+              required_value={true}
+              disabled={true}
+            />
+          <% end %>
+           <.input field={@form[:thumbnail]} type="text" label="Thumbnail" disabled="true" />
           <input
             name={@form[:creator_id].name}
             value={@form[:creator_id].value || @current_scope.user.id}
@@ -382,13 +417,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       </path>
                     </svg>
                   </div>
-                  
+
                   <div>
                     <p class="font-medium">Click to upload or drag and drop</p>
-                    
+
                     <p class="text-sm mt-1">PNG, JPG, GIF up to 10MB</p>
                   </div>
-                  
+
                   <div class="mt-4">
                     <.live_file_input upload={@uploads.thumbnail} class="hidden" />
                     <label
@@ -410,7 +445,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 </div>
               </div>
             <% end %>
-            
+
             <%= for entry <- @uploads.thumbnail.entries do %>
               <div class="space-y-4">
                 <div class="flex items-center space-x-3">
@@ -430,10 +465,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       </path>
                     </svg>
                   </div>
-                  
+
                   <div class="flex-1">
                     <p class="text-gray-700 font-medium text-sm">{entry.client_name}</p>
-                    
+
                     <div class="mt-2 bg-gray-200 rounded-full h-2">
                       <div
                         class="bg-gradient-to-r from-voile-info to-voile-primary h-2 rounded-full transition-all duration-300"
@@ -441,13 +476,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       >
                       </div>
                     </div>
-                    
+
                     <p class="text-gray-500 text-xs mt-1">Uploading... {entry.progress}%</p>
                   </div>
                 </div>
               </div>
             <% end %>
-            
+
             <%= if @form[:thumbnail].value != nil and @form[:thumbnail].value != "" do %>
               <div class="space-y-4">
                 <div class="relative group w-full max-w-96">
@@ -459,7 +494,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 rounded-xl transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                   </div>
                 </div>
-                
+
                 <div class="flex items-center justify-between w-full max-w-96">
                   <div class="flex items-center space-x-2 text-voile-success">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -469,9 +504,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         clip-rule="evenodd"
                       >
                       </path>
-                    </svg> <span class="text-sm font-medium">Thumbnail uploaded</span>
+                    </svg>
+                    <span class="text-sm font-medium">Thumbnail uploaded</span>
                   </div>
-                  
+
                   <.button
                     type="button"
                     phx-click="delete_thumbnail"
@@ -501,17 +537,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% end %>
           </div>
         <% end %>
-        
+
         <%= if @step == 2 do %>
           <div class="flex items-start gap-5">
             <div class="sticky top-0 w-full h-full max-w-72">
               <h5>Collection Properties</h5>
-              
+
               <div class="w-full h-full max-h-screen border border-1 border-voile-muted overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
                 <p class="text-xs italic mb-4 max-w-48">
                   You can click each category below and pick any necessary property for your collection.
                 </p>
-                
+
                 <div>
                   <.input
                     type="text"
@@ -524,7 +560,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     phx-debounce="300"
                   />
                 </div>
-                
+
                 <%= if Enum.empty?(@filtered_properties) do %>
                   <p class="text-red-500 text-sm mt-2">No property found.</p>
                 <% else %>
@@ -546,7 +582,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           (<span class="text-brand">{length(props)}</span>)
                         <% end %>
                       </h6>
-                      
+
                       <div
                         id={id |> String.downcase() |> String.replace(" ", "-")}
                         class={
@@ -576,7 +612,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 <% end %>
               </div>
             </div>
-            
+
             <div class="w-full">
               <%= if @form[:collection_fields] == nil or Enum.empty?(@form[:collection_fields].value || []) do %>
                 <p class="text-red-500 text-sm mt-2">No collection fields added yet.</p>
@@ -586,13 +622,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     <h6 class="bg-voile-primary px-4 py-1 rounded-t-xl text-white">
                       {col_field[:label].value}
                     </h6>
-                    
+
                     <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
                       <p class="text-gray-500 dark:text-white italic pb-4">
                         {col_field[:information].value ||
                           col_field.data.metadata_properties.information}
                       </p>
-                      
+
                       <input
                         type="hidden"
                         name={col_field[:label].name}
@@ -641,7 +677,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           />
                         </div>
                       </div>
-                      
+
                       <div class="w-full flex items-center gap-3 mt-2">
                         <%= if col_field[:id].value != nil do %>
                           <.button
@@ -675,11 +711,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             </div>
           </div>
         <% end %>
-        
+
         <%= if @step == 3 do %>
           <div class="flex items-center justify-between mb-5">
             <h5>The Items Data</h5>
-            
+
             <div class="flex items-center gap-5">
               <.button
                 type="button"
@@ -691,7 +727,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               </.button>
             </div>
           </div>
-          
+
           <div class="">
             <%= if @form[:items] == nil or Enum.empty?(@form[:items].value || []) do %>
               <p class="text-red-500 text-sm mt-2">
@@ -727,7 +763,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         </.button>
                       <% end %>
                     </div>
-                    
+
                     <.input
                       field={item_field[:item_code]}
                       type="text"
@@ -745,6 +781,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       type="text"
                       label="Location"
                       required_value={true}
+                    />
+                    <input
+                      type="hidden"
+                      name={item_field[:unit_id].name}
+                      value={item_field[:unit_id].value}
                     />
                     <.input
                       field={item_field[:unit_id]}
@@ -791,7 +832,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <% end %>
           </div>
         <% end %>
-        
+
         <div class="mt-12 w-full flex justify-between items-center gap-5">
           <%= if @step > 1 do %>
             <.button
@@ -803,7 +844,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               &leftarrow; Back
             </.button>
           <% end %>
-          
+
           <%= if @step == 3 do %>
             <.button
               type="button"
@@ -857,7 +898,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           # Fetch fresh collection with preloads
           coll =
             Catalog.get_collection!(collection.id)
-            |> Voile.Repo.preload(collection_fields: [:metadata_properties])
+            |> Voile.Repo.preload([:mst_creator, collection_fields: [:metadata_properties]])
 
           {coll, Catalog.change_collection(coll)}
 
@@ -870,6 +911,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       end
 
     seed_source = if assigns.action == :edit, do: original_collection, else: collection
+
+    # Initialize creator_input based on existing data
+    initial_creator_input =
+      case assigns.action do
+        :edit when not is_nil(original_collection.mst_creator) ->
+          original_collection.mst_creator.creator_name
+
+        _ ->
+          nil
+      end
 
     seed_params =
       (seed_source.collection_fields || [])
@@ -911,7 +962,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:parent_search, "")
      |> assign(:parent_search_results, [])
      |> assign(:selected_parent_title, get_selected_parent_title(collection))
-     |> assign(:creator_input, nil)
+     |> assign(:creator_input, initial_creator_input)
      |> assign(:creator_list, assigns.creator_list)
      |> assign(:creator_suggestions, [])
      |> assign(:creator_searching, false)
@@ -933,6 +984,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      )
      |> assign_new(:form, fn ->
        # Build form with all initial params
+       # For new collections by non-super_admin, force their unit_id
+       unit_id =
+         case assigns.action do
+           :new ->
+             get_allowed_unit_id(assigns.current_scope, collection)
+
+           :edit ->
+             collection.unit_id
+         end
+
+       # RBAC: Force status and access_level for non-super admin
+       default_status =
+         if is_super_admin?(assigns.current_scope.user) do
+           collection.status || "draft"
+         else
+           "draft"
+         end
+
+       default_access_level =
+         if is_super_admin?(assigns.current_scope.user) do
+           collection.access_level || "public"
+         else
+           "private"
+         end
+
        initial_params =
          Map.merge(
            %{"collection_fields" => seed_params, "items" => item_params},
@@ -940,10 +1016,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
              "id" => collection.id || Ecto.UUID.generate(),
              "title" => collection.title || "",
              "description" => collection.description || "",
-             "status" => collection.status || "draft",
-             "access_level" => collection.access_level || "public",
+             "status" => default_status,
+             "access_level" => default_access_level,
              "type_id" => collection.type_id || nil,
-             "unit_id" => collection.unit_id || nil,
+             "unit_id" => unit_id,
              "creator_id" => collection.creator_id || nil,
              "thumbnail" => collection.thumbnail || "",
              "parent_id" => collection.parent_id || nil,
@@ -968,6 +1044,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     current_params = socket.assigns.form.params || %{}
     updated_params = Map.merge(current_params, collection_params)
 
+    # RBAC: Force unit_id for non-super_admin users
+    updated_params =
+      if can_select_unit?(socket.assigns.current_scope) do
+        updated_params
+      else
+        Map.put(updated_params, "unit_id", socket.assigns.current_scope.user.node_id)
+      end
+
+    # RBAC: Force status and access_level for non-super admin users
+    updated_params =
+      if is_super_admin?(socket.assigns.current_scope.user) do
+        updated_params
+      else
+        updated_params
+        |> Map.put("status", "draft")
+        |> Map.put("access_level", "private")
+      end
+
     changeset =
       Catalog.change_collection(socket.assigns.collection, updated_params)
 
@@ -984,11 +1078,40 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     current_params = socket.assigns.form.params || %{}
     updated_params = Map.merge(current_params, collection_params)
 
+    # RBAC: Force unit_id for non-super_admin users
+    updated_params =
+      if can_select_unit?(socket.assigns.current_scope) do
+        updated_params
+      else
+        Map.put(updated_params, "unit_id", socket.assigns.current_scope.user.node_id)
+      end
+
+    # RBAC: Force status and access_level for non-super admin users
+    updated_params =
+      if is_super_admin?(socket.assigns.current_scope.user) do
+        updated_params
+      else
+        updated_params
+        |> Map.put("status", "draft")
+        |> Map.put("access_level", "private")
+      end
+
     changeset =
       Catalog.change_collection(socket.assigns.collection, updated_params)
 
+    # Preserve creator_input if creator_id is set (creator was already selected)
+    # We rely on creator_input since mst_creator is not always loaded
+    creator_input =
+      if updated_params["creator_id"] && updated_params["creator_id"] != "" &&
+           socket.assigns.creator_input do
+        socket.assigns.creator_input
+      else
+        socket.assigns.creator_input
+      end
+
     socket =
       socket
+      |> assign(:creator_input, creator_input)
       |> assign(:form, to_form(changeset, action: :validate))
 
     {:noreply, socket}
@@ -1000,27 +1123,34 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   end
 
   def handle_event("search_creator", %{"value" => query}, socket) do
-    # Mark searching true so UI can show a loading indicator
-    socket = assign(socket, :creator_searching, true)
+    # Don't search if a creator has already been selected
+    creator_id = socket.assigns.form[:creator_id].value
 
-    suggestions =
-      try do
-        Voile.Schema.Master.search_mst_creator_names(query, 10)
-      rescue
-        _ ->
-          # Fallback to in-memory filtering
-          Enum.filter(socket.assigns.creator_list || [], fn creator ->
-            String.contains?(String.downcase(creator.creator_name), String.downcase(query))
-          end)
-      end
+    if creator_id not in [nil, ""] do
+      {:noreply, socket}
+    else
+      # Mark searching true so UI can show a loading indicator
+      socket = assign(socket, :creator_searching, true)
 
-    socket =
-      socket
-      |> assign(:creator_searching, false)
-      |> assign(:creator_input, query)
-      |> assign(:creator_suggestions, suggestions)
+      suggestions =
+        try do
+          Voile.Schema.Master.search_mst_creator_names(query, 10)
+        rescue
+          _ ->
+            # Fallback to in-memory filtering
+            Enum.filter(socket.assigns.creator_list || [], fn creator ->
+              String.contains?(String.downcase(creator.creator_name), String.downcase(query))
+            end)
+        end
 
-    {:noreply, socket}
+      socket =
+        socket
+        |> assign(:creator_searching, false)
+        |> assign(:creator_input, query)
+        |> assign(:creator_suggestions, suggestions)
+
+      {:noreply, socket}
+    end
   end
 
   # Accept `creator` param name (from phx-change on input) and forward to the same logic
@@ -1119,13 +1249,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   def handle_event("save", _params, socket) do
     collection_params = socket.assigns.form.params
 
-    # RBAC: Auto-set status to "pending" for non-reviewers when saving (not draft)
+    # RBAC: Force status and access_level for non-super admin users
     collection_params =
-      if not can?(socket.assigns.current_scope.user, "collections.publish") and
-           collection_params["status"] not in ["draft", "pending"] do
-        Map.put(collection_params, "status", "pending")
+      if is_super_admin?(socket.assigns.current_scope.user) do
+        collection_params
       else
         collection_params
+        |> Map.put("status", "draft")
+        |> Map.put("access_level", "private")
       end
 
     cond do
@@ -1159,6 +1290,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
   def handle_event("save_as_draft", _params, socket) do
     collection_params = socket.assigns.form.params
+
+    # RBAC: Force status to draft and access_level to private for non-super admin users
+    collection_params =
+      if is_super_admin?(socket.assigns.current_scope.user) do
+        Map.put(collection_params, "status", "draft")
+      else
+        collection_params
+        |> Map.put("status", "draft")
+        |> Map.put("access_level", "private")
+      end
+
     save_collection_as_draft(socket, socket.assigns.action, collection_params)
   end
 
@@ -1229,33 +1371,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     end
   end
 
-  # RBAC: Get status options based on user permissions
-  defp get_status_options(current_scope) do
-    user = current_scope.user
-
-    cond do
-      # Reviewer or admin can access all statuses
-      can?(user, "collections.publish") ->
-        [
-          {"Draft", "draft"},
-          {"Pending", "pending"},
-          {"Published", "published"},
-          {"Archived", "archived"}
-        ]
-
-      # Librarian, curator, archivist can only use draft and pending
-      true ->
-        [
-          {"Draft", "draft"},
-          {"Pending", "pending"}
-        ]
-    end
+  # RBAC: Get status options for super admin
+  defp get_status_options(_current_scope) do
+    [
+      {"Draft", "draft"},
+      {"Pending", "pending"},
+      {"Published", "published"},
+      {"Archived", "archived"}
+    ]
   end
 
-  # RBAC: Check if user can edit status field
-  defp can_edit_status?(current_scope) do
-    user = current_scope.user
-    # Only reviewer (with collections.publish) can freely edit status
-    can?(user, "collections.publish")
+  # RBAC: Check if user can select any unit (only super_admin)
+  defp can_select_unit?(current_scope) do
+    is_super_admin?(current_scope.user)
+  end
+
+  # RBAC: Get the unit_id that should be used for the collection
+  defp get_allowed_unit_id(current_scope, collection) do
+    cond do
+      # Super admin can use any unit (from collection or nil)
+      can_select_unit?(current_scope) ->
+        collection.unit_id
+
+      # Other users must use their own unit_id (from node_id field)
+      true ->
+        current_scope.user.node_id
+    end
   end
 end

@@ -40,6 +40,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
       |> assign(:collection, collection)
+      |> assign(:patch, ~p"/manage/catalog/collections/#{collection}")
 
     {:noreply, socket}
   end

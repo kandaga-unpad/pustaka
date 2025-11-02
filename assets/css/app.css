@@ -281,37 +281,14 @@
   }
 
   .search-tab-item {
-    @apply p-2 w-full text-xs md:text-base text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all;
-    background-color: var(--color-voile-surface);
-    color: var(--color-voile-text);
-  }
-  .search-tab-item:hover {
-    background-color: var(--color-voile-surface);
-  }
-  :where([data-theme="dark"], [data-theme="dark"] *) .search-tab-item {
-    background-color: var(--color-voile-neutral-dark);
-    color: var(--color-voile-text-dark);
-  }
-  :where([data-theme="dark"], [data-theme="dark"] *) .search-tab-item:hover {
-    @apply bg-gray-700;
-    color: var(--color-voile-text-dark);
+    @apply bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 hover:dark:bg-gray-700 p-2 w-full text-xs md:text-base text-center rounded-tl-lg rounded-tr-lg cursor-pointer transition-all;
   }
 
   .active-tab-item {
-    @apply p-2 rounded-md;
+    @apply bg-gray-400 dark:bg-gray-700 p-2 rounded-md;
     /* Solid soft-violet background that is clearly distinct from the main surface */
-    background-color: var(--color-voile-surface-variant);
-    color: var(--color-voile-text);
     border: 1px solid rgba(99, 102, 241, 0.06); /* subtle outline */
     box-shadow: 0 6px 12px rgba(15, 23, 42, 0.04);
-  }
-
-  :where([data-theme="dark"], [data-theme="dark"] *) .active-tab-item {
-    /* In dark mode use a slightly lighter neutral so the active tab stands out */
-    background-color: var(--color-voile-neutral-dark);
-    color: var(--color-voile-surface);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    box-shadow: 0 6px 12px rgba(2, 6, 23, 0.6);
   }
 
   .input-main-search {
