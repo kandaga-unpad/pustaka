@@ -342,6 +342,24 @@ defmodule Voile.Schema.Master do
   def get_member_type!(id), do: Repo.get!(MemberType, id)
 
   @doc """
+  Gets a single member_type by slug.
+
+  Returns nil if the Member type does not exist.
+
+  ## Examples
+
+      iex> get_member_type_by_slug("verified_member")
+      %MemberType{}
+
+      iex> get_member_type_by_slug("nonexistent")
+      nil
+
+  """
+  def get_member_type_by_slug(slug) when is_binary(slug) do
+    Repo.get_by(MemberType, slug: slug)
+  end
+
+  @doc """
   Creates a member_type.
 
   ## Examples

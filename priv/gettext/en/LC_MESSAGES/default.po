@@ -581,7 +581,7 @@ msgstr ""
 msgid "Send Login Link"
 msgstr ""
 
-msgid "Welcome back to Voile"
+msgid "Welcome back to"
 msgstr ""
 
 msgid "Sign in to access your dashboard, manage content, and explore features built for creators and teams."

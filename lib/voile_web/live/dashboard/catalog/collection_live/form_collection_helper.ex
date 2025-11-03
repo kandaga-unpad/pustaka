@@ -63,9 +63,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     type_id = current_params["type_id"]
     collection_title = current_params["title"]
 
-    IO.inspect(current_params, label: "ADD_ITEM - current_params")
-    IO.inspect(unit_id, label: "ADD_ITEM - unit_id from params")
-
     # Safely get unit and type data
     unit_data =
       if unit_id && unit_id != "",
@@ -76,10 +73,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       if type_id && type_id != "",
         do: Metadata.get_resource_class!(type_id) || %{local_name: "UNK"},
         else: %{local_name: "UNK"}
-
-    dbg(
-      "Adding item to form with collection_id: #{collection_id}, unit: #{unit_data.abbr}, type: #{type_data.local_name}"
-    )
 
     # Get current items
     current_items = current_params["items"] || %{}
@@ -120,10 +113,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
     changeset = Collection.changeset(socket.assigns.collection, new_params)
 
-    assign(socket,
-      form: to_form(changeset, action: :validate),
-      collection_has_more_than_one_item: true
-    )
+    socket
+    |> assign(:form, to_form(changeset, action: :validate))
+    |> assign(:collection_has_more_than_one_item, true)
   end
 
   def assign_selected_creator(id, socket) do

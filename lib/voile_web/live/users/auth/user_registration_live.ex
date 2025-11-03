@@ -13,27 +13,30 @@ defmodule VoileWeb.UserRegistrationLive do
             <div class="max-w-sm text-center">
               <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
               <h3 class="mt-6 text-lg font-semibold text-gray-900">Create your account</h3>
-              
+
               <p class="mt-2 text-sm text-gray-600">
                 Join Voile to manage your projects and collaborate with your team.
               </p>
             </div>
           </div>
-          
-          <div class="bg-white shadow rounded-lg border border-gray-100 p-6 md:p-8">
+
+          <div class="default-card shadow rounded-lg border border-gray-100 p-6 md:p-8">
             <.header>
               Register for an account
               <:subtitle>
                 <span class="text-sm text-gray-500">
                   Already registered?
-                  <.link navigate={~p"/login"} class="font-semibold text-brand hover:underline ml-1">
+                  <.link
+                    navigate={~p"/login"}
+                    class="font-semibold text-voile-primary hover:underline ml-1"
+                  >
                     Log in
                   </.link>
                   to your account now.
                 </span>
               </:subtitle>
             </.header>
-            
+
             <.form
               for={@form}
               id="registration_form"
@@ -51,6 +54,24 @@ defmodule VoileWeb.UserRegistrationLive do
                 </.button>
               </div>
             </.form>
+
+            <div class="my-6 flex items-center gap-3">
+              <hr class="flex-1 border-gray-300" />
+              <span class="text-sm text-gray-500">or register with</span>
+              <hr class="flex-1 border-gray-300" />
+            </div>
+
+            <.button
+              phx-click="google_auth"
+              class="w-full btn border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50"
+            >
+              <img
+                src={~p"/images/google_img.png"}
+                class="inline h-5 w-5 mr-2"
+                alt="Google logo"
+              />
+              <span>Continue with Google</span>
+            </.button>
           </div>
         </div>
       </div>
@@ -97,8 +118,14 @@ defmodule VoileWeb.UserRegistrationLive do
             &url(~p"/users/confirm/#{&1}")
           )
 
-        changeset = Accounts.change_user_registration(user)
-        {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
+        # Redirect to pending confirmation page instead of auto-login
+        {:noreply,
+         socket
+         |> put_flash(
+           :info,
+           "Account created successfully! Please check your email to confirm your account."
+         )
+         |> push_navigate(to: ~p"/users/pending_confirmation?email=#{user.email}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
@@ -108,6 +135,10 @@ defmodule VoileWeb.UserRegistrationLive do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+  end
+
+  def handle_event("google_auth", _params, socket) do
+    {:noreply, redirect(socket, to: "/auth/google")}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

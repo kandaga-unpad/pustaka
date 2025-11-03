@@ -671,11 +671,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             />
             <div>
               <h1 class="text-2xl font-semibold">Welcome back, {@current_scope.user.fullname}</h1>
-              
+
               <p class="mt-1 text-sm opacity-90">
                 This is your Atrium — a personalized member dashboard.
               </p>
-              
+
               <div class="mt-3 flex items-center gap-3 text-sm">
                 <span class="px-3 py-1 bg-white/20 rounded-full">
                   Loans: <strong class="ml-1">{length(@loans || [])}</strong>
@@ -687,7 +687,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             </div>
           </div>
         </header>
-        
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Left column: profile card -->
           <div class="lg:col-span-1">
@@ -700,36 +700,36 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 />
                 <div>
                   <div class="text-lg font-medium">{@current_scope.user.fullname}</div>
-                  
-                  <div class="text-sm mt-1">{role_name(@current_scope.user)}</div>
+
+                  <div class="text-sm mt-1">{@current_scope.user.identifier}</div>
                 </div>
               </div>
-              
+
               <div class="mt-4 text-sm space-y-2">
                 <div><strong>Email:</strong> {@current_scope.user.email}</div>
-                
+
                 <div><strong>Member type:</strong> {user_type_name(@current_scope.user)}</div>
-                
-                <div><strong>Node:</strong> {node_name(@current_scope.user)}</div>
+
+                <div><strong>Location Node:</strong> {node_name(@current_scope.user)}</div>
               </div>
-              
+
               <div class="mt-6">
                 <h6 class="text-sm font-medium text-voile-muted mb-3">Circulation Summary</h6>
-                
+
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Active Loans</div>
-                    
+
                     <div class="text-lg font-semibold">{@total_loans}</div>
                   </div>
-                  
+
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Unpaid Fines</div>
-                    
+
                     <div class="text-lg font-semibold">{@total_unpaid_fines}</div>
                   </div>
                 </div>
-                
+
                 <div class="mt-4">
                   <.button
                     type="button"
@@ -767,7 +767,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   </button>
                 <% end %>
               </nav>
-              
+
               <div id="atrium-tabpanels" class="space-y-6">
                 <%= if @active_tab == :collections do %>
                   <div
@@ -775,20 +775,20 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-2">Collections</h4>
-                    
+
                     <p class="text-sm">
                       Your collections will be shown here — curated and simple to browse.
                     </p>
                   </div>
                 <% end %>
-                
+
                 <%= if @active_tab == :settings do %>
                   <div
                     id="tab-settings"
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
                     <h4 class="text-lg font-semibold mb-4">Account Settings</h4>
-                    
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div class="space-y-4">
                         <.form
@@ -806,7 +806,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               disabled
                             />
                           </div>
-                          
+
                           <.input field={@profile_form[:email]} type="email" label="Email" disabled />
                           <label class="block text-sm font-medium text-gray-700 mb-2">
                             Profile image
@@ -820,7 +820,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 />
                                 <div class="flex-1">
                                   <p class="text-sm text-voile-muted">Uploaded</p>
-                                  
+
                                   <.button
                                     type="button"
                                     phx-click="delete_user_image"
@@ -834,7 +834,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <% else %>
                               <div class="border border-dashed rounded p-4 text-center">
                                 <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
-                                 <.live_file_input upload={@uploads.user_image} class="hidden" />
+                                <.live_file_input upload={@uploads.user_image} class="hidden" />
                                 <label
                                   for={@uploads.user_image.ref}
                                   class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
@@ -849,7 +849,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               </div>
                             <% end %>
                           </div>
-                          
+
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input field={@profile_form[:website]} type="url" label="Website" />
                             <.input
@@ -859,7 +859,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               placeholder="@username"
                             />
                           </div>
-                          
+
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <.input
                               field={@user_profile_form[:fullname]}
@@ -911,29 +911,29 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               label="Position"
                             />
                           </div>
-                           <hr class="my-4" />
+                          <hr class="my-4" />
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
-                          
+
                           <div class="text-sm text-voile-muted mb-3 space-y-1">
                             <p>Role: {role_name(@current_scope.user)}</p>
-                            
+
                             <p>Member type: {user_type_name(@current_scope.user)}</p>
-                            
+
                             <p>Node: {node_name(@current_scope.user)}</p>
-                            
+
                             <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
-                            
+
                             <p>
                               Last login: {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
                             </p>
                           </div>
-                          
+
                           <div class="mt-3 grid grid-cols-1 gap-2">
                             <.button phx-disable-with="Saving...">Save Profile</.button>
                           </div>
                         </.form>
                       </div>
-                      
+
                       <div>
                         <.form
                           for={@password_form}
@@ -986,18 +986,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Your Active Loans</h4>
-                          
+
                           <div class="text-sm text-voile-muted mt-1">
                             Active loans: <strong>{length(@loans || [])}</strong>
                           </div>
                         </div>
-                        
+
                         <%= if length(@loans) > 10 do %>
                           <div class="flex items-center gap-3">
                             <div class="text-sm text-voile-muted">
                               Page {@loans_page || 1} of {@loans_total_pages || 1}
                             </div>
-                            
+
                             <.button
                               phx-click="loans_prev"
                               disabled={@loans_page <= 1}
@@ -1013,7 +1013,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="mt-4">
                         <%= if @loans == [] do %>
                           <p class="text-sm text-voile-muted">You have no active loans.</p>
@@ -1051,14 +1051,14 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </div>
                                   <% end %>
                                 </div>
-                                
+
                                 <div class="flex-1 min-w-0">
                                   <div class="font-medium text-gray-900 dark:text-gray-100 mb-1">
                                     {if tx.collection && tx.collection.title,
                                       do: tx.collection.title,
                                       else: tx.item.item_code}
                                   </div>
-                                  
+
                                   <div class="flex flex-wrap items-center gap-3 text-xs">
                                     <%= cond do %>
                                       <% is_overdue -> %>
@@ -1079,7 +1079,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           /> Due: {Calendar.strftime(tx.due_date, "%b %d, %Y")}
                                         </span>
                                     <% end %>
-                                    
+
                                     <span class="text-voile-muted">
                                       <.icon name="hero-arrow-path" class="w-3 h-3 inline mr-1" />
                                       Renewed: {tx.renewal_count}/{max_renewals}
@@ -1090,7 +1090,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       </span>
                                     <% end %>
                                   </div>
-                                  
+
                                   <%= if renew_disabled do %>
                                     <div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
                                       <%= cond do %>
@@ -1137,7 +1137,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     <% end %>
                                   <% end %>
                                 </div>
-                                
+
                                 <div class="flex-shrink-0">
                                   <%= if is_renewing do %>
                                     <button
@@ -1159,7 +1159,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           stroke-width="4"
                                         >
                                         </circle>
-                                        
+
                                         <path
                                           class="opacity-75"
                                           fill="currentColor"
@@ -1191,18 +1191,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Outstanding Fines</h4>
-                          
+
                           <div class="text-sm text-voile-muted mt-1">
                             Unpaid fines: <strong>{length(@fines || [])}</strong>
                           </div>
                         </div>
-                        
+
                         <%= if length(@fines) > 10 do %>
                           <div class="flex items-center gap-3">
                             <div class="text-sm text-voile-muted">
                               Page {@fines_page || 1} of {@fines_total_pages || 1}
                             </div>
-                            
+
                             <.button
                               phx-click="fines_prev"
                               disabled={@fines_page <= 1}
@@ -1218,7 +1218,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="mt-4">
                         <%= if @fines == [] do %>
                           <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
@@ -1241,14 +1241,14 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     <.icon name="hero-currency-dollar" class="w-6 h-6" />
                                   <% end %>
                                 </div>
-                                
+
                                 <div class="flex-1 text-sm space-y-2">
                                   <div class="font-medium text-gray-900 dark:text-gray-100">
                                     {f.description ||
                                       (f.item && f.item.collection && f.item.collection.title) ||
                                       "Library Fine"}
                                   </div>
-                                  
+
                                   <div class="flex items-center gap-4 text-xs text-voile-muted">
                                     <span>
                                       Type:
@@ -1266,7 +1266,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       <span>Date: {Calendar.strftime(f.fine_date, "%Y-%m-%d")}</span>
                                     <% end %>
                                   </div>
-                                  
+
                                   <%= if pending_payment do %>
                                     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-2 mt-2">
                                       <div class="flex items-center justify-between">
@@ -1274,7 +1274,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
                                           Payment link available
                                         </div>
-                                        
+
                                         <a
                                           href={pending_payment.payment_url}
                                           target="_blank"
@@ -1290,7 +1290,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </div>
                                   <% end %>
                                 </div>
-                                
+
                                 <div class="flex-shrink-0 flex flex-col gap-2">
                                   <%= if pending_payment do %>
                                     <a
@@ -1311,7 +1311,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       Get Payment Link
                                     </button>
                                   <% end %>
-                                  
+
                                   <div class="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
                                     or pay in person at library
                                   </div>
@@ -1329,7 +1329,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           </div>
         </div>
       </div>
-       <%!-- Renewal Confirmation Modal --%>
+      <%!-- Renewal Confirmation Modal --%>
       <.modal
         :if={@show_renewal_modal && @renewal_transaction}
         id="renewal-modal"
@@ -1354,7 +1354,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             Confirm Loan Renewal
           </h3>
-          
+
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Please review the details before confirming
           </p>
@@ -1375,18 +1375,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 </div>
               <% end %>
             </div>
-            
+
             <div class="flex-1">
               <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 {if tx.collection && tx.collection.title,
                   do: tx.collection.title,
                   else: tx.item && tx.item.item_code}
               </h4>
-              
+
               <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <%= if tx.item do %>
                   <p><span class="font-medium">Item Code:</span> {tx.item.item_code}</p>
-                  
+
                   <%= if tx.item.location do %>
                     <p><span class="font-medium">Location:</span> {tx.item.location}</p>
                   <% end %>
@@ -1403,11 +1403,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <div class="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
                 Current Due Date
               </div>
-              
+
               <div class="text-lg font-semibold text-red-700 dark:text-red-300">
                 {Calendar.strftime(current_due, "%b %d, %Y")}
               </div>
-              
+
               <div class="text-xs text-red-600 dark:text-red-400 mt-1">
                 <%= if days_until_current_due > 0 do %>
                   {days_until_current_due} days remaining
@@ -1421,22 +1421,22 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
                 New Due Date
               </div>
-              
+
               <div class="text-lg font-semibold text-green-700 dark:text-green-300">
                 {Calendar.strftime(new_due, "%b %d, %Y")}
               </div>
-              
+
               <div class="text-xs text-green-600 dark:text-green-400 mt-1">
                 +{loan_period_days} days extension
               </div>
             </div>
           </div>
-          
+
           <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <h5 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3">
               Transaction Details
             </h5>
-            
+
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span class="text-blue-600 dark:text-blue-400">Transaction Date:</span>
@@ -1444,19 +1444,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   {Calendar.strftime(tx.transaction_date, "%b %d, %Y")}
                 </div>
               </div>
-              
+
               <div>
                 <span class="text-blue-600 dark:text-blue-400">Renewal Count:</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
                   {tx.renewal_count} / {(member.user_type && member.user_type.max_renewals) || 0}
                 </div>
               </div>
-              
+
               <div>
                 <span class="text-blue-600 dark:text-blue-400">Status:</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100 capitalize">{tx.status}</div>
               </div>
-              
+
               <div>
                 <span class="text-blue-600 dark:text-blue-400">Member Type:</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
@@ -1475,17 +1475,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             />
             <div class="text-sm text-amber-800 dark:text-amber-200">
               <p class="font-medium mb-1">Important Information:</p>
-              
+
               <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-300">
                 <li>This renewal will extend your loan period by {loan_period_days} days</li>
-                
+
                 <li>
                   You will have {(member.user_type &&
                                     member.user_type.max_renewals - tx.renewal_count - 1) || 0} renewal(s) left after this
                 </li>
-                
+
                 <li>Late returns may result in fines</li>
-                
+
                 <li>This action cannot be undone</li>
               </ul>
             </div>

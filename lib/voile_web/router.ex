@@ -101,11 +101,24 @@ defmodule VoileWeb.Router do
       live "/users/set_initial_password/:token", UserInitialPasswordLive, :edit
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
+      live "/users/pending_confirmation", UserPendingConfirmationLive, :index
     end
 
     post "/users/log_in", UserSessionController, :create
     get "/users/login/:token", MagicLinkController, :login
     delete "/users/log_out", UserSessionController, :delete
+  end
+
+  scope "/", VoileWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_for_onboarding,
+      on_mount: [
+        {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
+        {VoileWeb.UserAuth, :require_authenticated}
+      ] do
+      live "/users/onboarding", UserOnboardingLive, :edit
+    end
   end
 
   scope "/", VoileWeb do

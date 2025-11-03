@@ -582,8 +582,8 @@ msgstr "Masukkan email Anda dan kami akan mengirimkan tautan masuk yang aman. Ti
 msgid "Send Login Link"
 msgstr "Kirim tautan masuk"
 
-msgid "Welcome back to Voile"
-msgstr "Selamat datang kembali di Voile"
+msgid "Welcome back to"
+msgstr "Selamat datang kembali di"
 
 msgid "Sign in to access your dashboard, manage content, and explore features built for creators and teams."
 msgstr "Masuk untuk mengakses dasbor Anda, mengelola konten, dan menjelajahi fitur yang dibuat untuk kreator dan tim."

@@ -8,11 +8,11 @@ defmodule VoileWeb.UserLoginLive do
     <.modal id="magic-link-modal">
       <div class="p-6 sm:p-8 rounded-lg max-w-md mx-auto">
         <h3 class="text-xl sm:text-2xl font-semibold mb-2">{gettext("Login with Email Link")}</h3>
-        
+
         <p class="text-sm text-voile-muted mb-4">
           {gettext("Enter your email and we'll send a secure login link. No password required.")}
         </p>
-        
+
         <.form for={@magic_link_form} phx-submit="send_magic_link">
           <.input
             field={@magic_link_form[:email]}
@@ -49,15 +49,15 @@ defmodule VoileWeb.UserLoginLive do
             <!-- Left: Brand / Illustration -->
             <div class="hidden lg:flex flex-col justify-center items-start px-6 py-8 bg-gradient-to-br from-voile-gradient to-library-gradient rounded-xl text-voile-surface">
               <h1 class="text-3xl font-extrabold mb-2 voile-text-gradient">
-                {gettext("Welcome back to Voile")}
+                {gettext("Welcome back to")} {@app_name}
               </h1>
-              
+
               <p class="text-voile-dark/90 dark:text-voile-light max-w-prose mb-6">
                 {gettext(
                   "Sign in to access your dashboard, manage content, and explore features built for creators and teams."
                 )}
               </p>
-              
+
               <ul class="space-y-3">
                 <li class="flex items-center gap-3">
                   <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
@@ -65,14 +65,14 @@ defmodule VoileWeb.UserLoginLive do
                     {gettext("Fast, secure login")}
                   </span>
                 </li>
-                
+
                 <li class="flex items-center gap-3">
                   <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
                   <span class="text-voile-dark/90 dark:text-voile-light">
                     {gettext("Passwordless and social auth")}
                   </span>
                 </li>
-                
+
                 <li class="flex items-center gap-3">
                   <span class="inline-block w-3 h-3 rounded-full bg-voile-accent dark:bg-white/80" />
                   <span class="text-voile-dark/90 dark:text-voile-light">
@@ -86,7 +86,7 @@ defmodule VoileWeb.UserLoginLive do
               <div class="flex items-center justify-between mb-6">
                 <div>
                   <h2 class="text-2xl font-bold">{gettext("Sign in to your account")}</h2>
-                  
+
                   <p class="text-sm italic">
                     {gettext("Don't have an account?")}
                     <.link
@@ -98,7 +98,7 @@ defmodule VoileWeb.UserLoginLive do
                   </p>
                 </div>
               </div>
-              
+
               <.form for={@form} id="login_form" action={~p"/users/log_in"} class="space-y-4">
                 <.input
                   field={@form[:email]}
@@ -124,18 +124,18 @@ defmodule VoileWeb.UserLoginLive do
                     {gettext("Forgot your password?")}
                   </.link>
                 </div>
-                
+
                 <.button phx-disable-with="Logging in..." class="default-btn w-full">
                   {gettext("Log in")} <span aria-hidden="true">→</span>
                 </.button>
               </.form>
-              
+
               <div class="my-4 flex items-center gap-3">
                 <hr class="flex-1 border-voile-muted" />
                 <span class="text-sm text-voile-muted">or</span>
                 <hr class="flex-1 border-voile-muted" />
               </div>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <.button
                   phx-click="google_auth"
@@ -148,7 +148,8 @@ defmodule VoileWeb.UserLoginLive do
                       class="inline h-5 w-5"
                       alt="Google logo"
                     />
-                  </span> <span>Google</span>
+                  </span>
+                  <span>Google</span>
                 </.button>
                 <.button
                   type="button"
@@ -160,19 +161,21 @@ defmodule VoileWeb.UserLoginLive do
                       name="hero-link"
                       class="size-4 opacity-75 hover:opacity-100"
                     />
-                  </span> <span>{gettext("Login passwordless")}</span>
+                  </span>
+                  <span>{gettext("Login passwordless")}</span>
                 </.button>
               </div>
-              
+
               <div class="mt-4 text-center w-full">
                 <.button
                   phx-click="paus_auth"
-                  class="btn w-full hover:brightness-95 cursor-not-allowed"
+                  class="bg-gray-400 p-2 rounded-lg w-full hover:brightness-95 cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                   disabled
                 >
                   <span>
                     <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
-                  </span> <span>PAuS ID</span>
+                  </span>
+                  <span>PAuS ID</span>
                 </.button>
               </div>
             </div>
@@ -195,13 +198,17 @@ defmodule VoileWeb.UserLoginLive do
         Phoenix.Flash.get(socket.assigns.flash, :email) ||
           get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
 
+      # Get app name for display
+      app_name = Voile.Schema.System.get_setting_value("app_name", "Voile")
+
       form = to_form(%{"email" => email}, as: "user")
       magic_link_form = to_form(%{"email" => ""}, as: "magic_link")
 
       {:ok,
        socket
        |> assign(form: form)
-       |> assign(magic_link_form: magic_link_form),
+       |> assign(magic_link_form: magic_link_form)
+       |> assign(app_name: app_name),
        temporary_assigns: [form: form, magic_link_form: magic_link_form]}
     end
   end

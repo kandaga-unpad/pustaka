@@ -69,6 +69,7 @@ defmodule Voile.Analytics.Dashboard do
       select: %{
         id: u.id,
         email: u.email,
+        username: u.username,
         fullname: u.fullname,
         user_image: u.user_image,
         inserted_at: u.inserted_at,

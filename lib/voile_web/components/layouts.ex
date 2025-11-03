@@ -132,7 +132,7 @@ defmodule VoileWeb.Layouts do
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
               </.button>
-               <.locale_switcher current_path={assigns[:current_path] || "/"} />
+              <.locale_switcher current_path={assigns[:current_path] || "/"} />
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
@@ -189,7 +189,7 @@ defmodule VoileWeb.Layouts do
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
                           </span>
-                           <span>{gettext("Dashboard")}</span>
+                          <span>{gettext("Dashboard")}</span>
                         </.link>
                         <.link navigate="/atrium" class="primary-btn flex flex-col w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
@@ -206,10 +206,10 @@ defmodule VoileWeb.Layouts do
                               class="size-5 inline-block mr-1"
                             />
                           </span>
-                           <span>{gettext("Log out")}</span>
+                          <span>{gettext("Log out")}</span>
                         </.link>
                       <% else %>
-                        <.link navigate="/atrium" class="primary-btn hero-home w-full text-center">
+                        <.link navigate="/atrium" class="success-btn w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
                           <span>{gettext("Atrium")}</span>
                         </.link>
@@ -224,7 +224,7 @@ defmodule VoileWeb.Layouts do
                               class="size-5 inline-block mr-1"
                             />
                           </span>
-                           <span>{gettext("Log out")}</span>
+                          <span>{gettext("Log out")}</span>
                         </.link>
                       <% end %>
                     </div>
