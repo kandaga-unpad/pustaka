@@ -196,6 +196,38 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_email(opts)
   end
 
+  @doc """
+  A user changeset for onboarding that requires essential profile fields.
+  """
+  def onboarding_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :username,
+      :identifier,
+      :email,
+      :fullname,
+      :user_type_id,
+      # Profile fields
+      :address,
+      :phone_number,
+      :birth_date,
+      :birth_place,
+      :gender,
+      :organization,
+      :department,
+      :position
+    ])
+    |> validate_required([:fullname, :phone_number],
+      message: "is required to complete onboarding"
+    )
+    |> validate_email([])
+    |> validate_length(:phone_number,
+      min: 8,
+      max: 20,
+      message: "must be between 8 and 20 characters"
+    )
+  end
+
   def login_changeset(user, attrs) do
     user
     |> cast(attrs, [:last_login, :last_login_ip])

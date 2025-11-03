@@ -41,7 +41,13 @@ defmodule VoileWeb.Dashboard.Glam.Index do
 
   @impl true
   def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
-    node_id = if node_id_str in [nil, "all", ""], do: nil, else: String.to_integer(node_id_str)
+    node_id =
+      case node_id_str do
+        nil -> nil
+        "all" -> nil
+        "" -> nil
+        id -> String.to_integer(id)
+      end
 
     socket = assign(socket, :selected_node_id, node_id)
 
@@ -84,7 +90,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
           </.form>
         </div>
       <% end %>
-       <%!-- Breadcrumb --%>
+      <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: "Manage", path: ~p"/manage"},
         %{label: "GLAM", path: nil}
@@ -93,18 +99,18 @@ defmodule VoileWeb.Dashboard.Glam.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">GLAM Management Dashboard</h1>
-            
+
             <p class="text-white text-lg">
               Gallery, Library, Archive & Museum - Unified Collections Management
             </p>
           </div>
-          
+
           <div class="hidden md:block">
             <.icon name="hero-building-library" class="w-24 h-24 opacity-20" />
           </div>
         </div>
       </div>
-       <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
+      <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <.stat_card
@@ -134,14 +140,14 @@ defmodule VoileWeb.Dashboard.Glam.Index do
           color="orange"
         />
       </div>
-       <%!-- Recent Activity --%>
+      <%!-- Recent Activity --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Collections</h2>
           </div>
-          
+
           <.link
             navigate="/manage/catalog/collections"
             class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
@@ -149,7 +155,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
             View All →
           </.link>
         </div>
-        
+
         <div class="space-y-3">
           <%= for collection <- @recent_collections do %>
             <.recent_collection_item collection={collection} />
@@ -171,9 +177,11 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     total_collections = gallery_count + library_count + archive_count + museum_count
 
     total_items =
-      if Authorization.is_super_admin?(user) do
+      if is_nil(user.node_id) do
+        # Super admin viewing all nodes or no node_id set
         Repo.aggregate(Item, :count, :id)
       else
+        # Scoped to specific node
         Repo.aggregate(
           from(i in Item, join: c in assoc(i, :collection), where: c.unit_id == ^user.node_id),
           :count,
@@ -218,9 +226,11 @@ defmodule VoileWeb.Dashboard.Glam.Index do
       )
 
     query =
-      if Authorization.is_super_admin?(user) do
+      if is_nil(user.node_id) do
+        # No node filter - show all
         base
       else
+        # Filter by node
         from(c in base, where: c.unit_id == ^user.node_id)
       end
 
@@ -240,9 +250,11 @@ defmodule VoileWeb.Dashboard.Glam.Index do
       )
 
     query =
-      if Authorization.is_super_admin?(user) do
+      if is_nil(user.node_id) do
+        # No node filter - show all
         base
       else
+        # Filter by node
         from(c in base, where: c.unit_id == ^user.node_id)
       end
 

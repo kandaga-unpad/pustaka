@@ -7,12 +7,12 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {search_page_title(@glam_type)}
           </h1>
-          
+
           <p class="text-gray-600 dark:text-gray-300 mt-1">
             {search_page_description(@glam_type)}
           </p>
         </div>
-        
+
         <div class="flex gap-2">
           <.link
             href={~p"/search/advanced"}
@@ -43,13 +43,13 @@
             >
             </div>
           </div>
-          
+
           <select
             name="type"
             class="px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md focus:ring-2 focus:ring-voile-primary focus:border-transparent bg-white dark:bg-voile-dark text-gray-900 dark:text-white"
           >
             <option value="universal" selected={@search_type == "universal"}>All</option>
-            
+
             <option value="collections" selected={@search_type == "collections"}>
               Collections
             </option>
@@ -63,6 +63,158 @@
         </div>
       </form>
     </div>
+    <!-- Welcome Message (when no search query) -->
+    <%= if @query == "" do %>
+      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-sm p-12 text-center">
+        <div class="max-w-2xl mx-auto">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <svg
+              class="w-10 h-10 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              >
+              </path>
+            </svg>
+          </div>
+
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            {gettext("Discover Our Collections")}
+          </h2>
+
+          <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">
+            {gettext(
+              "Search through %{count} collections in our digital library. Find books, documents, artworks, and historical archives.",
+              count: "289,089"
+            )}
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  >
+                  </path>
+                </svg>
+              </div>
+
+              <h6 class="font-semibold text-gray-900 dark:text-white mb-1">
+                {gettext("Libraries")}
+              </h6>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Books, journals, and academic resources")}
+              </p>
+            </div>
+
+            <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-emerald-600 dark:text-emerald-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  >
+                  </path>
+                </svg>
+              </div>
+
+              <h6 class="font-semibold text-gray-900 dark:text-white mb-1">
+                {gettext("Galleries")}
+              </h6>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Artworks, photographs, and visual collections")}
+              </p>
+            </div>
+
+            <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-amber-600 dark:text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                  >
+                  </path>
+                </svg>
+              </div>
+
+              <h6 class="font-semibold text-gray-900 dark:text-white mb-1">
+                {gettext("Archives")}
+              </h6>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Historical documents and records")}
+              </p>
+            </div>
+
+            <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 dark:bg-rose-900 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-rose-600 dark:text-rose-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  >
+                  </path>
+                </svg>
+              </div>
+
+              <h6 class="font-semibold text-gray-900 dark:text-white mb-1">
+                {gettext("Museums")}
+              </h6>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Artifacts, exhibits, and cultural heritage")}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-8 text-sm text-gray-500 dark:text-gray-400">
+            <p>
+              {gettext(
+                "💡 Try searching for: books, manuscripts, paintings, or historical documents"
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
     <!-- Search Results -->
     <%= if @query != "" do %>
       <div class="space-y-6">
@@ -99,7 +251,7 @@
                   Collections ({@results.collections.total})
                 </h2>
               </div>
-              
+
               <div class="divide-y divide-voile-light dark:divide-voile-dark">
                 <%= for collection <- @results.collections.results do %>
                   <div class="p-4 hover:bg-voile-surface dark:hover:bg-voile-dark">
@@ -119,7 +271,7 @@
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="flex-1">
                         <h5
                           class="font-medium text-gray-900 dark:text-white"
@@ -132,18 +284,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -154,7 +306,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status |> String.downcase())}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -164,7 +316,7 @@
                   </div>
                 <% end %>
               </div>
-              
+
               <%= if @results.collections.total > length(@results.collections.results) do %>
                 <div class="p-4 bg-voile-surface dark:bg-voile-dark text-center">
                   <.link
@@ -200,7 +352,7 @@
                           </div>
                         <% end %>
                       </div>
-                      
+
                       <div class="flex-1">
                         <h5
                           class="font-medium text-gray-900 dark:text-white"
@@ -213,18 +365,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -235,7 +387,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -271,18 +423,18 @@
                             {collection.title |> trim_title()}
                           </.link>
                         </h5>
-                        
+
                         <%= if collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mt-1">
                             {collection.description |> trim_and_reduce_description()}
                           </p>
                         <% end %>
-                        
+
                         <div class="flex items-center gap-4 mt-2 text-sm">
                           <%= if collection.mst_creator do %>
                             <span>By: {collection.mst_creator.creator_name}</span>
                           <% end %>
-                          
+
                           <span>
                             Type: {String.capitalize(collection.collection_type || "Unknown")}
                           </span>
@@ -293,7 +445,7 @@
                           <% end %>
                         </div>
                       </div>
-                      
+
                       <div class="ml-4">
                         <span class={"px-2 py-1 text-xs rounded-full #{status_class(collection.status)}"}>
                           {String.capitalize(collection.status || "unknown")}
@@ -318,7 +470,7 @@
                       ← Previous
                     </.link>
                   <% end %>
-                  
+
                   <div class="flex items-center space-x-1">
                     <%= for page_num <- page_range(@results.page, @results.total_pages) do %>
                       <%= if page_num == @results.page do %>
@@ -337,7 +489,7 @@
                       <% end %>
                     <% end %>
                   </div>
-                  
+
                   <%= if @results.has_next do %>
                     <.link
                       href={
@@ -381,21 +533,21 @@
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No results found
             </h3>
-            
+
             <p class="text-gray-600 dark:text-gray-300 mb-4">
               We couldn't find anything matching "<strong><%= @query %></strong>".
             </p>
-            
+
             <div class="text-sm text-gray-500 dark:text-gray-400">
               <p>Try:</p>
-              
+
               <ul class="list-disc list-inside mt-2 space-y-1">
                 <li>Checking your spelling</li>
-                
+
                 <li>Using different keywords</li>
-                
+
                 <li>Using more general terms</li>
-                
+
                 <li>Using the advanced search for more specific criteria</li>
               </ul>
             </div>
@@ -404,7 +556,7 @@
       </div>
     <% end %>
   </div>
-  
+
   <script>
     // Auto-complete functionality
     document.addEventListener('DOMContentLoaded', function() {

@@ -155,8 +155,11 @@ defmodule VoileWeb.UserConfirmationLive do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "User confirmed successfully.")
-         |> redirect(to: ~p"/")}
+         |> put_flash(
+           :info,
+           "Email confirmed successfully! Please log in to complete your profile."
+         )
+         |> redirect(to: ~p"/login")}
 
       :error ->
         # If there is a current user and the account was already confirmed,

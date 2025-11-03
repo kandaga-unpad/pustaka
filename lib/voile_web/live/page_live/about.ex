@@ -3,6 +3,15 @@ defmodule VoileWeb.PageLive.About do
 
   @impl true
   def mount(_params, _session, socket) do
+    # Load app colors from system settings
+    app_main_color = Voile.Schema.System.get_setting_value("app_main_color", "#9333ea")
+    app_secondary_color = Voile.Schema.System.get_setting_value("app_secondary_color", "#7c3aed")
+
+    socket =
+      socket
+      |> assign(:app_main_color, app_main_color)
+      |> assign(:app_secondary_color, app_secondary_color)
+
     {:ok, socket}
   end
 
@@ -10,39 +19,430 @@ defmodule VoileWeb.PageLive.About do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
-      <section class="text-center max-w-7xl mx-auto">
-        <h1 class="pb-5">Tentang Voile</h1>
-
-        <.modal id="about-modal">
-          <h3>
-            <%= if assigns[:current_scope] && assigns[:current_scope].user do %>
-              Hey there, {@current_scope.user.username}!
-            <% else %>
-              Hey there, visitor!
-            <% end %>
-          </h3>
-
-          <p class="text-justify">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit praesentium voluptatum minus quibusdam enim fugit aperiam tempora. Voluptates facilis commodi pariatur! Tenetur qui similique nobis nulla, atque fugiat ratione id obcaecati autem asperiores illum unde, nostrum eos vel harum mollitia. Inventore consequatur quasi, ut culpa laudantium libero quod assumenda est!
-          </p>
-        </.modal>
-
-        <p class="text-justify px-5 lg:px-3">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempore quasi dolorem delectus nulla excepturi quibusdam illum quia harum beatae alias culpa iusto, ex hic in est? Aliquam veritatis quae dolore quisquam. Totam, blanditiis ea adipisci a vel eum recusandae sapiente rem quas doloremque, distinctio excepturi quisquam accusamus quam dicta? Facilis quibusdam tenetur reprehenderit porro ea tempore aliquam error dignissimos sint nulla! Accusamus officiis perspiciatis dignissimos vero quo aliquam? Minus ipsa veritatis quod repellat dolores fugit quaerat minima rerum, consequuntur debitis sit consequatur laudantium corrupti maiores ratione ipsum quisquam impedit. Debitis, itaque sapiente possimus eligendi omnis culpa quos quod laudantium. Est mollitia, exercitationem inventore adipisci reiciendis pariatur? Asperiores quasi quos suscipit minima rerum, commodi perspiciatis illo nesciunt sunt in sed voluptate veritatis? In placeat eaque consectetur itaque, rerum, minus vero atque consequuntur aut suscipit laudantium aperiam? Ad libero autem facilis dolorem nihil corrupti quasi architecto nam molestiae. Modi, dolores molestias quisquam beatae id doloribus impedit consequatur quo quasi nisi. Reiciendis expedita accusamus corrupti ipsam. Et labore praesentium minima quidem. Itaque corporis eveniet iusto qui nobis quibusdam minus impedit numquam repudiandae, quos ab ullam praesentium. Rerum odio libero explicabo illum autem. Doloremque obcaecati voluptate, dolorum ipsum expedita illo ducimus asperiores facilis dolorem tempora? Optio saepe aut vel ea dolorum, sapiente debitis deleniti quod voluptatem eius dolor fugit numquam natus laboriosam rem sunt! Aperiam sint consectetur neque reiciendis ipsum, blanditiis eaque, voluptas aliquam ratione natus animi ad suscipit dolor, eligendi iusto esse sit. Libero quasi repellendus nemo soluta sequi! Necessitatibus porro natus illum officiis consequatur quasi voluptatum odit, tempora autem magnam, deserunt inventore fuga, perspiciatis non. Blanditiis omnis exercitationem, eum fuga officia sequi ad, corrupti reiciendis laudantium doloribus qui reprehenderit inventore! Temporibus quaerat tenetur totam maiores maxime fugit magni harum? Laudantium molestiae rem commodi sit sequi fugiat nam amet, optio illo! Nemo aliquam eaque, aut odit, debitis mollitia vitae magnam, ratione iste ut assumenda eos rem architecto culpa odio maxime doloribus illo a explicabo. Cupiditate recusandae sint vel, itaque odit quisquam alias eos ducimus aliquid qui consequuntur at neque sit dicta molestiae. Magnam quos eius provident veniam, blanditiis quasi sed quibusdam inventore. Quisquam totam magnam nulla, a doloribus libero recusandae nobis. Voluptate magni asperiores corporis accusantium explicabo, ipsa expedita eum modi voluptates illo nam laudantium temporibus debitis pariatur rem? Laudantium quas aut quibusdam, nihil voluptas, libero harum quasi velit veritatis odit distinctio deserunt aperiam placeat, et illo dolorum. Provident reiciendis architecto cupiditate. Aut possimus illum, similique assumenda nulla placeat saepe incidunt veniam iste quae ut inventore distinctio laborum ad porro, aliquam provident dolorum error animi iure quos cumque, perferendis voluptatibus minus. Nobis laborum, voluptate reiciendis vitae odit quia fuga itaque repellat dolore explicabo eos ratione iure, ab nesciunt veritatis ducimus officia voluptatibus quas sed, dicta sit? Animi asperiores sint, quam neque praesentium atque quo voluptate hic consectetur nam perspiciatis id fugit aspernatur voluptatum sapiente itaque ipsam, libero esse excepturi in. Illum eaque velit expedita optio omnis fuga magnam quae? Ipsa assumenda rem modi necessitatibus? Quis corporis impedit quae ex sed assumenda explicabo eius laborum ab accusamus. Autem maxime, a expedita accusamus rem deleniti deserunt eum at, facere quae quam maiores, quasi ut? Animi quaerat amet nemo in, facilis omnis nisi cumque, sint perspiciatis ea, velit rem vero provident ratione porro labore corrupti repellat consequatur. Doloremque beatae eius explicabo laudantium non, et fuga minus laborum soluta, neque architecto aliquid qui perferendis! Totam fugiat aut rem accusantium quasi corrupti beatae perferendis qui ut laudantium cumque iste, soluta autem, quaerat dolores aliquid corporis sequi saepe praesentium porro voluptas! Veniam inventore eum odio ad, doloribus, voluptatibus dolores eos totam exercitationem esse, earum placeat alias reprehenderit sed odit delectus est molestias vel consectetur. Saepe aut est at repellat hic, earum qui debitis quibusdam distinctio magnam impedit unde sint, a ullam rem blanditiis ex quasi deleniti exercitationem? Numquam, recusandae? Amet facilis asperiores officia adipisci vitae praesentium eveniet modi quam blanditiis reprehenderit repellendus, quas neque ullam culpa aliquid ad delectus? Cum perferendis incidunt minima! Minus vero facilis placeat? In cumque odio illo iure sint ullam aperiam rem nesciunt perferendis debitis aliquid, maiores nostrum non at, exercitationem commodi natus expedita facilis vel itaque sit. Natus sequi totam laboriosam commodi nulla?
-        </p>
-
-        <div class="mt-8 space-y-4">
-          <.button phx-click={show_modal("about-modal")} class="primary-btn">Open Modal</.button>
-          <div>
-            <.link
-              navigate={~p"/"}
-              class="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              <.icon name="hero-arrow-left" class="w-4 h-4 mr-2" /> Kembali
-            </.link>
+      <div class="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <!-- Hero Section -->
+        <section class="relative overflow-hidden">
+          <div
+            class="absolute inset-0 opacity-10"
+            style={"background: linear-gradient(135deg, #{@app_main_color} 0%, #{@app_secondary_color} 100%);"}
+          >
           </div>
-        </div>
-      </section>
+          <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="text-center">
+              <div
+                class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 shadow-lg"
+                style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
+              >
+                <.icon name="hero-book-open" class="w-12 h-12 text-white" />
+              </div>
+
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+                Voile, the Magic Library
+              </h1>
+
+              <p
+                class="text-xl md:text-2xl font-semibold mb-6"
+                style={"color: #{@app_main_color};"}
+              >
+                Virtual Organized of Information & Library Ecosystem
+              </p>
+
+              <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                A next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology.
+              </p>
+            </div>
+          </div>
+        </section>
+        <!-- Overview Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border hover:shadow-xl transition-shadow"
+              style={"border-color: #{@app_main_color}33;"}
+            >
+              <div
+                class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                style={"background-color: #{@app_main_color}15; color: #{@app_main_color};"}
+              >
+                <.icon name="hero-sparkles" class="w-6 h-6" />
+              </div>
+
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Digital Transformation
+              </h3>
+
+              <p class="text-gray-600 dark:text-gray-300">
+                VOILE reimagines the cultural institution experience by providing a fully digital ecosystem that caters to libraries while also supporting galleries, archives, and museums.
+              </p>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border hover:shadow-xl transition-shadow"
+              style={"border-color: #{@app_secondary_color}33;"}
+            >
+              <div
+                class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                style={"background-color: #{@app_secondary_color}15; color: #{@app_secondary_color};"}
+              >
+                <.icon name="hero-server-stack" class="w-6 h-6" />
+              </div>
+
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Robust Architecture
+              </h3>
+
+              <p class="text-gray-600 dark:text-gray-300">
+                Built with Elixir and Phoenix, leveraging high concurrency, fault tolerance, and real-time performance for a scalable platform.
+              </p>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border hover:shadow-xl transition-shadow"
+              style={"border-color: #{@app_main_color}33;"}
+            >
+              <div
+                class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                style={"background-color: #{@app_main_color}15; color: #{@app_main_color};"}
+              >
+                <.icon name="hero-paint-brush" class="w-6 h-6" />
+              </div>
+
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                User-Centric Design
+              </h3>
+
+              <p class="text-gray-600 dark:text-gray-300">
+                Inspired by violet and purple hues, offering a visually engaging experience that evokes the magic of ancient libraries and cultural heritage.
+              </p>
+            </div>
+          </div>
+        </section>
+        <!-- Key Features Section -->
+        <section
+          class="text-white py-16"
+          style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
+        >
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
+
+              <p class="text-white/80 text-lg">
+                Powerful tools for modern library management
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-folder-open" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">
+                      Advanced Cataloging & Metadata Management
+                    </h4>
+
+                    <p class="text-white/80 text-sm">
+                      Efficiently manage diverse collections with sophisticated indexing, metadata tagging, and categorization tools.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-magnifying-glass" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">Dynamic Search & Retrieval</h4>
+
+                    <p class="text-white/80 text-sm">
+                      Robust search functionalities including filters, metadata searches, and full-text search capabilities.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-user-circle" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">
+                      User Authentication & Personalization
+                    </h4>
+
+                    <p class="text-white/80 text-sm">
+                      Secure access controls with personalized experiences, ensuring safe and engaging interactions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-chart-bar" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">Data Analytics & Reporting</h4>
+
+                    <p class="text-white/80 text-sm">
+                      Integrated analytics offer insights into user behavior and collection usage for data-driven decisions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-arrow-trending-up" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">Scalable Ecosystem</h4>
+
+                    <p class="text-white/80 text-sm">
+                      Designed for growth, handling increasing data loads ideal for academic libraries and cultural institutions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <.icon name="hero-globe-alt" class="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-semibold mb-2">GLAM Integration</h4>
+
+                    <p class="text-white/80 text-sm">
+                      Unified support for Galleries, Libraries, Archives, and Museums in a single platform.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Vision Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 border border-gray-200 dark:border-gray-700">
+            <div class="text-center mb-8">
+              <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Our Vision
+              </h2>
+
+              <div
+                class="w-20 h-1 bg-gradient-to-r mx-auto rounded-full"
+                style={"background: linear-gradient(90deg, #{@app_main_color}, #{@app_secondary_color});"}
+              >
+              </div>
+            </div>
+
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+              <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-6">
+                VOILE is more than just a library management system—it's a <strong style={"color: #{@app_main_color};"}>digital sanctuary for cultural preservation and discovery</strong>. By uniting classical library principles with GLAM concepts and cutting-edge technology, VOILE aims to enhance how libraries operate while simultaneously supporting galleries, archives, and museums.
+              </p>
+
+              <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
+                This integrated approach empowers users to explore and engage with a rich tapestry of cultural heritage, transforming the way knowledge and art are experienced in the digital age.
+              </p>
+            </div>
+          </div>
+        </section>
+        <!-- Technology Stack Section -->
+        <section class="bg-gray-50 dark:bg-gray-900/50 py-16">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+              <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Built with Modern Technology
+              </h2>
+
+              <p class="text-gray-600 dark:text-gray-300 text-lg">
+                Powered by industry-leading tools and frameworks
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span style={"color: #{@app_main_color};"}>
+                    <.icon name="hero-server" class="w-6 h-6" />
+                  </span>
+                  Server
+                </h3>
+
+                <ul class="space-y-3">
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_main_color};"}
+                    >
+                    </span>
+                    <span><strong>Elixir</strong> v1.18.0</span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_main_color};"}
+                    >
+                    </span>
+                    <span><strong>Phoenix</strong> v1.17.20</span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_main_color};"}
+                    >
+                    </span>
+                    <span><strong>Erlang (BEAM VM)</strong> OTP 27.1</span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_main_color};"}
+                    >
+                    </span>
+                    <span><strong>PostgreSQL</strong> 14 or newer</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <span style={"color: #{@app_secondary_color};"}>
+                    <.icon name="hero-computer-desktop" class="w-6 h-6" />
+                  </span>
+                  Client
+                </h3>
+
+                <ul class="space-y-3">
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_secondary_color};"}
+                    >
+                    </span>
+                    <span><strong>Phoenix LiveView</strong></span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_secondary_color};"}
+                    >
+                    </span>
+                    <span><strong>Tailwind CSS</strong></span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_secondary_color};"}
+                    >
+                    </span>
+                    <span><strong>Real-time Interactivity</strong></span>
+                  </li>
+
+                  <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{@app_secondary_color};"}
+                    >
+                    </span>
+                    <span><strong>Responsive Design</strong></span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Developer Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">
+              Developer
+            </h2>
+
+            <div class="inline-flex items-center gap-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div
+                class="w-16 h-16 rounded-full flex items-center justify-center"
+                style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
+              >
+                <.icon name="hero-code-bracket" class="w-8 h-8 text-white" />
+              </div>
+
+              <div class="text-left">
+                <a
+                  href="https://github.com/chrisnaadhi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xl font-semibold hover:opacity-80 transition-opacity"
+                  style={"color: #{@app_main_color};"}
+                >
+                  @chrisnaadhi
+                </a>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400">GitHub</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- CTA Section -->
+        <section
+          class="text-white py-16"
+          style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
+        >
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+              Ready to Experience the Magic?
+            </h2>
+
+            <p class="text-xl text-white/80 mb-8">
+              Explore our collections and discover the future of digital library management
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <.link
+                navigate={~p"/"}
+                class="inline-flex items-center justify-center px-8 py-4 bg-white font-semibold rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+                style={"color: #{@app_main_color};"}
+              >
+                <.icon name="hero-home" class="w-5 h-5 mr-2" /> Back to Home
+              </.link>
+
+              <%= if assigns[:current_scope] && assigns[:current_scope].user do %>
+                <.link
+                  navigate={~p"/atrium"}
+                  class="inline-flex items-center justify-center px-8 py-4 bg-white/20 text-white font-semibold rounded-lg shadow-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
+                >
+                  <.icon name="hero-user-circle" class="w-5 h-5 mr-2" /> Go to Your Atrium
+                </.link>
+              <% else %>
+                <.link
+                  navigate={~p"/login"}
+                  class="inline-flex items-center justify-center px-8 py-4 bg-white/20 text-white font-semibold rounded-lg shadow-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
+                >
+                  <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5 mr-2" /> Get Started
+                </.link>
+              <% end %>
+            </div>
+          </div>
+        </section>
+      </div>
     </Layouts.app>
     """
   end

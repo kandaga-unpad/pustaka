@@ -4,11 +4,26 @@ defmodule VoileWeb.PageLive.Home do
   alias Voile.Search.Collections, as: SearchCollections
   alias Voile.Analytics.Dashboard
   alias VoileWeb.VoileComponents
+  alias Voile.Schema.System
 
   @impl true
   def mount(params, _session, socket) do
     search_query = Map.get(params, "q", "")
     current_glam_type = Map.get(params, "glam_type", "quick")
+
+    # Load app colors for dynamic branding
+    app_main_color = System.get_setting_value("app_main_color", "#9333ea")
+    app_secondary_color = System.get_setting_value("app_secondary_color", "#7c3aed")
+
+    # Load app homepage content
+    app_home_title =
+      System.get_setting_value("app_home_title", "Voile, the Magic Library")
+
+    app_home_description =
+      System.get_setting_value(
+        "app_home_description",
+        "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+      )
 
     # Get dashboard statistics with fallback defaults
     dashboard_stats = Dashboard.get_dashboard_stats()
@@ -32,6 +47,10 @@ defmodule VoileWeb.PageLive.Home do
       |> assign(:show_suggestions, false)
       |> assign(:loading, false)
       |> assign(:dashboard_stats, dashboard_stats)
+      |> assign(:app_main_color, app_main_color)
+      |> assign(:app_secondary_color, app_secondary_color)
+      |> assign(:app_home_title, app_home_title)
+      |> assign(:app_home_description, app_home_description)
 
     {:ok, socket}
   end
@@ -189,12 +208,10 @@ defmodule VoileWeb.PageLive.Home do
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col items-center justify-center gap-3 pb-16 pt-4 relative z-5 bg-white/80 dark:bg-gray-800/80 rounded-b-xl">
               <img src="/images/v.png" alt="" class="h-full w-32" />
-              <h5 class="text-center">{gettext("Voile, the Magic Library")}</h5>
+              <h5 class="text-center">{@app_home_title}</h5>
 
-              <p class="max-w-3xl mx-auto text-center text-sm">
-                {gettext(
-                  "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
-                )}
+              <p class="max-w-3xl mx-auto text-center text-sm px-4">
+                {@app_home_description}
               </p>
             </div>
 
@@ -223,7 +240,9 @@ defmodule VoileWeb.PageLive.Home do
         <!-- Dashboard Highlights Section -->
         <section class="max-w-7xl mx-auto py-16 px-4">
           <div class="text-center mb-12">
-            <h2 class="voile-text-gradient mb-4">{gettext("Collection Highlights")}</h2>
+            <h2 class="mb-4 text-3xl md:text-4xl font-bold" style={"color: #{@app_main_color};"}>
+              {gettext("Collection Highlights")}
+            </h2>
 
             <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
               {gettext(
@@ -265,11 +284,14 @@ defmodule VoileWeb.PageLive.Home do
               </div>
 
               <div class="relative p-6 text-center">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl voile-gradient flex items-center justify-center shadow-lg">
+                <div
+                  class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg"
+                  style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
+                >
                   <.icon name="hero-building-library" class="w-8 h-8 text-white" />
                 </div>
 
-                <div class="text-3xl font-black text-transparent bg-clip-text voile-gradient mb-2">
+                <div class="text-3xl font-black mb-2" style={"color: #{@app_main_color};"}>
                   {@dashboard_stats.node_collection_count}
                 </div>
 
@@ -277,7 +299,7 @@ defmodule VoileWeb.PageLive.Home do
                   {gettext("Total Collections")}
                 </p>
 
-                <div class="text-3xl font-black text-transparent bg-clip-text voile-gradient mb-2 mt-4">
+                <div class="text-3xl font-black mb-2 mt-4" style={"color: #{@app_main_color};"}>
                   {@dashboard_stats.total_item_count}
                 </div>
 
@@ -514,7 +536,8 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="mt-8">
                   <.link
                     navigate="/collections"
-                    class="block w-full text-center py-3 px-6 rounded-2xl voile-gradient text-white font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                    class="block w-full text-center py-3 px-6 rounded-2xl text-white font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                    style={"background: linear-gradient(135deg, #{@app_main_color}, #{@app_secondary_color});"}
                   >
                     {gettext("Explore All Collections")}
                   </.link>

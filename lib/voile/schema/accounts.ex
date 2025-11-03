@@ -264,12 +264,35 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Returns a changeset for tracking onboarding user changes with validations.
+  """
+  def change_user_onboarding(%User{} = user, attrs \\ %{}) do
+    User.onboarding_changeset(user, attrs)
+  end
+
+  @doc """
   Update an existing user data.
   """
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Updates a user's profile during onboarding with required field validations.
+  """
+  def update_user_onboarding(%User{} = user, attrs) do
+    user
+    |> User.onboarding_changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments], force: true)}
+
+      error ->
+        error
+    end
   end
 
   def update_profile_user(%User{} = user, attrs) do

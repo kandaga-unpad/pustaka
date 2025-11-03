@@ -45,112 +45,95 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
     ~H"""
     <.header>
       <h4>App Profile Settings</h4>
-      
+
       <:subtitle>Manage the application profile</:subtitle>
     </.header>
 
     <div class="flex gap-4">
       <div class="w-full max-w-64"><.dashboard_settings_sidebar current_user={@current_user} /></div>
-      
+
       <div class="w-full bg-white dark:bg-gray-700 p-4 rounded-lg">
         <.form for={%{}} phx-submit="save" phx-change="validate">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Application Logo
               </label>
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 flex flex-col items-center gap-1">
+              <div phx-drop-target={@uploads.app_logo.ref} class="flex items-center gap-4">
+                <div class="flex-shrink-0">
                   <%= if @app_logo_preview do %>
                     <img
                       src={@app_logo_preview}
-                      class="w-16 h-16 rounded object-cover border"
+                      class="w-20 h-20 rounded object-cover border border-gray-200 dark:border-gray-600"
                       alt="App logo"
                     />
-                    <button
-                      type="button"
-                      phx-click="delete_app_logo"
-                      class="text-xs text-red-600 hover:text-red-700 mt-1"
-                    >
-                      Remove
-                    </button>
                   <% else %>
-                    <div class="w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border">
+                    <div class="w-20 h-20 bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-500">
                       No logo
                     </div>
                   <% end %>
                 </div>
-              </div>
-               <label class="block text-sm font-medium text-gray-700 mb-2">Application Logo</label>
-              <div phx-drop-target={@uploads.app_logo.ref} class="flex items-center gap-4">
-                <%= if @app_logo_preview do %>
-                  <img src={@app_logo_preview} class="w-20 h-20 rounded object-cover" />
-                <% else %>
-                  <div class="w-20 h-20 bg-gray-100 rounded flex items-center justify-center text-sm text-gray-500">
-                    No logo
-                  </div>
-                <% end %>
-                
-                <div>
-                  <.live_file_input upload={@uploads.app_logo} class="hidden" />
-                  <label
-                    for={@uploads.app_logo.ref}
-                    class="inline-flex items-center px-3 py-2 border rounded cursor-pointer"
-                  >
-                    Choose logo
-                  </label>
-                  <%= for entry <- @uploads.app_logo.entries do %>
-                    <div class="mt-2 text-sm text-voile-muted">Uploading... {entry.progress}%</div>
-                  <% end %>
-                </div>
-                
+
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 mb-2">
                     <.live_file_input upload={@uploads.app_logo} class="sr-only" />
                     <label
                       for={@uploads.app_logo.ref}
-                      class="inline-flex items-center px-3 py-1 border rounded text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
+                      class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     >
-                      Change
+                      {if @app_logo_preview, do: "Change Logo", else: "Choose Logo"}
                     </label>
-                    <span class="text-sm text-gray-500 truncate">
-                      {if @app_logo_preview, do: "Current logo", else: "No file"}
-                    </span>
-                  </div>
-                  
-                  <div class="mt-2">
-                    <div :for={entry <- @uploads.app_logo.entries} class="flex items-center gap-2">
-                      <.live_img_preview entry={entry} class="w-10 h-10 rounded object-cover" />
-                      <div class="flex-1 min-w-0">
-                        <div class="text-sm truncate">{entry.client_name}</div>
-                        
-                        <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
-                          <div class="bg-blue-600 h-1 rounded" style={"width: #{entry.progress}%"}>
-                          </div>
-                        </div>
-                      </div>
-                      
+                    <%= if @app_logo_preview do %>
                       <button
                         type="button"
-                        phx-click="cancel-upload"
-                        phx-value-ref={entry.ref}
-                        class="text-xs text-gray-400 hover:text-red-600"
+                        phx-click="delete_app_logo"
+                        class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
-                        Cancel
+                        Remove
                       </button>
-                    </div>
-                    
-                    <p
-                      :for={err <- upload_errors(@uploads.app_logo)}
-                      class="mt-1 text-xs text-red-600"
-                    >
-                      {error_to_string(err)}
-                    </p>
+                    <% end %>
                   </div>
+
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    PNG, JPG, WebP or SVG. Max 10MB.
+                  </p>
+
+                  <div :for={entry <- @uploads.app_logo.entries} class="flex items-center gap-2 mt-2">
+                    <.live_img_preview entry={entry} class="w-10 h-10 rounded object-cover border" />
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm text-gray-700 dark:text-gray-300 truncate">
+                        {entry.client_name}
+                      </div>
+
+                      <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-1">
+                        <div
+                          class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all"
+                          style={"width: #{entry.progress}%"}
+                        >
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      phx-click="cancel-upload"
+                      phx-value-ref={entry.ref}
+                      class="text-sm text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  <p
+                    :for={err <- upload_errors(@uploads.app_logo)}
+                    class="mt-2 text-sm text-red-600 dark:text-red-400"
+                  >
+                    {error_to_string(err)}
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div>
               <.input
                 name="app_name"
@@ -158,7 +141,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_name", "")}
               />
             </div>
-            
+
             <div>
               <.input
                 name="app_contact_email"
@@ -167,7 +150,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_contact_email", "")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 type="textarea"
@@ -177,7 +160,32 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_description", "")}
               />
             </div>
-            
+
+            <div class="md:col-span-2">
+              <.input
+                name="app_home_title"
+                label="Homepage Title"
+                value={System.get_setting_value("app_home_title", "Voile, the Magic Library")}
+                placeholder="Voile, the Magic Library"
+              />
+            </div>
+
+            <div class="md:col-span-2">
+              <.input
+                type="textarea"
+                name="app_home_description"
+                label="Homepage Description"
+                rows="4"
+                value={
+                  System.get_setting_value(
+                    "app_home_description",
+                    "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+                  )
+                }
+                placeholder="Describe your digital library's mission and purpose..."
+              />
+            </div>
+
             <div>
               <.input
                 type="color"
@@ -186,7 +194,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_main_color", "#1d4ed8")}
               />
             </div>
-            
+
             <div>
               <.input
                 type="color"
@@ -195,7 +203,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_secondary_color", "#06b6d4")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 name="app_website"
@@ -203,7 +211,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("app_website", "")}
               />
             </div>
-            
+
             <div>
               <.input
                 type="select"
@@ -213,7 +221,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 value={System.get_setting_value("storage_adapter", "local")}
               />
             </div>
-            
+
             <div class="md:col-span-2">
               <.input
                 name="app_address"
@@ -222,7 +230,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               />
             </div>
           </div>
-          
+
           <div class="mt-6 flex items-center gap-3">
             <button type="submit" class="btn btn-primary">Save Settings</button>
             <span class="text-sm text-gray-500">
@@ -250,6 +258,8 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
     keys = [
       "app_name",
       "app_description",
+      "app_home_title",
+      "app_home_description",
       "app_main_color",
       "app_secondary_color",
       "app_website",

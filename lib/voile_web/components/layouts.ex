@@ -246,9 +246,175 @@ defmodule VoileWeb.Layouts do
     <.mobile_nav id="mobileNav" current_scope={@current_scope} />
     <main class="min-h-screen w-full h-full">{render_slot(@inner_block)}</main>
 
-    <footer>
-      <div class="bg-zinc-700 dark:bg-surface-dark py-3 text-center text-white">
-        &copy; Voile - Curatorian Developer | 2024 - {get_year()}
+    <footer class="bg-gray-900 dark:bg-gray-950 text-gray-300">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <!-- About Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <%= if @app_logo do %>
+                <img src={@app_logo} width="32" alt="Logo" />
+              <% else %>
+                <img src={~p"/images/v.png"} width="32" alt="Voile Logo" />
+              <% end %>
+              <h3
+                class="text-lg font-bold"
+                style={if @app_main_color, do: "color: #{@app_main_color}", else: "color: #9333ea"}
+              >
+                {@app_name}
+              </h3>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Virtual Organized of Information & Library Ecosystem - A next-generation digital library management system.
+            </p>
+          </div>
+          <!-- Quick Links -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">{gettext("Quick Links")}</h4>
+            <ul class="space-y-2 text-sm">
+              <li>
+                <.link
+                  href="/"
+                  class="hover:text-white transition-colors"
+                  style={
+                    "hover:color: #{if @app_main_color, do: @app_main_color, else: "#9333ea"}"
+                  }
+                >
+                  {gettext("Home")}
+                </.link>
+              </li>
+              <li>
+                <.link href="/about" class="hover:text-white transition-colors">
+                  {gettext("About")}
+                </.link>
+              </li>
+              <li>
+                <.link href="/collections" class="hover:text-white transition-colors">
+                  {gettext("Collections")}
+                </.link>
+              </li>
+              <li>
+                <.link href="/items" class="hover:text-white transition-colors">
+                  {gettext("Items")}
+                </.link>
+              </li>
+              <li>
+                <.link href="/search" class="hover:text-white transition-colors">
+                  {gettext("Search")}
+                </.link>
+              </li>
+            </ul>
+          </div>
+          <!-- User Section -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">{gettext("For Users")}</h4>
+            <ul class="space-y-2 text-sm">
+              <%= if @current_scope do %>
+                <%= if has_dashboard_access?(@current_scope.user) do %>
+                  <li>
+                    <.link navigate="/manage" class="hover:text-white transition-colors">
+                      {gettext("Dashboard")}
+                    </.link>
+                  </li>
+                <% else %>
+                  <li>
+                    <.link navigate="/atrium" class="hover:text-white transition-colors">
+                      {gettext("My Atrium")}
+                    </.link>
+                  </li>
+                <% end %>
+                <li>
+                  <.link
+                    href="/users/log_out"
+                    method="delete"
+                    class="hover:text-white transition-colors"
+                  >
+                    {gettext("Log Out")}
+                  </.link>
+                </li>
+              <% else %>
+                <li>
+                  <.link navigate="/login" class="hover:text-white transition-colors">
+                    {gettext("Sign In")}
+                  </.link>
+                </li>
+                <li>
+                  <.link navigate="/register" class="hover:text-white transition-colors">
+                    {gettext("Register")}
+                  </.link>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+          <!-- Contact & Info -->
+          <div>
+            <h4 class="text-white font-semibold mb-4">{gettext("Connect")}</h4>
+            <ul class="space-y-3 text-sm">
+              <li class="flex items-start gap-2">
+                <.icon name="hero-envelope" class="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <span class="text-gray-400 break-all">
+                  {System.get_setting_value("app_contact_email", "info@voile.id")}
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <.icon name="hero-map-pin" class="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <span class="text-gray-400">
+                  {System.get_setting_value("app_address", "Library Location")}
+                </span>
+              </li>
+              <%= if System.get_setting_value("app_website", nil) do %>
+                <li class="flex items-start gap-2">
+                  <.icon name="hero-globe-alt" class="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <a
+                    href={System.get_setting_value("app_website", "#")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-gray-400 hover:text-white transition-colors break-all"
+                  >
+                    {System.get_setting_value("app_website", "")}
+                  </a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+        <!-- Bottom Bar -->
+        <div class="border-t border-gray-800 pt-8">
+          <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-gray-400">
+              <p>
+                &copy; {get_year()} {@app_name}. {gettext("All rights reserved.")}
+              </p>
+              <p class="mt-1 text-xs">
+                {gettext("Powered by")}
+                <a
+                  href="https://github.com/curatorian"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hover:text-white transition-colors"
+                  style={
+                    "hover:color: #{if @app_main_color, do: @app_main_color, else: "#9333ea"}"
+                  }
+                >
+                  Curatorian Developer
+                </a>
+              </p>
+            </div>
+
+            <div class="flex items-center gap-6">
+              <div class="text-xs text-gray-500">
+                <span>Built with</span>
+                <span
+                  class="mx-1"
+                  style={"color: #{if @app_main_color, do: @app_main_color, else: "#9333ea"}"}
+                >
+                  ♥
+                </span>
+                <span>using Elixir & Phoenix</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
     <.flash_group flash={@flash} />

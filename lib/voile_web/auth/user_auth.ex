@@ -265,6 +265,21 @@ defmodule VoileWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_onboarding_complete, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    # Attach a hook to check onboarding after params are handled
+    socket =
+      socket
+      |> Phoenix.LiveView.attach_hook(
+        :check_onboarding_complete,
+        :handle_params,
+        &check_onboarding_hook/3
+      )
+
+    {:cont, socket}
+  end
+
   def on_mount({:require_permission, permission_name}, params, session, socket) do
     on_mount({:require_permission, permission_name, []}, params, session, socket)
   end
@@ -390,6 +405,33 @@ defmodule VoileWeb.UserAuth do
     end)
   end
 
+  defp check_onboarding_hook(_params, url, socket) do
+    # Get the current path from the URL
+    current_path = URI.parse(url).path || ""
+
+    # Skip onboarding check if we're on the onboarding page
+    if String.contains?(current_path, "/users/onboarding") do
+      {:cont, socket}
+    else
+      case socket.assigns[:current_scope] do
+        %{user: user} when not is_nil(user) ->
+          if needs_onboarding?(user) do
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(:info, "Please complete your profile to continue.")
+              |> Phoenix.LiveView.redirect(to: ~p"/users/onboarding")
+
+            {:halt, socket}
+          else
+            {:cont, socket}
+          end
+
+        _ ->
+          {:cont, socket}
+      end
+    end
+  end
+
   @doc "Returns the path to redirect to after log in."
   # the user was already logged in, redirect to settings
   def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Accounts.User{}}}}) do
@@ -412,6 +454,70 @@ defmodule VoileWeb.UserAuth do
       |> halt()
     end
   end
+
+  @doc """
+  Plug that ensures the user has completed onboarding before accessing protected routes.
+  This should be used after require_authenticated_user.
+  """
+  def require_onboarding_complete(conn, _opts) do
+    # Skip onboarding check if we're already on the onboarding page
+    if String.contains?(conn.request_path, "/users/onboarding") do
+      conn
+    else
+      user = conn.assigns.current_scope.user
+
+      if needs_onboarding?(user) do
+        conn
+        |> put_flash(:info, "Please complete your profile to continue.")
+        |> redirect(to: ~p"/users/onboarding")
+        |> halt()
+      else
+        conn
+      end
+    end
+  end
+
+  @doc """
+  Checks if a user needs to complete onboarding.
+  Returns true if the user lacks basic profile information.
+  Admin and staff users are exempt from onboarding.
+  """
+  def needs_onboarding?(user) do
+    # Preload roles if not already loaded
+    user = Voile.Repo.preload(user, :roles)
+
+    # Admin and staff roles that are exempt from onboarding
+    exempt_roles = [
+      "super_admin",
+      "admin",
+      "editor",
+      "librarian",
+      "gallery_curator",
+      "archivist",
+      "museum_curator"
+    ]
+
+    # Check if user has any exempt role
+    is_admin_or_staff? =
+      Enum.any?(user.roles, fn role ->
+        role.name in exempt_roles
+      end)
+
+    # Skip onboarding for admin/staff users
+    if is_admin_or_staff? do
+      false
+    else
+      # User needs onboarding if they lack basic profile information
+      is_nil(user.fullname) or is_nil(user.phone_number) or
+        (not is_nil(user.identifier) and not institutional_email?(user.email))
+    end
+  end
+
+  defp institutional_email?(email) when is_binary(email) do
+    String.ends_with?(email, "@mail.unpad.ac.id") or String.ends_with?(email, "@unpad.ac.id")
+  end
+
+  defp institutional_email?(_), do: false
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))

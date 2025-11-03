@@ -60,7 +60,6 @@ defmodule VoileWeb.UserOnboardingLive do
                 label={identifier_label(@form[:identifier].value)}
                 readonly
                 disabled
-                class="bg-gray-100 dark:bg-gray-700"
               />
             <% end %>
 
@@ -86,7 +85,6 @@ defmodule VoileWeb.UserOnboardingLive do
                 label="Institutional Email"
                 readonly
                 disabled
-                class="bg-gray-100 dark:bg-gray-700"
               />
 
               <.input
@@ -166,6 +164,7 @@ defmodule VoileWeb.UserOnboardingLive do
                 label="Username"
                 placeholder="johndoe"
                 required
+                disabled
               />
             </div>
 
@@ -174,6 +173,7 @@ defmodule VoileWeb.UserOnboardingLive do
               type="tel"
               label="Phone Number"
               placeholder="+62 812-3456-7890"
+              required
             />
 
             <.input
@@ -332,7 +332,7 @@ defmodule VoileWeb.UserOnboardingLive do
 
     changeset =
       user
-      |> Accounts.change_user(user_params)
+      |> Accounts.change_user_onboarding(user_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -345,7 +345,7 @@ defmodule VoileWeb.UserOnboardingLive do
     # Validate email domain for migrated users with identifier
     user_params = validate_and_adjust_params(user_params, user_type, user)
 
-    case Accounts.update_user(user, user_params) do
+    case Accounts.update_user_onboarding(user, user_params) do
       {:ok, updated_user} ->
         # Determine redirect path based on user type
         redirect_path =
@@ -360,6 +360,9 @@ defmodule VoileWeb.UserOnboardingLive do
          |> push_navigate(to: redirect_path)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        require Logger
+        Logger.error("Onboarding save failed: #{inspect(changeset.errors)}")
+
         {:noreply, assign_form(socket, changeset)}
     end
   end

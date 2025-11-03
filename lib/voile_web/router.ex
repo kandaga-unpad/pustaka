@@ -122,12 +122,13 @@ defmodule VoileWeb.Router do
   end
 
   scope "/", VoileWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser, :require_authenticated_user, :require_onboarding_complete]
 
     live_session :require_authenticated_and_verified_member,
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_member},
+        {VoileWeb.UserAuth, :require_onboarding_complete},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.UserAuth, :mount_current_scope}
       ] do
@@ -137,12 +138,13 @@ defmodule VoileWeb.Router do
   end
 
   scope "/", VoileWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [:browser, :require_authenticated_user, :require_onboarding_complete]
 
     live_session :require_authenticated_user_and_verified_staff_user,
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user},
+        {VoileWeb.UserAuth, :require_onboarding_complete},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu},
         {VoileWeb.Live.Hooks.NotificationHook, :default}
@@ -187,6 +189,7 @@ defmodule VoileWeb.Router do
 
             scope "/circulation" do
               live "/", Dashboard.Glam.Library.Circulation.Index, :index
+              live "/report", Dashboard.Glam.Library.Circulation.Report, :report
 
               scope "/transactions" do
                 live "/", Dashboard.Glam.Library.Circulation.Transaction.Index, :index
