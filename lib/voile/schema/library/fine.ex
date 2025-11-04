@@ -5,6 +5,7 @@ defmodule Voile.Schema.Library.Fine do
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.Library.Transaction
+  alias Voile.Schema.Library.Payment
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_fines" do
@@ -28,12 +29,14 @@ defmodule Voile.Schema.Library.Fine do
     belongs_to :processed_by, User, foreign_key: :processed_by_id, type: :binary_id
     belongs_to :waived_by, User, foreign_key: :waived_by_id, type: :binary_id
 
+    has_many :payments, Payment, foreign_key: :fine_id
+
     timestamps(type: :utc_datetime)
   end
 
   @fine_types ~w(overdue lost_item damaged_item processing)
   @statuses ~w(pending partial_paid paid waived)
-  @payment_methods ~w(cash credit_card debit_card bank_transfer online)
+  @payment_methods ~w(cash credit_card debit_card bank_transfer online ewallet qris qr_code virtual_account retail_outlet)
 
   def changeset(fine, attrs) do
     # Set default values for Indonesian context
@@ -45,6 +48,9 @@ defmodule Voile.Schema.Library.Fine do
 
     # Normalize param keys to strings to avoid mixed atom/string maps
     attrs = normalize_params(attrs)
+
+    # Normalize payment_method to lowercase for case-insensitive validation
+    attrs = normalize_payment_method(attrs)
 
     fine
     |> cast(attrs, [
@@ -92,11 +98,45 @@ defmodule Voile.Schema.Library.Fine do
 
   defp normalize_params(val), do: val
 
+  # Normalize payment_method to lowercase for case-insensitive validation
+  defp normalize_payment_method(attrs) when is_map(attrs) do
+    cond do
+      # Handle string key
+      Map.has_key?(attrs, "payment_method") ->
+        case Map.get(attrs, "payment_method") do
+          payment_method when is_binary(payment_method) ->
+            Map.put(attrs, "payment_method", String.downcase(payment_method))
+
+          _ ->
+            attrs
+        end
+
+      # Handle atom key
+      Map.has_key?(attrs, :payment_method) ->
+        case Map.get(attrs, :payment_method) do
+          payment_method when is_binary(payment_method) ->
+            Map.put(attrs, :payment_method, String.downcase(payment_method))
+
+          _ ->
+            attrs
+        end
+
+      # No payment_method key found
+      true ->
+        attrs
+    end
+  end
+
+  defp normalize_payment_method(val), do: val
+
   @doc """
   Changeset for payment/waiver updates that preserves original fine amount.
   Does not apply default value helpers to avoid overriding existing data.
   """
   def payment_changeset(fine, attrs) do
+    # Normalize payment_method to lowercase for case-insensitive validation
+    attrs = normalize_payment_method(attrs)
+
     fine
     |> cast(attrs, [
       :paid_amount,

@@ -5,8 +5,6 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
     execute "CREATE TYPE fine_type AS ENUM ('overdue', 'lost_item', 'damaged_item', 'processing');"
     execute "CREATE TYPE fine_status AS ENUM ('pending', 'partial_paid', 'paid', 'waived');"
 
-    execute "CREATE TYPE payment_method AS ENUM ('cash', 'credit_card', 'debit_card', 'bank_transfer', 'online');"
-
     create table(:lib_fines, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :fine_type, :fine_type
@@ -20,7 +18,7 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
       add :waived, :boolean, default: false
       add :waived_date, :utc_datetime
       add :waived_reason, :text
-      add :payment_method, :payment_method
+      add :payment_method, :string
       add :receipt_number, :string
 
       add :member_id, references(:users, on_delete: :nilify_all, type: :binary_id), null: false

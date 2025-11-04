@@ -4,10 +4,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
   alias Client.Storage
+  alias VoileWeb.Frontend.Atrium.AtriumHelper
 
   @impl true
   def mount(_params, _session, socket) do
-    tabs = [:circulation, :collections, :settings]
+    tabs = [:circulation, :fines, :fine_history, :loan_history, :settings]
 
     user = socket.assigns.current_scope.user
 
@@ -41,6 +42,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         fines_total_pages: fines_total_pages,
         total_loans: total_loans,
         total_unpaid_fines: total_unpaid_fines,
+        loan_history: [],
+        loan_history_page: 1,
+        loan_history_total_pages: 0,
+        fine_history: [],
+        fine_history_page: 1,
+        fine_history_total_pages: 0,
         paying: nil,
         renewing_loan_id: nil,
         show_renewal_modal: false,
@@ -50,7 +57,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         profile_form: to_form(profile_changeset),
         user_profile_form: user_profile_form,
         password_form: to_form(password_changeset),
-        trigger_submit: false
+        trigger_submit: false,
+        show_payment_modal: false,
+        payment_link_data: nil,
+        payment_processing: false
       )
       |> allow_upload(:user_image,
         accept: ~w(.jpg .jpeg .png .webp),
@@ -91,14 +101,109 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     {:noreply, assign(socket, fines: fines, fines_page: page, fines_total_pages: total)}
   end
 
+  def handle_event("loan_history_prev", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = max((socket.assigns.loan_history_page || 1) - 1, 1)
+    {history, total} = Circulation.list_member_transaction_history_paginated(member.id, page, 10)
+
+    {:noreply,
+     assign(socket,
+       loan_history: history,
+       loan_history_page: page,
+       loan_history_total_pages: total
+     )}
+  end
+
+  def handle_event("loan_history_next", _params, socket) do
+    member = socket.assigns.current_scope.user
+
+    page =
+      min(
+        (socket.assigns.loan_history_page || 1) + 1,
+        socket.assigns.loan_history_total_pages || 1
+      )
+
+    {history, total} = Circulation.list_member_transaction_history_paginated(member.id, page, 10)
+
+    {:noreply,
+     assign(socket,
+       loan_history: history,
+       loan_history_page: page,
+       loan_history_total_pages: total
+     )}
+  end
+
+  def handle_event("fine_history_prev", _params, socket) do
+    member = socket.assigns.current_scope.user
+    page = max((socket.assigns.fine_history_page || 1) - 1, 1)
+    {history, total} = Circulation.list_member_paid_fines_paginated(member.id, page, 10)
+
+    {:noreply,
+     assign(socket,
+       fine_history: history,
+       fine_history_page: page,
+       fine_history_total_pages: total
+     )}
+  end
+
+  def handle_event("fine_history_next", _params, socket) do
+    member = socket.assigns.current_scope.user
+
+    page =
+      min(
+        (socket.assigns.fine_history_page || 1) + 1,
+        socket.assigns.fine_history_total_pages || 1
+      )
+
+    {history, total} = Circulation.list_member_paid_fines_paginated(member.id, page, 10)
+
+    {:noreply,
+     assign(socket,
+       fine_history: history,
+       fine_history_page: page,
+       fine_history_total_pages: total
+     )}
+  end
+
   @impl true
   def handle_event("select_tab", %{"tab" => tab}, socket) do
+    member = socket.assigns.current_scope.user
+
     tab_atom =
       case tab do
         "circulation" -> :circulation
-        "collections" -> :collections
+        "fines" -> :fines
+        "fine_history" -> :fine_history
+        "loan_history" -> :loan_history
         "settings" -> :settings
         _ -> :circulation
+      end
+
+    # Load data when switching to history tabs
+    socket =
+      case tab_atom do
+        :loan_history ->
+          {loan_history, loan_history_total_pages} =
+            Circulation.list_member_transaction_history_paginated(member.id, 1, 10)
+
+          assign(socket,
+            loan_history: loan_history,
+            loan_history_page: 1,
+            loan_history_total_pages: loan_history_total_pages
+          )
+
+        :fine_history ->
+          {fine_history, fine_history_total_pages} =
+            Circulation.list_member_paid_fines_paginated(member.id, 1, 10)
+
+          assign(socket,
+            fine_history: fine_history,
+            fine_history_page: 1,
+            fine_history_total_pages: fine_history_total_pages
+          )
+
+        _ ->
+          socket
       end
 
     {:noreply, assign(socket, :active_tab, tab_atom)}
@@ -128,7 +233,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     member = socket.assigns.current_scope.user
     user_type = Map.get(member, :user_type)
 
-    case can_renew_transaction_precheck(tx_id, member, user_type) do
+    case AtriumHelper.can_renew_transaction_precheck(tx_id, member, user_type) do
       {:error, msg} ->
         {:noreply, socket |> put_flash(:error, msg)}
 
@@ -275,8 +380,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     # Check if payment link already exists
     case Circulation.get_pending_payment_for_fine(fine_id) do
-      {:ok, _payment} ->
-        # Reload fines to show payment status
+      {:ok, payment} ->
+        # Show existing payment link
         {fines, fines_total_pages} =
           Circulation.list_member_unpaid_fines_paginated(
             member.id,
@@ -286,10 +391,16 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
         {:noreply,
          socket
-         |> assign(fines: fines, fines_total_pages: fines_total_pages)
-         |> put_flash(
-           :info,
-           "Payment link already exists. Check your email or contact library staff."
+         |> assign(
+           fines: fines,
+           fines_total_pages: fines_total_pages,
+           show_payment_modal: true,
+           payment_link_data: %{
+             payment_url: payment.payment_url,
+             amount: payment.amount,
+             fine_id: fine_id,
+             status: payment.status
+           }
          )}
 
       {:error, :not_found} ->
@@ -300,7 +411,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                success_redirect_url: url(~p"/atrium?payment=success"),
                failure_redirect_url: url(~p"/atrium?payment=failed")
              ) do
-          {:ok, _payment} ->
+          {:ok, payment} ->
             {fines, fines_total_pages} =
               Circulation.list_member_unpaid_fines_paginated(
                 member.id,
@@ -310,14 +421,32 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
             {:noreply,
              socket
-             |> assign(fines: fines, fines_total_pages: fines_total_pages, payment_link: nil)
-             |> put_flash(:info, "Payment link created! You can now proceed to pay online.")}
+             |> assign(
+               fines: fines,
+               fines_total_pages: fines_total_pages,
+               show_payment_modal: true,
+               payment_link_data: %{
+                 payment_url: payment.payment_url,
+                 amount: payment.amount,
+                 fine_id: fine_id,
+                 status: payment.status
+               }
+             )
+             |> put_flash(:info, "Payment link created successfully!")}
 
           {:error, reason} ->
             {:noreply,
              socket |> put_flash(:error, "Failed to create payment link: #{inspect(reason)}")}
         end
     end
+  end
+
+  def handle_event("close_payment_modal", _params, socket) do
+    {:noreply, assign(socket, show_payment_modal: false, payment_link_data: nil)}
+  end
+
+  def handle_event("copy_payment_link", _params, socket) do
+    {:noreply, put_flash(socket, :info, "Payment link copied to clipboard!")}
   end
 
   def handle_event("open_payment_link", %{"fine_id" => fine_id}, socket) do
@@ -446,7 +575,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     member = socket.assigns.current_scope.user
     user_type = Map.get(member, :user_type)
 
-    case can_renew_transaction_precheck(tx_id, member, user_type) do
+    case AtriumHelper.can_renew_transaction_precheck(tx_id, member, user_type) do
       {:error, msg} ->
         {:noreply, socket |> put_flash(:error, msg)}
 
@@ -466,6 +595,27 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             end
         end
     end
+  end
+
+  def handle_info(:reload_after_payment, socket) do
+    member = socket.assigns.current_scope.user
+    fines_page = socket.assigns[:fines_page] || 1
+
+    # Reload fines after webhook should have processed
+    {fines, fines_total_pages} =
+      Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, 10)
+
+    total_unpaid_fines = Circulation.count_member_unpaid_fines(member.id)
+
+    {:noreply,
+     socket
+     |> assign(
+       fines: fines,
+       fines_total_pages: fines_total_pages,
+       total_unpaid_fines: total_unpaid_fines,
+       payment_processing: false
+     )
+     |> put_flash(:info, "✅ Payment confirmed! Your fine has been updated.")}
   end
 
   defp handle_progress(:user_image, entry, socket) do
@@ -494,7 +644,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
 
           # Update the preview form and also update current_scope user so header reflects new image
-          new_user = Map.put(socket.assigns.current_scope.user, :user_image, cache_bust(url))
+          new_user =
+            Map.put(socket.assigns.current_scope.user, :user_image, AtriumHelper.cache_bust(url))
 
           {:noreply,
            socket
@@ -505,7 +656,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
           changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
 
-          new_user = Map.put(socket.assigns.current_scope.user, :user_image, cache_bust(url))
+          new_user =
+            Map.put(socket.assigns.current_scope.user, :user_image, AtriumHelper.cache_bust(url))
 
           {:noreply,
            socket
@@ -523,75 +675,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     end
   end
 
-  # Quick precheck for renewals to provide immediate UI feedback.
-  # Returns true if we should proceed to call Circulation.renew_transaction/3.
-  defp can_renew_transaction_precheck(_transaction_id, _member, nil) do
-    # If we don't have the member type preloaded on the user, let server do
-    # authoritative checks.
-    {:ok}
-  end
-
-  defp can_renew_transaction_precheck(transaction_id, _member, %{} = user_type) do
-    # First check if member type allows renewals
-    if not Map.get(user_type, :can_renew, true) do
-      {:error, "Your member type does not allow renewing items"}
-    else
-      # Try to fetch transaction quickly and check renewal_count vs max_renewals.
-      case Circulation.get_transaction(transaction_id) do
-        nil ->
-          # Let server-side handle missing transaction
-          {:ok}
-
-        tx ->
-          max_renewals = Map.get(user_type, :max_renewals, 0) || 0
-
-          if tx.renewal_count >= max_renewals do
-            {:error, "Maximum renewals (#{max_renewals}) reached for your member type"}
-          else
-            # Check renewal window: 3 days before due to 1 day before due
-            if tx.due_date do
-              days_until_due = Date.diff(tx.due_date, Date.utc_today())
-
-              cond do
-                days_until_due <= 1 ->
-                  {:error,
-                   "Too late to renew. Items must be renewed at least 1 day before due date"}
-
-                days_until_due > 3 ->
-                  {:error,
-                   "Too early to renew. You can renew starting 3 days before the due date"}
-
-                true ->
-                  {:ok}
-              end
-            else
-              {:ok}
-            end
-          end
-      end
-    end
-  end
-
-  # Safe association helpers - avoid accessing NotLoaded associations directly in templates
-  # Return the primary role name (prefer loaded `roles`, then `user_role_assignments`),
-  # or fallback to any id fields, or "-" if nothing available.
-  # role_name helper prefers loaded roles then assignments. Fallthrough to "-".
-  defp role_name(%{roles: [%{name: name} | _]}), do: to_string(name)
-
-  defp role_name(%{user_role_assignments: [%{role: %{name: name}} | _]}), do: to_string(name)
-
-  defp role_name(_), do: "-"
-
-  # User type helper: prefer loaded struct then id
-  defp user_type_name(%{user_type: %{name: name}}), do: name
-  defp user_type_name(%{user_type_id: id}) when not is_nil(id), do: to_string(id)
-  defp user_type_name(_), do: "-"
-
-  # Node helper: prefer loaded node struct then node_id
-  defp node_name(%{node: %{name: name}}), do: name
-  defp node_name(%{node_id: id}) when not is_nil(id), do: to_string(id)
-  defp node_name(_), do: "-"
-
   @impl true
   def handle_params(params, _uri, socket) do
     # Load member-specific data when LiveView mounts or params change
@@ -608,21 +691,34 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     {fines, fines_total_pages} =
       Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, per_page)
 
+    # Reload totals
+    total_loans = Circulation.count_list_active_transactions(member.id)
+    total_unpaid_fines = Circulation.count_member_unpaid_fines(member.id)
+
     # Check for payment status in URL params
     socket =
       case params["payment"] do
         "success" ->
+          # Give webhook a moment to process, then reload after mount
+          Process.send_after(self(), :reload_after_payment, 2000)
+
           socket
-          |> put_flash(:info, "Payment successful! Your fine has been paid.")
-          |> assign(:active_tab, :circulation)
+          |> put_flash(
+            :info,
+            "🎉 Payment completed! Please wait a moment while we confirm your payment..."
+          )
+          |> assign(active_tab: :fines, payment_processing: true)
 
         "failed" ->
           socket
-          |> put_flash(:error, "Payment failed. Please try again or contact library staff.")
-          |> assign(:active_tab, :circulation)
+          |> put_flash(
+            :error,
+            "Payment failed or was cancelled. Please try again or contact library staff."
+          )
+          |> assign(active_tab: :fines, payment_processing: false)
 
         _ ->
-          socket
+          assign(socket, payment_processing: false)
       end
 
     {:noreply,
@@ -632,28 +728,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
        loans_total_pages: loans_total_pages,
        fines: fines,
        fines_page: fines_page,
-       fines_total_pages: fines_total_pages
+       fines_total_pages: fines_total_pages,
+       total_loans: total_loans,
+       total_unpaid_fines: total_unpaid_fines
      )}
-  end
-
-  defp cache_bust(url) do
-    ts = System.system_time(:millisecond)
-
-    if String.contains?(url, "?"),
-      do: url <> "&t=" <> Integer.to_string(ts),
-      else: url <> "?t=" <> Integer.to_string(ts)
-  end
-
-  # Calculate the new due date after renewal based on member type
-  defp calculate_new_due_date(current_due_date, member) do
-    max_days =
-      if member.user_type && member.user_type.max_days do
-        member.user_type.max_days
-      else
-        21
-      end
-
-    Date.add(current_due_date, max_days)
   end
 
   @impl true
@@ -708,9 +786,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <div class="mt-4 text-sm space-y-2">
                 <div><strong>Email:</strong> {@current_scope.user.email}</div>
 
-                <div><strong>Member type:</strong> {user_type_name(@current_scope.user)}</div>
+                <div>
+                  <strong>Member type:</strong> {AtriumHelper.user_type_name(@current_scope.user)}
+                </div>
 
-                <div><strong>Location Node:</strong> {node_name(@current_scope.user)}</div>
+                <div>
+                  <strong>Location Node:</strong> {AtriumHelper.node_name(@current_scope.user)}
+                </div>
               </div>
 
               <div class="mt-6">
@@ -754,7 +836,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 tabindex="0"
               >
                 <%= for {tab, idx} <- Enum.with_index(@tabs) do %>
-                  <% tab_str = Atom.to_string(tab) %> <% label = String.capitalize(tab_str) %>
+                  <% tab_str = Atom.to_string(tab) %> <% label =
+                    case tab do
+                      :fine_history -> "Fine History"
+                      :loan_history -> "Loan History"
+                      _ -> String.capitalize(tab_str)
+                    end %>
                   <button
                     type="button"
                     role="tab"
@@ -769,19 +856,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               </nav>
 
               <div id="atrium-tabpanels" class="space-y-6">
-                <%= if @active_tab == :collections do %>
-                  <div
-                    id="tab-collections"
-                    class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
-                  >
-                    <h4 class="text-lg font-semibold mb-2">Collections</h4>
-
-                    <p class="text-sm">
-                      Your collections will be shown here — curated and simple to browse.
-                    </p>
-                  </div>
-                <% end %>
-
                 <%= if @active_tab == :settings do %>
                   <div
                     id="tab-settings"
@@ -915,11 +989,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           <h5 class="text-sm font-medium mb-2">Member profile details</h5>
 
                           <div class="text-sm text-voile-muted mb-3 space-y-1">
-                            <p>Role: {role_name(@current_scope.user)}</p>
+                            <p>Role: {AtriumHelper.role_name(@current_scope.user)}</p>
 
-                            <p>Member type: {user_type_name(@current_scope.user)}</p>
+                            <p>Member type: {AtriumHelper.user_type_name(@current_scope.user)}</p>
 
-                            <p>Node: {node_name(@current_scope.user)}</p>
+                            <p>Node: {AtriumHelper.node_name(@current_scope.user)}</p>
 
                             <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
 
@@ -988,11 +1062,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           <h4 class="text-lg font-semibold">Your Active Loans</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Active loans: <strong>{length(@loans || [])}</strong>
+                            Showing {length(@loans || [])} of <strong>{@total_loans}</strong>
+                            active loans
                           </div>
                         </div>
 
-                        <%= if length(@loans) > 10 do %>
+                        <%= if @loans_total_pages > 1 do %>
                           <div class="flex items-center gap-3">
                             <div class="text-sm text-voile-muted">
                               Page {@loans_page || 1} of {@loans_total_pages || 1}
@@ -1186,18 +1261,63 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         <% end %>
                       </div>
                     </div>
-                    <!-- Fines card -->
+                  </div>
+                <% end %>
+                <%!-- Fines Tab --%>
+                <%= if @active_tab == :fines do %>
+                  <div class="space-y-6">
+                    <%= if @payment_processing do %>
+                      <div class="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4 animate-pulse">
+                        <div class="flex items-center gap-3">
+                          <svg
+                            class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              class="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              stroke-width="4"
+                            >
+                            </circle>
+
+                            <path
+                              class="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            >
+                            </path>
+                          </svg>
+
+                          <div class="flex-1">
+                            <div class="text-sm font-medium text-blue-900 dark:text-blue-100">
+                              Processing your payment...
+                            </div>
+
+                            <div class="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                              Please wait while we confirm your payment with the payment gateway.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
                       <div class="flex items-start justify-between">
                         <div>
                           <h4 class="text-lg font-semibold">Outstanding Fines</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Unpaid fines: <strong>{length(@fines || [])}</strong>
+                            Showing {length(@fines || [])} of <strong>{@total_unpaid_fines}</strong>
+                            unpaid fines
                           </div>
                         </div>
 
-                        <%= if length(@fines) > 10 do %>
+                        <%= if @fines_total_pages > 1 do %>
                           <div class="flex items-center gap-3">
                             <div class="text-sm text-voile-muted">
                               Page {@fines_page || 1} of {@fines_total_pages || 1}
@@ -1221,7 +1341,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                       <div class="mt-4">
                         <%= if @fines == [] do %>
-                          <p class="text-sm text-voile-muted">You have no unpaid fines.</p>
+                          <div class="text-center py-12">
+                            <.icon
+                              name="hero-check-circle"
+                              class="w-16 h-16 mx-auto text-green-500 mb-4"
+                            />
+                            <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                              No Outstanding Fines
+                            </p>
+
+                            <p class="text-sm text-voile-muted mt-1">You're all clear! 🎉</p>
+                          </div>
                         <% else %>
                           <ul class="space-y-3">
                             <%= for f <- @fines do %>
@@ -1231,7 +1361,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                   _ -> nil
                                 end %>
                               <li class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                                <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
+                                <div class="w-16 h-20 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
                                   <%= if f.item && f.item.collection && f.item.collection.thumbnail do %>
                                     <img
                                       src={f.item.collection.thumbnail}
@@ -1268,24 +1398,39 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                   </div>
 
                                   <%= if pending_payment do %>
-                                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-2 mt-2">
-                                      <div class="flex items-center justify-between">
-                                        <div class="text-xs text-blue-800 dark:text-blue-200">
-                                          <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
-                                          Payment link available
+                                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-lg p-3 mt-2">
+                                      <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2">
+                                          <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                                              <.icon
+                                                name="hero-check-circle"
+                                                class="w-5 h-5 text-green-600 dark:text-green-400"
+                                              />
+                                            </div>
+                                          </div>
+
+                                          <div>
+                                            <div class="text-xs font-semibold text-green-800 dark:text-green-300">
+                                              Payment Link Ready
+                                            </div>
+
+                                            <div class="text-xs text-green-700 dark:text-green-400">
+                                              Click to view or pay online
+                                            </div>
+                                          </div>
                                         </div>
 
-                                        <a
-                                          href={pending_payment.payment_url}
-                                          target="_blank"
-                                          class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                                        <button
+                                          phx-click="request_payment_link"
+                                          phx-value-fine_id={f.id}
+                                          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
                                         >
-                                          Pay Now
                                           <.icon
                                             name="hero-arrow-top-right-on-square"
-                                            class="w-3 h-3 inline ml-1"
-                                          />
-                                        </a>
+                                            class="w-4 h-4 inline mr-1"
+                                          /> View Link
+                                        </button>
                                       </div>
                                     </div>
                                   <% end %>
@@ -1293,19 +1438,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                 <div class="flex-shrink-0 flex flex-col gap-2">
                                   <%= if pending_payment do %>
-                                    <a
-                                      href={pending_payment.payment_url}
-                                      target="_blank"
-                                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded text-center"
+                                    <button
+                                      phx-click="request_payment_link"
+                                      phx-value-fine_id={f.id}
+                                      class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                                     >
                                       <.icon name="hero-credit-card" class="w-4 h-4 inline mr-1" />
                                       Pay Online
-                                    </a>
+                                    </button>
                                   <% else %>
                                     <button
                                       phx-click="request_payment_link"
                                       phx-value-fine_id={f.id}
-                                      class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded"
+                                      class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                                     >
                                       <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
                                       Get Payment Link
@@ -1324,11 +1469,343 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     </div>
                   </div>
                 <% end %>
+                <%!-- Fine History Tab --%>
+                <%= if @active_tab == :fine_history do %>
+                  <div class="space-y-6">
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <div class="flex items-start justify-between mb-4">
+                        <div>
+                          <h4 class="text-lg font-semibold">Fine Payment History</h4>
+
+                          <div class="text-sm text-voile-muted mt-1">
+                            Showing {length(@fine_history || [])} paid/waived fines
+                          </div>
+                        </div>
+
+                        <%= if @fine_history_total_pages > 1 do %>
+                          <div class="flex items-center gap-3">
+                            <div class="text-sm text-voile-muted">
+                              Page {@fine_history_page || 1} of {@fine_history_total_pages || 1}
+                            </div>
+
+                            <.button phx-click="fine_history_prev" disabled={@fine_history_page <= 1}>
+                              Prev
+                            </.button>
+                            <.button
+                              phx-click="fine_history_next"
+                              disabled={@fine_history_page >= @fine_history_total_pages}
+                            >
+                              Next
+                            </.button>
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <%= if @fine_history == [] do %>
+                        <div class="text-center py-12">
+                          <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                          <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            No Fine History
+                          </p>
+
+                          <p class="text-sm text-voile-muted mt-1">
+                            You haven't paid any fines yet.
+                          </p>
+                        </div>
+                      <% else %>
+                        <ul class="space-y-3">
+                          <%= for fine <- @fine_history do %>
+                            <li class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                              <div class="w-12 h-12 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
+                                <%= if fine.item && fine.item.collection && fine.item.collection.thumbnail do %>
+                                  <img
+                                    src={fine.item.collection.thumbnail}
+                                    class="w-full h-full object-cover"
+                                  />
+                                <% else %>
+                                  <.icon name="hero-currency-dollar" class="w-6 h-6" />
+                                <% end %>
+                              </div>
+
+                              <div class="flex-1 text-sm space-y-2">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                  {fine.description ||
+                                    (fine.item && fine.item.collection && fine.item.collection.title) ||
+                                    "Library Fine"}
+                                </div>
+
+                                <div class="flex items-center gap-4 text-xs text-voile-muted">
+                                  <span>
+                                    Type:
+                                    <strong class="text-gray-700 dark:text-gray-300">
+                                      {String.upcase(fine.fine_type || "")}
+                                    </strong>
+                                  </span>
+                                  <span>
+                                    Amount:
+                                    <strong class="text-green-600 dark:text-green-400">
+                                      Rp {Decimal.to_string(fine.amount)}
+                                    </strong>
+                                  </span>
+                                  <%= if fine.payment_date do %>
+                                    <span>
+                                      Paid: {Calendar.strftime(fine.payment_date, "%Y-%m-%d")}
+                                    </span>
+                                  <% end %>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                  <span class={[
+                                    "inline-flex px-2 py-1 text-xs font-medium rounded",
+                                    case fine.fine_status do
+                                      "paid" ->
+                                        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+
+                                      "waived" ->
+                                        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+
+                                      _ ->
+                                        "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                    end
+                                  ]}>
+                                    {String.upcase(fine.fine_status)}
+                                  </span>
+
+                                  <%= if fine.payment_method do %>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">
+                                      via {String.upcase(fine.payment_method)}
+                                    </span>
+                                  <% end %>
+                                </div>
+                              </div>
+
+                              <div class="flex-shrink-0">
+                                <.link
+                                  navigate={~p"/atrium/fine_detail/#{fine.id}"}
+                                  class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
+                                >
+                                  <.icon name="hero-eye" class="w-4 h-4 inline mr-1" /> View Details
+                                </.link>
+                              </div>
+                            </li>
+                          <% end %>
+                        </ul>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+                <%!-- Loan History Tab --%>
+                <%= if @active_tab == :loan_history do %>
+                  <div class="space-y-6">
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <div class="flex items-start justify-between mb-4">
+                        <div>
+                          <h4 class="text-lg font-semibold">Loan History</h4>
+
+                          <div class="text-sm text-voile-muted mt-1">
+                            Showing {length(@loan_history || [])} completed loans
+                          </div>
+                        </div>
+
+                        <%= if @loan_history_total_pages > 1 do %>
+                          <div class="flex items-center gap-3">
+                            <div class="text-sm text-voile-muted">
+                              Page {@loan_history_page || 1} of {@loan_history_total_pages || 1}
+                            </div>
+
+                            <.button phx-click="loan_history_prev" disabled={@loan_history_page <= 1}>
+                              Prev
+                            </.button>
+                            <.button
+                              phx-click="loan_history_next"
+                              disabled={@loan_history_page >= @loan_history_total_pages}
+                            >
+                              Next
+                            </.button>
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <%= if @loan_history == [] do %>
+                        <div class="text-center py-12">
+                          <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                          <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            No Loan History
+                          </p>
+
+                          <p class="text-sm text-voile-muted mt-1">
+                            You haven't returned any books yet.
+                          </p>
+                        </div>
+                      <% else %>
+                        <ul class="space-y-3">
+                          <%= for tx <- @loan_history do %>
+                            <li class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                              <div class="w-12 h-16 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
+                                <%= if tx.item && tx.item.collection && tx.item.collection.thumbnail do %>
+                                  <img
+                                    src={tx.item.collection.thumbnail}
+                                    class="w-full h-full object-cover"
+                                  />
+                                <% else %>
+                                  <.icon name="hero-book-open" class="w-6 h-6" />
+                                <% end %>
+                              </div>
+
+                              <div class="flex-1 text-sm space-y-2">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                  {if tx.collection && tx.collection.title,
+                                    do: tx.collection.title,
+                                    else: tx.item && tx.item.item_code}
+                                </div>
+
+                                <div class="flex items-center gap-4 text-xs text-voile-muted">
+                                  <%= if tx.borrow_date do %>
+                                    <span>
+                                      Borrowed: {Calendar.strftime(tx.borrow_date, "%Y-%m-%d")}
+                                    </span>
+                                  <% end %>
+
+                                  <%= if tx.return_date do %>
+                                    <span>
+                                      Returned: {Calendar.strftime(tx.return_date, "%Y-%m-%d")}
+                                    </span>
+                                  <% end %>
+                                </div>
+
+                                <span class={[
+                                  "inline-flex px-2 py-1 text-xs font-medium rounded",
+                                  case tx.status do
+                                    "returned" ->
+                                      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+
+                                    "lost" ->
+                                      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+
+                                    "damaged" ->
+                                      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+
+                                    _ ->
+                                      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                  end
+                                ]}>
+                                  {String.upcase(tx.status)}
+                                </span>
+                              </div>
+                            </li>
+                          <% end %>
+                        </ul>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <%!-- Payment Link Modal --%>
+      <.modal
+        :if={@show_payment_modal && @payment_link_data}
+        id="payment-link-modal"
+        show
+        on_cancel={JS.push("close_payment_modal")}
+      >
+        <div class="space-y-6">
+          <!-- Header -->
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
+              <.icon name="hero-check-circle" class="h-10 w-10 text-green-600 dark:text-green-400" />
+            </div>
+
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Payment Link Ready!
+            </h3>
+
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Your payment link has been created. Use it to pay your fine online.
+            </p>
+          </div>
+          <!-- Amount -->
+          <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-6 text-center border border-indigo-200 dark:border-indigo-800">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Amount to Pay</div>
+
+            <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+              Rp {@payment_link_data.amount}
+            </div>
+          </div>
+          <!-- Payment Link with Copy Button -->
+          <div class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Payment Link
+            </label>
+
+            <div class="flex gap-2">
+              <input
+                type="text"
+                readonly
+                id="payment-url-input"
+                value={@payment_link_data.payment_url}
+                class="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+                onclick="this.select()"
+              />
+
+              <button
+                type="button"
+                phx-click={
+                  JS.dispatch("phx:copy", to: "#payment-url-input")
+                  |> JS.push("copy_payment_link")
+                }
+                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors"
+              >
+                <.icon name="hero-clipboard-document" class="w-5 h-5" />
+              </button>
+            </div>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              <.icon name="hero-information-circle" class="w-4 h-4 inline mr-1" />
+              Click the link to copy it to your clipboard
+            </p>
+          </div>
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              type="button"
+              phx-click="close_payment_modal"
+              class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+            >
+              Close
+            </button>
+
+            <a
+              href={@payment_link_data.payment_url}
+              target="_blank"
+              class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl text-center"
+            >
+              <.icon name="hero-arrow-top-right-on-square" class="w-5 h-5 inline mr-2" /> Pay Now
+            </a>
+          </div>
+          <!-- Additional Info -->
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div class="flex gap-3">
+              <.icon
+                name="hero-information-circle"
+                class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"
+              />
+              <div class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <p class="font-medium">Important Notes:</p>
+
+                <ul class="list-disc list-inside space-y-1 text-xs">
+                  <li>This payment link is valid for 24 hours</li>
+                  <li>You can access this link anytime from the Fines tab</li>
+                  <li>Payment will be processed by Xendit (secure payment gateway)</li>
+                  <li>Your fine status will update automatically after successful payment</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </.modal>
       <%!-- Renewal Confirmation Modal --%>
       <.modal
         :if={@show_renewal_modal && @renewal_transaction}
@@ -1345,7 +1822,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             end
           else
             Date.utc_today()
-          end %> <% new_due = calculate_new_due_date(current_due, member) %> <% loan_period_days =
+          end %> <% new_due = AtriumHelper.calculate_new_due_date(current_due, member) %> <% loan_period_days =
           if member.user_type && member.user_type.max_days,
             do: member.user_type.max_days,
             else: 21 %> <% days_until_current_due = Date.diff(current_due, Date.utc_today()) %>

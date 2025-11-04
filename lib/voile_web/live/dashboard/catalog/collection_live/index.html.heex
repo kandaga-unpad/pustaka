@@ -61,7 +61,7 @@
         for={%{}}
         as={:search}
         phx-change="search"
-        phx-submit="noop"
+        phx-submit="search"
         autocomplete="off"
         phx-hook="SearchFocus"
       >
@@ -380,7 +380,11 @@
             <%= for {id, collection} <- @streams.collections do %>
               <tr
                 id={id}
-                phx-click={JS.navigate(~p"/manage/catalog/collections/#{collection}")}
+                phx-click={
+                  JS.navigate(
+                    ~p"/manage/catalog/collections/#{collection}?#{@current_query_params}"
+                  )
+                }
                 class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
               >
                 <td class="px-4 py-3 text-sm text-gray-700">

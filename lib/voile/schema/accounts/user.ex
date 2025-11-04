@@ -27,6 +27,13 @@ defmodule Voile.Schema.Accounts.User do
     field :last_login, :utc_datetime
     field :last_login_ip, :string
 
+    # Manual suspension fields
+    field :manually_suspended, :boolean, default: false
+    field :suspension_reason, :string
+    field :suspended_at, :utc_datetime
+    field :suspension_ends_at, :utc_datetime
+    belongs_to :suspended_by, __MODULE__, type: :binary_id
+
     # Profile fields (moved from UserProfile)
     field :address, :string
     field :phone_number, :string
@@ -83,6 +90,12 @@ defmodule Voile.Schema.Accounts.User do
       :website,
       :last_login,
       :last_login_ip,
+      # Manual suspension fields
+      :manually_suspended,
+      :suspension_reason,
+      :suspended_at,
+      :suspended_by_id,
+      :suspension_ends_at,
       # Profile fields
       :address,
       :phone_number,

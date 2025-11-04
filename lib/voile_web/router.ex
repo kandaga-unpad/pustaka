@@ -134,6 +134,7 @@ defmodule VoileWeb.Router do
       ] do
       # Frontend member routes that require authentication
       live "/atrium", Frontend.Atrium.Index, :index
+      live "/atrium/fine_detail/:id", Frontend.Atrium.FineDetail.Show, :show
     end
   end
 

@@ -33,14 +33,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id} = params, _, socket) do
     collection = Catalog.get_collection!(id)
+
+    # Preserve query parameters from the index page (search, filters)
+    query_params = Map.drop(params, ["id"])
 
     socket =
       socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
       |> assign(:collection, collection)
       |> assign(:patch, ~p"/manage/catalog/collections/#{collection}")
+      |> assign(:back_query_params, query_params)
 
     {:noreply, socket}
   end

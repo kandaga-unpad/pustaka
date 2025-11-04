@@ -11,14 +11,14 @@ defmodule VoileWeb.Users.ManageLive do
       <.header>
         Users Management
         <:subtitle>Manage system users and their roles</:subtitle>
-        
+
         <:actions>
           <%= if can?(@current_scope.user, "users.create") do %>
             <.link patch={~p"/manage/settings/users/new"}><.button>New User</.button></.link>
           <% end %>
         </:actions>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64 ">
           <.dashboard_settings_sidebar
@@ -26,7 +26,7 @@ defmodule VoileWeb.Users.ManageLive do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
@@ -34,21 +34,21 @@ defmodule VoileWeb.Users.ManageLive do
                 <.input name="query" phx-debounce="300" placeholder="Search users..." value="" />
                 <select name="node_id" id="node-filter" class="w-48" disabled={@node_select_disabled}>
                   <option value="">All nodes</option>
-                  
+
                   <%= for node <- @node_list do %>
                     <option value={node.id}>{node.name}</option>
                   <% end %>
                 </select>
                 <select name="user_role_id" id="role-filter" class="w-48">
                   <option value="">All roles</option>
-                  
+
                   <%= for {label, id} <- @user_role_options do %>
                     <option value={id}>{label}</option>
                   <% end %>
                 </select>
                 <select name="user_type_id" id="member-type-filter" class="w-48">
                   <option value="">All member types</option>
-                  
+
                   <%= for t <- @user_type_options do %>
                     <option value={t.id}>{t.name}</option>
                   <% end %>
@@ -71,29 +71,30 @@ defmodule VoileWeb.Users.ManageLive do
                         stroke-width="4"
                       >
                       </circle>
-                      
+
                       <path
                         class="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                       >
                       </path>
-                    </svg> <span class="text-sm text-gray-500">Searching...</span>
+                    </svg>
+                     <span class="text-sm text-gray-500">Searching...</span>
                   </div>
                 <% end %>
               </div>
             </.form>
           </div>
-          
+
           <.table
             id="users"
             rows={@streams.users}
             row_click={fn {_id, user} -> JS.navigate(~p"/manage/settings/users/#{user}") end}
           >
             <:col :let={{_id, user}} label="Username">{user.username}</:col>
-            
+
             <:col :let={{_id, user}} label="Full Name">{user.fullname}</:col>
-            
+
             <:col :let={{_id, user}} label="Roles">
               <%= if Ecto.assoc_loaded?(user.roles) and length(user.roles) > 0 do %>
                 <div class="flex flex-wrap gap-1">
@@ -102,7 +103,7 @@ defmodule VoileWeb.Users.ManageLive do
                       {role.name}
                     </span>
                   <% end %>
-                  
+
                   <%= if length(user.roles) > 2 do %>
                     <span class="text-xs text-gray-500">+{length(user.roles) - 2}</span>
                   <% end %>
@@ -111,29 +112,39 @@ defmodule VoileWeb.Users.ManageLive do
                 <span class="text-xs text-gray-400">No roles</span>
               <% end %>
             </:col>
-            
+
             <:col :let={{_id, user}} label="Status">
-              <%= if user.confirmed_at do %>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Active
-                </span>
-              <% else %>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Pending
-                </span>
-              <% end %>
+              <div class="flex flex-col gap-1">
+                <%= if user.confirmed_at do %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Pending
+                  </span>
+                <% end %>
+                <%!-- Add suspension indicator --%>
+                <%= if user.user_type_id do %>
+                  <%= if check_suspension(user.id) do %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <.icon name="hero-exclamation-circle" class="w-3 h-3 mr-1" /> Suspended
+                    </span>
+                  <% end %>
+                <% end %>
+              </div>
             </:col>
-            
+
             <:action :let={{_id, user}}>
               <.link navigate={~p"/manage/settings/users/#{user}"}>Show</.link>
             </:action>
-            
+
             <:action :let={{_id, user}}>
               <%= if can?(@current_scope.user, "users.update") do %>
                 <.link patch={~p"/manage/settings/users/#{user}/edit"}>Edit</.link>
               <% end %>
             </:action>
-            
+
             <:action :let={{id, user}}>
               <%= if can?(@current_scope.user, "users.delete") do %>
                 <.link
@@ -145,10 +156,10 @@ defmodule VoileWeb.Users.ManageLive do
               <% end %>
             </:action>
           </.table>
-           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
-      
+
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"
@@ -440,5 +451,11 @@ defmodule VoileWeb.Users.ManageLive do
     # Task completed or crashed, we can safely ignore this since we already
     # handled the results via {:search_results, ...} or {:search_timeout, ...}
     {:noreply, socket}
+  end
+
+  # Private helper functions
+
+  defp check_suspension(user_id) do
+    Voile.Schema.Library.Circulation.member_privileges_suspended?(user_id)
   end
 end

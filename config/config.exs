@@ -97,8 +97,8 @@ config :voile, VoileWeb.Gettext,
 
 # Xendit Payment Gateway Configuration
 config :voile,
-  xendit_api_key: System.get_env("XENDIT_API_KEY"),
-  xendit_webhook_token: System.get_env("XENDIT_WEBHOOK_TOKEN")
+  xendit_api_key: System.get_env("VOILE_XENDIT_API_KEY"),
+  xendit_webhook_token: System.get_env("VOILE_XENDIT_WEBHOOK_TOKEN")
 
 # Configure esbuild (the version is required)
 config :esbuild,

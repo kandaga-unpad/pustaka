@@ -778,11 +778,27 @@ defmodule Voile.Schema.Accounts do
       from(u in User, where: not is_nil(u.confirmed_at))
       |> Repo.aggregate(:count, :id)
 
+    # Count suspended members (members with user_type_id who have exceeded fine limit)
+    suspended_count = count_suspended_members()
+
     %{
       total_users: total_users,
       confirmed_users: confirmed_users,
-      unconfirmed_users: total_users - confirmed_users
+      unconfirmed_users: total_users - confirmed_users,
+      suspended_members: suspended_count
     }
+  end
+
+  defp count_suspended_members do
+    # Get all users with a user_type_id
+    members =
+      from(u in User, where: not is_nil(u.user_type_id), select: u.id)
+      |> Repo.all()
+
+    # Check each member for suspension
+    Enum.count(members, fn member_id ->
+      Voile.Schema.Library.Circulation.member_privileges_suspended?(member_id)
+    end)
   end
 
   @doc """
@@ -992,4 +1008,126 @@ defmodule Voile.Schema.Accounts do
   def primary_role(%User{user_role_assignments: [%{role: role} | _]}), do: role
 
   def primary_role(_), do: nil
+
+  # ============================================================================
+  # MANUAL SUSPENSION MANAGEMENT
+  # ============================================================================
+
+  @doc """
+  Manually suspends a user account with a reason.
+
+  Options:
+  - `:ends_at` - DateTime when suspension should automatically expire (optional)
+  - `:reason` - Reason for suspension (required)
+  - `:suspended_by_id` - ID of the admin who suspended the user (required)
+
+  ## Examples
+
+      iex> suspend_user(user, %{
+        reason: "Violation of terms",
+        suspended_by_id: admin_id,
+        ends_at: ~U[2025-12-31 23:59:59Z]
+      })
+      {:ok, %User{}}
+
+      iex> suspend_user(user, %{reason: "", suspended_by_id: admin_id})
+      {:error, %Ecto.Changeset{}}
+  """
+  def suspend_user(%User{} = user, attrs) do
+    changeset =
+      user
+      |> User.changeset(
+        Map.merge(attrs, %{
+          manually_suspended: true,
+          suspended_at: DateTime.utc_now()
+        })
+      )
+      |> validate_required([:suspension_reason, :suspended_by_id])
+      |> validate_length(:suspension_reason, min: 10, max: 1000)
+
+    Repo.update(changeset)
+  end
+
+  @doc """
+  Lifts the manual suspension from a user account.
+
+  ## Examples
+
+      iex> unsuspend_user(user)
+      {:ok, %User{}}
+  """
+  def unsuspend_user(%User{} = user) do
+    user
+    |> User.changeset(%{
+      manually_suspended: false,
+      suspension_reason: nil,
+      suspended_at: nil,
+      suspended_by_id: nil,
+      suspension_ends_at: nil
+    })
+    |> Repo.update()
+  end
+
+  @doc """
+  Checks if a user is currently manually suspended.
+  Takes into account suspension end dates.
+
+  ## Examples
+
+      iex> is_manually_suspended?(user)
+      true
+
+      iex> is_manually_suspended?(user_with_expired_suspension)
+      false
+  """
+  def is_manually_suspended?(%User{manually_suspended: false}), do: false
+  def is_manually_suspended?(%User{manually_suspended: nil}), do: false
+
+  def is_manually_suspended?(%User{
+        manually_suspended: true,
+        suspension_ends_at: nil
+      }) do
+    true
+  end
+
+  def is_manually_suspended?(%User{
+        manually_suspended: true,
+        suspension_ends_at: ends_at
+      }) do
+    case DateTime.compare(DateTime.utc_now(), ends_at) do
+      :lt -> true
+      _ -> false
+    end
+  end
+
+  def is_manually_suspended?(_), do: false
+
+  @doc """
+  Automatically lifts expired suspensions.
+  Should be called periodically (e.g., via a scheduled job).
+
+  Returns the count of users whose suspensions were lifted.
+  """
+  def lift_expired_suspensions do
+    now = DateTime.utc_now()
+
+    {count, _} =
+      from(u in User,
+        where:
+          u.manually_suspended == true and
+            not is_nil(u.suspension_ends_at) and
+            u.suspension_ends_at <= ^now
+      )
+      |> Repo.update_all(
+        set: [
+          manually_suspended: false,
+          suspension_reason: nil,
+          suspended_at: nil,
+          suspended_by_id: nil,
+          suspension_ends_at: nil
+        ]
+      )
+
+    count
+  end
 end

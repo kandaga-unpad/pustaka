@@ -1611,6 +1611,95 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   @doc """
+  Lists all fines for a member (including pending, paid, and waived).
+  """
+  def list_member_all_fines(nil), do: []
+
+  def list_member_all_fines(member_id) do
+    Fine
+    |> where([f], f.member_id == ^member_id)
+    |> preload([
+      :processed_by,
+      :waived_by,
+      item: [:collection],
+      transaction: [],
+      payments: [:processed_by]
+    ])
+    |> order_by([f], desc: f.fine_date, desc: f.id)
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists paid fines for a member with pagination.
+  Returns {[fines], total_pages}
+  """
+  def list_member_paid_fines_paginated(member_id, page \\ 1, per_page \\ 10)
+
+  def list_member_paid_fines_paginated(nil, _page, _per_page), do: {[], 0}
+
+  def list_member_paid_fines_paginated(member_id, page, per_page) do
+    offset = (page - 1) * per_page
+
+    query =
+      from f in Fine,
+        where: f.member_id == ^member_id and f.fine_status in ["paid", "waived"],
+        preload: [item: [:collection], transaction: [], payments: [:processed_by]],
+        order_by: [desc: f.updated_at, desc: f.id],
+        offset: ^offset,
+        limit: ^per_page
+
+    fines = Repo.all(query)
+
+    count_query =
+      from(f in Fine,
+        where: f.member_id == ^member_id and f.fine_status in ["paid", "waived"]
+      )
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {fines, total_pages}
+  end
+
+  @doc """
+  Lists transaction history for a member (returned/completed transactions) with pagination.
+  Returns {[transactions], total_pages}
+  """
+  def list_member_transaction_history_paginated(member_id, page \\ 1, per_page \\ 10)
+
+  def list_member_transaction_history_paginated(nil, _page, _per_page), do: {[], 0}
+
+  def list_member_transaction_history_paginated(member_id, page, per_page) do
+    offset = (page - 1) * per_page
+
+    query =
+      from t in Transaction,
+        where:
+          t.member_id == ^member_id and
+            t.transaction_type == "loan" and
+            t.status in ["returned", "lost", "damaged"],
+        preload: [item: [:collection], member: [], collection: []],
+        order_by: [desc: t.return_date, desc: t.updated_at],
+        offset: ^offset,
+        limit: ^per_page
+
+    transactions = Repo.all(query)
+
+    count_query =
+      from(t in Transaction,
+        where:
+          t.member_id == ^member_id and
+            t.transaction_type == "loan" and
+            t.status in ["returned", "lost", "damaged"]
+      )
+
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {transactions, total_pages}
+  end
+
+  @doc """
   Gets a fine by transaction id if present.
   Returns {:ok, fine} or {:error, reason}
   """
@@ -1618,6 +1707,29 @@ defmodule Voile.Schema.Library.Circulation do
     case Fine |> where([f], f.transaction_id == ^transaction_id) |> Repo.one() do
       %Fine{} = fine -> {:ok, Repo.preload(fine, [:member, :transaction, :item])}
       nil -> {:error, "Fine not found"}
+    end
+  end
+
+  @doc """
+  Gets a fine with all related details including payments.
+  Returns {:ok, fine} or {:error, reason}
+  """
+  def get_fine_with_details(fine_id) do
+    case Repo.get(Fine, fine_id) do
+      nil ->
+        {:error, :not_found}
+
+      fine ->
+        fine =
+          Repo.preload(fine, [
+            :member,
+            :processed_by,
+            item: [:collection],
+            transaction: [:member],
+            payments: [:processed_by, :member]
+          ])
+
+        {:ok, fine}
     end
   end
 
@@ -1807,14 +1919,20 @@ defmodule Voile.Schema.Library.Circulation do
   """
   def member_privileges_suspended?(member_id) do
     with {:ok, member} <- get_member_with_type(member_id) do
-      case member.user_type.max_fine do
-        # No fine limit
-        nil ->
-          false
+      # Check manual suspension first
+      if Voile.Schema.Accounts.is_manually_suspended?(member) do
+        true
+      else
+        # Then check fine-based suspension
+        case member.user_type.max_fine do
+          # No fine limit
+          nil ->
+            false
 
-        max_fine ->
-          outstanding = get_member_outstanding_fine_amount(member_id)
-          Decimal.compare(outstanding, max_fine) == :gt
+          max_fine ->
+            outstanding = get_member_outstanding_fine_amount(member_id)
+            Decimal.compare(outstanding, max_fine) == :gt
+        end
       end
     else
       # Suspend if we can't determine member type
@@ -1943,11 +2061,21 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   defp validate_member_checkout_eligibility(%User{user_type: member_type} = member) do
-    with {:ok, _} <- check_concurrent_loan_limit(member, member_type),
+    with {:ok, _} <- check_manual_suspension(member),
+         {:ok, _} <- check_concurrent_loan_limit(member, member_type),
          {:ok, _} <- check_fine_limit(member, member_type) do
       {:ok, :eligible}
     else
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp check_manual_suspension(%User{} = member) do
+    if Voile.Schema.Accounts.is_manually_suspended?(member) do
+      reason = member.suspension_reason || "Account suspended by administrator"
+      {:error, "Account suspended: #{reason}"}
+    else
+      {:ok, :not_suspended}
     end
   end
 
@@ -2538,7 +2666,12 @@ defmodule Voile.Schema.Library.Circulation do
 
   ## Examples
 
-      iex> create_payment_link_for_fine(fine_id, processed_by_id)
+      # Librarian creates payment link for member
+      iex> create_payment_link_for_fine(fine_id, librarian_id)
+      {:ok, %Payment{payment_url: "https://checkout.xendit.co/...", status: "pending"}}
+
+      # Member creates payment link for themselves (self-service)
+      iex> create_payment_link_for_fine(fine_id, member_id)
       {:ok, %Payment{payment_url: "https://checkout.xendit.co/...", status: "pending"}}
   """
   def create_payment_link_for_fine(fine_id, processed_by_id, opts \\ []) do
@@ -2828,7 +2961,7 @@ defmodule Voile.Schema.Library.Circulation do
       payment_date:
         if(parsed_webhook.paid_at, do: parse_xendit_datetime(parsed_webhook.paid_at), else: nil),
       payment_method: parsed_webhook.payment_method,
-      payment_channel: parsed_webhook.payment_method,
+      payment_channel: parsed_webhook.payment_channel,
       failure_reason: parsed_webhook.failure_reason,
       callback_data: parsed_webhook
     }

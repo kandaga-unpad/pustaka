@@ -62,7 +62,7 @@ defmodule Client.Xendit do
     # Remove nil values
     body = Map.reject(body, fn {_k, v} -> is_nil(v) or v == [] end)
 
-    case post("/v2/payment_links", body) do
+    case post("/v2/invoices", body) do
       {:ok, response} ->
         Logger.info("Xendit payment link created: #{response["id"]}")
         {:ok, response}
@@ -168,6 +168,7 @@ defmodule Client.Xendit do
       status: payload["status"],
       paid_amount: payload["paid_amount"] || payload["amount"],
       payment_method: payload["payment_method"],
+      payment_channel: payload["payment_channel"],
       paid_at: payload["paid_at"],
       expired_at: payload["expired_at"],
       failure_reason: payload["failure_reason"]

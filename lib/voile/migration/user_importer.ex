@@ -10,7 +10,7 @@ defmodule Voile.Migration.UserImporter do
   import Voile.Migration.Common
 
   alias Voile.Repo
-  alias Voile.Schema.Accounts.{User, UserRole}
+  alias Voile.Schema.Accounts.{User, Role}
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
 
@@ -69,11 +69,11 @@ defmodule Voile.Migration.UserImporter do
 
     # Cache all roles
     roles =
-      Repo.all(UserRole)
+      Repo.all(Role)
       |> Enum.into(%{}, fn role -> {role.name, role} end)
 
-    # Cache member type and node
-    member_type = Repo.one(from(mt in MemberType, limit: 1))
+    # Cache Staff member type specifically for user imports
+    member_type = Repo.get_by(MemberType, slug: "staff")
     node = Repo.one(from(n in Node, limit: 1))
 
     # Cache existing user emails for faster duplicate checking
@@ -82,7 +82,7 @@ defmodule Voile.Migration.UserImporter do
       |> MapSet.new()
 
     IO.puts(
-      "✅ Cache initialized with #{map_size(roles)} roles and #{MapSet.size(existing_emails)} existing emails"
+      "✅ Cache initialized with #{map_size(roles)} roles, Staff member type, and #{MapSet.size(existing_emails)} existing emails"
     )
 
     %{
@@ -149,26 +149,67 @@ defmodule Voile.Migration.UserImporter do
     :ets.update_counter(stats_ref, :skipped, length(batch) - length(valid_users))
 
     if length(valid_users) > 0 do
-      # Use transaction for better connection management - NO PASSWORD HASHING
+      # Use transaction for better connection management
       try do
         Repo.transaction(
           fn ->
             now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-            insert_data =
+            # Extract role_ids and prepare insert data
+            {insert_data, role_mappings} =
               valid_users
               |> Enum.map(fn {attrs, _index} ->
-                attrs
-                |> Map.put(:inserted_at, attrs[:inserted_at] || now)
-                |> Map.put(:updated_at, attrs[:updated_at] || now)
-                # Users will onboard later
-                |> Map.put(:confirmed_at, nil)
-                # No password during migration
-                |> Map.delete(:password)
-                |> Map.delete(:hashed_password)
-              end)
+                role_id = attrs[:role_id]
 
-            {insert_count, _} = Repo.insert_all(User, insert_data, timeout: :infinity)
+                user_data =
+                  attrs
+                  |> Map.put(:inserted_at, attrs[:inserted_at] || now)
+                  |> Map.put(:updated_at, attrs[:updated_at] || now)
+                  # Users will onboard later
+                  |> Map.put(:confirmed_at, nil)
+                  # No password during migration
+                  |> Map.delete(:password)
+                  |> Map.delete(:hashed_password)
+                  # Remove role_id as it's not a direct field
+                  |> Map.delete(:role_id)
+
+                {user_data, %{email: attrs.email, role_id: role_id}}
+              end)
+              |> Enum.unzip()
+
+            # Insert users
+            {insert_count, inserted_users} =
+              Repo.insert_all(User, insert_data, returning: [:id, :email], timeout: :infinity)
+
+            # Create role assignments for inserted users
+            if insert_count > 0 do
+              role_assignments =
+                inserted_users
+                |> Enum.map(fn user ->
+                  role_mapping = Enum.find(role_mappings, fn rm -> rm.email == user.email end)
+
+                  if role_mapping && role_mapping.role_id do
+                    %{
+                      user_id: user.id,
+                      role_id: role_mapping.role_id,
+                      inserted_at: now,
+                      updated_at: now
+                    }
+                  end
+                end)
+                |> Enum.reject(&is_nil/1)
+
+              # Insert role assignments if any
+              if length(role_assignments) > 0 do
+                alias Voile.Schema.Accounts.UserRoleAssignment
+
+                Repo.insert_all(UserRoleAssignment, role_assignments,
+                  on_conflict: :nothing,
+                  timeout: :infinity
+                )
+              end
+            end
+
             insert_count
           end,
           timeout: :infinity
@@ -231,7 +272,8 @@ defmodule Voile.Migration.UserImporter do
           identifier: parse_int(user_id),
           email: clean_email,
           fullname: safe_string_trim(realname) || clean_username,
-          user_role_id: user_role && user_role.id,
+          # Store role_id for later assignment via user_role_assignments
+          role_id: user_role && user_role.id,
           user_type_id: cache.member_type && cache.member_type.id,
           user_image: safe_string_trim(user_image),
           social_media: parse_social_media(social_media),
@@ -319,12 +361,12 @@ defmodule Voile.Migration.UserImporter do
   defp map_user_type_to_role_cached(user_type, roles_cache) do
     case user_type do
       # Admin
-      "1" -> roles_cache["Pustakawan (Koordinator)"]
-      # Librarian (also admin-like)
-      "2" -> roles_cache["Pustakawan (General)"]
-      # Member
-      "3" -> roles_cache["Member"]
-      _ -> roles_cache["Member"]
+      "1" -> roles_cache["admin"]
+      # Librarian
+      "2" -> roles_cache["librarian"]
+      # Editor
+      "3" -> roles_cache["editor"]
+      _ -> roles_cache["member"]
     end
   end
 

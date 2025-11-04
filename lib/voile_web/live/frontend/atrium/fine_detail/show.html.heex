@@ -1,0 +1,293 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="min-h-screen bg-gradient-to-br from-voile-light to-gray-50 dark:from-gray-900 dark:to-voile-dark py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <%!-- Back Button --%>
+      <button
+        phx-click="go_back"
+        class="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      >
+        <.icon name="hero-arrow-left" class="w-5 h-5" /> Back to Atrium
+      </button>
+      <%!-- Fine Detail Card --%>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <%!-- Header --%>
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white">
+          <div class="flex items-start justify-between">
+            <div>
+              <h1 class="text-3xl font-bold mb-2">Fine Details</h1>
+
+              <p class="text-indigo-100">
+                Fine ID: <span class="font-mono">#{@fine.id}</span>
+              </p>
+            </div>
+
+            <div class="text-right">
+              <div class="text-sm text-indigo-100 mb-1">Status</div>
+
+              <span class={[
+                "inline-flex px-4 py-2 rounded-full text-sm font-semibold",
+                case @fine.fine_status do
+                  "paid" -> "bg-green-500 text-white"
+                  "waived" -> "bg-blue-500 text-white"
+                  "pending" -> "bg-yellow-500 text-white"
+                  "partial_paid" -> "bg-orange-500 text-white"
+                  _ -> "bg-gray-500 text-white"
+                end
+              ]}>
+                {String.upcase(@fine.fine_status || "unknown")}
+              </span>
+            </div>
+          </div>
+        </div>
+        <%!-- Fine Information --%>
+        <div class="p-6 space-y-6">
+          <%!-- Amount Section --%>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Original Amount</div>
+
+              <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Rp {Decimal.to_string(@fine.amount)}
+              </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Paid Amount</div>
+
+              <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                Rp {Decimal.to_string(@fine.paid_amount || Decimal.new("0"))}
+              </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Balance</div>
+
+              <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+                Rp {Decimal.to_string(@fine.balance || @fine.amount)}
+              </div>
+            </div>
+          </div>
+          <%!-- Fine Details --%>
+          <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Fine Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex gap-3">
+                <.icon name="hero-calendar" class="w-5 h-5 text-gray-400 mt-0.5" />
+                <div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Fine Date</div>
+
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {if @fine.fine_date,
+                      do: Calendar.strftime(@fine.fine_date, "%B %d, %Y"),
+                      else: "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <.icon name="hero-tag" class="w-5 h-5 text-gray-400 mt-0.5" />
+                <div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Fine Type</div>
+
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {String.capitalize(@fine.fine_type || "N/A")}
+                  </div>
+                </div>
+              </div>
+
+              <%= if @fine.payment_date do %>
+                <div class="flex gap-3">
+                  <.icon name="hero-check-circle" class="w-5 h-5 text-green-500 mt-0.5" />
+                  <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Payment Date</div>
+
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {Calendar.strftime(@fine.payment_date, "%B %d, %Y at %I:%M %p")}
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+
+              <%= if @fine.payment_method do %>
+                <div class="flex gap-3">
+                  <.icon name="hero-credit-card" class="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Payment Method</div>
+
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {String.upcase(@fine.payment_method)}
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <%= if @fine.description do %>
+              <div class="flex gap-3">
+                <.icon name="hero-document-text" class="w-5 h-5 text-gray-400 mt-0.5" />
+                <div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">Description</div>
+
+                  <div class="text-sm text-gray-900 dark:text-gray-100">
+                    {@fine.description}
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <%!-- Related Item --%>
+          <%= if @fine.item && @fine.item.collection do %>
+            <div class="space-y-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Related Item</h2>
+
+              <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <%= if @fine.item.collection.thumbnail do %>
+                  <img
+                    src={@fine.item.collection.thumbnail}
+                    alt={@fine.item.collection.title}
+                    class="w-20 h-28 object-cover rounded shadow-sm"
+                  />
+                <% else %>
+                  <div class="w-20 h-28 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                    <.icon name="hero-book-open" class="w-8 h-8 text-gray-400" />
+                  </div>
+                <% end %>
+
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    {@fine.item.collection.title}
+                  </h3>
+
+                  <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p>Item Code: <span class="font-mono">{@fine.item.item_code}</span></p>
+
+                    <%= if @fine.item.collection.creator_id do %>
+                      <p>Author: {@fine.item.collection.creator_id}</p>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+          <%!-- Payment History --%>
+          <%= if @fine.payments && @fine.payments != [] do %>
+            <div class="space-y-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Payment History
+              </h2>
+
+              <div class="space-y-3">
+                <%= for payment <- @fine.payments do %>
+                  <div class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div class={[
+                      "w-10 h-10 rounded-full flex items-center justify-center",
+                      case payment.status do
+                        "paid" -> "bg-green-100 dark:bg-green-900/30"
+                        "pending" -> "bg-yellow-100 dark:bg-yellow-900/30"
+                        "cancelled" -> "bg-red-100 dark:bg-red-900/30"
+                        _ -> "bg-gray-100 dark:bg-gray-700"
+                      end
+                    ]}>
+                      <% icon_color =
+                        case payment.status do
+                          "paid" -> "text-green-600 dark:text-green-400"
+                          "pending" -> "text-yellow-600 dark:text-yellow-400"
+                          "cancelled" -> "text-red-600 dark:text-red-400"
+                          _ -> "text-gray-400"
+                        end %>
+                      <.icon
+                        name={
+                          case payment.status do
+                            "paid" -> "hero-check-circle"
+                            "pending" -> "hero-clock"
+                            "cancelled" -> "hero-x-circle"
+                            _ -> "hero-question-mark-circle"
+                          end
+                        }
+                        class={"w-6 h-6 #{icon_color}"}
+                      />
+                    </div>
+
+                    <div class="flex-1">
+                      <div class="flex items-start justify-between mb-2">
+                        <div>
+                          <div class="font-medium text-gray-900 dark:text-gray-100">
+                            Payment #{payment.id}
+                          </div>
+
+                          <div class="text-xs text-gray-500 dark:text-gray-400">
+                            {if payment.payment_date,
+                              do:
+                                Calendar.strftime(payment.payment_date, "%B %d, %Y at %I:%M %p"),
+                              else: "Pending"}
+                          </div>
+                        </div>
+
+                        <div class="text-right">
+                          <div class="font-semibold text-gray-900 dark:text-gray-100">
+                            Rp {Decimal.to_string(payment.amount)}
+                          </div>
+
+                          <span class={[
+                            "inline-flex px-2 py-1 text-xs font-medium rounded",
+                            case payment.status do
+                              "paid" ->
+                                "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+
+                              "pending" ->
+                                "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+
+                              "cancelled" ->
+                                "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+
+                              _ ->
+                                "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                            end
+                          ]}>
+                            {String.upcase(payment.status)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <%= if payment.payment_method do %>
+                          <div>
+                            Method:
+                            <span class="font-medium">
+                              {String.upcase(payment.payment_method)}
+                            </span>
+                          </div>
+                        <% end %>
+
+                        <%= if payment.payment_channel do %>
+                          <div>
+                            Channel:
+                            <span class="font-medium">
+                              {String.upcase(payment.payment_channel)}
+                            </span>
+                          </div>
+                        <% end %>
+
+                        <%= if payment.processed_by do %>
+                          <div class="col-span-2">
+                            Processed by:
+                            <span class="font-medium">
+                              {payment.processed_by.fullname || payment.processed_by.email}
+                            </span>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

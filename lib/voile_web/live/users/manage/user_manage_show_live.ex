@@ -10,12 +10,29 @@ defmodule VoileWeb.Users.ManageLive.Show do
     authorize!(socket, "users.read")
 
     user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node])
-    dbg(user.node)
+
+    # Check if member privileges are suspended due to fines
+    suspended? =
+      if user.user_type_id do
+        Voile.Schema.Library.Circulation.member_privileges_suspended?(user.id)
+      else
+        false
+      end
+
+    # Get outstanding fine amount
+    outstanding_fines =
+      if user.user_type_id do
+        Voile.Schema.Library.Circulation.get_member_outstanding_fine_amount(user.id)
+      else
+        Decimal.new("0")
+      end
 
     socket =
       socket
       |> assign(user: user)
       |> assign(current_path: "/manage/settings/users/#{id}")
+      |> assign(:suspended, suspended?)
+      |> assign(:outstanding_fines, outstanding_fines)
 
     {:ok, socket}
   end
@@ -28,7 +45,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
         User Profile
         <:subtitle>Personal and account information</:subtitle>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -36,18 +53,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/settings/users"}>Back to Users</.back>
-            
+
             <%= if can?(@current_scope.user, "users.update") do %>
               <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
                 Edit
               </.link>
             <% end %>
           </div>
-          
+
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
             <div class="flex flex-col items-center">
               <div class="mb-4">
@@ -64,9 +81,9 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   </div>
                 <% end %>
               </div>
-              
+
               <h2 class="text-2xl font-bold mb-1">{@user.fullname || @user.username}</h2>
-              
+
               <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <%= if Ecto.assoc_loaded?(@user.roles) and length(@user.roles) > 0 do %>
                   <%= for role <- @user.roles do %>
@@ -79,7 +96,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     No roles assigned
                   </span>
                 <% end %>
-                
+
                 <%= if @user.confirmed_at do %>
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                     Active
@@ -89,41 +106,140 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     Pending
                   </span>
                 <% end %>
+                <%!-- Suspension Status Badge --%>
+                <%= if @user.user_type_id do %>
+                  <%= if @suspended do %>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                      <.icon name="hero-exclamation-triangle" class="w-3 h-3 mr-1" /> Suspended
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                      <.icon name="hero-check-circle" class="w-3 h-3 mr-1" /> Good Standing
+                    </span>
+                  <% end %>
+                <% end %>
               </div>
-              
+
               <div class="w-full mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <%!-- Suspension Warning Alert --%>
+                <%= if @user.user_type_id && @suspended do %>
+                  <div class="col-span-2 bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0">
+                        <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-red-400" />
+                      </div>
+
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                          Member Privileges Suspended
+                        </h3>
+
+                        <div class="mt-2 text-sm text-red-700">
+                          <p>
+                            This member cannot borrow items due to outstanding fines exceeding the maximum limit.
+                          </p>
+
+                          <div class="mt-2 flex items-center gap-4">
+                            <div>
+                              <span class="font-semibold">Outstanding Fines:</span>
+                              <span class="text-red-900 font-bold">
+                                Rp {Decimal.to_string(@outstanding_fines)}
+                              </span>
+                            </div>
+
+                            <%= if @user.user_type && @user.user_type.max_fine do %>
+                              <div>
+                                <span class="font-semibold">Maximum Allowed:</span>
+                                <span>Rp {Decimal.to_string(@user.user_type.max_fine)}</span>
+                              </div>
+                            <% end %>
+                          </div>
+
+                          <div class="mt-3">
+                            <.link
+                              navigate={~p"/manage/glam/library/ledger"}
+                              class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            >
+                              <.icon name="hero-banknotes" class="w-4 h-4 mr-1" />
+                              Manage Fines & Payments
+                            </.link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+                <%!-- Fine Status Info (Good Standing) --%>
+                <%= if @user.user_type_id && !@suspended && Decimal.compare(@outstanding_fines, Decimal.new("0")) == :gt do %>
+                  <div class="col-span-2 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0">
+                        <.icon name="hero-information-circle" class="h-5 w-5 text-yellow-400" />
+                      </div>
+
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                          Outstanding Fines
+                        </h3>
+
+                        <div class="mt-2 text-sm text-yellow-700">
+                          <p>
+                            Member has outstanding fines but is still within the allowed limit.
+                          </p>
+
+                          <div class="mt-2 flex items-center gap-4">
+                            <div>
+                              <span class="font-semibold">Current Balance:</span>
+                              <span class="text-yellow-900 font-bold">
+                                Rp {Decimal.to_string(@outstanding_fines)}
+                              </span>
+                            </div>
+
+                            <%= if @user.user_type && @user.user_type.max_fine do %>
+                              <div>
+                                <span class="font-semibold">Maximum Allowed:</span>
+                                <span>Rp {Decimal.to_string(@user.user_type.max_fine)}</span>
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Email</div>
-                  
+
                   <div class="font-medium">{@user.email}</div>
                 </div>
-                
+
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Username</div>
-                  
+
                   <div class="font-medium">{@user.username}</div>
                 </div>
-                
+
                 <%= if @user.identifier do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">Identifier</div>
-                    
+
                     <div class="font-medium">{@user.identifier}</div>
                   </div>
                 <% end %>
-                
+
                 <%= if Ecto.assoc_loaded?(@user.user_type) && @user.user_type do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">User Type</div>
-                    
+
                     <div class="font-medium">{@user.user_type.name}</div>
                   </div>
                 <% end %>
-                
+
                 <%= if @user.groups && @user.groups != [] do %>
                   <div class="col-span-2">
                     <div class="text-gray-500 text-xs uppercase mb-1">Groups</div>
-                    
+
                     <div class="flex flex-wrap gap-2">
                       <%= for group <- @user.groups do %>
                         <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
@@ -133,18 +249,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </div>
                   </div>
                 <% end %>
-                
+
                 <%= if @user.node_id do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">Node ID</div>
-                    
+
                     <div class="font-medium">{@user.node.name}</div>
                   </div>
                 <% end %>
-                
+
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Last Login</div>
-                  
+
                   <div class="font-medium">
                     <%= if @user.last_login do %>
                       {FormatIndonesiaTime.format_utc_to_jakarta(@user.last_login)}
@@ -153,42 +269,42 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     <% end %>
                   </div>
                 </div>
-                
+
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Last Login IP</div>
-                  
+
                   <div class="font-medium">{@user.last_login_ip || "-"}</div>
                 </div>
               </div>
-              
+
               <div class="w-full mt-8">
                 <div class="text-gray-500 text-xs uppercase mb-2">Social & Links</div>
-                
+
                 <div class="flex flex-wrap gap-4">
                   <%= if @user.twitter do %>
                     <a href={@user.twitter} class="text-blue-400 hover:underline" target="_blank">
                       Twitter
                     </a>
                   <% end %>
-                  
+
                   <%= if @user.facebook do %>
                     <a href={@user.facebook} class="text-blue-600 hover:underline" target="_blank">
                       Facebook
                     </a>
                   <% end %>
-                  
+
                   <%= if @user.linkedin do %>
                     <a href={@user.linkedin} class="text-blue-700 hover:underline" target="_blank">
                       LinkedIn
                     </a>
                   <% end %>
-                  
+
                   <%= if @user.instagram do %>
                     <a href={@user.instagram} class="text-pink-500 hover:underline" target="_blank">
                       Instagram
                     </a>
                   <% end %>
-                  
+
                   <%= if @user.website do %>
                     <a href={@user.website} class="text-gray-700 hover:underline" target="_blank">
                       Website
@@ -196,7 +312,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   <% end %>
                 </div>
               </div>
-              
+
               <div class="w-full mt-8 text-xs text-gray-400 text-center">
                 User ID: {@user.id} &middot; Created: {Calendar.strftime(
                   @user.inserted_at,
@@ -207,7 +323,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
           </div>
         </div>
       </div>
-      
+
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"

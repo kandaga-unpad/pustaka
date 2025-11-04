@@ -1,7 +1,9 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
   <div class="bg-white dark:bg-gray-700 py-4 px-8 rounded-xl shadow-md">
-    <.back navigate={~p"/manage/catalog/collections"}>Back to collections</.back>
+    <.back navigate={~p"/manage/catalog/collections?#{@back_query_params}"}>
+      Back to collections
+    </.back>
 
     <.header>
       Collection : <span class="text-orange-600 font-bold">{@collection.title}</span>
@@ -242,7 +244,9 @@
       <% end %>
     </div>
 
-    <.back navigate={~p"/manage/catalog/collections"}>Back to collections</.back>
+    <.back navigate={~p"/manage/catalog/collections?#{@back_query_params}"}>
+      Back to collections
+    </.back>
 
     <.collection_modal
       :if={@live_action == :edit}

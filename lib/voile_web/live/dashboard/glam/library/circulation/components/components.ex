@@ -41,12 +41,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </span>
         </div>
       </div>
-      
+
       <div class="ml-4">
         <div class="text-sm font-medium text-gray-900">
           {if @member, do: @member.fullname, else: "Unknown Member"}
         </div>
-        
+
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">ID: {@member.id}</div>
         <% end %>
@@ -66,7 +66,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
     <div>
       <%= if @item do %>
         <div class="text-sm font-medium text-gray-900">{@item.item_code}</div>
-        
+
         <%= unless @compact do %>
           <div class="text-sm text-gray-500">
             {if @item.collection, do: @item.collection.title, else: "No collection"}
@@ -93,10 +93,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <div class="flex-shrink-0">
               <.icon name={stat.icon} class={"w-8 h-8 #{stat.icon_color}"} />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500">{stat.label}</h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900">{stat.value}</p>
             </div>
           </div>
@@ -173,7 +173,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
     ~H"""
     <div class="bg-white dark:bg-gray-700 shadow rounded-lg p-6">
       <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Quick Actions</h3>
-      
+
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <%= if can?(@current_user, "circulation.checkout") do %>
           <button
@@ -191,7 +191,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <.icon name="hero-arrow-right-circle" class="w-4 h-4 mr-2" /> Quick Checkout
           </button>
         <% end %>
-        
+
         <%= if can?(@current_user, "circulation.return") do %>
           <button
             phx-click="show_quick_return"
@@ -208,7 +208,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <.icon name="hero-arrow-left-circle" class="w-4 h-4 mr-2" /> Quick Return
           </button>
         <% end %>
-        
+
         <%= if can?(@current_user, "members.lookup") do %>
           <button
             phx-click="show_member_lookup"
@@ -225,7 +225,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <.icon name="hero-user-circle" class="w-4 h-4 mr-2" /> Member Lookup
           </button>
         <% end %>
-        
+
         <.link
           navigate={~p"/search?type=items"}
           class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile bg-voile-primary text-white hover:bg-voile-primary-dark transition-colors"
@@ -260,16 +260,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <div class="p-2 rounded-full bg-voile-info/10 text-voile-info dark:bg-voile-info/20 dark:text-voile-info">
             <.icon name="hero-arrow-right-circle" class="w-5 h-5" />
           </div>
-          
+
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Checkout</h3>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300">
               Enter member identifier and item code to quickly checkout an item.
             </p>
           </div>
         </div>
-        
+
         <.form
           :let={f}
           for={@checkout_form}
@@ -300,7 +300,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-400"
             >
               Cancel
-            </button> <button type="submit" class="primary-btn">Checkout</button>
+            </button>
+            <button type="submit" class="primary-btn">Checkout</button>
           </div>
         </.form>
       </div>
@@ -331,31 +332,31 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <div class="p-2 rounded-full bg-voile-success/10 text-voile-success dark:bg-voile-success/20 dark:text-voile-success">
             <.icon name="hero-arrow-left-circle" class="w-5 h-5" />
           </div>
-          
+
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Return</h3>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300">
               Enter item code to quickly return an item.
             </p>
           </div>
         </div>
-        
+
         <%= if @quick_return_transaction do %>
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
             <div class="text-xs text-gray-500 dark:text-gray-400">Transaction found</div>
-            
+
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {@quick_return_transaction.item.item_code}
             </div>
-            
+
             <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Predicted fine</div>
-            
+
             <div class="mt-1 text-lg font-semibold text-voile-error dark:text-voile-error">
               Rp {Decimal.to_string(@quick_return_predicted_fine)}
             </div>
           </div>
-          
+
           <.form
             :let={f}
             for={@return_form}
@@ -393,7 +394,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 Return
               </button>
             </div>
-             <input type="hidden" name="transaction_id" value={@quick_return_transaction.id} />
+            <input type="hidden" name="transaction_id" value={@quick_return_transaction.id} />
           </.form>
         <% else %>
           <.form
@@ -418,7 +419,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
               >
                 Cancel
-              </button> <button type="submit" class="primary-btn">Find Transaction</button>
+              </button>
+              <button type="submit" class="primary-btn">Find Transaction</button>
             </div>
           </.form>
         <% end %>
@@ -450,16 +452,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <div class="p-2 rounded-full bg-voile-primary/10 text-voile-primary dark:bg-voile-primary/20 dark:text-voile-primary">
             <.icon name="hero-user-circle" class="w-5 h-5" />
           </div>
-          
+
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Member Lookup</h3>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300">
               Search for members by name, username, or ID.
             </p>
           </div>
         </div>
-        
+
         <.form
           :let={f}
           for={@lookup_form}
@@ -476,29 +478,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             placeholder="Enter name, username, or ID"
           />
         </.form>
-        
+
         <%= if @selected_member do %>
           <div class="p-4 rounded-lg bg-voile-info/10 dark:bg-voile-info/20 border border-voile-info/10 dark:border-voile-info/20">
             <div class="flex items-start space-x-3">
               <div class="h-12 w-12 rounded-full bg-voile-info flex items-center justify-center text-white font-semibold">
                 {String.first(@selected_member.fullname || "?")}
               </div>
-              
+
               <div class="flex-1">
                 <h4 class="font-semibold text-gray-900 dark:text-gray-100">
                   {@selected_member.fullname}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-300">@{@selected_member.username}</p>
-                
+
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {@selected_member.id}</p>
-                
+
                 <%= if @selected_member.email do %>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
                     Email: {@selected_member.email}
                   </p>
                 <% end %>
-                
+
                 <%= if @selected_member.user_type do %>
                   <div class="mt-2">
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-voile-info/10 text-voile-info dark:bg-voile-info/20 dark:text-voile-info">
@@ -523,10 +525,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                     <div class="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-700 dark:text-gray-200 font-semibold">
                       {String.first(member.fullname || "?")}
                     </div>
-                    
+
                     <div class="flex-1">
                       <p class="font-medium text-gray-900 dark:text-gray-100">{member.fullname}</p>
-                      
+
                       <p class="text-sm text-gray-600 dark:text-gray-400">@{member.username}</p>
                     </div>
                   </div>
@@ -535,7 +537,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             </div>
           <% end %>
         <% end %>
-        
+
         <div class="flex justify-end">
           <button
             type="button"
@@ -571,24 +573,24 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <div class="p-2 rounded-full bg-rose-100 text-rose-600 dark:bg-rose-700/10 dark:text-rose-300">
             <.icon name="hero-check" class="w-5" />
           </div>
-          
+
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Return Item</h3>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300">
               Process the return and optionally accept payment for any fine.
             </p>
           </div>
         </div>
-        
+
         <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
           <div class="text-xs text-gray-500 dark:text-gray-400">Predicted fine</div>
-          
+
           <div class="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
             Rp {Decimal.to_string(@predicted_fine || Decimal.new("0"))}
           </div>
         </div>
-        
+
         <.form :let={f} for={%{}} id="return-payment-form" phx-submit="confirm_return">
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <.input
@@ -607,7 +609,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               value={@payment_method || "cash"}
             />
           </div>
-          
+
           <div class="mt-4 flex justify-end items-center space-x-3">
             <button
               type="button"
@@ -615,9 +617,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               class="cancel-btn"
             >
               Cancel
-            </button> <button type="submit" class="success-btn">Return</button>
+            </button>
+            <button type="submit" class="success-btn">Return</button>
           </div>
-          
+
           <input
             type="hidden"
             name="transaction_id"
@@ -637,6 +640,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
       |> assign_new(:recommended_renew_days, fn -> nil end)
       |> assign_new(:preview_due_date, fn -> nil end)
       |> assign_new(:remaining_renewals, fn -> 0 end)
+      |> assign_new(:current_user, fn -> nil end)
 
     ~H"""
     <.modal
@@ -646,48 +650,48 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
       on_cancel={JS.hide(to: "#renew-modal") |> JS.push("cancel_renew")}
     >
       <div class="space-y-4">
-        <div class="flex items-start space-x-3">
+        <div class="flex items-center space-x-3">
           <div class="p-2 rounded-full bg-voile-primary/10 dark:bg-voile-primary/20 text-voile-primary dark:text-voile-surface">
             <.icon name="hero-arrow-path" class="w-5 h-5" />
           </div>
-          
+
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Renew Item</h3>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300">
               Extend the due date for this transaction. You can use the recommended duration or enter a custom number of days.
             </p>
           </div>
         </div>
-        
+
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
             <div class="text-xs text-gray-500 dark:text-gray-400">Recommended</div>
-            
+
             <div class="mt-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
               {if @recommended_renew_days, do: "#{@recommended_renew_days} days", else: "-"}
             </div>
-            
+
             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Based on member type</div>
           </div>
-          
+
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
             <div class="text-xs text-gray-500 dark:text-gray-400">Current due date</div>
-            
+
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {if @transaction && @transaction.due_date,
                 do: format_datetime(@transaction.due_date),
                 else: "-"}
             </div>
-            
+
             <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">Expected new due date</div>
-            
+
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {if @preview_due_date, do: format_datetime(@preview_due_date), else: "-"}
             </div>
           </div>
         </div>
-        
+
         <.form
           :let={f}
           for={%{}}
@@ -697,23 +701,44 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           class="mt-1"
         >
           <div class="flex items-center space-x-3">
-            <.input
-              field={f[:renew_days]}
-              name="renew_days"
-              type="number"
-              min="1"
-              label="Renewal Duration (days)"
-              value={@recommended_renew_days || 1}
-            />
+            <%= if @current_user && is_super_admin?(@current_user) do %>
+              <.input
+                field={f[:renew_days]}
+                name="renew_days"
+                type="number"
+                min="1"
+                label="Renewal Duration (days)"
+                value={@recommended_renew_days || 1}
+              />
+            <% else %>
+              <.input
+                field={f[:renew_days]}
+                name="renew_days"
+                type="number"
+                min="1"
+                label="Renewal Duration (days)"
+                value={@recommended_renew_days || 1}
+                readonly
+                disabled
+              />
+            <% end %>
+
             <div class="ml-auto flex items-center space-x-3">
               <div class="text-sm text-gray-600 dark:text-gray-300">Remaining</div>
-              
+
               <div class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-voile-warning/10 text-voile-warning dark:bg-voile-warning/20 dark:text-voile-warning">
                 {@remaining_renewals || 0}
               </div>
             </div>
           </div>
-          
+
+          <%= if @current_user && !is_super_admin?(@current_user) do %>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <.icon name="hero-information-circle" class="w-4 h-4 inline" />
+              Only super admins can change the renewal duration. Non-super admins must use the recommended duration.
+            </p>
+          <% end %>
+
           <div class="mt-4 flex justify-end items-center space-x-3">
             <button
               type="button"
@@ -734,7 +759,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               Renew
             </button>
           </div>
-          
+
           <input
             type="hidden"
             name="transaction_id"

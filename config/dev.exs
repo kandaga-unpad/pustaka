@@ -116,3 +116,11 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# Xendit Payment Gateway Configuration (Development)
+# Get your API keys from https://dashboard.xendit.co/settings/developers#api-keys
+# For development, you can hardcode test keys here or use environment variables
+config :voile,
+  xendit_api_key:
+    System.get_env("VOILE_XENDIT_API_KEY") || "xnd_development_REPLACE_WITH_YOUR_KEY",
+  xendit_webhook_token: System.get_env("VOILE_XENDIT_WEBHOOK_TOKEN") || "REPLACE_WITH_YOUR_TOKEN"

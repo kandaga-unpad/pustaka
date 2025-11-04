@@ -31,6 +31,7 @@ defmodule Mix.Tasks.Voile.Migrate do
     mix voile.migrate --only masters     # Import only master data from CSV
     mix voile.migrate --only biblio      # Import only bibliography data from CSV
     mix voile.migrate --only items --source mysql  # Import only items from MySQL/MariaDB
+    mix voile.migrate --only members    # Import only member data from CSV
     mix voile.migrate --only loans       # Import only loan data from CSV
     mix voile.migrate --only loan_history # Import only loan history from CSV
     mix voile.migrate --only fines       # Import only fines data from CSV

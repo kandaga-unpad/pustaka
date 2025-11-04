@@ -91,6 +91,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:active_filters_count, active_count)
         |> assign(:is_staff, !Catalog.is_user_admin?(current_user))
         |> assign(:current_user, current_user)
+        # Track current query params for navigation
+        |> assign(:current_query_params, %{})
 
       {:ok, socket}
     end
@@ -167,19 +169,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     # to ensure the stream is properly maintained
     page = socket.assigns.page
     per_page = 10
-    search = socket.assigns.search
+    # Get search from URL params if present, otherwise use current search
+    search = params["q"] || socket.assigns.search
     current_user = socket.assigns.current_user
 
-    # Start with existing filters or empty map
-    filters = socket.assigns.filters || %{}
-
-    # Check if URL contains filter parameters and apply them
-    filters =
-      if params["glam_type"] do
-        Map.put(filters, :glam_type, params["glam_type"])
-      else
-        filters
-      end
+    # Build filters from URL params
+    filters = build_filters_from_params(params)
 
     # Re-apply role-based filters to ensure they're not overridden
     filters = Catalog.apply_role_based_filters(current_user, filters)
@@ -193,6 +188,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     # Also refresh tree collections
     tree_collections = Catalog.list_collections_tree(50)
 
+    # Build current query params for navigation links
+    current_query_params = build_query_params(filters, search)
+
     socket
     |> stream(:collections, collections, reset: true)
     |> assign(:tree_collections, tree_collections)
@@ -201,9 +199,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:total_pages, total_pages)
     |> assign(:page_title, "Listing Collections")
     |> assign(:collection, nil)
+    |> assign(:search, search)
     |> assign(:filters, filters)
+    |> assign(:filter_status, filters[:status] || "")
+    |> assign(:filter_access_level, filters[:access_level] || "")
     |> assign(:filter_glam_type, filters[:glam_type] || "")
+    |> assign(
+      :filter_node_id,
+      if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
+    )
     |> assign(:active_filters_count, active_count)
+    |> assign(:current_query_params, current_query_params)
   end
 
   @impl true
@@ -284,13 +290,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   def handle_event("toggle_view_mode", _params, socket) do
     new_mode = if socket.assigns.view_mode == "list", do: "tree", else: "list"
 
-    # When switching to tree mode, reload limited tree collections
     socket =
       if new_mode == "tree" do
+        # When switching to tree mode, reload limited tree collections
         tree_collections = Catalog.list_collections_tree(50)
         assign(socket, :tree_collections, tree_collections)
       else
+        # When switching back to list mode, reload collections with current filters and search
+        page = socket.assigns.page
+        per_page = 10
+        search = socket.assigns.search
+        filters = socket.assigns.filters
+
+        {collections, total_pages} =
+          Catalog.list_collections_paginated(page, per_page, search, filters)
+
         socket
+        |> stream(:collections, collections, reset: true)
+        |> assign(:collections_empty?, collections == [])
+        |> assign(:collections_count, length(collections))
+        |> assign(:total_pages, total_pages)
       end
 
     {:noreply, assign(socket, :view_mode, new_mode)}
@@ -320,42 +339,20 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("search", %{"q" => q}, socket) do
-    page = 1
-    per_page = 10
-    filters = socket.assigns.filters
+    # Build query params with search query
+    query_params = build_query_params(socket.assigns.filters, q)
 
-    {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, q, filters)
-
-    socket =
-      socket
-      |> stream(:collections, collections, reset: true)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:search, q)
-      |> assign(:collections_empty?, collections == [])
-      |> assign(:collections_count, length(collections))
-
-    {:noreply, socket}
+    # Push patch to update URL with search query
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
   end
 
   @impl true
   def handle_event("clear_search", _params, socket) do
-    # Clear filter and show initial unfiltered list
-    page = 1
-    per_page = 10
-    filters = socket.assigns.filters
-    {collections, total_pages} = Catalog.list_collections_paginated(page, per_page, nil, filters)
+    # Build query params without search query
+    query_params = build_query_params(socket.assigns.filters, "")
 
-    socket =
-      socket
-      |> stream(:collections, collections, reset: true)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:search, "")
-      |> assign(:collections_empty?, collections == [])
-      |> assign(:collections_count, length(collections))
-
-    {:noreply, socket}
+    # Push patch to update URL without search query
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
   end
 
   @impl true
@@ -367,70 +364,33 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     current_user = socket.assigns.current_user
     filters = Catalog.apply_role_based_filters(current_user, filters)
 
-    # Count active filters
-    active_count = count_active_filters(filters)
-
-    # Reset to page 1 when filters change
-    page = 1
-    per_page = 10
+    # Keep current search query
     search = socket.assigns.search
 
-    {collections, total_pages} =
-      Catalog.list_collections_paginated(page, per_page, search, filters)
+    # Build query params with both filters and search
+    query_params = build_query_params(filters, search)
 
-    socket =
-      socket
-      |> stream(:collections, collections, reset: true)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filters, filters)
-      |> assign(:filter_status, filters[:status] || "")
-      |> assign(:filter_access_level, filters[:access_level] || "")
-      |> assign(:filter_glam_type, filters[:glam_type] || "")
-      |> assign(
-        :filter_node_id,
-        if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
-      )
-      |> assign(:active_filters_count, active_count)
-      |> assign(:collections_empty?, collections == [])
-      |> assign(:collections_count, length(collections))
-
-    {:noreply, socket}
+    # Push patch to update URL with new filters
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
   end
 
   @impl true
   def handle_event("clear_filters", _params, socket) do
-    # Clear user-selected filters but maintain role-based filters
-    page = 1
-    per_page = 10
-    search = socket.assigns.search
+    # Clear user-selected filters but maintain role-based filters and search
     filters = %{}
 
     # Re-apply role-based filters
     current_user = socket.assigns.current_user
     filters = Catalog.apply_role_based_filters(current_user, filters)
 
-    {collections, total_pages} =
-      Catalog.list_collections_paginated(page, per_page, search, filters)
+    # Keep current search query
+    search = socket.assigns.search
 
-    socket =
-      socket
-      |> stream(:collections, collections, reset: true)
-      |> assign(:page, page)
-      |> assign(:total_pages, total_pages)
-      |> assign(:filters, filters)
-      |> assign(:filter_status, filters[:status] || "")
-      |> assign(:filter_access_level, filters[:access_level] || "")
-      |> assign(:filter_glam_type, filters[:glam_type] || "")
-      |> assign(
-        :filter_node_id,
-        if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
-      )
-      |> assign(:active_filters_count, count_active_filters(filters))
-      |> assign(:collections_empty?, collections == [])
-      |> assign(:collections_count, length(collections))
+    # Build query params with cleared filters but keep search
+    query_params = build_query_params(filters, search)
 
-    {:noreply, socket}
+    # Push patch to update URL
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
   end
 
   @impl true
@@ -439,27 +399,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
     if user_node_id do
       filters = Map.put(socket.assigns.filters, :node_id, user_node_id)
-      active_count = count_active_filters(filters)
-
-      page = 1
-      per_page = 10
       search = socket.assigns.search
 
-      {collections, total_pages} =
-        Catalog.list_collections_paginated(page, per_page, search, filters)
+      # Build query params with node filter
+      query_params = build_query_params(filters, search)
 
-      socket =
-        socket
-        |> stream(:collections, collections, reset: true)
-        |> assign(:page, page)
-        |> assign(:total_pages, total_pages)
-        |> assign(:filters, filters)
-        |> assign(:filter_node_id, to_string(user_node_id))
-        |> assign(:active_filters_count, active_count)
-        |> assign(:collections_empty?, collections == [])
-        |> assign(:collections_count, length(collections))
-
-      {:noreply, socket}
+      {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
     else
       {:noreply, socket}
     end
@@ -483,5 +428,48 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> Map.values()
     |> Enum.reject(&(&1 == nil || &1 == ""))
     |> length()
+  end
+
+  defp build_query_params(filters, search) do
+    params = %{}
+
+    # Add search query if present
+    params =
+      if search && search != "" do
+        Map.put(params, :q, search)
+      else
+        params
+      end
+
+    # Add filters
+    params =
+      if filters[:status] && filters[:status] != "" do
+        Map.put(params, :status, filters[:status])
+      else
+        params
+      end
+
+    params =
+      if filters[:access_level] && filters[:access_level] != "" do
+        Map.put(params, :access_level, filters[:access_level])
+      else
+        params
+      end
+
+    params =
+      if filters[:glam_type] && filters[:glam_type] != "" do
+        Map.put(params, :glam_type, filters[:glam_type])
+      else
+        params
+      end
+
+    params =
+      if filters[:node_id] && filters[:node_id] != "" do
+        Map.put(params, :node_id, filters[:node_id])
+      else
+        params
+      end
+
+    params
   end
 end
