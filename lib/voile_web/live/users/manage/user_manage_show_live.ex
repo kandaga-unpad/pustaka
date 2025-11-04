@@ -9,11 +9,14 @@ defmodule VoileWeb.Users.ManageLive.Show do
     # Check permission
     authorize!(socket, "users.read")
 
-    user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node])
+    user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node, :suspended_by])
+
+    # Check if manually suspended
+    manually_suspended? = Accounts.is_manually_suspended?(user)
 
     # Check if member privileges are suspended due to fines
-    suspended? =
-      if user.user_type_id do
+    fine_suspended? =
+      if user.user_type_id && !manually_suspended? do
         Voile.Schema.Library.Circulation.member_privileges_suspended?(user.id)
       else
         false
@@ -31,8 +34,12 @@ defmodule VoileWeb.Users.ManageLive.Show do
       socket
       |> assign(user: user)
       |> assign(current_path: "/manage/settings/users/#{id}")
-      |> assign(:suspended, suspended?)
+      |> assign(:manually_suspended, manually_suspended?)
+      |> assign(:fine_suspended, fine_suspended?)
+      |> assign(:suspended, manually_suspended? || fine_suspended?)
       |> assign(:outstanding_fines, outstanding_fines)
+      |> assign(:suspend_modal_visible, false)
+      |> assign(:suspend_form, to_form(%{}))
 
     {:ok, socket}
   end
@@ -58,11 +65,31 @@ defmodule VoileWeb.Users.ManageLive.Show do
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/settings/users"}>Back to Users</.back>
 
-            <%= if can?(@current_scope.user, "users.update") do %>
-              <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
-                Edit
-              </.link>
-            <% end %>
+            <div class="flex gap-2">
+              <%= if can?(@current_scope.user, "users.update") do %>
+                <%= if @manually_suspended do %>
+                  <button
+                    phx-click="unsuspend_user"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    <.icon name="hero-check-circle" class="w-4 h-4 mr-2" />
+                    Unsuspend Account
+                  </button>
+                <% else %>
+                  <button
+                    phx-click="show_suspend_modal"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" />
+                    Suspend Account
+                  </button>
+                <% end %>
+
+                <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
+                  Edit
+                </.link>
+              <% end %>
+            </div>
           </div>
 
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
@@ -121,8 +148,56 @@ defmodule VoileWeb.Users.ManageLive.Show do
               </div>
 
               <div class="w-full mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <%!-- Suspension Warning Alert --%>
-                <%= if @user.user_type_id && @suspended do %>
+                <%!-- Manual Suspension Alert --%>
+                <%= if @manually_suspended do %>
+                  <div class="col-span-2 bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0">
+                        <.icon name="hero-no-symbol" class="h-5 w-5 text-red-400" />
+                      </div>
+
+                      <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-medium text-red-800">
+                          Account Manually Suspended
+                        </h3>
+
+                        <div class="mt-2 text-sm text-red-700">
+                          <p class="font-semibold">Reason:</p>
+                          <p class="mt-1 italic">{@user.suspension_reason || "No reason provided"}</p>
+
+                          <div class="mt-3 grid grid-cols-2 gap-4">
+                            <%= if @user.suspended_at do %>
+                              <div>
+                                <span class="font-semibold">Suspended On:</span>
+                                <div>{Calendar.strftime(@user.suspended_at, "%B %d, %Y at %I:%M %p")}</div>
+                              </div>
+                            <% end %>
+
+                            <%= if @user.suspended_by do %>
+                              <div>
+                                <span class="font-semibold">Suspended By:</span>
+                                <div>{@user.suspended_by.fullname || @user.suspended_by.username}</div>
+                              </div>
+                            <% end %>
+
+                            <%= if @user.suspension_ends_at do %>
+                              <div class="col-span-2">
+                                <span class="font-semibold">Suspension Ends:</span>
+                                <div>{Calendar.strftime(@user.suspension_ends_at, "%B %d, %Y at %I:%M %p")}</div>
+                              </div>
+                            <% else %>
+                              <div class="col-span-2">
+                                <span class="font-semibold text-red-900">Indefinite Suspension</span>
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+                <%!-- Fine-Based Suspension Warning Alert --%>
+                <%= if @user.user_type_id && @fine_suspended do %>
                   <div class="col-span-2 bg-red-50 border-l-4 border-red-400 p-4 rounded">
                     <div class="flex items-start">
                       <div class="flex-shrink-0">
@@ -131,7 +206,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
 
                       <div class="ml-3">
                         <h3 class="text-sm font-medium text-red-800">
-                          Member Privileges Suspended
+                          Member Privileges Suspended (Outstanding Fines)
                         </h3>
 
                         <div class="mt-2 text-sm text-red-700">
@@ -342,8 +417,139 @@ defmodule VoileWeb.Users.ManageLive.Show do
           patch={~p"/manage/settings/users/#{@user.id}"}
         />
       </.modal>
+      <%!-- Suspend Modal --%>
+      <.modal
+        :if={@suspend_modal_visible}
+        id="suspend-modal"
+        show
+        on_cancel={JS.push("cancel_suspend")}
+      >
+        <div class="space-y-4">
+          <div class="flex items-start space-x-3">
+            <div class="p-2 rounded-full bg-red-100 text-red-600">
+              <.icon name="hero-no-symbol" class="w-5 h-5" />
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Suspend User Account</h3>
+
+              <p class="text-sm text-gray-600">
+                This will prevent the user from borrowing items. You must provide a reason for the suspension.
+              </p>
+            </div>
+          </div>
+
+          <.form :let={f} for={@suspend_form} id="suspend-form" phx-submit="confirm_suspend">
+            <div class="space-y-4">
+              <.input
+                field={f[:suspension_reason]}
+                name="suspension_reason"
+                type="textarea"
+                label="Suspension Reason"
+                placeholder="Enter the reason for suspending this account..."
+                required
+                rows="4"
+              />
+
+              <.input
+                field={f[:suspension_ends_at]}
+                name="suspension_ends_at"
+                type="datetime-local"
+                label="Suspension End Date (Optional - leave empty for indefinite)"
+              />
+            </div>
+
+            <div class="mt-6 flex justify-end items-center space-x-3">
+              <button type="button" phx-click="cancel_suspend" class="cancel-btn">
+                Cancel
+              </button>
+              <button type="submit" class="danger-btn">
+                Confirm Suspension
+              </button>
+            </div>
+          </.form>
+        </div>
+      </.modal>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("show_suspend_modal", _params, socket) do
+    {:noreply, assign(socket, :suspend_modal_visible, true)}
+  end
+
+  @impl true
+  def handle_event("cancel_suspend", _params, socket) do
+    {:noreply, assign(socket, :suspend_modal_visible, false)}
+  end
+
+  @impl true
+  def handle_event("confirm_suspend", params, socket) do
+    reason = params["suspension_reason"]
+    ends_at_str = params["suspension_ends_at"]
+
+    ends_at =
+      if ends_at_str && ends_at_str != "" do
+        case NaiveDateTime.from_iso8601(ends_at_str) do
+          {:ok, naive} -> DateTime.from_naive!(naive, "Etc/UTC")
+          _ -> nil
+        end
+      else
+        nil
+      end
+
+    attrs = %{
+      suspension_reason: reason,
+      suspended_by_id: socket.assigns.current_scope.user.id,
+      suspension_ends_at: ends_at
+    }
+
+    case Accounts.suspend_user(socket.assigns.user, attrs) do
+      {:ok, user} ->
+        user = Voile.Repo.preload(user, [:roles, :user_type, :node, :suspended_by], force: true)
+
+        {:noreply,
+         socket
+         |> assign(:user, user)
+         |> assign(:manually_suspended, true)
+         |> assign(:suspended, true)
+         |> assign(:suspend_modal_visible, false)
+         |> put_flash(:info, "User account has been suspended")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(:suspend_form, to_form(changeset))
+         |> put_flash(:error, "Failed to suspend user account")}
+    end
+  end
+
+  @impl true
+  def handle_event("unsuspend_user", _params, socket) do
+    case Accounts.unsuspend_user(socket.assigns.user) do
+      {:ok, user} ->
+        user = Voile.Repo.preload(user, [:roles, :user_type, :node, :suspended_by], force: true)
+
+        # Recalculate fine-based suspension
+        fine_suspended? =
+          if user.user_type_id do
+            Voile.Schema.Library.Circulation.member_privileges_suspended?(user.id)
+          else
+            false
+          end
+
+        {:noreply,
+         socket
+         |> assign(:user, user)
+         |> assign(:manually_suspended, false)
+         |> assign(:fine_suspended, fine_suspended?)
+         |> assign(:suspended, fine_suspended?)
+         |> put_flash(:info, "User account suspension has been lifted")}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to unsuspend user account")}
+    end
   end
 
   @impl true

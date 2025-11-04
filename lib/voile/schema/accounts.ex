@@ -4,6 +4,7 @@ defmodule Voile.Schema.Accounts do
   """
 
   import Ecto.Query, warn: false
+  import Ecto.Changeset, only: [validate_required: 2, validate_length: 3]
   alias Voile.Repo
 
   alias Voile.Schema.Accounts.{User, UserToken, UserNotifier}
