@@ -9,7 +9,8 @@ defmodule VoileWeb.Users.ManageLive.Show do
     # Check permission
     authorize!(socket, "users.read")
 
-    user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node, :suspended_by])
+    user =
+      Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node, :suspended_by])
 
     # Check if manually suspended
     manually_suspended? = Accounts.is_manually_suspended?(user)
@@ -72,16 +73,14 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     phx-click="unsuspend_user"
                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
-                    <.icon name="hero-check-circle" class="w-4 h-4 mr-2" />
-                    Unsuspend Account
+                    <.icon name="hero-check-circle" class="w-4 h-4 mr-2" /> Unsuspend Account
                   </button>
                 <% else %>
                   <button
                     phx-click="show_suspend_modal"
                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
-                    <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" />
-                    Suspend Account
+                    <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" /> Suspend Account
                   </button>
                 <% end %>
 
@@ -169,21 +168,30 @@ defmodule VoileWeb.Users.ManageLive.Show do
                             <%= if @user.suspended_at do %>
                               <div>
                                 <span class="font-semibold">Suspended On:</span>
-                                <div>{Calendar.strftime(@user.suspended_at, "%B %d, %Y at %I:%M %p")}</div>
+                                <div>
+                                  {Calendar.strftime(@user.suspended_at, "%B %d, %Y at %I:%M %p")}
+                                </div>
                               </div>
                             <% end %>
 
                             <%= if @user.suspended_by do %>
                               <div>
                                 <span class="font-semibold">Suspended By:</span>
-                                <div>{@user.suspended_by.fullname || @user.suspended_by.username}</div>
+                                <div>
+                                  {@user.suspended_by.fullname || @user.suspended_by.username}
+                                </div>
                               </div>
                             <% end %>
 
                             <%= if @user.suspension_ends_at do %>
                               <div class="col-span-2">
                                 <span class="font-semibold">Suspension Ends:</span>
-                                <div>{Calendar.strftime(@user.suspension_ends_at, "%B %d, %Y at %I:%M %p")}</div>
+                                <div>
+                                  {Calendar.strftime(
+                                    @user.suspension_ends_at,
+                                    "%B %d, %Y at %I:%M %p"
+                                  )}
+                                </div>
                               </div>
                             <% else %>
                               <div class="col-span-2">
