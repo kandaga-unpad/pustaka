@@ -5,6 +5,11 @@ defmodule Voile.Schema.System.LibHoliday do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
+  # ETS cache for holiday lookups
+  @cache_table :lib_holiday_cache
+  # 1 hour in seconds
+  @cache_ttl 3600
+
   schema "lib_holidays" do
     field :name, :string
     field :holiday_date, :date
@@ -24,6 +29,44 @@ defmodule Voile.Schema.System.LibHoliday do
     belongs_to :unit, Voile.Schema.System.Node, foreign_key: :unit_id, type: :integer
 
     timestamps(type: :utc_datetime)
+  end
+
+  # Initialize ETS cache table if it doesn't exist
+  defp ensure_cache_table do
+    unless :ets.whereis(@cache_table) != :undefined do
+      :ets.new(@cache_table, [:set, :public, :named_table, read_concurrency: true])
+    end
+  end
+
+  # Get from cache or compute and cache
+  defp cached_lookup(key, compute_fn) do
+    ensure_cache_table()
+
+    case :ets.lookup(@cache_table, key) do
+      [{^key, value, timestamp}] ->
+        # Check if cache is still valid
+        if :os.system_time(:second) - timestamp < @cache_ttl do
+          value
+        else
+          # Cache expired, recompute
+          value = compute_fn.()
+          :ets.insert(@cache_table, {key, value, :os.system_time(:second)})
+          value
+        end
+
+      [] ->
+        # Not in cache, compute and store
+        value = compute_fn.()
+        :ets.insert(@cache_table, {key, value, :os.system_time(:second)})
+        value
+    end
+  end
+
+  # Clear cache (useful after updating holidays)
+  def clear_cache do
+    if :ets.whereis(@cache_table) != :undefined do
+      :ets.delete_all_objects(@cache_table)
+    end
   end
 
   @doc """
@@ -116,12 +159,17 @@ defmodule Voile.Schema.System.LibHoliday do
   Checks if a given date is a holiday or non-business day.
   This includes both specific holidays and weekly schedule non-business days.
   Considers both unit-specific and system-wide rules.
+  Uses ETS caching to avoid repeated database queries.
   """
   def is_holiday?(date, unit_id \\ nil)
 
   def is_holiday?(%Date{} = date, unit_id) do
-    # Check weekly schedule first (more efficient)
-    is_non_business_day_by_schedule?(date, unit_id) or is_specific_holiday?(date, unit_id)
+    cache_key = {:is_holiday, date, unit_id}
+
+    cached_lookup(cache_key, fn ->
+      # Check weekly schedule first (more efficient)
+      is_non_business_day_by_schedule?(date, unit_id) or is_specific_holiday?(date, unit_id)
+    end)
   end
 
   def is_holiday?(%DateTime{} = datetime, unit_id) do
@@ -134,43 +182,22 @@ defmodule Voile.Schema.System.LibHoliday do
   Checks if a date is a non-business day according to the weekly schedule.
   This replaces the old hardcoded weekend check.
   Checks both unit-specific and system-wide schedules.
+  Uses caching to avoid repeated queries for the same day of week.
   """
   def is_non_business_day_by_schedule?(date, unit_id \\ nil)
 
   def is_non_business_day_by_schedule?(%Date{} = date, unit_id) do
-    import Ecto.Query
-    alias Voile.Repo
-
     day_of_week = Date.day_of_week(date)
+    cache_key = {:schedule, day_of_week, unit_id}
 
-    is_nil_unit = is_nil(unit_id)
+    cached_lookup(cache_key, fn ->
+      import Ecto.Query
+      alias Voile.Repo
 
-    if is_nil_unit do
-      query =
-        from h in __MODULE__,
-          where:
-            h.schedule_type == "schedule" and
-              h.day_of_week == ^day_of_week and
-              h.holiday_type == "non_business" and
-              h.is_active == true and
-              is_nil(h.unit_id)
+      is_nil_unit = is_nil(unit_id)
 
-      Repo.exists?(query)
-    else
-      # Check unit-specific schedule first; if none, fall back to system-wide
-      unit_query =
-        from h in __MODULE__,
-          where:
-            h.schedule_type == "schedule" and
-              h.day_of_week == ^day_of_week and
-              h.holiday_type == "non_business" and
-              h.is_active == true and
-              h.unit_id == type(^unit_id, :integer)
-
-      if Repo.exists?(unit_query) do
-        true
-      else
-        system_query =
+      if is_nil_unit do
+        query =
           from h in __MODULE__,
             where:
               h.schedule_type == "schedule" and
@@ -179,9 +206,34 @@ defmodule Voile.Schema.System.LibHoliday do
                 h.is_active == true and
                 is_nil(h.unit_id)
 
-        Repo.exists?(system_query)
+        Repo.exists?(query)
+      else
+        # Check unit-specific schedule first; if none, fall back to system-wide
+        unit_query =
+          from h in __MODULE__,
+            where:
+              h.schedule_type == "schedule" and
+                h.day_of_week == ^day_of_week and
+                h.holiday_type == "non_business" and
+                h.is_active == true and
+                h.unit_id == type(^unit_id, :integer)
+
+        if Repo.exists?(unit_query) do
+          true
+        else
+          system_query =
+            from h in __MODULE__,
+              where:
+                h.schedule_type == "schedule" and
+                  h.day_of_week == ^day_of_week and
+                  h.holiday_type == "non_business" and
+                  h.is_active == true and
+                  is_nil(h.unit_id)
+
+          Repo.exists?(system_query)
+        end
       end
-    end
+    end)
   end
 
   def is_non_business_day_by_schedule?(%DateTime{} = datetime, unit_id) do
@@ -193,39 +245,21 @@ defmodule Voile.Schema.System.LibHoliday do
   @doc """
   Checks if a date is a specific holiday from the database.
   Checks both unit-specific and system-wide holidays.
+  Uses caching to avoid repeated queries for the same date.
   """
   def is_specific_holiday?(date, unit_id \\ nil)
 
   def is_specific_holiday?(%Date{} = date, unit_id) do
-    import Ecto.Query
-    alias Voile.Repo
+    cache_key = {:specific_holiday, date, unit_id}
 
-    is_nil_unit = is_nil(unit_id)
+    cached_lookup(cache_key, fn ->
+      import Ecto.Query
+      alias Voile.Repo
 
-    if is_nil_unit do
-      query =
-        from h in __MODULE__,
-          where:
-            h.schedule_type == "holiday" and
-              h.holiday_date == ^date and
-              h.is_active == true and
-              is_nil(h.unit_id)
+      is_nil_unit = is_nil(unit_id)
 
-      Repo.exists?(query)
-    else
-      # Check unit-specific holiday first, then fall back to system-wide
-      unit_query =
-        from h in __MODULE__,
-          where:
-            h.schedule_type == "holiday" and
-              h.holiday_date == ^date and
-              h.is_active == true and
-              h.unit_id == type(^unit_id, :integer)
-
-      if Repo.exists?(unit_query) do
-        true
-      else
-        system_query =
+      if is_nil_unit do
+        query =
           from h in __MODULE__,
             where:
               h.schedule_type == "holiday" and
@@ -233,9 +267,32 @@ defmodule Voile.Schema.System.LibHoliday do
                 h.is_active == true and
                 is_nil(h.unit_id)
 
-        Repo.exists?(system_query)
+        Repo.exists?(query)
+      else
+        # Check unit-specific holiday first, then fall back to system-wide
+        unit_query =
+          from h in __MODULE__,
+            where:
+              h.schedule_type == "holiday" and
+                h.holiday_date == ^date and
+                h.is_active == true and
+                h.unit_id == type(^unit_id, :integer)
+
+        if Repo.exists?(unit_query) do
+          true
+        else
+          system_query =
+            from h in __MODULE__,
+              where:
+                h.schedule_type == "holiday" and
+                  h.holiday_date == ^date and
+                  h.is_active == true and
+                  is_nil(h.unit_id)
+
+          Repo.exists?(system_query)
+        end
       end
-    end
+    end)
   end
 
   def is_specific_holiday?(%DateTime{} = datetime, unit_id) do

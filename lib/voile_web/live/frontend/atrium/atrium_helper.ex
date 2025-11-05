@@ -126,4 +126,46 @@ defmodule VoileWeb.Frontend.Atrium.AtriumHelper do
 
     Date.add(current_due_date, max_days)
   end
+
+  @doc """
+  Formats a Decimal number as Indonesian Rupiah currency.
+
+  Adds thousand separators (dots) and handles Decimal types.
+
+  ## Examples
+
+      iex> format_currency(Decimal.new("1000"))
+      "1.000"
+
+      iex> format_currency(Decimal.new("1234567"))
+      "1.234.567"
+
+      iex> format_currency(Decimal.new("0"))
+      "0"
+  """
+  def format_currency(amount) when is_struct(amount, Decimal) do
+    amount
+    |> Decimal.to_string(:normal)
+    |> format_currency()
+  end
+
+  def format_currency(amount) when is_binary(amount) do
+    # Remove any decimal places for integer currency
+    amount = String.split(amount, ".") |> List.first()
+
+    # Reverse the string, add dots every 3 digits, then reverse back
+    amount
+    |> String.graphemes()
+    |> Enum.reverse()
+    |> Enum.chunk_every(3)
+    |> Enum.map(&Enum.reverse/1)
+    |> Enum.reverse()
+    |> Enum.join(".")
+  end
+
+  def format_currency(amount) when is_integer(amount) do
+    amount |> Integer.to_string() |> format_currency()
+  end
+
+  def format_currency(_), do: "0"
 end

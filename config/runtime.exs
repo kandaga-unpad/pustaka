@@ -116,4 +116,66 @@ if config_env() == :prod do
   #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+
+  # Turnstile Configuration
+  config :phoenix_turnstile,
+    site_key: System.fetch_env!("VOILE_TURNSTILE_SITE_KEY"),
+    secret_key: System.fetch_env!("VOILE_TURNSTILE_SECRET_KEY")
+
+  # Configure mailer for production
+  # Supports both SMTP (Google Workspace, self-hosted) and API-based providers
+  mailer_adapter = System.get_env("VOILE_MAILER_ADAPTER") || "smtp"
+
+  case mailer_adapter do
+    "gmail_api" ->
+      # Gmail API Configuration (OAuth2)
+      # This is more secure than SMTP with app passwords
+      config :voile, Voile.Mailer,
+        adapter: Voile.Mailer.GmailApiAdapter,
+        access_token: System.get_env("VOILE_GMAIL_ACCESS_TOKEN"),
+        refresh_token: System.get_env("VOILE_GMAIL_REFRESH_TOKEN"),
+        client_id: System.get_env("VOILE_GMAIL_CLIENT_ID"),
+        client_secret: System.get_env("VOILE_GMAIL_CLIENT_SECRET"),
+        redirect_uri: System.get_env("VOILE_GMAIL_REDIRECT_URI")
+
+    "smtp" ->
+      # SMTP Configuration (Google Workspace or Self-hosted)
+      config :voile, Voile.Mailer,
+        adapter: Swoosh.Adapters.SMTP,
+        relay: System.get_env("VOILE_SMTP_RELAY") || "smtp.gmail.com",
+        port: String.to_integer(System.get_env("VOILE_SMTP_PORT") || "587"),
+        username: System.get_env("VOILE_SMTP_USERNAME"),
+        password: System.get_env("VOILE_SMTP_PASSWORD"),
+        ssl: System.get_env("VOILE_SMTP_SSL") == "true",
+        tls: :if_available,
+        auth: :always,
+        # For Gmail/Google Workspace, use these settings:
+        # relay: "smtp.gmail.com"
+        # port: 587
+        # tls: :if_available
+        # auth: :always
+        retries: 3,
+        no_mx_lookups: false
+
+    "mailgun" ->
+      # Mailgun API Configuration
+      config :voile, Voile.Mailer,
+        adapter: Swoosh.Adapters.Mailgun,
+        api_key: System.get_env("VOILE_MAILGUN_API_KEY"),
+        domain: System.get_env("VOILE_MAILGUN_DOMAIN")
+
+      config :swoosh, :api_client, Swoosh.ApiClient.Finch
+
+    "sendgrid" ->
+      # SendGrid API Configuration
+      config :voile, Voile.Mailer,
+        adapter: Swoosh.Adapters.Sendgrid,
+        api_key: System.get_env("VOILE_SENDGRID_API_KEY")
+
+      config :swoosh, :api_client, Swoosh.ApiClient.Finch
+
+    _ ->
+      # Default to Local adapter (dev/test)
+      config :voile, Voile.Mailer, adapter: Swoosh.Adapters.Local
+  end
 end

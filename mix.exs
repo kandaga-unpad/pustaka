@@ -69,6 +69,7 @@ defmodule Voile.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_turnstile, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
       {:swoosh, "~> 1.16"},
       {:req, "~> 0.5"},

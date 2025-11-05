@@ -4,6 +4,7 @@ defmodule Voile.Utils.ItemHelper do
   def generate_item_code(unit, type, collection, time_identifier, index) do
     unit = String.downcase(unit)
     type = String.downcase(type)
+    collection = String.downcase(to_string(collection))
     index = String.pad_leading(index, 3, "0")
 
     "#{unit}-#{type}-#{collection}-#{time_identifier}-#{index}"

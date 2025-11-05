@@ -5,6 +5,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   alias Voile.Schema.Library.Circulation
   alias Client.Storage
   alias VoileWeb.Frontend.Atrium.AtriumHelper
+  alias Voile.Notifications.LoanReminderNotifier
 
   @impl true
   def mount(_params, _session, socket) do
@@ -12,9 +13,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     user = socket.assigns.current_scope.user
 
+    # Subscribe to loan reminder notifications if connected
+    if connected?(socket) do
+      LoanReminderNotifier.subscribe_to_member_notifications(user.id)
+    end
+
     # Profile changeset (biodata + user_image handled as URL field for now)
     profile_changeset = Accounts.change_user(user)
     password_changeset = Accounts.change_user_password(user)
+
+    # Check if user has a password set (for OAuth users or admin-created accounts)
+    has_password = Accounts.has_password?(user)
 
     # prepare a changeset/form for user profile and set `as: :user` so inputs submit as user[...] params
     user_profile_changeset = Accounts.change_user(user)
@@ -28,6 +37,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     total_loans = Circulation.count_list_active_transactions(user.id)
     total_unpaid_fines = Circulation.count_member_unpaid_fines(user.id)
+    total_unpaid_fines_amount = Circulation.sum_member_unpaid_fines(user.id)
 
     socket =
       socket
@@ -42,6 +52,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         fines_total_pages: fines_total_pages,
         total_loans: total_loans,
         total_unpaid_fines: total_unpaid_fines,
+        total_unpaid_fines_amount: total_unpaid_fines_amount,
         loan_history: [],
         loan_history_page: 1,
         loan_history_total_pages: 0,
@@ -58,9 +69,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         user_profile_form: user_profile_form,
         password_form: to_form(password_changeset),
         trigger_submit: false,
+        has_password: has_password,
         show_payment_modal: false,
         payment_link_data: nil,
-        payment_processing: false
+        payment_processing: false,
+        # Loan reminder notification assigns
+        loan_reminders: [],
+        show_notification_badge: false
       )
       |> allow_upload(:user_image,
         accept: ~w(.jpg .jpeg .png .webp),
@@ -449,6 +464,14 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     {:noreply, put_flash(socket, :info, "Payment link copied to clipboard!")}
   end
 
+  def handle_event("dismiss_notification_badge", _params, socket) do
+    {:noreply, assign(socket, show_notification_badge: false)}
+  end
+
+  def handle_event("clear_reminders", _params, socket) do
+    {:noreply, assign(socket, loan_reminders: [], show_notification_badge: false)}
+  end
+
   def handle_event("open_payment_link", %{"fine_id" => fine_id}, socket) do
     case Circulation.get_pending_payment_for_fine(fine_id) do
       {:ok, payment} ->
@@ -570,6 +593,23 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     end
   end
 
+  def handle_event("request_password_reset", _params, socket) do
+    user = socket.assigns.current_scope.user
+
+    # Send password reset email
+    Accounts.deliver_user_reset_password_instructions(
+      user,
+      &url(~p"/users/reset_password/#{&1}")
+    )
+
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       "Password reset instructions have been sent to #{user.email}. Please check your inbox."
+     )}
+  end
+
   @impl true
   def handle_info({:open_renewal_modal, tx_id}, socket) do
     member = socket.assigns.current_scope.user
@@ -606,6 +646,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, 10)
 
     total_unpaid_fines = Circulation.count_member_unpaid_fines(member.id)
+    total_unpaid_fines_amount = Circulation.sum_member_unpaid_fines(member.id)
 
     {:noreply,
      socket
@@ -613,9 +654,76 @@ defmodule VoileWeb.Frontend.Atrium.Index do
        fines: fines,
        fines_total_pages: fines_total_pages,
        total_unpaid_fines: total_unpaid_fines,
+       total_unpaid_fines_amount: total_unpaid_fines_amount,
        payment_processing: false
      )
      |> put_flash(:info, "✅ Payment confirmed! Your fine has been updated.")}
+  end
+
+  @impl true
+  def handle_info({:loan_reminder, data}, socket) do
+    # Handle loan reminder notifications from PubSub
+    %{
+      collection_title: collection_title,
+      item_code: item_code,
+      due_date: due_date,
+      days_until_due: days_until_due
+    } = data
+
+    message =
+      "📚 Reminder: \"#{collection_title}\" (#{item_code}) is due in #{days_until_due} day(s) on #{Calendar.strftime(due_date, "%B %d, %Y")}"
+
+    # Add to reminders list and show badge
+    reminders = [data | socket.assigns.loan_reminders]
+
+    {:noreply,
+     socket
+     |> assign(loan_reminders: reminders, show_notification_badge: true)
+     |> put_flash(:info, message)}
+  end
+
+  @impl true
+  def handle_info({:loan_overdue, data}, socket) do
+    # Handle overdue loan notifications from PubSub
+    %{
+      collection_title: collection_title,
+      item_code: item_code,
+      due_date: due_date,
+      days_overdue: days_overdue
+    } = data
+
+    message =
+      "⚠️ Overdue: \"#{collection_title}\" (#{item_code}) was due on #{Calendar.strftime(due_date, "%B %d, %Y")} and is now #{days_overdue} day(s) overdue!"
+
+    # Add to reminders list and show badge
+    reminders = [data | socket.assigns.loan_reminders]
+
+    {:noreply,
+     socket
+     |> assign(loan_reminders: reminders, show_notification_badge: true)
+     |> put_flash(:error, message)}
+  end
+
+  @impl true
+  def handle_info({:manual_reminder, data}, socket) do
+    # Handle manual reminder from librarian
+    %{
+      collection_title: collection_title,
+      item_code: item_code,
+      due_date: due_date,
+      days_until_due: days_until_due
+    } = data
+
+    message =
+      "📬 Library Notice: Please remember to return \"#{collection_title}\" (#{item_code}) by #{Calendar.strftime(due_date, "%B %d, %Y")} (#{days_until_due} day(s) remaining)"
+
+    # Add to reminders list and show badge
+    reminders = [data | socket.assigns.loan_reminders]
+
+    {:noreply,
+     socket
+     |> assign(loan_reminders: reminders, show_notification_badge: true)
+     |> put_flash(:info, message)}
   end
 
   defp handle_progress(:user_image, entry, socket) do
@@ -694,6 +802,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     # Reload totals
     total_loans = Circulation.count_list_active_transactions(member.id)
     total_unpaid_fines = Circulation.count_member_unpaid_fines(member.id)
+    total_unpaid_fines_amount = Circulation.sum_member_unpaid_fines(member.id)
 
     # Check for payment status in URL params
     socket =
@@ -730,7 +839,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
        fines_page: fines_page,
        fines_total_pages: fines_total_pages,
        total_loans: total_loans,
-       total_unpaid_fines: total_unpaid_fines
+       total_unpaid_fines: total_unpaid_fines,
+       total_unpaid_fines_amount: total_unpaid_fines_amount
      )}
   end
 
@@ -756,10 +866,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
               <div class="mt-3 flex items-center gap-3 text-sm">
                 <span class="px-3 py-1 bg-white/20 rounded-full">
-                  Loans: <strong class="ml-1">{length(@loans || [])}</strong>
-                </span>
-                <span class="px-3 py-1 bg-white/20 rounded-full">
-                  Unpaid fines: <strong class="ml-1">{length(@fines || [])}</strong>
+                  Fines:
+                  <strong class="ml-1">
+                    Rp {AtriumHelper.format_currency(@total_unpaid_fines_amount)}
+                  </strong>
                 </span>
               </div>
             </div>
@@ -808,7 +918,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
                     <div class="text-xs text-voile-muted">Unpaid Fines</div>
 
-                    <div class="text-lg font-semibold">{@total_unpaid_fines}</div>
+                    <div class="text-lg font-semibold">
+                      Rp {AtriumHelper.format_currency(@total_unpaid_fines_amount)}
+                    </div>
+
+                    <div class="text-xs text-voile-muted mt-1">
+                      {@total_unpaid_fines} fine(s)
+                    </div>
                   </div>
                 </div>
 
@@ -1009,45 +1125,143 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       </div>
 
                       <div>
-                        <.form
-                          for={@password_form}
-                          id="password_form"
-                          action={~p"/users/log_in?_action=password_updated"}
-                          method="post"
-                          phx-change="validate_password"
-                          phx-submit="update_password"
-                          phx-trigger-action={@trigger_submit}
-                        >
-                          <input
-                            name={@password_form[:email].name}
-                            type="hidden"
-                            id="hidden_user_email"
-                            value={@current_email}
-                          />
-                          <.input
-                            field={@password_form[:password]}
-                            type="password"
-                            label="New password"
-                            required
-                          />
-                          <.input
-                            field={@password_form[:password_confirmation]}
-                            type="password"
-                            label="Confirm new password"
-                          />
-                          <.input
-                            field={@password_form[:current_password]}
-                            name="current_password"
-                            type="password"
-                            label="Current password"
-                            id="current_password_for_password"
-                            value={@current_password}
-                            required
-                          />
-                          <div class="mt-3">
-                            <.button phx-disable-with="Changing...">Change Password</.button>
+                        <%= if @has_password do %>
+                          <%!-- Change Password Form (for users with existing password) --%>
+                          <h5 class="text-lg font-semibold mb-4">Change Password</h5>
+
+                          <.form
+                            for={@password_form}
+                            id="password_form"
+                            action={~p"/users/log_in?_action=password_updated"}
+                            method="post"
+                            phx-change="validate_password"
+                            phx-submit="update_password"
+                            phx-trigger-action={@trigger_submit}
+                          >
+                            <input
+                              name={@password_form[:email].name}
+                              type="hidden"
+                              id="hidden_user_email"
+                              value={@current_email}
+                            />
+                            <.input
+                              field={@password_form[:password]}
+                              type="password"
+                              label="New password"
+                              required
+                            />
+                            <.input
+                              field={@password_form[:password_confirmation]}
+                              type="password"
+                              label="Confirm new password"
+                            />
+                            <.input
+                              field={@password_form[:current_password]}
+                              name="current_password"
+                              type="password"
+                              label="Current password"
+                              id="current_password_for_password"
+                              value={@current_password}
+                              required
+                            />
+                            <div class="mt-3">
+                              <.button phx-disable-with="Changing...">Change Password</.button>
+                            </div>
+                          </.form>
+
+                          <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                              <strong>Forgot your current password?</strong>
+                            </div>
+
+                            <.button
+                              type="button"
+                              phx-click="request_password_reset"
+                              class="w-full bg-gray-600 hover:bg-gray-700"
+                            >
+                              <.icon name="hero-envelope" class="w-5 h-5 mr-2" />
+                              Request Password Reset Email
+                            </.button>
+
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              We'll send you a secure link to reset your password via email.
+                            </p>
                           </div>
-                        </.form>
+                        <% else %>
+                          <%!-- Password Reset Request (for OAuth users or admin-created accounts) --%>
+                          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                            <div class="flex gap-3">
+                              <.icon
+                                name="hero-information-circle"
+                                class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"
+                              />
+                              <div class="text-sm text-blue-800 dark:text-blue-200">
+                                <p class="font-medium mb-1">No Password Set</p>
+
+                                <p>
+                                  You currently don't have a password for your account. You can set one by requesting a password reset link via email.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <h5 class="text-lg font-semibold mb-4">Set Up Password</h5>
+
+                          <div class="space-y-4">
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                              <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0">
+                                  <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                                    <.icon
+                                      name="hero-shield-check"
+                                      class="w-6 h-6 text-indigo-600 dark:text-indigo-400"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div class="flex-1">
+                                  <h6 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                                    Secure Password Setup
+                                  </h6>
+
+                                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    For security reasons, we'll send you a secure link to
+                                    <strong>{@current_email}</strong>
+                                    where you can safely set up your password.
+                                  </p>
+
+                                  <.button
+                                    type="button"
+                                    phx-click="request_password_reset"
+                                    class="w-full"
+                                  >
+                                    <.icon name="hero-envelope" class="w-5 h-5 mr-2" />
+                                    Send Password Setup Link
+                                  </.button>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                              <div class="flex gap-3">
+                                <.icon
+                                  name="hero-light-bulb"
+                                  class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+                                />
+                                <div class="text-xs text-amber-800 dark:text-amber-200 space-y-1">
+                                  <p class="font-medium">Why use email for password setup?</p>
+
+                                  <ul class="list-disc list-inside space-y-0.5 text-amber-700 dark:text-amber-300">
+                                    <li>Verifies you have access to your registered email</li>
+                                    <li>Provides a secure, time-limited link</li>
+                                    <li>Prevents unauthorized password changes</li>
+                                    <li>Industry-standard security practice</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <% end %>
                       </div>
                     </div>
                   </div>
@@ -1453,7 +1667,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                                     >
                                       <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
-                                      Get Payment Link
+                                      Generate Payment
                                     </button>
                                   <% end %>
 

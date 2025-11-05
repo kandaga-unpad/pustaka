@@ -28,18 +28,17 @@ defmodule VoileWeb.UserOnboardingLive do
             phx-change="validate"
             class="space-y-6"
           >
-            <%= if @user_type == :migrated_with_identifier do %>
-              <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+            <%= if @user_type == :migrated_with_personal_email do %>
+              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
                 <div class="flex items-start gap-3">
                   <.icon
-                    name="hero-exclamation-triangle"
-                    class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
+                    name="hero-check-circle"
+                    class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                   />
-                  <div class="text-sm text-yellow-800 dark:text-yellow-300">
-                    <p class="font-semibold mb-1">Action Required: Update Your Email</p>
+                  <div class="text-sm text-green-800 dark:text-green-300">
+                    <p class="font-semibold mb-1">Welcome Back!</p>
                     <p>
-                      As a verified member, please update your email to use your institutional address
-                      (@mail.unpad.ac.id or @unpad.ac.id) for enhanced security and access.
+                      Your identifier has been found in our system. You can keep using your personal email or switch to an institutional email if you have one.
                     </p>
                   </div>
                 </div>
@@ -48,9 +47,8 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:email]}
                 type="email"
-                label="Institutional Email (Required)"
-                placeholder="your.name@mail.unpad.ac.id or your.name@unpad.ac.id"
-                required
+                label="Email"
+                placeholder="your.email@example.com"
                 phx-debounce="300"
               />
 
@@ -60,6 +58,7 @@ defmodule VoileWeb.UserOnboardingLive do
                 label={identifier_label(@form[:identifier].value)}
                 readonly
                 disabled
+                class="bg-gray-100 dark:bg-gray-700"
               />
             <% end %>
 
@@ -94,32 +93,6 @@ defmodule VoileWeb.UserOnboardingLive do
                 placeholder="Enter your 12-digit NPM or 15-16 digit NIP"
                 required
                 phx-debounce="300"
-              />
-            <% end %>
-
-            <%= if @user_type == :migrated_without_identifier do %>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-                <div class="flex items-start gap-3">
-                  <.icon
-                    name="hero-information-circle"
-                    class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
-                  />
-                  <div class="text-sm text-blue-800 dark:text-blue-300">
-                    <p class="font-semibold mb-1">System-Generated Identifier</p>
-                    <p>
-                      A unique identifier has been assigned to your account for tracking purposes.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <.input
-                field={@form[:identifier]}
-                type="text"
-                label="Your Unique Identifier"
-                readonly
-                disabled
-                class="bg-gray-100 dark:bg-gray-700"
               />
             <% end %>
 
@@ -269,23 +242,24 @@ defmodule VoileWeb.UserOnboardingLive do
 
   defp determine_user_type(user) do
     is_institutional = is_institutional_email?(user.email)
-    migration_cutoff = ~U[2025-01-01 00:00:00Z]
 
     cond do
-      # Institutional new user (from Google OAuth with @unpad email)
-      is_institutional and is_nil(user.identifier) and not is_nil(user.confirmed_at) ->
+      # Institutional user needs to provide NPM/NIP (identifier)
+      # This covers: Google OAuth with @unpad email OR registered with @unpad email
+      is_institutional and is_nil(user.identifier) ->
         :institutional_new_user
 
-      # Migrated user with identifier (student or lecturer)
-      user.identifier != nil and not is_nil(user.identifier) and is_nil(user.confirmed_at) ->
-        :migrated_with_identifier
+      # User with identifier but using personal email (migrated user, alumni, etc.)
+      # Allow them to keep personal email
+      not is_nil(user.identifier) and not is_institutional ->
+        :migrated_with_personal_email
 
-      # Migrated user without identifier
-      is_nil(user.identifier) and is_nil(user.confirmed_at) and
-          DateTime.compare(user.inserted_at, migration_cutoff) == :lt ->
-        :migrated_without_identifier
+      # User with identifier and institutional email (already complete)
+      # This shouldn't reach onboarding, but handle gracefully
+      not is_nil(user.identifier) and is_institutional ->
+        :complete_profile
 
-      # New registered user
+      # New user with personal email (Google OAuth or registration)
       true ->
         :new_user
     end
@@ -310,7 +284,7 @@ defmodule VoileWeb.UserOnboardingLive do
   end
 
   defp maybe_generate_identifier(user, user_type)
-       when user_type in [:migrated_without_identifier, :new_user] do
+       when user_type in [:new_user] do
     if is_nil(user.identifier) do
       # Generate identifier: unix timestamp + random 4 digits
       timestamp = System.system_time(:second)
@@ -367,18 +341,15 @@ defmodule VoileWeb.UserOnboardingLive do
     end
   end
 
-  defp validate_and_adjust_params(params, :migrated_with_identifier, user) do
-    # Ensure email is updated and from correct domain
+  defp validate_and_adjust_params(params, :migrated_with_personal_email, user) do
+    # Allow email update but validate it's a valid email
+    # User can keep personal email or switch to institutional
     case params["email"] do
-      email when is_binary(email) ->
-        if is_institutional_email?(email) do
-          params
-        else
-          # Keep the current email if invalid domain provided
-          Map.put(params, "email", user.email)
-        end
+      email when is_binary(email) and byte_size(email) > 0 ->
+        params
 
       _ ->
+        # Keep current email if empty
         Map.put(params, "email", user.email)
     end
   end

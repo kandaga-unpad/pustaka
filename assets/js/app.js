@@ -23,14 +23,15 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import { hooks as colocatedHooks } from "phoenix-colocated/voile";
+import { ItemSearch } from "./hooks/item_search_hook";
+import { SearchDropdown } from "./hooks/search_dropdown_hook";
+import { SearchPanel } from "./hooks/search_panel_hook";
+import { TurnstileHook } from "phoenix_turnstile";
 import topbar from "../vendor/topbar";
 import DragDrop from "./hooks/sortable";
 import DragUpload from "./hooks/draggable_area";
 import position_panel from "./hooks/position_panel";
 import MobileNav from "./hooks/mobile_nav";
-import { ItemSearch } from "./hooks/item_search_hook";
-import { SearchDropdown } from "./hooks/search_dropdown_hook";
-import { SearchPanel } from "./hooks/search_panel_hook";
 import SearchFocus from "./hooks/search_focus";
 import SearchResultsLoading from "./hooks/search_results_loading";
 
@@ -64,6 +65,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     SearchFocus,
     SearchResultsLoading,
     NotificationSound,
+    Turnstile: TurnstileHook,
     ...colocatedHooks,
   },
 });

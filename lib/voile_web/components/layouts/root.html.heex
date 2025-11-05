@@ -7,7 +7,7 @@
     <.live_title default="Voile" suffix=" · the Magic Library">
       {assigns[:page_title]}
     </.live_title>
-    
+
     <%!-- Inject brand color CSS variables early so Tailwind/daisyUI and other CSS
         can pick them up on first paint (before `app.css` is loaded). --%> <% app_main_color =
       Voile.Schema.System.get_setting_value("app_main_color", nil) %> <% app_secondary_color =
@@ -28,7 +28,7 @@
         }
       </style>
     <% end %>
-     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,7 +38,7 @@
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-    
+
     <script>
       (() => {
         const setTheme = (theme) => {
@@ -58,10 +58,11 @@
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js">
     </script>
+    <Turnstile.script />
   </head>
-  
+
   <body class="anti-aliased w-full">{@inner_content}</body>
 </html>

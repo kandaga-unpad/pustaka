@@ -99,8 +99,8 @@ defmodule VoileWeb.UserAuthGoogle do
 
   defp needs_onboarding?(user, is_institutional) do
     # User needs onboarding if:
-    # 1. Lacks basic profile information
-    # 2. Is institutional user and doesn't have identifier yet
+    # 1. Lacks basic profile information (fullname or phone)
+    # 2. Is institutional user (@unpad email) and doesn't have identifier (NPM/NIP) yet
     is_nil(user.fullname) or
       is_nil(user.phone_number) or
       (is_institutional and is_nil(user.identifier))

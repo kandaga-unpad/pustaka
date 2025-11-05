@@ -1365,6 +1365,93 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.all()
   end
 
+  @doc """
+  Lists all members with active loans, grouped by member.
+  Returns paginated results with member info and their active transaction count.
+  Useful for librarians to see who has active loans and send manual reminders.
+  """
+  def list_members_with_active_loans_paginated(page \\ 1, per_page \\ 10, filters \\ %{}) do
+    offset = (page - 1) * per_page
+
+    # Base query to get distinct members with active loans
+    query =
+      from t in Transaction,
+        where: t.status == "active",
+        join: m in assoc(t, :member),
+        group_by: [m.id, m.fullname, m.email, m.identifier],
+        select: %{
+          member_id: m.id,
+          member_name: m.fullname,
+          member_email: m.email,
+          member_identifier: m.identifier,
+          active_loan_count: count(t.id),
+          earliest_due_date: min(t.due_date),
+          latest_due_date: max(t.due_date)
+        }
+
+    # Apply search filter
+    query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            query,
+            [t, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.email), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern)
+          )
+      end
+
+    # Apply sorting
+    query =
+      case Map.get(filters, :sort_by, "due_date") do
+        "name" -> order_by(query, [t, m], asc: m.fullname)
+        "loan_count" -> order_by(query, [t, m], desc: count(t.id))
+        "due_date" -> order_by(query, [t, m], asc: min(t.due_date))
+        _ -> order_by(query, [t, m], asc: min(t.due_date))
+      end
+
+    # Apply pagination
+    query = query |> offset(^offset) |> limit(^per_page)
+
+    members = Repo.all(query)
+
+    # Count query
+    count_query =
+      from t in Transaction,
+        where: t.status == "active",
+        join: m in assoc(t, :member),
+        group_by: m.id,
+        select: m.id
+
+    count_query =
+      case Map.get(filters, :query, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [t, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.email), ^search_pattern) or
+              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern)
+          )
+      end
+
+    total_count = Repo.all(count_query) |> length()
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {members, total_pages, total_count}
+  end
+
   # ============================================================================
   # RESERVATIONS
   # ============================================================================
@@ -1580,6 +1667,26 @@ defmodule Voile.Schema.Library.Circulation do
     Fine
     |> where([f], f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"])
     |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Calculate the total amount of unpaid fines for a member.
+  Returns a Decimal representing the sum of all balances.
+  """
+  def sum_member_unpaid_fines(nil), do: Decimal.new(0)
+
+  def sum_member_unpaid_fines(member_id) do
+    result =
+      Fine
+      |> where([f], f.member_id == ^member_id and f.fine_status in ["pending", "partial_paid"])
+      |> select([f], sum(f.balance))
+      |> Repo.one()
+
+    case result do
+      nil -> Decimal.new(0)
+      val when is_struct(val, Decimal) -> val
+      val -> Decimal.new(val)
+    end
   end
 
   def list_member_unpaid_fines_paginated(member_id, page \\ 1, per_page \\ 10)

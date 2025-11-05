@@ -240,6 +240,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </button>
             </div>
           </div>
+          <.link
+            navigate="/manage/glam/library/circulation/loan_reminders"
+            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
+          >
+            <div class="flex items-center justify-center gap-4 w-full h-full">
+              <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <.icon
+                  name="hero-book-open"
+                  class="w-6 h-6 text-green-600 dark:text-green-400"
+                />
+              </div>
+
+              <div>
+                <h5 class="font-semibold text-gray-900 dark:text-white">Loan Reminders</h5>
+
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  View and manage loan reminders for library items
+                </p>
+              </div>
+            </div>
+          </.link>
         </div>
       </div>
     </div>

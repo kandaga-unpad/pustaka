@@ -192,6 +192,10 @@ defmodule VoileWeb.Router do
               live "/", Dashboard.Glam.Library.Circulation.Index, :index
               live "/report", Dashboard.Glam.Library.Circulation.Report, :report
 
+              live "/loan_reminders",
+                   Dashboard.Glam.Library.Circulation.LoanReminderLive,
+                   :index
+
               scope "/transactions" do
                 live "/", Dashboard.Glam.Library.Circulation.Transaction.Index, :index
                 live "/checkout", Dashboard.Glam.Library.Circulation.Transaction.Index, :checkout
@@ -376,5 +380,11 @@ defmodule VoileWeb.Router do
     pipe_through [:browser]
     get "/", GoogleAuthController, :request
     get "/callback", GoogleAuthController, :callback
+  end
+
+  # Gmail API OAuth callback (for email sending setup, NOT user login)
+  scope "/auth/gmail", VoileWeb do
+    pipe_through [:browser]
+    get "/callback", GmailCallbackController, :callback
   end
 end

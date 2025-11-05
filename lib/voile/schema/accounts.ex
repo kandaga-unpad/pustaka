@@ -242,6 +242,26 @@ defmodule Voile.Schema.Accounts do
   end
 
   @doc """
+  Gets a single user by ID (safe version).
+  Returns nil if not found.
+
+  ## Examples
+
+      iex> get_user(123)
+      %User{}
+
+      iex> get_user(456)
+      nil
+
+  """
+  def get_user(id) do
+    case User |> Repo.get(id) do
+      nil -> nil
+      user -> Repo.preload(user, [:roles, :user_type])
+    end
+  end
+
+  @doc """
   Create a new User.
   """
   def create_user(attrs) do
@@ -511,6 +531,21 @@ defmodule Voile.Schema.Accounts do
     |> User.password_changeset(attrs)
     |> update_user_and_delete_all_tokens()
   end
+
+  @doc """
+  Checks if a user has a password set.
+
+  ## Examples
+
+      iex> has_password?(user)
+      true
+
+      iex> has_password?(oauth_user)
+      false
+  """
+  def has_password?(%User{hashed_password: nil}), do: false
+  def has_password?(%User{hashed_password: ""}), do: false
+  def has_password?(%User{hashed_password: _}), do: true
 
   ## Session
 

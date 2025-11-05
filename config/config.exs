@@ -100,6 +100,43 @@ config :voile,
   xendit_api_key: System.get_env("VOILE_XENDIT_API_KEY"),
   xendit_webhook_token: System.get_env("VOILE_XENDIT_WEBHOOK_TOKEN")
 
+# Loan Reminder Configuration
+# Can be overridden with environment variables:
+# - VOILE_LOAN_REMINDER_DAYS (comma-separated: "3,1")
+# - VOILE_LOAN_REMINDER_INTERVAL (milliseconds: "86400000")
+# - VOILE_EMAIL_QUEUE_DELAY (milliseconds between emails: "2000")
+# - VOILE_EMAIL_QUEUE_MAX_RETRIES (max retry attempts: "3")
+loan_reminder_days =
+  case System.get_env("VOILE_LOAN_REMINDER_DAYS") do
+    nil -> [3, 1]
+    days -> days |> String.split(",") |> Enum.map(&(&1 |> String.trim() |> String.to_integer()))
+  end
+
+loan_reminder_interval =
+  case System.get_env("VOILE_LOAN_REMINDER_INTERVAL") do
+    nil -> 24 * 60 * 60 * 1000
+    interval -> String.to_integer(interval)
+  end
+
+email_queue_delay =
+  case System.get_env("VOILE_EMAIL_QUEUE_DELAY") do
+    # 2 seconds between emails (default)
+    nil -> 2000
+    delay -> String.to_integer(delay)
+  end
+
+email_queue_max_retries =
+  case System.get_env("VOILE_EMAIL_QUEUE_MAX_RETRIES") do
+    nil -> 3
+    retries -> String.to_integer(retries)
+  end
+
+config :voile,
+  loan_reminder_days: loan_reminder_days,
+  loan_reminder_interval: loan_reminder_interval,
+  email_queue_delay: email_queue_delay,
+  email_queue_max_retries: email_queue_max_retries
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

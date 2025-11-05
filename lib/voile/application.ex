@@ -16,6 +16,10 @@ defmodule Voile.Application do
       {Finch, name: Voile.Finch},
       # Supervisor for short-lived tasks (used by LiveViews for async work)
       {Task.Supervisor, name: Voile.TaskSupervisor},
+      # Start the email queue for rate-limited email sending
+      Voile.Notifications.EmailQueue,
+      # Start the loan reminder scheduler
+      Voile.Task.LoanReminderScheduler,
       # Start a worker by calling: Voile.Worker.start_link(arg)
       # {Voile.Worker, arg},
       # Start to serve requests, typically the last entry

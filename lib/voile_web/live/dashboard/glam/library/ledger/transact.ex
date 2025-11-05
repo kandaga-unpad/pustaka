@@ -877,7 +877,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unit Location</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">{@member.node.name || "N/A"}</p>
+            <p class="mt-1 text-base text-gray-900 dark:text-white">
+              {if @member.node, do: @member.node.name, else: "N/A"}
+            </p>
           </div>
 
           <div>

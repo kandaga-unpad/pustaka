@@ -508,16 +508,9 @@ defmodule VoileWeb.UserAuth do
       false
     else
       # User needs onboarding if they lack basic profile information
-      is_nil(user.fullname) or is_nil(user.phone_number) or
-        (not is_nil(user.identifier) and not institutional_email?(user.email))
+      is_nil(user.fullname) or is_nil(user.phone_number)
     end
   end
-
-  defp institutional_email?(email) when is_binary(email) do
-    String.ends_with?(email, "@mail.unpad.ac.id") or String.ends_with?(email, "@unpad.ac.id")
-  end
-
-  defp institutional_email?(_), do: false
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
