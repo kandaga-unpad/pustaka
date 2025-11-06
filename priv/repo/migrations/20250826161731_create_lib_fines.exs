@@ -30,6 +30,7 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
       timestamps(type: :utc_datetime)
     end
 
+    # Basic indexes
     create index(:lib_fines, [:member_id])
     create index(:lib_fines, [:item_id])
     create index(:lib_fines, [:transaction_id])
@@ -41,7 +42,20 @@ defmodule Voile.Repo.Migrations.CreateLibFines do
     create index(:lib_fines, [:waived])
     create index(:lib_fines, [:member_id, :fine_status])
 
+    # Partial index for unpaid fines by member (checkout validation)
+    create index(:lib_fines, [:member_id, :fine_status, :balance],
+             where: "fine_status IN ('pending', 'partial_paid')",
+             name: :lib_fines_unpaid_idx
+           )
+
+    # Check constraints for data integrity
     create constraint(:lib_fines, :balance_non_negative, check: "balance >= 0")
     create constraint(:lib_fines, :paid_amount_non_negative, check: "paid_amount >= 0")
+
+    execute """
+            ALTER TABLE lib_fines ADD CONSTRAINT fines_paid_amount_check
+            CHECK (paid_amount <= amount)
+            """,
+            "ALTER TABLE lib_fines DROP CONSTRAINT IF EXISTS fines_paid_amount_check"
   end
 end

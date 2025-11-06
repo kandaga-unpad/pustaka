@@ -433,7 +433,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   def save_collection(socket, :edit, collection_params) do
     updated_by = socket.assigns.current_scope.user.id
-    collection_params = Map.put(collection_params, "updated_by_id", updated_by)
+
+    collection_params =
+      collection_params
+      |> Map.put("updated_by_id", updated_by)
+      |> add_barcodes_to_items()
 
     case Catalog.update_collection(socket.assigns.original_collection, collection_params) do
       {:ok, collection} ->
@@ -477,6 +481,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       collection_params
       |> Map.put("collection_code", generated_code)
       |> Map.put("created_by_id", created_by)
+      |> add_barcodes_to_items()
 
     case Catalog.create_collection(collection_params) do
       {:ok, collection} ->
@@ -496,8 +501,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   def save_collection_as_draft(socket, :edit, collection_params) do
     updated_by = socket.assigns.current_scope.user.id
-    collection_params = Map.put(collection_params, "updated_by_id", updated_by)
-    draft_params = Map.put(collection_params, "status", "draft")
+
+    draft_params =
+      collection_params
+      |> Map.put("updated_by_id", updated_by)
+      |> Map.put("status", "draft")
+      |> add_barcodes_to_items()
 
     case Catalog.update_collection(socket.assigns.original_collection, draft_params) do
       {:ok, collection} ->
@@ -543,6 +552,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       |> Map.put("collection_code", generated_code)
       |> Map.put("status", "draft")
       |> Map.put("created_by_id", created_by)
+      |> add_barcodes_to_items()
 
     case Catalog.create_collection(draft_params) do
       {:ok, collection} ->
@@ -632,5 +642,48 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     random_suffix = :crypto.strong_rand_bytes(3) |> Base.encode16(case: :lower)
 
     "COLLECTION-#{unit}-#{collection_type}-#{timestamp}-#{random_suffix}"
+  end
+
+  # Generate barcode from item_code
+  # Extracts last UUID segment + sequence number for scannable 15-char barcode
+  # Example: "kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001"
+  # Returns: "c47e6d008b3a001"
+  defp generate_barcode_from_item_code(item_code) when is_binary(item_code) do
+    parts = String.split(item_code, "-")
+
+    # Need at least 3 parts: [..., uuid_segment, timestamp, sequence]
+    if length(parts) >= 3 do
+      uuid_segment = Enum.at(parts, -3)
+      sequence = List.last(parts)
+      "#{uuid_segment}#{sequence}"
+    else
+      # Fallback for short codes: use full code
+      String.replace(item_code, "-", "") |> String.slice(0, 15)
+    end
+  end
+
+  defp generate_barcode_from_item_code(_), do: ""
+
+  # Add barcodes to all items in collection_params
+  defp add_barcodes_to_items(collection_params) do
+    items = collection_params["items"] || %{}
+
+    updated_items =
+      items
+      |> Enum.map(fn {key, item_data} ->
+        # Only generate barcode if item has an item_code and doesn't already have a barcode
+        updated_item =
+          if item_data["item_code"] && (!item_data["barcode"] || item_data["barcode"] == "") do
+            barcode = generate_barcode_from_item_code(item_data["item_code"])
+            Map.put(item_data, "barcode", barcode)
+          else
+            item_data
+          end
+
+        {key, updated_item}
+      end)
+      |> Enum.into(%{})
+
+    Map.put(collection_params, "items", updated_items)
   end
 end

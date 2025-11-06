@@ -24,6 +24,7 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
       timestamps(type: :utc_datetime)
     end
 
+    # Basic indexes
     create index(:lib_reservations, [:item_id])
     create index(:lib_reservations, [:collection_id])
     create index(:lib_reservations, [:member_id])
@@ -33,8 +34,22 @@ defmodule Voile.Repo.Migrations.CreateLibReservations do
     create index(:lib_reservations, [:priority])
     create index(:lib_reservations, [:member_id, :status])
 
+    # Partial index for active reservations by item (check availability)
+    create index(:lib_reservations, [:item_id, :status],
+             where: "status IN ('pending', 'available')",
+             name: :lib_reservations_active_idx
+           )
+
+    # Check constraint for item or collection requirement
     create constraint(:lib_reservations, :item_or_collection_check,
              check: "item_id IS NOT NULL OR collection_id IS NOT NULL"
            )
+
+    # Check constraint for expiry date logic
+    execute """
+            ALTER TABLE lib_reservations ADD CONSTRAINT reservations_expiry_date_check
+            CHECK (expiry_date IS NULL OR expiry_date >= reservation_date)
+            """,
+            "ALTER TABLE lib_reservations DROP CONSTRAINT IF EXISTS reservations_expiry_date_check"
   end
 end

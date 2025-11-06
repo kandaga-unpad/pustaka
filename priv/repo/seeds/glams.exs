@@ -462,7 +462,7 @@ defmodule GLAMSeeds do
         id: collection_id,
         collection_code: collection_code,
         title: collection_data.title,
-        description: collection_data.description,
+        description: collection_data.description || "No description available",
         type_id: resource_class_id,
         unit_id: unit.id,
         status: "published",

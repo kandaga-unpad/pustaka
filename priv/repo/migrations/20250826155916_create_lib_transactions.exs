@@ -27,6 +27,7 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
       timestamps(type: :utc_datetime)
     end
 
+    # Basic indexes
     create index(:lib_transactions, [:due_date])
     create index(:lib_transactions, [:is_overdue])
     create index(:lib_transactions, [:item_id])
@@ -35,6 +36,43 @@ defmodule Voile.Repo.Migrations.CreateLibTransactions do
     create index(:lib_transactions, [:status])
     create index(:lib_transactions, [:transaction_type])
     create index(:lib_transactions, [:transaction_date])
-    create index(:lib_transactions, [:member_id, :status, :due_date])
+
+    # Composite indexes for common query patterns
+    create index(:lib_transactions, [:member_id, :status, :due_date],
+             name: :lib_transactions_member_status_due_idx
+           )
+
+    # Partial index for active loans (most common library query)
+    create index(:lib_transactions, [:member_id, :status, :transaction_type],
+             where: "status = 'active'",
+             name: :lib_transactions_active_loans_idx
+           )
+
+    # Partial index for overdue items (daily background job)
+    create index(:lib_transactions, [:due_date, :status],
+             where: "is_overdue = true AND status = 'active'",
+             name: :lib_transactions_overdue_idx
+           )
+
+    # Ordered index for transaction history (newest first, using raw SQL)
+    execute "CREATE INDEX lib_transactions_date_desc_idx ON lib_transactions (transaction_date DESC)",
+            "DROP INDEX IF EXISTS lib_transactions_date_desc_idx"
+
+    # Check constraints for data integrity
+    execute """
+            ALTER TABLE lib_transactions ADD CONSTRAINT transactions_due_date_check
+            CHECK (due_date IS NULL OR due_date >= transaction_date)
+            """,
+            "ALTER TABLE lib_transactions DROP CONSTRAINT IF EXISTS transactions_due_date_check"
+
+    execute """
+            ALTER TABLE lib_transactions ADD CONSTRAINT transactions_return_date_check
+            CHECK (return_date IS NULL OR return_date >= transaction_date)
+            """,
+            "ALTER TABLE lib_transactions DROP CONSTRAINT IF EXISTS transactions_return_date_check"
+
+    # Increase statistics target for better query planning
+    execute "ALTER TABLE lib_transactions ALTER COLUMN due_date SET STATISTICS 500",
+            "ALTER TABLE lib_transactions ALTER COLUMN due_date SET STATISTICS -1"
   end
 end

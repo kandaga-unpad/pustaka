@@ -2,6 +2,9 @@ defmodule Voile.Repo.Migrations.CreateResourceClass do
   use Ecto.Migration
 
   def change do
+    # Enable pg_trgm extension for trigram indexes (ILIKE search optimization)
+    execute "CREATE EXTENSION IF NOT EXISTS pg_trgm", "DROP EXTENSION IF EXISTS pg_trgm"
+
     execute "CREATE TYPE glam_type AS ENUM ('Gallery', 'Library', 'Archive', 'Museum');"
 
     create table(:resource_class) do
