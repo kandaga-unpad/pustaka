@@ -36,6 +36,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   def handle_params(%{"id" => id} = params, _, socket) do
     collection = Catalog.get_collection!(id)
 
+    dbg(collection.collection_fields |> List.last())
+
     # Preserve query parameters from the index page (search, filters)
     query_params = Map.drop(params, ["id"])
 

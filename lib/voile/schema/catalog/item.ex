@@ -12,6 +12,7 @@ defmodule Voile.Schema.Catalog.Item do
   schema "items" do
     field :item_code, :string
     field :inventory_code, :string
+    field :barcode, :string
     field :location, :string
     field :status, :string
     field :condition, :string
@@ -92,6 +93,7 @@ defmodule Voile.Schema.Catalog.Item do
       :last_inventory_date,
       :last_circulated,
       :rfid_tag,
+      :barcode,
       :location,
       :collection_id,
       :unit_id,
@@ -110,6 +112,7 @@ defmodule Voile.Schema.Catalog.Item do
     ])
     |> unique_constraint(:item_code)
     |> unique_constraint(:inventory_code)
+    |> unique_constraint(:barcode)
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:condition, @conditions)
     |> validate_inclusion(:availability, @availabilities)

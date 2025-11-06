@@ -344,6 +344,11 @@ defmodule Voile.Migration.ItemImporter do
             index
           )
 
+        # Generate barcode from final_item_code
+        # Format: kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001
+        # Barcode: c47e6d008b3a001 (last UUID segment + sequence)
+        barcode = generate_barcode_from_item_code(final_item_code)
+
         {:ok,
          %{
            id: id,
@@ -351,6 +356,7 @@ defmodule Voile.Migration.ItemImporter do
            item_code: final_item_code,
            legacy_item_code: item_code,
            inventory_code: final_inventory_code,
+           barcode: barcode,
            location: unit_data.name,
            status: "active",
            condition: "good",
@@ -408,5 +414,23 @@ defmodule Voile.Migration.ItemImporter do
     from(c in Collection, select: {c.id, %{title: c.title, type_id: c.type_id}})
     |> Repo.all()
     |> Enum.into(%{})
+  end
+
+  # Generate barcode from item_code
+  # Extracts last UUID segment + sequence number for scannable 15-char barcode
+  # Example: "kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001"
+  # Returns: "c47e6d008b3a001"
+  defp generate_barcode_from_item_code(item_code) when is_binary(item_code) do
+    parts = String.split(item_code, "-")
+
+    # Need at least 3 parts: [..., uuid_segment, timestamp, sequence]
+    if length(parts) >= 3 do
+      uuid_segment = Enum.at(parts, -3)
+      sequence = List.last(parts)
+      "#{uuid_segment}#{sequence}"
+    else
+      # Fallback for short codes: use full code
+      String.replace(item_code, "-", "") |> String.slice(0, 15)
+    end
   end
 end

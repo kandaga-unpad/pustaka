@@ -117,6 +117,9 @@ config :phoenix_live_view,
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
+# Disable email queue in development (prevents background email processing)
+config :voile, :disable_email_queue, true
+
 # Xendit Payment Gateway Configuration (Development)
 # Get your API keys from https://dashboard.xendit.co/settings/developers#api-keys
 # For development, you can hardcode test keys here or use environment variables

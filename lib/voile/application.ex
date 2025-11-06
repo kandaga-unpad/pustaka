@@ -7,7 +7,8 @@ defmodule Voile.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
+    # Build children list conditionally based on configuration
+    base_children = [
       VoileWeb.Telemetry,
       Voile.Repo,
       {DNSCluster, query: Application.get_env(:voile, :dns_cluster_query) || :ignore},
@@ -15,16 +16,31 @@ defmodule Voile.Application do
       # Start the Finch HTTP client for sending emails
       {Finch, name: Voile.Finch},
       # Supervisor for short-lived tasks (used by LiveViews for async work)
-      {Task.Supervisor, name: Voile.TaskSupervisor},
-      # Start the email queue for rate-limited email sending
-      Voile.Notifications.EmailQueue,
-      # Start the loan reminder scheduler
-      Voile.Task.LoanReminderScheduler,
-      # Start a worker by calling: Voile.Worker.start_link(arg)
-      # {Voile.Worker, arg},
-      # Start to serve requests, typically the last entry
-      VoileWeb.Endpoint
+      {Task.Supervisor, name: Voile.TaskSupervisor}
     ]
+
+    # Conditionally add email queue (disabled in dev if configured)
+    email_queue_children =
+      if Application.get_env(:voile, :disable_email_queue, false) do
+        []
+      else
+        [
+          # Start the email queue for rate-limited email sending
+          Voile.Notifications.EmailQueue,
+          # Start the loan reminder scheduler
+          Voile.Task.LoanReminderScheduler
+        ]
+      end
+
+    children =
+      base_children ++
+        email_queue_children ++
+        [
+          # Start a worker by calling: Voile.Worker.start_link(arg)
+          # {Voile.Worker, arg},
+          # Start to serve requests, typically the last entry
+          VoileWeb.Endpoint
+        ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

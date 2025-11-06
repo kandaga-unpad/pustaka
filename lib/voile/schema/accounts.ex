@@ -101,6 +101,7 @@ defmodule Voile.Schema.Accounts do
   def get_user_by_email_or_register(user) when is_map(user) do
     case Repo.get_by(User, email: user["email"]) do
       nil ->
+        # New user - create with Google data
         pw = :crypto.strong_rand_bytes(30) |> Base.encode64(padding: false)
         username = String.split(user["email"], "@") |> hd
         profile_picture = user["picture"] || "/images/default_profile.png"
@@ -119,8 +120,17 @@ defmodule Voile.Schema.Accounts do
 
         user
 
-      user ->
-        user
+      existing_user ->
+        # Existing user - update fullname if missing from Google data
+        google_fullname = "#{user["given_name"]} #{user["family_name"]}"
+
+        if is_nil(existing_user.fullname) and google_fullname != " " do
+          # Update fullname from Google if user doesn't have one
+          {:ok, updated_user} = update_user(existing_user, %{fullname: google_fullname})
+          updated_user
+        else
+          existing_user
+        end
     end
   end
 

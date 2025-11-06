@@ -8,6 +8,7 @@ defmodule Voile.Repo.Migrations.CreateItems do
     create table(:items, primary_key: false) do
       add :id, :binary_id, primary_key: true, null: false
       add :item_code, :text
+      add :barcode, :text
       add :inventory_code, :text
       add :location, :text
       add :status, :string

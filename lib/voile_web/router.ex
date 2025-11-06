@@ -155,6 +155,7 @@ defmodule VoileWeb.Router do
 
         scope "/catalog" do
           live "/", Dashboard.Catalog.Index, :index
+          live "/labels", Dashboard.Catalog.ItemLive.Labels, :index
 
           scope "/collections" do
             live "/", Dashboard.Catalog.CollectionLive.Index, :index

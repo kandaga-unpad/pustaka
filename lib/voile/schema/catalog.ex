@@ -905,12 +905,41 @@ defmodule Voile.Schema.Catalog do
     |> where(
       [i, c],
       ilike(c.title, ^search_term) or
-        ilike(i.description, ^search_term) or
+        ilike(c.description, ^search_term) or
         ilike(i.item_code, ^search_term) or
-        ilike(i.inventory_code, ^search_term)
+        ilike(i.inventory_code, ^search_term) or
+        ilike(i.location, ^search_term)
     )
     |> where([i], i.status == "active")
-    |> preload([:collection, :node])
+    |> order_by([i], asc: i.item_code, desc: i.inserted_at)
+    |> limit(50)
+    |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
+    |> Repo.all()
+  end
+
+  def search_collections(query_string) when is_binary(query_string) do
+    search_term = "%#{query_string}%"
+
+    Collection
+    |> where(
+      [c],
+      ilike(c.title, ^search_term) or
+        ilike(c.description, ^search_term) or
+        ilike(c.collection_code, ^search_term)
+    )
+    |> where([c], c.status == "published")
+    |> order_by([c], asc: c.title)
+    |> limit(50)
+    |> preload([:mst_creator])
+    |> Repo.all()
+  end
+
+  def get_items_by_collection(collection_id) do
+    Item
+    |> where([i], i.collection_id == ^collection_id)
+    |> where([i], i.status == "active")
+    |> order_by([i], asc: i.item_code)
+    |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
     |> Repo.all()
   end
 
@@ -1409,4 +1438,42 @@ defmodule Voile.Schema.Catalog do
            String.contains?(String.downcase(attachment.description), String.downcase(query)))
     end)
   end
+
+  @doc """
+  Find item by barcode scan.
+  Supports both full item_code and shortened barcode format.
+
+  ## Examples
+
+      iex> find_item_by_barcode("c47e6d008b3a001")
+      %Item{}
+
+      iex> find_item_by_barcode("kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001")
+      %Item{}
+  """
+  def find_item_by_barcode(code) when is_binary(code) do
+    code = String.trim(code)
+
+    # Try direct barcode lookup first (for items imported with barcode field)
+    item =
+      Repo.one(
+        from i in Item,
+          where: i.barcode == ^code,
+          preload: [:collection, :node]
+      )
+
+    # Fallback to item_code lookup for backward compatibility
+    # (items that were created before barcode field was added)
+    if item do
+      item
+    else
+      Repo.one(
+        from i in Item,
+          where: i.item_code == ^code,
+          preload: [:collection, :node]
+      )
+    end
+  end
+
+  def find_item_by_barcode(_), do: nil
 end

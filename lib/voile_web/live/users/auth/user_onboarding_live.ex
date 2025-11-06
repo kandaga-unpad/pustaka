@@ -223,7 +223,7 @@ defmodule VoileWeb.UserOnboardingLive do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     user = socket.assigns.current_scope.user
 
     # Determine user type
@@ -232,12 +232,33 @@ defmodule VoileWeb.UserOnboardingLive do
     # Generate identifier if needed
     user = maybe_generate_identifier(user, user_type)
 
-    changeset = Accounts.change_user(user, %{})
+    # Pre-fill from Google OAuth data if available
+    google_user = session["google_user"]
+    prefill_data = build_prefill_data(user, google_user)
+
+    changeset = Accounts.change_user(user, prefill_data)
 
     {:ok,
      socket
      |> assign(user_type: user_type)
      |> assign_form(changeset)}
+  end
+
+  defp build_prefill_data(user, google_user) when is_map(google_user) do
+    # Only pre-fill if user doesn't already have the data
+    %{}
+    |> maybe_add_fullname(user, google_user)
+  end
+
+  defp build_prefill_data(_user, _google_user), do: %{}
+
+  defp maybe_add_fullname(prefill, user, google_user) do
+    if (is_nil(user.fullname) and google_user["given_name"]) && google_user["family_name"] do
+      fullname = "#{google_user["given_name"]} #{google_user["family_name"]}"
+      Map.put(prefill, :fullname, fullname)
+    else
+      prefill
+    end
   end
 
   defp determine_user_type(user) do

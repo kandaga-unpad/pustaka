@@ -43,6 +43,7 @@ defmodule Voile.MixProject do
       {:assent, "~> 0.2.10"},
       {:aws, "~> 1.0.0"},
       {:bandit, "~> 1.5"},
+      {:barlix, "~> 0.6.0"},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.13"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
