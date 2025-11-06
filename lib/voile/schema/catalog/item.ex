@@ -84,6 +84,7 @@ defmodule Voile.Schema.Catalog.Item do
     |> cast(attrs, [
       :item_code,
       :inventory_code,
+      :barcode,
       :location,
       :status,
       :condition,
