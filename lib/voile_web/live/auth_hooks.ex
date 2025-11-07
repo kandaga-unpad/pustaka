@@ -37,12 +37,15 @@ defmodule VoileWeb.Live.AuthHooks do
       rescue
         # Catch UnauthorizedError exceptions and convert to friendly redirect
         error in [VoileWeb.Auth.Authorization.UnauthorizedError] ->
+          # Use custom redirect path if provided, otherwise default to "/"
+          redirect_path = error.redirect_to || ~p"/"
+
           var!(socket)
           |> Phoenix.LiveView.put_flash(
             :error,
             "Access Denied: You don't have permission to access this page"
           )
-          |> Phoenix.LiveView.push_navigate(to: ~p"/")
+          |> Phoenix.LiveView.push_navigate(to: redirect_path)
           |> then(&{:ok, &1})
       catch
         # Handle the redirect throw from authorize!

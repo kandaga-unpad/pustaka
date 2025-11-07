@@ -368,3 +368,6 @@ And **never** do this:
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
   <!-- phoenix:liveview-end -->
   <!-- usage-rules-end -->
+
+#### Docs or Guide in Markdown
+- You should place any documentation or markdown inside the /docs folder

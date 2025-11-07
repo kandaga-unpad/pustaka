@@ -101,27 +101,23 @@ defmodule Voile.Schema.Master do
   def get_creator!(id), do: Repo.get!(Creator, id)
 
   @doc """
-  Creates a creator.
+  Gets or creates a creator by attributes (typically creator_name).
+  Uses upsert with on_conflict to handle race conditions.
 
   ## Examples
 
-      iex> create_creator(%{field: value})
+      iex> get_or_create_creator(%{creator_name: "John Doe"})
       {:ok, %Creator{}}
-
-      iex> create_creator(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
 
   """
   def get_or_create_creator(attrs \\ %{}) do
-    case Repo.get_by(Creator, attrs) do
-      nil ->
-        %Creator{}
-        |> Creator.changeset(attrs)
-        |> Repo.insert()
+    changeset = Creator.changeset(%Creator{}, attrs)
 
-      creator ->
-        {:ok, creator}
-    end
+    Repo.insert(changeset,
+      on_conflict: {:replace, [:updated_at]},
+      conflict_target: :creator_name,
+      returning: true
+    )
   end
 
   @doc """

@@ -132,4 +132,13 @@ defmodule Client.Storage.Local do
   end
 
   defp extract_upload_from_params(_), do: {:error, "Invalid file parameters"}
+
+  @doc """
+  Local adapter does not support presigned URLs since files are served
+  directly via the application. Return `{:error, :not_supported}`.
+  """
+  @impl true
+  def presign(_file_key, _opts \\ []) do
+    {:error, :not_supported}
+  end
 end

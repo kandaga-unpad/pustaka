@@ -218,11 +218,34 @@ admin_user_attrs = %{
   confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
 }
 
+reviewer_user_attrs = %{
+  email: "reviewer@voile.id",
+  fullname: "Voile Reviewer",
+  username: "reviewer",
+  password: "super_long_password",
+  user_type_id: admin_member_type.id,
+  confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_naive()
+}
+
 admin_user =
   case Repo.get_by(Accounts.User, email: "admin@voile.id") do
     nil ->
       %Accounts.User{}
       |> Accounts.User.registration_changeset(admin_user_attrs,
+        hash_password: true,
+        validate_email: false
+      )
+      |> Repo.insert!()
+
+    existing_user ->
+      existing_user
+  end
+
+reviewer_user =
+  case Repo.get_by(Accounts.User, email: "reviewer@voile.id") do
+    nil ->
+      %Accounts.User{}
+      |> Accounts.User.registration_changeset(reviewer_user_attrs,
         hash_password: true,
         validate_email: false
       )
@@ -245,6 +268,21 @@ if super_admin_role do
 
     {:error, %Ecto.Changeset{errors: [role_id: {"has already been taken", _}]}} ->
       IO.puts("ℹ️  Admin user already has super_admin role")
+
+    {:error, reason} ->
+      IO.puts("⚠️  Failed to assign super_admin role: #{inspect(reason)}")
+  end
+else
+  IO.puts("⚠️  super_admin role not found. Please run authorization seeds first.")
+end
+
+if super_admin_role do
+  case Authorization.assign_role(reviewer_user.id, super_admin_role.id) do
+    {:ok, _assignment} ->
+      IO.puts("✅ Assigned super_admin role to #{reviewer_user.email}")
+
+    {:error, %Ecto.Changeset{errors: [role_id: {"has already been taken", _}]}} ->
+      IO.puts("ℹ️  Reviewer user already has super_admin role")
 
     {:error, reason} ->
       IO.puts("⚠️  Failed to assign super_admin role: #{inspect(reason)}")

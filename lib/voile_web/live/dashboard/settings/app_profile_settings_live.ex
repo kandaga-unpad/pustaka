@@ -9,17 +9,22 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
   @impl true
   def mount(_params, _session, socket) do
     handle_mount_errors do
-      unless VoileWeb.Auth.Authorization.is_super_admin?(socket) do
-        user_id =
-          case socket.assigns[:current_scope] do
-            %{user: %{id: id}} -> id
-            _ -> nil
-          end
+      # Determine redirect path based on user type
+      user = socket.assigns.current_scope.user
 
-        raise VoileWeb.Auth.Authorization.UnauthorizedError,
-          permission: "system.settings",
-          user_id: user_id
-      end
+      redirect_path =
+        if user && user.user_type && user.user_type.slug in ["administrator", "staff"] do
+          # Staff/admin users redirect to dashboard
+          ~p"/manage"
+        else
+          # Regular members redirect to home
+          ~p"/"
+        end
+
+      # Check permission with custom redirect
+      VoileWeb.Auth.Authorization.authorize!(socket, "system.settings",
+        redirect_to: redirect_path
+      )
 
       current_user = socket.assigns.current_scope.user
 

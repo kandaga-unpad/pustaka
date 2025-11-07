@@ -10,11 +10,19 @@
         <%= if @current_scope.user do %>
           <div class="flex items-center gap-3 mt-2">
             <div>
-              <img
-                src={@current_scope.user.user_image}
-                alt="User Avatar"
-                class="w-10 h-10 rounded-full"
-              />
+              <%= if @current_scope.user.user_image do %>
+                <img
+                  src={@current_scope.user.user_image}
+                  alt="User Avatar"
+                  class="w-10 h-10 rounded-full"
+                />
+              <% else %>
+                <img
+                  src="/images/default_avatar.jpg"
+                  alt="Default Avatar"
+                  class="w-10 h-10 rounded-full"
+                />
+              <% end %>
             </div>
 
             <p>Hello, {@current_scope.user.username}!</p>

@@ -137,7 +137,7 @@
   --color-voile-surface: oklch(96.5% 0.05 292.5);
   /* Slightly darker surface variant used for active states so it reads
     clearly against the main surface while keeping a soft violet hue. */
-  --color-voile-surface-variant: oklch(94% 0.08 292.5);
+  --color-voile-surface-variant: oklch(76% 0.14 295.1);
   --color-voile-neutral: oklch(96% 0.02 280);
   --color-voile-text: oklch(18% 0.05 260);
 
@@ -217,7 +217,7 @@
 
   /* Ensure links remain themed when using daisyUI's data-theme="dark" */
   :where([data-theme="dark"], [data-theme="dark"] *) a {
-    color: var(--color-voile-primary);
+    color: var(--color-voile-surface-variant);
   }
 
   option {

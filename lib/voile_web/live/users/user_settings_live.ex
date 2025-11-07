@@ -9,7 +9,7 @@ defmodule VoileWeb.UserSettingsLive do
     ~H"""
     <.header>
       <h4>Account Settings</h4>
-      
+
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
@@ -17,7 +17,7 @@ defmodule VoileWeb.UserSettingsLive do
       <div class="w-full max-w-64">
         <.dashboard_settings_sidebar current_user={@current_scope.user} current_path={@current_path} />
       </div>
-      
+
       <div class="w-full space-y-12 divide-y">
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <.form
@@ -38,7 +38,7 @@ defmodule VoileWeb.UserSettingsLive do
             /> <.button phx-disable-with="Changing...">Change Email</.button>
           </.form>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <%= if @can_change_password do %>
             <.form
@@ -72,27 +72,27 @@ defmodule VoileWeb.UserSettingsLive do
                 required
               /> <.button phx-disable-with="Changing...">Change Password</.button>
             </.form>
-            
+
             <div class="mt-3">
               <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Can't remember your current password? We'll email you a secure link so you can set a new password.
               </p>
-              
+
               <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
             </div>
           <% else %>
             <h4 class="text-lg font-semibold mb-2">Set a password for your account</h4>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Your account currently doesn't have a password because it was created via an external provider or import. You can set one now to enable email/password logins.
             </p>
              <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
           <% end %>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
           <h4 class="text-lg font-semibold mb-4">Profile & Member Details</h4>
-          
+
           <.form
             for={@profile_form}
             id="profile_form"
@@ -114,7 +114,7 @@ defmodule VoileWeb.UserSettingsLive do
                   />
                   <div class="flex-1">
                     <p class="text-sm text-voile-muted">Uploaded</p>
-                    
+
                     <.button
                       type="button"
                       phx-click="delete_user_image"
@@ -141,27 +141,27 @@ defmodule VoileWeb.UserSettingsLive do
                 </div>
               <% end %>
             </div>
-            
+
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
                 Contact Information
               </legend>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <.input field={@profile_form[:phone_number]} type="text" label="Phone number" />
                 <.input field={@profile_form[:website]} type="url" label="Website" />
               </div>
-              
+
               <div class="mt-3">
                 <.input field={@profile_form[:address]} type="text" label="Address" />
               </div>
             </fieldset>
-            
+
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
                 Social Media
               </legend>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <.input
                   field={@profile_form[:twitter]}
@@ -189,17 +189,17 @@ defmodule VoileWeb.UserSettingsLive do
                 />
               </div>
             </fieldset>
-            
+
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
                 Personal Information
               </legend>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <.input field={@profile_form[:birth_date]} type="date" label="Birth date" />
                 <.input field={@profile_form[:birth_place]} type="text" label="Birth place" />
               </div>
-              
+
               <div class="mt-3">
                 <.input
                   field={@profile_form[:gender]}
@@ -210,17 +210,17 @@ defmodule VoileWeb.UserSettingsLive do
                 />
               </div>
             </fieldset>
-            
+
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
                 Organization Details
               </legend>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <.input field={@profile_form[:organization]} type="text" label="Organization" />
                 <.input field={@profile_form[:department]} type="text" label="Department" />
               </div>
-              
+
               <div class="mt-3">
                 <.input field={@profile_form[:position]} type="text" label="Position" />
               </div>
@@ -500,15 +500,39 @@ defmodule VoileWeb.UserSettingsLive do
 
     socket =
       if preview do
-        # Keep the preview in a dedicated assign to avoid embedding maps into
-        # template attributes. Also update the current_scope user for immediate
-        # UI feedback.
-        current_user = Map.put(socket.assigns.current_scope.user, :user_image, preview)
-        current_scope = Map.put(socket.assigns.current_scope, :user, current_user)
+        # Persist the uploaded image immediately so the user's profile is
+        # updated as soon as the upload completes (even if they don't click
+        # Save). We still keep a preview assign for immediate UI feedback.
+        user = Accounts.get_user!(socket.assigns.current_scope.user.id)
+        old_image = user.user_image
 
-        socket
-        |> assign(:profile_image_preview, preview)
-        |> assign(:current_scope, current_scope)
+        case Accounts.update_profile_user(user, %{"user_image" => preview}) do
+          {:ok, updated_user} ->
+            # If the old image looks like an upload path, attempt to delete it.
+            if old_image && is_binary(old_image) && old_image != updated_user.user_image &&
+                 String.starts_with?(old_image, "/uploads") do
+              case Storage.delete(old_image) do
+                {:ok, _} -> :ok
+                _ -> :ok
+              end
+            end
+
+            current_scope = Map.put(socket.assigns.current_scope, :user, updated_user)
+
+            socket
+            |> assign(:profile_image_preview, nil)
+            |> assign(:current_scope, current_scope)
+            |> assign(:profile_form, to_form(Accounts.change_user(updated_user)))
+            |> put_flash(:info, "Profile image uploaded")
+
+          {:error, changeset} ->
+            # Persisting failed - keep preview and show validation errors in
+            # the profile form so the user can still take corrective action.
+            socket
+            |> assign(:profile_image_preview, preview)
+            |> assign(:profile_form, to_form(changeset))
+            |> put_flash(:error, "Failed to persist uploaded image")
+        end
       else
         socket
       end

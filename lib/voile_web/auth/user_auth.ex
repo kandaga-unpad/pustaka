@@ -292,15 +292,27 @@ defmodule VoileWeb.UserAuth do
         if VoileWeb.Auth.Authorization.can?(user, permission_name, opts) do
           {:cont, socket}
         else
-          socket =
-            socket
-            |> Phoenix.LiveView.put_flash(
-              :error,
-              "You don't have permission to access this page."
-            )
-            |> Phoenix.LiveView.redirect(to: ~p"/")
+          if socket.assigns.current_scope.user.user_type.slug in ["administrator", "staff"] do
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(
+                :error,
+                "You don't have permission to access this page."
+              )
+              |> Phoenix.LiveView.redirect(to: ~p"/manage")
 
-          {:halt, socket}
+            {:halt, socket}
+          else
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(
+                :error,
+                "You don't have permission to access this page."
+              )
+              |> Phoenix.LiveView.redirect(to: ~p"/")
+
+            {:halt, socket}
+          end
         end
 
       _ ->
@@ -480,31 +492,20 @@ defmodule VoileWeb.UserAuth do
   @doc """
   Checks if a user needs to complete onboarding.
   Returns true if the user lacks basic profile information.
-  Admin and staff users are exempt from onboarding.
+  Only super_admin users are exempt from onboarding.
   """
   def needs_onboarding?(user) do
     # Preload roles if not already loaded
     user = Voile.Repo.preload(user, :roles)
 
-    # Admin and staff roles that are exempt from onboarding
-    exempt_roles = [
-      "super_admin",
-      "admin",
-      "editor",
-      "librarian",
-      "gallery_curator",
-      "archivist",
-      "museum_curator"
-    ]
-
-    # Check if user has any exempt role
-    is_admin_or_staff? =
+    # Only super_admin is exempt from onboarding
+    is_super_admin? =
       Enum.any?(user.roles, fn role ->
-        role.name in exempt_roles
+        role.name == "super_admin"
       end)
 
-    # Skip onboarding for admin/staff users
-    if is_admin_or_staff? do
+    # Skip onboarding for super_admin only
+    if is_super_admin? do
       false
     else
       # User needs onboarding if they lack basic profile information

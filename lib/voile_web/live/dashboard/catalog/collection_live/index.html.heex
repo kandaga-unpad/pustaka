@@ -44,11 +44,11 @@
           <% end %>
         </.button>
         <%= if can?(@current_scope.user, "collections.create") do %>
-          <.link navigate={~p"/manage/catalog/collections/import"}>
+          <%!-- <.link navigate={~p"/manage/catalog/collections/import"}>
             <.button class="btn btn-outline">
               <.icon name="hero-arrow-up-tray" class="w-4 h-4 mr-1" /> {gettext("Import CSV")}
             </.button>
-          </.link>
+          </.link> --%>
           <.link patch={~p"/manage/catalog/collections/new"}>
             <.button>{gettext("New Collection")}</.button>
           </.link>

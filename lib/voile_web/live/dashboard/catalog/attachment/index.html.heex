@@ -1,0 +1,311 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="container mx-auto px-4 py-6">
+    <%!-- Header --%>
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Attachment Management</h1>
+      <p class="text-gray-600 mt-2">Manage file attachments and access control</p>
+    </div>
+
+    <%!-- Search and Filter Bar --%>
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <%!-- Search --%>
+        <div class="flex-1">
+          <form phx-submit="search" class="relative">
+            <input
+              type="text"
+              name="q"
+              value={@search}
+              placeholder="Search by filename, description..."
+              class="input input-bordered w-full pr-20"
+            />
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+              <%= if @search != "" do %>
+                <button
+                  type="button"
+                  phx-click="clear_search"
+                  class="btn btn-ghost btn-sm"
+                >
+                  <.icon name="hero-x-mark" class="w-4 h-4" />
+                </button>
+              <% end %>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <.icon name="hero-magnifying-glass" class="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <%!-- Filters --%>
+        <div class="flex gap-2 items-center">
+          <select
+            name="access_level"
+            phx-change="filter_change"
+            class="select select-bordered select-sm"
+          >
+            <option value="">All Access Levels</option>
+            <option value="public" selected={@filter_access_level == "public"}>Public</option>
+            <option value="limited" selected={@filter_access_level == "limited"}>Limited</option>
+            <option value="restricted" selected={@filter_access_level == "restricted"}>
+              Restricted
+            </option>
+          </select>
+
+          <select
+            name="file_type"
+            phx-change="filter_change"
+            class="select select-bordered select-sm"
+          >
+            <option value="">All File Types</option>
+            <option value="document" selected={@filter_file_type == "document"}>Document</option>
+            <option value="image" selected={@filter_file_type == "image"}>Image</option>
+            <option value="video" selected={@filter_file_type == "video"}>Video</option>
+            <option value="audio" selected={@filter_file_type == "audio"}>Audio</option>
+            <option value="archive" selected={@filter_file_type == "archive"}>Archive</option>
+            <option value="software" selected={@filter_file_type == "software"}>Software</option>
+            <option value="other" selected={@filter_file_type == "other"}>Other</option>
+          </select>
+
+          <select
+            name="attachable_type"
+            phx-change="filter_change"
+            class="select select-bordered select-sm"
+          >
+            <option value="">All Types</option>
+            <option value="collection" selected={@filter_attachable_type == "collection"}>
+              Collections
+            </option>
+            <option value="item" selected={@filter_attachable_type == "item"}>Items</option>
+          </select>
+
+          <%= if @active_filters_count > 0 do %>
+            <button phx-click="clear_filters" class="btn btn-ghost btn-sm">
+              Clear ({@active_filters_count})
+            </button>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Stats Cards --%>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="stat bg-white rounded-lg shadow-sm">
+        <div class="stat-title">Total Attachments</div>
+        <div class="stat-value text-primary">{@attachments_count}</div>
+      </div>
+      <div class="stat bg-white rounded-lg shadow-sm">
+        <div class="stat-title">Public</div>
+        <div class="stat-value text-success">
+          {Enum.count(@streams.attachments, fn {_, a} -> a.access_level == "public" end)}
+        </div>
+      </div>
+      <div class="stat bg-white rounded-lg shadow-sm">
+        <div class="stat-title">Limited</div>
+        <div class="stat-value text-warning">
+          {Enum.count(@streams.attachments, fn {_, a} -> a.access_level == "limited" end)}
+        </div>
+      </div>
+      <div class="stat bg-white rounded-lg shadow-sm">
+        <div class="stat-title">Restricted</div>
+        <div class="stat-value text-error">
+          {Enum.count(@streams.attachments, fn {_, a} -> a.access_level == "restricted" end)}
+        </div>
+      </div>
+    </div>
+
+    <%!-- Attachments List --%>
+    <%= if @attachments_empty? do %>
+      <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+        <.icon name="hero-document" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No attachments found</h3>
+        <p class="text-gray-500">
+          <%= if @search != "" or @active_filters_count > 0 do %>
+            Try adjusting your search or filters
+          <% else %>
+            No attachments have been uploaded yet
+          <% end %>
+        </p>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table table-zebra">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Access Level</th>
+                <th>Embargo</th>
+                <th>Entity</th>
+                <th>Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attachments" phx-update="stream">
+              <tr
+                :for={{id, attachment} <- @streams.attachments}
+                id={id}
+                class="hover"
+              >
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar placeholder">
+                      <div class="bg-neutral text-neutral-content rounded w-12">
+                        <span class="text-xs uppercase">
+                          {String.slice(attachment.file_type, 0, 3)}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-sm">{attachment.original_name}</div>
+                      <div class="text-xs text-gray-500 truncate max-w-xs">
+                        {attachment.file_name}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-outline badge-sm">{attachment.file_type}</span>
+                </td>
+                <td class="text-sm">{format_file_size(attachment.file_size)}</td>
+                <td>
+                  <span class={"badge badge-sm #{access_level_badge_class(attachment.access_level)}"}>
+                    {String.capitalize(attachment.access_level)}
+                  </span>
+                  <%= if attachment.access_level == "limited" do %>
+                    <div class="text-xs text-gray-500 mt-1">
+                      {length(attachment.allowed_roles)} roles, {length(attachment.allowed_users)} users
+                    </div>
+                  <% end %>
+                </td>
+                <td>
+                  <%= cond do %>
+                    <% not is_nil(attachment.embargo_start_date) and not is_nil(attachment.embargo_end_date) -> %>
+                      <div class="text-xs">
+                        <div class="text-amber-600 font-semibold">Window</div>
+                        <div class="text-gray-500">
+                          {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")} - {Calendar.strftime(
+                            attachment.embargo_end_date,
+                            "%m/%d/%y"
+                          )}
+                        </div>
+                      </div>
+                    <% not is_nil(attachment.embargo_start_date) -> %>
+                      <div class="text-xs">
+                        <div class="text-amber-600 font-semibold">After</div>
+                        <div class="text-gray-500">
+                          {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")}
+                        </div>
+                      </div>
+                    <% not is_nil(attachment.embargo_end_date) -> %>
+                      <div class="text-xs">
+                        <div class="text-amber-600 font-semibold">Until</div>
+                        <div class="text-gray-500">
+                          {Calendar.strftime(attachment.embargo_end_date, "%m/%d/%y")}
+                        </div>
+                      </div>
+                    <% true -> %>
+                      <span class="text-xs text-gray-400">No embargo</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="text-sm">
+                    <div class="badge badge-sm badge-ghost">
+                      {String.capitalize(attachment.attachable_type)}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <%= if attachment.access_settings_updated_by do %>
+                    <div class="text-xs">
+                      <div class="font-semibold">
+                        {attachment.access_settings_updated_by.fullname ||
+                          attachment.access_settings_updated_by.email}
+                      </div>
+                      <div class="text-gray-500">
+                        {format_datetime(attachment.access_settings_updated_at)}
+                      </div>
+                    </div>
+                  <% else %>
+                    <span class="text-xs text-gray-400">Never</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="flex gap-2">
+                    <.link
+                      patch={~p"/manage/catalog/attachments/#{attachment.id}/access"}
+                      class="btn btn-sm btn-ghost"
+                      title="Manage Access"
+                    >
+                      <.icon name="hero-lock-closed" class="w-4 h-4" />
+                    </.link>
+                    <.link
+                      href={~p"/attachments/#{attachment.id}/download"}
+                      class="btn btn-sm btn-ghost"
+                      title="Download"
+                      target="_blank"
+                    >
+                      <.icon name="hero-arrow-down-tray" class="w-4 h-4" />
+                    </.link>
+                    <button
+                      phx-click="delete"
+                      phx-value-id={attachment.id}
+                      data-confirm="Are you sure you want to delete this attachment?"
+                      class="btn btn-sm btn-ghost text-error"
+                      title="Delete"
+                    >
+                      <.icon name="hero-trash" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <%!-- Pagination --%>
+        <%= if @total_pages > 1 do %>
+          <div class="flex justify-center items-center gap-2 p-4 border-t">
+            <button
+              phx-click="paginate"
+              phx-value-page={max(@page - 1, 1)}
+              disabled={@page == 1}
+              class="btn btn-sm"
+            >
+              Previous
+            </button>
+            <span class="text-sm text-gray-600">
+              Page {@page} of {@total_pages}
+            </span>
+            <button
+              phx-click="paginate"
+              phx-value-page={min(@page + 1, @total_pages)}
+              disabled={@page == @total_pages}
+              class="btn btn-sm"
+            >
+              Next
+            </button>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%!-- Access Management Modal --%>
+  <.modal
+    :if={@live_action == :manage_access}
+    id="access-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/catalog/attachments")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Catalog.Attachment.AccessComponent}
+      id={@attachment.id}
+      attachment={@attachment}
+      all_roles={@all_roles}
+      current_user={@current_user}
+      return_to={~p"/manage/catalog/attachments"}
+    />
+  </.modal>
+</Layouts.app>

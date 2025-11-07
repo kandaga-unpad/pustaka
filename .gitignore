@@ -57,6 +57,7 @@ npm-debug.log
 
 # Scripts Source
 /scripts/*.csv
+/scripts/csv_data.zip
 
 # CSV Data - ignore numbered files but keep samples
 /scripts/csv_data/**/*_[0-9]*.csv

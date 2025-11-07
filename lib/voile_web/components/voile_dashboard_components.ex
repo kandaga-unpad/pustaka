@@ -21,7 +21,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   attr :list_menu, :list,
     default: [
       %{
-        name: "Katalog",
+        name: "Catalogs",
         url: "/manage/catalog"
       },
       %{
@@ -29,7 +29,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         url: "/manage/glam"
       },
       %{
-        name: "Pengaturan",
+        name: "Settings",
         url: "/manage/settings"
       }
     ]
@@ -63,7 +63,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             patch={menu.url}
             class={["default-menu", @active_nav |> String.starts_with?(menu.url) && "active-menu"]}
           >
-            {menu.name}
+            {Gettext.gettext(VoileWeb.Gettext, menu.name)}
           </.link>
         <% end %>
       </div>

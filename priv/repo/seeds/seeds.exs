@@ -206,14 +206,14 @@ alias Voile.Schema.System
 IO.puts("Seeding default application profile and theme...")
 
 # App identity
-System.upsert_setting("app_name", "Voile — the Magic Library")
+System.upsert_setting("app_name", "Voile")
 
 System.upsert_setting(
   "app_description",
   "A gentle digital sanctuary for libraries, museums, and archives — curated for discovery and wonder."
 )
 
-System.upsert_setting("app_contact_email", "support@example.org")
+System.upsert_setting("app_contact_email", "chrisna.adhi@unpad.ac.id")
 System.upsert_setting("app_website", "https://example.org")
 System.upsert_setting("app_address", "123 Library Avenue, Knowledge City")
 

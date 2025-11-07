@@ -84,12 +84,24 @@ config :voile,
   ]
 
 config :voile,
-  s3_region: System.get_env("VOILE_S3_REGION") || "ap-southeast-1",
+  s3_region: System.get_env("VOILE_S3_REGION") || "us-east-1",
   s3_access_key_id: System.get_env("VOILE_S3_ACCESS_KEY_ID"),
   s3_secret_key_access: System.get_env("VOILE_S3_SECRET_ACCESS_KEY"),
-  s3_bucket_name: System.get_env("VOILE_S3_BUCKET_NAME"),
-  s3_public_url:
-    System.get_env("VOILE_S3_PUBLIC_URL") || "https://s3.ap-southeast-1.amazonaws.com"
+  s3_bucket_name: System.get_env("VOILE_S3_BUCKET_NAME") || "glam-storage",
+  s3_public_url: System.get_env("VOILE_S3_PUBLIC_URL") || "https://library.unpad.ac.id",
+  s3_public_url_format:
+    System.get_env("VOILE_S3_PUBLIC_URL_FORMAT") || "{endpoint}/{bucket}/{key}"
+
+# Automatically select storage adapter based on configuration
+# If S3 credentials are provided, use S3 storage, otherwise use local filesystem
+s3_adapter =
+  if System.get_env("VOILE_S3_ACCESS_KEY_ID") && System.get_env("VOILE_S3_SECRET_ACCESS_KEY") do
+    Client.Storage.S3
+  else
+    Client.Storage.Local
+  end
+
+config :voile, storage_adapter: s3_adapter
 
 config :voile, VoileWeb.Gettext,
   locales: ~w(id en),

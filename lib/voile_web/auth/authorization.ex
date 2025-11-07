@@ -97,7 +97,16 @@ defmodule VoileWeb.Auth.Authorization do
     if can?(user, permission_name, opts) do
       :ok
     else
-      raise __MODULE__.UnauthorizedError, permission: permission_name, user_id: user.id
+      error_opts = [permission: permission_name, user_id: user.id]
+
+      error_opts =
+        if redirect_to = Keyword.get(opts, :redirect_to) do
+          Keyword.put(error_opts, :redirect_to, redirect_to)
+        else
+          error_opts
+        end
+
+      raise __MODULE__.UnauthorizedError, error_opts
     end
   end
 
@@ -108,16 +117,30 @@ defmodule VoileWeb.Auth.Authorization do
         authorize!(user, permission_name, opts)
 
       _ ->
-        raise __MODULE__.UnauthorizedError,
-          permission: permission_name,
-          user_id: nil
+        error_opts = [permission: permission_name, user_id: nil]
+
+        error_opts =
+          if redirect_to = Keyword.get(opts, :redirect_to) do
+            Keyword.put(error_opts, :redirect_to, redirect_to)
+          else
+            error_opts
+          end
+
+        raise __MODULE__.UnauthorizedError, error_opts
     end
   end
 
-  def authorize!(%Phoenix.LiveView.Socket{}, permission_name, _opts) do
-    raise __MODULE__.UnauthorizedError,
-      permission: permission_name,
-      user_id: nil
+  def authorize!(%Phoenix.LiveView.Socket{}, permission_name, opts) do
+    error_opts = [permission: permission_name, user_id: nil]
+
+    error_opts =
+      if redirect_to = Keyword.get(opts, :redirect_to) do
+        Keyword.put(error_opts, :redirect_to, redirect_to)
+      else
+        error_opts
+      end
+
+    raise __MODULE__.UnauthorizedError, error_opts
   end
 
   def authorize!(%Plug.Conn{} = conn, permission_name, opts) do
@@ -126,9 +149,16 @@ defmodule VoileWeb.Auth.Authorization do
         authorize!(user, permission_name, opts)
 
       _ ->
-        raise __MODULE__.UnauthorizedError,
-          permission: permission_name,
-          user_id: nil
+        error_opts = [permission: permission_name, user_id: nil]
+
+        error_opts =
+          if redirect_to = Keyword.get(opts, :redirect_to) do
+            Keyword.put(error_opts, :redirect_to, redirect_to)
+          else
+            error_opts
+          end
+
+        raise __MODULE__.UnauthorizedError, error_opts
     end
   end
 
@@ -592,18 +622,20 @@ defmodule VoileWeb.Auth.Authorization do
 
   # Exception module
   defmodule UnauthorizedError do
-    defexception [:message, :permission, :user_id]
+    defexception [:message, :permission, :user_id, :redirect_to]
 
     def exception(opts) do
       permission = Keyword.get(opts, :permission)
       user_id = Keyword.get(opts, :user_id)
+      redirect_to = Keyword.get(opts, :redirect_to)
 
       message = "User #{user_id} does not have permission: #{permission}"
 
       %__MODULE__{
         message: message,
         permission: permission,
-        user_id: user_id
+        user_id: user_id,
+        redirect_to: redirect_to
       }
     end
   end

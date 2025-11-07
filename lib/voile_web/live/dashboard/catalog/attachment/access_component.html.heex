@@ -1,0 +1,279 @@
+<div class="p-6">
+  <div class="flex justify-between items-start mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">Manage Access Control</h2>
+      <p class="text-sm text-gray-600 mt-1">{@attachment.original_name}</p>
+    </div>
+    <button phx-click="close" phx-target={@myself} class="btn btn-ghost btn-sm">
+      <.icon name="hero-x-mark" class="w-5 h-5" />
+    </button>
+  </div>
+
+  <%!-- File Info Card --%>
+  <div class="bg-base-200 rounded-lg p-4 mb-6">
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <span class="font-semibold">File Type:</span>
+        <span class="ml-2 badge badge-sm">{@attachment.file_type}</span>
+      </div>
+      <div>
+        <span class="font-semibold">Current Access:</span>
+        <span class="ml-2 badge badge-sm badge-primary">
+          {String.capitalize(@attachment.access_level)}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <%!-- Access Level Settings --%>
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold mb-3">Access Level & Embargo</h3>
+    <.form
+      for={@changeset}
+      id="access-level-form"
+      phx-change="validate"
+      phx-submit="save_access_level"
+      phx-target={@myself}
+    >
+      <div class="space-y-4">
+        <div>
+          <label class="label">
+            <span class="label-text font-semibold">Access Level</span>
+          </label>
+          <select name="attachment[access_level]" class="select select-bordered w-full">
+            <option value="public" selected={@attachment.access_level == "public"}>
+              Public - Anyone can view
+            </option>
+            <option value="limited" selected={@attachment.access_level == "limited"}>
+              Limited - Specific roles/users only
+            </option>
+            <option value="restricted" selected={@attachment.access_level == "restricted"}>
+              Restricted - Super Admin only
+            </option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Embargo Start Date</span>
+              <span class="label-text-alt">Available after this date</span>
+            </label>
+            <input
+              type="datetime-local"
+              name="attachment[embargo_start_date]"
+              value={
+                if @attachment.embargo_start_date do
+                  DateTime.to_iso8601(@attachment.embargo_start_date) |> String.slice(0..15)
+                else
+                  ""
+                end
+              }
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <div>
+            <label class="label">
+              <span class="label-text font-semibold">Embargo End Date</span>
+              <span class="label-text-alt">Available until this date</span>
+            </label>
+            <input
+              type="datetime-local"
+              name="attachment[embargo_end_date]"
+              value={
+                if @attachment.embargo_end_date do
+                  DateTime.to_iso8601(@attachment.embargo_end_date) |> String.slice(0..15)
+                else
+                  ""
+                end
+              }
+              class="input input-bordered w-full"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="btn btn-primary">
+            <.icon name="hero-check" class="w-4 h-4 mr-2" /> Update Access Settings
+          </button>
+        </div>
+      </div>
+    </.form>
+  </div>
+
+  <%!-- Role-Based Access (only shown for limited access) --%>
+  <%= if @attachment.access_level == "limited" do %>
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Role-Based Access</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Select roles that can access this attachment
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div :for={role <- @all_roles} class="form-control">
+          <label class="label cursor-pointer justify-start gap-3">
+            <input
+              type="checkbox"
+              class="checkbox"
+              checked={role.id in @allowed_role_ids}
+              phx-click="toggle_role"
+              phx-value-role-id={role.id}
+              phx-target={@myself}
+            />
+            <span class="label-text">
+              <span class="font-semibold">{role.name}</span>
+              <%= if role.description do %>
+                <span class="text-xs text-gray-500 block">{role.description}</span>
+              <% end %>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <%= if length(@attachment.allowed_roles) > 0 do %>
+        <div class="mt-4 p-3 bg-success/10 rounded-lg">
+          <p class="text-sm font-semibold text-success mb-2">
+            <.icon name="hero-check-circle" class="w-4 h-4 inline" />
+            Active Roles ({length(@attachment.allowed_roles)})
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span
+              :for={role <- @attachment.allowed_roles}
+              class="badge badge-success"
+            >
+              {role.name}
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%!-- User-Specific Access --%>
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">User-Specific Access</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Grant access to specific users (e.g., guests, external reviewers)
+      </p>
+
+      <%!-- User Search --%>
+      <div class="mb-4">
+        <label class="label">
+          <span class="label-text font-semibold">Search and Add Users</span>
+        </label>
+        <input
+          type="text"
+          phx-keyup="search_users"
+          phx-target={@myself}
+          phx-debounce="300"
+          name="search"
+          value={@user_search}
+          placeholder="Search by email or name..."
+          class="input input-bordered w-full"
+        />
+
+        <%= if length(@user_search_results) > 0 do %>
+          <div class="mt-2 border rounded-lg divide-y max-h-60 overflow-y-auto">
+            <div
+              :for={user <- @user_search_results}
+              class="p-3 hover:bg-base-200 cursor-pointer flex justify-between items-center"
+              phx-click="add_user"
+              phx-value-user-id={user.id}
+              phx-target={@myself}
+            >
+              <div>
+                <div class="font-semibold text-sm">{user.fullname || user.email}</div>
+                <div class="text-xs text-gray-500">{user.email}</div>
+              </div>
+              <%= if user.id in @allowed_user_ids do %>
+                <span class="badge badge-sm badge-success">Already added</span>
+              <% else %>
+                <button type="button" class="btn btn-xs btn-primary">
+                  Add
+                </button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Currently Allowed Users --%>
+      <%= if length(@attachment.allowed_users) > 0 do %>
+        <div class="border rounded-lg divide-y">
+          <div
+            :for={user <- @attachment.allowed_users}
+            class="p-3 flex justify-between items-center hover:bg-base-200"
+          >
+            <div>
+              <div class="font-semibold text-sm">{user.fullname || user.email}</div>
+              <div class="text-xs text-gray-500">{user.email}</div>
+            </div>
+            <button
+              type="button"
+              phx-click="remove_user"
+              phx-value-user-id={user.id}
+              phx-target={@myself}
+              class="btn btn-xs btn-error btn-outline"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      <% else %>
+        <div class="text-center p-6 border rounded-lg border-dashed">
+          <p class="text-sm text-gray-500">No users added yet</p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%!-- Access Summary --%>
+  <div class="mt-6 p-4 bg-info/10 rounded-lg border border-info/20">
+    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+      <.icon name="hero-information-circle" class="w-5 h-5 text-info" /> Access Summary
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div>
+        <span class="font-semibold">Access Level:</span>
+        <span class="ml-2">{String.capitalize(@access_summary.access_level)}</span>
+      </div>
+
+      <%= if @access_summary.is_under_embargo do %>
+        <div>
+          <span class="font-semibold text-amber-600">Under Embargo:</span>
+          <span class="ml-2 badge badge-warning badge-sm">Yes</span>
+        </div>
+      <% end %>
+
+      <%= if @access_summary.access_level == "limited" do %>
+        <div>
+          <span class="font-semibold">Allowed Roles:</span>
+          <span class="ml-2">{length(@access_summary.allowed_roles)}</span>
+        </div>
+
+        <div>
+          <span class="font-semibold">Allowed Users:</span>
+          <span class="ml-2">{length(@access_summary.allowed_users)}</span>
+        </div>
+      <% end %>
+
+      <%= if @access_summary.last_updated_by do %>
+        <div class="md:col-span-2">
+          <span class="font-semibold">Last Updated:</span>
+          <span class="ml-2">
+            {format_datetime(@access_summary.last_updated_at)} by {@access_summary.last_updated_by.fullname ||
+              @access_summary.last_updated_by.email}
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%!-- Action Buttons --%>
+  <div class="flex justify-end gap-2 mt-6 pt-6 border-t">
+    <button phx-click="close" phx-target={@myself} class="btn btn-ghost">
+      Close
+    </button>
+  </div>
+</div>

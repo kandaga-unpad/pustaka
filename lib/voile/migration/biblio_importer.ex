@@ -95,21 +95,22 @@ defmodule Voile.Migration.BiblioImporter do
       {stats, problematic_units} =
         files
         |> Stream.with_index(1)
-        |> Enum.reduce({%{inserted: 0, skipped: 0, errors: 0}, problematic_units}, fn {file,
-                                                                                       index},
-                                                                                      {acc,
-                                                                                       prob_units} ->
-          IO.puts(
-            "\n🔄 Processing bibliography file #{index}/#{length(files)}: #{Path.basename(file)}"
-          )
+        |> Enum.reduce(
+          {%{inserted: 0, attempted: 0, failed: 0, skipped: 0, errors: 0}, problematic_units},
+          fn {file, index}, {acc, prob_units} ->
+            IO.puts(
+              "\n🔄 Processing bibliography file #{index}/#{length(files)}: #{Path.basename(file)}"
+            )
 
-          file_stats = process_biblio_file_optimized(file, batch_size, skip_images, cache)
+            file_stats = process_biblio_file_optimized(file, batch_size, skip_images, cache)
 
-          new_acc = %{
-            inserted: acc.inserted + file_stats.inserted,
-            skipped: acc.skipped + file_stats.skipped,
-            errors: acc.errors + file_stats.errors
-          }
+            new_acc = %{
+              inserted: acc.inserted + file_stats.inserted,
+              attempted: acc.attempted + Map.get(file_stats, :attempted, 0),
+              failed: acc.failed + Map.get(file_stats, :failed, 0),
+              skipped: acc.skipped + file_stats.skipped,
+              errors: acc.errors + file_stats.errors
+            }
 
           # Track units with high skip rates
           new_prob_units =
@@ -123,7 +124,9 @@ defmodule Voile.Migration.BiblioImporter do
         end)
 
       print_summary("BIBLIOGRAPHY IMPORT", %{
+        "Total Collections Attempted" => stats.attempted,
         "Total Collections Inserted" => stats.inserted,
+        "Total Collections Failed" => stats.failed,
         "Total Collections Skipped" => stats.skipped,
         "Total Errors" => stats.errors
       })
@@ -203,6 +206,9 @@ defmodule Voile.Migration.BiblioImporter do
     author_mappings = load_all_author_mappings()
     publisher_mappings = load_all_publisher_mappings()
 
+    # Ensure default creator exists and get its ID
+    default_creator_id = ensure_default_creator()
+
     # Cache existing creators for faster lookups
     creators =
       Repo.all(Creator)
@@ -231,6 +237,7 @@ defmodule Voile.Migration.BiblioImporter do
     IO.puts("  - Author mappings: #{map_size(author_mappings)} units")
     IO.puts("  - Publisher mappings: #{map_size(publisher_mappings)} units")
     IO.puts("  - Creators: #{map_size(creators)}")
+    IO.puts("  - Default creator ID: #{default_creator_id}")
     IO.puts("  - Existing collections: #{MapSet.size(existing_collections)}")
     IO.puts("  - Units: #{map_size(unit_map)}")
     IO.puts("  - Resource classes: #{map_size(resource_class_map)}")
@@ -241,6 +248,7 @@ defmodule Voile.Migration.BiblioImporter do
       author_mappings: author_mappings,
       publisher_mappings: publisher_mappings,
       creators: creators,
+      default_creator_id: default_creator_id,
       existing_collections: existing_collections,
       unit_map: unit_map,
       resource_class_map: resource_class_map,
@@ -341,6 +349,30 @@ defmodule Voile.Migration.BiblioImporter do
 
   defp is_thesis_title?(_), do: false
 
+  # Ensure default creator exists for collections without authors
+  defp ensure_default_creator do
+    default_name = "Kandaga Universitas Padjadjaran"
+
+    case Repo.get_by(Creator, creator_name: default_name) do
+      nil ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        {:ok, creator} =
+          Repo.insert(%Creator{
+            creator_name: default_name,
+            inserted_at: now,
+            updated_at: now
+          })
+
+        IO.puts("✅ Created default creator: #{default_name} (ID: #{creator.id})")
+        creator.id
+
+      creator ->
+        IO.puts("✅ Using existing default creator: #{default_name} (ID: #{creator.id})")
+        creator.id
+    end
+  end
+
   # Optimized file processing using streams and batching
   defp process_biblio_file_optimized(file_path, batch_size, skip_images, cache) do
     unit_id = extract_unit_id_from_filename(file_path)
@@ -357,9 +389,13 @@ defmodule Voile.Migration.BiblioImporter do
     :ets.insert(stats_ref, {:fields_inserted, 0})
     :ets.insert(stats_ref, {:errors, 0})
     :ets.insert(stats_ref, {:skipped, 0})
+    :ets.insert(stats_ref, {:collections_attempted, 0})
+    :ets.insert(stats_ref, {:collections_failed, 0})
 
     # Track first few skipped rows for debugging
     :ets.insert(stats_ref, {:sample_skipped, []})
+    # Track sample of failed inserts with reasons
+    :ets.insert(stats_ref, {:sample_failures, []})
 
     try do
       File.stream!(file_path)
@@ -424,17 +460,37 @@ defmodule Voile.Migration.BiblioImporter do
       [{:collections_inserted, collections_inserted}] =
         :ets.lookup(stats_ref, :collections_inserted)
 
+      [{:collections_attempted, collections_attempted}] =
+        :ets.lookup(stats_ref, :collections_attempted)
+
+      [{:collections_failed, collections_failed}] =
+        :ets.lookup(stats_ref, :collections_failed)
+
       [{:fields_inserted, fields_inserted}] = :ets.lookup(stats_ref, :fields_inserted)
       [{:errors, errors}] = :ets.lookup(stats_ref, :errors)
       [{:skipped, skipped}] = :ets.lookup(stats_ref, :skipped)
       [{:sample_skipped, sample_skipped}] = :ets.lookup(stats_ref, :sample_skipped)
+      [{:sample_failures, sample_failures}] = :ets.lookup(stats_ref, :sample_failures)
 
       IO.puts("\n✅ File processed: #{filename}")
       IO.puts("  - Unit ID: #{unit_id}")
-      IO.puts("  - Collections: #{collections_inserted}")
+      IO.puts("  - Collections attempted: #{collections_attempted}")
+      IO.puts("  - Collections inserted: #{collections_inserted}")
+      IO.puts("  - Collections failed: #{collections_failed}")
       IO.puts("  - Fields: #{fields_inserted}")
       IO.puts("  - Skipped: #{skipped}")
       IO.puts("  - Errors: #{errors}")
+
+      if collections_failed > 0 and length(sample_failures) > 0 do
+        IO.puts("\n⚠️ Sample of failed collection inserts (first 5):")
+
+        sample_failures
+        |> Enum.reverse()
+        |> Enum.take(5)
+        |> Enum.each(fn {old_biblio_id, reason} ->
+          IO.puts("  old_biblio_id=#{old_biblio_id}: #{reason}")
+        end)
+      end
 
       if skipped > 10 and length(sample_skipped) > 0 do
         IO.puts("\n📊 Sample of skipped rows (first 10):")
@@ -446,7 +502,14 @@ defmodule Voile.Migration.BiblioImporter do
         end)
       end
 
-      %{inserted: collections_inserted, skipped: skipped, errors: errors, unit_id: unit_id}
+      %{
+        inserted: collections_inserted,
+        attempted: collections_attempted,
+        failed: collections_failed,
+        skipped: skipped,
+        errors: errors,
+        unit_id: unit_id
+      }
     after
       :ets.delete(stats_ref)
     end
@@ -460,6 +523,9 @@ defmodule Voile.Migration.BiblioImporter do
         {[collection | colls], all_flds ++ fields, [line_num | lines]}
       end)
 
+    # Track attempted collections
+    :ets.update_counter(stats_ref, :collections_attempted, length(collections))
+
     # Batch insert collections
     collections_inserted =
       if length(collections) > 0 do
@@ -471,14 +537,51 @@ defmodule Voile.Migration.BiblioImporter do
             )
 
           :ets.update_counter(stats_ref, :collections_inserted, count)
+
+          # Track failures
+          failed_count = length(collections) - count
+          if failed_count > 0 do
+            :ets.update_counter(stats_ref, :collections_failed, failed_count)
+
+            # Store sample failures (duplicates caught by on_conflict)
+            [{:sample_failures, current_failures}] = :ets.lookup(stats_ref, :sample_failures)
+
+            if length(current_failures) < 10 do
+              sample_ids = collections |> Enum.take(3) |> Enum.map(& &1.old_biblio_id)
+
+              :ets.insert(
+                stats_ref,
+                {:sample_failures, [{sample_ids, "on_conflict: duplicate"} | current_failures]}
+              )
+            end
+          end
+
           count
         rescue
           e ->
             sample_old_ids = collections |> Enum.take(5) |> Enum.map(& &1.old_biblio_id)
             sample_lines = Enum.take(line_nums, 5)
-            IO.puts("\n⚠️ Collection batch insert error: #{inspect(e)}")
+            error_msg = Exception.message(e)
+
+            IO.puts("\n⚠️ Collection batch insert error: #{error_msg}")
             IO.puts("  - Sample old_biblio_ids: #{inspect(sample_old_ids)}")
             IO.puts("  - Sample lines: #{inspect(sample_lines)}")
+
+            # Store detailed failure info
+            [{:sample_failures, current_failures}] = :ets.lookup(stats_ref, :sample_failures)
+
+            sample_old_ids
+            |> Enum.take(5)
+            |> Enum.each(fn old_id ->
+              if length(current_failures) < 10 do
+                :ets.insert(
+                  stats_ref,
+                  {:sample_failures, [{old_id, error_msg} | current_failures]}
+                )
+              end
+            end)
+
+            :ets.update_counter(stats_ref, :collections_failed, length(collections))
             :ets.update_counter(stats_ref, :errors, length(collections))
             0
         end
@@ -631,14 +734,14 @@ defmodule Voile.Migration.BiblioImporter do
           # Generate UUID for collection
           id = Ecto.UUID.generate()
 
-          # Get primary creator using cached data
+          # Get primary creator using cached data, fallback to default if not found
           creator_id =
             get_primary_creator_id_cached(
               biblio_id_int,
               unit_author_data,
               unit_author_mappings,
               cache.creators
-            )
+            ) || cache.default_creator_id
 
           # Get publisher name using cached mappings
           publisher_name = get_publisher_name_cached(publisher_id, unit_publisher_mappings)

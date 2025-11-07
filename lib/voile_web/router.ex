@@ -59,6 +59,8 @@ defmodule VoileWeb.Router do
       live "/collections/:id", Frontend.Collections.Show, :show
       live "/items", Frontend.Items.Index, :index
       live "/items/:id", Frontend.Items.Show, :show
+  # E-Book reader - accepts query param `url` (local path or public S3 URL)
+  live "/ebooks/view", Frontend.EbookReader.Show, :view
     end
   end
 
@@ -175,6 +177,11 @@ defmodule VoileWeb.Router do
 
             live "/:id", Dashboard.Catalog.ItemLive.Show, :show
             live "/:id/show/edit", Dashboard.Catalog.ItemLive.Show, :edit
+          end
+
+          scope "/attachments" do
+            live "/", Dashboard.Catalog.Attachment.Index, :index
+            live "/:id/access", Dashboard.Catalog.Attachment.Index, :manage_access
           end
         end
 
