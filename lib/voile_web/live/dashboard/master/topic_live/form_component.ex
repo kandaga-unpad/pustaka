@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.FormComponent do
         {@title}
         <:subtitle>Manage topic records.</:subtitle>
       </.header>
-      
+
       <.form for={@form} id="topic-form" phx-target={@myself} phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:type]} type="text" label="Type" />

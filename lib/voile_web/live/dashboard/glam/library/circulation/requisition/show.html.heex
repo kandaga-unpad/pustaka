@@ -12,10 +12,10 @@
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Requisition Details</h1>
-        
+
         <p class="mt-2 text-sm text-gray-700">Complete information about this member request</p>
       </div>
-      
+
       <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
         <%= if @requisition.status == "pending" do %>
           <button
@@ -35,7 +35,7 @@
             <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Reject
           </button>
         <% end %>
-        
+
         <%= if @requisition.status == "approved" do %>
           <button
             phx-click="fulfill"
@@ -46,7 +46,7 @@
             <.icon name="hero-check-circle" class="w-4 h-4 mr-2" /> Mark as Fulfilled
           </button>
         <% end %>
-        
+
         <%= if @requisition.status in ["pending", "approved"] do %>
           <button
             phx-click="cancel"
@@ -68,56 +68,56 @@
         <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Requisition Information</h3>
         </div>
-        
+
         <div class="px-6 py-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt class="text-sm font-medium text-gray-500">Requisition Type</dt>
-              
+
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{priority_badge_class(@requisition.requisition_type)}"}>
                   {String.capitalize(@requisition.requisition_type)}
                 </span>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Status</dt>
-              
+
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@requisition.status)}"}>
                   {String.capitalize(@requisition.status)}
                 </span>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Priority</dt>
-              
+
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{priority_badge_class(@requisition.priority)}"}>
                   {String.capitalize(@requisition.priority)}
                 </span>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Request Date</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">
                 {format_datetime(@requisition.request_date)}
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Expected Completion</dt>
-              
+
               <dd class="mt-1">
                 <%= if @requisition.expected_completion_date do %>
                   <div class="text-sm text-gray-900">
                     {format_datetime(@requisition.expected_completion_date)}
                   </div>
-                  
+
                   <%= if @requisition.expected_completion_date && DateTime.compare(@requisition.expected_completion_date, DateTime.utc_now()) == :lt && @requisition.status in ["pending", "approved"] do %>
                     <div class="text-xs text-voile-error font-medium mt-1">
                       {abs(
@@ -134,60 +134,60 @@
                 <% end %>
               </dd>
             </div>
-            
+
             <%= if @requisition.approval_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Approval Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-voile-success">
                   {format_datetime(@requisition.approval_date)}
                 </dd>
               </div>
             <% end %>
-            
+
             <%= if @requisition.completion_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Completion Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-voile-info">
                   {format_datetime(@requisition.completion_date)}
                 </dd>
               </div>
             <% end %>
-            
+
             <%= if @requisition.rejection_date do %>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Rejection Date</dt>
-                
+
                 <dd class="mt-1 text-sm text-voile-error">
                   {format_datetime(@requisition.rejection_date)}
                 </dd>
               </div>
             <% end %>
           </div>
-          
+
           <div class="pt-4 border-t border-voile-light">
             <dt class="text-sm font-medium text-gray-500">Request Description</dt>
-            
+
             <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
               {@requisition.description}
             </dd>
           </div>
-          
+
           <%= if @requisition.justification do %>
             <div class="pt-4 border-t border-voile-light">
               <dt class="text-sm font-medium text-gray-500">Justification</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
                 {@requisition.justification}
               </dd>
             </div>
           <% end %>
-          
+
           <%= if @requisition.rejection_reason do %>
             <div class="pt-4 border-t border-voile-error/30 bg-voile-error/10 -mx-6 px-6 py-4">
               <dt class="text-sm font-medium text-voile-error">Rejection Reason</dt>
-              
+
               <dd class="mt-1 text-sm text-voile-error/80 whitespace-pre-wrap">
                 {@requisition.rejection_reason}
               </dd>
@@ -203,7 +203,7 @@
         <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Requesting Member</h3>
         </div>
-        
+
         <div class="px-6 py-4">
           <%= if @requisition.member do %>
             <div class="flex items-center space-x-4">
@@ -214,16 +214,16 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900 truncate">
                   {@requisition.member.fullname}
                 </p>
-                
+
                 <p class="text-sm text-gray-500">Member ID: {@requisition.member_id}</p>
-                
+
                 <p class="text-sm text-gray-500">Email: {@requisition.member.email}</p>
-                
+
                 <p class="text-sm text-gray-500">
                   Phone: {@requisition.member.phone || "Not provided"}
                 </p>
@@ -234,13 +234,13 @@
               <div class="grid grid-cols-2 gap-4 text-center">
                 <div>
                   <div class="text-2xl font-bold text-gray-900">12</div>
-                  
+
                   <div class="text-xs text-gray-500">Total Requests</div>
                 </div>
-                
+
                 <div>
                   <div class="text-2xl font-bold text-voile-success">8</div>
-                  
+
                   <div class="text-xs text-gray-500">Approved</div>
                 </div>
               </div>
@@ -256,7 +256,7 @@
           <div class="px-6 py-4 border-b border-voile-light">
             <h3 class="text-lg font-medium text-gray-900">Assigned Staff</h3>
           </div>
-          
+
           <div class="px-6 py-4">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-10 w-10">
@@ -266,12 +266,12 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">
                   {@requisition.assigned_librarian.fullname}
                 </p>
-                
+
                 <p class="text-sm text-gray-500">Staff Member</p>
               </div>
             </div>
@@ -284,7 +284,7 @@
           <div class="px-6 py-4 border-b border-voile-light">
             <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
           </div>
-          
+
           <div class="px-6 py-4">
             <div class="flex items-center space-x-3">
               <div class="flex-shrink-0 h-10 w-10">
@@ -294,12 +294,12 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">
                   {@requisition.processing_librarian.fullname}
                 </p>
-                
+
                 <p class="text-sm text-gray-500">Processing Librarian</p>
               </div>
             </div>
@@ -311,12 +311,12 @@
         <div class="px-6 py-4 border-b border-voile-light">
           <h3 class="text-lg font-medium text-gray-900">Request Stats</h3>
         </div>
-        
+
         <div class="px-6 py-4">
           <dl class="space-y-3">
             <div>
               <dt class="text-sm font-medium text-gray-500">Processing Time</dt>
-              
+
               <dd class="mt-1 text-sm text-gray-900">
                 <%= if @requisition.completion_date do %>
                   {DateTime.diff(@requisition.completion_date, @requisition.request_date, :day)} days
@@ -325,10 +325,10 @@
                 <% end %>
               </dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-gray-500">Request ID</dt>
-              
+
               <dd class="mt-1 text-xs text-gray-500 font-mono">#{@requisition.id}</dd>
             </div>
           </dl>
@@ -341,7 +341,7 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <h3 class="text-lg font-medium text-gray-900">Requisition Timeline</h3>
     </div>
-    
+
     <div class="px-6 py-4">
       <div class="flow-root">
         <ul class="-mb-8">
@@ -359,7 +359,7 @@
                     <.icon name="hero-document-text" class="w-4 h-4 text-white" />
                   </span>
                 </div>
-                
+
                 <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                   <div>
                     <p class="text-sm text-gray-500">
@@ -370,12 +370,12 @@
                         </span>
                       <% end %>
                     </p>
-                    
+
                     <p class="text-xs text-gray-400 mt-1">
                       Type: {String.capitalize(@requisition.requisition_type)}
                     </p>
                   </div>
-                  
+
                   <div class="text-right text-sm whitespace-nowrap text-gray-500">
                     {format_datetime(@requisition.request_date)}
                   </div>
@@ -394,21 +394,21 @@
                   >
                   </span>
                 <% end %>
-                
+
                 <div class="relative flex space-x-3">
                   <div>
                     <span class="h-8 w-8 rounded-full bg-voile-primary flex items-center justify-center ring-8 ring-white">
                       <.icon name="hero-user" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">
                         Assigned to {@requisition.assigned_librarian.fullname}
                       </p>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@requisition.updated_at)}
                     </div>
@@ -428,19 +428,19 @@
                   >
                   </span>
                 <% end %>
-                
+
                 <div class="relative flex space-x-3">
                   <div>
                     <span class="h-8 w-8 rounded-full bg-voile-success flex items-center justify-center ring-8 ring-white">
                       <.icon name="hero-check" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Requisition approved</p>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@requisition.approval_date)}
                     </div>
@@ -459,12 +459,12 @@
                       <.icon name="hero-check-circle" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Requisition fulfilled</p>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@requisition.completion_date)}
                     </div>
@@ -483,12 +483,12 @@
                       <.icon name="hero-x-mark" class="w-4 h-4 text-white" />
                     </span>
                   </div>
-                  
+
                   <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                     <div>
                       <p class="text-sm text-gray-500">Requisition rejected</p>
                     </div>
-                    
+
                     <div class="text-right text-sm whitespace-nowrap text-gray-500">
                       {format_datetime(@requisition.rejection_date)}
                     </div>

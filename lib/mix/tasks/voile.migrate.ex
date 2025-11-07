@@ -127,7 +127,7 @@ defmodule Mix.Tasks.Voile.Migrate do
     IO.puts("VOILE DATA MIGRATION")
     IO.puts("=" |> String.duplicate(60))
     IO.puts("Data source: #{String.upcase(to_string(source_type))}")
-            IO.puts("Storage adapter override: #{opts[:storage] || "(none)"}")
+    IO.puts("Storage adapter override: #{opts[:storage] || "(none)"}")
     IO.puts("Batch size: #{batch_size}")
     IO.puts("Skip images: #{skip_images}")
     IO.puts("=" |> String.duplicate(60))
@@ -201,9 +201,13 @@ defmodule Mix.Tasks.Voile.Migrate do
     optional_steps =
       []
       |> maybe_add_step(with_loans, {"Loan Data", fn -> LoanImporter.import_all(batch_size) end})
-      |> maybe_add_step(with_loan_history, {"Loan History Data", fn ->
-        LoanHistoryImporter.import_all(batch_size)
-      end})
+      |> maybe_add_step(
+        with_loan_history,
+        {"Loan History Data",
+         fn ->
+           LoanHistoryImporter.import_all(batch_size)
+         end}
+      )
       |> maybe_add_step(with_fines, {"Fines Data", fn -> FineImporter.import_all(batch_size) end})
 
     all_steps = default_steps ++ optional_steps
@@ -275,9 +279,7 @@ defmodule Mix.Tasks.Voile.Migrate do
 
       invalid_type ->
         IO.puts("❌ Invalid data type: #{invalid_type}")
-        IO.puts(
-          "Valid types: biblio, items, members, users, masters, loans, loan_history, fines"
-        )
+        IO.puts("Valid types: biblio, items, members, users, masters, loans, loan_history, fines")
 
         show_help()
     end
@@ -308,15 +310,22 @@ defmodule Mix.Tasks.Voile.Migrate do
       _ -> :noop
     end
 
-    query_base = from(a in Attachment, where: like(a.file_path, ^"/uploads/%"), order_by: [asc: a.inserted_at])
+    query_base =
+      from(a in Attachment,
+        where: like(a.file_path, ^"/uploads/%"),
+        order_by: [asc: a.inserted_at]
+      )
 
-    total = Repo.aggregate(from(a in Attachment, where: like(a.file_path, ^"/uploads/%")), :count, :id)
+    total =
+      Repo.aggregate(from(a in Attachment, where: like(a.file_path, ^"/uploads/%")), :count, :id)
+
     IO.puts("  Found #{total} local attachments to consider for migration")
 
     migrate_loop(0, batch_size, total, dry_run, delete_old, query_base)
   end
 
-  defp migrate_loop(offset, _batch_size, total, _dry_run, _delete_old, _query) when offset >= total do
+  defp migrate_loop(offset, _batch_size, total, _dry_run, _delete_old, _query)
+       when offset >= total do
     IO.puts("🎉 Thumbnail migration finished")
   end
 
@@ -345,8 +354,11 @@ defmodule Mix.Tasks.Voile.Migrate do
 
     local_path =
       cond do
-        String.starts_with?(file_path, "/") -> Path.join(["priv/static", String.trim_leading(file_path, "/")])
-        true -> Path.join(["priv/static", file_path])
+        String.starts_with?(file_path, "/") ->
+          Path.join(["priv/static", String.trim_leading(file_path, "/")])
+
+        true ->
+          Path.join(["priv/static", file_path])
       end
 
     if not File.exists?(local_path) do
@@ -357,12 +369,19 @@ defmodule Mix.Tasks.Voile.Migrate do
       size = stat.size
       mime = attachment.mime_type || MIME.from_path(local_path)
 
-      upload_map = %{path: local_path, filename: attachment.original_name || attachment.file_name || Path.basename(local_path), content_type: mime}
+      upload_map = %{
+        path: local_path,
+        filename: attachment.original_name || attachment.file_name || Path.basename(local_path),
+        content_type: mime
+      }
 
       IO.puts("Uploading attachment #{attachment.id} (#{local_path}) -> storage...")
 
       if dry_run do
-        IO.puts("[dry-run] would upload and update record #{attachment.id} -> keep local file: #{not delete_old}")
+        IO.puts(
+          "[dry-run] would upload and update record #{attachment.id} -> keep local file: #{not delete_old}"
+        )
+
         :dry_run
       else
         case Client.Storage.upload(upload_map, folder: "thumbnails", adapter: Client.Storage.S3) do
@@ -382,8 +401,11 @@ defmodule Mix.Tasks.Voile.Migrate do
 
                 if delete_old do
                   case File.rm(local_path) do
-                    :ok -> IO.puts("Deleted old local file: #{local_path}")
-                    {:error, reason} -> IO.puts("Failed to delete #{local_path}: #{inspect(reason)}")
+                    :ok ->
+                      IO.puts("Deleted old local file: #{local_path}")
+
+                    {:error, reason} ->
+                      IO.puts("Failed to delete #{local_path}: #{inspect(reason)}")
                   end
                 end
 

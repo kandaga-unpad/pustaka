@@ -28,7 +28,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
         Role Details
         <:subtitle>View role information</:subtitle>
       </.header>
-      
+
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -36,18 +36,18 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
             current_path={@current_path}
           />
         </div>
-        
+
         <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/settings/roles"}>Back to Roles</.back>
-            
+
             <%= if can?(@current_scope.user, "roles.update") and not @role.is_system_role do %>
               <.link navigate={~p"/manage/settings/roles/#{@role.id}/edit"} class="primary-btn">
                 Edit Role
               </.link>
             <% end %>
           </div>
-          
+
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
             <div class="space-y-6">
               <div>
@@ -59,17 +59,17 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                     </span>
                   <% end %>
                 </h3>
-                
+
                 <%= if @role.description do %>
                   <p class="text-sm text-gray-600 dark:text-gray-400">{@role.description}</p>
                 <% end %>
               </div>
-              
+
               <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
                   Permissions ({length(@role.permissions)})
                 </h4>
-                
+
                 <%= if length(@role.permissions) > 0 do %>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <%= for permission <- @role.permissions do %>
@@ -79,7 +79,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                           <div class="text-sm font-medium text-gray-900 dark:text-white">
                             {permission.name}
                           </div>
-                          
+
                           <%= if permission.description do %>
                             <div class="text-xs text-gray-500 dark:text-gray-400">
                               {permission.description}
@@ -95,12 +95,12 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                   </p>
                 <% end %>
               </div>
-              
+
               <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
                   Assigned Users ({length(@role_users)})
                 </h4>
-                
+
                 <%= if length(@role_users) > 0 do %>
                   <div class="space-y-2">
                     <%= for user <- @role_users do %>
@@ -117,12 +117,12 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                             {String.first(user.fullname || user.username) |> String.upcase()}
                           </div>
                         <% end %>
-                        
+
                         <div>
                           <div class="text-sm font-medium text-gray-900 dark:text-white">
                             {user.fullname || user.username}
                           </div>
-                          
+
                           <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
                         </div>
                       </div>

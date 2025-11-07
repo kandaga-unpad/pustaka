@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.FormComponent do
         {@title}
         <:subtitle>Manage place records.</:subtitle>
       </.header>
-      
+
       <.form for={@form} id="place-form" phx-target={@myself} phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} type="text" label="Name" />
         <div class="mt-4 flex gap-3">

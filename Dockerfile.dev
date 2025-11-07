@@ -1,0 +1,43 @@
+# Development Dockerfile for Voile
+# This is optimized for development with mounted volumes
+#
+# https://hub.docker.com/r/hexpm/elixir/tags?name=debian
+
+ARG ELIXIR_VERSION=1.19.1
+ARG OTP_VERSION=27.3.4.3
+ARG DEBIAN_VERSION=bookworm-20251103-slim
+
+ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
+
+FROM ${BUILDER_IMAGE}
+
+# set development ENV
+ENV MIX_ENV=dev
+
+# install development dependencies
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+  build-essential \
+  git \
+  curl \
+  ca-certificates \
+  postgresql-client \
+  inotify-tools \
+  && rm -rf /var/lib/apt/lists/*
+
+# prepare build dir
+WORKDIR /app
+
+# install hex + rebar
+RUN mix local.hex --force \
+  && mix local.rebar --force
+
+# expose port
+ENV PORT=4000
+EXPOSE 4000
+
+# run as root for development (easier with mounted volumes)
+USER root
+
+# default command - will use mounted source code
+CMD ["sh", "-c", "mix deps.get && mix ecto.setup && mix phx.server"]

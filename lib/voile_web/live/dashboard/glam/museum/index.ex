@@ -46,10 +46,10 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">Museum Management</h1>
-            
+
             <p class="text-sm text-voile-muted">Manage artifacts, specimens, and cultural objects</p>
           </div>
-          
+
           <div class="hidden md:block">
             <.icon name="hero-building-library" class="w-24 h-24 opacity-20" />
           </div>
@@ -68,10 +68,10 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
                 class="w-6 h-6 text-voile-primary dark:text-voile-primary"
               />
             </div>
-            
+
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">View Collections</h3>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all museum collections</p>
             </div>
           </div>
@@ -84,10 +84,10 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
             <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
               <.icon name="hero-plus-circle" class="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
-            
+
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">New Collection</h3>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Create a new museum collection</p>
             </div>
           </div>
@@ -100,10 +100,10 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
             <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
               <.icon name="hero-cube" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            
+
             <div>
               <h3 class="font-semibold text-gray-900 dark:text-white">View Items</h3>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all museum items</p>
             </div>
           </div>
@@ -112,25 +112,25 @@ defmodule VoileWeb.Dashboard.Glam.Museum.Index do
       <!-- Statistics -->
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Museum Statistics</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-3xl font-bold text-voile-primary">{@total_collections}</div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
           </div>
-          
+
           <div class="text-center">
             <div class="text-3xl font-bold text-voile-primary">{@total_items}</div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
           </div>
-          
+
           <div class="text-center">
             <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
               {@published_collections}
             </div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
           </div>
         </div>

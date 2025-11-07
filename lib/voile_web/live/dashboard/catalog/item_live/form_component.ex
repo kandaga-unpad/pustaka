@@ -14,7 +14,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-      
+
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
@@ -59,7 +59,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               label="Availability"
             />
           </div>
-          
+
           <div class="flex items-center gap-3 pt-2">
             <.button
               phx-disable-with="Saving..."

@@ -112,16 +112,17 @@ defmodule Voile.Migration.BiblioImporter do
               errors: acc.errors + file_stats.errors
             }
 
-          # Track units with high skip rates
-          new_prob_units =
-            if file_stats.skipped > 100 do
-              [{file_stats.unit_id, file_stats.skipped, Path.basename(file)} | prob_units]
-            else
-              prob_units
-            end
+            # Track units with high skip rates
+            new_prob_units =
+              if file_stats.skipped > 100 do
+                [{file_stats.unit_id, file_stats.skipped, Path.basename(file)} | prob_units]
+              else
+                prob_units
+              end
 
-          {new_acc, new_prob_units}
-        end)
+            {new_acc, new_prob_units}
+          end
+        )
 
       print_summary("BIBLIOGRAPHY IMPORT", %{
         "Total Collections Attempted" => stats.attempted,
@@ -540,6 +541,7 @@ defmodule Voile.Migration.BiblioImporter do
 
           # Track failures
           failed_count = length(collections) - count
+
           if failed_count > 0 do
             :ets.update_counter(stats_ref, :collections_failed, failed_count)
 

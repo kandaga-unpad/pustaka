@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
         {@title}
         <:subtitle>Manage membership types and entitlements.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="member-type-form"
@@ -34,14 +34,14 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
             label="Max Event Bookings / Year"
           />
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
           <.input field={@form[:fine_per_day]} type="text" label="Fine / Day" />
           <.input field={@form[:max_fine]} type="text" label="Max Fine" />
           <.input field={@form[:membership_fee]} type="text" label="Membership Fee" />
           <.input field={@form[:currency]} type="text" label="Currency" />
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
           <.input field={@form[:ticket_discount_percent]} type="number" label="Ticket Discount %" />
           <.input field={@form[:shop_discount_percent]} type="number" label="Shop Discount %" />
@@ -51,14 +51,14 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
             label="Membership Period (days)"
           /> <.input field={@form[:priority_level]} type="number" label="Priority Level" />
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
           <.input field={@form[:auto_renew]} type="checkbox" label="Auto Renew" />
           <.input field={@form[:can_reserve]} type="checkbox" label="Can Reserve" />
           <.input field={@form[:can_renew]} type="checkbox" label="Can Renew" />
           <.input field={@form[:digital_access]} type="checkbox" label="Digital Access" />
         </div>
-        
+
         <div class="mt-4 flex gap-3">
           <.button phx-disable-with="Saving...">Save Member Type</.button>
           <.link patch={@patch} class="btn">Cancel</.link>

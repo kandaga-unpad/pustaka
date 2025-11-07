@@ -186,10 +186,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">Import Collections</h1>
-            
+
             <p class="mt-2 text-gray-600">Upload a CSV file to import collections in bulk</p>
           </div>
-          
+
           <.link
             navigate={~p"/manage/catalog/collections"}
             class="btn btn-ghost btn-sm"
@@ -198,7 +198,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
           </.link>
         </div>
       </div>
-      
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Upload Section -->
         <div class="lg:col-span-2">
@@ -218,11 +218,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                     <div class="mt-4">
                       <label for={@uploads.csv_file.ref} class="btn btn-primary">
                         <.icon name="hero-folder-open" class="w-5 h-5 mr-2" /> Choose File
-                      </label> <.live_file_input upload={@uploads.csv_file} class="hidden" />
+                      </label>
+                       <.live_file_input upload={@uploads.csv_file} class="hidden" />
                     </div>
-                    
+
                     <p class="mt-2 text-sm text-gray-500">or drag and drop CSV file here</p>
-                    
+
                     <p class="mt-1 text-xs text-gray-400">Maximum file size: 10MB</p>
                   </div>
                   <!-- Uploaded Files -->
@@ -232,13 +233,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                         <.icon name="hero-document-text" class="w-5 h-5 text-blue-600 mr-3" />
                         <div>
                           <p class="font-medium text-gray-900">{entry.client_name}</p>
-                          
+
                           <p class="text-sm text-gray-500">
                             {Float.round(entry.client_size / 1024, 2)} KB
                           </p>
                         </div>
                       </div>
-                      
+
                       <button
                         type="button"
                         phx-click="cancel_upload"
@@ -278,7 +279,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                           />
                         </label>
                       </div>
-                      
+
                       <div class="flex gap-2">
                         <button type="submit" class="btn btn-primary flex-1">
                           <.icon name="hero-arrow-up-tray" class="w-5 h-5 mr-2" /> Import Now
@@ -302,26 +303,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
             <div class="card bg-base-100 shadow-xl mt-6">
               <div class="card-body">
                 <h2 class="card-title"><.icon name="hero-eye" class="w-6 h-6" /> CSV Preview</h2>
-                
+
                 <p class="text-sm text-gray-600">Showing first {length(@preview_data.rows)} rows</p>
-                
+
                 <div class="overflow-x-auto mt-4">
                   <table class="table table-zebra table-xs">
                     <thead>
                       <tr>
                         <th class="bg-primary text-primary-content">#</th>
-                        
+
                         <%= for header <- @preview_data.headers do %>
                           <th class="bg-primary text-primary-content">{header}</th>
                         <% end %>
                       </tr>
                     </thead>
-                    
+
                     <tbody>
                       <%= for {row, idx} <- Enum.with_index(@preview_data.rows, 1) do %>
                         <tr>
                           <td class="font-bold">{idx}</td>
-                          
+
                           <%= for cell <- row do %>
                             <td class="max-w-xs truncate" title={cell}>{cell}</td>
                           <% end %>
@@ -341,38 +342,38 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                   <h2 class="card-title">
                     <.icon name="hero-chart-bar" class="w-6 h-6" /> Import Results
                   </h2>
-                  
+
                   <button phx-click="clear_results" class="btn btn-ghost btn-sm">
                     <.icon name="hero-x-mark" class="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <div class="stats stats-vertical lg:stats-horizontal shadow mt-4">
                   <div class="stat">
                     <div class="stat-title">Total Rows</div>
-                    
+
                     <div class="stat-value">{@import_results.total}</div>
                   </div>
-                  
+
                   <div class="stat">
                     <div class="stat-title">Successful</div>
-                    
+
                     <div class="stat-value text-success">{@import_results.success}</div>
                   </div>
-                  
+
                   <div class="stat">
                     <div class="stat-title">Failed</div>
-                    
+
                     <div class="stat-value text-error">{@import_results.failed}</div>
                   </div>
                 </div>
-                
+
                 <%= if @import_results.warnings != [] do %>
                   <div class="alert alert-warning mt-4">
                     <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
                     <div>
                       <h3 class="font-bold">Warnings</h3>
-                      
+
                       <ul class="list-disc list-inside mt-2">
                         <%= for warning <- @import_results.warnings do %>
                           <li class="text-sm">{warning}</li>
@@ -381,22 +382,22 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                     </div>
                   </div>
                 <% end %>
-                
+
                 <%= if @import_results.errors != [] do %>
                   <div class="mt-4">
                     <h3 class="font-bold text-error mb-2">Errors:</h3>
-                    
+
                     <div class="space-y-2 max-h-96 overflow-y-auto">
                       <%= for error <- Enum.take(@import_results.errors, 20) do %>
                         <div class="alert alert-error">
                           <div>
                             <div class="font-bold">Row {error.row}</div>
-                            
+
                             <div class="text-sm">{error.reason}</div>
                           </div>
                         </div>
                       <% end %>
-                      
+
                       <%= if length(@import_results.errors) > 20 do %>
                         <p class="text-sm text-gray-500 text-center py-2">
                           ... and {length(@import_results.errors) - 20} more errors
@@ -405,7 +406,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                     </div>
                   </div>
                 <% end %>
-                
+
                 <%= if @import_results.success > 0 do %>
                   <div class="mt-4">
                     <.link navigate={~p"/manage/catalog/collections"} class="btn btn-primary w-full">
@@ -425,45 +426,45 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
               <h2 class="card-title">
                 <.icon name="hero-information-circle" class="w-6 h-6" /> Quick Guide
               </h2>
-              
+
               <div class="space-y-4 text-sm">
                 <div>
                   <h5 class="font-bold mb-2">1. Download Template</h5>
-                  
+
                   <p class="text-gray-600 mb-2">
                     Start with our template that includes all available property columns.
                   </p>
-                  
+
                   <button phx-click="download_template" class="btn btn-sm btn-outline w-full">
                     <.icon name="hero-arrow-down-tray" class="w-4 h-4 mr-2" /> Download Template
                   </button>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div>
                   <h5 class="font-bold mb-2">2. Required Columns</h5>
-                  
+
                   <ul class="list-disc list-inside text-gray-600 space-y-1">
                     <li>title</li>
-                    
+
                     <li>description</li>
-                    
+
                     <li>status</li>
-                    
+
                     <li>access_level</li>
-                    
+
                     <li>thumbnail</li>
-                    
+
                     <li>creator_id</li>
                   </ul>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div>
                   <h5 class="font-bold mb-2">3. Status Values</h5>
-                  
+
                   <div class="space-y-1">
                     <span class="badge badge-sm">draft</span>
                     <span class="badge badge-sm">pending</span>
@@ -471,38 +472,38 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                     <span class="badge badge-sm">archived</span>
                   </div>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div>
                   <h5 class="font-bold mb-2">4. Access Levels</h5>
-                  
+
                   <div class="space-y-1">
                     <span class="badge badge-sm">public</span>
                     <span class="badge badge-sm">private</span>
                     <span class="badge badge-sm">restricted</span>
                   </div>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div>
                   <h5 class="font-bold mb-2">5. Available Properties</h5>
-                  
+
                   <p class="text-gray-600 mb-2">Add columns using these property names:</p>
-                  
+
                   <div class="max-h-48 overflow-y-auto space-y-1">
                     <%= for prop <- @available_properties do %>
                       <div class="badge badge-outline badge-sm">{prop.local_name}</div>
                     <% end %>
                   </div>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div>
                   <h5 class="font-bold mb-2">6. Items (Optional)</h5>
-                  
+
                   <p class="text-gray-600">
                     Add item columns: item_1_item_code, item_1_inventory_code, item_1_location, etc.
                   </p>

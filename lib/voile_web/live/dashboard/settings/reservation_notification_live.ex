@@ -103,29 +103,29 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
           current_path={@current_path}
         />
       </div>
-      
+
       <div class="flex-1">
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
             <h3 class="text-lg font-medium">Notification Preferences</h3>
-            
+
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Control how you want to be notified about new reservation requests
             </p>
           </div>
-          
+
           <div class="px-6 py-4 space-y-6">
             <!-- Enable/Disable Notifications -->
             <div class="flex items-start">
               <div class="flex-1">
                 <h4 class="text-base font-medium">Enable Reservation Notifications</h4>
-                
+
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Receive real-time notifications when members create reservation requests.
                   When disabled, no notification popup will appear but reservations will still be recorded.
                 </p>
               </div>
-              
+
               <div class="ml-4 flex-shrink-0">
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
@@ -141,7 +141,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
                 </label>
               </div>
             </div>
-            
+
             <div class="border-t border-gray-200 dark:border-gray-600 pt-6"></div>
             <!-- Sound Notifications -->
             <div class={[
@@ -150,12 +150,12 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             ]}>
               <div class="flex-1">
                 <h4 class="text-base font-medium">Sound Alerts</h4>
-                
+
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Play a sound when a new reservation notification arrives. Requires notifications to be enabled.
                 </p>
               </div>
-              
+
               <div class="ml-4 flex-shrink-0">
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
@@ -172,7 +172,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
                 </label>
               </div>
             </div>
-            
+
             <div class="border-t border-gray-200 dark:border-gray-600 pt-6"></div>
             <!-- Desktop Notifications -->
             <div class={[
@@ -181,13 +181,13 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             ]}>
               <div class="flex-1">
                 <h4 class="text-base font-medium">Browser Desktop Notifications</h4>
-                
+
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Show browser notifications even when you're on a different tab.
                   You'll need to grant permission in your browser. Requires notifications to be enabled.
                 </p>
               </div>
-              
+
               <div class="ml-4 flex-shrink-0">
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
@@ -205,7 +205,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               </div>
             </div>
           </div>
-          
+
           <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
             <div class="flex items-center gap-2 text-sm">
               <.icon name="hero-information-circle" class="w-5 h-5 text-blue-500" />
@@ -221,20 +221,20 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             <div class="flex-shrink-0">
               <.icon name="hero-light-bulb" class="w-5 h-5 text-blue-400" />
             </div>
-            
+
             <div class="ml-3">
               <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
                 About Reservation Notifications
               </h3>
-              
+
               <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
                 <ul class="list-disc list-inside space-y-1">
                   <li>Notifications appear when members request to reserve items</li>
-                  
+
                   <li>Only staff and admin users receive these notifications</li>
-                  
+
                   <li>Notifications show member name, item details, and notes</li>
-                  
+
                   <li>Click on a notification to view the full reservation details</li>
                 </ul>
               </div>

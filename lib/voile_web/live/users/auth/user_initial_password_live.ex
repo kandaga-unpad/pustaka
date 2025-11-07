@@ -10,12 +10,12 @@ defmodule VoileWeb.UserInitialPasswordLive do
         <div class="w-full max-w-md bg-white/80 dark:bg-gray-800/70 backdrop-blur rounded-lg shadow-md p-6">
           <div class="mb-4 text-center">
             <.header>Set your initial password</.header>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
               This account was imported with a default password. Choose a new secure password below to finish setting up your account.
             </p>
           </div>
-          
+
           <.form
             for={@form}
             id="initial_password_form"
@@ -39,7 +39,7 @@ defmodule VoileWeb.UserInitialPasswordLive do
               <.button phx-disable-with="Setting..." class="w-full primary-btn">Set password</.button>
             </div>
           </.form>
-          
+
           <div class="mt-5 text-center text-sm text-gray-600 dark:text-gray-300">
             <.link href={~p"/register"} class="underline mr-2">Register</.link>
             <span class="mx-1">·</span>

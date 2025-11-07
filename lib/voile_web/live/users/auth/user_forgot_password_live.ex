@@ -14,7 +14,7 @@ defmodule VoileWeb.UserForgotPasswordLive do
               <!-- Simple SVG illustration placeholder -->
               <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
               <h3 class="mt-6 text-lg font-semibold">Reset your password</h3>
-              
+
               <p class="mt-2 text-sm">
                 Enter the email associated with your account and we'll send a secure link to reset your password.
               </p>
@@ -30,7 +30,7 @@ defmodule VoileWeb.UserForgotPasswordLive do
                 </span>
               </:subtitle>
             </.header>
-            
+
             <.form for={@form} id="reset_password_form" phx-submit="send_email">
               <div class="space-y-4">
                 <.input field={@form[:email]} type="email" placeholder="Email" required />
@@ -39,7 +39,7 @@ defmodule VoileWeb.UserForgotPasswordLive do
                 </.button>
               </div>
             </.form>
-            
+
             <div class="mt-6 flex items-center justify-between text-sm text-gray-600">
               <.link href={~p"/register"} class="w-24 text-center primary-btn hover:underline">
                 Register

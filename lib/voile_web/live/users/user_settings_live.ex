@@ -86,7 +86,7 @@ defmodule VoileWeb.UserSettingsLive do
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Your account currently doesn't have a password because it was created via an external provider or import. You can set one now to enable email/password logins.
             </p>
-             <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
+            <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
           <% end %>
         </div>
 
@@ -103,7 +103,7 @@ defmodule VoileWeb.UserSettingsLive do
               <.input field={@profile_form[:fullname]} type="text" label="Full name" />
               <.input field={@profile_form[:username]} type="text" label="Username" />
             </div>
-             <.input field={@profile_form[:email]} type="email" label="Email" disabled />
+            <.input field={@profile_form[:email]} type="email" label="Email" disabled />
             <label class="block text-sm font-medium text-gray-700 mb-2">Profile image</label>
             <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
               <%= if @profile_image_preview || @current_scope.user.user_image do %>
@@ -128,7 +128,7 @@ defmodule VoileWeb.UserSettingsLive do
               <% else %>
                 <div class="border border-dashed rounded p-4 text-center">
                   <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
-                   <.live_file_input upload={@uploads.user_image} class="hidden" />
+                  <.live_file_input upload={@uploads.user_image} class="hidden" />
                   <label
                     for={@uploads.user_image.ref}
                     class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
@@ -225,7 +225,7 @@ defmodule VoileWeb.UserSettingsLive do
                 <.input field={@profile_form[:position]} type="text" label="Position" />
               </div>
             </fieldset>
-             <hr class="my-4" />
+            <hr class="my-4" />
             <div class="mt-3 grid grid-cols-1 gap-2">
               <.button phx-disable-with="Saving...">Save Profile</.button>
             </div>

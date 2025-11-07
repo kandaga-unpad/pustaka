@@ -79,7 +79,7 @@ defmodule VoileWeb.Users.ManageLive do
                       >
                       </path>
                     </svg>
-                     <span class="text-sm text-gray-500">Searching...</span>
+                    <span class="text-sm text-gray-500">Searching...</span>
                   </div>
                 <% end %>
               </div>

@@ -18,7 +18,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
           <% end %>
         </:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="permission-form"
@@ -36,7 +36,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
         <div class="text-xs text-gray-500 dark:text-gray-400 -mt-2 mb-4">
           Format: resource.action (e.g., collections.create)
         </div>
-        
+
         <.input
           field={@form[:resource]}
           type="text"

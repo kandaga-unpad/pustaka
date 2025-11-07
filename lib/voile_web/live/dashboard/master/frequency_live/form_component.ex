@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.FormComponent do
         {@title}
         <:subtitle>Manage frequency records.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="frequency-form"

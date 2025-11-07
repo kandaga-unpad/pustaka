@@ -37,7 +37,10 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
             # preserves authorization but consumes server bandwidth. Use
             # streaming to avoid buffering the entire file in memory.
             # We use hackney directly for chunked streaming.
-            case :hackney.request(:get, fp, [], :stream, [{:recv_timeout, 120_000}, {:follow_redirect, true}]) do
+            case :hackney.request(:get, fp, [], :stream, [
+                   {:recv_timeout, 120_000},
+                   {:follow_redirect, true}
+                 ]) do
               {:ok, status, headers, client_ref} ->
                 # Determine content type
                 content_type =
@@ -46,7 +49,8 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
                       # Try to get from response headers
                       get_resp_header_value(headers, "content-type") || "application/octet-stream"
 
-                    ct -> ct
+                    ct ->
+                      ct
                   end
 
                 conn =
@@ -59,15 +63,8 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
 
                 case Plug.Conn.send_chunked(conn, status) do
                   %Plug.Conn{} = chunked_conn ->
-                    # Some Plug versions (or the static analysis) represent the
-                    # send_chunked result as the conn directly; handle that form.
+                    # send_chunked returns the connection; stream from it
                     stream_hackney_body(chunked_conn, client_ref)
-
-                  other ->
-                    conn
-                    |> put_status(502)
-                    |> put_resp_content_type("text/plain")
-                    |> send_resp(502, "Failed to initiate chunked response: #{inspect(other)}")
                 end
 
               {:error, reason} ->
@@ -95,11 +92,12 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
   end
 
   defp get_resp_header_value(headers, key) do
-    cond do
-      is_map(headers) -> Map.get(headers, key) || Map.get(headers, String.downcase(key))
-      is_list(headers) -> headers |> Enum.find_value(fn {k, v} -> if String.downcase(k) == String.downcase(key), do: v end)
-      true -> nil
-    end
+    # Headers from hackney are always a list of {key, value} tuples.
+    headers
+    |> Enum.find_value(fn
+      {k, v} when is_binary(k) -> if String.downcase(k) == String.downcase(key), do: v
+      _ -> nil
+    end)
   end
 
   defp stream_hackney_body(conn, client_ref) do

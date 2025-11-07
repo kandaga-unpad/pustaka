@@ -40,10 +40,10 @@ defmodule VoileWeb.SearchDashboardLive do
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Dashboard</h1>
-          
+
           <p class="text-gray-600 dark:text-gray-300">Monitor search activity and trends</p>
         </div>
-        
+
         <.link
           href="/search"
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-voile-surface bg-voile-primary hover:bg-voile-primary/80 dark:bg-voile-primary dark:hover:bg-voile-primary/80"
@@ -63,7 +63,7 @@ defmodule VoileWeb.SearchDashboardLive do
             <.icon name="hero-fire" class="w-6 h-6 text-red-600 dark:text-red-400" />
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Trending Searches</h3>
           </div>
-          
+
           <div class="space-y-3">
             <%= for {query, count} <- Enum.take(@popular_searches, 5) do %>
               <div class="flex items-center justify-between">
@@ -78,7 +78,7 @@ defmodule VoileWeb.SearchDashboardLive do
                 </span>
               </div>
             <% end %>
-            
+
             <%= if length(@popular_searches) == 0 do %>
               <p class="text-sm text-gray-500 dark:text-gray-400 italic">No searches yet today</p>
             <% end %>
@@ -91,7 +91,7 @@ defmodule VoileWeb.SearchDashboardLive do
           <.icon name="hero-chart-bar" class="w-6 h-6 text-green-600 dark:text-green-400" />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Activity by Hour</h3>
         </div>
-        
+
         <div class="grid grid-cols-12 gap-2 h-32">
           <%= for hour <- 0..23 do %>
             <div class="flex flex-col items-center justify-end">
@@ -100,11 +100,11 @@ defmodule VoileWeb.SearchDashboardLive do
                 style={"height: #{get_hour_percentage(@search_trends, hour)}%"}
               >
               </div>
-               <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">{hour}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">{hour}</span>
             </div>
           <% end %>
         </div>
-        
+
         <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
           <p>Peak search hours: {get_peak_hours(@search_trends)}</p>
         </div>
@@ -115,12 +115,12 @@ defmodule VoileWeb.SearchDashboardLive do
           <.icon name="hero-clock" class="w-6 h-6 text-voile-primary dark:text-voile-primary" />
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
         </div>
-        
+
         <div class="space-y-2">
           <%= for activity <- @search_stats.recent_activity do %>
             <div class="text-sm text-gray-600 dark:text-gray-300 py-1">{activity}</div>
           <% end %>
-          
+
           <%= if length(@search_stats.recent_activity) == 0 do %>
             <p class="text-sm text-gray-500 dark:text-gray-400 italic">No recent search activity</p>
           <% end %>

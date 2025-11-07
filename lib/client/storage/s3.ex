@@ -242,6 +242,7 @@ defmodule Client.Storage.S3 do
       credential = URI.encode_www_form("#{access_key}/#{credential_scope}")
 
       endpoint_full = get_s3_public_url()
+
       endpoint_host =
         case URI.parse(endpoint_full) do
           %URI{host: h} when is_binary(h) -> h
@@ -283,24 +284,31 @@ defmodule Client.Storage.S3 do
       payload_hash = "UNSIGNED-PAYLOAD"
 
       canonical_request =
-        Enum.join([
-          "GET",
-          canonical_uri,
-          canonical_querystring,
-          canonical_headers,
-          signed_headers,
-          payload_hash
-        ], "\n")
+        Enum.join(
+          [
+            "GET",
+            canonical_uri,
+            canonical_querystring,
+            canonical_headers,
+            signed_headers,
+            payload_hash
+          ],
+          "\n"
+        )
 
-      hashed_canonical_request = :crypto.hash(:sha256, canonical_request) |> Base.encode16(case: :lower)
+      hashed_canonical_request =
+        :crypto.hash(:sha256, canonical_request) |> Base.encode16(case: :lower)
 
       string_to_sign =
-        Enum.join([
-          algorithm,
-          amz_date,
-          credential_scope,
-          hashed_canonical_request
-        ], "\n")
+        Enum.join(
+          [
+            algorithm,
+            amz_date,
+            credential_scope,
+            hashed_canonical_request
+          ],
+          "\n"
+        )
 
       # derive signing key
       k_secret = "AWS4" <> secret_key
@@ -309,7 +317,8 @@ defmodule Client.Storage.S3 do
       k_service = :crypto.mac(:hmac, :sha256, k_region, service)
       k_signing = :crypto.mac(:hmac, :sha256, k_service, "aws4_request")
 
-      signature = :crypto.mac(:hmac, :sha256, k_signing, string_to_sign) |> Base.encode16(case: :lower)
+      signature =
+        :crypto.mac(:hmac, :sha256, k_signing, string_to_sign) |> Base.encode16(case: :lower)
 
       # Construct final URL using configured format so it matches provider expectations
       final_url =
@@ -318,7 +327,10 @@ defmodule Client.Storage.S3 do
         |> String.replace("{bucket}", bucket)
         |> String.replace("{key}", key_for_url)
 
-      url = final_url <> (if String.contains?(final_url, "?"), do: "&", else: "?") <> canonical_querystring <> "&X-Amz-Signature=" <> signature
+      url =
+        final_url <>
+          if(String.contains?(final_url, "?"), do: "&", else: "?") <>
+          canonical_querystring <> "&X-Amz-Signature=" <> signature
 
       {:ok, url}
     end

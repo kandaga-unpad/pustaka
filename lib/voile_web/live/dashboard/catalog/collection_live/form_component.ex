@@ -380,7 +380,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               disabled={true}
             />
           <% end %>
-           <.input field={@form[:thumbnail]} type="text" label="Thumbnail" disabled="true" />
+          <.input field={@form[:thumbnail]} type="text" label="Thumbnail" disabled="true" />
           <input
             name={@form[:creator_id].name}
             value={@form[:creator_id].value || @current_scope.user.id}

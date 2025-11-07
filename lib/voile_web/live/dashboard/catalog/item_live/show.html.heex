@@ -1,7 +1,7 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
   <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>
-   <%!-- Hero Section with Collection Info --%>
+  <%!-- Hero Section with Collection Info --%>
   <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-md overflow-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
       <%!-- Collection Thumbnail --%>
@@ -20,7 +20,7 @@
           <% end %>
         </div>
       </div>
-       <%!-- Main Info --%>
+      <%!-- Main Info --%>
       <div class="lg:col-span-2 flex flex-col justify-between">
         <div class="space-y-4">
           <div class="flex items-start justify-between gap-4">
@@ -45,16 +45,16 @@
                   {@item.availability || "unknown"}
                 </span>
               </div>
-              
+
               <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 {@item.collection.title}
               </h1>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
                 {@item.collection.description}
               </p>
             </div>
-            
+
             <.link
               patch={~p"/manage/catalog/items/#{@item}/show/edit"}
               phx-click={JS.push_focus()}
@@ -64,23 +64,23 @@
               </.button>
             </.link>
           </div>
-          
+
           <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div>
               <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
                 <.icon name="hero-building-library" class="w-4 h-4" /> Library Unit
               </div>
-              
+
               <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {@item.node.name} ({@item.node.abbr})
               </div>
             </div>
-            
+
             <div>
               <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
                 <.icon name="hero-user" class="w-4 h-4" /> Creator
               </div>
-              
+
               <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {@item.collection.mst_creator.creator_name}
               </div>
@@ -90,7 +90,7 @@
       </div>
     </div>
   </div>
-   <%!-- Item Details Cards --%>
+  <%!-- Item Details Cards --%>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <%!-- Item Information Card --%>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
@@ -98,7 +98,7 @@
         <.icon name="hero-identification" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Item Information</h2>
       </div>
-      
+
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Item Code</span>
@@ -106,28 +106,28 @@
             {@item.item_code || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Inventory Code</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.inventory_code || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Collection Code</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.collection.collection_code || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">RFID Tag</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.rfid_tag || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2">
           <span class="text-sm text-gray-500 dark:text-gray-400">Legacy Item Code</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
@@ -136,7 +136,7 @@
         </div>
       </div>
     </div>
-     <%!-- Location & Status Card --%>
+    <%!-- Location & Status Card --%>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
         <.icon name="hero-map-pin" class="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -144,7 +144,7 @@
           Location & Availability
         </h2>
       </div>
-      
+
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Current Location</span>
@@ -152,7 +152,7 @@
             {@item.location || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Item Status</span>
           <span class={[
@@ -162,7 +162,7 @@
             {@item.status || "unknown"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Condition</span>
           <span class={[
@@ -172,7 +172,7 @@
             {@item.condition || "unknown"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Availability</span>
           <span class={[
@@ -182,7 +182,7 @@
             {@item.availability || "unknown"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2">
           <span class="text-sm text-gray-500 dark:text-gray-400">Price</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -195,7 +195,7 @@
         </div>
       </div>
     </div>
-     <%!-- Dates & History Card --%>
+    <%!-- Dates & History Card --%>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
         <.icon
@@ -204,7 +204,7 @@
         />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dates & History</h2>
       </div>
-      
+
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Acquisition Date</span>
@@ -216,7 +216,7 @@
             <% end %>
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Last Inventory</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -227,7 +227,7 @@
             <% end %>
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Last Circulated</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -238,14 +238,14 @@
             <% end %>
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Created</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             {Voile.Utils.DateHelper.display_datetime(@item.inserted_at)}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2">
           <span class="text-sm text-gray-500 dark:text-gray-400">Last Updated</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -254,13 +254,13 @@
         </div>
       </div>
     </div>
-     <%!-- Collection Details Card --%>
+    <%!-- Collection Details Card --%>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
         <.icon name="hero-book-open" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Collection Details</h2>
       </div>
-      
+
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Collection Status</span>
@@ -271,7 +271,7 @@
             {@item.collection.status || "unknown"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Access Level</span>
           <span class={[
@@ -281,21 +281,21 @@
             {@item.collection.access_level || "unknown"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Type ID</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             {@item.collection.type_id || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Creator Type</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
             {@item.collection.mst_creator.type || "-"}
           </span>
         </div>
-        
+
         <div class="flex items-start justify-between py-2">
           <span class="text-sm text-gray-500 dark:text-gray-400">Creator Affiliation</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -305,11 +305,11 @@
       </div>
     </div>
   </div>
-   <%!-- Action Bar --%>
+  <%!-- Action Bar --%>
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
     <div class="flex items-center justify-between">
       <.back navigate={~p"/manage/catalog/items"}>Back to items</.back>
-      
+
       <div class="flex items-center gap-3 mt-3">
         <.link
           navigate={~p"/manage/catalog/collections/#{@item.collection.id}"}
@@ -320,7 +320,7 @@
       </div>
     </div>
   </div>
-   <%!-- Edit Modal --%>
+  <%!-- Edit Modal --%>
   <.modal
     :if={@live_action == :edit}
     id="item-modal"

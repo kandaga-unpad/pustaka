@@ -8,13 +8,13 @@
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
     <.back navigate="/manage/glam/library/circulation">Back</.back>
-    
+
     <div class="text-center">
       <h1 class="text-2xl font-bold text-surface-dark">Library Fines</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage fines, payments, and waivers</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/glam/library/circulation/fines/new"}
@@ -80,25 +80,25 @@
     <div class="bg-white dark:bg-gray-700 px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Outstanding</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Partial Paid</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-green-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Paid Today</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">Rp -</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Total Outstanding</div>
       </div>
     </div>
@@ -115,24 +115,24 @@
               </span>
             </div>
           </div>
-          
+
           <div class="ml-4">
             <div class="text-sm font-medium text-surface-dark">
               {if fine.member, do: fine.member.fullname, else: "Unknown Member"}
             </div>
-            
+
             <div class="text-sm text-gray-500">
               ID: {if fine.member.identifier, do: fine.member.identifier, else: "-"}
             </div>
           </div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Item">
         <div>
           <%= if fine.item do %>
             <div class="text-sm font-medium text-surface-dark">{fine.item.item_code}</div>
-            
+
             <div
               class="text-sm text-gray-500"
               title={
@@ -146,27 +146,27 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Fine Type">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_type_badge_class(fine.fine_type)}"}>
           {fine.fine_type |> String.replace("_", " ") |> String.capitalize()}
         </span>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Amount">
         <div class="text-sm font-medium text-surface-dark">{format_idr(fine.amount)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Paid">
         <div class="text-sm text-surface-dark">{format_idr(fine.paid_amount)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Balance">
         <div class={"text-sm font-medium #{if Decimal.equal?(fine.balance || Decimal.new(0), 0), do: "text-green-600", else: "text-red-600"}"}>
           {format_idr(fine.balance)}
         </div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_status_badge_class(fine.fine_status)}"}>
           {if fine.waived do
@@ -176,11 +176,11 @@
           end}
         </span>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Fine Date">
         <div class="text-sm text-surface-dark">{format_date(fine.fine_date)}</div>
       </:col>
-      
+
       <:col :let={{_id, fine}} label="Payment Method">
         <div class="text-sm text-surface-dark">
           {if fine.payment_method do
@@ -190,7 +190,7 @@
           end}
         </div>
       </:col>
-      
+
       <:action :let={{_id, fine}}>
         <.link
           navigate={~p"/manage/glam/library/circulation/fines/#{fine.id}"}
@@ -215,7 +215,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium text-surface-dark">New Fine</h3>
-    
+
     <.form for={@fine_form} id="fine-form" phx-submit="create_fine">
       <.input
         field={@fine_form[:member_id]}
@@ -251,7 +251,7 @@
                       — {if item.collection, do: item.collection.title, else: "No collection"}
                     </span>
                   </div>
-                  
+
                   <div class="text-xs text-gray-500 truncate">
                     {if item.collection && item.collection.title,
                       do: item.collection.title,
@@ -259,7 +259,7 @@
                   </div>
                 </li>
               <% end %>
-              
+
               <%= if @item_suggestions == [] and @item_search_text != "" do %>
                 <li class="px-3 py-2 text-sm text-gray-500">No items found</li>
               <% end %>
@@ -267,7 +267,7 @@
           </div>
         </div>
       </div>
-      
+
       <.input
         field={@fine_form[:fine_type]}
         type="select"
@@ -292,7 +292,7 @@
         <strong>Note:</strong>
         For overdue fines, amount defaults to member type's daily fine rate. For other types: Lost Item (Rp 50,000), Damaged Item (Rp 25,000), Processing Fee (Rp 10,000).
       </div>
-      
+
       <.input
         field={@fine_form[:description]}
         type="textarea"

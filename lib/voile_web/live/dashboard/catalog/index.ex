@@ -27,10 +27,10 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
     ~H"""
     <section class="flex flex-col gap-4">
       <div><.dashboard_menu_bar user={@current_scope.user} /></div>
-      
+
       <div class="flex flex-col gap-4 p-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
         <h1 class="text-2xl font-bold">{gettext("Catalog")}</h1>
-        
+
         <div class="w-full">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="rounded-lg p-4 bg-gray-50 dark:bg-gray-700 shadow flex items-center gap-4">
@@ -52,12 +52,12 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                   /> <path d="M3 18h18" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
-              
+
               <div class="flex-1">
                 <div class="text-sm text-gray-500 dark:text-gray-300 font-semibold">
                   {gettext("Total Collections")}
                 </div>
-                
+
                 <div class="mt-1 flex items-center gap-3">
                   <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
                     <%= if is_nil(@count_collections) do %>
@@ -77,7 +77,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                             stroke-width="4"
                           >
                           </circle>
-                          
+
                           <path
                             class="opacity-75"
                             fill="currentColor"
@@ -93,14 +93,14 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                       {@count_collections}
                     <% end %>
                   </div>
-                  
+
                   <div class="text-xs text-gray-500 dark:text-gray-400">
                     {gettext("collections across nodes")}
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div class="rounded-lg p-4 bg-gray-50 dark:bg-gray-700 shadow flex items-center gap-4">
               <div class="p-3 rounded-md bg-green-50 dark:bg-green-900/30">
                 <!-- gallery small icon -->
@@ -117,12 +117,12 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                   <circle cx="17" cy="8" r="1.5" />
                 </svg>
               </div>
-              
+
               <div class="flex-1">
                 <div class="text-sm text-gray-500 dark:text-gray-300 font-semibold">
                   {gettext("Items")}
                 </div>
-                
+
                 <div class="mt-1 flex items-center gap-3">
                   <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
                     <%= if is_nil(@count_items) do %>
@@ -142,7 +142,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                             stroke-width="4"
                           >
                           </circle>
-                          
+
                           <path
                             class="opacity-75"
                             fill="currentColor"
@@ -158,7 +158,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                       {@count_items}
                     <% end %>
                   </div>
-                  
+
                   <div class="text-xs text-gray-500 dark:text-gray-400">
                     {gettext("items across nodes")}
                   </div>
@@ -167,10 +167,10 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
             </div>
           </div>
         </div>
-         <hr class="my-4 text-gray-200 dark:text-gray-700" />
+        <hr class="my-4 text-gray-200 dark:text-gray-700" />
         <div class="w-full">
           <h3 class="text-lg font-semibold mb-2">{gettext("Per Node Statistics")}</h3>
-          
+
           <%= if @count_all_nodes == [] do %>
             <div class="flex items-center justify-center p-4">
               <svg
@@ -188,7 +188,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                   stroke-width="4"
                 >
                 </circle>
-                
+
                 <path
                   class="opacity-75"
                   fill="currentColor"
@@ -205,7 +205,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                   <div class={"px-4 py-3 bg-gradient-to-r " <> node.color}>
                     <h4 class="text-sm font-medium text-white truncate">{node.name}</h4>
                   </div>
-                  
+
                   <div class="p-4 grid grid-cols-2 gap-3 bg-white dark:bg-gray-600">
                     <div class="flex items-center gap-3">
                       <div class="p-2 rounded-md bg-gray-100 dark:bg-gray-900">
@@ -226,12 +226,12 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                           /> <path d="M3 18h18" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                       </div>
-                      
+
                       <div>
                         <div class="text-xs text-gray-500 dark:text-gray-300">
                           {gettext("Collections")}
                         </div>
-                        
+
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_collections) do %>
                             <span class="inline-flex items-center gap-2">
@@ -250,14 +250,15 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                                   stroke-width="4"
                                 >
                                 </circle>
-                                
+
                                 <path
                                   class="opacity-75"
                                   fill="currentColor"
                                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                                 >
                                 </path>
-                              </svg> <span class="text-sm">{gettext("Loading")}</span>
+                              </svg>
+                               <span class="text-sm">{gettext("Loading")}</span>
                             </span>
                           <% else %>
                             {node.count_collections}
@@ -265,7 +266,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-3">
                       <div class="p-2 rounded-md bg-gray-100 dark:bg-gray-900">
                         <!-- gallery / item icon: framed photo with mountain and sun -->
@@ -282,10 +283,10 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                           <circle cx="17" cy="8" r="1.5" />
                         </svg>
                       </div>
-                      
+
                       <div>
                         <div class="text-xs text-gray-500 dark:text-gray-300">{gettext("Items")}</div>
-                        
+
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_items) do %>
                             <span class="inline-flex items-center gap-2">
@@ -304,14 +305,15 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                                   stroke-width="4"
                                 >
                                 </circle>
-                                
+
                                 <path
                                   class="opacity-75"
                                   fill="currentColor"
                                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                                 >
                                 </path>
-                              </svg> <span class="text-sm">{gettext("Loading")}</span>
+                              </svg>
+                               <span class="text-sm">{gettext("Loading")}</span>
                             </span>
                           <% else %>
                             {node.count_items}

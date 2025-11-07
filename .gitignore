@@ -37,6 +37,8 @@ npm-debug.log
 
 # Environment Variable
 .env
+.env.*
+!.env.*.example
 *.bat
 
 # Private Assets

@@ -58,8 +58,9 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
           # Local file served by existing controller
           {:ok, "/attachments/#{attachment.id}/download"}
 
-        is_binary(fp) and (String.starts_with?(fp, "http://") or
-                             String.starts_with?(fp, "https://")) ->
+        is_binary(fp) and
+            (String.starts_with?(fp, "http://") or
+               String.starts_with?(fp, "https://")) ->
           # Remote file (S3-like) - presign the underlying key
           file_key = Client.Storage.S3.extract_file_key_from_url(fp)
 
@@ -88,7 +89,14 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
 
         <%= if @file_url do %>
           <div class="mb-4 flex gap-2">
-            <a href={@file_url} target="_blank" rel="noopener noreferrer" class="px-3 py-2 bg-voile-primary text-white rounded">Open in new tab</a>
+            <a
+              href={@file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-3 py-2 bg-voile-primary text-white rounded"
+            >
+              Open in new tab
+            </a>
             <a href={@file_url} download class="px-3 py-2 border rounded">Download</a>
           </div>
 
@@ -97,7 +105,11 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
           </div>
         <% else %>
           <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <p class="text-gray-600 dark:text-gray-300">No file specified. Provide a file URL via query parameter <code>?url=</code> (local path like <code>/uploads/...</code> or full S3 URL).</p>
+            <p class="text-gray-600 dark:text-gray-300">
+              No file specified. Provide a file URL via query parameter <code>?url=</code>
+              (local path like <code>/uploads/...</code>
+              or full S3 URL).
+            </p>
           </div>
         <% end %>
       </div>

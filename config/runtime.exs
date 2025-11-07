@@ -22,7 +22,8 @@ end
 
 if config_env() == :prod do
   database_url =
-    System.get_env("VOILE_DATABASE_URL") ||
+    System.get_env("DATABASE_URL") ||
+      System.get_env("VOILE_DATABASE_URL") ||
       raise """
       environment variable DATABASE_URL is missing.
       For example: ecto://USER:PASS@HOST/DATABASE
@@ -64,6 +65,11 @@ if config_env() == :prod do
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
+    ],
+    check_origin: [
+      "//localhost:4000",
+      "//127.0.0.1:4000",
+      "//#{host}"
     ],
     secret_key_base: secret_key_base
 

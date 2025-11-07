@@ -8,13 +8,13 @@
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
     <.back navigate="/manage/glam/library/circulation">Back</.back>
-    
+
     <div class="text-center">
       <h1 class="text-2xl font-bold">Library Reservations</h1>
-      
+
       <p class="mt-2 text-sm text-gray-700">Manage item reservations and queue system</p>
     </div>
-    
+
     <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/glam/library/circulation/reservations/new"}
@@ -46,7 +46,7 @@
               label=""
             />
           </.form>
-          
+
           <%= if @is_super_admin do %>
             <.form :let={f} for={%{}} phx-change="select_node" class="inline">
               <.input
@@ -70,25 +70,25 @@
     <div class="bg-white dark:bg-gray-700 px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-yellow-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Pending</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-green-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Available</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-blue-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Picked Up</div>
       </div>
-      
+
       <div class="text-center">
         <div class="text-2xl font-semibold text-red-600">-</div>
-        
+
         <div class="text-xs text-gray-500 uppercase">Expired</div>
       </div>
     </div>
@@ -107,22 +107,22 @@
               </span>
             </div>
           </div>
-          
+
           <div class="ml-4">
             <div class="text-sm font-medium">
               {if reservation.member, do: reservation.member.fullname, else: "Unknown Member"}
             </div>
-            
+
             <div class="text-sm">ID: {reservation.member_id}</div>
           </div>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Item/Collection">
         <div>
           <%= if reservation.item do %>
             <div class="text-sm font-medium">{reservation.item.item_code}</div>
-            
+
             <div class="text-sm">
               {if reservation.item.collection,
                 do: reservation.item.collection.title,
@@ -130,7 +130,7 @@
             </div>
           <% else %>
             <div class="text-sm font-medium">Collection Reservation</div>
-            
+
             <div class="text-sm">
               {if reservation.collection,
                 do: reservation.collection.title,
@@ -139,13 +139,13 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Status">
         <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{reservation_status_badge_class(reservation.status)}"}>
           {String.capitalize(reservation.status)}
         </span>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Priority">
         <div class="flex items-center">
           <span class="text-sm">{reservation.priority || 1}</span>
@@ -154,11 +154,11 @@
           <% end %>
         </div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Reserved Date">
         <div class="text-sm">{format_datetime(reservation.reservation_date)}</div>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Expiry Date">
         <div class="text-sm">
           {if reservation.expiry_date do
@@ -167,12 +167,12 @@
             "-"
           end}
         </div>
-        
+
         <%= if reservation.expiry_date && DateTime.compare(reservation.expiry_date, DateTime.utc_now()) == :lt && reservation.status in ["pending", "available"] do %>
           <div class="text-xs text-red-500 font-medium">Expired</div>
         <% end %>
       </:col>
-      
+
       <:col :let={{_id, reservation}} label="Notification">
         <%= if reservation.notification_sent do %>
           <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -184,7 +184,7 @@
           </span>
         <% end %>
       </:col>
-      
+
       <:action :let={{_id, reservation}}>
         <div class="flex space-x-2">
           <%= if reservation.status == "pending" do %>
@@ -197,7 +197,7 @@
               Available
             </button>
           <% end %>
-          
+
           <%= if reservation.status == "available" do %>
             <button
               phx-click="fulfill_reservation"
@@ -208,7 +208,7 @@
               Fulfill
             </button>
           <% end %>
-          
+
           <%= if reservation.status in ["pending", "available"] do %>
             <button
               phx-click="cancel_reservation"
@@ -219,7 +219,7 @@
               Cancel
             </button>
           <% end %>
-          
+
           <.link
             navigate={~p"/manage/glam/library/circulation/reservations/#{reservation.id}"}
             class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -244,7 +244,7 @@
 >
   <div class="space-y-4">
     <h3 class="text-lg font-medium">New Reservation</h3>
-    
+
     <.form for={@form} id="reservation-form" phx-submit="create_reservation">
       <.input
         field={@form[:member_id]}

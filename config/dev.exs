@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :voile, Voile.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "voile_dev",
+  username: System.get_env("VOILE_POSTGRES_USER") || "postgres",
+  password: System.get_env("VOILE_POSTGRES_PASSWORD") || "postgres",
+  hostname: System.get_env("VOILE_POSTGRES_HOSTNAME") || "localhost",
+  database: System.get_env("VOILE_POSTGRES_DB") || "voile_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,

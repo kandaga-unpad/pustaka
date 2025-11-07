@@ -351,7 +351,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             </div>
           </div>
         </.link>
-         <.quick_actions current_user={@current_scope.user} />
+        <.quick_actions current_user={@current_scope.user} />
       </div>
       <!-- Recent Activity -->
       <div class="mt-8 bg-white dark:bg-gray-700 rounded-lg shadow">

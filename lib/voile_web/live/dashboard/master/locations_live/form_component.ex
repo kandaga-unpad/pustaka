@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.FormComponent do
         {@title}
         <:subtitle>Manage location records.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="location-form"

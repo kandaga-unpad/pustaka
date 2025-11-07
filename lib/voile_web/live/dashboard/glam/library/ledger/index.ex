@@ -145,15 +145,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
     ]} />
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
       <.back navigate="/manage/glam/library">Back</.back>
-      
+
       <div class="text-center flex-1">
         <h1 class="text-2xl font-bold">Start Library Transactions</h1>
-        
+
         <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
           Search for a member to start circulation transactions
         </p>
       </div>
-      
+
       <div class="w-24"></div>
     </div>
 
@@ -167,12 +167,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               class="w-16 h-16 mx-auto text-indigo-600 dark:text-indigo-400 mb-4"
             />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Find Member</h2>
-            
+
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Search by identifier, name, or email
             </p>
           </div>
-          
+
           <div class="space-y-4 relative">
             <div>
               <label
@@ -193,7 +193,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 autofocus
               />
             </div>
-             <%!-- Dropdown Results --%>
+            <%!-- Dropdown Results --%>
             <%= if @show_dropdown and @search_results != [] do %>
               <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
                 <div class="py-2">
@@ -209,7 +209,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                           <p class="font-medium text-gray-900 dark:text-white">
                             {member.fullname || "Unnamed Member"}
                           </p>
-                          
+
                           <div class="flex items-center gap-3 mt-1 text-sm text-gray-500 dark:text-gray-400">
                             <span class="flex items-center gap-1">
                               <.icon name="hero-identification" class="w-4 h-4" /> {if member.identifier,
@@ -220,28 +220,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                               <.icon name="hero-envelope" class="w-4 h-4" /> {member.email}
                             </span>
                           </div>
-                          
+
                           <%= if member.user_type do %>
                             <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
                               {member.user_type.name}
                             </span>
                           <% end %>
                         </div>
-                         <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
+                        <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
                       </div>
                     </button>
                   </div>
                 </div>
               </div>
             <% end %>
-            
+
             <%= if not is_nil(@search_error) and @search_query != "" and not @show_dropdown do %>
               <div class="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4">
                 <div class="flex">
                   <div class="flex-shrink-0">
                     <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-yellow-400" />
                   </div>
-                  
+
                   <div class="ml-3">
                     <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                       {@search_error}
@@ -251,7 +251,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               </div>
             <% end %>
           </div>
-          
+
           <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400 mb-24">
             <p>
               <.icon name="hero-information-circle" class="w-4 h-4 inline mr-1" />
@@ -269,12 +269,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 <div class="w-20 h-20 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center">
                   <.icon name="hero-user" class="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                
+
                 <div>
                   <h2 class="text-2xl font-bold text-white">
                     {@selected_member.fullname || "Unnamed Member"}
                   </h2>
-                  
+
                   <p class="text-indigo-100 mt-1">
                     {if @selected_member.user_type,
                       do: @selected_member.user_type.name,
@@ -282,7 +282,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   </p>
                 </div>
               </div>
-              
+
               <button
                 phx-click="clear_selection"
                 class="text-white hover:text-indigo-100 transition-colors"
@@ -292,18 +292,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               </button>
             </div>
           </div>
-           <%!-- Member Details --%>
+          <%!-- Member Details --%>
           <div class="px-8 py-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Member Information
             </h3>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="flex items-start gap-3">
                 <.icon name="hero-identification" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Identifier</p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {if @selected_member.identifier,
                       do: Decimal.to_string(@selected_member.identifier),
@@ -311,47 +311,47 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-start gap-3">
                 <.icon name="hero-envelope" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {@selected_member.email || "N/A"}
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-start gap-3">
                 <.icon name="hero-phone" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {@selected_member.phone_number || "N/A"}
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-start gap-3">
                 <.icon name="hero-building-office" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {@selected_member.organization || "N/A"}
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-start gap-3">
                 <.icon name="hero-calendar" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Registration Date
                   </p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {if @selected_member.registration_date,
                       do: Calendar.strftime(@selected_member.registration_date, "%B %d, %Y"),
@@ -359,12 +359,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-start gap-3">
                 <.icon name="hero-clock" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expiry Date</p>
-                  
+
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     <%= if @selected_member.expiry_date do %>
                       {Calendar.strftime(@selected_member.expiry_date, "%B %d, %Y")}
@@ -379,13 +379,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   </p>
                 </div>
               </div>
-              
+
               <%= if @selected_member.address do %>
                 <div class="flex items-start gap-3 md:col-span-2">
                   <.icon name="hero-map-pin" class="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
-                    
+
                     <p class="mt-1 text-base text-gray-900 dark:text-white">
                       {@selected_member.address}
                     </p>
@@ -394,7 +394,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <% end %>
             </div>
           </div>
-           <%!-- Action Buttons --%>
+          <%!-- Action Buttons --%>
           <div class="px-8 py-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
             <%= if @selected_member.expiry_date && Date.compare(@selected_member.expiry_date, Date.utc_today()) == :lt do %>
               <div class="rounded-md bg-red-50 dark:bg-red-900/20 p-4 mb-4">
@@ -402,10 +402,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   <div class="flex-shrink-0">
                     <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-red-400" />
                   </div>
-                  
+
                   <div class="ml-3">
                     <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Member Expired</h3>
-                    
+
                     <p class="mt-1 text-sm text-red-700 dark:text-red-300">
                       This member's account expired on {Calendar.strftime(
                         @selected_member.expiry_date,
@@ -417,7 +417,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 </div>
               </div>
             <% end %>
-            
+
             <div class="flex gap-4 justify-end">
               <.button
                 phx-click="clear_selection"

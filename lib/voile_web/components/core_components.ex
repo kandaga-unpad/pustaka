@@ -94,7 +94,7 @@ defmodule VoileWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -166,16 +166,16 @@ defmodule VoileWeb.CoreComponents do
                 <div class="flex-none">
                   <.icon name="hero-exclamation-triangle-solid" class="h-8 w-8 text-voile-error" />
                 </div>
-                
+
                 <div class="flex-1">
                   <h3 id={"#{@id}-title"} class="text-lg font-semibold">{@title}</h3>
-                  
+
                   <p id={"#{@id}-description"} class="mt-2 text-sm text-base-content/70">
                     {render_slot(@inner_block)}
                   </p>
                 </div>
               </div>
-              
+
               <div class="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
@@ -237,10 +237,10 @@ defmodule VoileWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
-          
+
           <p>{msg}</p>
         </div>
-         <div class="flex-1" />
+        <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
@@ -275,7 +275,7 @@ defmodule VoileWeb.CoreComponents do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
       </.flash>
-      
+
       <.flash
         id="server-error"
         kind={:error}
@@ -429,7 +429,7 @@ defmodule VoileWeb.CoreComponents do
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-           {Phoenix.HTML.Form.options_for_select(@options, @value)}
+          {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -443,7 +443,8 @@ defmodule VoileWeb.CoreComponents do
       <label>
         <span :if={@label} class="label mb-1">
           {@label}<span :if={@required_value} class="text-voile-error">*</span>
-        </span> <textarea
+        </span>
+         <textarea
           id={@id}
           name={@name}
           class={[
@@ -521,10 +522,10 @@ defmodule VoileWeb.CoreComponents do
     ]}>
       <div>
         <h5 class="font-semibold">{render_slot(@inner_block)}</h5>
-        
+
         <p :if={@subtitle != []} class="text-sm text-base-content/70">{render_slot(@subtitle)}</p>
       </div>
-      
+
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -566,11 +567,11 @@ defmodule VoileWeb.CoreComponents do
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-          
+
           <th :if={@action != []}><span class="sr-only">{gettext("Actions")}</span></th>
         </tr>
       </thead>
-      
+
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -580,7 +581,7 @@ defmodule VoileWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
-          
+
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -614,7 +615,7 @@ defmodule VoileWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold text-base">{item.title}</div>
-          
+
           <div class="font-semibold italic">{render_slot(item)}</div>
         </div>
       </li>
@@ -847,7 +848,8 @@ defmodule VoileWeb.CoreComponents do
           {VoileWeb.Utils.Locale.locale_flag(VoileWeb.Utils.Locale.get_locale())} {VoileWeb.Utils.Locale.locale_name(
             VoileWeb.Utils.Locale.get_locale()
           )}
-        </span> <.icon name="hero-chevron-down" class="h-4 w-4" />
+        </span>
+         <.icon name="hero-chevron-down" class="h-4 w-4" />
       </button>
       <div
         id="locale-dropdown"

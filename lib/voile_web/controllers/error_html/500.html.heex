@@ -1,0 +1,63 @@
+<% app_main_color = assigns[:app_main_color] || "#9333ea"
+app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
+
+<Layouts.app flash={assigns[:flash] || %{}} current_scope={assigns[:current_scope]}>
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2">
+          <div class="p-10 flex flex-col justify-center gap-6">
+            <div
+              class="inline-flex items-center justify-center w-16 h-16 rounded-full"
+              style={"background: linear-gradient(135deg, " <> app_main_color <> ", " <> app_secondary_color <> ");"}
+            >
+              <.icon name="hero-exclamation-triangle" class="w-7 h-7 text-white" />
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
+              Something went wrong
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300">
+              We're experiencing an unexpected error. Our team has been notified, and we're working on a fix.
+            </p>
+
+            <div class="flex flex-wrap gap-3 mt-4">
+              <.link
+                href={~p"/"}
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-white dark:bg-gray-900 text-gray-900 shadow hover:shadow-md"
+                style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
+              >
+                <.icon name="hero-home" class="w-5 h-5" /> Back to home
+              </.link>
+
+              <.link
+                href="mailto:support@yourorg.example"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100"
+              >
+                <.icon name="hero-phone" class="w-5 h-5" /> Contact support
+              </.link>
+            </div>
+          </div>
+
+          <div class="p-8 bg-gray-50 dark:bg-gray-900">
+            <h3 class="text-lg font-semibold mb-3">What you can try</h3>
+            <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+              <li>Refresh the page — sometimes transient errors recover quickly.</li>
+              <li>Try again in a few minutes.</li>
+              <li>
+                If the problem persists, contact support with the action you were performing.
+              </li>
+            </ul>
+
+            <div class="mt-6">
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Error ID</h4>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                If available, include the request ID from the logs when contacting support.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
