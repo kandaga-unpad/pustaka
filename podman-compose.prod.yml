@@ -13,15 +13,11 @@ services:
     environment:
       POSTGRES_USER: ${VOILE_POSTGRES_USER:-voile}
       POSTGRES_PASSWORD: ${VOILE_POSTGRES_PASSWORD:-voile}
-      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile}
+      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
     volumes:
-      - /data/voile/postgres:/var/lib/postgresql/data:z
+      - /data/voile/postgres:/var/lib/postgresql/data:Z
     ports:
-      - "5432:5432" # External:Internal (5433 on host to avoid conflicts)
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${VOILE_POSTGRES_USER:-voile}"]
-      interval: 10s
-      retries: 5
+      - "5432:5432"
     networks:
       - voile_prod
 
@@ -42,10 +38,10 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - /data/voile/uploads:/app/priv/static/uploads:z
-      - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:z
-      - /data/voile/images:/app/priv/static/images:z
-      - /data/voile/sfx:/app/priv/static/sfx:z
+      - /data/voile/uploads:/app/priv/static/uploads:Z
+      - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
+      - /data/voile/images:/app/priv/static/images:Z
+      - /data/voile/sfx:/app/priv/static/sfx:Z
     networks:
       - voile_prod
     command:
@@ -53,10 +49,7 @@ services:
       - -c
       - |
         echo "Waiting for DB at db:5432..."
-        until pg_isready -h db -p 5432 -U ${VOILE_POSTGRES_USER:-voile}; do
-          echo "DB not ready yet, sleeping 2s..."
-          sleep 2
-        done
+        sleep 10
         echo "DB is ready — running release tasks"
         /app/bin/voile eval 'Voile.Release.create_database()' && \
         /app/bin/voile eval 'Voile.Release.migrate()' && \
