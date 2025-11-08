@@ -19,6 +19,16 @@ LOG_FILE="/tmp/voile-deploy-$(date +%Y%m%d_%H%M%S).log"
 APP_PORT="4000"
 DB_PORT="5432"
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Determine project root (parent of scripts directory if script is in scripts/)
+if [[ "$SCRIPT_DIR" == */scripts ]]; then
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+else
+    PROJECT_ROOT="$SCRIPT_DIR"
+fi
+
 # Function to log to both file and console
 log() {
     echo -e "$1" | tee -a "$LOG_FILE"
@@ -38,16 +48,28 @@ log_warning() {
 
 # Main deployment function
 deploy() {
+    # Change to project root
+    cd "$PROJECT_ROOT"
+    
     log "${GREEN}================================${NC}"
     log "${GREEN}Voile Background Deployment${NC}"
     log "${GREEN}================================${NC}"
     log_status "Started at: $(date)"
+    log_status "Project root: $PROJECT_ROOT"
     log_status "Log file: $LOG_FILE"
     log ""
 
     # Check if .env.prod exists
     if [ ! -f "$ENV_FILE" ]; then
-        log_error ".env.prod file not found!"
+        log_error ".env.prod file not found in $PROJECT_ROOT!"
+        log_error "Please make sure .env.prod exists in the project root."
+        exit 1
+    fi
+
+    # Check if Containerfile exists
+    if [ ! -f "Containerfile" ]; then
+        log_error "Containerfile not found in $PROJECT_ROOT!"
+        log_error "Please make sure you're in the correct directory."
         exit 1
     fi
 
@@ -126,7 +148,7 @@ deploy() {
         --name "$APP_CONTAINER" \
         --pod "$POD_NAME" \
         --restart unless-stopped \
-        --env-file "$ENV_FILE" \
+        --env-file "$PROJECT_ROOT/$ENV_FILE" \
         -e PHX_SERVER=true \
         -e DATABASE_HOST=localhost \
         -e DATABASE_PORT="$DB_PORT" \
@@ -181,6 +203,7 @@ deploy() {
     log "${GREEN}================================${NC}"
     log "${GREEN}Deployment Information${NC}"
     log "${GREEN}================================${NC}"
+    log "Project Root:   ${YELLOW}$PROJECT_ROOT${NC}"
     log "Pod Name:       ${YELLOW}$POD_NAME${NC}"
     log "Database:       ${YELLOW}$DB_CONTAINER${NC}"
     log "Application:    ${YELLOW}$APP_CONTAINER${NC}"
@@ -192,7 +215,7 @@ deploy() {
     log "${GREEN}Useful Commands:${NC}"
     log "  View app logs:  ${YELLOW}podman logs -f $APP_CONTAINER${NC}"
     log "  View db logs:   ${YELLOW}podman logs -f $DB_CONTAINER${NC}"
-    log "  Check status:   ${YELLOW}./manage-voile.sh status${NC}"
+    log "  Check status:   ${YELLOW}cd $PROJECT_ROOT && ./scripts/manage-voile.sh status${NC}"
     log "  View this log:  ${YELLOW}cat $LOG_FILE${NC}"
     log "${GREEN}================================${NC}"
 }
@@ -201,10 +224,17 @@ deploy() {
 if [ "$1" = "bg" ] || [ "$1" = "background" ]; then
     # Run in background with nohup
     echo "Starting deployment in background..."
+    echo "Project root: $PROJECT_ROOT"
     echo "Log file: $LOG_FILE"
     echo "Monitor progress: tail -f $LOG_FILE"
     echo ""
-    nohup bash -c "$(declare -f deploy); $(declare -f log); $(declare -f log_status); $(declare -f log_error); $(declare -f log_warning); deploy" >> "$LOG_FILE" 2>&1 &
+    
+    # Export functions and variables for the background process
+    export PROJECT_ROOT LOG_FILE POD_NAME DB_CONTAINER APP_CONTAINER DATA_DIR ENV_FILE APP_PORT DB_PORT
+    export RED GREEN YELLOW NC
+    export -f log log_status log_error log_warning deploy
+    
+    nohup bash -c 'deploy' >> "$LOG_FILE" 2>&1 &
     PID=$!
     echo "Deployment started with PID: $PID"
     echo "You can safely log out now."
