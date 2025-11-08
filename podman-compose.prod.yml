@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: ${VOILE_POSTGRES_PASSWORD}
       POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
     volumes:
-      - db_data:/var/lib/postgresql/data:Z
+      - /data/voile/postgres:/var/lib/postgresql/data:Z
     ports:
       - "5433:5432"
     healthcheck:
@@ -46,10 +46,10 @@ services:
       # Mount uploads_data in both possible release locations so Plug.Static
       # can find uploaded files regardless of whether the release serves
       # assets from /app/priv/static or the versioned app priv dir under /app/lib.
-      - uploads_data:/app/priv/static/uploads:Z
-      - uploads_data:/app/lib/voile-0.1.0/priv/static/uploads:Z
-      - ./priv/static/images:/app/priv/static/images:Z
-      - ./priv/static/sfx:/app/priv/static/sfx:Z
+      - /data/voile/uploads:/app/priv/static/uploads:Z
+      - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
+      - /data/voile/images:/app/priv/static/images:Z
+      - /data/voile/sfx:/app/priv/static/sfx:Z
     networks:
       - voile_prod
     # Wait for DB to be reachable before running the release evals and starting
