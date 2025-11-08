@@ -13,10 +13,10 @@ services:
       POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
     volumes:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
-    # Removed external port exposure for security - only accessible within container network
-    # If you need external access, uncomment the line below:
-    # ports:
-    #   - "5432:5432"
+      # Removed external port exposure for security - only accessible within container network
+      # If you need external access, uncomment the line below:
+    ports:
+      - "5432:5432"
 
   web:
     container_name: voile_prod_web
