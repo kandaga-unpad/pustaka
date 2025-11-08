@@ -38,8 +38,6 @@ services:
       - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
       - /data/voile/images:/app/priv/static/images:Z
       - /data/voile/sfx:/app/priv/static/sfx:Z
-    networks:
-      - voile_prod
     command:
       - "/bin/sh"
       - -c
@@ -57,6 +55,5 @@ services:
         exec /app/bin/voile start
 
 networks:
-  default:
-    name: voile_prod
+  voile_prod:
     driver: bridge
