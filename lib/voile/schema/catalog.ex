@@ -1244,8 +1244,29 @@ defmodule Voile.Schema.Catalog do
   Get one attachments based on the id
   """
   def get_attachment!(id) do
-    Repo.get!(Attachment, id)
+    attachment =
+      Attachment
+      |> Repo.get!(id)
+
+    # Load the polymorphic attachable (collection or item)
+    attachment
+    |> load_attachable()
   end
+
+  @doc """
+  Load the polymorphic attachable entity (collection or item) for an attachment
+  """
+  def load_attachable(%Attachment{attachable_type: "collection", attachable_id: id} = attachment) do
+    collection = Repo.get(Collection, id)
+    Map.put(attachment, :attachable, collection)
+  end
+
+  def load_attachable(%Attachment{attachable_type: "item", attachable_id: id} = attachment) do
+    item = Repo.get(Item, id)
+    Map.put(attachment, :attachable, item)
+  end
+
+  def load_attachable(attachment), do: attachment
 
   @doc """
   Get attachments filtered by file type

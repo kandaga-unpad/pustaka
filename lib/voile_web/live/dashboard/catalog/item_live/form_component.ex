@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.System
   alias Voile.Schema.Master
+  alias VoileWeb.Auth.GLAMAuthorization
 
   @impl true
   def render(assigns) do
@@ -14,7 +15,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-
+      
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
@@ -24,47 +25,140 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
           phx-submit="save"
           class="space-y-6"
         >
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <.input field={@form[:item_code]} type="text" label="Item code" />
-            <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
-            <.input field={@form[:barcode]} type="text" label="Barcode" />
-            <.input
-              field={@form[:unit_id]}
-              type="select"
-              options={@nodes || []}
-              label="Unit / Node"
-            />
-            <.input
-              field={@form[:item_location_id]}
-              type="select"
-              options={@locations || []}
-              label="Location"
-            />
-            <.input
-              field={@form[:status]}
-              type="select"
-              options={Item.status_options()}
-              label="Status"
-            />
-            <.input
-              field={@form[:condition]}
-              type="select"
-              options={Item.condition_options()}
-              label="Condition"
-            />
-            <.input
-              field={@form[:availability]}
-              type="select"
-              options={Item.availability_options()}
-              label="Availability"
-            />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Collection (full row, read-only) -->
+            <div class="col-span-full flex items-center gap-3">
+              <.input field={@form[:collection_id]} type="hidden" />
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 w-32">
+                Collection
+              </label>
+              <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                {@collection_name || ""}
+              </div>
+            </div>
+            <!-- Identifiers (editable only for super_admin) -->
+            <div class="col-span-full">
+              <%= if @editable_identifiers do %>
+                <.input field={@form[:item_code]} type="text" label="Item code" />
+              <% else %>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Item code</label>
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                  {@form[:item_code].value || ""}
+                </div>
+                 <.input field={@form[:item_code]} type="hidden" />
+              <% end %>
+            </div>
+            
+            <div class="col-span-full">
+              <%= if @editable_identifiers do %>
+                <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
+              <% else %>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  Inventory code
+                </label>
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                  {@form[:inventory_code].value || ""}
+                </div>
+                 <.input field={@form[:inventory_code]} type="hidden" />
+              <% end %>
+            </div>
+            
+            <div class="col-span-full">
+              <%= if @editable_identifiers do %>
+                <.input field={@form[:barcode]} type="text" label="Barcode" />
+              <% else %>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Barcode</label>
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                  {@form[:barcode].value || ""}
+                </div>
+                 <.input field={@form[:barcode]} type="hidden" />
+              <% end %>
+            </div>
+            <!-- Relations and small selects (grouped on one row when space allows) -->
+            <div>
+              <.input
+                field={@form[:unit_id]}
+                type="select"
+                options={@nodes || []}
+                label="Unit / Node"
+              />
+            </div>
+            
+            <div>
+              <.input
+                field={@form[:item_location_id]}
+                type="select"
+                options={@locations || []}
+                label="Location (site)"
+              />
+              <%= if (@locations || []) == [] do %>
+                <p class="text-xs text-gray-500 mt-1">
+                  Choose a Unit/Node first to enable location options.
+                </p>
+              <% end %>
+            </div>
+            
+            <div>
+              <.input
+                field={@form[:price]}
+                type="number"
+                label="Price"
+              />
+            </div>
+            <!-- Status/Condition/Availability (compact row) -->
+            <div>
+              <.input
+                field={@form[:status]}
+                type="select"
+                options={Item.status_options()}
+                label="Status"
+              />
+            </div>
+            
+            <div>
+              <.input
+                field={@form[:condition]}
+                type="select"
+                options={Item.condition_options()}
+                label="Condition"
+              />
+            </div>
+            
+            <div>
+              <.input
+                field={@form[:availability]}
+                type="select"
+                options={Item.availability_options()}
+                label="Availability"
+              />
+            </div>
+            <!-- Location text (full width) -->
+            <div class="col-span-full">
+              <.input field={@form[:location]} type="text" label="Location (text)" />
+            </div>
+            <!-- Dates and times (compact) -->
+            <div>
+              <.input field={@form[:acquisition_date]} type="date" label="Acquisition date" />
+            </div>
+            
+            <div>
+              <.input field={@form[:last_inventory_date]} type="date" label="Last inventory date" />
+            </div>
+            
+            <div class="col-span-full">
+              <!-- Hidden: last_circulated should not be editable in the form but keep value submitted -->
+              <.input field={@form[:last_circulated]} type="hidden" />
+            </div>
+            
+            <div><.input field={@form[:rfid_tag]} type="text" label="RFID tag" /></div>
+            
+            <div class="col-span-full">
+              <.input field={@form[:legacy_item_code]} type="text" label="Legacy item code" />
+            </div>
           </div>
-
+          
           <div class="flex items-center gap-3 pt-2">
-            <.button
-              phx-disable-with="Saving..."
-              class="success-btn"
-            >
+            <.button phx-disable-with="Saving..." class="success-btn">
               <.icon name="hero-check" class="w-4 h-4" /> Save
             </.button>
             <.link patch={@patch} class="inline-block">
@@ -93,6 +187,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
     # 3. nil -> no locations shown
     selected_node_id = item.unit_id || assigns[:user_node_id]
 
+    # If a node is selected, show only locations for that node. Otherwise,
+    # leave the location options empty until the user selects a node.
     filtered_locations =
       if selected_node_id do
         Enum.filter(all_locations, &(&1.node_id == selected_node_id))
@@ -102,11 +198,37 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
     location_options = Enum.map(filtered_locations, &{&1.location_name, &1.id})
 
+    collection_name =
+      case item do
+        %{collection: %_{} = coll} ->
+          coll.title
+
+        %{collection_id: cid} when not is_nil(cid) ->
+          # fallback to empty string; parent LiveView may pass collection_name
+          ""
+
+        _ ->
+          ""
+      end
+
+    # Determine whether identifier fields should be editable by this user.
+    # Parent LiveView should pass `:current_user` into the component. If not
+    # present, default to non-editable.
+    is_super_admin =
+      case assigns[:current_user] do
+        %_{} = u -> GLAMAuthorization.is_super_admin?(u)
+        _ -> false
+      end
+
     {:ok,
      socket
      |> assign(assigns)
      |> assign(:nodes, node_options)
      |> assign(:locations, location_options)
+     |> assign(:all_locations, all_locations)
+     |> assign_new(:collections, fn -> [] end)
+     |> assign(:collection_name, collection_name)
+     |> assign(:editable_identifiers, is_super_admin)
      |> assign_new(:form, fn ->
        to_form(Catalog.change_item(item))
      end)}
@@ -140,6 +262,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
     locations =
       case unit_id do
         nil ->
+          # no unit selected -> keep locations empty until node is chosen
           []
 
         id ->

@@ -13,9 +13,16 @@ defmodule Voile.Task.Catalog.Collection do
   Load collections with filtering, pagination, and search functionality.
   Now filters by unit_id (node) instead of non-existent collection types.
   """
-  def load_collections(page, search_query, filter_unit_id, filter_status, per_page \\ 12) do
+  def load_collections(
+        page,
+        search_query,
+        filter_unit_id,
+        filter_status,
+        glam_type \\ "all",
+        per_page \\ 12
+      ) do
     # Build base query with filtering for public access and member-visible collections
-    base_query = build_base_query(search_query, filter_unit_id, filter_status)
+    base_query = build_base_query(search_query, filter_unit_id, filter_status, glam_type)
 
     # Apply pagination
     pagination_offset = (page - 1) * per_page
@@ -106,12 +113,28 @@ defmodule Voile.Task.Catalog.Collection do
 
   # Private functions
 
-  defp build_base_query(search_query, filter_unit_id, filter_status) do
+  defp build_base_query(search_query, filter_unit_id, filter_status, glam_type) do
     from(c in Collection)
     |> where([c], c.access_level in ["public", "restricted"])
     |> filter_by_status(filter_status)
     |> filter_by_unit_id(filter_unit_id)
+    |> filter_by_glam_type(glam_type)
     |> search_by_query(search_query)
+  end
+
+  defp filter_by_glam_type(query, "all"), do: query
+
+  defp filter_by_glam_type(query, ""), do: query
+
+  defp filter_by_glam_type(query, glam_type) do
+    # resource_class table is named `resource_class` and Collection.type_id stores
+    # the resource_class id. Use a fragment subquery to avoid adding joins that
+    # could shift binding positions for other query parts.
+    where(
+      query,
+      [c],
+      fragment("(SELECT glam_type FROM resource_class WHERE id = ?) = ?", c.type_id, ^glam_type)
+    )
   end
 
   defp filter_by_status(query, "all"), do: query

@@ -462,15 +462,18 @@ defmodule VoileWeb.VoileComponents do
     <div class="p-6">
       <!-- Thumbnail -->
       <div class="mb-4">
-        <%= if @collection.thumbnail do %>
+        <%= if @collection.thumbnail && @collection.thumbnail != "" do %>
           <img
             src={@collection.thumbnail}
             class="w-full h-86 object-cover rounded-lg border-1 border-voile-muted dark:border-voile-dark shadow-md"
             alt={@collection.title}
           />
         <% else %>
-          <div class="w-full h-86 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center border-voile-muted dark:border-voile-dark shadow-md">
+          <div class="w-full h-86 bg-gray-200 dark:bg-gray-600 rounded-lg flex flex-col items-center justify-center border-voile-muted dark:border-voile-dark shadow-md">
             <.icon name="hero-book-open" class="w-8 h-8 text-gray-400" />
+            <span class="text-xs italic text-gray-400 dark:text-gray-300">
+              No Thumbnail Available
+            </span>
           </div>
         <% end %>
       </div>
@@ -775,6 +778,7 @@ defmodule VoileWeb.VoileComponents do
   attr :filter_status, :string, default: "published"
   # or "items"
   attr :type_page, :string, default: "collections"
+  attr :filter_glam_type, :string, default: "all"
   attr :socket, :map, default: nil
 
   def frontend_pagination(assigns) do
@@ -789,7 +793,8 @@ defmodule VoileWeb.VoileComponents do
                 @search_query,
                 @filter_unit_id,
                 @filter_status,
-                @type_page
+                @type_page,
+                @filter_glam_type
               )
             }
             class="relative inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile hover:bg-voile-surface"
@@ -806,7 +811,8 @@ defmodule VoileWeb.VoileComponents do
                 @search_query,
                 @filter_unit_id,
                 @filter_status,
-                @type_page
+                @type_page,
+                @filter_glam_type
               )
             }
             class="relative ml-3 inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile dark:bg-voile-neutral-dark dark:text-voile-surface dark:hover:bg-voile-surface-dark hover:bg-voile-surface"
@@ -851,7 +857,14 @@ defmodule VoileWeb.VoileComponents do
               <% else %>
                 <.link
                   patch={
-                    build_page_url(page, @search_query, @filter_unit_id, @filter_status, @type_page)
+                    build_page_url(
+                      page,
+                      @search_query,
+                      @filter_unit_id,
+                      @filter_status,
+                      @type_page,
+                      @filter_glam_type
+                    )
                   }
                   class={[
                     "relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0",
@@ -876,7 +889,8 @@ defmodule VoileWeb.VoileComponents do
                     @search_query,
                     @filter_unit_id,
                     @filter_status,
-                    @type_page
+                    @type_page,
+                    @filter_glam_type
                   )
                 }
                 class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
@@ -1038,7 +1052,7 @@ defmodule VoileWeb.VoileComponents do
             navigate={"/collections/#{@collection.id}"}
             class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
           >
-            View Details →
+            {Gettext.gettext(VoileWeb.Gettext, "View Details")} →
           </.link>
         </div>
       </div>
@@ -1216,15 +1230,23 @@ defmodule VoileWeb.VoileComponents do
   def condition_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
 
-  def build_page_url(page, search_query, filter_unit_id, filter_status, type_page) do
+  def build_page_url(
+        page,
+        search_query,
+        filter_unit_id,
+        filter_status,
+        type_page,
+        filter_glam_type \\ nil
+      ) do
     params =
       %{
         "q" => search_query,
         "unit_id" => filter_unit_id,
         "status" => filter_status,
+        "glam_type" => filter_glam_type,
         "page" => page
       }
-      |> Enum.reject(fn {_k, v} -> v == "" or v == "all" end)
+      |> Enum.reject(fn {_k, v} -> v == "" or v == "all" or is_nil(v) end)
       |> Enum.into(%{})
 
     "/#{type_page}?" <> URI.encode_query(params)

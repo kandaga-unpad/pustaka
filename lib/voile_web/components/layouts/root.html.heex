@@ -7,7 +7,7 @@
     <.live_title default="Voile" suffix=" · the Magic Library">
       {assigns[:page_title]}
     </.live_title>
-
+    
     <%!-- Inject brand color CSS variables early so Tailwind/daisyUI and other CSS
         can pick them up on first paint (before `app.css` is loaded). --%> <% app_main_color =
       Voile.Schema.System.get_setting_value("app_main_color", nil) %> <% app_secondary_color =
@@ -28,17 +28,34 @@
         }
       </style>
     <% end %>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,899;1,900&display=swap"
+      rel="stylesheet"
+    /> <%!-- ePub.js library for EPUB reading --%>
+    <script
+      src="https://unpkg.com/epubjs@0.3/dist/epub.min.js"
+      onerror="console.error('Failed to load ePub.js from unpkg')"
+    >
+    </script>
+     <%!-- PDF.js library from cdnjs (most reliable CDN) --%>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+      onload="console.log('PDF.js script loaded'); if(window.pdfjsLib) { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; console.log('PDF.js configured:', window.pdfjsLib); }"
+      onerror="console.error('Failed to load PDF.js from cdnjs')"
+    >
+    </script>
+    
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css"
       rel="stylesheet"
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-
+    
     <script>
       (() => {
         const setTheme = (theme) => {
@@ -58,11 +75,11 @@
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js">
     </script>
-    <Turnstile.script />
+     <Turnstile.script />
   </head>
-
+  
   <body class="anti-aliased w-full">{@inner_content}</body>
 </html>

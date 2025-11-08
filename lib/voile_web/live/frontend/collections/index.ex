@@ -12,6 +12,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
   def mount(_params, _session, socket) do
     total_collections = Collection.count_collections()
     nodes = Collection.get_all_nodes()
+    glam_type_options = ["all", "Gallery", "Library", "Archive", "Museum"]
 
     {:ok,
      socket
@@ -24,6 +25,8 @@ defmodule VoileWeb.Frontend.Collections.Index do
      |> assign(:search_query, "")
      |> assign(:filter_unit_id, "all")
      |> assign(:filter_status, "published")
+     |> assign(:filter_glam_type, "all")
+     |> assign(:glam_type_options, glam_type_options)
      |> assign(:nodes, nodes)
      |> stream_configure(:collections, dom_id: &"collection-#{&1.id}")}
   end
@@ -34,6 +37,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
     search_query = Map.get(params, "q", "")
     filter_unit_id = Map.get(params, "unit_id", "all")
     filter_status = Map.get(params, "status", "published")
+    filter_glam_type = Map.get(params, "glam_type", "all")
 
     socket =
       socket
@@ -41,17 +45,30 @@ defmodule VoileWeb.Frontend.Collections.Index do
       |> assign(:search_query, search_query)
       |> assign(:filter_unit_id, filter_unit_id)
       |> assign(:filter_status, filter_status)
+      |> assign(:filter_glam_type, filter_glam_type)
       |> assign(:loading, true)
 
-    send(self(), {:load_collections, page, search_query, filter_unit_id, filter_status})
+    send(
+      self(),
+      {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type}
+    )
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_info({:load_collections, page, search_query, filter_unit_id, filter_status}, socket) do
+  def handle_info(
+        {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type},
+        socket
+      ) do
     {collections, total_pages, total_count_filtered} =
-      Collection.load_collections(page, search_query, filter_unit_id, filter_status)
+      Collection.load_collections(
+        page,
+        search_query,
+        filter_unit_id,
+        filter_status,
+        filter_glam_type
+      )
 
     {:noreply,
      socket
@@ -63,24 +80,18 @@ defmodule VoileWeb.Frontend.Collections.Index do
   end
 
   @impl true
-  def handle_event("search", %{"q" => query, "unit_id" => unit_id, "status" => status}, socket) do
+  def handle_event("search", params_in, socket) do
+    # Normalize incoming search params and preserve existing filters if not present
+    query = Map.get(params_in, "q", "")
+    unit_id = Map.get(params_in, "unit_id", socket.assigns.filter_unit_id)
+    status = Map.get(params_in, "status", socket.assigns.filter_status)
+    glam_type = Map.get(params_in, "glam_type", socket.assigns.filter_glam_type)
+
     params = %{
       "q" => query,
       "unit_id" => unit_id,
       "status" => status,
-      "page" => "1"
-    }
-
-    {:noreply, push_patch(socket, to: ~p"/collections?#{params}")}
-  end
-
-  @impl true
-  def handle_event("search", %{"q" => query}, socket) do
-    # Fallback for cases where hidden fields might not be present
-    params = %{
-      "q" => query,
-      "unit_id" => socket.assigns.filter_unit_id,
-      "status" => socket.assigns.filter_status,
+      "glam_type" => glam_type,
       "page" => "1"
     }
 
@@ -93,6 +104,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "q" => socket.assigns.search_query,
       "unit_id" => unit_id,
       "status" => socket.assigns.filter_status,
+      "glam_type" => socket.assigns.filter_glam_type,
       "page" => "1"
     }
 
@@ -105,6 +117,20 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "q" => socket.assigns.search_query,
       "unit_id" => socket.assigns.filter_unit_id,
       "status" => status,
+      "glam_type" => socket.assigns.filter_glam_type,
+      "page" => "1"
+    }
+
+    {:noreply, push_patch(socket, to: ~p"/collections?#{params}")}
+  end
+
+  @impl true
+  def handle_event("filter_glam_type", %{"glam_type" => glam_type}, socket) do
+    params = %{
+      "q" => socket.assigns.search_query,
+      "unit_id" => socket.assigns.filter_unit_id,
+      "status" => socket.assigns.filter_status,
+      "glam_type" => glam_type,
       "page" => "1"
     }
 
@@ -134,19 +160,23 @@ defmodule VoileWeb.Frontend.Collections.Index do
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse Collections</h1>
-
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  {gettext("Browse Collections")}
+                </h1>
+                
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  Discover our curated collections
+                  {gettext("Discover our curated collections")}
                 </p>
               </div>
-
+              
               <div class="flex items-center gap-4">
                 <.link
                   navigate={~p"/search"}
                   class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" /> Advanced Search
+                  <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" /> {gettext(
+                    "Advanced Search"
+                  )}
                 </.link>
               </div>
             </div>
@@ -162,6 +192,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                   <!-- Hidden fields to preserve current filter state -->
                   <input type="hidden" name="unit_id" value={@filter_unit_id} />
                   <input type="hidden" name="status" value={@filter_status} />
+                  <input type="hidden" name="glam_type" value={@filter_glam_type} />
                   <input
                     type="text"
                     name="q"
@@ -183,7 +214,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="all" selected={@filter_unit_id == "all"}>All Location</option>
-
+                    
                     <%= for node <- @nodes do %>
                       <option value={node.id} selected={@filter_unit_id == to_string(node.id)}>
                         {node.name} ({node.abbr})
@@ -202,8 +233,23 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     <option value="published" selected={@filter_status == "published"}>
                       Available
                     </option>
-
+                    
                     <option value="all" selected={@filter_status == "all"}>All Status</option>
+                  </select>
+                </form>
+              </div>
+              <!-- Glam Type Filter -->
+              <div class="sm:w-48">
+                <form phx-change="filter_glam_type">
+                  <select
+                    name="glam_type"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <%= for opt <- @glam_type_options do %>
+                      <option value={opt} selected={@filter_glam_type == opt}>
+                        {String.capitalize(opt)}
+                      </option>
+                    <% end %>
                   </select>
                 </form>
               </div>
@@ -215,7 +261,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
           <%= if @loading do %>
             <div class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collections...</span>
+               <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collections...</span>
             </div>
           <% else %>
             <!-- Results Header -->
@@ -225,7 +271,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                 <%= if @search_query != "" do %>
                   for "<strong><%= @search_query %></strong>"
                 <% end %>
-
+                
                 <span>
                   from
                   <%= if @search_query && @total_count_filtered do %>
@@ -255,6 +301,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                   search_query={@search_query}
                   filter_unit_id={@filter_unit_id}
                   filter_status={@filter_status}
+                  filter_glam_type={@filter_glam_type}
                 />
               <% end %>
             <% else %>

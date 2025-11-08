@@ -4,7 +4,7 @@
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
       <div class="flex items-center gap-3">
         <.back navigate="/manage/catalog">Kembali</.back>
-
+        
         <%= if @search && @search != "" do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
             <span class="text-sm text-gray-600">Results</span>
@@ -13,7 +13,7 @@
             </span>
           </div>
         <% end %>
-
+        
         <%= if @search && @search != "" do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/40 rounded-md">
             <span class="text-sm text-indigo-700">Filter:</span>
@@ -26,7 +26,7 @@
           </div>
         <% end %>
       </div>
-
+      
       <div class="flex items-center gap-3">
         <.link
           navigate={~p"/manage/catalog/labels"}
@@ -34,7 +34,6 @@
         >
           <.icon name="hero-printer" class="w-5 h-5" /> Print Labels
         </.link>
-
         <.form
           for={%{}}
           as={:search}
@@ -56,7 +55,7 @@
             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <.icon name="hero-magnifying-glass" class="w-4 h-4" />
             </div>
-
+            
             <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
               <%!-- Show spinner while searching --%>
               <span class="hidden phx-loading:inline-block" phx-loading>
@@ -75,7 +74,7 @@
                     stroke-width="4"
                   >
                   </circle>
-
+                  
                   <path
                     class="opacity-75"
                     fill="currentColor"
@@ -101,13 +100,13 @@
             </div>
           </div>
         </.form>
-
+        
         <%= if can?(@current_scope.user, "items.create") do %>
           <.link patch={~p"/manage/catalog/items/new"}><.button>New Item</.button></.link>
         <% end %>
       </div>
     </div>
-
+    
     <div
       id="items-results"
       class="overflow-x-auto relative transition-opacity duration-200 phx-loading:opacity-50"
@@ -122,33 +121,33 @@
         >
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
           </circle>
-
+          
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
           </path>
         </svg>
       </div>
-
+      
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Collection</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Item code</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Inventory code</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Location</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Condition</th>
-
+            
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Availability</th>
-
+            
             <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Actions</th>
           </tr>
         </thead>
-
+        
         <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
           <tr :if={@items_empty?} class="only:table-row hidden">
             <td class="px-4 py-6 text-center text-sm text-gray-500" colspan="8">
@@ -158,7 +157,7 @@
               >create a new item</.link>.
             </td>
           </tr>
-
+          
           <%= for {id, item} <- @streams.items do %>
             <tr
               id={id}
@@ -166,17 +165,17 @@
               phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
             >
               <td class="px-4 py-3 text-sm">{item.collection.title || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">{item.item_code || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">{item.inventory_code || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">{item.location || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">{item.status || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">{item.condition || "-"}</td>
-
+              
               <td class="px-4 py-3 text-sm">
                 <span class={[
                   "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
@@ -189,7 +188,7 @@
                   {item.availability || "-"}
                 </span>
               </td>
-
+              
               <td class="px-4 py-3 text-sm text-right">
                 <div class="inline-flex items-center gap-2">
                   <%= if can?(@current_scope.user, "items.update") do %>
@@ -202,7 +201,7 @@
                       <.icon name="hero-pencil" class="w-4 h-4" />
                     </.link>
                   <% end %>
-
+                  
                   <%= if can?(@current_scope.user, "items.delete") do %>
                     <.link
                       phx-click={JS.push("delete", value: %{id: item.id}) |> hide("##{id}")}
@@ -220,7 +219,7 @@
         </tbody>
       </table>
     </div>
-    <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+     <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <.modal
       :if={@live_action in [:new, :edit]}
       id="item-modal"
@@ -233,6 +232,7 @@
         title={@page_title}
         action={@live_action}
         item={@item}
+        current_user={@current_user}
         user_node_id={@user_node_id}
         patch={~p"/manage/catalog/items"}
       />

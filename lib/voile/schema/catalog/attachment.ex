@@ -19,6 +19,8 @@ defmodule Voile.Schema.Catalog.Attachment do
     # Polymorphic associations
     field :attachable_id, :binary_id
     field :attachable_type, :string
+    # Virtual field to hold the loaded polymorphic entity (collection or item)
+    field :attachable, :any, virtual: true
 
     # Access control
     field :access_level, :string, default: "public"

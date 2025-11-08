@@ -625,8 +625,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
                     <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
                       <p class="text-gray-500 dark:text-white italic pb-4">
-                        {col_field[:information].value ||
-                          col_field.data.metadata_properties.information}
+                        <% mp = Map.get(col_field.data, :metadata_properties) %>
+                        <%= cond do
+                          col_field[:information].value not in [nil, ""] ->
+                            col_field[:information].value
+
+                          mp && not match?(%Ecto.Association.NotLoaded{}, mp) ->
+                            mp.information
+
+                          true ->
+                            ""
+                        end %>
                       </p>
 
                       <input
@@ -930,7 +939,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
          %{
            "id" => field.id,
            "label" => field.label,
-           "information" => field.metadata_properties.information,
+           "information" => (case Map.get(field, :metadata_properties) do
+              %Ecto.Association.NotLoaded{} -> ""
+              nil -> ""
+              mp -> mp.information
+            end),
            "type_value" => field.type_value,
            "value_lang" => field.value_lang,
            "value" => field.value,

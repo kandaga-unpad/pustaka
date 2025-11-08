@@ -531,7 +531,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:53
 #, elixir-autogen, elixir-format, fuzzy
 msgid "New Collection"
-msgstr "Collections"
+msgstr "New Collections"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:97
 #, elixir-autogen, elixir-format
@@ -890,4 +890,10 @@ msgstr ""
 #: lib/voile_web/controllers/search_html/index.html.heex:210
 #, elixir-autogen, elixir-format
 msgid "💡 Try searching for: books, manuscripts, paintings, or historical documents"
+msgstr ""
+
+msgid "View Details"
+msgstr ""
+
+msgid "Discover our curated collections"
 msgstr ""
