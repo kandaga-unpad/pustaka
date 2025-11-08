@@ -14,6 +14,8 @@ services:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
     ports:
       - "5432:5432"
+    networks:
+      - voile_prod
 
   web:
     build:
@@ -23,8 +25,7 @@ services:
         MIX_ENV: prod
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     env_file:
       - .env.prod
     environment:
@@ -36,6 +37,8 @@ services:
       - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
       - /data/voile/images:/app/priv/static/images:Z
       - /data/voile/sfx:/app/priv/static/sfx:Z
+    networks:
+      - voile_prod
     command:
       - "/bin/sh"
       - -c
@@ -51,3 +54,7 @@ services:
         /app/bin/voile eval 'Voile.Release.seed()' && \
         /app/bin/voile eval 'Voile.Release.import_data()'
         exec /app/bin/voile start
+
+networks:
+  voile_prod:
+    external: true
