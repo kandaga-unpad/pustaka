@@ -16,7 +16,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - pustaka_voile_prod
+      - voile_prod
 
   web:
     build:
@@ -39,7 +39,7 @@ services:
       - /data/voile/images:/app/priv/static/images:Z
       - /data/voile/sfx:/app/priv/static/sfx:Z
     networks:
-      - pustaka_voile_prod
+      - voile_prod
     command:
       - "/bin/sh"
       - -c
@@ -57,6 +57,5 @@ services:
         exec /app/bin/voile start
 
 networks:
-  pustaka_voile_prod:
+  voile_prod:
     driver: bridge
-    external: false
