@@ -13,7 +13,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data:Z
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${VOILE_POSTGRES_USER:-voile}"]
       interval: 10s
