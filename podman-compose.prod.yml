@@ -1,8 +1,8 @@
-name: voile_prod
 version: "3.8"
 
 services:
   db:
+    container_name: voile_prod_db
     image: docker.io/library/postgres:15
     restart: unless-stopped
     env_file:
@@ -13,11 +13,13 @@ services:
       POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
     volumes:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
-    ports:
-      - "5432:5432"
-    network_mode: host
+    # Removed external port exposure for security - only accessible within container network
+    # If you need external access, uncomment the line below:
+    # ports:
+    #   - "5432:5432"
 
   web:
+    container_name: voile_prod_web
     build:
       context: /data/pustaka
       dockerfile: Containerfile
@@ -30,6 +32,9 @@ services:
       - .env.prod
     environment:
       PHX_SERVER: "true"
+      # Explicitly set database host to service name
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
     ports:
       - "4000:4000"
     volumes:
@@ -39,16 +44,24 @@ services:
       - /data/voile/sfx:/app/priv/static/sfx:Z
     command:
       - "/bin/sh"
-      - -c
+      - "-c"
       - |
-        echo "Waiting for DB at localhost:5432..."
-        until pg_isready -h localhost -p 5432 -U voile -q; do
-          echo "DB not ready yet, sleeping 2s..."
+        echo "Waiting for PostgreSQL at db:5432..."
+        timeout=60
+        elapsed=0
+        until pg_isready -h db -p 5432 -U ${VOILE_POSTGRES_USER:-voile} > /dev/null 2>&1; do
+          if [ $$elapsed -ge $$timeout ]; then
+            echo "ERROR: Database failed to become ready after $${timeout}s"
+            exit 1
+          fi
+          echo "PostgreSQL not ready yet, waiting... ($${elapsed}s/$${timeout}s)"
           sleep 2
+          elapsed=$$((elapsed + 2))
         done
-        echo "DB is ready — running release tasks"
+        echo "PostgreSQL is ready! Running release tasks..."
         /app/bin/voile eval 'Voile.Release.create_database()' && \
         /app/bin/voile eval 'Voile.Release.migrate()' && \
         /app/bin/voile eval 'Voile.Release.seed()' && \
         /app/bin/voile eval 'Voile.Release.import_data()'
+        echo "Starting Voile application..."
         exec /app/bin/voile start
