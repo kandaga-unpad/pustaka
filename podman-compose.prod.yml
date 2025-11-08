@@ -13,10 +13,9 @@ services:
       POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
     volumes:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
-      # Removed external port exposure for security - only accessible within container network
-      # If you need external access, uncomment the line below:
     ports:
       - "5432:5432"
+    network_mode: host
 
   web:
     container_name: voile_prod_web
@@ -32,8 +31,8 @@ services:
       - .env.prod
     environment:
       PHX_SERVER: "true"
-      # Explicitly set database host to service name
-      DATABASE_HOST: db
+      # Database is on host networking, so connect to localhost
+      DATABASE_HOST: localhost
       DATABASE_PORT: 5432
     ports:
       - "4000:4000"
@@ -46,10 +45,10 @@ services:
       - "/bin/sh"
       - "-c"
       - |
-        echo "Waiting for PostgreSQL at db:5432..."
+        echo "Waiting for PostgreSQL at localhost:5432..."
         timeout=60
         elapsed=0
-        until pg_isready -h db -p 5432 -U ${VOILE_POSTGRES_USER:-voile} > /dev/null 2>&1; do
+        until pg_isready -h localhost -p 5432 -U ${VOILE_POSTGRES_USER:-voile} > /dev/null 2>&1; do
           if [ $$elapsed -ge $$timeout ]; then
             echo "ERROR: Database failed to become ready after $${timeout}s"
             exit 1
