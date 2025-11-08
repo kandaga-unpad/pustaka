@@ -13,9 +13,9 @@ services:
     environment:
       POSTGRES_USER: ${VOILE_POSTGRES_USER:-voile}
       POSTGRES_PASSWORD: ${VOILE_POSTGRES_PASSWORD:-voile}
-      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
+      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile}
     volumes:
-      - /data/voile/postgres:/var/lib/postgresql/data:Z
+      - /data/voile/postgres:/var/lib/postgresql/data:z
     ports:
       - "5432:5432" # External:Internal (5433 on host to avoid conflicts)
     healthcheck:
@@ -42,10 +42,10 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - /data/voile/uploads:/app/priv/static/uploads:Z
-      - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
-      - /data/voile/images:/app/priv/static/images:Z
-      - /data/voile/sfx:/app/priv/static/sfx:Z
+      - /data/voile/uploads:/app/priv/static/uploads:z
+      - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:z
+      - /data/voile/images:/app/priv/static/images:z
+      - /data/voile/sfx:/app/priv/static/sfx:z
     networks:
       - voile_prod
     command:
