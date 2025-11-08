@@ -15,7 +15,8 @@ services:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
     ports:
       - "5432:5432"
-    network_mode: host
+    networks:
+      - voile_prod
 
   web:
     container_name: voile_prod_web
@@ -31,8 +32,8 @@ services:
       - .env.prod
     environment:
       PHX_SERVER: "true"
-      # Database is on host networking, so connect to localhost
-      DATABASE_HOST: localhost
+      # Explicitly set database host to service name
+      DATABASE_HOST: db
       DATABASE_PORT: 5432
     ports:
       - "4000:4000"
@@ -41,14 +42,16 @@ services:
       - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
       - /data/voile/images:/app/priv/static/images:Z
       - /data/voile/sfx:/app/priv/static/sfx:Z
+    networks:
+      - voile_prod
     command:
       - "/bin/sh"
       - "-c"
       - |
-        echo "Waiting for PostgreSQL at localhost:5432..."
+        echo "Waiting for PostgreSQL at db:5432..."
         timeout=60
         elapsed=0
-        until pg_isready -h localhost -p 5432 -U ${VOILE_POSTGRES_USER:-voile} > /dev/null 2>&1; do
+        until pg_isready -h db -p 5432 -U ${VOILE_POSTGRES_USER:-voile} > /dev/null 2>&1; do
           if [ $$elapsed -ge $$timeout ]; then
             echo "ERROR: Database failed to become ready after $${timeout}s"
             exit 1
@@ -64,3 +67,7 @@ services:
         /app/bin/voile eval 'Voile.Release.import_data()'
         echo "Starting Voile application..."
         exec /app/bin/voile start
+
+networks:
+  voile_prod:
+    driver: bridge
