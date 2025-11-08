@@ -49,7 +49,10 @@ services:
       - -c
       - |
         echo "Waiting for DB at db:5432..."
-        sleep 10
+        until (echo > /dev/tcp/db/5432) >/dev/null 2>&1; do
+          echo "DB not ready yet, sleeping 2s..."
+          sleep 2
+        done
         echo "DB is ready — running release tasks"
         /app/bin/voile eval 'Voile.Release.create_database()' && \
         /app/bin/voile eval 'Voile.Release.migrate()' && \
