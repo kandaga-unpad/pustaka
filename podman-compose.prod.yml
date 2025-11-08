@@ -24,7 +24,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Containerfile
       args:
         MIX_ENV: prod
     restart: unless-stopped

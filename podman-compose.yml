@@ -22,7 +22,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Containerfile.dev
     restart: unless-stopped
     depends_on:
       db:
