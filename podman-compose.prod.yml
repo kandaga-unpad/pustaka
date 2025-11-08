@@ -38,12 +38,14 @@ services:
       - /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z
       - /data/voile/images:/app/priv/static/images:Z
       - /data/voile/sfx:/app/priv/static/sfx:Z
+    networks:
+      - voile_prod
     command:
       - "/bin/sh"
       - -c
       - |
         echo "Waiting for DB at db:5432..."
-        until (echo > /dev/tcp/db/5432) >/dev/null 2>&1; do
+        until pg_isready -h db -p 5432 -U voile -q; do
           echo "DB not ready yet, sleeping 2s..."
           sleep 2
         done
