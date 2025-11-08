@@ -13,7 +13,7 @@ services:
     environment:
       POSTGRES_USER: ${VOILE_POSTGRES_USER:-voile}
       POSTGRES_PASSWORD: ${VOILE_POSTGRES_PASSWORD:-voile}
-      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile_prod}
+      POSTGRES_DB: ${VOILE_POSTGRES_DB:-voile}
     volumes:
       - /data/voile/postgres:/var/lib/postgresql/data:Z
     ports:
