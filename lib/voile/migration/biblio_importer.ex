@@ -763,11 +763,9 @@ defmodule Voile.Migration.BiblioImporter do
                 {:ok, path} ->
                   IO.puts("✅ Successfully processed image for biblio_id: #{biblio_id} -> #{path}")
                   path
+
                 {:error, reason} ->
                   IO.puts("❌ Failed to process image for biblio_id: #{biblio_id}: #{reason}")
-                  nil
-                _ ->
-                  IO.puts("⚠️ No image processed for biblio_id: #{biblio_id}")
                   nil
               end
             end
@@ -1398,17 +1396,18 @@ defmodule Voile.Migration.BiblioImporter do
     if cleaned_path == "" do
       {:ok, nil}
     else
-      try do
-        # Determine file extension
-        file_extension = Path.extname(cleaned_path) |> String.downcase()
-        file_extension = if file_extension == "", do: ".jpg", else: file_extension
+      # Download to temporary file first
+      case download_to_temp_file(cleaned_path) do
+        {:ok, temp_path, content_type} ->
+          # Ensure cleanup happens even if upload fails
+          try do
+            # Determine file extension
+            file_extension = Path.extname(cleaned_path) |> String.downcase()
+            file_extension = if file_extension == "", do: ".jpg", else: file_extension
 
-        # Extract original filename for better organization
-        original_filename = Path.basename(cleaned_path, Path.extname(cleaned_path))
+            # Extract original filename for better organization
+            original_filename = Path.basename(cleaned_path, Path.extname(cleaned_path))
 
-        # Download to temporary file first
-        case download_to_temp_file(cleaned_path, original_filename, file_extension) do
-          {:ok, temp_path, content_type} ->
             # Create filename for the upload (Storage will generate unique name)
             temp_filename = "#{original_filename}#{file_extension}"
 
@@ -1428,33 +1427,46 @@ defmodule Voile.Migration.BiblioImporter do
                  ) do
               {:ok, file_url} ->
                 IO.puts("✅ Successfully uploaded to storage: #{file_url}")
-                # Clean up temp file
-                File.rm(temp_path)
                 {:ok, file_url}
 
               {:error, reason} ->
                 IO.puts("❌ Storage upload failed: #{reason}")
-                # Clean up temp file
-                File.rm(temp_path)
                 {:error, "Storage upload failed: #{reason}"}
             end
+          after
+            # Always cleanup temp file, even if upload fails or exceptions occur
+            File.rm(temp_path)
+            IO.puts("🧹 Cleaned up temporary file: #{temp_path}")
+          end
 
-          {:error, reason} ->
-            IO.puts("⚠️ Failed to download image from #{cleaned_path}: #{reason}")
-            {:ok, nil}
-        end
-      rescue
-        e ->
-          IO.puts("⚠️ Exception downloading image from #{cleaned_path}: #{Exception.message(e)}")
+        {:error, reason} ->
+          IO.puts("⚠️ Failed to download image from #{cleaned_path}: #{reason}")
           {:ok, nil}
       end
     end
   end
 
   # Download image to temporary file and return path with content type
-  defp download_to_temp_file(url_or_path, _original_filename, file_extension) do
-    # Create temporary file
-    temp_dir = System.tmp_dir!()
+  defp download_to_temp_file(url_or_path) do
+    # Determine file extension
+    file_extension = Path.extname(url_or_path) |> String.downcase()
+    file_extension = if file_extension == "", do: ".jpg", else: file_extension
+
+    # Create temporary file in custom directory
+    temp_dir = "/data/voile/tmp"
+
+    # Ensure the temp directory exists, fallback to system temp if needed
+    temp_dir =
+      case File.mkdir_p(temp_dir) do
+        :ok ->
+          temp_dir
+
+        {:error, reason} ->
+          IO.puts("⚠️ Failed to create temp directory #{temp_dir}: #{reason}")
+          # Fallback to system temp dir
+          System.tmp_dir!()
+      end
+
     temp_filename = "biblio_import_#{System.unique_integer([:positive])}#{file_extension}"
     temp_path = Path.join(temp_dir, temp_filename)
 
@@ -1462,53 +1474,77 @@ defmodule Voile.Migration.BiblioImporter do
       # Handle HTTP/HTTPS URLs
       String.starts_with?(url_or_path, "http://") or String.starts_with?(url_or_path, "https://") ->
         IO.puts("🌐 Downloading from HTTP URL: #{url_or_path}")
+
         case download_from_http(url_or_path, temp_path) do
           {:ok, content_type} ->
-            IO.puts("✅ Downloaded successfully, content-type: #{content_type}")
             {:ok, temp_path, content_type}
+
           {:error, reason} ->
-            IO.puts("❌ HTTP download failed: #{reason}")
+            # Clean up temp file if it was created but download failed
+            if File.exists?(temp_path) do
+              File.rm(temp_path)
+              IO.puts("🧹 Cleaned up failed download temp file: #{temp_path}")
+            end
+
             {:error, reason}
         end
 
       # Handle local file paths (relative to some base directory)
       File.exists?(url_or_path) ->
         IO.puts("📁 Copying local file: #{url_or_path}")
+
         case File.cp(url_or_path, temp_path) do
           :ok ->
             content_type = get_content_type_from_extension(file_extension)
             {:ok, temp_path, content_type}
 
           {:error, reason} ->
+            # Clean up temp file if copy failed
+            if File.exists?(temp_path) do
+              File.rm(temp_path)
+              IO.puts("🧹 Cleaned up failed copy temp file: #{temp_path}")
+            end
+
             {:error, "Failed to copy local file: #{reason}"}
         end
 
       # Try to resolve relative paths (common in SLiMS) - construct full URL
       true ->
         # Try multiple base URLs that might work
-        base_urls = [
-          "https://lib.unpad.ac.id/images/docs/",
-          "https://pustaka.unpad.ac.id/images/docs/",
-          System.get_env("VOILE_IMAGE_BASE_URL") || ""
-        ] |> Enum.filter(&(&1 != ""))
+        base_urls =
+          [
+            "https://lib.unpad.ac.id/images/docs/",
+            "https://pustaka.unpad.ac.id/images/docs/",
+            System.get_env("VOILE_IMAGE_BASE_URL") || ""
+          ]
+          |> Enum.filter(&(&1 != ""))
 
         # Try each base URL
-        result = Enum.find_value(base_urls, fn base_url ->
-          full_url = base_url <> url_or_path
-          IO.puts("� Trying to download from: #{full_url}")
+        result =
+          Enum.find_value(base_urls, fn base_url ->
+            full_url = base_url <> url_or_path
+            IO.puts("🔍 Trying to download from: #{full_url}")
 
-          case download_from_http(full_url, temp_path) do
-            {:ok, content_type} ->
-              IO.puts("✅ Found image at: #{full_url}")
-              {:ok, temp_path, content_type}
-            {:error, _} ->
-              nil
-          end
-        end)
+            case download_from_http(full_url, temp_path) do
+              {:ok, content_type} ->
+                IO.puts("✅ Found image at: #{full_url}")
+                {:ok, temp_path, content_type}
+
+              {:error, _} ->
+                nil
+            end
+          end)
 
         case result do
           nil ->
+            # Clean up temp file if it was created during attempts
+            if File.exists?(temp_path) do
+              File.rm(temp_path)
+              IO.puts("🧹 Cleaned up temp file after all download attempts failed: #{temp_path}")
+            end
+
             {:error, "Could not find image at any base URL for path: #{url_or_path}"}
+
           success ->
             success
         end
@@ -1520,31 +1556,38 @@ defmodule Voile.Migration.BiblioImporter do
     IO.puts("🌐 Making HTTP request to: #{url}")
 
     # Use Req for HTTP downloads with better error handling
-    case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 60_000) do
-      {:ok, %Req.Response{status: status, body: body, headers: headers}} when status in 200..299 ->
-        IO.puts("📄 HTTP #{status} - received #{byte_size(body)} bytes")
+    try do
+      case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 60_000) do
+        {:ok, %Req.Response{status: status, body: body, headers: headers}}
+        when status in 200..299 ->
+          IO.puts("📄 HTTP #{status} - received #{byte_size(body)} bytes")
 
-        case File.write(destination, body) do
-          :ok ->
-            content_type = get_content_type_from_headers(headers)
-            {:ok, content_type}
+          case File.write(destination, body) do
+            :ok ->
+              content_type = get_content_type_from_headers(headers)
+              {:ok, content_type}
 
-          {:error, reason} ->
-            {:error, "Failed to write file: #{reason}"}
-        end
+            {:error, reason} ->
+              {:error, "Failed to write file: #{reason}"}
+          end
 
-      {:ok, %Req.Response{status: status}} ->
-        {:error, "HTTP #{status} - image not found or access denied"}
+        {:ok, %Req.Response{status: status}} ->
+          {:error, "HTTP #{status} - image not found or access denied"}
 
-      {:error, %Req.TransportError{reason: reason}} ->
-        {:error, "Network error: #{inspect(reason)}"}
+        {:error, %Req.TransportError{reason: reason}} ->
+          {:error, "Network error: #{inspect(reason)}"}
 
-      {:error, reason} ->
-        {:error, "HTTP request failed: #{inspect(reason)}"}
+        {:error, reason} ->
+          {:error, "HTTP request failed: #{inspect(reason)}"}
+      end
+    rescue
+      e ->
+        {:error, "Exception during HTTP download: #{Exception.message(e)}"}
+    after
+      # Note: cleanup is handled by the caller in download_to_temp_file
+      # since that's where the temp file is created
+      :ok
     end
-  rescue
-    e ->
-      {:error, "Exception during HTTP download: #{Exception.message(e)}"}
   end
 
   # Extract content type from response headers

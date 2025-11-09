@@ -40,9 +40,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
       rescue
         Ecto.NoResultsError ->
           nil
+
         e ->
           # Log unexpected errors
-          IO.inspect(e, label: "Error getting collection attachments for ID: #{id}")
+          IO.puts("Error getting collection attachments for ID: #{id}: #{Exception.message(e)}")
           nil
       end
 
@@ -51,6 +52,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
       case attachments_data do
         nil ->
           nil
+
         %{} ->
           attachments_data.attachments
           |> Enum.filter(fn att -> att.is_primary == true end)
@@ -112,7 +114,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-             <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
+            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
           </div>
         <% else %>
           <%= if @collection do %>

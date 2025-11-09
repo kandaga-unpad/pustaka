@@ -164,7 +164,7 @@ else
 fi
 
 print_status "Importing data..."
-if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.import_data()'; then
+if podman exec "$APP_CONTAINER" /app/bin/voile rpc 'Voile.Release.import_data()'; then
     print_status "Data import completed successfully"
 else
     print_warning "Data import might have failed, check logs if needed"

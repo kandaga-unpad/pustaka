@@ -236,12 +236,21 @@ defmodule GLAMSeeds do
 
     # Read and process Gallery CSV
     gallery_file = "scripts/csv_data/gallery/koleksi_gallery 20250917-3256.csv"
+    tumbuhan_file = "scripts/csv_data/gallery/koleksi_tumbuhan 20251108-6346.csv"
 
     if File.exists?(gallery_file) && gallery_rc do
       IO.puts("📸 Processing Gallery collections...")
       gallery_collections = parse_gallery_csv(gallery_file)
       insert_collections(gallery_collections, gallery_rc.id, kandaga_unit, "GALLERY")
       IO.puts("✅ Processed #{length(gallery_collections)} gallery collections")
+    end
+
+    # Also process the tumbuhan (plant) collections if they exist
+    if File.exists?(tumbuhan_file) && gallery_rc do
+      IO.puts("🌿 Processing Plant (Tumbuhan) collections...")
+      tumbuhan_collections = parse_tumbuhan_csv(tumbuhan_file)
+      insert_collections(tumbuhan_collections, gallery_rc.id, kandaga_unit, "PLANT")
+      IO.puts("✅ Processed #{length(tumbuhan_collections)} plant collections")
     end
 
     # Read and process Archive CSV
@@ -393,6 +402,124 @@ defmodule GLAMSeeds do
         publication_date: parse_date(tanggal_publikasi),
         directus_id: id,
         thumbnail_id: parse_empty_string(thumbnail_id)
+      }
+    end)
+  end
+
+  defp parse_tumbuhan_csv(file_path) do
+    file_path
+    |> File.stream!()
+    |> GLAMCSVParser.parse_stream(skip_headers: false)
+    # Skip header row
+    |> Stream.drop(1)
+    |> Enum.map(fn row ->
+      [
+        id,
+        register_number,
+        number_of_collection,
+        local_name,
+        type,
+        collector_id,
+        _status,
+        _user_created,
+        _date_created,
+        _user_updated,
+        _date_updated,
+        specific_type,
+        date_of_collection,
+        locality_or_location,
+        _latitude,
+        _longitude,
+        _altitude,
+        habitat,
+        field_note,
+        determinated_by,
+        date_determinated,
+        uses_or_bioprospect,
+        use_category,
+        kingdom,
+        phylum,
+        classis,
+        ordo,
+        family,
+        genus,
+        species,
+        featured_image_id,
+        _featured_image
+      ] = row
+
+      # Build a descriptive title combining local name and scientific name
+      title =
+        if species && species != "" do
+          "#{parse_empty_string(local_name)} (#{genus} #{species})"
+        else
+          parse_empty_string(local_name)
+        end
+
+      # Build description from field notes and other details
+      description_parts = []
+
+      description_parts =
+        if field_note && field_note != "",
+          do: ["Field notes: #{field_note}" | description_parts],
+          else: description_parts
+
+      description_parts =
+        if habitat && habitat != "",
+          do: ["Habitat: #{habitat}" | description_parts],
+          else: description_parts
+
+      description_parts =
+        if locality_or_location && locality_or_location != "",
+          do: ["Location: #{locality_or_location}" | description_parts],
+          else: description_parts
+
+      description_parts =
+        if determinated_by && determinated_by != "",
+          do: ["Determined by: #{determinated_by}" | description_parts],
+          else: description_parts
+
+      description_parts =
+        if uses_or_bioprospect && uses_or_bioprospect != "",
+          do: ["Uses: #{uses_or_bioprospect}" | description_parts],
+          else: description_parts
+
+      description =
+        if length(description_parts) > 0 do
+          Enum.join(description_parts, ". ")
+        else
+          "Herbarium specimen"
+        end
+
+      # Build keywords from taxonomic information
+      keywords =
+        [
+          parse_empty_string(kingdom),
+          parse_empty_string(phylum),
+          parse_empty_string(classis),
+          parse_empty_string(ordo),
+          parse_empty_string(family),
+          parse_empty_string(genus),
+          parse_empty_string(species),
+          parse_empty_string(type),
+          parse_empty_string(specific_type),
+          parse_empty_string(use_category)
+        ]
+        |> Enum.reject(&is_nil/1)
+
+      %{
+        id: id,
+        title: title,
+        creator: get_collector_name(collector_id),
+        type: "herbarium",
+        institution: "Universitas Padjadjaran",
+        location: parse_empty_string(locality_or_location),
+        description: description,
+        keywords: keywords,
+        created_date: parse_date(date_of_collection),
+        publication_date: nil,
+        directus_id: id,
+        thumbnail_id: parse_empty_string(featured_image_id)
       }
     end)
   end
@@ -698,6 +825,59 @@ defmodule GLAMSeeds do
       _ -> ".jpg"
     end
   end
+
+  defp get_collector_name(collector_id) do
+    # Try to load collector data from CSV if available
+    collector_file = "scripts/csv_data/mst/collector_hayati 20251108-63150.csv"
+
+    if File.exists?(collector_file) do
+      # Load collector data if not already loaded
+      collectors = Process.get(:glam_collectors)
+
+      collectors =
+        if collectors do
+          collectors
+        else
+          collectors = load_collectors_from_csv(collector_file)
+          Process.put(:glam_collectors, collectors)
+          collectors
+        end
+
+      # Look up collector by ID
+      case parse_int(collector_id) do
+        nil -> nil
+        id -> Map.get(collectors, id)
+      end
+    else
+      nil
+    end
+  end
+
+  defp load_collectors_from_csv(file_path) do
+    file_path
+    |> File.stream!()
+    |> GLAMCSVParser.parse_stream(skip_headers: false)
+    |> Stream.drop(1)
+    |> Enum.reduce(%{}, fn [id, full_name | _rest], acc ->
+      case parse_int(id) do
+        nil -> acc
+        collector_id -> Map.put(acc, collector_id, String.trim(full_name))
+      end
+    end)
+  end
+
+  defp parse_int(nil), do: nil
+  defp parse_int(""), do: nil
+
+  defp parse_int(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, _} -> int
+      :error -> nil
+    end
+  end
+
+  defp parse_int(value) when is_integer(value), do: value
+  defp parse_int(_), do: nil
 end
 
 # Run the seeding
