@@ -227,10 +227,17 @@ defmodule Voile.Release do
   def import_data(opts \\ []) do
     load_app()
 
-    # Ensure all required applications are started (including Finch for HTTP requests)
-    {:ok, _} = Application.ensure_all_started(@app)
-    {:ok, _} = Application.ensure_all_started(:finch)
-    {:ok, _} = Application.ensure_all_started(:req)
+    # Check if the application is already running
+    app_already_started =
+      Application.started_applications()
+      |> Enum.any?(fn {app, _, _} -> app == @app end)
+
+    # Only start applications if they're not already running
+    unless app_already_started do
+      {:ok, _} = Application.ensure_all_started(@app)
+      {:ok, _} = Application.ensure_all_started(:finch)
+      {:ok, _} = Application.ensure_all_started(:req)
+    end
 
     alias Voile.Migration.{
       BiblioImporter,
