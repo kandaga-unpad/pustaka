@@ -1,0 +1,19 @@
+sequenceDiagram
+  participant U as User (browser)
+  participant App as Phoenix LiveView
+  participant AM as Attachment Manager
+  participant S as Object Storage
+  participant BG as Background Worker
+  participant DB as Postgres
+
+  U->>App: Click upload (file metadata)
+  App->>AM: Request presign (user, record, policy)
+  AM->>DB: Verify policy & log request
+  AM-->>App: Return presigned PUT URL
+  App-->>U: Deliver presign details
+  U->>S: Upload file using presigned PUT
+  S-->>App: Upload confirmation (webhook) / or App polls
+  App->>DB: Update attachment record (status: uploaded)
+  App->>BG: Enqueue derivative job
+  BG->>S: Download file for processing
+  BG->>DB: Save derivative metadata, thumbnails
