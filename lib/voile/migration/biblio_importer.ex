@@ -1263,13 +1263,19 @@ defmodule Voile.Migration.BiblioImporter do
   defp load_unit_author_data(unit_id) do
     # Load biblio-author relations for specific unit
     # First try the biblio directory (primary location)
-    biblio_author_file = Path.join("scripts/csv_data/biblio", "biblio_author_#{unit_id}.csv")
+    biblio_author_file =
+      Path.join([
+        Voile.Migration.Common.csv_base_path(),
+        "biblio",
+        "biblio_author_#{unit_id}.csv"
+      ])
 
     if File.exists?(biblio_author_file) do
       load_biblio_author_relations(biblio_author_file)
     else
       # Fallback to mst directory (legacy location)
-      biblio_author_file_mst = Path.join("scripts/csv_data/mst", "biblio_author_#{unit_id}.csv")
+      biblio_author_file_mst =
+        Path.join([Voile.Migration.Common.csv_base_path(), "mst", "biblio_author_#{unit_id}.csv"])
 
       if File.exists?(biblio_author_file_mst) do
         load_biblio_author_relations(biblio_author_file_mst)

@@ -3,7 +3,15 @@ defmodule Voile.Migration.Common do
   Common utilities and helpers for data migration.
   """
 
-  @csv_base_path "scripts/csv_data"
+  # Get the CSV base path, preferring absolute path for containerized environments
+  def csv_base_path do
+    cond do
+      File.dir?("/app/scripts/csv_data") -> "/app/scripts/csv_data"
+      File.dir?("scripts/csv_data") -> "scripts/csv_data"
+      # fallback
+      true -> "scripts/csv_data"
+    end
+  end
 
   # Define CSV parser
   NimbleCSV.define(
@@ -14,7 +22,7 @@ defmodule Voile.Migration.Common do
   )
 
   def get_csv_files(data_type) do
-    base_path = Path.join(@csv_base_path, data_type)
+    base_path = Path.join(csv_base_path(), data_type)
 
     if File.exists?(base_path) do
       pattern = Path.join(base_path, "*.csv")
@@ -35,7 +43,7 @@ defmodule Voile.Migration.Common do
   end
 
   def get_specific_files(data_type, pattern) do
-    base_path = Path.join(@csv_base_path, data_type)
+    base_path = Path.join(csv_base_path(), data_type)
     full_pattern = Path.join(base_path, pattern)
 
     files = Path.wildcard(full_pattern) |> Enum.sort()

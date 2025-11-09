@@ -22,13 +22,22 @@ defmodule Voile.Migration.DataSource do
   def init_source(source_type) do
     case source_type do
       :csv ->
-        csv_dir = Path.join("scripts", "csv_data")
+        # Use absolute path for containerized environment
+        csv_dir = Path.join(["/", "app", "scripts", "csv_data"])
 
         if File.dir?(csv_dir) do
           Logger.info("📁 Using CSV data source from #{csv_dir}")
           {:ok, :csv}
         else
-          {:error, "CSV data directory not found: #{csv_dir}"}
+          # Fallback to relative path for development
+          csv_dir_relative = Path.join("scripts", "csv_data")
+
+          if File.dir?(csv_dir_relative) do
+            Logger.info("📁 Using CSV data source from #{csv_dir_relative} (development mode)")
+            {:ok, :csv}
+          else
+            {:error, "CSV data directory not found: #{csv_dir} or #{csv_dir_relative}"}
+          end
         end
 
       :mysql ->
