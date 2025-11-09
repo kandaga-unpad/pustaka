@@ -137,7 +137,8 @@ defmodule VoileWeb.Layouts do
                 class="p-2 bg-transparent border-0"
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
-              </.button> <.locale_switcher current_path={assigns[:current_path] || "/"} />
+              </.button>
+              <.locale_switcher current_path={assigns[:current_path] || "/"} />
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
@@ -193,7 +194,8 @@ defmodule VoileWeb.Layouts do
                         <.link navigate="/manage" class="primary-btn flex flex-col w-full text-center">
                           <span>
                             <.icon name="hero-chart-bar-square" class="size-5 inline-block mr-1" />
-                          </span> <span>{gettext("Dashboard")}</span>
+                          </span>
+                          <span>{gettext("Dashboard")}</span>
                         </.link>
                         <.link navigate="/atrium" class="primary-btn flex flex-col w-full text-center">
                           <span><.icon name="hero-home" class="size-5 inline-block mr-1" /></span>
@@ -209,7 +211,8 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>{gettext("Log out")}</span>
+                          </span>
+                          <span>{gettext("Log out")}</span>
                         </.link>
                       <% else %>
                         <.link navigate="/atrium" class="success-btn w-full text-center">
@@ -226,7 +229,8 @@ defmodule VoileWeb.Layouts do
                               name="hero-arrow-right-on-rectangle"
                               class="size-5 inline-block mr-1"
                             />
-                          </span> <span>{gettext("Log out")}</span>
+                          </span>
+                          <span>{gettext("Log out")}</span>
                         </.link>
                       <% end %>
                     </div>
@@ -360,20 +364,20 @@ defmodule VoileWeb.Layouts do
           </div>
           <!-- Contact & Info -->
           <div>
-            <h4 class="text-white font-semibold mb-4">{gettext("Connect")}</h4>
+            <h4 class="text-white font-semibold mb-4">{gettext("Contact")}</h4>
 
             <ul class="space-y-3 text-sm">
               <li class="flex items-start gap-2">
                 <.icon name="hero-envelope" class="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span class="text-gray-400 break-all">
-                  {System.get_setting_value("app_contact_email", "info@voile.id")}
+                  {System.get_setting_value("app_contact_email", "chrisna.adhi@unpad.ac.id")}
                 </span>
               </li>
 
               <li class="flex items-start gap-2">
                 <.icon name="hero-map-pin" class="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span class="text-gray-400">
-                  {System.get_setting_value("app_address", "Library Location")}
+                  {System.get_setting_value("app_address", "Kandaga Universitas Padjadjaran")}
                 </span>
               </li>
 
@@ -381,12 +385,12 @@ defmodule VoileWeb.Layouts do
                 <li class="flex items-start gap-2">
                   <.icon name="hero-globe-alt" class="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <a
-                    href={System.get_setting_value("app_website", "#")}
+                    href={System.get_setting_value("app_website", "https://curatorian.id")}
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-gray-400 hover:text-white transition-colors break-all"
                   >
-                    {System.get_setting_value("app_website", "")}
+                    {System.get_setting_value("app_website", "https://curatorian.id")}
                   </a>
                 </li>
               <% end %>
@@ -423,14 +427,15 @@ defmodule VoileWeb.Layouts do
                   style={"color: #{if @app_main_color, do: @app_main_color, else: "#9333ea"}"}
                 >
                   ♥
-                </span> <span>using Elixir & Phoenix</span>
+                </span>
+                <span>using Elixir & Phoenix</span>
               </div>
             </div>
           </div>
         </div>
       </div>
     </footer>
-     <.flash_group flash={@flash} />
+    <.flash_group flash={@flash} />
     """
   end
 

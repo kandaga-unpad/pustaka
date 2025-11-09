@@ -189,7 +189,7 @@ deploy() {
     fi
 
     log_status "Importing data..."
-    if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.import_data()' 2>&1 | tee -a "$LOG_FILE"; then
+    if podman exec "$APP_CONTAINER" /app/bin/voile rpc 'Voile.Release.import_data()' 2>&1 | tee -a "$LOG_FILE"; then
         log_status "Data import completed successfully"
     else
         log_warning "Data import might have failed, check logs if needed"

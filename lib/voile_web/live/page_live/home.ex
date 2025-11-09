@@ -17,13 +17,15 @@ defmodule VoileWeb.PageLive.Home do
 
     # Load app homepage content
     app_home_title =
-      System.get_setting_value("app_home_title", "Voile, the Magic Library")
+      System.get_setting_value("app_home_title", "home.title")
+      |> translate_dynamic_content()
 
     app_home_description =
       System.get_setting_value(
         "app_home_description",
-        "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+        "home.description"
       )
+      |> translate_dynamic_content()
 
     # Get dashboard statistics with fallback defaults
     dashboard_stats = Dashboard.get_dashboard_stats()
@@ -184,6 +186,25 @@ defmodule VoileWeb.PageLive.Home do
   defp get_category_icon("Archive"), do: "hero-archive-box"
   defp get_category_icon("Museum"), do: "hero-building-library"
   defp get_category_icon(_), do: "hero-squares-2x2"
+
+  # Helper function to translate dynamic content from system settings
+  # If the content is a known translation key, translate it
+  # Otherwise, return it as-is (for custom admin content)
+  defp translate_dynamic_content(content) do
+    case content do
+      "home.title" ->
+        gettext("Voile, the Magic Library")
+
+      "home.description" ->
+        gettext(
+          "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+        )
+
+      # For any other content (custom admin input), return as-is
+      _ ->
+        content
+    end
+  end
 
   @impl true
   def render(assigns) do

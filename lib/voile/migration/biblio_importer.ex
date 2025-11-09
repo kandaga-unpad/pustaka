@@ -1454,7 +1454,7 @@ defmodule Voile.Migration.BiblioImporter do
         {:ok, temp_path, content_type} ->
           # Ensure cleanup happens even if upload fails
           try do
-            # Determine file extension
+            # Determine file extension - keep original extensions as-is
             file_extension = Path.extname(cleaned_path) |> String.downcase()
             file_extension = if file_extension == "", do: ".jpg", else: file_extension
 
@@ -1501,14 +1501,17 @@ defmodule Voile.Migration.BiblioImporter do
 
   # Download image to temporary file and return path with content type
   defp download_to_temp_file(url_or_path) do
-    # Determine file extension
-    file_extension = Path.extname(url_or_path) |> String.downcase()
+    # Clean and normalize the path/extension
+    cleaned_path = String.trim(url_or_path)
+
+    # Determine file extension - keep original extensions as-is
+    file_extension = Path.extname(cleaned_path) |> String.downcase()
     file_extension = if file_extension == "", do: ".jpg", else: file_extension
 
-    # Create temporary file in custom directory
+    # Create temporary file in custom directory with better fallback
     temp_dir = "/data/voile/tmp"
 
-    # Ensure the temp directory exists, fallback to system temp if needed
+    # Ensure the temp directory exists with better error handling
     temp_dir =
       case File.mkdir_p(temp_dir) do
         :ok ->
@@ -1516,8 +1519,23 @@ defmodule Voile.Migration.BiblioImporter do
 
         {:error, reason} ->
           IO.puts("⚠️ Failed to create temp directory #{temp_dir}: #{reason}")
-          # Fallback to system temp dir
-          System.tmp_dir!()
+
+          # Try system temp dir
+          system_temp = System.tmp_dir!()
+
+          case File.mkdir_p(system_temp) do
+            :ok ->
+              IO.puts("✅ Using system temp directory: #{system_temp}")
+              system_temp
+
+            {:error, sys_reason} ->
+              IO.puts("❌ Failed to create system temp directory #{system_temp}: #{sys_reason}")
+
+              # Last resort: use current directory
+              current_dir = File.cwd!()
+              IO.puts("⚠️ Using current directory as temp: #{current_dir}")
+              current_dir
+          end
       end
 
     temp_filename = "biblio_import_#{System.unique_integer([:positive])}#{file_extension}"
@@ -1525,10 +1543,11 @@ defmodule Voile.Migration.BiblioImporter do
 
     cond do
       # Handle HTTP/HTTPS URLs
-      String.starts_with?(url_or_path, "http://") or String.starts_with?(url_or_path, "https://") ->
-        IO.puts("🌐 Downloading from HTTP URL: #{url_or_path}")
+      String.starts_with?(cleaned_path, "http://") or
+          String.starts_with?(cleaned_path, "https://") ->
+        IO.puts("🌐 Downloading from HTTP URL: #{cleaned_path}")
 
-        case download_from_http(url_or_path, temp_path) do
+        case download_from_http(cleaned_path, temp_path) do
           {:ok, content_type} ->
             {:ok, temp_path, content_type}
 
@@ -1543,10 +1562,10 @@ defmodule Voile.Migration.BiblioImporter do
         end
 
       # Handle local file paths (relative to some base directory)
-      File.exists?(url_or_path) ->
-        IO.puts("📁 Copying local file: #{url_or_path}")
+      File.exists?(cleaned_path) ->
+        IO.puts("📁 Copying local file: #{cleaned_path}")
 
-        case File.cp(url_or_path, temp_path) do
+        case File.cp(cleaned_path, temp_path) do
           :ok ->
             content_type = get_content_type_from_extension(file_extension)
             {:ok, temp_path, content_type}
@@ -1567,7 +1586,6 @@ defmodule Voile.Migration.BiblioImporter do
         base_urls =
           [
             "https://lib.unpad.ac.id/images/docs/",
-            "https://pustaka.unpad.ac.id/images/docs/",
             System.get_env("VOILE_IMAGE_BASE_URL") || ""
           ]
           |> Enum.filter(&(&1 != ""))
@@ -1575,7 +1593,7 @@ defmodule Voile.Migration.BiblioImporter do
         # Try each base URL
         result =
           Enum.find_value(base_urls, fn base_url ->
-            full_url = base_url <> url_or_path
+            full_url = base_url <> cleaned_path
             IO.puts("🔍 Trying to download from: #{full_url}")
 
             case download_from_http(full_url, temp_path) do
@@ -1596,7 +1614,7 @@ defmodule Voile.Migration.BiblioImporter do
               IO.puts("🧹 Cleaned up temp file after all download attempts failed: #{temp_path}")
             end
 
-            {:error, "Could not find image at any base URL for path: #{url_or_path}"}
+            {:error, "Could not find image at any base URL for path: #{cleaned_path}"}
 
           success ->
             success
@@ -1608,9 +1626,19 @@ defmodule Voile.Migration.BiblioImporter do
   defp download_from_http(url, destination) do
     IO.puts("🌐 Making HTTP request to: #{url}")
 
-    # Use Req for HTTP downloads with better error handling
+    # Use Req for HTTP downloads with increased timeouts (no retries)
     try do
-      case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 60_000) do
+      # Configure Req with longer timeouts but no retry
+      req_options = [
+        # 60 seconds connect timeout
+        connect_options: [timeout: 60_000],
+        # 120 seconds receive timeout
+        receive_timeout: 120_000,
+        # Add user agent to avoid being blocked
+        headers: [{"User-Agent", "Voile-Biblio-Importer/1.0"}]
+      ]
+
+      case Req.get(url, req_options) do
         {:ok, %Req.Response{status: status, body: body, headers: headers}}
         when status in 200..299 ->
           IO.puts("📄 HTTP #{status} - received #{byte_size(body)} bytes")

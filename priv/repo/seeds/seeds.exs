@@ -214,8 +214,8 @@ System.upsert_setting(
 )
 
 System.upsert_setting("app_contact_email", "chrisna.adhi@unpad.ac.id")
-System.upsert_setting("app_website", "https://example.org")
-System.upsert_setting("app_address", "123 Library Avenue, Knowledge City")
+System.upsert_setting("app_website", "https://curatorian.id")
+System.upsert_setting("app_address", "Kandaga Universitas Padjadjaran, Jatinangor, Indonesia")
 
 # Logo (default to packaged icon)
 System.upsert_setting("app_logo_url", "/images/v.png")

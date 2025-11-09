@@ -20,10 +20,18 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
         </div>
 
         <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
-          Service Unavailable
+          {gettext("Service Unavailable")}
         </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          {gettext("Error occurred at:")}
+          <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+            {assigns[:conn].request_path}
+          </code>
+        </p>
         <p class="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          We're currently performing maintenance to improve reliability. Some features may be unavailable. We'll be back shortly.
+          {gettext(
+            "We're currently performing maintenance to improve reliability. Some features may be unavailable. We'll be back shortly."
+          )}
         </p>
 
         <div class="mt-8 flex flex-col sm:flex-row sm:justify-center gap-3">
@@ -32,7 +40,7 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
             style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
           >
-            <.icon name="hero-home" class="w-5 h-5 mr-2" /> Return home
+            <.icon name="hero-home" class="w-5 h-5 mr-2" /> {gettext("Return home")}
           </.link>
 
           <.link
@@ -40,7 +48,14 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
             style={"border-color: " <> app_secondary_color <> "33;"}
           >
-            <.icon name="hero-envelope" class="w-5 h-5 mr-2" /> Contact support
+            <.icon name="hero-envelope" class="w-5 h-5 mr-2" /> {gettext("Contact support")}
+          </.link>
+
+          <.link
+            href="mailto:chrisna.adhi@unpad.ac.id"
+            class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            <.icon name="hero-envelope" class="w-5 h-5 mr-2" /> {gettext("Contact Developer")}
           </.link>
         </div>
       </div>
@@ -49,10 +64,11 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-          <h2 class="text-2xl font-semibold mb-4">What's happening</h2>
+          <h2 class="text-2xl font-semibold mb-4">{gettext("What's happening")}</h2>
           <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-            We have taken the service offline temporarily to perform maintenance and deploy reliability improvements.
-            This is a short, planned interruption — no user data will be affected.
+            {gettext(
+              "We have taken the service offline temporarily to perform maintenance and deploy reliability improvements. This is a short, planned interruption — no user data will be affected."
+            )}
           </p>
 
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -64,9 +80,9 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
                 <.icon name="hero-rocket-launch" class="w-5 h-5" />
               </div>
               <div>
-                <div class="font-semibold">Deploying updates</div>
+                <div class="font-semibold">{gettext("Deploying updates")}</div>
                 <div class="text-sm text-gray-500">
-                  Applying small updates to improve performance and stability.
+                  {gettext("Applying small updates to improve performance and stability.")}
                 </div>
               </div>
             </li>
@@ -79,9 +95,9 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
                 <.icon name="hero-cog" class="w-5 h-5" />
               </div>
               <div>
-                <div class="font-semibold">Maintenance tasks</div>
+                <div class="font-semibold">{gettext("Maintenance tasks")}</div>
                 <div class="text-sm text-gray-500">
-                  Routine checks and small fixes being applied by the ops team.
+                  {gettext("Routine checks and small fixes being applied by the ops team.")}
                 </div>
               </div>
             </li>
@@ -91,9 +107,9 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
                 <.icon name="hero-clock" class="w-5 h-5" />
               </div>
               <div>
-                <div class="font-semibold">ETA</div>
+                <div class="font-semibold">{gettext("ETA")}</div>
                 <div class="text-sm text-gray-500">
-                  Expected to be back within a few minutes — thanks for your patience.
+                  {gettext("Expected to be back within a few minutes — thanks for your patience.")}
                 </div>
               </div>
             </li>
@@ -103,9 +119,9 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
                 <.icon name="hero-check-badge" class="w-5 h-5" />
               </div>
               <div>
-                <div class="font-semibold">Safety</div>
+                <div class="font-semibold">{gettext("Safety")}</div>
                 <div class="text-sm text-gray-500">
-                  No user data is affected during this maintenance window.
+                  {gettext("No user data is affected during this maintenance window.")}
                 </div>
               </div>
             </li>
@@ -113,15 +129,15 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
         </div>
 
         <aside class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg">
-          <h3 class="text-lg font-semibold mb-3">Status & updates</h3>
+          <h3 class="text-lg font-semibold mb-3">{gettext("Status & updates")}</h3>
           <p class="text-sm text-gray-500 mb-4">
-            Subscribe or check our status page for real-time updates.
+            {gettext("Subscribe or check our status page for real-time updates.")}
           </p>
           <.link
             href="/status"
             class="w-full inline-flex items-center justify-center px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
           >
-            View status
+            {gettext("View status")}
           </.link>
         </aside>
       </div>

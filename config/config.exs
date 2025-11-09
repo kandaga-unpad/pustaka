@@ -32,7 +32,7 @@ config :voile, VoileWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
     formats: [html: VoileWeb.ErrorHTML, json: VoileWeb.ErrorJSON],
-    layout: false
+    layout: {VoileWeb.Layouts, :root}
   ],
   pubsub_server: Voile.PubSub,
   live_view: [signing_salt: "q1X5qNFK"]

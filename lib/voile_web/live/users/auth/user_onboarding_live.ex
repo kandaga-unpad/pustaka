@@ -58,7 +58,6 @@ defmodule VoileWeb.UserOnboardingLive do
                 label={identifier_label(@form[:identifier].value)}
                 readonly
                 disabled
-                class="bg-gray-100 dark:bg-gray-700"
               />
             <% end %>
 
@@ -295,13 +294,24 @@ defmodule VoileWeb.UserOnboardingLive do
   defp identifier_label(nil), do: "Identifier"
 
   defp identifier_label(value) when is_binary(value) do
-    if String.length(value) >= 15, do: "NIP (Lecturer ID)", else: "NPM (Student ID)"
+    case String.length(value) do
+      length when length >= 15 -> "NIP (Lecturer ID)"
+      length when length == 14 -> "Number ID"
+      length when length == 12 -> "NPM (Student ID)"
+      _ -> "Identifier"
+    end
   end
 
   defp identifier_label(value) do
     # Handle Decimal type
     str_value = to_string(value)
-    if String.length(str_value) >= 15, do: "NIP (Lecturer ID)", else: "NPM (Student ID)"
+
+    case String.length(str_value) do
+      length when length >= 15 -> "NIP (Lecturer ID)"
+      length when length == 14 -> "Number ID"
+      length when length == 12 -> "NPM (Student ID)"
+      _ -> "Identifier"
+    end
   end
 
   defp maybe_generate_identifier(user, user_type)
@@ -313,7 +323,7 @@ defmodule VoileWeb.UserOnboardingLive do
       identifier = "#{timestamp}#{random}" |> Decimal.new()
 
       # Update user with identifier
-      {:ok, updated_user} = Accounts.update_user(user, %{identifier: identifier})
+      {:ok, updated_user} = Accounts.update_profile_user(user, %{identifier: identifier})
       updated_user
     else
       user

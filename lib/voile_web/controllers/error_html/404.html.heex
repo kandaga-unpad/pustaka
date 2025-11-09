@@ -10,53 +10,76 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-lg"
             style={"background: linear-gradient(135deg, " <> app_main_color <> ", " <> app_secondary_color <> ");"}
           >
-            <.icon name="hero-book-open" class="w-10 h-10 text-white" />
+            <.icon name="hero-exclamation-triangle" class="w-10 h-10 text-white" />
           </div>
 
-          <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
-            Page not found
+          <h1 class="text-4xl md:text-5xl font-extrabold text-red-500 dark:text-white">
+            {gettext("Page not found")}
           </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {gettext("Error occurred at:")}
+            <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+              {assigns[:conn].request_path}
+            </code>
+          </p>
           <p class="text-lg text-gray-600 dark:text-gray-300 max-w-xl">
-            The page you were looking for could not be found. It may have been moved or deleted, or the link is incorrect.
+            {gettext(
+              "The page you were looking for could not be found. It may have been moved or deleted, or the link is incorrect."
+            )}
           </p>
 
-          <div class="flex flex-col sm:flex-row gap-3 mt-4">
+          <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full">
             <.link
               href={~p"/"}
-              class="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
+              class="inline-flex w-full items-center gap-2 px-5 py-3 rounded-md bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
               style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
             >
-              <.icon name="hero-home" class="w-5 h-5" /> Back to home
+              <.icon name="hero-home" class="w-5 h-5" /> {gettext("Back to home")}
             </.link>
 
             <.link
               href="/search"
-              class="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-transparent border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="inline-flex w-full items-center gap-2 px-5 py-3 rounded-md bg-transparent border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
-              <.icon name="hero-magnifying-glass" class="w-5 h-5" /> Search the library
+              <.icon name="hero-magnifying-glass" class="w-5 h-5" /> {gettext(
+                "Search the library"
+              )}
+            </.link>
+          </div>
+          <div class="flex w-full mt-4">
+            <.link
+              href="mailto:chrisna.adhi@unpad.ac.id"
+              class="flex items-center justify-center gap-2 px-5 py-3 rounded-md bg-red-500 text-white hover:bg-red-600 w-full"
+            >
+              <.icon name="hero-envelope" class="w-5 h-5" />
+              <span>{gettext("Contact Developer")}</span>
             </.link>
           </div>
         </div>
 
         <div class="rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-lg">
-          <h3 class="text-lg font-semibold mb-3">Helpful links</h3>
+          <h3 class="text-lg font-semibold mb-3">{gettext("Helpful links")}</h3>
           <ul class="space-y-3">
             <li class="flex items-center justify-between">
-              <div class="text-sm text-gray-700 dark:text-gray-200">Home</div>
-              <.link href={~p"/"} class="text-sm text-indigo-600">Open</.link>
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Home")}</div>
+              <.link href={~p"/"} class="text-sm text-indigo-600">{gettext("Open")}</.link>
             </li>
             <li class="flex items-center justify-between">
-              <div class="text-sm text-gray-700 dark:text-gray-200">Search</div>
-              <.link href={~p"/search"} class="text-sm text-indigo-600">Search</.link>
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Search")}</div>
+              <.link href={~p"/search"} class="text-sm text-indigo-600">
+                {gettext("Search")}
+              </.link>
             </li>
             <li class="flex items-center justify-between">
-              <div class="text-sm text-gray-700 dark:text-gray-200">Collections</div>
-              <.link href={~p"/collections"} class="text-sm text-indigo-600">Browse</.link>
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Collections")}</div>
+              <.link href={~p"/collections"} class="text-sm text-indigo-600">
+                {gettext("Browse")}
+              </.link>
             </li>
             <li class="flex items-center justify-between">
-              <div class="text-sm text-gray-700 dark:text-gray-200">Help</div>
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Help")}</div>
               <.link href="mailto:support@yourorg.example" class="text-sm text-indigo-600">
-                Contact
+                {gettext("Contact")}
               </.link>
             </li>
           </ul>
