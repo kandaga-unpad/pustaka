@@ -28,7 +28,7 @@ defmodule Client.Storage.AWSHTTPClient do
       # For development/testing with self-signed certificates, you may need to disable SSL verification
       # Remove or adjust this in production
       connect_options:
-        if Mix.env() == :dev do
+        if System.get_env("MIX_ENV") == "dev" do
           [transport_opts: [verify: :verify_none]]
         else
           []
