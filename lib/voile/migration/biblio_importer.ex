@@ -354,7 +354,10 @@ defmodule Voile.Migration.BiblioImporter do
   defp ensure_default_creator do
     default_name = "Kandaga Universitas Padjadjaran"
 
-    case Voile.Schema.Master.get_or_create_creator(%{creator_name: default_name, type: "Organization"}) do
+    case Voile.Schema.Master.get_or_create_creator(%{
+           creator_name: default_name,
+           type: "Organization"
+         }) do
       {:ok, creator} ->
         IO.puts("✅ Default creator ready: #{default_name} (ID: #{creator.id})")
         creator.id
@@ -366,6 +369,7 @@ defmodule Voile.Migration.BiblioImporter do
           nil ->
             IO.puts("❌ No default creator found and creation failed")
             nil
+
           creator ->
             IO.puts("✅ Using existing default creator: #{default_name} (ID: #{creator.id})")
             creator.id
@@ -382,15 +386,18 @@ defmodule Voile.Migration.BiblioImporter do
     # Load specific author data for this unit from cache
     unit_author_mappings = Map.get(cache.author_mappings, unit_id, %{})
     # If no unit-specific mappings, try the default (unit 0)
-    unit_author_mappings = if map_size(unit_author_mappings) == 0,
-      do: Map.get(cache.author_mappings, 0, %{}),
-      else: unit_author_mappings
+    unit_author_mappings =
+      if map_size(unit_author_mappings) == 0,
+        do: Map.get(cache.author_mappings, 0, %{}),
+        else: unit_author_mappings
 
     unit_publisher_mappings = Map.get(cache.publisher_mappings, unit_id, %{})
     # If no unit-specific mappings, try the default (unit 0)
-    unit_publisher_mappings = if map_size(unit_publisher_mappings) == 0,
-      do: Map.get(cache.publisher_mappings, 0, %{}),
-      else: unit_publisher_mappings
+    unit_publisher_mappings =
+      if map_size(unit_publisher_mappings) == 0,
+        do: Map.get(cache.publisher_mappings, 0, %{}),
+        else: unit_publisher_mappings
+
     unit_author_data = load_unit_author_data(unit_id)
 
     stats_ref = :ets.new(:biblio_import_stats, [:set, :public])
