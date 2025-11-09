@@ -354,23 +354,22 @@ defmodule Voile.Migration.BiblioImporter do
   defp ensure_default_creator do
     default_name = "Kandaga Universitas Padjadjaran"
 
-    case Repo.get_by(Creator, creator_name: default_name) do
-      nil ->
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-        {:ok, creator} =
-          Repo.insert(%Creator{
-            creator_name: default_name,
-            inserted_at: now,
-            updated_at: now
-          })
-
-        IO.puts("✅ Created default creator: #{default_name} (ID: #{creator.id})")
+    case Voile.Schema.Master.get_or_create_creator(%{creator_name: default_name, type: "Organization"}) do
+      {:ok, creator} ->
+        IO.puts("✅ Default creator ready: #{default_name} (ID: #{creator.id})")
         creator.id
 
-      creator ->
-        IO.puts("✅ Using existing default creator: #{default_name} (ID: #{creator.id})")
-        creator.id
+      {:error, changeset} ->
+        IO.puts("❌ Failed to create default creator: #{inspect(changeset.errors)}")
+        # Fallback to finding existing creator
+        case Repo.get_by(Creator, creator_name: default_name) do
+          nil ->
+            IO.puts("❌ No default creator found and creation failed")
+            nil
+          creator ->
+            IO.puts("✅ Using existing default creator: #{default_name} (ID: #{creator.id})")
+            creator.id
+        end
     end
   end
 
@@ -382,7 +381,16 @@ defmodule Voile.Migration.BiblioImporter do
 
     # Load specific author data for this unit from cache
     unit_author_mappings = Map.get(cache.author_mappings, unit_id, %{})
+    # If no unit-specific mappings, try the default (unit 0)
+    unit_author_mappings = if map_size(unit_author_mappings) == 0,
+      do: Map.get(cache.author_mappings, 0, %{}),
+      else: unit_author_mappings
+
     unit_publisher_mappings = Map.get(cache.publisher_mappings, unit_id, %{})
+    # If no unit-specific mappings, try the default (unit 0)
+    unit_publisher_mappings = if map_size(unit_publisher_mappings) == 0,
+      do: Map.get(cache.publisher_mappings, 0, %{}),
+      else: unit_publisher_mappings
     unit_author_data = load_unit_author_data(unit_id)
 
     stats_ref = :ets.new(:biblio_import_stats, [:set, :public])
@@ -1237,27 +1245,59 @@ defmodule Voile.Migration.BiblioImporter do
   defp load_all_author_mappings do
     IO.puts("📋 Loading author mappings...")
 
-    files = get_specific_files("mst", "mst_author_*.csv")
+    # First try to find unit-specific author files
+    unit_files = get_specific_files("mst", "mst_author_*.csv")
 
-    files
-    |> Enum.reduce(%{}, fn file, acc ->
-      unit_id = extract_unit_id_from_filename(file)
-      authors = load_authors_from_file(file)
-      Map.put(acc, unit_id, authors)
-    end)
+    if Enum.empty?(unit_files) do
+      # Fall back to the main author file
+      main_file = Path.join([Voile.Migration.Common.csv_base_path(), "mst", "mst_author.csv"])
+
+      if File.exists?(main_file) do
+        IO.puts("📋 Using main author file: #{main_file}")
+        authors = load_authors_from_file(main_file)
+        # Use a default unit_id of 0 for the main file
+        %{0 => authors}
+      else
+        IO.puts("⚠️ No author mapping files found")
+        %{}
+      end
+    else
+      unit_files
+      |> Enum.reduce(%{}, fn file, acc ->
+        unit_id = extract_unit_id_from_filename(file)
+        authors = load_authors_from_file(file)
+        Map.put(acc, unit_id, authors)
+      end)
+    end
   end
 
   defp load_all_publisher_mappings do
     IO.puts("🏢 Loading publisher mappings...")
 
-    files = get_specific_files("mst", "mst_publisher_*.csv")
+    # First try to find unit-specific publisher files
+    unit_files = get_specific_files("mst", "mst_publisher_*.csv")
 
-    files
-    |> Enum.reduce(%{}, fn file, acc ->
-      unit_id = extract_unit_id_from_filename(file)
-      publishers = load_publishers_from_file(file)
-      Map.put(acc, unit_id, publishers)
-    end)
+    if Enum.empty?(unit_files) do
+      # Fall back to the main publisher file
+      main_file = Path.join([Voile.Migration.Common.csv_base_path(), "mst", "mst_publisher.csv"])
+
+      if File.exists?(main_file) do
+        IO.puts("🏢 Using main publisher file: #{main_file}")
+        publishers = load_publishers_from_file(main_file)
+        # Use a default unit_id of 0 for the main file
+        %{0 => publishers}
+      else
+        IO.puts("⚠️ No publisher mapping files found")
+        %{}
+      end
+    else
+      unit_files
+      |> Enum.reduce(%{}, fn file, acc ->
+        unit_id = extract_unit_id_from_filename(file)
+        publishers = load_publishers_from_file(file)
+        Map.put(acc, unit_id, publishers)
+      end)
+    end
   end
 
   defp load_unit_author_data(unit_id) do
