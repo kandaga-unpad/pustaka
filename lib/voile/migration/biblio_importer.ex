@@ -760,8 +760,15 @@ defmodule Voile.Migration.BiblioImporter do
 
               # Store image URL for batch processing later, or process immediately for small batches
               case download_image_optimized(image, unit_id) do
-                {:ok, path} -> path
-                _ -> nil
+                {:ok, path} ->
+                  IO.puts("✅ Successfully processed image for biblio_id: #{biblio_id} -> #{path}")
+                  path
+                {:error, reason} ->
+                  IO.puts("❌ Failed to process image for biblio_id: #{biblio_id}: #{reason}")
+                  nil
+                _ ->
+                  IO.puts("⚠️ No image processed for biblio_id: #{biblio_id}")
+                  nil
               end
             end
 
@@ -1420,15 +1427,16 @@ defmodule Voile.Migration.BiblioImporter do
                    preserve_extension: true
                  ) do
               {:ok, file_url} ->
+                IO.puts("✅ Successfully uploaded to storage: #{file_url}")
                 # Clean up temp file
                 File.rm(temp_path)
                 {:ok, file_url}
 
               {:error, reason} ->
+                IO.puts("❌ Storage upload failed: #{reason}")
                 # Clean up temp file
                 File.rm(temp_path)
-                IO.puts("⚠️ Failed to upload image from #{cleaned_path}: #{reason}")
-                {:ok, nil}
+                {:error, "Storage upload failed: #{reason}"}
             end
 
           {:error, reason} ->
@@ -1453,13 +1461,19 @@ defmodule Voile.Migration.BiblioImporter do
     cond do
       # Handle HTTP/HTTPS URLs
       String.starts_with?(url_or_path, "http://") or String.starts_with?(url_or_path, "https://") ->
+        IO.puts("🌐 Downloading from HTTP URL: #{url_or_path}")
         case download_from_http(url_or_path, temp_path) do
-          {:ok, content_type} -> {:ok, temp_path, content_type}
-          {:error, reason} -> {:error, reason}
+          {:ok, content_type} ->
+            IO.puts("✅ Downloaded successfully, content-type: #{content_type}")
+            {:ok, temp_path, content_type}
+          {:error, reason} ->
+            IO.puts("❌ HTTP download failed: #{reason}")
+            {:error, reason}
         end
 
       # Handle local file paths (relative to some base directory)
       File.exists?(url_or_path) ->
+        IO.puts("📁 Copying local file: #{url_or_path}")
         case File.cp(url_or_path, temp_path) do
           :ok ->
             content_type = get_content_type_from_extension(file_extension)
@@ -1471,24 +1485,45 @@ defmodule Voile.Migration.BiblioImporter do
 
       # Try to resolve relative paths (common in SLiMS) - construct full URL
       true ->
-        # Construct the full URL for UNPAD library images
-        base_url = "https://lib.unpad.ac.id/images/docs/"
-        full_url = base_url <> url_or_path
+        # Try multiple base URLs that might work
+        base_urls = [
+          "https://lib.unpad.ac.id/images/docs/",
+          "https://pustaka.unpad.ac.id/images/docs/",
+          System.get_env("VOILE_IMAGE_BASE_URL") || ""
+        ] |> Enum.filter(&(&1 != ""))
 
-        IO.puts("📁 Trying to download from: #{full_url}")
+        # Try each base URL
+        result = Enum.find_value(base_urls, fn base_url ->
+          full_url = base_url <> url_or_path
+          IO.puts("� Trying to download from: #{full_url}")
 
-        case download_from_http(full_url, temp_path) do
-          {:ok, content_type} -> {:ok, temp_path, content_type}
-          {:error, reason} -> {:error, reason}
+          case download_from_http(full_url, temp_path) do
+            {:ok, content_type} ->
+              IO.puts("✅ Found image at: #{full_url}")
+              {:ok, temp_path, content_type}
+            {:error, _} ->
+              nil
+          end
+        end)
+
+        case result do
+          nil ->
+            {:error, "Could not find image at any base URL for path: #{url_or_path}"}
+          success ->
+            success
         end
     end
   end
 
   # Download image from HTTP URL and return content type
   defp download_from_http(url, destination) do
-    # Use Req for HTTP downloads
-    case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 30_000) do
-      {:ok, %Req.Response{status: 200, body: body, headers: headers}} ->
+    IO.puts("🌐 Making HTTP request to: #{url}")
+
+    # Use Req for HTTP downloads with better error handling
+    case Req.get(url, connect_options: [timeout: 30_000], receive_timeout: 60_000) do
+      {:ok, %Req.Response{status: status, body: body, headers: headers}} when status in 200..299 ->
+        IO.puts("📄 HTTP #{status} - received #{byte_size(body)} bytes")
+
         case File.write(destination, body) do
           :ok ->
             content_type = get_content_type_from_headers(headers)
@@ -1498,8 +1533,11 @@ defmodule Voile.Migration.BiblioImporter do
             {:error, "Failed to write file: #{reason}"}
         end
 
-      {:ok, %Req.Response{status: status_code}} ->
-        {:error, "HTTP #{status_code}"}
+      {:ok, %Req.Response{status: status}} ->
+        {:error, "HTTP #{status} - image not found or access denied"}
+
+      {:error, %Req.TransportError{reason: reason}} ->
+        {:error, "Network error: #{inspect(reason)}"}
 
       {:error, reason} ->
         {:error, "HTTP request failed: #{inspect(reason)}"}

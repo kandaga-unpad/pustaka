@@ -184,4 +184,19 @@ if config_env() == :prod do
       # Default to Local adapter (dev/test)
       config :voile, Voile.Mailer, adapter: Swoosh.Adapters.Local
   end
+
+  # S3 Storage Configuration
+  # Load S3 credentials from environment variables into application config
+  if System.get_env("VOILE_S3_ACCESS_KEY_ID") do
+    config :voile,
+      storage_adapter: Client.Storage.S3,
+      s3_access_key_id: System.get_env("VOILE_S3_ACCESS_KEY_ID"),
+      s3_secret_key_access: System.get_env("VOILE_S3_SECRET_ACCESS_KEY"),
+      s3_bucket_name: System.get_env("VOILE_S3_BUCKET_NAME") || "glam-storage",
+      s3_region: System.get_env("VOILE_S3_REGION") || "us-east-1",
+      s3_public_url: System.get_env("VOILE_S3_PUBLIC_URL") || "https://library.unpad.ac.id",
+      s3_public_url_format: System.get_env("VOILE_S3_PUBLIC_URL_FORMAT") || "{endpoint}/{bucket}/{key}"
+  else
+    config :voile, storage_adapter: Client.Storage.Local
+  end
 end

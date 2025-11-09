@@ -33,23 +33,49 @@ defmodule VoileWeb.Frontend.Collections.Show do
 
   @impl true
   def handle_info({:load_collection, id}, socket) do
-    attachments_data = Catalog.get_collection!(id)
+    # Get collection data for attachments
+    attachments_data =
+      try do
+        Catalog.get_collection!(id)
+      rescue
+        Ecto.NoResultsError ->
+          nil
+        e ->
+          # Log unexpected errors
+          IO.inspect(e, label: "Error getting collection attachments for ID: #{id}")
+          nil
+      end
 
+    # Safely get the primary ebook attachment
     ebook =
-      attachments_data.attachments
-      |> Enum.filter(fn att -> att.is_primary == true end)
-      |> List.first()
+      case attachments_data do
+        nil ->
+          nil
+        %{} ->
+          attachments_data.attachments
+          |> Enum.filter(fn att -> att.is_primary == true end)
+          |> List.first()
+      end
 
     case Collection.load_collection_with_items(id, socket.assigns.items_page) do
       {:ok, collection, items, total_items_pages} ->
-        {:noreply,
-         socket
-         |> assign(:collection, collection)
-         |> assign(:total_items_pages, total_items_pages)
-         |> assign(:page_title, collection.title)
-         |> assign(:loading, false)
-         |> assign(:ebook_id, ebook.id)
-         |> stream(:items, items, reset: true)}
+        socket =
+          socket
+          |> assign(:collection, collection)
+          |> assign(:total_items_pages, total_items_pages)
+          |> assign(:page_title, collection.title)
+          |> assign(:loading, false)
+          |> stream(:items, items, reset: true)
+
+        # Only assign ebook_id if we have a valid ebook
+        socket =
+          if ebook && ebook.id do
+            assign(socket, :ebook_id, ebook.id)
+          else
+            socket
+          end
+
+        {:noreply, socket}
 
       {:error, :not_found} ->
         {:noreply,
@@ -133,7 +159,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                           {@collection.title}
                         </h1>
-                        
+
                         <%= if @collection.description do %>
                           <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                             {@collection.description}
@@ -152,7 +178,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <%= if @collection.collection_type do %>
                             <div class="flex items-center">
                               <.icon
@@ -164,7 +190,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-document-duplicate-solid"
@@ -174,7 +200,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {length(@collection.items || [])}
                             </span>
                           </div>
-                          
+
                           <%= if @collection.node do %>
                             <div class="flex items-center">
                               <.icon
@@ -186,7 +212,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-calendar-solid"
@@ -196,7 +222,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
                             </span>
                           </div>
-                          
+
                           <div class="flex items-center">
                             <.icon
                               name="hero-eye-solid"
@@ -221,7 +247,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         </span>
                       </h2>
                     </div>
-                    
+
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
                       <div
                         :for={{id, item} <- @streams.items}
@@ -252,7 +278,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
                           No items available
                         </h3>
-                        
+
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           This collection currently has no available items.
                         </p>
@@ -268,9 +294,9 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Quick Actions
                       </h3>
-                      
+
                       <div class="space-y-3">
-                        <%= if @current_scope && @current_scope.user && @current_scope.user.confirmed_at do %>
+                        <%= if @current_scope && @current_scope.user && @current_scope.user.confirmed_at && assigns[:ebook_id] do %>
                           <.link
                             navigate={~p"/ebooks/view?id=#{@ebook_id}"}
                             class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -282,7 +308,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> Read E-Book
                           </.button>
                         <% end %>
-                        
+
                         <.link
                           navigate={~p"/search?q=#{@collection.title}&type=items"}
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -304,7 +330,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Statistics
                       </h3>
-                      
+
                       <div class="space-y-4">
                         <.stat_item
                           icon="document-duplicate"
@@ -329,7 +355,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                           More by this Creator
                         </h3>
-                        
+
                         <.link
                           navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
                           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

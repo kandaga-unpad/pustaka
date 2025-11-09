@@ -192,6 +192,20 @@ defmodule Voile.Release do
   def seed do
     load_app()
 
+    # Check if the application is already running
+    app_already_started =
+      Application.started_applications()
+      |> Enum.any?(fn {app, _, _} -> app == @app end)
+
+    # Only start applications if they're not already running
+    unless app_already_started do
+      {:ok, _} = Application.ensure_all_started(:finch)
+      {:ok, _} = Application.ensure_all_started(:req)
+    end
+
+    # Load S3 configuration from environment variables if not already loaded
+    load_s3_config()
+
     seed_files = [
       "seeds/seeds.exs",
       "seeds/metadata_resource_class.exs",
@@ -238,6 +252,9 @@ defmodule Voile.Release do
       {:ok, _} = Application.ensure_all_started(:finch)
       {:ok, _} = Application.ensure_all_started(:req)
     end
+
+    # Load S3 configuration from environment variables if not already loaded
+    load_s3_config()
 
     alias Voile.Migration.{
       BiblioImporter,
@@ -369,5 +386,24 @@ defmodule Voile.Release do
     # Many platforms require SSL when connecting to the database
     Application.ensure_all_started(:ssl)
     Application.ensure_loaded(@app)
+  end
+
+  # Load S3 configuration from environment variables into application config
+  # This is needed for the import process to work with S3 storage
+  defp load_s3_config do
+    if System.get_env("VOILE_S3_ACCESS_KEY_ID") do
+      Application.put_env(:voile, :storage_adapter, Client.Storage.S3)
+      Application.put_env(:voile, :s3_access_key_id, System.get_env("VOILE_S3_ACCESS_KEY_ID"))
+      Application.put_env(:voile, :s3_secret_key_access, System.get_env("VOILE_S3_SECRET_ACCESS_KEY"))
+      Application.put_env(:voile, :s3_bucket_name, System.get_env("VOILE_S3_BUCKET_NAME") || "glam-storage")
+      Application.put_env(:voile, :s3_region, System.get_env("VOILE_S3_REGION") || "us-east-1")
+      Application.put_env(:voile, :s3_public_url, System.get_env("VOILE_S3_PUBLIC_URL") || "https://library.unpad.ac.id")
+      Application.put_env(:voile, :s3_public_url_format, System.get_env("VOILE_S3_PUBLIC_URL_FORMAT") || "{endpoint}/{bucket}/{key}")
+
+      IO.puts("✅ S3 configuration loaded for import process")
+    else
+      Application.put_env(:voile, :storage_adapter, Client.Storage.Local)
+      IO.puts("ℹ️ No S3 credentials found, using local storage for import")
+    end
   end
 end

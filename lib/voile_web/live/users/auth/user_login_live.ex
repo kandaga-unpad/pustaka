@@ -125,7 +125,7 @@ defmodule VoileWeb.UserLoginLive do
                   </.link>
                 </div>
 
-                <.button phx-disable-with="Logging in..." class="default-btn w-full">
+                <.button type="submit" phx-disable-with="Logging in..." class="default-btn w-full">
                   {gettext("Log in")} <span aria-hidden="true">→</span>
                 </.button>
               </.form>

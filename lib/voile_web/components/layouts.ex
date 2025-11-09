@@ -81,7 +81,7 @@ defmodule VoileWeb.Layouts do
             <% else %>
               <img src={~p"/images/v.png"} width="36" />
             <% end %>
-            
+
             <h5 style={if @app_main_color, do: "color: #{@app_main_color}", else: nil}>
               {@app_name}
             </h5>
@@ -98,7 +98,7 @@ defmodule VoileWeb.Layouts do
             <% end %>
           </nav>
         </div>
-        
+
         <div>
           <div class="flex lg:hidden">
             <.button
@@ -121,7 +121,7 @@ defmodule VoileWeb.Layouts do
               <.icon name="hero-bars-3" />
             </.button>
           </div>
-          
+
           <div class="hidden lg:block">
             <div class="flex items-center justify-center gap-2">
               <.button
@@ -151,7 +151,7 @@ defmodule VoileWeb.Layouts do
                         <.button class="default-btn">{gettext("Atrium")}</.button>
                       </.link>
                     <% end %>
-                    
+
                     <button
                       data-panel-anchor
                       aria-expanded="false"
@@ -179,7 +179,7 @@ defmodule VoileWeb.Layouts do
                       <% end %>
                     </button>
                   </div>
-                  
+
                   <div
                     data-position-panel
                     class="sticky hidden bg-voile-light dark:bg-voile-dark max-w-sm right-8 p-4 mt-1 rounded-md shadow-xl text-right"
@@ -187,7 +187,7 @@ defmodule VoileWeb.Layouts do
                     <p class="text-sm">
                       {gettext("Hello, %{name}!", name: @current_scope.user.fullname)}
                     </p>
-                    
+
                     <div class="mt-2 flex w-full gap-2 text-xs">
                       <%= if has_dashboard_access?(@current_scope.user) do %>
                         <.link navigate="/manage" class="primary-btn flex flex-col w-full text-center">
@@ -233,7 +233,7 @@ defmodule VoileWeb.Layouts do
                   </div>
                 </div>
               <% else %>
-                <.link navigate="/login">
+                <.link href="/login">
                   <.button class="ml-2 default-btn">{gettext("Sign in")}</.button>
                 </.link>
               <% end %>
@@ -259,7 +259,7 @@ defmodule VoileWeb.Layouts do
               <% else %>
                 <img src={~p"/images/v.png"} width="32" alt="Voile Logo" />
               <% end %>
-              
+
               <h3
                 class="text-lg font-bold"
                 style={if @app_main_color, do: "color: #{@app_main_color}", else: "color: #9333ea"}
@@ -267,7 +267,7 @@ defmodule VoileWeb.Layouts do
                 {@app_name}
               </h3>
             </div>
-            
+
             <p class="text-sm text-gray-400 leading-relaxed">
               Virtual Organized of Information & Library Ecosystem - A next-generation digital library management system.
             </p>
@@ -275,7 +275,7 @@ defmodule VoileWeb.Layouts do
           <!-- Quick Links -->
           <div>
             <h4 class="text-white font-semibold mb-4">{gettext("Quick Links")}</h4>
-            
+
             <ul class="space-y-2 text-sm">
               <li>
                 <.link
@@ -288,25 +288,25 @@ defmodule VoileWeb.Layouts do
                   {gettext("Home")}
                 </.link>
               </li>
-              
+
               <li>
                 <.link href="/about" class="hover:text-white transition-colors">
                   {gettext("About")}
                 </.link>
               </li>
-              
+
               <li>
                 <.link href="/collections" class="hover:text-white transition-colors">
                   {gettext("Collections")}
                 </.link>
               </li>
-              
+
               <li>
                 <.link href="/items" class="hover:text-white transition-colors">
                   {gettext("Items")}
                 </.link>
               </li>
-              
+
               <li>
                 <.link href="/search" class="hover:text-white transition-colors">
                   {gettext("Search")}
@@ -317,7 +317,7 @@ defmodule VoileWeb.Layouts do
           <!-- User Section -->
           <div>
             <h4 class="text-white font-semibold mb-4">{gettext("For Users")}</h4>
-            
+
             <ul class="space-y-2 text-sm">
               <%= if @current_scope do %>
                 <%= if has_dashboard_access?(@current_scope.user) do %>
@@ -333,7 +333,7 @@ defmodule VoileWeb.Layouts do
                     </.link>
                   </li>
                 <% end %>
-                
+
                 <li>
                   <.link
                     href="/users/log_out"
@@ -349,7 +349,7 @@ defmodule VoileWeb.Layouts do
                     {gettext("Sign In")}
                   </.link>
                 </li>
-                
+
                 <li>
                   <.link navigate="/register" class="hover:text-white transition-colors">
                     {gettext("Register")}
@@ -361,7 +361,7 @@ defmodule VoileWeb.Layouts do
           <!-- Contact & Info -->
           <div>
             <h4 class="text-white font-semibold mb-4">{gettext("Connect")}</h4>
-            
+
             <ul class="space-y-3 text-sm">
               <li class="flex items-start gap-2">
                 <.icon name="hero-envelope" class="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -369,14 +369,14 @@ defmodule VoileWeb.Layouts do
                   {System.get_setting_value("app_contact_email", "info@voile.id")}
                 </span>
               </li>
-              
+
               <li class="flex items-start gap-2">
                 <.icon name="hero-map-pin" class="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span class="text-gray-400">
                   {System.get_setting_value("app_address", "Library Location")}
                 </span>
               </li>
-              
+
               <%= if System.get_setting_value("app_website", nil) do %>
                 <li class="flex items-start gap-2">
                   <.icon name="hero-globe-alt" class="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -398,7 +398,7 @@ defmodule VoileWeb.Layouts do
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-sm text-gray-400">
               <p>&copy; {get_year()} {@app_name}. {gettext("All rights reserved.")}</p>
-              
+
               <p class="mt-1 text-xs">
                 {gettext("Powered by")}
                 <a
@@ -414,7 +414,7 @@ defmodule VoileWeb.Layouts do
                 </a>
               </p>
             </div>
-            
+
             <div class="flex items-center gap-6">
               <div class="text-xs text-gray-500">
                 <span>Built with</span>
@@ -592,7 +592,7 @@ defmodule VoileWeb.Layouts do
             <.icon name="hero-x-mark" />
           </button>
         </div>
-        
+
         <nav class="p-4">
           <ul class="flex flex-col gap-3">
             <%= for item <- @nav_items do %>
@@ -607,13 +607,13 @@ defmodule VoileWeb.Layouts do
               </li>
             <% end %>
           </ul>
-          
+
           <div class="mt-6">
             <%= if @current_scope do %>
               <p class="text-sm mb-2">
                 {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
               </p>
-              
+
               <div class="flex flex-col gap-2">
                 <%= if has_dashboard_access?(@current_scope.user) do %>
                   <.link navigate="/manage" class="primary-btn w-full text-center">
@@ -624,7 +624,7 @@ defmodule VoileWeb.Layouts do
                     {gettext("Atrium")}
                   </.link>
                 <% end %>
-                
+
                 <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
                   {gettext("Log out")}
                 </.link>
@@ -675,7 +675,7 @@ defmodule VoileWeb.Layouts do
                   />
                 </form>
               </div>
-              
+
               <button
                 phx-click={
                   JS.toggle(

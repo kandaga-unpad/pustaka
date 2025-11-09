@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Determine project root (parent of scripts directory if script is in scripts/)
+if [[ "$SCRIPT_DIR" == */scripts ]]; then
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+else
+    PROJECT_ROOT="$SCRIPT_DIR"
+fi
+
+# Change to project root
+cd "$PROJECT_ROOT"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -179,5 +192,5 @@ echo -e "  Start all:      ${YELLOW}podman pod start $POD_NAME${NC}"
 echo -e "  Restart app:    ${YELLOW}podman restart $APP_CONTAINER${NC}"
 echo -e "  App shell:      ${YELLOW}podman exec -it $APP_CONTAINER /bin/sh${NC}"
 echo -e "  DB shell:       ${YELLOW}podman exec -it $DB_CONTAINER psql -U $DB_USER -d $DB_NAME${NC}"
-echo -e "  Remove all:     ${YELLOW}./cleanup-voile.sh${NC}"
+echo -e "  Remove all:     ${YELLOW}./scripts/cleanup.sh${NC}"
 echo -e "${GREEN}================================${NC}"

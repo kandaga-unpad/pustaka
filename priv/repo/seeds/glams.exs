@@ -456,7 +456,7 @@ defmodule GLAMSeeds do
       collection_id = collection_data.id
 
       # Download thumbnail if available
-      thumbnail_filename = download_thumbnail(collection_data.thumbnail_id, collection_id)
+      thumbnail_filename = download_thumbnail(collection_data.thumbnail_id, collection_id, unit)
 
       collection = %{
         id: collection_id,
@@ -607,10 +607,10 @@ defmodule GLAMSeeds do
     Repo.insert!(struct(Item, item_data))
   end
 
-  defp download_thumbnail(nil, _collection_id), do: nil
-  defp download_thumbnail("", _collection_id), do: nil
+  defp download_thumbnail(nil, _collection_id, _unit), do: nil
+  defp download_thumbnail("", _collection_id, _unit), do: nil
 
-  defp download_thumbnail(thumbnail_id, collection_id) do
+  defp download_thumbnail(thumbnail_id, collection_id, unit) do
     # Build download URL
     download_url = @base_url <> thumbnail_id
 
@@ -642,7 +642,7 @@ defmodule GLAMSeeds do
           # Upload using Storage module with glams folder
           case Storage.upload(upload,
                  folder: "glams",
-                 unit_id: 20,
+                 unit_id: unit.id,
                  generate_filename: true,
                  preserve_extension: true
                ) do
