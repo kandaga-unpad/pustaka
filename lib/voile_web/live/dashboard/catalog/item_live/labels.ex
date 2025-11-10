@@ -2,6 +2,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.Catalog
+  require Logger
   import VoileWeb.Components.LabelComponents
 
   @impl true
@@ -106,20 +107,35 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
     selected = socket.assigns.selected_items
     selected_data = socket.assigns.selected_item_data
 
+    # Normalize id to string for consistent storage
+    item_id_str = to_string(item_id)
+
     {new_selected, new_data} =
-      if item_id in selected do
+      if item_id_str in selected do
         # Remove from selection
-        {List.delete(selected, item_id), Map.delete(selected_data, item_id)}
+        {List.delete(selected, item_id_str), Map.delete(selected_data, item_id_str)}
       else
-        # Add to selection - find the full item data
-        item = Enum.find(socket.assigns.items, fn i -> to_string(i.id) == to_string(item_id) end)
+        # Add to selection - try to find the full item data from assigns first,
+        # fall back to DB fetch if it's not present (prevents list clearing).
+        item =
+          Enum.find(socket.assigns.items, fn i -> to_string(i.id) == item_id_str end) ||
+            try do
+              Catalog.get_item!(String.to_integer(item_id_str))
+            rescue
+              _ -> nil
+            end
 
         if item do
-          {[item_id | selected], Map.put(selected_data, item_id, item)}
+          {[item_id_str | selected], Map.put(selected_data, item_id_str, item)}
         else
           {selected, selected_data}
         end
       end
+
+    # Debugging info to help trace why the items stream might disappear
+    Logger.debug(
+      "toggle_item: selected_count=#{length(new_selected || [])} items_len=#{length(socket.assigns.items || [])} streams=#{inspect(Map.keys(socket.assigns.streams || %{}))}"
+    )
 
     {:noreply,
      socket
@@ -130,7 +146,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
   @impl true
   def handle_event("select_all", _params, socket) do
     items = socket.assigns.items
-    all_ids = Enum.map(items, & &1.id)
+    # Use string IDs consistently
+    all_ids = Enum.map(items, &to_string(&1.id))
     all_data = Map.new(items, fn item -> {to_string(item.id), item} end)
 
     {:noreply,

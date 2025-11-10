@@ -452,18 +452,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
     with member when not is_nil(member) <- Accounts.get_user(member_id),
          transactions <- Circulation.list_member_active_transactions(member_id),
          true <- length(transactions) > 0 do
-      # Queue the email instead of sending immediately
-      EmailQueue.enqueue(
-        fn -> LoanReminderEmail.send_manual_reminder(member, transactions) end,
-        metadata: %{
-          member_id: member_id,
-          type: :manual_reminder,
-          transaction_count: length(transactions),
-          sent_by: :librarian
-        }
-      )
+      # If the email queue is disabled (e.g., development), send immediately so
+      # the local mailbox preview at /dev/mailbox receives the email.
+      if Application.get_env(:voile, :disable_email_queue, false) do
+        case LoanReminderEmail.send_manual_reminder(member, transactions) do
+          {:ok, _} = ok -> ok
+          other -> other
+        end
+      else
+        # Queue the email instead of sending immediately
+        EmailQueue.enqueue(
+          fn -> LoanReminderEmail.send_manual_reminder(member, transactions) end,
+          metadata: %{
+            member_id: member_id,
+            type: :manual_reminder,
+            transaction_count: length(transactions),
+            sent_by: :librarian
+          }
+        )
 
-      {:ok, "Email queued successfully"}
+        {:ok, "Email queued successfully"}
+      end
     else
       nil -> {:error, "Member not found"}
       false -> {:error, "No active loans"}

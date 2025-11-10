@@ -97,37 +97,43 @@
                   </div>
                 </div>
               <% end %>
+              <div id="collections" phx-update="stream">
+                <%= for {id, collection} <- @streams.collections || [] do %>
+                  <div id={id}>
+                    <button
+                      type="button"
+                      phx-click="select_collection"
+                      phx-value-collection-id={collection.id}
+                      class="w-full flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-colors text-left"
+                    >
+                      <.icon
+                        name="hero-book-open"
+                        class="w-5 h-5 mt-1 text-blue-600 flex-shrink-0"
+                      />
 
-              <div :for={{id, collection} <- @streams.collections} id={id}>
-                <button
-                  type="button"
-                  phx-click="select_collection"
-                  phx-value-collection-id={collection.id}
-                  class="w-full flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-colors text-left"
-                >
-                  <.icon name="hero-book-open" class="w-5 h-5 mt-1 text-blue-600 flex-shrink-0" />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm text-gray-900 dark:text-white">
+                          {collection.title}
+                        </div>
 
-                  <div class="flex-1 min-w-0">
-                    <div class="font-medium text-sm text-gray-900 dark:text-white">
-                      {collection.title}
-                    </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                          Code: {collection.collection_code || "N/A"}
+                        </div>
 
-                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                      Code: {collection.collection_code || "N/A"}
-                    </div>
-
-                    <%= if collection.mst_creator do %>
-                      <div class="text-xs text-gray-500">
-                        Author: {collection.mst_creator.creator_name}
+                        <%= if collection.mst_creator do %>
+                          <div class="text-xs text-gray-500">
+                            Author: {collection.mst_creator.creator_name}
+                          </div>
+                        <% end %>
                       </div>
-                    <% end %>
-                  </div>
 
-                  <.icon
-                    name="hero-plus-circle"
-                    class="w-5 h-5 mt-1 text-green-600 flex-shrink-0"
-                  />
-                </button>
+                      <.icon
+                        name="hero-plus-circle"
+                        class="w-5 h-5 mt-1 text-green-600 flex-shrink-0"
+                      />
+                    </button>
+                  </div>
+                <% end %>
               </div>
             <% end %>
           <% else %>
@@ -146,32 +152,36 @@
                   </div>
                 </div>
               <% end %>
+              <div id="items" phx-update="stream">
+                <%= for {id, item} <- @streams.items || [] do %>
+                  <div id={id}>
+                    <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_item"
+                        phx-value-item-id={to_string(item.id)}
+                        checked={to_string(item.id) in @selected_items}
+                        class="mt-1"
+                      />
 
-              <div :for={{id, item} <- @streams.items} id={id}>
-                <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    phx-click="toggle_item"
-                    phx-value-item-id={item.id}
-                    checked={item.id in @selected_items}
-                    class="mt-1"
-                  />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm text-gray-900 dark:text-white truncate">
+                          {item.collection.title}
+                        </div>
 
-                  <div class="flex-1 min-w-0">
-                    <div class="font-medium text-sm text-gray-900 dark:text-white truncate">
-                      {item.collection.title}
-                    </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                          Code: {item.item_code || "N/A"}
+                        </div>
 
-                    <div class="text-xs text-gray-600 dark:text-gray-400">
-                      Code: {item.item_code || "N/A"}
-                    </div>
-
-                    <div class="text-xs text-gray-500">
-                      Location: {item.location || (item.item_location && item.item_location.name) ||
-                        "N/A"}
-                    </div>
+                        <div class="text-xs text-gray-500">
+                          Location: {item.location ||
+                            (item.item_location && item.item_location.name) ||
+                            "N/A"}
+                        </div>
+                      </div>
+                    </label>
                   </div>
-                </label>
+                <% end %>
               </div>
             <% end %>
           <% end %>

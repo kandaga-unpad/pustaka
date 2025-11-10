@@ -121,7 +121,7 @@ config :phoenix_live_view,
 config :swoosh, :api_client, false
 
 # Disable email queue in development (prevents background email processing)
-config :voile, :disable_email_queue, true
+config :voile, :disable_email_queue, false
 
 # Xendit Payment Gateway Configuration (Development)
 # Get your API keys from https://dashboard.xendit.co/settings/developers#api-keys

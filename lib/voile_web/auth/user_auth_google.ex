@@ -7,7 +7,7 @@ defmodule VoileWeb.UserAuthGoogle do
   # /auth/google
   def request(conn) do
     case Application.get_env(:assent, :google, [])
-      |> Google.authorize_url() do
+         |> Google.authorize_url() do
       {:ok, %{url: url, session_params: session_params}} ->
         # Session params (used for OAuth 2.0 and OIDC strategies) will be
         # retrieved when user returns for the callback phase
@@ -41,9 +41,9 @@ defmodule VoileWeb.UserAuthGoogle do
     session_params = get_session(conn, :session_params)
 
     case Application.get_env(:assent, :google, [])
-      # Session params should be added to the config so the strategi can use them
-      |> Keyword.put(:session_params, session_params)
-      |> Google.callback(params) do
+         # Session params should be added to the config so the strategi can use them
+         |> Keyword.put(:session_params, session_params)
+         |> Google.callback(params) do
       {:ok, %{user: user, token: token}} ->
         # Authorization successful
         email = user["email"]
