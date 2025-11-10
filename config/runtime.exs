@@ -201,4 +201,14 @@ if config_env() == :prod do
   else
     config :voile, storage_adapter: Client.Storage.Local
   end
+
+  # Load Assent (OAuth) configuration from environment at runtime for releases
+  # This ensures the Google strategy receives the credentials when the app
+  # is started in a container/release where compile-time config isn't used.
+  config :assent,
+    google: [
+      client_id: System.get_env("VOILE_GOOGLE_CLIENT_ID"),
+      client_secret: System.get_env("VOILE_GOOGLE_CLIENT_SECRET"),
+      redirect_uri: System.get_env("VOILE_GOOGLE_REDIRECT_URI")
+    ]
 end
