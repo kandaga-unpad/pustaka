@@ -590,7 +590,7 @@ msgstr ""
 #: lib/voile_web/controllers/search_html/index.html.heex:172
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Archives"
-msgstr "Active"
+msgstr "Archives"
 
 #: lib/voile_web/controllers/search_html/index.html.heex:203
 #, elixir-autogen, elixir-format

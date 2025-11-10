@@ -591,7 +591,7 @@ msgstr "Hak cipta dilindungi undang-undang."
 #: lib/voile_web/controllers/search_html/index.html.heex:172
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Archives"
-msgstr "Aktif"
+msgstr "Arsip"
 
 #: lib/voile_web/controllers/search_html/index.html.heex:203
 #, elixir-autogen, elixir-format

@@ -19,25 +19,23 @@
       <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
         <%= if @reservation.status == "pending" do %>
           <button
-            phx-click="fulfill"
+            phx-click="open_fulfill_modal"
             phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success text-sm font-medium rounded-md"
-            data-confirm="Are you sure you want to fulfill this reservation?"
+            class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success text-sm text-white font-medium rounded-md"
           >
             <.icon name="hero-check" class="w-4 h-4 mr-2" /> Fulfill Reservation
           </button>
           <button
             phx-click="notify"
             phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-sm font-medium rounded-md"
+            class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-sm text-white font-medium rounded-md"
           >
             <.icon name="hero-bell" class="w-4 h-4 mr-2" /> Send Notification
           </button>
           <button
-            phx-click="cancel"
+            phx-click="open_cancel_modal"
             phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm font-medium rounded-md"
-            data-confirm="Are you sure you want to cancel this reservation?"
+            class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm text-white font-medium rounded-md"
           >
             <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Cancel Reservation
           </button>
@@ -45,6 +43,50 @@
       </div>
     </div>
   </div>
+
+  <%= if @show_fulfill_modal do %>
+    <.modal id="fulfill-modal" show={true}>
+      <h3 class="text-lg font-semibold">Fulfill Reservation</h3>
+
+      <p class="mt-4 text-sm">
+        Are you sure you want to fulfill this reservation and create a checkout for the member?
+      </p>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button phx-click="close_fulfill_modal" type="button" class="hover-btn">Cancel</button>
+        <button
+          phx-click="confirm_fulfill"
+          phx-value-id={@pending_fulfill_id || @reservation.id}
+          type="button"
+          class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success text-sm text-white font-medium rounded-md"
+        >
+          Confirm
+        </button>
+      </div>
+    </.modal>
+  <% end %>
+
+  <%= if @show_cancel_modal do %>
+    <.modal id="cancel-modal" show={true}>
+      <h3 class="text-lg font-semibold">Cancel Reservation</h3>
+
+      <p class="mt-4 text-sm">
+        Are you sure you want to cancel this reservation? This action cannot be undone.
+      </p>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button phx-click="close_cancel_modal" type="button" class="hover-btn">Back</button>
+        <button
+          phx-click="confirm_cancel"
+          phx-value-id={@pending_cancel_id || @reservation.id}
+          type="button"
+          class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm text-white font-medium rounded-md"
+        >
+          Confirm Cancel
+        </button>
+      </div>
+    </.modal>
+  <% end %>
   <!-- Reservation Info Grid -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Main Reservation Details -->

@@ -69,6 +69,7 @@ if config_env() == :prod do
     check_origin: [
       "//localhost:4000",
       "//127.0.0.1:4000",
+      "//pustaka.unpad.ac.id",
       "//#{host}"
     ],
     secret_key_base: secret_key_base
@@ -195,7 +196,8 @@ if config_env() == :prod do
       s3_bucket_name: System.get_env("VOILE_S3_BUCKET_NAME") || "glam-storage",
       s3_region: System.get_env("VOILE_S3_REGION") || "us-east-1",
       s3_public_url: System.get_env("VOILE_S3_PUBLIC_URL") || "https://library.unpad.ac.id",
-      s3_public_url_format: System.get_env("VOILE_S3_PUBLIC_URL_FORMAT") || "{endpoint}/{bucket}/{key}"
+      s3_public_url_format:
+        System.get_env("VOILE_S3_PUBLIC_URL_FORMAT") || "{endpoint}/{bucket}/{key}"
   else
     config :voile, storage_adapter: Client.Storage.Local
   end
