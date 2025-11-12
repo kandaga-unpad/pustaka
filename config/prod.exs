@@ -16,5 +16,20 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
+# Ensure email queue is enabled for production (do not use local mailbox)
+config :voile, disable_email_queue: false
+
+# Gmail SMTP setup instructions:
+# To use Gmail SMTP, set these environment variables in your production environment:
+# VOILE_MAILER_ADAPTER=smtp
+# VOILE_SMTP_RELAY=smtp.gmail.com
+# VOILE_SMTP_PORT=587
+# VOILE_SMTP_USERNAME=your_gmail_address@gmail.com
+# VOILE_SMTP_PASSWORD=your_gmail_app_password
+# VOILE_SMTP_SSL=false
+#
+# You must use an App Password for Gmail (not your regular password).
+# See: https://support.google.com/accounts/answer/185833
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

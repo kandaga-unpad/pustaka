@@ -1092,3 +1092,6 @@ msgstr "What you can try"
 #, elixir-autogen, elixir-format
 msgid "Voile, the Magic Library"
 msgstr ""
+
+msgid "If you need information about %{app_name}, please contact %{link}."
+msgstr "If you need information about %{app_name}, please contact %{link}."

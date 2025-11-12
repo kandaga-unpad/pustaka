@@ -117,8 +117,18 @@ config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
 
-# Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+# Use Gmail API adapter in development if requested
+if System.get_env("VOILE_MAILER_ADAPTER") == "gmail_api" do
+  config :voile, Voile.Mailer,
+    adapter: Voile.Mailer.GmailApiAdapter,
+    access_token: System.get_env("VOILE_GMAIL_ACCESS_TOKEN"),
+    refresh_token: System.get_env("VOILE_GMAIL_REFRESH_TOKEN"),
+    client_id: System.get_env("VOILE_GMAIL_CLIENT_ID"),
+    client_secret: System.get_env("VOILE_GMAIL_CLIENT_SECRET"),
+    redirect_uri: System.get_env("VOILE_GMAIL_REDIRECT_URI")
+end
 
 # Disable email queue in development (prevents background email processing)
 config :voile, :disable_email_queue, false

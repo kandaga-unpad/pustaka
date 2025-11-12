@@ -98,7 +98,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Member type updated successfully.")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -113,7 +113,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Member type created successfully.")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

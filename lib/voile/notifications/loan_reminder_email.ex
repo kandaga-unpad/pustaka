@@ -179,11 +179,19 @@ defmodule Voile.Notifications.LoanReminderEmail do
         <div style="text-align: center; font-size: 12px; color: #666; margin-top: 20px;">
           <p>Jika Anda memerlukan bantuan, silakan hubungi perpustakaan Anda.</p>
           <p>If you need assistance, please contact your library.</p>
-          <div>
-            <a href="mailto:perpustakaan@unpad.ac.id">perpustakaan@unpad.ac.id</a>
-            <a href="https://instagram.com/kandagaunpad">Instagram: @kandagaunpad</a>
-            <a href="https://twitter.com/kandagaunpad">Twitter: @kandagaunpad</a>
-            <a href="https://wa.me/6282315798979">WhatsApp: +62 823-1579-8979</a>
+          <div style="display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px;">
+            <a href="mailto:perpustakaan@unpad.ac.id" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #4F46E5; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/gmail.svg" alt="Email" width="18" height="18" style="vertical-align: middle;"> Email
+            </a>
+            <a href="https://instagram.com/kandagaunpad" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #E1306C; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram" width="18" height="18" style="vertical-align: middle;"> @kandagaunpad
+            </a>
+            <a href="https://twitter.com/kandagaunpad" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #1DA1F2; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg" alt="Twitter" width="18" height="18" style="vertical-align: middle;"> @kandagaunpad
+            </a>
+            <a href="https://wa.me/6282315798979" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #25D366; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="18" height="18" style="vertical-align: middle;"> +62 823-1579-8979
+            </a>
           </div>
         </div>
       </div>
@@ -568,11 +576,19 @@ defmodule Voile.Notifications.LoanReminderEmail do
         <div style="text-align: center; font-size: 12px; color: #666; margin-top: 20px;">
           <p>Jika Anda memerlukan bantuan, silakan hubungi perpustakaan Anda.</p>
           <p>If you need assistance, please contact your library.</p>
-          <div>
-            <a href="mailto:perpustakaan@unpad.ac.id">perpustakaan@unpad.ac.id</a>
-            <a href="https://instagram.com/kandagaunpad">Instagram: @kandagaunpad</a>
-            <a href="https://twitter.com/kandagaunpad">Twitter: @kandagaunpad</a>
-            <a href="https://wa.me/6282315798979">WhatsApp: +62 823-1579-8979</a>
+          <div style="display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px;">
+            <a href="mailto:perpustakaan@unpad.ac.id" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #4F46E5; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/gmail.svg" alt="Email" width="18" height="18" style="vertical-align: middle;"> Email
+            </a>
+            <a href="https://instagram.com/kandagaunpad" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #E1306C; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram" width="18" height="18" style="vertical-align: middle;"> @kandagaunpad
+            </a>
+            <a href="https://twitter.com/kandagaunpad" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #1DA1F2; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg" alt="Twitter" width="18" height="18" style="vertical-align: middle;"> @kandagaunpad
+            </a>
+            <a href="https://wa.me/6282315798979" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #25D366; background: #F3F4F6; border-radius: 6px; padding: 8px 14px; font-weight: 500;">
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="18" height="18" style="vertical-align: middle;"> +62 823-1579-8979
+            </a>
           </div>
         </div>
       </div>

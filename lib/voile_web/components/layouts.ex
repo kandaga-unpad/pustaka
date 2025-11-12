@@ -52,11 +52,12 @@ defmodule VoileWeb.Layouts do
     ~H"""
     <div class="bg-voile-primary text-white px-3 py-1 text-sm font-semibold">
       <p>
-        If you need information about {@app_name}, please contact <a
-          href="https://github.com/curatorian"
-          target="_blank"
-          class="text-white underline"
-        >us</a>.
+        {gettext("If you need information about %{app_name}, please contact %{link}.",
+          app_name: @app_name,
+          link:
+            "<a href='https://github.com/curatorian' target='_blank' class='text-white underline'>Curatorian</a>"
+        )
+        |> Phoenix.HTML.raw()}
       </p>
     </div>
     <!-- Inject CSS variables for brand colors so Tailwind/daisyUI tokens can be overridden -->

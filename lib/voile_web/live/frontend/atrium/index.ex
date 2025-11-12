@@ -1177,7 +1177,6 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <.button
                               type="button"
                               phx-click="request_password_reset"
-                              class="w-full bg-gray-600 hover:bg-gray-700"
                             >
                               <.icon name="hero-envelope" class="w-5 h-5 mr-2" />
                               Request Password Reset Email

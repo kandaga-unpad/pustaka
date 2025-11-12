@@ -26,7 +26,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
         socket
         |> assign(:page_title, "Listing Member Types")
         |> assign(:live_action, :index)
-        |> assign(:member_types, member_types)
+        |> stream(:member_types, member_types)
         |> assign(:page, page)
         |> assign(:total_pages, total_pages)
 
@@ -81,7 +81,8 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
 
     socket =
       socket
-      |> assign(:member_types, member_types)
+      # reset the stream with the new page of member_types
+      |> stream(:member_types, member_types, reset: true)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
 

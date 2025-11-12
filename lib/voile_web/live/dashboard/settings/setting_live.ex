@@ -8,8 +8,6 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
 
       current_user = socket.assigns.current_scope.user
 
-      dbg(current_user.user_type.slug)
-
       socket =
         socket
         |> assign(:current_user, current_user)

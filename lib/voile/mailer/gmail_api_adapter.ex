@@ -40,9 +40,24 @@ defmodule Voile.Mailer.GmailApiAdapter do
 
     case build_message(email) do
       {:ok, raw_message} ->
-        send_via_api(raw_message, access_token)
+        result = send_via_api(raw_message, access_token)
+
+        case result do
+          {:error, reason} when is_binary(reason) ->
+            if String.contains?(reason, "401") do
+              Logger.warning("[GmailApiAdapter] Got 401, attempting token refresh and retry...")
+              new_token = refresh_access_token(config)
+              send_via_api(raw_message, new_token)
+            else
+              result
+            end
+
+          _ ->
+            result
+        end
 
       {:error, reason} ->
+        Logger.error("[GmailApiAdapter] Failed to build message: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -51,7 +66,6 @@ defmodule Voile.Mailer.GmailApiAdapter do
     # First check if we have a valid access token
     case Keyword.get(config, :access_token) do
       nil ->
-        # Try to refresh token
         refresh_access_token(config)
 
       token ->
@@ -162,7 +176,12 @@ defmodule Voile.Mailer.GmailApiAdapter do
 
       {:ok, %{status: status, body: body}} ->
         Logger.error("Gmail API error (#{status}): #{inspect(body)}")
-        {:error, "Gmail API returned status #{status}: #{inspect(body)}"}
+        # Detect 401 error for token refresh
+        if status == 401 or (is_map(body) and get_in(body, ["error", "code"]) == 401) do
+          {:error, "Gmail API returned status 401: #{inspect(body)}"}
+        else
+          {:error, "Gmail API returned status #{status}: #{inspect(body)}"}
+        end
 
       {:error, reason} ->
         Logger.error("Failed to send email via Gmail API: #{inspect(reason)}")
