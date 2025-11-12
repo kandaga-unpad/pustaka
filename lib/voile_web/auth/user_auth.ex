@@ -46,7 +46,8 @@ defmodule VoileWeb.UserAuth do
 
     conn
     |> create_or_extend_session(user, params)
-    |> redirect(to: user_return_to || signed_in_path(conn))
+    |> assign(:current_scope, Scope.for_user(user))
+    |> redirect(to: user_return_to || signed_in_path(user))
   end
 
   @doc """
@@ -446,8 +447,24 @@ defmodule VoileWeb.UserAuth do
 
   @doc "Returns the path to redirect to after log in."
   # the user was already logged in, redirect to settings
-  def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Accounts.User{}}}}) do
-    ~p"/manage"
+  def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: user}}})
+      when not is_nil(user), do: signed_in_path(user)
+
+  def signed_in_path(%Scope{user: user}) when not is_nil(user), do: signed_in_path(user)
+
+  def signed_in_path(user) when is_map(user) do
+    if Map.has_key?(user, :id) do
+      user = Voile.Repo.preload(user, [:user_type, :roles])
+
+      cond do
+        Enum.any?(user.roles, &(&1.name == "super_admin")) -> ~p"/manage"
+        user.user_type && user.user_type.slug in ["administrator", "staff"] -> ~p"/manage"
+        user.user_type && String.starts_with?(user.user_type.slug, "member_") -> ~p"/atrium"
+        true -> ~p"/"
+      end
+    else
+      ~p"/"
+    end
   end
 
   def signed_in_path(_), do: ~p"/"
