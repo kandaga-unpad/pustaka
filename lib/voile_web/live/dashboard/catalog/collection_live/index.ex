@@ -120,7 +120,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
           socket.assigns.collection_properties
         end
 
+      # Ensure the current list view remains populated when opening the modal
+      page = socket.assigns.page || 1
+      per_page = 10
+      search = socket.assigns.search || ""
+      filters = socket.assigns.filters || %{}
+
+      {collections, total_pages} =
+        Catalog.list_collections_paginated(page, per_page, search, filters)
+
       socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:total_pages, total_pages)
       |> assign(:page_title, "Edit Collection")
       |> assign(:collection, collection)
       |> assign(:collection_properties, collection_properties)
@@ -157,7 +168,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         socket.assigns.collection_properties
       end
 
+    # Keep the current collection list visible while opening the new collection modal
+    page = socket.assigns.page || 1
+    per_page = 10
+    search = socket.assigns.search || ""
+    filters = socket.assigns.filters || %{}
+
+    {collections, total_pages} =
+      Catalog.list_collections_paginated(page, per_page, search, filters)
+
     socket
+    |> stream(:collections, collections, reset: true)
+    |> assign(:total_pages, total_pages)
     |> assign(:page_title, "New Collection")
     |> assign(:collection, collection)
     |> assign(:collection_properties, collection_properties)

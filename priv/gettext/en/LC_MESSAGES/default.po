@@ -1095,3 +1095,43 @@ msgstr ""
 
 msgid "If you need information about %{app_name}, please contact %{link}."
 msgstr "If you need information about %{app_name}, please contact %{link}."
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:33
+#, elixir-autogen, elixir-format
+msgid "Already registered?"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:16
+#, elixir-autogen, elixir-format
+msgid "Create your account"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "Join %{app_name} today and start explore collection, manage your favorite items, and connect with us."
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:30
+#, elixir-autogen, elixir-format
+msgid "Register for an account"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:40
+#, elixir-autogen, elixir-format
+msgid "to your account now."
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "Continue with Google"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:58
+#, elixir-autogen, elixir-format
+msgid "Create an account"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_registration_live.ex:65
+#, elixir-autogen, elixir-format
+msgid "or register with"
+msgstr ""

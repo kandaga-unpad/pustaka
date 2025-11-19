@@ -37,6 +37,17 @@ defmodule VoileWeb.Layouts do
   slot :inner_block, required: true
 
   def app(assigns) do
+    # Make current_path available automatically:
+    # - For controller-rendered templates, derive it from @conn.assigns
+    # - For LiveViews, it can be passed explicitly or assigned via LV hook
+    assigns =
+      assign_new(assigns, :current_path, fn ->
+        case assigns do
+          %{conn: %Plug.Conn{assigns: %{current_path: path}}} -> path
+          _ -> nil
+        end
+      end)
+
     assigns = assign_nav_items(assigns)
 
     # Load app profile settings for branding
@@ -139,7 +150,7 @@ defmodule VoileWeb.Layouts do
               >
                 <.icon name="hero-magnifying-glass" class="w-5 h-5" />
               </.button>
-              <.locale_switcher current_path={assigns[:current_path] || "/"} />
+              <.locale_switcher current_path={@current_path} />
               <Layouts.theme_toggle />
               <%= if @current_scope do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">

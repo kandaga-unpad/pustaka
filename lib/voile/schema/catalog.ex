@@ -421,8 +421,10 @@ defmodule Voile.Schema.Catalog do
     all_collections =
       Repo.all(
         from c in Collection,
+          # Only include collections that have a parent (i.e. exclude root collections)
+          where: not is_nil(c.parent_id),
           preload: [:mst_creator, :resource_class],
-          order_by: [asc: c.sort_order, asc: c.title],
+          order_by: [desc: c.updated_at, asc: c.title],
           limit: ^limit
       )
 

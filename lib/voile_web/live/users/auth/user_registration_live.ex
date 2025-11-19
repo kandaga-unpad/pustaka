@@ -12,27 +12,32 @@ defmodule VoileWeb.UserRegistrationLive do
           <div class="flex items-center justify-center">
             <div class="max-w-sm text-center">
               <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
-              <h3 class="mt-6 text-lg font-semibold text-gray-900">Create your account</h3>
+              <h3 class="mt-6 text-lg font-semibold">
+                {gettext("Create your account")}
+              </h3>
 
-              <p class="mt-2 text-sm text-gray-600">
-                Join Voile to manage your projects and collaborate with your team.
+              <p class="mt-2 text-sm">
+                {gettext(
+                  "Join %{app_name} today and start explore collection, manage your favorite items, and connect with us.",
+                  app_name: @app_name
+                )}
               </p>
             </div>
           </div>
 
           <div class="default-card shadow rounded-lg border border-gray-100 p-6 md:p-8">
             <.header>
-              Register for an account
+              {gettext("Register for an account")}
               <:subtitle>
-                <span class="text-sm text-gray-500">
-                  Already registered?
+                <span class="text-sm">
+                  {gettext("Already registered?")}
                   <.link
                     navigate={~p"/login"}
                     class="font-semibold text-voile-primary hover:underline ml-1"
                   >
-                    Log in
+                    {gettext("Log in")}
                   </.link>
-                  to your account now.
+                  {gettext("to your account now.")}
                 </span>
               </:subtitle>
             </.header>
@@ -50,14 +55,14 @@ defmodule VoileWeb.UserRegistrationLive do
                 <.input field={@form[:email]} type="email" label="Email" required />
                 <.input field={@form[:password]} type="password" label="Password" required />
                 <.button phx-disable-with="Creating account..." class="default-btn w-full">
-                  Create an account
+                  {gettext("Create an account")}
                 </.button>
               </div>
             </.form>
 
             <div class="my-6 flex items-center gap-3">
               <hr class="flex-1 border-gray-300" />
-              <span class="text-sm text-gray-500">or register with</span>
+              <span class="text-sm">{gettext("or register with")}</span>
               <hr class="flex-1 border-gray-300" />
             </div>
 
@@ -70,7 +75,7 @@ defmodule VoileWeb.UserRegistrationLive do
                 class="inline h-5 w-5 mr-2"
                 alt="Google logo"
               />
-              <span>Continue with Google</span>
+              <span>{gettext("Continue with Google")}</span>
             </.button>
           </div>
         </div>
@@ -92,6 +97,7 @@ defmodule VoileWeb.UserRegistrationLive do
       socket =
         socket
         |> assign(trigger_submit: false, check_errors: false)
+        |> assign(app_name: Voile.Schema.System.get_setting_value("app_name", "Voile"))
         |> assign_form(changeset)
 
       {:ok, socket, temporary_assigns: [form: nil]}

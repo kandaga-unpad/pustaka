@@ -421,16 +421,7 @@ defmodule Voile.Migration.ItemImporter do
   # Example: "kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001"
   # Returns: "c47e6d008b3a001"
   defp generate_barcode_from_item_code(item_code) when is_binary(item_code) do
-    parts = String.split(item_code, "-")
-
-    # Need at least 3 parts: [..., uuid_segment, timestamp, sequence]
-    if length(parts) >= 3 do
-      uuid_segment = Enum.at(parts, -3)
-      sequence = List.last(parts)
-      "#{uuid_segment}#{sequence}"
-    else
-      # Fallback for short codes: use full code
-      String.replace(item_code, "-", "") |> String.slice(0, 15)
-    end
+    # Delegate to ItemHelper to keep logic centralized
+    ItemHelper.generate_barcode_from_item_code(item_code)
   end
 end

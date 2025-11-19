@@ -7,7 +7,9 @@ defmodule Voile.Schema.Accounts do
   import Ecto.Changeset, only: [validate_required: 2, validate_length: 3]
   alias Voile.Repo
 
-  alias Voile.Schema.Accounts.{User, UserToken, UserNotifier}
+  alias Voile.Schema.Accounts.{User, UserToken, UserNotifier, Role}
+  alias Voile.Schema.Master.MemberType
+  alias VoileWeb.Auth.Authorization
 
   # Helper to ensure returned user structs have common associations preloaded
   defp preload_user_assocs(nil), do: nil
@@ -319,10 +321,97 @@ defmodule Voile.Schema.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments], force: true)}
+        # If the user provided/updated an identifier that looks like a 12-digit
+        # NPM (student id), try to assign a node based on the identifier prefix.
+        updated_user = maybe_assign_node_from_identifier(user)
+
+        {:ok,
+         Repo.preload(updated_user, [:roles, :user_type, :user_role_assignments], force: true)}
 
       error ->
         error
+    end
+  end
+
+  # If the user has a 12-digit numeric identifier (NPM), map its prefix to a
+  # faculty abbreviation and try to find a matching Node (by `abbr`) and assign
+  # `node_id` to the user. This is conservative: only assigns when the
+  # identifier is exactly 12 digits and a matching node is found.
+  defp maybe_assign_node_from_identifier(%User{} = user) do
+    require Logger
+
+    identifier_str =
+      case user.identifier do
+        %Decimal{} = d -> Decimal.to_string(d)
+        i when is_integer(i) -> Integer.to_string(i)
+        s when is_binary(s) -> s
+        _ -> nil
+      end
+
+    if is_binary(identifier_str) and String.length(identifier_str) == 12 and
+         String.match?(identifier_str, ~r/^[0-9]+$/) do
+      prefix = String.slice(identifier_str, 0, 3)
+
+      # Mapping from NPM prefix to Node.abbr (uppercased in DB)
+      prefix_to_abbr = %{
+        "110" => "FH",
+        "120" => "FEB",
+        "130" => "FK",
+        "140" => "FMIPA",
+        "150" => "FAPERTA",
+        "160" => "FKG",
+        "170" => "FISIP",
+        "180" => "FIB",
+        "190" => "FAPSI",
+        "200" => "FAPET",
+        "210" => "FIKOM",
+        "220" => "FKEP",
+        "230" => "FPIK",
+        "240" => "FTIP",
+        "250" => "SPS",
+        "260" => "FARMASI",
+        "270" => "FTG",
+        "500" => "UNPAD_PRESS"
+      }
+
+      case Map.get(prefix_to_abbr, prefix) do
+        nil ->
+          # No mapping for this prefix
+          user
+
+        target_abbr ->
+          # Try to find node by abbr (case-insensitive)
+          node =
+            Repo.get_by(Voile.Schema.System.Node, abbr: target_abbr) ||
+              Repo.get_by(Voile.Schema.System.Node, abbr: String.upcase(target_abbr))
+
+          cond do
+            node == nil ->
+              Logger.debug("No node found for NPM prefix #{prefix} (abbr #{target_abbr})")
+              user
+
+            user.node_id == node.id ->
+              # Already assigned
+              user
+
+            true ->
+              # Update the user node_id. If this update fails, log and return
+              # the original user so onboarding flow is not blocked.
+              case user |> User.update_profile_changeset(%{node_id: node.id}) |> Repo.update() do
+                {:ok, updated} ->
+                  updated
+
+                {:error, changeset} ->
+                  Logger.error(
+                    "Failed to assign node for user #{user.id}: #{inspect(changeset.errors)}"
+                  )
+
+                  user
+              end
+          end
+      end
+    else
+      user
     end
   end
 
@@ -360,11 +449,31 @@ defmodule Voile.Schema.Accounts do
 
   """
   def register_user(attrs) do
-    %User{}
-    |> User.registration_changeset(attrs)
-    |> Repo.insert()
-    |> case do
+    # Get the Guest member type
+    guest_member_type = Repo.get_by(MemberType, slug: "guest")
+
+    # Set the user_type_id to Guest if not provided
+    attrs =
+      if guest_member_type && !Map.get(attrs, "user_type_id") do
+        Map.put(attrs, "user_type_id", guest_member_type.id)
+      else
+        attrs
+      end
+
+    result =
+      %User{}
+      |> User.registration_changeset(attrs)
+      |> Repo.insert()
+
+    case result do
       {:ok, user} ->
+        # Assign the viewer role to the new user
+        viewer_role = Repo.get_by(Role, name: "viewer")
+
+        if viewer_role do
+          Authorization.assign_role(user.id, viewer_role.id)
+        end
+
         {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments])}
 
       error ->
@@ -719,9 +828,23 @@ defmodule Voile.Schema.Accounts do
   end
 
   defp confirm_user_multi(user) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.confirm_changeset(user))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
+    # Get the Member (Affirmation) member type
+    affirmation_member_type = Repo.get_by(MemberType, slug: "affirmation")
+
+    multi =
+      Ecto.Multi.new()
+      |> Ecto.Multi.update(:user, User.confirm_changeset(user))
+      |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["confirm"]))
+
+    # Update user's member type to Member (Affirmation) if found
+    if affirmation_member_type do
+      multi
+      |> Ecto.Multi.update(:update_member_type, fn %{user: confirmed_user} ->
+        Ecto.Changeset.change(confirmed_user, user_type_id: affirmation_member_type.id)
+      end)
+    else
+      multi
+    end
   end
 
   ## Reset password

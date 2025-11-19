@@ -111,19 +111,20 @@ defmodule VoileWeb.UserPendingConfirmationLive do
   def mount(params, _session, socket) do
     email = params["email"]
 
-    is_user_logged_in = Map.has_key?(socket.assigns.current_scope, :user)
+    # `socket.assigns.current_scope` may be nil when this LiveView is mounted
+    # outside of the expected live_session. Use a safe check instead of
+    # calling Map.has_key?/2 directly on a potentially nil value.
+    is_user_logged_in = not is_nil(get_in(socket.assigns, [:current_scope, :user]))
 
-    case is_user_logged_in do
-      true ->
-        {:ok,
-         socket
-         |> put_flash(:info, "You are already logged in.")
-         |> push_navigate(to: ~p"/")}
-
-      false ->
-        {:ok,
-         socket
-         |> assign(:email, email)}
+    if is_user_logged_in do
+      {:ok,
+       socket
+       |> put_flash(:info, "You are already logged in.")
+       |> push_navigate(to: ~p"/")}
+    else
+      {:ok,
+       socket
+       |> assign(:email, email)}
     end
   end
 

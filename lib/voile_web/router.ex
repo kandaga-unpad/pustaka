@@ -41,9 +41,11 @@ defmodule VoileWeb.Router do
     get "/api/search", SearchController, :api_search
 
     live_session :public_with_scope,
+      session: {__MODULE__, :put_current_path_session, []},
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
-        {VoileWeb.UserAuth, :mount_current_scope}
+        {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       # Search dashboard (admin only)
       live "/", PageLive.Home, :index
@@ -92,9 +94,11 @@ defmodule VoileWeb.Router do
     pipe_through [:browser]
 
     live_session :current_user,
+      session: {__MODULE__, :put_current_path_session, []},
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
-        {VoileWeb.UserAuth, :mount_current_scope}
+        {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       live "/register", UserRegistrationLive, :new
       live "/login", UserLoginLive, :new
@@ -115,9 +119,11 @@ defmodule VoileWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_for_onboarding,
+      session: {__MODULE__, :put_current_path_session, []},
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
-        {VoileWeb.UserAuth, :require_authenticated}
+        {VoileWeb.UserAuth, :require_authenticated},
+        {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       live "/users/onboarding", UserOnboardingLive, :edit
     end
@@ -127,12 +133,14 @@ defmodule VoileWeb.Router do
     pipe_through [:browser, :require_authenticated_user, :require_onboarding_complete]
 
     live_session :require_authenticated_and_verified_member,
+      session: {__MODULE__, :put_current_path_session, []},
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_member},
         {VoileWeb.UserAuth, :require_onboarding_complete},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
-        {VoileWeb.UserAuth, :mount_current_scope}
+        {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       # Frontend member routes that require authentication
       live "/atrium", Frontend.Atrium.Index, :index
@@ -144,13 +152,15 @@ defmodule VoileWeb.Router do
     pipe_through [:browser, :require_authenticated_user, :require_onboarding_complete]
 
     live_session :require_authenticated_user_and_verified_staff_user,
+      session: {__MODULE__, :put_current_path_session, []},
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user},
         {VoileWeb.UserAuth, :require_onboarding_complete},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu},
-        {VoileWeb.Live.Hooks.NotificationHook, :default}
+        {VoileWeb.Live.Hooks.NotificationHook, :default},
+        {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       scope "/manage" do
         live "/", DashboardLive, :index
@@ -394,5 +404,13 @@ defmodule VoileWeb.Router do
   scope "/auth/gmail", VoileWeb do
     pipe_through [:browser]
     get "/callback", GmailCallbackController, :callback
+  end
+
+  @doc false
+  def put_current_path_session(conn) do
+    %{
+      "current_path" => Plug.Conn.get_session(conn, :current_path),
+      "current_uri" => Plug.Conn.get_session(conn, :current_uri)
+    }
   end
 end

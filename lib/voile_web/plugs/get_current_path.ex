@@ -4,11 +4,19 @@ defmodule VoileWeb.Plugs.GetCurrentPath do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    # Get the request path without query string for clean URLs
+    # Compute current path and full URI (path + optional query string)
     current_path = conn.request_path
 
+    current_uri =
+      case conn.query_string do
+        "" -> current_path
+        qs -> current_path <> "?" <> qs
+      end
+
     conn
-    |> assign(:current_uri, current_path)
+    |> put_session(:current_path, current_path)
+    |> put_session(:current_uri, current_uri)
+    |> assign(:current_uri, current_uri)
     |> assign(:current_path, current_path)
   end
 end

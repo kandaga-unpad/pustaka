@@ -626,7 +626,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
                       <p class="text-gray-500 dark:text-white italic pb-4">
                         <% mp = Map.get(col_field.data, :metadata_properties) %>
-                        <%= cond do
+                        {cond do
                           col_field[:information].value not in [nil, ""] ->
                             col_field[:information].value
 
@@ -635,7 +635,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
                           true ->
                             ""
-                        end %>
+                        end}
                       </p>
 
                       <input
@@ -786,6 +786,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       required_value={true}
                     />
                     <.input
+                      field={item_field[:barcode]}
+                      type="text"
+                      label="Barcode"
+                      required_value={true}
+                      disabled
+                    />
+                    <.input
                       field={item_field[:location]}
                       type="text"
                       label="Location"
@@ -813,7 +820,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         {"Active", "active"},
                         {"Inactive", "inactive"},
                         {"Lost", "lost"},
-                        {"Damaged", "damaged"}
+                        {"Damaged", "damaged"},
+                        {"Discarded", "discarded"}
                       ]}
                     />
                     <.input
@@ -822,10 +830,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       label="Condition"
                       required_value={true}
                       options={[
-                        {"New", "new"},
+                        {"Excellent", "excellent"},
                         {"Good", "good"},
                         {"Fair", "fair"},
-                        {"Poor", "poor"}
+                        {"Poor", "poor"},
+                        {"Damaged", "damaged"}
                       ]}
                     />
                     <.input
@@ -939,11 +948,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
          %{
            "id" => field.id,
            "label" => field.label,
-           "information" => (case Map.get(field, :metadata_properties) do
-              %Ecto.Association.NotLoaded{} -> ""
-              nil -> ""
-              mp -> mp.information
-            end),
+           "information" =>
+             case Map.get(field, :metadata_properties) do
+               %Ecto.Association.NotLoaded{} -> ""
+               nil -> ""
+               mp -> mp.information
+             end,
            "type_value" => field.type_value,
            "value_lang" => field.value_lang,
            "value" => field.value,

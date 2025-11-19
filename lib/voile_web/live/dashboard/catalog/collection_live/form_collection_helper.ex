@@ -6,6 +6,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   alias Client.Storage
   alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Collection
+  alias Voile.Repo
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
 
@@ -80,25 +81,38 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     # Generate new item
     new_index = map_size(current_items)
 
+    # Precompute codes so we can also generate the barcode immediately for the UI
+    item_code =
+      generate_item_code(
+        unit_data.abbr,
+        type_data.local_name,
+        collection_id,
+        socket.assigns.time_identifier,
+        to_string(new_index + 1)
+      )
+
+    inventory_code =
+      generate_inventory_code(
+        unit_data.abbr,
+        type_data.local_name,
+        collection_id || collection_title,
+        to_string(new_index + 1)
+      )
+
+    barcode = generate_barcode_from_item_code(item_code)
+
     new_item = %{
-      "item_code" =>
-        generate_item_code(
-          unit_data.abbr,
-          type_data.local_name,
-          collection_id,
-          socket.assigns.time_identifier,
-          to_string(new_index + 1)
-        ),
-      "inventory_code" =>
-        generate_inventory_code(
-          unit_data.abbr,
-          type_data.local_name,
-          collection_title,
-          to_string(new_index + 1)
-        ),
+      "item_code" => item_code,
+      # Use collection identifier (uuid) to match seed/db style. Fall back to
+      # collection title if collection_id is missing.
+      "inventory_code" => inventory_code,
+      "barcode" => barcode,
       "location" => unit_data.name,
       "status" => "active",
-      "condition" => "new",
+      # Schema defines allowed conditions as: excellent, good, fair, poor, damaged
+      # Use "good" as a sane default instead of the previously used "new" which
+      # is not in the allowed list and caused validation failures.
+      "condition" => "good",
       "availability" => "available",
       "unit_id" => unit_id
     }
@@ -311,22 +325,85 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       item ->
         case Catalog.delete_item(item) do
           {:ok, _} ->
-            current_params = socket.assigns.form.params || %{}
-            current_items = Map.get(current_params, "items", %{})
+            # Re-fetch authoritative collection state from DB (with preloads)
+            # and rebuild the form so the UI reflects the deletion reliably.
+            coll_id = socket.assigns.collection.id
 
-            updated_items =
-              current_items
-              |> Enum.reject(fn {_, item_data} ->
-                item_data["id"] == id || item_data[:id] == id
-              end)
+            updated_collection =
+              try do
+                Catalog.get_collection!(coll_id)
+                |> Repo.preload([:mst_creator, :items, collection_fields: [:metadata_properties]])
+              rescue
+                _ -> socket.assigns.collection
+              end
+
+            # Build form params from the authoritative collection so we preserve
+            # any remaining items when the user adds a new one later.
+            item_params =
+              (updated_collection.items || [])
               |> Enum.with_index()
-              |> Enum.into(%{}, fn {item_data, idx} -> {to_string(idx), item_data} end)
+              |> Enum.into(%{}, fn {item, idx} ->
+                {to_string(idx),
+                 %{
+                   "id" => item.id,
+                   "item_code" => item.item_code,
+                   "inventory_code" => item.inventory_code,
+                   "barcode" => Map.get(item, :barcode, ""),
+                   "location" => item.location,
+                   "unit_id" => item.unit_id,
+                   "status" => item.status,
+                   "condition" => item.condition,
+                   "availability" => item.availability
+                 }}
+              end)
 
-            new_params = Map.put(current_params, "items", updated_items)
-            changeset = Catalog.change_collection(socket.assigns.collection, new_params)
+            field_params =
+              (updated_collection.collection_fields || [])
+              |> Enum.with_index()
+              |> Enum.into(%{}, fn {field, idx} ->
+                {to_string(idx),
+                 %{
+                   "id" => field.id,
+                   "label" => field.label,
+                   "information" =>
+                     case Map.get(field, :metadata_properties) do
+                       %Ecto.Association.NotLoaded{} -> ""
+                       nil -> ""
+                       mp -> mp.information
+                     end,
+                   "type_value" => field.type_value,
+                   "value_lang" => field.value_lang,
+                   "value" => field.value,
+                   "sort_order" => field.sort_order
+                 }}
+              end)
+
+            initial_params =
+              %{
+                "id" => updated_collection.id,
+                "title" => updated_collection.title || "",
+                "description" => updated_collection.description || "",
+                "status" => updated_collection.status || "draft",
+                "access_level" => updated_collection.access_level || "private",
+                "type_id" => updated_collection.type_id,
+                "unit_id" => updated_collection.unit_id,
+                "creator_id" => updated_collection.creator_id,
+                "thumbnail" => updated_collection.thumbnail || "",
+                "parent_id" => updated_collection.parent_id,
+                "collection_type" => updated_collection.collection_type,
+                "sort_order" => updated_collection.sort_order || 1,
+                "collection_fields" => field_params,
+                "items" => item_params
+              }
+
+            changeset = Catalog.change_collection(updated_collection, initial_params)
 
             socket
             |> assign(:form, to_form(changeset, action: :validate))
+            |> assign(:collection, updated_collection)
+            |> assign(:original_collection, updated_collection)
+            |> assign(:chosen_item_field, nil)
+            |> assign(:delete_item_confirmation_id, nil)
 
           {:error, _} ->
             socket
@@ -644,25 +721,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     "COLLECTION-#{unit}-#{collection_type}-#{timestamp}-#{random_suffix}"
   end
 
-  # Generate barcode from item_code
-  # Extracts last UUID segment + sequence number for scannable 15-char barcode
-  # Example: "kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001"
-  # Returns: "c47e6d008b3a001"
-  defp generate_barcode_from_item_code(item_code) when is_binary(item_code) do
-    parts = String.split(item_code, "-")
-
-    # Need at least 3 parts: [..., uuid_segment, timestamp, sequence]
-    if length(parts) >= 3 do
-      uuid_segment = Enum.at(parts, -3)
-      sequence = List.last(parts)
-      "#{uuid_segment}#{sequence}"
-    else
-      # Fallback for short codes: use full code
-      String.replace(item_code, "-", "") |> String.slice(0, 15)
-    end
-  end
-
-  defp generate_barcode_from_item_code(_), do: ""
+  # Note: barcode generation is provided by Voile.Utils.ItemHelper.generate_barcode_from_item_code/1
 
   # Add barcodes to all items in collection_params
   defp add_barcodes_to_items(collection_params) do

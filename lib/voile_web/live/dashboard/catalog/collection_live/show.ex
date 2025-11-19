@@ -27,6 +27,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:node_location, node_location)
       |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
+      |> assign(:show_close_confirm, false)
       |> assign(:time_identifier, time_identifier)
 
     {:ok, socket}
@@ -35,8 +36,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
     collection = Catalog.get_collection!(id)
-
-    dbg(collection.collection_fields |> List.last())
 
     # Preserve query parameters from the index page (search, filters)
     query_params = Map.drop(params, ["id"])
@@ -49,6 +48,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:back_query_params, query_params)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("attempt_close_collection_modal", _params, socket) do
+    {:noreply, assign(socket, :show_close_confirm, true)}
+  end
+
+  @impl true
+  def handle_event("cancel_close_collection_modal", _params, socket) do
+    {:noreply, assign(socket, :show_close_confirm, false)}
   end
 
   defp page_title(:show), do: "Show Collection"

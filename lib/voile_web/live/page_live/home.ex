@@ -15,6 +15,8 @@ defmodule VoileWeb.PageLive.Home do
     app_main_color = System.get_setting_value("app_main_color", "#9333ea")
     app_secondary_color = System.get_setting_value("app_secondary_color", "#7c3aed")
 
+    app_logo_url = System.get_setting_value("app_logo_url", "/images/v.png")
+
     # Load app homepage content
     app_home_title =
       System.get_setting_value("app_home_title", "home.title")
@@ -51,6 +53,7 @@ defmodule VoileWeb.PageLive.Home do
       |> assign(:dashboard_stats, dashboard_stats)
       |> assign(:app_main_color, app_main_color)
       |> assign(:app_secondary_color, app_secondary_color)
+      |> assign(:app_logo_url, app_logo_url)
       |> assign(:app_home_title, app_home_title)
       |> assign(:app_home_description, app_home_description)
 
@@ -228,9 +231,8 @@ defmodule VoileWeb.PageLive.Home do
         <div class="relative bg-white/50 dark:bg-gray-800/50 h-[600px] w-full">
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col items-center justify-center gap-3 pb-16 pt-4 relative z-5 bg-white/80 dark:bg-gray-800/80 rounded-b-xl">
-              <img src="/images/v.png" alt="" class="h-full w-32" />
+              <img src={@app_logo_url} alt="" class="h-full w-32" />
               <h5 class="text-center">{@app_home_title}</h5>
-
               <p class="max-w-3xl mx-auto text-center text-sm px-4">
                 {@app_home_description}
               </p>

@@ -217,7 +217,7 @@
 
   /* Ensure links remain themed when using daisyUI's data-theme="dark" */
   :where([data-theme="dark"], [data-theme="dark"] *) a {
-    color: var(--color-voile-surface-variant);
+    color: var(--color-voile-primary);
   }
 
   option {

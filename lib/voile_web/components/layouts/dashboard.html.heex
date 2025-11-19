@@ -14,13 +14,13 @@
                 <img
                   src={@current_scope.user.user_image}
                   alt="User Avatar"
-                  class="w-10 h-10 rounded-full"
+                  class="w-10 h-10 rounded-full border border-gray-700 border-2"
                 />
               <% else %>
                 <img
                   src="/images/default_avatar.jpg"
                   alt="Default Avatar"
-                  class="w-10 h-10 rounded-full"
+                  class="w-10 h-10 rounded-full border border-gray-700 border-2"
                 />
               <% end %>
             </div>
@@ -47,7 +47,7 @@
           navigate="/manage/master"
           class={[
             "default-voile-menu",
-            @current_uri |> String.starts_with?("/manage/master") && "default-voile-menu-active"
+            @current_path |> String.starts_with?("/manage/master") && "default-voile-menu-active"
           ]}
         >
           Master
@@ -56,22 +56,22 @@
           navigate="/manage/metaresource"
           class={[
             "default-voile-menu",
-            @current_uri |> String.starts_with?("/manage/metaresource") &&
+            @current_path |> String.starts_with?("/manage/metaresource") &&
               "default-voile-menu-active"
           ]}
         >
           Metadata
         </.link>
       </div>
-      <.nav_bar active_nav={@current_uri} />
+      <.nav_bar active_nav={@current_path} />
     </div>
 
     <section>
       <div class="pb-10 px-4 xl:px-0">
-        <%= if String.contains?(@current_uri, "master") or String.contains?(@current_uri, "metaresource") do %>
+        <%= if String.contains?(@current_path, "master") or String.contains?(@current_path, "metaresource") do %>
           <div class="flex gap-5">
             <div class="max-w-64 w-full">
-              <%= if String.contains?(@current_uri, "master") do %>
+              <%= if String.contains?(@current_path, "master") do %>
                 <.side_bar_dashboard>
                   <h6>Master Data</h6>
 
@@ -81,7 +81,7 @@
                         navigate={item.url}
                         class={[
                           "default-menu",
-                          @current_uri |> String.starts_with?(item.url) && "active-menu"
+                          @current_path |> String.starts_with?(item.url) && "active-menu"
                         ]}
                       >
                         {item.name}
@@ -91,7 +91,7 @@
                 </.side_bar_dashboard>
               <% end %>
 
-              <%= if String.contains?(@current_uri, "metaresource") do %>
+              <%= if String.contains?(@current_path, "metaresource") do %>
                 <.side_bar_dashboard>
                   <h6>Metaresource Data</h6>
 
@@ -101,7 +101,7 @@
                         navigate={item.url}
                         class={[
                           "default-menu",
-                          @current_uri |> String.starts_with?(item.url) && "active-menu"
+                          @current_path |> String.starts_with?(item.url) && "active-menu"
                         ]}
                       >
                         {item.name}
@@ -123,7 +123,7 @@
 </main>
 <!-- Reservation notifications for staff (rendered by NotificationHook) -->
 <.live_component
-  :if={String.starts_with?(@current_uri, "/manage") && assigns[:notifications]}
+  :if={String.starts_with?(@current_path, "/manage") && assigns[:notifications]}
   module={VoileWeb.NotificationComponent}
   id="notification-component"
   notifications={@notifications}
