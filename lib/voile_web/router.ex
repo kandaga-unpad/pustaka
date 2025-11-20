@@ -21,11 +21,9 @@ defmodule VoileWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Webhook endpoints (no CSRF protection needed)
-  scope "/webhooks", VoileWeb do
-    pipe_through :api
-
-    post "/xendit/payment", XenditWebhookController, :payment_callback
+  pipeline :api_authenticated do
+    plug :accepts, ["json"]
+    plug VoileWeb.Plugs.APIAuthorization
   end
 
   scope "/", VoileWeb do
@@ -394,6 +392,25 @@ defmodule VoileWeb.Router do
     get "/attachments/:id/download", Collection.AttachmentController.Download, :download
   end
 
+  scope "/api", VoileWeb do
+    pipe_through :api
+
+    get "/info", API.InfoController, :info
+
+    scope "/v1" do
+      pipe_through :api_authenticated
+
+      resources "/tokens", API.V1.UserApiTokenController,
+        only: [:index, :create, :show, :update, :delete] do
+        post "/rotate", API.V1.UserApiTokenController, :rotate, as: :rotate
+      end
+
+      # get "/search", API.V1.SearchController, :search
+      # get "/items/:id", API.V1.ItemController, :show
+      # get "/collections/:id", API.V1.CollectionController, :show
+    end
+  end
+
   scope "/auth/google", VoileWeb do
     pipe_through [:browser]
     get "/", GoogleAuthController, :request
@@ -404,6 +421,13 @@ defmodule VoileWeb.Router do
   scope "/auth/gmail", VoileWeb do
     pipe_through [:browser]
     get "/callback", GmailCallbackController, :callback
+  end
+
+  # Webhook endpoints (no CSRF protection needed)
+  scope "/webhooks", VoileWeb do
+    pipe_through :api
+
+    post "/xendit/payment", XenditWebhookController, :payment_callback
   end
 
   @doc false

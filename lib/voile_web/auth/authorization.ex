@@ -639,4 +639,8 @@ defmodule VoileWeb.Auth.Authorization do
       }
     end
   end
+
+  def verify_api_token(token) do
+    {:ok, token}
+  end
 end

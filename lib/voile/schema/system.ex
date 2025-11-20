@@ -436,4 +436,155 @@ defmodule Voile.Schema.System do
   def change_collection_log(%CollectionLog{} = collection_log, attrs \\ %{}) do
     CollectionLog.changeset(collection_log, attrs)
   end
+
+  alias Voile.Schema.System.UserApiToken
+  alias Voile.Schema.Accounts.User
+
+  ## API Token Functions
+
+  @doc """
+  Creates a new API token for a user.
+  Returns {:ok, token, plain_token} where plain_token should be shown to user once.
+  """
+  def create_api_token(user, attrs \\ %{}) do
+    attrs = Map.put(attrs, :user_id, user.id)
+
+    changeset = UserApiToken.create_changeset(%UserApiToken{}, attrs)
+
+    case Repo.insert(changeset) do
+      {:ok, token} ->
+        # Return the plain token - this is the ONLY time it's available
+        plain_token = Ecto.Changeset.get_change(changeset, :token)
+        {:ok, token, plain_token}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Lists all API tokens for a user
+  """
+  def list_user_api_tokens(user) do
+    UserApiToken
+    |> where([t], t.user_id == ^user.id)
+    |> order_by([t], desc: t.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets a single API token
+  """
+  def get_api_token(id) do
+    Repo.get(UserApiToken, id)
+  end
+
+  @doc """
+  Verifies an API token and returns the associated user.
+  Updates last_used_at timestamp.
+  """
+  def verify_api_token(plain_token, opts \\ []) do
+    ip_address = Keyword.get(opts, :ip_address)
+
+    hashed_token = UserApiToken.hash_token(plain_token)
+
+    query =
+      from t in UserApiToken.valid_tokens_query(),
+        where: t.hashed_token == ^hashed_token,
+        preload: [:user]
+
+    case Repo.one(query) do
+      nil ->
+        {:error, :invalid_token}
+
+      token ->
+        # Check IP whitelist if configured
+        if valid_ip?(token, ip_address) do
+          # Update last used timestamp
+          update_token_usage(token, ip_address)
+          {:ok, token.user, token}
+        else
+          {:error, :ip_not_allowed}
+        end
+    end
+  end
+
+  defp valid_ip?(%UserApiToken{ip_whitelist: nil}, _ip), do: true
+  defp valid_ip?(%UserApiToken{ip_whitelist: []}, _ip), do: true
+
+  defp valid_ip?(%UserApiToken{ip_whitelist: whitelist}, ip) when is_binary(ip) do
+    ip in whitelist
+  end
+
+  defp valid_ip?(_token, _ip), do: true
+
+  defp update_token_usage(token, ip_address) do
+    token
+    |> Ecto.Changeset.change(%{
+      last_used_at: DateTime.utc_now(),
+      last_used_ip: ip_address
+    })
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates an API token
+  """
+  def update_api_token(%UserApiToken{} = token, attrs) do
+    token
+    |> UserApiToken.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Revokes an API token
+  """
+  def revoke_api_token(%UserApiToken{} = token) do
+    token
+    |> Ecto.Changeset.change(%{revoked_at: DateTime.utc_now()})
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes an API token
+  """
+  def delete_api_token(%UserApiToken{} = token) do
+    Repo.delete(token)
+  end
+
+  @doc """
+  Rotates an API token (revokes old, creates new with same settings)
+  """
+  def rotate_api_token(%UserApiToken{} = old_token) do
+    Repo.transaction(fn ->
+      # Revoke old token
+      {:ok, _} = revoke_api_token(old_token)
+
+      # Create new token with same settings
+      attrs = %{
+        name: old_token.name,
+        description: old_token.description,
+        scopes: old_token.scopes,
+        expires_at: old_token.expires_at,
+        ip_whitelist: old_token.ip_whitelist,
+        user_id: old_token.user_id
+      }
+
+      case create_api_token(%User{id: old_token.user_id}, attrs) do
+        {:ok, token, plain_token} -> {token, plain_token}
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Cleans up expired tokens (run periodically via cron/quantum)
+  """
+  def cleanup_expired_tokens do
+    from(t in UserApiToken,
+      where: not is_nil(t.expires_at),
+      where: t.expires_at < ^DateTime.utc_now()
+    )
+    |> Repo.delete_all()
+  end
 end
