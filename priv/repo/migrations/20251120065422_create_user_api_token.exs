@@ -21,7 +21,7 @@ defmodule Voile.Repo.Migrations.CreateUserApiToken do
       add :user_agent, :string
       add :last_used_ip, :string
 
-      timestamp(type: :utc_datetime)
+      timestamps(type: :utc_datetime)
     end
 
     create unique_index(:user_api_tokens, [:token])

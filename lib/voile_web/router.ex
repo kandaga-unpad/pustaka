@@ -400,14 +400,12 @@ defmodule VoileWeb.Router do
     scope "/v1" do
       pipe_through :api_authenticated
 
+      resources "/collections", API.V1.Collections.CollectionApiController, except: [:new, :edit]
+
       resources "/tokens", API.V1.UserApiTokenController,
         only: [:index, :create, :show, :update, :delete] do
         post "/rotate", API.V1.UserApiTokenController, :rotate, as: :rotate
       end
-
-      # get "/search", API.V1.SearchController, :search
-      # get "/items/:id", API.V1.ItemController, :show
-      # get "/collections/:id", API.V1.CollectionController, :show
     end
   end
 
