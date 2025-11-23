@@ -398,7 +398,7 @@ defmodule VoileWeb.Router do
     get "/info", API.InfoController, :info
 
     scope "/v1" do
-      pipe_through :api_authenticated
+      # pipe_through :api_authenticated
 
       resources "/collections", API.V1.Collections.CollectionApiController, except: [:new, :edit]
 
