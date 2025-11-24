@@ -5,6 +5,7 @@ defmodule Voile.Repo.Migrations.CreateUserApiToken do
     create table(:user_api_tokens, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :token, :string, null: false
+      add :hashed_token, :string
 
       add :name, :string, null: false
       add :description, :text

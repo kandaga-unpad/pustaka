@@ -1,0 +1,86 @@
+<% app_main_color = assigns[:app_main_color] || "#9333ea"
+app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
+
+<Layouts.app flash={assigns[:flash] || %{}} current_scope={assigns[:current_scope]}>
+  <div class="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-6">
+          <div
+            class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-lg"
+            style={"background: linear-gradient(135deg, " <> app_main_color <> ", " <> app_secondary_color <> ");"}
+          >
+            <.icon name="hero-lock-closed" class="w-10 h-10 text-white" />
+          </div>
+
+          <h1 class="text-4xl md:text-5xl font-extrabold text-red-500 dark:text-white">
+            {gettext("Unauthorized")}
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {gettext("Error occurred at:")}
+            <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+              {assigns[:conn].request_path}
+            </code>
+          </p>
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-xl">
+            {gettext("You need to be logged in to access this page. Please sign in to continue.")}
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full">
+            <.link
+              href={~p"/users/log_in"}
+              class="inline-flex w-full items-center gap-2 px-5 py-3 rounded-md bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
+              style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
+            >
+              <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> {gettext("Sign in")}
+            </.link>
+
+            <.link
+              href={~p"/"}
+              class="inline-flex w-full items-center gap-2 px-5 py-3 rounded-md bg-transparent border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <.icon name="hero-home" class="w-5 h-5" /> {gettext("Back to home")}
+            </.link>
+          </div>
+          <div class="flex w-full mt-4">
+            <.link
+              href="mailto:chrisna.adhi@unpad.ac.id"
+              class="flex items-center justify-center gap-2 px-5 py-3 rounded-md bg-red-500 text-white hover:bg-red-600 w-full"
+            >
+              <.icon name="hero-envelope" class="w-5 h-5" />
+              <span>{gettext("Contact Developer")}</span>
+            </.link>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-lg">
+          <h3 class="text-lg font-semibold mb-3">{gettext("Helpful links")}</h3>
+          <ul class="space-y-3">
+            <li class="flex items-center justify-between">
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Home")}</div>
+              <.link href={~p"/"} class="text-sm text-indigo-600">{gettext("Open")}</.link>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Sign in")}</div>
+              <.link href={~p"/login"} class="text-sm text-indigo-600">
+                {gettext("Login")}
+              </.link>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Register")}</div>
+              <.link href={~p"/register"} class="text-sm text-indigo-600">
+                {gettext("Sign up")}
+              </.link>
+            </li>
+            <li class="flex items-center justify-between">
+              <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Help")}</div>
+              <.link href="mailto:support@yourorg.example" class="text-sm text-indigo-600">
+                {gettext("Contact")}
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
