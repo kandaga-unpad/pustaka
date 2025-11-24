@@ -3,14 +3,15 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
+  alias VoileWeb.Auth.Authorization
   import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
-    current_user = socket.assigns[:current_user]
+    current_user = socket.assigns.current_scope.user |> Voile.Repo.preload(:roles)
 
     # Check if user is authenticated
-    if current_user do
+    if Authorization.can?(current_user, "system.settings") do
       stats = Accounts.get_user_statistics()
       recent_users = get_recent_users()
 
@@ -50,14 +51,14 @@ defmodule VoileWeb.Users.Manage.Dashboard do
         <:actions>
           <.button
             phx-click="refresh_stats"
-            class="bg-voile-primary hover:bg-voile-primary/80 text-voile-surface"
+            class="btn btn-primary rounded-lg"
           >
             <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Refresh Stats
           </.button>
         </:actions>
       </.header>
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Total Users Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg">
           <div class="p-5">
@@ -148,36 +149,6 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             </div>
           </div>
         </div>
-        <!-- Suspended Members Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-          <div class="p-5">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg
-                  class="h-6 w-6 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-
-              <div class="ml-5 w-0 flex-1">
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Suspended Members</dt>
-
-                  <dd class="text-lg font-medium text-gray-900">{@stats.suspended_members}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
       <!-- Users by Role Chart -->
       <div class="bg-white shadow rounded-lg">
@@ -208,107 +179,6 @@ defmodule VoileWeb.Users.Manage.Dashboard do
           </div>
         </div>
       </div>
-      <!-- Quick Actions -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
-
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <.link
-              navigate={~p"/manage/settings/users/new"}
-              class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-voile-info focus:border-voile-info"
-            >
-              <svg
-                class="mx-auto h-8 w-8 text-gray-400 group-hover:text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-              <span class="mt-2 block text-sm font-medium text-gray-900 group-hover:text-gray-600">
-                Create User
-              </span>
-            </.link>
-            <%= if @current_user do %>
-              <.link
-                navigate={~p"/manage/settings"}
-                class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <svg
-                  class="mx-auto h-8 w-8 text-gray-400 group-hover:text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                <span class="mt-2 block text-sm font-medium text-gray-900 group-hover:text-gray-600">
-                  Create Role
-                </span>
-              </.link>
-            <% end %>
-
-            <%= if @current_user do %>
-              <.link
-                navigate={~p"/manage/settings/users"}
-                class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <svg
-                  class="mx-auto h-8 w-8 text-gray-400 group-hover:text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <span class="mt-2 block text-sm font-medium text-gray-900 group-hover:text-gray-600">
-                  Manage Users
-                </span>
-              </.link>
-            <% end %>
-
-            <%= if @current_user do %>
-              <.link
-                navigate={~p"/manage/settings/users/roles"}
-                class="group relative block p-4 border-2 border-gray-300 border-dashed rounded-lg text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <svg
-                  class="mx-auto h-8 w-8 text-gray-400 group-hover:text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <span class="mt-2 block text-sm font-medium text-gray-900 group-hover:text-gray-600">
-                  Manage Roles
-                </span>
-              </.link>
-            <% end %>
-          </div>
-        </div>
-      </div>
       <!-- Recent Users -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
@@ -320,8 +190,8 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 <li class="py-4">
                   <div class="flex items-center space-x-4">
                     <div class="flex-shrink-0">
-                      <%= if user.avatar_url do %>
-                        <img class="h-8 w-8 rounded-full" src={user.avatar_url} alt="" />
+                      <%= if user.user_image do %>
+                        <img class="h-8 w-8 rounded-full" src={user.user_image} alt="" />
                       <% else %>
                         <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
                           <span class="text-sm font-medium text-gray-700">
@@ -402,8 +272,8 @@ defmodule VoileWeb.Users.Manage.Dashboard do
               <dt class="text-sm font-medium text-gray-500">Last Login</dt>
 
               <dd class="mt-1 text-sm text-gray-900">
-                <%= if @current_user.current_sign_in_at do %>
-                  {Calendar.strftime(@current_user.current_sign_in_at, "%B %d, %Y at %I:%M %p")}
+                <%= if @current_user.last_login do %>
+                  {Calendar.strftime(@current_user.last_login, "%B %d, %Y at %I:%M %p")}
                 <% else %>
                   Never
                 <% end %>

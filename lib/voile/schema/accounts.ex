@@ -7,7 +7,7 @@ defmodule Voile.Schema.Accounts do
   import Ecto.Changeset, only: [validate_required: 2, validate_length: 3]
   alias Voile.Repo
 
-  alias Voile.Schema.Accounts.{User, UserToken, UserNotifier, Role}
+  alias Voile.Schema.Accounts.{User, UserToken, UserNotifier, Role, UserRoleAssignment}
   alias Voile.Schema.Master.MemberType
   alias VoileWeb.Auth.Authorization
 
@@ -947,27 +947,20 @@ defmodule Voile.Schema.Accounts do
       from(u in User, where: not is_nil(u.confirmed_at))
       |> Repo.aggregate(:count, :id)
 
-    # Count suspended members (members with user_type_id who have exceeded fine limit)
-    suspended_count = count_suspended_members()
+    users_by_role =
+      from(ura in UserRoleAssignment,
+        join: r in assoc(ura, :role),
+        group_by: r.name,
+        select: {r.name, count(ura.user_id)}
+      )
+      |> Repo.all()
 
     %{
       total_users: total_users,
       confirmed_users: confirmed_users,
       unconfirmed_users: total_users - confirmed_users,
-      suspended_members: suspended_count
+      users_by_role: users_by_role
     }
-  end
-
-  defp count_suspended_members do
-    # Get all users with a user_type_id
-    members =
-      from(u in User, where: not is_nil(u.user_type_id), select: u.id)
-      |> Repo.all()
-
-    # Check each member for suspension
-    Enum.count(members, fn member_id ->
-      Voile.Schema.Library.Circulation.member_privileges_suspended?(member_id)
-    end)
   end
 
   @doc """
