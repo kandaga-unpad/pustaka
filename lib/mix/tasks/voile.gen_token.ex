@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Voile.GenToken do
         Voile.Schema.System.create_api_token(user, %{
           name: "CLI Generated",
           scopes: ["read", "write", "admin"],
-          expires_at: DateTime.utc_now() |> DateTime.add(365, :day)
+          expires_at: DateTime.utc_now() |> DateTime.add(365, :day) |> DateTime.truncate(:second)
         })
 
       IO.puts("\n✅ Token generated successfully!")
@@ -22,6 +22,9 @@ defmodule Mix.Tasks.Voile.GenToken do
       IO.puts(
         "curl http://localhost:4000/api/v1/collections -H 'Authorization: Bearer #{plain_token}'"
       )
+
+      IO.puts("\nOr in your browser:")
+      IO.puts("http://localhost:4000/api/v1/collections?token=#{plain_token}")
     else
       IO.puts("❌ User not found: #{email}")
     end

@@ -53,14 +53,13 @@ defmodule Voile.Schema.System.UserApiToken do
         :ip_whitelist,
         :user_agent,
         :last_used_ip,
-        :user_id
+        :user_id,
+        :hashed_token
       ]
     )
-    |> validate_required([:user_id])
+    |> validate_required([:user_id, :hashed_token])
     |> validate_scopes()
     |> validate_expiration()
-    |> put_token()
-    |> put_hashed_token()
   end
 
   def update_changeset(api_token, attrs) do
@@ -88,26 +87,6 @@ defmodule Voile.Schema.System.UserApiToken do
         else
           changeset
         end
-    end
-  end
-
-  defp put_token(changeset) do
-    if changeset.valid? do
-      token = generate_token()
-      put_change(changeset, :token, token)
-    else
-      changeset
-    end
-  end
-
-  defp put_hashed_token(changeset) do
-    case get_change(changeset, :token) do
-      nil ->
-        changeset
-
-      token ->
-        hashed = hash_token(token)
-        put_change(changeset, :hashed_token, hashed)
     end
   end
 

@@ -62,6 +62,7 @@ defmodule Voile.Schema.Catalog do
     collections =
       Repo.all(query)
       |> Repo.preload([
+        :collection_fields,
         :resource_class,
         :mst_creator,
         :node
@@ -92,6 +93,7 @@ defmodule Voile.Schema.Catalog do
       left_join: creator in assoc(c, :mst_creator),
       left_join: node in assoc(c, :node),
       left_join: rc in assoc(c, :resource_class),
+      left_join: cf in assoc(c, :collection_fields),
       where:
         ilike(c.title, ^like) or
           ilike(c.description, ^like) or
@@ -101,7 +103,8 @@ defmodule Voile.Schema.Catalog do
           ilike(c.access_level, ^like) or
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
-          ilike(rc.label, ^like)
+          ilike(rc.label, ^like) or
+          ilike(cf.value, ^like)
   end
 
   defp maybe_search_collections(query, _), do: query

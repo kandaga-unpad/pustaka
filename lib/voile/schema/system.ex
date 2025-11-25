@@ -439,6 +439,8 @@ defmodule Voile.Schema.System do
 
   alias Voile.Schema.System.UserApiToken
   alias Voile.Schema.Accounts.User
+  alias Voile.Schema.Accounts.UserRoleAssignment
+  alias Voile.Schema.Accounts.Role
 
   ## API Token Functions
 
@@ -447,14 +449,19 @@ defmodule Voile.Schema.System do
   Returns {:ok, token, plain_token} where plain_token should be shown to user once.
   """
   def create_api_token(user, attrs \\ %{}) do
-    attrs = Map.put(attrs, :user_id, user.id)
+    attrs = Map.put(attrs, "user_id", user.id)
+
+    # Generate the plain token
+    plain_token = UserApiToken.generate_token()
+
+    # Add the hashed token to attrs
+    attrs = Map.put(attrs, "hashed_token", UserApiToken.hash_token(plain_token))
 
     changeset = UserApiToken.create_changeset(%UserApiToken{}, attrs)
 
     case Repo.insert(changeset) do
       {:ok, token} ->
         # Return the plain token - this is the ONLY time it's available
-        plain_token = Ecto.Changeset.get_change(changeset, :token)
         {:ok, token, plain_token}
 
       {:error, changeset} ->
@@ -469,6 +476,16 @@ defmodule Voile.Schema.System do
     UserApiToken
     |> where([t], t.user_id == ^user.id)
     |> order_by([t], desc: t.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists all API tokens (admin only)
+  """
+  def list_all_api_tokens do
+    UserApiToken
+    |> order_by([t], desc: t.inserted_at)
+    |> preload(:user)
     |> Repo.all()
   end
 
@@ -521,7 +538,7 @@ defmodule Voile.Schema.System do
   defp update_token_usage(token, ip_address) do
     token
     |> Ecto.Changeset.change(%{
-      last_used_at: DateTime.utc_now(),
+      last_used_at: DateTime.utc_now() |> DateTime.truncate(:second),
       last_used_ip: ip_address
     })
     |> Repo.update()
@@ -541,7 +558,7 @@ defmodule Voile.Schema.System do
   """
   def revoke_api_token(%UserApiToken{} = token) do
     token
-    |> Ecto.Changeset.change(%{revoked_at: DateTime.utc_now()})
+    |> Ecto.Changeset.change(%{revoked_at: DateTime.utc_now() |> DateTime.truncate(:second)})
     |> Repo.update()
   end
 
@@ -562,12 +579,12 @@ defmodule Voile.Schema.System do
 
       # Create new token with same settings
       attrs = %{
-        name: old_token.name,
-        description: old_token.description,
-        scopes: old_token.scopes,
-        expires_at: old_token.expires_at,
-        ip_whitelist: old_token.ip_whitelist,
-        user_id: old_token.user_id
+        "name" => old_token.name,
+        "description" => old_token.description,
+        "scopes" => old_token.scopes,
+        "expires_at" => old_token.expires_at,
+        "ip_whitelist" => old_token.ip_whitelist,
+        "user_id" => old_token.user_id
       }
 
       case create_api_token(%User{id: old_token.user_id}, attrs) do
@@ -575,6 +592,34 @@ defmodule Voile.Schema.System do
         {:error, changeset} -> Repo.rollback(changeset)
       end
     end)
+  end
+
+  @doc """
+  Creates a master API token for a user (non-expiring with admin privileges).
+  Returns {:ok, token, plain_token} where plain_token should be shown to user once.
+  Only users with super_admin role can create master tokens.
+  """
+  def create_master_api_token(user, attrs \\ %{}) do
+    # Check if user has super_admin role
+    if has_role?(user, "super_admin") do
+      # Merge with master token defaults
+      master_attrs = %{
+        "name" => "Master Token",
+        "description" => "Non-expiring master token with full access",
+        "scopes" => ["admin"],
+        # Never expires
+        "expires_at" => nil,
+        # No IP restrictions
+        "ip_whitelist" => nil
+      }
+
+      # Allow overriding defaults with provided attrs
+      attrs = Map.merge(master_attrs, attrs)
+
+      create_api_token(user, attrs)
+    else
+      {:error, :insufficient_permissions}
+    end
   end
 
   @doc """
@@ -586,5 +631,19 @@ defmodule Voile.Schema.System do
       where: t.expires_at < ^DateTime.utc_now()
     )
     |> Repo.delete_all()
+  end
+
+  # Private helper functions
+
+  defp has_role?(%User{} = user, role_name) do
+    query =
+      from ura in UserRoleAssignment,
+        join: r in Role,
+        on: ura.role_id == r.id,
+        where: ura.user_id == ^user.id,
+        where: r.name == ^role_name,
+        where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()
+
+    Repo.exists?(query)
   end
 end

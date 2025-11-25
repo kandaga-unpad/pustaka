@@ -4,8 +4,8 @@ defmodule Voile.Repo.Migrations.CreateUserApiToken do
   def change do
     create table(:user_api_tokens, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :token, :string, null: false
-      add :hashed_token, :string
+      add :token, :string
+      add :hashed_token, :string, null: false
 
       add :name, :string, null: false
       add :description, :text
@@ -25,7 +25,7 @@ defmodule Voile.Repo.Migrations.CreateUserApiToken do
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:user_api_tokens, [:token])
+    create unique_index(:user_api_tokens, [:hashed_token])
     create index(:user_api_tokens, [:user_id])
     create index(:user_api_tokens, [:expires_at])
     create index(:user_api_tokens, [:revoked_at])

@@ -7,13 +7,24 @@ defmodule VoileWeb.Plugs.APIAuthorization do
   def call(conn, opts) do
     required_scope = Keyword.get(opts, :scope)
 
-    case get_req_header(conn, "authorization") do
-      ["Bearer " <> token] ->
-        verify_token(conn, token, required_scope)
+    token = get_token_from_header(conn) || get_token_from_params(conn)
 
-      _ ->
-        unauthorized(conn)
+    if token do
+      verify_token(conn, token, required_scope)
+    else
+      unauthorized(conn)
     end
+  end
+
+  defp get_token_from_header(conn) do
+    case get_req_header(conn, "authorization") do
+      ["Bearer " <> token] -> token
+      _ -> nil
+    end
+  end
+
+  defp get_token_from_params(conn) do
+    conn.params["token"] || conn.query_params["token"]
   end
 
   defp verify_token(conn, token, required_scope) do
