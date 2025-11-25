@@ -916,8 +916,8 @@ defmodule Voile.Schema.Accounts do
 
     Repo.transaction(multi)
     |> case do
-      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
       {:ok, %{confirm: _confirmed, user: user}} -> {:ok, preload_user_assocs(user)}
+      {:ok, %{user: user}} -> {:ok, preload_user_assocs(user)}
       {:error, :user, changeset, _} -> {:error, changeset}
       {:error, :confirm, changeset, _} -> {:error, changeset}
     end
