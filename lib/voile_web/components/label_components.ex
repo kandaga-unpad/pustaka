@@ -68,10 +68,10 @@ defmodule VoileWeb.Components.LabelComponents do
         <%= if @include_barcode do %>
           <div class="mt-2 pt-2 border-t border-gray-300 flex flex-col items-center">
             <div class="w-full px-2 flex justify-center">
-              {Phoenix.HTML.raw(generate_barcode(@item.item_code || "000000"))}
+              {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
             </div>
             <div class="text-center text-[0.5rem] font-mono mt-1 text-gray-700 break-all px-1">
-              {@item.item_code || "000000"}
+              {@item.barcode || "000000"}
             </div>
           </div>
         <% end %>
