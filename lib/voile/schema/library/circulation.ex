@@ -1904,7 +1904,12 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Gets circulation history for a member with pagination and filters.
   """
-  def list_circulation_history_paginated_with_filters_by_member(member_id, page \\ 1, per_page \\ 50, opts \\ []) do
+  def list_circulation_history_paginated_with_filters_by_member(
+        member_id,
+        page \\ 1,
+        per_page \\ 50,
+        opts \\ []
+      ) do
     limit = per_page
     offset = (page - 1) * per_page
     event_types = Keyword.get(opts, :event_types, [])
@@ -2361,7 +2366,7 @@ defmodule Voile.Schema.Library.Circulation do
       Map.merge(attrs, %{
         member_id: member.id,
         item_id: item.id,
-               librarian_id: librarian_id,
+        librarian_id: librarian_id,
         transaction_type: "loan",
         transaction_date: DateTime.utc_now(),
         due_date: due_date,
