@@ -493,7 +493,9 @@ defmodule Voile.Schema.System do
   Gets a single API token
   """
   def get_api_token(id) do
-    Repo.get(UserApiToken, id)
+    UserApiToken
+    |> preload(:user)
+    |> Repo.get(id)
   end
 
   @doc """

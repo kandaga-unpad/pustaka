@@ -39,148 +39,180 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
       </div>
       
     <!-- Token List -->
-      <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-3 border-b border-gray-200">
-          <h3 class="text-lg font-medium">API Tokens</h3>
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">API Tokens</h3>
         </div>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Token
                 </th>
-                <%= if @is_admin do %>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                <% end %>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Scopes
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Created
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Expires
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Used
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <%= for token <- @api_tokens do %>
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">
-                      {token.name || "Unnamed Token"}
+                <tr
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  phx-click="show_token_details"
+                  phx-value-token-id={token.id}
+                >
+                  <td class="px-4 py-4">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs">
+                      {String.slice(token.name || "Unnamed Token", 0, 30)}
+                      <%= if String.length(token.name || "") > 30 do %>
+                        ...
+                      <% end %>
                     </div>
-                    <div class="text-sm text-gray-500">
-                      {token.description || "No description"}
-                    </div>
-                  </td>
-                  <%= if @is_admin do %>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">
-                        <%= if token.user do %>
-                          {token.user.email}
-                        <% else %>
-                          Unknown User
-                        <% end %>
-                      </div>
-                    </td>
-                  <% end %>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex flex-wrap gap-1">
-                      <%= for scope <- token.scopes do %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {scope}
-                        </span>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                      {String.slice(token.description || "No description", 0, 40)}
+                      <%= if String.length(token.description || "") > 40 do %>
+                        ...
                       <% end %>
                     </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-4 py-4">
                     <%= if token.revoked_at do %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                         Revoked
                       </span>
                     <% else %>
                       <%= if token.expires_at do %>
                         <%= if DateTime.compare(token.expires_at, DateTime.utc_now()) == :gt do %>
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                             Active
                           </span>
                         <% else %>
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
                             Expired
                           </span>
                         <% end %>
                       <% else %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active (No Expiry)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                          Active
                         </span>
                       <% end %>
                     <% end %>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {Calendar.strftime(token.inserted_at, "%Y-%m-%d %H:%M")}
+                  <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    {Calendar.strftime(token.inserted_at, "%Y-%m-%d")}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
                     <%= if token.expires_at do %>
-                      {Calendar.strftime(token.expires_at, "%Y-%m-%d %H:%M")}
+                      {Calendar.strftime(token.expires_at, "%Y-%m-%d")}
                     <% else %>
                       Never
                     <% end %>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <%= if token.last_used_at do %>
-                      {Calendar.strftime(token.last_used_at, "%Y-%m-%d %H:%M")}
-                    <% else %>
-                      Never
-                    <% end %>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end gap-2">
-                      <.button
+                  <td class="px-4 py-4 text-right">
+                    <div class="flex justify-end gap-2" phx-click-stop>
+                      <button
                         phx-click="edit_token"
                         phx-value-token-id={token.id}
-                        class="text-blue-600 hover:text-blue-900 text-sm"
+                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700"
+                        title="Edit token"
                       >
+                        <svg
+                          class="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          >
+                          </path>
+                        </svg>
                         Edit
-                      </.button>
-                      <.button
+                      </button>
+                      <button
                         phx-click="confirm_rotate_token"
                         phx-value-token-id={token.id}
-                        class="text-orange-600 hover:text-orange-900 text-sm"
+                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-700"
+                        title="Rotate token"
                       >
+                        <svg
+                          class="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          >
+                          </path>
+                        </svg>
                         Rotate
-                      </.button>
+                      </button>
                       <%= unless token.revoked_at do %>
-                        <.button
+                        <button
                           phx-click="revoke_token"
                           phx-value-token-id={token.id}
-                          class="text-red-600 hover:text-red-900 text-sm"
+                          class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-700"
+                          title="Revoke token"
                           data-confirm="Are you sure you want to revoke this token?"
                         >
+                          <svg
+                            class="w-3 h-3 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                            >
+                            </path>
+                          </svg>
                           Revoke
-                        </.button>
+                        </button>
                       <% end %>
-                      <.button
+                      <button
                         phx-click="delete_token"
                         phx-value-token-id={token.id}
-                        class="text-red-600 hover:text-red-900 text-sm"
+                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded border border-red-200 dark:border-red-700"
+                        title="Delete token"
                         data-confirm="Are you sure you want to permanently delete this token?"
                       >
+                        <svg
+                          class="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          >
+                          </path>
+                        </svg>
                         Delete
-                      </.button>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -191,8 +223,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
 
         <%= if Enum.empty?(@api_tokens) do %>
           <div class="text-center py-12">
-            <p class="text-gray-500">No API tokens found.</p>
-            <p class="text-sm text-gray-400 mt-1">
+            <p class="text-gray-500 dark:text-gray-400">No API tokens found.</p>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
               <%= if @is_admin do %>
                 Create your first token to get started.
               <% else %>
@@ -223,10 +255,12 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
         on_cancel={JS.push("cancel_rotate")}
       >
         <div class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Token Rotation</h3>
-          <p class="text-sm text-gray-500 mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+            Confirm Token Rotation
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Are you sure you want to rotate this API token? The current token will be invalidated and a new one will be generated.
-            <strong class="text-red-600">
+            <strong class="text-red-600 dark:text-red-400">
               Make sure to update any applications using this token.
             </strong>
           </p>
@@ -253,19 +287,22 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
         on_cancel={JS.push("close_token_details")}
       >
         <div class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">API Token Created</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">API Token Created</h3>
           <div class="mb-4">
-            <p class="text-sm text-gray-600 mb-2">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
               Your new API token has been created successfully. Copy the token below and save it securely:
             </p>
-            <div class="bg-gray-50 border rounded-lg p-4">
+            <div class="bg-gray-50 dark:bg-gray-800 border dark:border-gray-600 rounded-lg p-4">
               <div class="flex items-center justify-between">
-                <code class="text-sm font-mono text-gray-800 break-all" id="new-token-value">
+                <code
+                  class="text-sm font-mono text-gray-800 dark:text-gray-200 break-all"
+                  id="new-token-value"
+                >
                   {@new_token_value}
                 </code>
                 <button
                   type="button"
-                  class="ml-2 p-2 text-gray-400 hover:text-gray-600"
+                  class="ml-2 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                   onclick="navigator.clipboard.writeText(document.getElementById('new-token-value').textContent).then(() => alert('Token copied to clipboard!'))"
                   title="Copy to clipboard"
                 >
@@ -281,13 +318,150 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                 </button>
               </div>
             </div>
-            <p class="text-xs text-red-600 mt-2">
+            <p class="text-xs text-red-600 dark:text-red-400 mt-2">
               <strong>Warning:</strong>
               This token will only be shown once. Make sure to save it securely!
             </p>
           </div>
           <div class="flex justify-end">
             <.button phx-click="close_token_details">
+              Close
+            </.button>
+          </div>
+        </div>
+      </.modal>
+      
+    <!-- Token Info Modal -->
+      <.modal
+        :if={@show_token_info}
+        id="token-info-modal"
+        show
+        on_cancel={JS.push("close_token_info")}
+      >
+        <div class="p-6 max-w-2xl">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">API Token Details</h3>
+
+          <%= if @selected_token_for_info do %>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {@selected_token_for_info.name || "Unnamed Token"}
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Description
+                </label>
+                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {@selected_token_for_info.description || "No description"}
+                </p>
+              </div>
+
+              <%= if @is_admin do %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    User
+                  </label>
+                  <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    <%= if @selected_token_for_info.user do %>
+                      {@selected_token_for_info.user.email}
+                    <% else %>
+                      Unknown User
+                    <% end %>
+                  </p>
+                </div>
+              <% end %>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Scopes
+                </label>
+                <div class="mt-1 flex flex-wrap gap-1">
+                  <%= for scope <- @selected_token_for_info.scopes do %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                      {scope}
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status
+                </label>
+                <div class="mt-1">
+                  <%= if @selected_token_for_info.revoked_at do %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                      Revoked on {Calendar.strftime(
+                        @selected_token_for_info.revoked_at,
+                        "%Y-%m-%d %H:%M"
+                      )}
+                    </span>
+                  <% else %>
+                    <%= if @selected_token_for_info.expires_at do %>
+                      <%= if DateTime.compare(@selected_token_for_info.expires_at, DateTime.utc_now()) == :gt do %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                          Active
+                        </span>
+                      <% else %>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                          Expired on {Calendar.strftime(
+                            @selected_token_for_info.expires_at,
+                            "%Y-%m-%d %H:%M"
+                          )}
+                        </span>
+                      <% end %>
+                    <% else %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                        Active (No Expiry)
+                      </span>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Created
+                  </label>
+                  <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {Calendar.strftime(@selected_token_for_info.inserted_at, "%Y-%m-%d %H:%M")}
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Expires
+                  </label>
+                  <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    <%= if @selected_token_for_info.expires_at do %>
+                      {Calendar.strftime(@selected_token_for_info.expires_at, "%Y-%m-%d %H:%M")}
+                    <% else %>
+                      Never
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Last Used
+                </label>
+                <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  <%= if @selected_token_for_info.last_used_at do %>
+                    {Calendar.strftime(@selected_token_for_info.last_used_at, "%Y-%m-%d %H:%M")}
+                  <% else %>
+                    Never
+                  <% end %>
+                </p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="flex justify-end mt-6">
+            <.button phx-click="close_token_info">
               Close
             </.button>
           </div>
@@ -320,7 +494,9 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
      |> assign(:show_rotate_confirm, false)
      |> assign(:token_to_rotate, nil)
      |> assign(:show_token_details, false)
-     |> assign(:new_token_value, nil)}
+     |> assign(:new_token_value, nil)
+     |> assign(:show_token_info, false)
+     |> assign(:selected_token_for_info, nil)}
   end
 
   @impl true
@@ -398,6 +574,24 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
   end
 
   @impl true
+  def handle_event("show_token_details", %{"token-id" => token_id}, socket) do
+    token = System.get_api_token(token_id)
+
+    {:noreply,
+     socket
+     |> assign(:show_token_info, true)
+     |> assign(:selected_token_for_info, token)}
+  end
+
+  @impl true
+  def handle_event("close_token_info", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_token_info, false)
+     |> assign(:selected_token_for_info, nil)}
+  end
+
+  @impl true
   def handle_event("revoke_token", %{"token-id" => token_id}, socket) do
     case System.revoke_api_token(System.get_api_token(token_id)) do
       {:ok, _token} ->
@@ -435,7 +629,9 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
      |> assign(:show_rotate_confirm, false)
      |> assign(:token_to_rotate, nil)
      |> assign(:show_token_details, false)
-     |> assign(:new_token_value, nil)}
+     |> assign(:new_token_value, nil)
+     |> assign(:show_token_info, false)
+     |> assign(:selected_token_for_info, nil)}
   end
 
   @impl true
