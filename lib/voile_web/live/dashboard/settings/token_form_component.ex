@@ -179,7 +179,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
 
   @impl true
   def handle_event("cancel", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/manage/settings/api-manager")}
+    {:noreply, push_navigate(socket, to: ~p"/manage/settings/api_manager")}
   end
 
   defp handle_token_success(socket, token, plain_token) do

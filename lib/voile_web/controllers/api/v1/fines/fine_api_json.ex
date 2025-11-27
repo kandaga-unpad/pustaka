@@ -1,4 +1,4 @@
-defmodule VoileWeb.API.V1.Fines.FineApiJson do
+defmodule VoileWeb.API.V1.Fines.FineApiJSON do
   alias Voile.Schema.Library.Fine
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.Item

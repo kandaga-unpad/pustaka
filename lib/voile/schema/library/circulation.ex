@@ -342,8 +342,7 @@ defmodule Voile.Schema.Library.Circulation do
     fines = Repo.all(query)
 
     # Count total with same filters for pagination
-    count_query =
-      from(f in Fine)
+    count_query = from(f in Fine)
 
     # Apply same filters for count
     count_query =
@@ -1459,7 +1458,7 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Creates a reservation - respects member type reservation policies.
   """
-  def create_reservation(member_id, item_id, attrs \\ %{}) do
+  def create_reservation(member_id, item_id, librarian_id, attrs \\ %{}) do
     with {:ok, member} <- get_member_with_type(member_id),
          {:ok, _} <- validate_reservation_eligibility(member),
          {:ok, reservation} <- create_item_reservation(member, item_id, attrs) do
@@ -1484,6 +1483,13 @@ defmodule Voile.Schema.Library.Circulation do
     else
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  @doc """
+  Creates a reservation for an item - simplified version for LiveView.
+  """
+  def create_reservation(member_id, item_id) do
+    create_reservation(member_id, item_id, nil, %{})
   end
 
   @doc """
@@ -1895,6 +1901,63 @@ defmodule Voile.Schema.Library.Circulation do
     |> Repo.all()
   end
 
+  @doc """
+  Gets circulation history for a member with pagination and filters.
+  """
+  def list_circulation_history_paginated_with_filters_by_member(member_id, page \\ 1, per_page \\ 50, opts \\ []) do
+    limit = per_page
+    offset = (page - 1) * per_page
+    event_types = Keyword.get(opts, :event_types, [])
+    date_from = Keyword.get(opts, :date_from)
+    date_to = Keyword.get(opts, :date_to)
+
+    query =
+      CirculationHistory
+      |> where([ch], ch.member_id == ^member_id)
+      |> preload([:item, :transaction, :reservation, :processed_by])
+
+    # Apply event type filter
+    query =
+      if event_types != [] do
+        where(query, [ch], ch.event_type in ^event_types)
+      else
+        query
+      end
+
+    # Apply date range filters
+    query =
+      if date_from do
+        where(query, [ch], ch.event_date >= ^date_from)
+      else
+        query
+      end
+
+    query =
+      if date_to do
+        where(query, [ch], ch.event_date <= ^date_to)
+      else
+        query
+      end
+
+    # Get total count for pagination
+    total_count =
+      query
+      |> select([ch], count(ch.id))
+      |> Repo.one()
+
+    total_pages = ceil(total_count / per_page)
+
+    # Apply ordering and pagination
+    history =
+      query
+      |> order_by([ch], desc: ch.event_date)
+      |> limit(^limit)
+      |> offset(^offset)
+      |> Repo.all()
+
+    {history, total_pages}
+  end
+
   # ============================================================================
   # REQUISITIONS
   # ============================================================================
@@ -1910,42 +1973,6 @@ defmodule Voile.Schema.Library.Circulation do
           assigned_to_id: assigned_to_id,
           status: "reviewing"
         })
-        |> Repo.update()
-
-      nil ->
-        {:error, "Requisition not found"}
-    end
-  end
-
-  @doc """
-  Approves a requisition.
-  """
-  def approve_requisition(requisition_id, staff_notes \\ nil) do
-    case Repo.get(Requisition, requisition_id) do
-      %Requisition{} = requisition ->
-        attrs = %{status: "approved"}
-        attrs = if staff_notes, do: Map.put(attrs, :staff_notes, staff_notes), else: attrs
-
-        requisition
-        |> Requisition.changeset(attrs)
-        |> Repo.update()
-
-      nil ->
-        {:error, "Requisition not found"}
-    end
-  end
-
-  @doc """
-  Rejects a requisition.
-  """
-  def reject_requisition(requisition_id, staff_notes \\ nil) do
-    case Repo.get(Requisition, requisition_id) do
-      %Requisition{} = requisition ->
-        attrs = %{status: "rejected"}
-        attrs = if staff_notes, do: Map.put(attrs, :staff_notes, staff_notes), else: attrs
-
-        requisition
-        |> Requisition.changeset(attrs)
         |> Repo.update()
 
       nil ->
@@ -1983,6 +2010,42 @@ defmodule Voile.Schema.Library.Circulation do
     |> preload([:requested_by, :assigned_to, :unit])
     |> order_by([r], desc: r.request_date)
     |> Repo.all()
+  end
+
+  @doc """
+  Approves a requisition.
+  """
+  def approve_requisition(requisition_id, staff_notes \\ nil) do
+    case Repo.get(Requisition, requisition_id) do
+      %Requisition{} = requisition ->
+        attrs = %{status: "approved"}
+        attrs = if staff_notes, do: Map.put(attrs, :staff_notes, staff_notes), else: attrs
+
+        requisition
+        |> Requisition.changeset(attrs)
+        |> Repo.update()
+
+      nil ->
+        {:error, "Requisition not found"}
+    end
+  end
+
+  @doc """
+  Rejects a requisition.
+  """
+  def reject_requisition(requisition_id, staff_notes \\ nil) do
+    case Repo.get(Requisition, requisition_id) do
+      %Requisition{} = requisition ->
+        attrs = %{status: "rejected"}
+        attrs = if staff_notes, do: Map.put(attrs, :staff_notes, staff_notes), else: attrs
+
+        requisition
+        |> Requisition.changeset(attrs)
+        |> Repo.update()
+
+      nil ->
+        {:error, "Requisition not found"}
+    end
   end
 
   # ============================================================================
@@ -2298,7 +2361,7 @@ defmodule Voile.Schema.Library.Circulation do
       Map.merge(attrs, %{
         member_id: member.id,
         item_id: item.id,
-        librarian_id: librarian_id,
+               librarian_id: librarian_id,
         transaction_type: "loan",
         transaction_date: DateTime.utc_now(),
         due_date: due_date,

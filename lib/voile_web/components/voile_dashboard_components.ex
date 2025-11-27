@@ -456,7 +456,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         label: "Reservation Notifications",
         path: "/manage/settings/reservation_notifications",
         icon: "hero-bell"
-      }
+      },
+      %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"}
     ],
     doc: """
     List of menu items. Each item should be a map with:

@@ -382,7 +382,7 @@ defmodule VoileWeb.Router do
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
           live "/holidays", Dashboard.Settings.HolidayLive, :index
 
-          live "/api-manager", Dashboard.Settings.ApiManager, :index
+          live "/api_manager", Dashboard.Settings.ApiManager, :index
 
           live "/reservation_notifications",
                Dashboard.Settings.ReservationNotificationLive,
@@ -403,6 +403,10 @@ defmodule VoileWeb.Router do
       pipe_through :api_authenticated
 
       resources "/collections", API.V1.Collections.CollectionApiController, except: [:new, :edit]
+      resources "/items", API.V1.Items.ItemApiController, except: [:new, :edit]
+      resources "/fines", API.V1.Fines.FineApiController, except: [:new, :edit]
+
+      resources "/circulation", API.V1.Circulation.CirculationApiController, except: [:new, :edit]
 
       resources "/tokens", API.V1.UserApiTokenController,
         only: [:index, :create, :show, :update, :delete] do
