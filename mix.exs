@@ -10,7 +10,7 @@ defmodule Voile.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers(),
+      compilers: [:phoenix_live_view] ++ Mix.compilers() ++ [:phoenix_swagger],
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -47,6 +47,7 @@ defmodule Voile.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.13"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
+      {:ex_json_schema, "~> 0.5"},
       {:finch, "~> 0.13"},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.26"},
@@ -70,6 +71,7 @@ defmodule Voile.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_swagger, "~> 0.8"},
       {:phoenix_turnstile, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
       {:swoosh, "~> 1.16"},

@@ -239,6 +239,20 @@ defmodule Voile.Schema.Library.Circulation do
     ])
   end
 
+  def get_circulation_history(id) do
+    case Repo.get(CirculationHistory, id) do
+      nil -> nil
+      history -> Repo.preload(history, [
+        :member,
+        :item,
+        :transaction,
+        :reservation,
+        :fine,
+        :processed_by
+      ])
+    end
+  end
+
   def create_circulation_history(attrs \\ %{}) do
     %CirculationHistory{}
     |> CirculationHistory.changeset(attrs)
@@ -1458,7 +1472,7 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Creates a reservation - respects member type reservation policies.
   """
-  def create_reservation(member_id, item_id, librarian_id, attrs \\ %{}) do
+  def create_reservation(member_id, item_id, _librarian_id, attrs \\ %{}) do
     with {:ok, member} <- get_member_with_type(member_id),
          {:ok, _} <- validate_reservation_eligibility(member),
          {:ok, reservation} <- create_item_reservation(member, item_id, attrs) do

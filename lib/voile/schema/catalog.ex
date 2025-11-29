@@ -439,15 +439,15 @@ defmodule Voile.Schema.Catalog do
     # Get root collections and attach their children
     children_map[nil]
     |> Kernel.||([])
-    |> Enum.map(&attach_children(&1, children_map, MapSet.new()))
+    |> Enum.map(&attach_children(&1, children_map, []))
   end
 
   defp attach_children(collection, children_map, visited) do
     # Prevent circular references
-    if MapSet.member?(visited, collection.id) do
+    if collection.id in visited do
       %{collection | children: []}
     else
-      updated_visited = MapSet.put(visited, collection.id)
+      updated_visited = [collection.id | visited]
 
       children =
         children_map[collection.id]

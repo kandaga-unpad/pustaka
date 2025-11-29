@@ -181,6 +181,18 @@ config :phoenix, :json_library, Jason
 # Assent Configuration
 config :assent, http_adapter: {Assent.HTTPAdapter.Finch, supervisor: Voile.Finch}
 
+# Configure Phoenix Swagger
+config :voile, :phoenix_swagger,
+  swagger_files: %{
+    "priv/static/swagger.json" => [
+      router: VoileWeb.Router,
+      endpoint: VoileWeb.Endpoint
+    ]
+  }
+
+# Configure Swagger to use Jason
+config :phoenix_swagger, json_library: Jason
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

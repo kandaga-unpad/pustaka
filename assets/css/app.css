@@ -217,7 +217,7 @@
 
   /* Ensure links remain themed when using daisyUI's data-theme="dark" */
   :where([data-theme="dark"], [data-theme="dark"] *) a {
-    color: var(--color-voile-primary);
+    color: var(--color-voile-secondary);
   }
 
   option {
@@ -382,7 +382,7 @@
     background-color: var(--color-voile-surface);
   }
   :where([data-theme="dark"], [data-theme="dark"] *) .default-menu {
-    color: var(--color-voile-primary);
+    color: var(--color-voile-secondary);
   }
   :where([data-theme="dark"], [data-theme="dark"] *) .default-menu:hover {
     background-color: var(--color-voile-surface-dark);

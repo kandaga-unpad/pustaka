@@ -405,8 +405,11 @@ defmodule VoileWeb.Router do
       resources "/collections", API.V1.Collections.CollectionApiController, except: [:new, :edit]
       resources "/items", API.V1.Items.ItemApiController, except: [:new, :edit]
       resources "/fines", API.V1.Fines.FineApiController, except: [:new, :edit]
-
+      resources "/users", API.V1.Users.UserApiController, only: [:index, :show]
       resources "/circulation", API.V1.Circulation.CirculationApiController, except: [:new, :edit]
+
+      resources "/circulation_history", API.V1.CirculationHistory.CirculationHistoryApiController,
+        except: [:new, :edit]
 
       resources "/tokens", API.V1.UserApiTokenController,
         only: [:index, :create, :show, :update, :delete] do
@@ -432,6 +435,59 @@ defmodule VoileWeb.Router do
     pipe_through :api
 
     post "/xendit/payment", XenditWebhookController, :payment_callback
+  end
+
+  if Mix.env() == :dev do
+    scope "/api/swagger" do
+      pipe_through :api
+
+      forward "/", PhoenixSwagger.Plug.SwaggerUI,
+        otp_app: :voile,
+        swagger_file: "swagger.json",
+        disable_validator: true,
+        config: %{
+          tagsSorter: false,
+          operationsSorter: false
+        }
+    end
+
+    scope "/api" do
+      pipe_through :api
+      get "/swagger.json", PhoenixSwagger.Plug.Validate, []
+    end
+  end
+
+  def swagger_info do
+    %{
+      basePath: "/api",
+      info: %{
+        version: "1.0",
+        title: "Voile",
+        description: "Voile API Documentation",
+        contact: %{
+          name: "Chrisna Adhi Pranoto",
+          email: "chrisna.adhi@unpad.ac.id"
+        }
+      },
+      tags: [
+        %{name: "Collections", description: "Collection management endpoints"},
+        %{name: "Items", description: "Item management endpoints"},
+        %{name: "Users", description: "User management endpoints"},
+        %{name: "Circulation", description: "Circulation management endpoints"},
+        %{name: "CirculationHistory", description: "Circulation history endpoints"},
+        %{name: "Fines", description: "Fine management endpoints"}
+      ],
+      securityDefinitions: %{
+        Bearer: %{
+          type: "apiKey",
+          name: "token",
+          description: "API Token must be provided via `token` query parameter",
+          in: "query"
+        }
+      },
+      consumes: ["application/json"],
+      produces: ["application/json"]
+    }
   end
 
   @doc false

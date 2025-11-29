@@ -1,25 +1,25 @@
-defmodule VoileWeb.API.V1.Fines.FineApiController do
+defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
   use VoileWeb, :controller
   use PhoenixSwagger
 
   alias Voile.Schema.Library.Circulation
-  alias Voile.Schema.Library.Fine
+  alias Voile.Schema.Library.CirculationHistory
 
   action_fallback VoileWeb.API.FallbackController
 
   swagger_path :index do
-    get("/v1/fines")
-    summary("List all fines")
-    description("Returns a paginated list of fines")
+    get("/v1/circulation_history")
+    summary("List all circulation history")
+    description("Returns a paginated list of circulation history entries")
     produces("application/json")
-    tag("Fines")
+    tag("CirculationHistory")
     security([%{Bearer: []}])
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
     end
 
-    response(200, "OK", Schema.ref(:FinesResponse))
+    response(200, "OK", Schema.ref(:CirculationHistoriesResponse))
     response(400, "Bad Request")
     response(401, "Unauthorized")
     response(500, "Internal Server Error")
@@ -28,8 +28,8 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   def index(conn, params) do
     page = Map.get(params, "page", "1") |> String.to_integer()
 
-    {fines, total_pages} =
-      Circulation.list_fines_paginated(page, 10)
+    {circulation_history, total_pages} =
+      Circulation.list_circulation_history_paginated(page, 10)
 
     pagination = %{
       page_number: page,
@@ -39,68 +39,71 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
 
     conn
     |> put_status(:ok)
-    |> render(:index, fines: fines, pagination: pagination)
+    |> render(:index, circulation_history: circulation_history, pagination: pagination)
   end
 
   swagger_path :show do
-    get("/v1/fines/{id}")
-    summary("Get a fine by ID")
-    description("Returns a single fine by its ID")
+    get("/v1/circulation_history/{id}")
+    summary("Get a circulation history entry by ID")
+    description("Returns a single circulation history entry by its ID")
     produces("application/json")
-    tag("Fines")
+    tag("CirculationHistory")
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Fine ID (UUID)",
+      id(:path, :string, "Circulation history ID (UUID)",
         required: true,
         example: "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
       )
     end
 
-    response(200, "OK", Schema.ref(:FineResponse))
+    response(200, "OK", Schema.ref(:CirculationHistoryResponse))
     response(401, "Unauthorized")
     response(404, "Not Found")
     response(500, "Internal Server Error")
   end
 
   def show(conn, %{"id" => id}) do
-    case Circulation.get_fine!(id) do
+    case Circulation.get_circulation_history(id) do
       nil ->
         {:error, :not_found}
 
-      %Fine{} = fine ->
+      %CirculationHistory{} = history ->
         conn
         |> put_status(:ok)
-        |> render(:show, fine: fine)
+        |> render(:show, circulation_history: history)
     end
   end
 
   swagger_path :create do
-    post("/v1/fines")
-    summary("Create a new fine")
-    description("Creates a new fine with the provided parameters")
+    post("/v1/circulation_history")
+    summary("Create a new circulation history entry")
+    description("Creates a new circulation history entry with the provided parameters")
     produces("application/json")
     consumes("application/json")
-    tag("Fines")
+    tag("CirculationHistory")
     security([%{Bearer: []}])
 
     parameters do
-      fine(:body, Schema.ref(:FineInput), "Fine parameters", required: true)
+      circulation_history(
+        :body,
+        Schema.ref(:CirculationHistoryInput),
+        "Circulation history parameters", required: true)
     end
 
-    response(201, "Created", Schema.ref(:FineResponse))
+    response(201, "Created", Schema.ref(:CirculationHistoryResponse))
     response(400, "Bad Request")
     response(401, "Unauthorized")
     response(422, "Unprocessable Entity", Schema.ref(:ErrorResponse))
     response(500, "Internal Server Error")
   end
 
-  def create(conn, %{"fine" => fine_params}) do
-    case Circulation.create_fine(fine_params) do
-      {:ok, %Fine{} = fine} ->
+  def create(conn, %{"circulation_history" => history_params}) do
+    case Circulation.create_circulation_history(history_params) do
+      {:ok, %CirculationHistory{} = history} ->
         conn
         |> put_status(:created)
-        |> render(:show, fine: fine)
+        |> render(:show, circulation_history: history)
 
       {:error, changeset} ->
         conn
@@ -111,41 +114,44 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   swagger_path :update do
-    put("/v1/fines/{id}")
-    summary("Update a fine")
-    description("Updates an existing fine with the provided parameters")
+    put("/v1/circulation_history/{id}")
+    summary("Update a circulation history entry")
+    description("Updates an existing circulation history entry with the provided parameters")
     produces("application/json")
     consumes("application/json")
-    tag("Fines")
+    tag("CirculationHistory")
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Fine ID (UUID)",
+      id(:path, :string, "Circulation history ID (UUID)",
         required: true,
         example: "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
       )
 
-      fine(:body, Schema.ref(:FineInput), "Fine parameters", required: true)
+      circulation_history(
+        :body,
+        Schema.ref(:CirculationHistoryInput),
+        "Circulation history parameters", required: true)
     end
 
-    response(200, "OK", Schema.ref(:FineResponse))
+    response(200, "OK", Schema.ref(:CirculationHistoryResponse))
     response(401, "Unauthorized")
     response(404, "Not Found")
     response(422, "Unprocessable Entity", Schema.ref(:ErrorResponse))
     response(500, "Internal Server Error")
   end
 
-  def update(conn, %{"id" => id, "fine" => fine_params}) do
-    case Circulation.get_fine!(id) do
+  def update(conn, %{"id" => id, "circulation_history" => history_params}) do
+    case Circulation.get_circulation_history(id) do
       nil ->
         {:error, :not_found}
 
-      %Fine{} = fine ->
-        case Circulation.update_fine(fine, fine_params) do
-          {:ok, %Fine{} = updated_fine} ->
+      %CirculationHistory{} = history ->
+        case Circulation.update_circulation_history(history, history_params) do
+          {:ok, %CirculationHistory{} = updated_history} ->
             conn
             |> put_status(:ok)
-            |> render(:show, fine: updated_fine)
+            |> render(:show, circulation_history: updated_history)
 
           {:error, changeset} ->
             conn
@@ -157,15 +163,15 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   swagger_path :delete do
-    PhoenixSwagger.Path.delete("/v1/fines/{id}")
-    summary("Delete a fine")
-    description("Deletes an existing fine by its ID")
+    PhoenixSwagger.Path.delete("/v1/circulation_history/{id}")
+    summary("Delete a circulation history entry")
+    description("Deletes an existing circulation history entry by its ID")
     produces("application/json")
-    tag("Fines")
+    tag("CirculationHistory")
     security([%{Bearer: []}])
 
     parameters do
-      id(:path, :string, "Fine ID (UUID)",
+      id(:path, :string, "Circulation history ID (UUID)",
         required: true,
         example: "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
       )
@@ -179,13 +185,13 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case Circulation.get_fine!(id) do
+    case Circulation.get_circulation_history(id) do
       nil ->
         {:error, :not_found}
 
-      %Fine{} = fine ->
-        case Circulation.delete_fine(fine) do
-          {:ok, %Fine{}} ->
+      %CirculationHistory{} = history ->
+        case Circulation.delete_circulation_history(history) do
+          {:ok, %CirculationHistory{}} ->
             send_resp(conn, :no_content, "")
 
           {:error, changeset} ->
@@ -199,77 +205,71 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
 
   def swagger_definitions do
     %{
-      Fine:
+      CirculationHistory:
         swagger_schema do
-          title("Fine")
-          description("A fine entity in the library system")
+          title("CirculationHistory")
+          description("A circulation history entry in the library system")
 
           properties do
             id(:string, "Unique identifier (UUID)", required: true, format: "uuid")
-            fine_type(:string, "Fine type")
-            amount(:number, "Amount", format: "decimal")
-            paid_amount(:number, "Paid amount", format: "decimal", default: 0)
-            balance(:number, "Balance", format: "decimal")
-            fine_date(:string, "Fine date", format: "date-time")
-            payment_date(:string, "Payment date", format: "date-time")
-            fine_status(:string, "Fine status")
+            event_type(:string, "Event type")
+            event_date(:string, "Event date", format: "date-time")
             description(:string, "Description")
-            waived(:boolean, "Waived", default: false)
-            waived_date(:string, "Waived date", format: "date-time")
-            waived_reason(:string, "Waived reason")
-            payment_method(:string, "Payment method")
-            receipt_number(:string, "Receipt number")
+            old_value(:object, "Old value")
+            new_value(:object, "New value")
+            ip_address(:string, "IP address")
+            user_agent(:string, "User agent")
             member_id(:string, "Member ID", format: "uuid")
             item_id(:string, "Item ID", format: "uuid")
             transaction_id(:string, "Transaction ID", format: "uuid")
+            reservation_id(:string, "Reservation ID", format: "uuid")
+            fine_id(:string, "Fine ID", format: "uuid")
             processed_by_id(:string, "Processed by user ID", format: "uuid")
-            waived_by_id(:string, "Waived by user ID", format: "uuid")
             inserted_at(:string, "Creation timestamp", format: "date-time")
             updated_at(:string, "Last update timestamp", format: "date-time")
           end
         end,
-      FineInput:
+      CirculationHistoryInput:
         swagger_schema do
-          title("FineInput")
-          description("Input schema for creating or updating a fine")
+          title("CirculationHistoryInput")
+          description("Input schema for creating or updating a circulation history entry")
 
           properties do
-            fine_type(:string, "Fine type")
-            amount(:number, "Amount", format: "decimal")
-            paid_amount(:number, "Paid amount", format: "decimal")
-            balance(:number, "Balance", format: "decimal")
-            fine_date(:string, "Fine date", format: "date-time")
-            payment_date(:string, "Payment date", format: "date-time")
-            fine_status(:string, "Fine status")
+            event_type(:string, "Event type")
+            event_date(:string, "Event date", format: "date-time")
             description(:string, "Description")
-            waived(:boolean, "Waived")
-            waived_date(:string, "Waived date", format: "date-time")
-            waived_reason(:string, "Waived reason")
-            payment_method(:string, "Payment method")
-            receipt_number(:string, "Receipt number")
+            old_value(:object, "Old value")
+            new_value(:object, "New value")
+            ip_address(:string, "IP address")
+            user_agent(:string, "User agent")
             member_id(:string, "Member ID", format: "uuid")
             item_id(:string, "Item ID", format: "uuid")
             transaction_id(:string, "Transaction ID", format: "uuid")
+            reservation_id(:string, "Reservation ID", format: "uuid")
+            fine_id(:string, "Fine ID", format: "uuid")
             processed_by_id(:string, "Processed by user ID", format: "uuid")
-            waived_by_id(:string, "Waived by user ID", format: "uuid")
           end
         end,
-      FineResponse:
+      CirculationHistoryResponse:
         swagger_schema do
-          title("FineResponse")
-          description("Response containing a single fine")
+          title("CirculationHistoryResponse")
+          description("Response containing a single circulation history entry")
 
           properties do
-            data(Schema.ref(:Fine), "Fine data", required: true)
+            data(Schema.ref(:CirculationHistory), "Circulation history data", required: true)
           end
         end,
-      FinesResponse:
+      CirculationHistoriesResponse:
         swagger_schema do
-          title("FinesResponse")
-          description("Response containing a paginated list of fines")
+          title("CirculationHistoriesResponse")
+          description("Response containing a paginated list of circulation history entries")
 
           properties do
-            data(:array, "List of fines", items: Schema.ref(:Fine), required: true)
+            data(:array, "List of circulation history entries",
+              items: Schema.ref(:CirculationHistory),
+              required: true
+            )
+
             pagination(Schema.ref(:Pagination), "Pagination metadata", required: true)
           end
         end,

@@ -61,6 +61,14 @@ defmodule Voile.Schema.Accounts.User do
     # Audit Trail
     has_many :audit_logs, AuditLog
 
+    # Library associations
+    has_many :transactions, Voile.Schema.Library.Transaction, foreign_key: :member_id
+    has_many :reservations, Voile.Schema.Library.Reservation, foreign_key: :member_id
+    has_many :fines, Voile.Schema.Library.Fine, foreign_key: :member_id
+
+    has_many :circulation_history, Voile.Schema.Library.CirculationHistory,
+      foreign_key: :member_id
+
     field :twitter, :string, virtual: true
     field :facebook, :string, virtual: true
     field :linkedin, :string, virtual: true

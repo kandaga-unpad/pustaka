@@ -3,6 +3,12 @@ defmodule Voile.Schema.Accounts do
   The Accounts context.
   """
 
+  # Disable Dialyzer warnings for Ecto.Multi opaque type issues
+  @dialyzer {:nowarn_function, user_email_multi: 3}
+  @dialyzer {:nowarn_function, update_user_password: 3}
+  @dialyzer {:nowarn_function, confirm_user_multi: 1}
+  @dialyzer {:nowarn_function, reset_user_password: 2}
+
   import Ecto.Query, warn: false
   import Ecto.Changeset, only: [validate_required: 2, validate_length: 3]
   alias Voile.Repo
@@ -231,6 +237,35 @@ defmodule Voile.Schema.Accounts do
     total_count = Repo.aggregate(User, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
     {users, total_pages}
+  end
+
+  @doc """
+  Gets a user by identifier with all library associations preloaded.
+  """
+  def get_user_with_associations_by_identifier(identifier) do
+    case Integer.parse(identifier) do
+      {id, ""} ->
+        Repo.get_by(User, identifier: id) |> preload_library_associations()
+
+      :error ->
+        Repo.get_by(User, identifier: identifier) |> preload_library_associations()
+    end
+  end
+
+  # Helper to preload library associations
+  defp preload_library_associations(nil), do: nil
+
+  defp preload_library_associations(%User{} = user) do
+    Repo.preload(user, [
+      :user_type,
+      :node,
+      :roles,
+      :user_role_assignments,
+      transactions: [],
+      reservations: [],
+      fines: [],
+      circulation_history: []
+    ])
   end
 
   @doc """

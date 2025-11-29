@@ -1,0 +1,2481 @@
+{
+  "info": {
+    "version": "1.0",
+    "description": "Voile API Documentation",
+    "title": "Voile",
+    "contact": {
+      "name": "Chrisna Adhi Pranoto",
+      "email": "chrisna.adhi@unpad.ac.id"
+    }
+  },
+  "host": "localhost:4000",
+  "definitions": {
+    "Fine": {
+      "description": "A fine entity",
+      "properties": {
+        "amount": {
+          "description": "Amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "balance": {
+          "description": "Balance",
+          "format": "decimal",
+          "type": "number"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "fine_date": {
+          "description": "Fine date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_status": {
+          "description": "Fine status",
+          "type": "string"
+        },
+        "fine_type": {
+          "description": "Fine type",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "paid_amount": {
+          "default": 0,
+          "description": "Paid amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "payment_date": {
+          "description": "Payment date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "payment_method": {
+          "description": "Payment method",
+          "type": "string"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "receipt_number": {
+          "description": "Receipt number",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived": {
+          "default": false,
+          "description": "Waived",
+          "type": "boolean"
+        },
+        "waived_by_id": {
+          "description": "Waived by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived_date": {
+          "description": "Waived date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived_reason": {
+          "description": "Waived reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Fine",
+      "type": "object"
+    },
+    "Transaction": {
+      "description": "A circulation transaction entity",
+      "properties": {
+        "due_date": {
+          "description": "Due date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_amount": {
+          "default": 0.0,
+          "description": "Fine amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "is_overdue": {
+          "default": false,
+          "description": "Is overdue",
+          "type": "boolean"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "librarian_id": {
+          "description": "Librarian ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "notes": {
+          "description": "Notes",
+          "type": "string"
+        },
+        "renewal_count": {
+          "default": 0,
+          "description": "Renewal count",
+          "type": "integer"
+        },
+        "return_date": {
+          "description": "Return date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status",
+          "type": "string"
+        },
+        "transaction_date": {
+          "description": "Transaction date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "transaction_type": {
+          "description": "Transaction type",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Transaction",
+      "type": "object"
+    },
+    "Errors": {
+      "additionalProperties": true,
+      "description": "Map of field names to error messages",
+      "title": "Errors",
+      "type": "object"
+    },
+    "User": {
+      "description": "A user entity",
+      "properties": {
+        "email": {
+          "description": "Email address",
+          "format": "email",
+          "type": "string"
+        },
+        "fullname": {
+          "description": "Full name",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "User identifier number",
+          "type": "number"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "username": {
+          "description": "Username",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "User",
+      "type": "object"
+    },
+    "Item": {
+      "description": "An item entity in the catalog system",
+      "properties": {
+        "acquisition_date": {
+          "description": "Acquisition date",
+          "format": "date",
+          "type": "string"
+        },
+        "availability": {
+          "description": "Availability",
+          "type": "string"
+        },
+        "barcode": {
+          "description": "Barcode",
+          "type": "string"
+        },
+        "collection_id": {
+          "description": "Collection ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "condition": {
+          "description": "Condition",
+          "type": "string"
+        },
+        "created_by_id": {
+          "description": "Created by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "inventory_code": {
+          "description": "Inventory code",
+          "type": "string"
+        },
+        "item_code": {
+          "description": "Item code",
+          "type": "string"
+        },
+        "item_location_id": {
+          "description": "Item location ID",
+          "type": "integer"
+        },
+        "last_circulated": {
+          "description": "Last circulated timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "last_inventory_date": {
+          "description": "Last inventory date",
+          "format": "date",
+          "type": "string"
+        },
+        "legacy_item_code": {
+          "description": "Legacy item code",
+          "type": "string"
+        },
+        "location": {
+          "description": "Location",
+          "type": "string"
+        },
+        "price": {
+          "description": "Price",
+          "format": "decimal",
+          "type": "number"
+        },
+        "rfid_tag": {
+          "description": "RFID tag",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status",
+          "type": "string"
+        },
+        "unit_id": {
+          "description": "Unit ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_by_id": {
+          "description": "Updated by user ID",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Item",
+      "type": "object"
+    },
+    "CirculationHistory": {
+      "description": "A circulation history entry in the library system",
+      "properties": {
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "event_date": {
+          "description": "Event date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "event_type": {
+          "description": "Event type",
+          "type": "string"
+        },
+        "fine_id": {
+          "description": "Fine ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "ip_address": {
+          "description": "IP address",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "new_value": {
+          "description": "New value",
+          "type": "object"
+        },
+        "old_value": {
+          "description": "Old value",
+          "type": "object"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reservation_id": {
+          "description": "Reservation ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "user_agent": {
+          "description": "User agent",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "CirculationHistory",
+      "type": "object"
+    },
+    "Collection": {
+      "description": "A collection entity in the catalog system",
+      "example": {
+        "access_level": "public",
+        "collection_code": "SF-001",
+        "collection_type": "series",
+        "created_by_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "creator_id": 42,
+        "description": "A collection of classic science fiction novels from the golden age of sci-fi.",
+        "id": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
+        "inserted_at": "2024-01-01T12:00:00Z",
+        "sort_order": 1,
+        "status": "published",
+        "template_id": 3,
+        "thumbnail": "https://example.com/thumbnails/sf-collection.jpg",
+        "title": "Science Fiction Collection",
+        "type_id": 7,
+        "unit_id": 5,
+        "updated_at": "2024-01-02T12:00:00Z",
+        "updated_by_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      },
+      "properties": {
+        "access_level": {
+          "description": "Access control level",
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "collection_code": {
+          "description": "Unique code for the collection",
+          "type": "string"
+        },
+        "collection_type": {
+          "description": "Type of collection",
+          "enum": [
+            "series",
+            "book",
+            "movie",
+            "album",
+            "course",
+            "other"
+          ],
+          "type": "string"
+        },
+        "created_by_id": {
+          "description": "User ID who created this collection",
+          "format": "uuid",
+          "type": "string"
+        },
+        "creator_id": {
+          "description": "Creator ID",
+          "type": "integer"
+        },
+        "description": {
+          "description": "Detailed description of the collection",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "old_biblio_id": {
+          "description": "Legacy bibliography ID",
+          "type": "integer"
+        },
+        "parent_id": {
+          "description": "Parent collection ID (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "sort_order": {
+          "description": "Sort order for display",
+          "type": "integer"
+        },
+        "status": {
+          "description": "Publication status",
+          "enum": [
+            "draft",
+            "pending",
+            "published",
+            "archived"
+          ],
+          "type": "string"
+        },
+        "template_id": {
+          "description": "Resource template ID",
+          "type": "integer"
+        },
+        "thumbnail": {
+          "description": "URL of the collection thumbnail",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title of the collection",
+          "type": "string"
+        },
+        "type_id": {
+          "description": "Resource class ID",
+          "type": "integer"
+        },
+        "unit_id": {
+          "description": "Organization unit/node ID",
+          "type": "integer"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_by_id": {
+          "description": "User ID who last updated this collection",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "creator_id",
+        "access_level",
+        "status",
+        "thumbnail",
+        "description",
+        "title",
+        "id"
+      ],
+      "title": "Collection",
+      "type": "object"
+    },
+    "CollectionsResponse": {
+      "description": "Response containing a paginated list of collections",
+      "example": {
+        "data": [
+          {
+            "access_level": "public",
+            "collection_code": "SF-001",
+            "id": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
+            "status": "published",
+            "title": "Science Fiction Collection"
+          }
+        ],
+        "pagination": {
+          "page_number": 1,
+          "page_size": 10,
+          "total_pages": 5
+        }
+      },
+      "properties": {
+        "data": {
+          "description": "Array of collections",
+          "items": {
+            "$ref": "#/definitions/Collection"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "CollectionsResponse",
+      "type": "object"
+    },
+    "CollectionInput": {
+      "description": "Input schema for creating or updating a collection",
+      "example": {
+        "access_level": "public",
+        "collection_code": "SF-001",
+        "collection_type": "series",
+        "creator_id": 42,
+        "description": "A collection of classic science fiction novels.",
+        "sort_order": 1,
+        "status": "published",
+        "template_id": 3,
+        "thumbnail": "https://example.com/thumbnails/sf-collection.jpg",
+        "title": "Science Fiction Collection",
+        "type_id": 7,
+        "unit_id": 5
+      },
+      "properties": {
+        "access_level": {
+          "description": "Access control level",
+          "enum": [
+            "public",
+            "private",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "collection_code": {
+          "description": "Unique code for the collection",
+          "type": "string"
+        },
+        "collection_type": {
+          "description": "Type of collection",
+          "enum": [
+            "series",
+            "book",
+            "movie",
+            "album",
+            "course",
+            "other"
+          ],
+          "type": "string"
+        },
+        "created_by_id": {
+          "description": "User ID creating this collection",
+          "format": "uuid",
+          "type": "string"
+        },
+        "creator_id": {
+          "description": "Creator ID",
+          "type": "integer"
+        },
+        "description": {
+          "description": "Detailed description of the collection",
+          "type": "string"
+        },
+        "parent_id": {
+          "description": "Parent collection ID (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "sort_order": {
+          "description": "Sort order for display",
+          "type": "integer"
+        },
+        "status": {
+          "description": "Publication status",
+          "enum": [
+            "draft",
+            "pending",
+            "published",
+            "archived"
+          ],
+          "type": "string"
+        },
+        "template_id": {
+          "description": "Resource template ID",
+          "type": "integer"
+        },
+        "thumbnail": {
+          "description": "URL of the collection thumbnail",
+          "type": "string"
+        },
+        "title": {
+          "description": "Title of the collection",
+          "type": "string"
+        },
+        "type_id": {
+          "description": "Resource class ID",
+          "type": "integer"
+        },
+        "unit_id": {
+          "description": "Organization unit/node ID",
+          "type": "integer"
+        },
+        "updated_by_id": {
+          "description": "User ID updating this collection",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "creator_id",
+        "access_level",
+        "status",
+        "thumbnail",
+        "description",
+        "title"
+      ],
+      "title": "CollectionInput",
+      "type": "object"
+    },
+    "CollectionResponse": {
+      "description": "Response containing a single collection",
+      "example": {
+        "data": {
+          "access_level": "public",
+          "collection_code": "SF-001",
+          "collection_type": "series",
+          "creator_id": 42,
+          "description": "A collection of classic science fiction novels.",
+          "id": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
+          "inserted_at": "2024-01-01T12:00:00Z",
+          "sort_order": 1,
+          "status": "published",
+          "template_id": 3,
+          "thumbnail": "https://example.com/thumbnails/sf-collection.jpg",
+          "title": "Science Fiction Collection",
+          "type_id": 7,
+          "updated_at": "2024-01-02T12:00:00Z"
+        }
+      },
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Collection",
+          "description": "Collection data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "CollectionResponse",
+      "type": "object"
+    },
+    "ErrorResponse": {
+      "description": "Error response with validation details",
+      "properties": {
+        "errors": {
+          "$ref": "#/definitions/Errors",
+          "description": "Validation errors"
+        }
+      },
+      "required": [
+        "errors"
+      ],
+      "title": "ErrorResponse",
+      "type": "object"
+    },
+    "Pagination": {
+      "description": "Pagination metadata",
+      "example": {
+        "page_number": 1,
+        "page_size": 10,
+        "total_pages": 5
+      },
+      "properties": {
+        "page_number": {
+          "description": "Current page number",
+          "type": "integer"
+        },
+        "page_size": {
+          "description": "Number of items per page",
+          "type": "integer"
+        },
+        "total_pages": {
+          "description": "Total number of pages",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_pages",
+        "page_size",
+        "page_number"
+      ],
+      "title": "Pagination",
+      "type": "object"
+    },
+    "UsersResponse": {
+      "description": "Response containing a paginated list of users",
+      "properties": {
+        "data": {
+          "description": "List of users",
+          "items": {
+            "$ref": "#/definitions/User"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "UsersResponse",
+      "type": "object"
+    },
+    "UserResponse": {
+      "description": "Response containing a single user",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/User",
+          "description": "User data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "UserResponse",
+      "type": "object"
+    },
+    "ItemsResponse": {
+      "description": "Response containing a paginated list of items",
+      "properties": {
+        "data": {
+          "description": "List of items",
+          "items": {
+            "$ref": "#/definitions/Item"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "ItemsResponse",
+      "type": "object"
+    },
+    "ItemInput": {
+      "description": "Input schema for creating or updating an item",
+      "properties": {
+        "acquisition_date": {
+          "description": "Acquisition date",
+          "format": "date",
+          "type": "string"
+        },
+        "availability": {
+          "description": "Availability",
+          "type": "string"
+        },
+        "barcode": {
+          "description": "Barcode",
+          "type": "string"
+        },
+        "collection_id": {
+          "description": "Collection ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "condition": {
+          "description": "Condition",
+          "type": "string"
+        },
+        "created_by_id": {
+          "description": "Created by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inventory_code": {
+          "description": "Inventory code",
+          "type": "string"
+        },
+        "item_code": {
+          "description": "Item code",
+          "type": "string"
+        },
+        "item_location_id": {
+          "description": "Item location ID",
+          "type": "integer"
+        },
+        "last_circulated": {
+          "description": "Last circulated timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "last_inventory_date": {
+          "description": "Last inventory date",
+          "format": "date",
+          "type": "string"
+        },
+        "legacy_item_code": {
+          "description": "Legacy item code",
+          "type": "string"
+        },
+        "location": {
+          "description": "Location",
+          "type": "string"
+        },
+        "price": {
+          "description": "Price",
+          "format": "decimal",
+          "type": "number"
+        },
+        "rfid_tag": {
+          "description": "RFID tag",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status",
+          "type": "string"
+        },
+        "unit_id": {
+          "description": "Unit ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_by_id": {
+          "description": "Updated by user ID",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "title": "ItemInput",
+      "type": "object"
+    },
+    "ItemResponse": {
+      "description": "Response containing a single item",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Item",
+          "description": "Item data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "ItemResponse",
+      "type": "object"
+    },
+    "CirculationResponse": {
+      "description": "Response containing circulation information for a user",
+      "properties": {
+        "data": {
+          "description": "Circulation data",
+          "properties": {
+            "active_transactions": {
+              "items": {
+                "$ref": "#/definitions/Transaction"
+              },
+              "type": "array"
+            },
+            "circulation_history": {
+              "items": {
+                "$ref": "#/definitions/CirculationHistory"
+              },
+              "type": "array"
+            },
+            "unpaid_fines": {
+              "items": {
+                "$ref": "#/definitions/Fine"
+              },
+              "type": "array"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "CirculationResponse",
+      "type": "object"
+    },
+    "TransactionsResponse": {
+      "description": "Response containing paginated transactions",
+      "properties": {
+        "data": {
+          "description": "Transaction data",
+          "properties": {
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "transactions": {
+              "items": {
+                "$ref": "#/definitions/Transaction"
+              },
+              "type": "array"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "TransactionsResponse",
+      "type": "object"
+    },
+    "HistoryResponse": {
+      "description": "Response containing paginated circulation history",
+      "properties": {
+        "data": {
+          "description": "History data",
+          "properties": {
+            "history": {
+              "items": {
+                "$ref": "#/definitions/CirculationHistory"
+              },
+              "type": "array"
+            },
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "HistoryResponse",
+      "type": "object"
+    },
+    "FinesResponse": {
+      "description": "Response containing paginated fines",
+      "properties": {
+        "data": {
+          "description": "Fines data",
+          "properties": {
+            "fines": {
+              "items": {
+                "$ref": "#/definitions/Fine"
+              },
+              "type": "array"
+            },
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "FinesResponse",
+      "type": "object"
+    },
+    "FineResponse": {
+      "description": "Response containing a single fine",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/Fine",
+          "description": "Fine data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "FineResponse",
+      "type": "object"
+    },
+    "FineInput": {
+      "description": "Input schema for creating or updating a fine",
+      "properties": {
+        "amount": {
+          "description": "Amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "balance": {
+          "description": "Balance",
+          "format": "decimal",
+          "type": "number"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "fine_date": {
+          "description": "Fine date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_status": {
+          "description": "Fine status",
+          "type": "string"
+        },
+        "fine_type": {
+          "description": "Fine type",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "paid_amount": {
+          "description": "Paid amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "payment_date": {
+          "description": "Payment date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "payment_method": {
+          "description": "Payment method",
+          "type": "string"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "receipt_number": {
+          "description": "Receipt number",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived": {
+          "description": "Waived",
+          "type": "boolean"
+        },
+        "waived_by_id": {
+          "description": "Waived by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived_date": {
+          "description": "Waived date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived_reason": {
+          "description": "Waived reason",
+          "type": "string"
+        }
+      },
+      "title": "FineInput",
+      "type": "object"
+    },
+    "CirculationHistoriesResponse": {
+      "description": "Response containing a paginated list of circulation history entries",
+      "properties": {
+        "data": {
+          "description": "List of circulation history entries",
+          "items": {
+            "$ref": "#/definitions/CirculationHistory"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "CirculationHistoriesResponse",
+      "type": "object"
+    },
+    "CirculationHistoryResponse": {
+      "description": "Response containing a single circulation history entry",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/CirculationHistory",
+          "description": "Circulation history data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "CirculationHistoryResponse",
+      "type": "object"
+    },
+    "CirculationHistoryInput": {
+      "description": "Input schema for creating or updating a circulation history entry",
+      "properties": {
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "event_date": {
+          "description": "Event date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "event_type": {
+          "description": "Event type",
+          "type": "string"
+        },
+        "fine_id": {
+          "description": "Fine ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "ip_address": {
+          "description": "IP address",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "new_value": {
+          "description": "New value",
+          "type": "object"
+        },
+        "old_value": {
+          "description": "Old value",
+          "type": "object"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reservation_id": {
+          "description": "Reservation ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_agent": {
+          "description": "User agent",
+          "type": "string"
+        }
+      },
+      "title": "CirculationHistoryInput",
+      "type": "object"
+    }
+  },
+  "tags": [
+    {
+      "name": "Collections",
+      "description": "Collection management endpoints"
+    },
+    {
+      "name": "Items",
+      "description": "Item management endpoints"
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Circulation",
+      "description": "Circulation management endpoints"
+    },
+    {
+      "name": "CirculationHistory",
+      "description": "Circulation history endpoints"
+    },
+    {
+      "name": "Fines",
+      "description": "Fine management endpoints"
+    }
+  ],
+  "paths": {
+    "/v1/circulation/{identifier}": {
+      "get": {
+        "description": "Returns circulation information including active transactions, history, and fines for a user",
+        "operationId": "VoileWeb.API.V1.Circulation.CirculationApiController.show",
+        "parameters": [
+          {
+            "description": "User identifier",
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CirculationResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get circulation information for a user",
+        "tags": [
+          "Circulation"
+        ]
+      }
+    },
+    "/v1/circulation_history": {
+      "get": {
+        "description": "Returns a paginated list of circulation history entries",
+        "operationId": "VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController.index",
+        "parameters": [
+          {
+            "default": 1,
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoriesResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List all circulation history",
+        "tags": [
+          "CirculationHistory"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a new circulation history entry with the provided parameters",
+        "operationId": "VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController.create",
+        "parameters": [
+          {
+            "description": "Circulation history parameters",
+            "in": "body",
+            "name": "circulation_history",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoryInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoryResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create a new circulation history entry",
+        "tags": [
+          "CirculationHistory"
+        ]
+      }
+    },
+    "/v1/circulation_history/{id}": {
+      "delete": {
+        "description": "Deletes an existing circulation history entry by its ID",
+        "operationId": "VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController.delete",
+        "parameters": [
+          {
+            "description": "Circulation history ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete a circulation history entry",
+        "tags": [
+          "CirculationHistory"
+        ]
+      },
+      "get": {
+        "description": "Returns a single circulation history entry by its ID",
+        "operationId": "VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController.show",
+        "parameters": [
+          {
+            "description": "Circulation history ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoryResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a circulation history entry by ID",
+        "tags": [
+          "CirculationHistory"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates an existing circulation history entry with the provided parameters",
+        "operationId": "VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController.update",
+        "parameters": [
+          {
+            "description": "Circulation history ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          },
+          {
+            "description": "Circulation history parameters",
+            "in": "body",
+            "name": "circulation_history",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoryInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CirculationHistoryResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update a circulation history entry",
+        "tags": [
+          "CirculationHistory"
+        ]
+      }
+    },
+    "/v1/collections": {
+      "get": {
+        "description": "Returns a paginated list of collections with optional search",
+        "operationId": "VoileWeb.API.V1.Collections.CollectionApiController.index",
+        "parameters": [
+          {
+            "default": 1,
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "Search keyword for filtering collections",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CollectionsResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List all collections",
+        "tags": [
+          "Collections"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a new collection with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Collections.CollectionApiController.create",
+        "parameters": [
+          {
+            "description": "Collection parameters",
+            "in": "body",
+            "name": "collection",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CollectionInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create a new collection",
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/v1/collections/{id}": {
+      "delete": {
+        "description": "Deletes an existing collection by its ID",
+        "operationId": "VoileWeb.API.V1.Collections.CollectionApiController.delete",
+        "parameters": [
+          {
+            "description": "Collection ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete a collection",
+        "tags": [
+          "Collections"
+        ]
+      },
+      "get": {
+        "description": "Returns a single collection by its ID",
+        "operationId": "VoileWeb.API.V1.Collections.CollectionApiController.show",
+        "parameters": [
+          {
+            "description": "Collection ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a collection by ID",
+        "tags": [
+          "Collections"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates an existing collection with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Collections.CollectionApiController.update",
+        "parameters": [
+          {
+            "description": "Collection ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          },
+          {
+            "description": "Collection parameters",
+            "in": "body",
+            "name": "collection",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CollectionInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CollectionResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update a collection",
+        "tags": [
+          "Collections"
+        ]
+      }
+    },
+    "/v1/fines": {
+      "get": {
+        "description": "Returns a paginated list of fines",
+        "operationId": "VoileWeb.API.V1.Fines.FineApiController.index",
+        "parameters": [
+          {
+            "default": 1,
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/FinesResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List all fines",
+        "tags": [
+          "Fines"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a new fine with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Fines.FineApiController.create",
+        "parameters": [
+          {
+            "description": "Fine parameters",
+            "in": "body",
+            "name": "fine",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FineInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/FineResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create a new fine",
+        "tags": [
+          "Fines"
+        ]
+      }
+    },
+    "/v1/fines/{id}": {
+      "delete": {
+        "description": "Deletes an existing fine by its ID",
+        "operationId": "VoileWeb.API.V1.Fines.FineApiController.delete",
+        "parameters": [
+          {
+            "description": "Fine ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete a fine",
+        "tags": [
+          "Fines"
+        ]
+      },
+      "get": {
+        "description": "Returns a single fine by its ID",
+        "operationId": "VoileWeb.API.V1.Fines.FineApiController.show",
+        "parameters": [
+          {
+            "description": "Fine ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/FineResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a fine by ID",
+        "tags": [
+          "Fines"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates an existing fine with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Fines.FineApiController.update",
+        "parameters": [
+          {
+            "description": "Fine ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          },
+          {
+            "description": "Fine parameters",
+            "in": "body",
+            "name": "fine",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FineInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/FineResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update a fine",
+        "tags": [
+          "Fines"
+        ]
+      }
+    },
+    "/v1/items": {
+      "get": {
+        "description": "Returns a paginated list of items with optional search",
+        "operationId": "VoileWeb.API.V1.Items.ItemApiController.index",
+        "parameters": [
+          {
+            "default": 1,
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "Search keyword for filtering items",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ItemsResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List all items",
+        "tags": [
+          "Items"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a new item with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Items.ItemApiController.create",
+        "parameters": [
+          {
+            "description": "Item parameters",
+            "in": "body",
+            "name": "item",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/ItemResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create a new item",
+        "tags": [
+          "Items"
+        ]
+      }
+    },
+    "/v1/items/{id}": {
+      "delete": {
+        "description": "Deletes an existing item by its ID",
+        "operationId": "VoileWeb.API.V1.Items.ItemApiController.delete",
+        "parameters": [
+          {
+            "description": "Item ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Delete an item",
+        "tags": [
+          "Items"
+        ]
+      },
+      "get": {
+        "description": "Returns a single item by its ID",
+        "operationId": "VoileWeb.API.V1.Items.ItemApiController.show",
+        "parameters": [
+          {
+            "description": "Item ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ItemResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get an item by ID",
+        "tags": [
+          "Items"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates an existing item with the provided parameters",
+        "operationId": "VoileWeb.API.V1.Items.ItemApiController.update",
+        "parameters": [
+          {
+            "description": "Item ID (UUID)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9"
+          },
+          {
+            "description": "Item parameters",
+            "in": "body",
+            "name": "item",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ItemResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update an item",
+        "tags": [
+          "Items"
+        ]
+      }
+    },
+    "/v1/users": {
+      "get": {
+        "description": "Returns a paginated list of users",
+        "operationId": "VoileWeb.API.V1.Users.UserApiController.index",
+        "parameters": [
+          {
+            "default": 1,
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UsersResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List all users",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/v1/users/{identifier}": {
+      "get": {
+        "description": "Returns a single user by their identifier",
+        "operationId": "VoileWeb.API.V1.Users.UserApiController.show",
+        "parameters": [
+          {
+            "description": "User identifier",
+            "in": "path",
+            "name": "identifier",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get a user by identifier",
+        "tags": [
+          "Users"
+        ]
+      }
+    }
+  },
+  "swagger": "2.0",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "basePath": "/api",
+  "securityDefinitions": {
+    "Bearer": {
+      "in": "query",
+      "name": "token",
+      "type": "apiKey",
+      "description": "API Token must be provided via `token` query parameter"
+    }
+  }
+}
