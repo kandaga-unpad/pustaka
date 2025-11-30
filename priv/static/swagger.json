@@ -10,6 +10,283 @@
   },
   "host": "localhost:4000",
   "definitions": {
+    "Transaction": {
+      "description": "A circulation transaction entity",
+      "properties": {
+        "due_date": {
+          "description": "Due date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_amount": {
+          "default": 0.0,
+          "description": "Fine amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "is_overdue": {
+          "default": false,
+          "description": "Is overdue",
+          "type": "boolean"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "librarian_id": {
+          "description": "Librarian ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "notes": {
+          "description": "Notes",
+          "type": "string"
+        },
+        "renewal_count": {
+          "default": 0,
+          "description": "Renewal count",
+          "type": "integer"
+        },
+        "return_date": {
+          "description": "Return date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status",
+          "type": "string"
+        },
+        "transaction_date": {
+          "description": "Transaction date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "transaction_type": {
+          "description": "Transaction type",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Transaction",
+      "type": "object"
+    },
+    "Fine": {
+      "description": "A fine entity",
+      "properties": {
+        "amount": {
+          "description": "Amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "balance": {
+          "description": "Balance",
+          "format": "decimal",
+          "type": "number"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "fine_date": {
+          "description": "Fine date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_status": {
+          "description": "Fine status",
+          "type": "string"
+        },
+        "fine_type": {
+          "description": "Fine type",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "paid_amount": {
+          "default": 0,
+          "description": "Paid amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "payment_date": {
+          "description": "Payment date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "payment_method": {
+          "description": "Payment method",
+          "type": "string"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "receipt_number": {
+          "description": "Receipt number",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived": {
+          "default": false,
+          "description": "Waived",
+          "type": "boolean"
+        },
+        "waived_by_id": {
+          "description": "Waived by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived_date": {
+          "description": "Waived date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived_reason": {
+          "description": "Waived reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Fine",
+      "type": "object"
+    },
+    "CirculationHistory": {
+      "description": "A circulation history entry in the library system",
+      "properties": {
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "event_date": {
+          "description": "Event date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "event_type": {
+          "description": "Event type",
+          "type": "string"
+        },
+        "fine_id": {
+          "description": "Fine ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "ip_address": {
+          "description": "IP address",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "new_value": {
+          "description": "New value",
+          "type": "object"
+        },
+        "old_value": {
+          "description": "Old value",
+          "type": "object"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reservation_id": {
+          "description": "Reservation ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "user_agent": {
+          "description": "User agent",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "CirculationHistory",
+      "type": "object"
+    },
     "Collection": {
       "description": "A collection entity in the catalog system",
       "example": {
@@ -146,6 +423,274 @@
       "title": "Collection",
       "type": "object"
     },
+    "Item": {
+      "description": "An item entity in the catalog system",
+      "properties": {
+        "acquisition_date": {
+          "description": "Acquisition date",
+          "format": "date",
+          "type": "string"
+        },
+        "availability": {
+          "description": "Availability",
+          "type": "string"
+        },
+        "barcode": {
+          "description": "Barcode",
+          "type": "string"
+        },
+        "collection_id": {
+          "description": "Collection ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "condition": {
+          "description": "Condition",
+          "type": "string"
+        },
+        "created_by_id": {
+          "description": "Created by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "inventory_code": {
+          "description": "Inventory code",
+          "type": "string"
+        },
+        "item_code": {
+          "description": "Item code",
+          "type": "string"
+        },
+        "item_location_id": {
+          "description": "Item location ID",
+          "type": "integer"
+        },
+        "last_circulated": {
+          "description": "Last circulated timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "last_inventory_date": {
+          "description": "Last inventory date",
+          "format": "date",
+          "type": "string"
+        },
+        "legacy_item_code": {
+          "description": "Legacy item code",
+          "type": "string"
+        },
+        "location": {
+          "description": "Location",
+          "type": "string"
+        },
+        "price": {
+          "description": "Price",
+          "format": "decimal",
+          "type": "number"
+        },
+        "rfid_tag": {
+          "description": "RFID tag",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status",
+          "type": "string"
+        },
+        "unit_id": {
+          "description": "Unit ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_by_id": {
+          "description": "Updated by user ID",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Item",
+      "type": "object"
+    },
+    "User": {
+      "description": "A user entity",
+      "properties": {
+        "email": {
+          "description": "Email address",
+          "format": "email",
+          "type": "string"
+        },
+        "fullname": {
+          "description": "Full name",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "User identifier number",
+          "type": "number"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "username": {
+          "description": "Username",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "User",
+      "type": "object"
+    },
+    "CirculationResponse": {
+      "description": "Response containing circulation information for a user",
+      "properties": {
+        "data": {
+          "description": "Circulation data",
+          "properties": {
+            "active_transactions": {
+              "items": {
+                "$ref": "#/definitions/Transaction"
+              },
+              "type": "array"
+            },
+            "circulation_history": {
+              "items": {
+                "$ref": "#/definitions/CirculationHistory"
+              },
+              "type": "array"
+            },
+            "unpaid_fines": {
+              "items": {
+                "$ref": "#/definitions/Fine"
+              },
+              "type": "array"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "CirculationResponse",
+      "type": "object"
+    },
+    "TransactionsResponse": {
+      "description": "Response containing paginated transactions",
+      "properties": {
+        "data": {
+          "description": "Transaction data",
+          "properties": {
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "transactions": {
+              "items": {
+                "$ref": "#/definitions/Transaction"
+              },
+              "type": "array"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "TransactionsResponse",
+      "type": "object"
+    },
+    "HistoryResponse": {
+      "description": "Response containing paginated circulation history",
+      "properties": {
+        "data": {
+          "description": "History data",
+          "properties": {
+            "history": {
+              "items": {
+                "$ref": "#/definitions/CirculationHistory"
+              },
+              "type": "array"
+            },
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "HistoryResponse",
+      "type": "object"
+    },
+    "FinesResponse": {
+      "description": "Response containing paginated fines",
+      "properties": {
+        "data": {
+          "description": "Fines data",
+          "properties": {
+            "fines": {
+              "items": {
+                "$ref": "#/definitions/Fine"
+              },
+              "type": "array"
+            },
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            },
+            "user": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "FinesResponse",
+      "type": "object"
+    },
     "Pagination": {
       "description": "Pagination metadata",
       "example": {
@@ -175,10 +720,164 @@
       "title": "Pagination",
       "type": "object"
     },
+    "CirculationHistoriesResponse": {
+      "description": "Response containing a paginated list of circulation history entries",
+      "properties": {
+        "data": {
+          "description": "List of circulation history entries",
+          "items": {
+            "$ref": "#/definitions/CirculationHistory"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "CirculationHistoriesResponse",
+      "type": "object"
+    },
+    "CirculationHistoryResponse": {
+      "description": "Response containing a single circulation history entry",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/CirculationHistory",
+          "description": "Circulation history data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "CirculationHistoryResponse",
+      "type": "object"
+    },
+    "CirculationHistoryInput": {
+      "description": "Input schema for creating or updating a circulation history entry",
+      "properties": {
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "event_date": {
+          "description": "Event date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "event_type": {
+          "description": "Event type",
+          "type": "string"
+        },
+        "fine_id": {
+          "description": "Fine ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "ip_address": {
+          "description": "IP address",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "new_value": {
+          "description": "New value",
+          "type": "object"
+        },
+        "old_value": {
+          "description": "Old value",
+          "type": "object"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "reservation_id": {
+          "description": "Reservation ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_agent": {
+          "description": "User agent",
+          "type": "string"
+        }
+      },
+      "title": "CirculationHistoryInput",
+      "type": "object"
+    },
+    "ErrorResponse": {
+      "description": "Error response with validation details",
+      "properties": {
+        "errors": {
+          "$ref": "#/definitions/Errors",
+          "description": "Validation errors"
+        }
+      },
+      "required": [
+        "errors"
+      ],
+      "title": "ErrorResponse",
+      "type": "object"
+    },
     "Errors": {
       "additionalProperties": true,
       "description": "Map of field names to error messages",
       "title": "Errors",
+      "type": "object"
+    },
+    "CollectionsResponse": {
+      "description": "Response containing a paginated list of collections",
+      "example": {
+        "data": [
+          {
+            "access_level": "public",
+            "collection_code": "SF-001",
+            "id": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
+            "status": "published",
+            "title": "Science Fiction Collection"
+          }
+        ],
+        "pagination": {
+          "page_number": 1,
+          "page_size": 10,
+          "total_pages": 5
+        }
+      },
+      "properties": {
+        "data": {
+          "description": "Array of collections",
+          "items": {
+            "$ref": "#/definitions/Collection"
+          },
+          "type": "array"
+        },
+        "pagination": {
+          "$ref": "#/definitions/Pagination",
+          "description": "Pagination metadata"
+        }
+      },
+      "required": [
+        "pagination",
+        "data"
+      ],
+      "title": "CollectionsResponse",
       "type": "object"
     },
     "CollectionInput": {
@@ -324,29 +1023,117 @@
       "title": "CollectionResponse",
       "type": "object"
     },
-    "CollectionsResponse": {
-      "description": "Response containing a paginated list of collections",
-      "example": {
-        "data": [
-          {
-            "access_level": "public",
-            "collection_code": "SF-001",
-            "id": "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
-            "status": "published",
-            "title": "Science Fiction Collection"
-          }
-        ],
-        "pagination": {
-          "page_number": 1,
-          "page_size": 10,
-          "total_pages": 5
-        }
-      },
+    "FineResponse": {
+      "description": "Response containing a single fine",
       "properties": {
         "data": {
-          "description": "Array of collections",
+          "$ref": "#/definitions/Fine",
+          "description": "Fine data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "FineResponse",
+      "type": "object"
+    },
+    "FineInput": {
+      "description": "Input schema for creating or updating a fine",
+      "properties": {
+        "amount": {
+          "description": "Amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "balance": {
+          "description": "Balance",
+          "format": "decimal",
+          "type": "number"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "fine_date": {
+          "description": "Fine date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "fine_status": {
+          "description": "Fine status",
+          "type": "string"
+        },
+        "fine_type": {
+          "description": "Fine type",
+          "type": "string"
+        },
+        "item_id": {
+          "description": "Item ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "member_id": {
+          "description": "Member ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "paid_amount": {
+          "description": "Paid amount",
+          "format": "decimal",
+          "type": "number"
+        },
+        "payment_date": {
+          "description": "Payment date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "payment_method": {
+          "description": "Payment method",
+          "type": "string"
+        },
+        "processed_by_id": {
+          "description": "Processed by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "receipt_number": {
+          "description": "Receipt number",
+          "type": "string"
+        },
+        "transaction_id": {
+          "description": "Transaction ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived": {
+          "description": "Waived",
+          "type": "boolean"
+        },
+        "waived_by_id": {
+          "description": "Waived by user ID",
+          "format": "uuid",
+          "type": "string"
+        },
+        "waived_date": {
+          "description": "Waived date",
+          "format": "date-time",
+          "type": "string"
+        },
+        "waived_reason": {
+          "description": "Waived reason",
+          "type": "string"
+        }
+      },
+      "title": "FineInput",
+      "type": "object"
+    },
+    "ItemsResponse": {
+      "description": "Response containing a paginated list of items",
+      "properties": {
+        "data": {
+          "description": "List of items",
           "items": {
-            "$ref": "#/definitions/Collection"
+            "$ref": "#/definitions/Item"
           },
           "type": "array"
         },
@@ -359,126 +1146,7 @@
         "pagination",
         "data"
       ],
-      "title": "CollectionsResponse",
-      "type": "object"
-    },
-    "ErrorResponse": {
-      "description": "Error response with validation details",
-      "properties": {
-        "errors": {
-          "$ref": "#/definitions/Errors",
-          "description": "Validation errors"
-        }
-      },
-      "required": [
-        "errors"
-      ],
-      "title": "ErrorResponse",
-      "type": "object"
-    },
-    "Item": {
-      "description": "An item entity in the catalog system",
-      "properties": {
-        "acquisition_date": {
-          "description": "Acquisition date",
-          "format": "date",
-          "type": "string"
-        },
-        "availability": {
-          "description": "Availability",
-          "type": "string"
-        },
-        "barcode": {
-          "description": "Barcode",
-          "type": "string"
-        },
-        "collection_id": {
-          "description": "Collection ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "condition": {
-          "description": "Condition",
-          "type": "string"
-        },
-        "created_by_id": {
-          "description": "Created by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "id": {
-          "description": "Unique identifier (UUID)",
-          "format": "uuid",
-          "type": "string"
-        },
-        "inserted_at": {
-          "description": "Creation timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "inventory_code": {
-          "description": "Inventory code",
-          "type": "string"
-        },
-        "item_code": {
-          "description": "Item code",
-          "type": "string"
-        },
-        "item_location_id": {
-          "description": "Item location ID",
-          "type": "integer"
-        },
-        "last_circulated": {
-          "description": "Last circulated timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "last_inventory_date": {
-          "description": "Last inventory date",
-          "format": "date",
-          "type": "string"
-        },
-        "legacy_item_code": {
-          "description": "Legacy item code",
-          "type": "string"
-        },
-        "location": {
-          "description": "Location",
-          "type": "string"
-        },
-        "price": {
-          "description": "Price",
-          "format": "decimal",
-          "type": "number"
-        },
-        "rfid_tag": {
-          "description": "RFID tag",
-          "type": "string"
-        },
-        "status": {
-          "description": "Status",
-          "type": "string"
-        },
-        "unit_id": {
-          "description": "Unit ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "Last update timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "updated_by_id": {
-          "description": "Updated by user ID",
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
-      ],
-      "title": "Item",
+      "title": "ItemsResponse",
       "type": "object"
     },
     "ItemInput": {
@@ -582,326 +1250,6 @@
       "title": "ItemResponse",
       "type": "object"
     },
-    "ItemsResponse": {
-      "description": "Response containing a paginated list of items",
-      "properties": {
-        "data": {
-          "description": "List of items",
-          "items": {
-            "$ref": "#/definitions/Item"
-          },
-          "type": "array"
-        },
-        "pagination": {
-          "$ref": "#/definitions/Pagination",
-          "description": "Pagination metadata"
-        }
-      },
-      "required": [
-        "pagination",
-        "data"
-      ],
-      "title": "ItemsResponse",
-      "type": "object"
-    },
-    "Fine": {
-      "description": "A fine entity",
-      "properties": {
-        "amount": {
-          "description": "Amount",
-          "format": "decimal",
-          "type": "number"
-        },
-        "balance": {
-          "description": "Balance",
-          "format": "decimal",
-          "type": "number"
-        },
-        "description": {
-          "description": "Description",
-          "type": "string"
-        },
-        "fine_date": {
-          "description": "Fine date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "fine_status": {
-          "description": "Fine status",
-          "type": "string"
-        },
-        "fine_type": {
-          "description": "Fine type",
-          "type": "string"
-        },
-        "id": {
-          "description": "Unique identifier (UUID)",
-          "format": "uuid",
-          "type": "string"
-        },
-        "inserted_at": {
-          "description": "Creation timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "item_id": {
-          "description": "Item ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "member_id": {
-          "description": "Member ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "paid_amount": {
-          "default": 0,
-          "description": "Paid amount",
-          "format": "decimal",
-          "type": "number"
-        },
-        "payment_date": {
-          "description": "Payment date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "payment_method": {
-          "description": "Payment method",
-          "type": "string"
-        },
-        "processed_by_id": {
-          "description": "Processed by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "receipt_number": {
-          "description": "Receipt number",
-          "type": "string"
-        },
-        "transaction_id": {
-          "description": "Transaction ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "Last update timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "waived": {
-          "default": false,
-          "description": "Waived",
-          "type": "boolean"
-        },
-        "waived_by_id": {
-          "description": "Waived by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "waived_date": {
-          "description": "Waived date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "waived_reason": {
-          "description": "Waived reason",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
-      ],
-      "title": "Fine",
-      "type": "object"
-    },
-    "FineInput": {
-      "description": "Input schema for creating or updating a fine",
-      "properties": {
-        "amount": {
-          "description": "Amount",
-          "format": "decimal",
-          "type": "number"
-        },
-        "balance": {
-          "description": "Balance",
-          "format": "decimal",
-          "type": "number"
-        },
-        "description": {
-          "description": "Description",
-          "type": "string"
-        },
-        "fine_date": {
-          "description": "Fine date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "fine_status": {
-          "description": "Fine status",
-          "type": "string"
-        },
-        "fine_type": {
-          "description": "Fine type",
-          "type": "string"
-        },
-        "item_id": {
-          "description": "Item ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "member_id": {
-          "description": "Member ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "paid_amount": {
-          "description": "Paid amount",
-          "format": "decimal",
-          "type": "number"
-        },
-        "payment_date": {
-          "description": "Payment date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "payment_method": {
-          "description": "Payment method",
-          "type": "string"
-        },
-        "processed_by_id": {
-          "description": "Processed by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "receipt_number": {
-          "description": "Receipt number",
-          "type": "string"
-        },
-        "transaction_id": {
-          "description": "Transaction ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "waived": {
-          "description": "Waived",
-          "type": "boolean"
-        },
-        "waived_by_id": {
-          "description": "Waived by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "waived_date": {
-          "description": "Waived date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "waived_reason": {
-          "description": "Waived reason",
-          "type": "string"
-        }
-      },
-      "title": "FineInput",
-      "type": "object"
-    },
-    "FineResponse": {
-      "description": "Response containing a single fine",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/Fine",
-          "description": "Fine data"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "FineResponse",
-      "type": "object"
-    },
-    "FinesResponse": {
-      "description": "Response containing paginated fines",
-      "properties": {
-        "data": {
-          "description": "Fines data",
-          "properties": {
-            "fines": {
-              "items": {
-                "$ref": "#/definitions/Fine"
-              },
-              "type": "array"
-            },
-            "pagination": {
-              "$ref": "#/definitions/Pagination"
-            },
-            "user": {
-              "$ref": "#/definitions/User"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "FinesResponse",
-      "type": "object"
-    },
-    "User": {
-      "description": "A user entity",
-      "properties": {
-        "email": {
-          "description": "Email address",
-          "format": "email",
-          "type": "string"
-        },
-        "fullname": {
-          "description": "Full name",
-          "type": "string"
-        },
-        "id": {
-          "description": "Unique identifier (UUID)",
-          "format": "uuid",
-          "type": "string"
-        },
-        "identifier": {
-          "description": "User identifier number",
-          "type": "number"
-        },
-        "inserted_at": {
-          "description": "Creation timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "Last update timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "username": {
-          "description": "Username",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
-      ],
-      "title": "User",
-      "type": "object"
-    },
-    "UserResponse": {
-      "description": "Response containing a single user",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/User",
-          "description": "User data"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "UserResponse",
-      "type": "object"
-    },
     "UsersResponse": {
       "description": "Response containing a paginated list of users",
       "properties": {
@@ -924,369 +1272,62 @@
       "title": "UsersResponse",
       "type": "object"
     },
-    "Transaction": {
-      "description": "A circulation transaction entity",
-      "properties": {
-        "due_date": {
-          "description": "Due date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "fine_amount": {
-          "default": 0.0,
-          "description": "Fine amount",
-          "format": "decimal",
-          "type": "number"
-        },
-        "id": {
-          "description": "Unique identifier (UUID)",
-          "format": "uuid",
-          "type": "string"
-        },
-        "inserted_at": {
-          "description": "Creation timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "is_overdue": {
-          "default": false,
-          "description": "Is overdue",
-          "type": "boolean"
-        },
-        "item_id": {
-          "description": "Item ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "librarian_id": {
-          "description": "Librarian ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "member_id": {
-          "description": "Member ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "notes": {
-          "description": "Notes",
-          "type": "string"
-        },
-        "renewal_count": {
-          "default": 0,
-          "description": "Renewal count",
-          "type": "integer"
-        },
-        "return_date": {
-          "description": "Return date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "status": {
-          "description": "Status",
-          "type": "string"
-        },
-        "transaction_date": {
-          "description": "Transaction date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "transaction_type": {
-          "description": "Transaction type",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "Last update timestamp",
-          "format": "date-time",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
-      ],
-      "title": "Transaction",
-      "type": "object"
-    },
-    "CirculationHistory": {
-      "description": "A circulation history entry in the library system",
-      "properties": {
-        "description": {
-          "description": "Description",
-          "type": "string"
-        },
-        "event_date": {
-          "description": "Event date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "event_type": {
-          "description": "Event type",
-          "type": "string"
-        },
-        "fine_id": {
-          "description": "Fine ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "id": {
-          "description": "Unique identifier (UUID)",
-          "format": "uuid",
-          "type": "string"
-        },
-        "inserted_at": {
-          "description": "Creation timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "ip_address": {
-          "description": "IP address",
-          "type": "string"
-        },
-        "item_id": {
-          "description": "Item ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "member_id": {
-          "description": "Member ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "new_value": {
-          "description": "New value",
-          "type": "object"
-        },
-        "old_value": {
-          "description": "Old value",
-          "type": "object"
-        },
-        "processed_by_id": {
-          "description": "Processed by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "reservation_id": {
-          "description": "Reservation ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "transaction_id": {
-          "description": "Transaction ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "updated_at": {
-          "description": "Last update timestamp",
-          "format": "date-time",
-          "type": "string"
-        },
-        "user_agent": {
-          "description": "User agent",
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
-      ],
-      "title": "CirculationHistory",
-      "type": "object"
-    },
-    "CirculationResponse": {
-      "description": "Response containing circulation information for a user",
+    "UserResponse": {
+      "description": "Response containing a single user",
       "properties": {
         "data": {
-          "description": "Circulation data",
-          "properties": {
-            "active_transactions": {
-              "items": {
-                "$ref": "#/definitions/Transaction"
-              },
-              "type": "array"
-            },
-            "circulation_history": {
-              "items": {
-                "$ref": "#/definitions/CirculationHistory"
-              },
-              "type": "array"
-            },
-            "unpaid_fines": {
-              "items": {
-                "$ref": "#/definitions/Fine"
-              },
-              "type": "array"
-            },
-            "user": {
-              "$ref": "#/definitions/User"
-            }
-          },
-          "type": "object"
+          "$ref": "#/definitions/User",
+          "description": "User data"
         }
       },
       "required": [
         "data"
       ],
-      "title": "CirculationResponse",
-      "type": "object"
-    },
-    "HistoryResponse": {
-      "description": "Response containing paginated circulation history",
-      "properties": {
-        "data": {
-          "description": "History data",
-          "properties": {
-            "history": {
-              "items": {
-                "$ref": "#/definitions/CirculationHistory"
-              },
-              "type": "array"
-            },
-            "pagination": {
-              "$ref": "#/definitions/Pagination"
-            },
-            "user": {
-              "$ref": "#/definitions/User"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "HistoryResponse",
-      "type": "object"
-    },
-    "TransactionsResponse": {
-      "description": "Response containing paginated transactions",
-      "properties": {
-        "data": {
-          "description": "Transaction data",
-          "properties": {
-            "pagination": {
-              "$ref": "#/definitions/Pagination"
-            },
-            "transactions": {
-              "items": {
-                "$ref": "#/definitions/Transaction"
-              },
-              "type": "array"
-            },
-            "user": {
-              "$ref": "#/definitions/User"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "TransactionsResponse",
-      "type": "object"
-    },
-    "CirculationHistoriesResponse": {
-      "description": "Response containing a paginated list of circulation history entries",
-      "properties": {
-        "data": {
-          "description": "List of circulation history entries",
-          "items": {
-            "$ref": "#/definitions/CirculationHistory"
-          },
-          "type": "array"
-        },
-        "pagination": {
-          "$ref": "#/definitions/Pagination",
-          "description": "Pagination metadata"
-        }
-      },
-      "required": [
-        "pagination",
-        "data"
-      ],
-      "title": "CirculationHistoriesResponse",
-      "type": "object"
-    },
-    "CirculationHistoryInput": {
-      "description": "Input schema for creating or updating a circulation history entry",
-      "properties": {
-        "description": {
-          "description": "Description",
-          "type": "string"
-        },
-        "event_date": {
-          "description": "Event date",
-          "format": "date-time",
-          "type": "string"
-        },
-        "event_type": {
-          "description": "Event type",
-          "type": "string"
-        },
-        "fine_id": {
-          "description": "Fine ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "ip_address": {
-          "description": "IP address",
-          "type": "string"
-        },
-        "item_id": {
-          "description": "Item ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "member_id": {
-          "description": "Member ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "new_value": {
-          "description": "New value",
-          "type": "object"
-        },
-        "old_value": {
-          "description": "Old value",
-          "type": "object"
-        },
-        "processed_by_id": {
-          "description": "Processed by user ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "reservation_id": {
-          "description": "Reservation ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "transaction_id": {
-          "description": "Transaction ID",
-          "format": "uuid",
-          "type": "string"
-        },
-        "user_agent": {
-          "description": "User agent",
-          "type": "string"
-        }
-      },
-      "title": "CirculationHistoryInput",
-      "type": "object"
-    },
-    "CirculationHistoryResponse": {
-      "description": "Response containing a single circulation history entry",
-      "properties": {
-        "data": {
-          "$ref": "#/definitions/CirculationHistory",
-          "description": "Circulation history data"
-        }
-      },
-      "required": [
-        "data"
-      ],
-      "title": "CirculationHistoryResponse",
+      "title": "UserResponse",
       "type": "object"
     }
   },
+  "tags": [
+    {
+      "name": "Collections",
+      "description": "Collection management endpoints"
+    },
+    {
+      "name": "Items",
+      "description": "Item management endpoints"
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Circulation",
+      "description": "Circulation management endpoints"
+    },
+    {
+      "name": "CirculationHistory",
+      "description": "Circulation history endpoints"
+    },
+    {
+      "name": "Fines",
+      "description": "Fine management endpoints"
+    }
+  ],
+  "basePath": "/api",
+  "securityDefinitions": {
+    "Bearer": {
+      "in": "query",
+      "name": "token",
+      "type": "apiKey",
+      "description": "API Token must be provided via `token` query parameter"
+    }
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/v1/circulation/{identifier}": {
       "get": {
@@ -1601,6 +1642,45 @@
             "name": "search",
             "required": false,
             "type": "string"
+          },
+          {
+            "description": "Filter by publication status",
+            "enum": [
+              "draft",
+              "pending",
+              "published",
+              "archived"
+            ],
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Filter by access control level",
+            "enum": [
+              "public",
+              "private",
+              "restricted"
+            ],
+            "in": "query",
+            "name": "access_level",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Filter by GLAM type",
+            "in": "query",
+            "name": "glam_type",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Filter by organization unit/node ID",
+            "in": "query",
+            "name": "unit_id",
+            "required": false,
+            "type": "integer"
           }
         ],
         "produces": [
@@ -2436,46 +2516,5 @@
       }
     }
   },
-  "swagger": "2.0",
-  "basePath": "/api",
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
-  "securityDefinitions": {
-    "Bearer": {
-      "in": "query",
-      "name": "token",
-      "type": "apiKey",
-      "description": "API Token must be provided via `token` query parameter"
-    }
-  },
-  "tags": [
-    {
-      "name": "Collections",
-      "description": "Collection management endpoints"
-    },
-    {
-      "name": "Items",
-      "description": "Item management endpoints"
-    },
-    {
-      "name": "Users",
-      "description": "User management endpoints"
-    },
-    {
-      "name": "Circulation",
-      "description": "Circulation management endpoints"
-    },
-    {
-      "name": "CirculationHistory",
-      "description": "Circulation history endpoints"
-    },
-    {
-      "name": "Fines",
-      "description": "Fine management endpoints"
-    }
-  ]
+  "swagger": "2.0"
 }

@@ -18,6 +18,19 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
       search(:query, :string, "Search keyword for filtering collections", required: false)
+
+      status(:query, :string, "Filter by publication status",
+        required: false,
+        enum: ["draft", "pending", "published", "archived"]
+      )
+
+      access_level(:query, :string, "Filter by access control level",
+        required: false,
+        enum: ["public", "private", "restricted"]
+      )
+
+      glam_type(:query, :string, "Filter by GLAM type", required: false)
+      unit_id(:query, :integer, "Filter by organization unit/node ID", required: false)
     end
 
     response(200, "OK", Schema.ref(:CollectionsResponse))
@@ -30,8 +43,15 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
     page = Map.get(params, "page", "1") |> String.to_integer()
     search_keyword = Map.get(params, "search", "")
 
+    filters = %{
+      status: Map.get(params, "status"),
+      access_level: Map.get(params, "access_level"),
+      glam_type: Map.get(params, "glam_type"),
+      node_id: Map.get(params, "unit_id")
+    }
+
     {collections, total_pages} =
-      Catalog.list_collections_paginated(page, 10, search_keyword)
+      Catalog.list_collections_paginated(page, 10, search_keyword, filters)
 
     pagination = %{
       page_number: page,
