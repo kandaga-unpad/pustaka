@@ -1,0 +1,629 @@
+<div class="container mx-auto px-4 py-6">
+  <%!-- Header --%>
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Asset Vault</h1>
+    
+    <p class="text-gray-600 dark:text-gray-400 mt-2">Browse and manage all your digital assets</p>
+  </div>
+   <%!-- Breadcrumbs --%>
+  <div class="mb-6">
+    <nav class="flex" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <%= for {breadcrumb, index} <- Enum.with_index(@breadcrumbs) do %>
+          <li class="inline-flex items-center">
+            <%= if index > 0 do %>
+              <svg
+                class="w-3 h-3 text-gray-400 mx-1"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 6 10"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="m1 9 4-4-4-4"
+                />
+              </svg>
+            <% end %>
+            
+            <%= if breadcrumb.id == @current_folder_id do %>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1 md:ml-2">
+                {breadcrumb.name}
+              </span>
+            <% else %>
+              <button
+                phx-click="navigate_breadcrumb"
+                phx-value-id={breadcrumb.id || ""}
+                class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 ml-1 md:ml-2"
+              >
+                {breadcrumb.name}
+              </button>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
+    </nav>
+  </div>
+   <%!-- Main Content with Sidebar --%>
+  <div class="flex gap-6">
+    <%!-- Sidebar Toggle Button (Mobile) --%>
+    <div class="lg:hidden mb-4">
+      <button
+        phx-click="toggle_sidebar"
+        class="btn btn-outline btn-sm"
+      >
+        <.icon name="hero-bars-3" class="w-4 h-4 mr-2" /> {if @sidebar_collapsed,
+          do: "Show",
+          else: "Hide"} Folders
+      </button>
+    </div>
+     <%!-- Sidebar Folder Hierarchy --%>
+    <div class={"w-80 flex-shrink-0 #{if @sidebar_collapsed, do: "hidden lg:block", else: "block"}"}>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sticky top-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Folders</h3>
+          
+          <button
+            phx-click="toggle_sidebar"
+            class="btn btn-sm btn-ghost btn-circle hidden lg:flex"
+          >
+            <.icon name="hero-x-mark" class="w-4 h-4" />
+          </button>
+        </div>
+        
+        <div class="space-y-1">
+          <%!-- Root Level --%>
+          <div class="folder-item">
+            <button
+              phx-click="navigate_folder"
+              phx-value-id=""
+              class={"w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 #{if @current_folder_id == nil, do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300", else: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}"}
+            >
+              <.icon name="hero-home" class="w-4 h-4" /> Asset Vault
+            </button>
+          </div>
+           <%!-- Folder Hierarchy --%>
+          <%= for folder <- @root_folders do %>
+            <% is_active = @current_folder_id == folder.id %> <% is_in_path =
+              folder.id in @folder_path_ids %> <% subfolders =
+              Repo.all(
+                from a in Attachment,
+                  where: a.parent_id == ^folder.id and a.attachable_type == "folder",
+                  order_by: a.file_name
+              ) %>
+            <div class="folder-item">
+              <button
+                phx-click="navigate_folder"
+                phx-value-id={folder.id}
+                class={"w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 #{if is_active, do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300", else: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}"}
+              >
+                <.icon name="hero-folder" class="w-4 h-4 text-blue-500" />
+                <span class="truncate flex-1">{folder.file_name}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  {count_folder_items(folder.id)}
+                </span>
+              </button> <%!-- Show subfolders if this folder is in the current path --%>
+              <%= if is_in_path do %>
+                <%= for subfolder <- subfolders do %>
+                  <% is_sub_active = @current_folder_id == subfolder.id %> <% is_sub_in_path =
+                    subfolder.id in @folder_path_ids %> <% sub_subfolders =
+                    Repo.all(
+                      from a in Attachment,
+                        where: a.parent_id == ^subfolder.id and a.attachable_type == "folder",
+                        order_by: a.file_name
+                    ) %>
+                  <div class="ml-4">
+                    <button
+                      phx-click="navigate_folder"
+                      phx-value-id={subfolder.id}
+                      class={"w-full text-left px-3 py-1 rounded-md text-sm transition-colors flex items-center gap-2 #{if is_sub_active, do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300", else: "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}"}
+                    >
+                      <.icon name="hero-folder" class="w-3 h-3 text-blue-400" />
+                      <span class="truncate flex-1">{subfolder.file_name}</span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {count_folder_items(subfolder.id)}
+                      </span>
+                    </button>
+                    <%!-- Show sub-subfolders if this subfolder is in the current path --%>
+                    <%= if is_sub_in_path do %>
+                      <%= for sub_subfolder <- sub_subfolders do %>
+                        <% is_sub_sub_active = @current_folder_id == sub_subfolder.id %>
+                        <div class="ml-4">
+                          <button
+                            phx-click="navigate_folder"
+                            phx-value-id={sub_subfolder.id}
+                            class={"w-full text-left px-3 py-1 rounded-md text-sm transition-colors flex items-center gap-2 #{if is_sub_sub_active, do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300", else: "text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"}"}
+                          >
+                            <.icon name="hero-folder" class="w-3 h-3 text-blue-300" />
+                            <span class="truncate flex-1">{sub_subfolder.file_name}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {count_folder_items(sub_subfolder.id)}
+                            </span>
+                          </button>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+     <%!-- Main Content Area --%>
+    <div class="flex-1 min-w-0">
+      <%!-- Current Folder Indicator --%>
+      <%= if @current_folder_id do %>
+        <% current_folder = Repo.get!(Attachment, @current_folder_id) %>
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <div class="flex items-center gap-3">
+            <.icon name="hero-folder" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div>
+              <h2 class="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                {current_folder.file_name}
+              </h2>
+              
+              <p class="text-sm text-blue-700 dark:text-blue-300">
+                {count_folder_items(@current_folder_id)} items • Created {format_datetime(
+                  current_folder.inserted_at
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+          <div class="flex items-center gap-3">
+            <.icon name="hero-home" class="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Asset Vault</h2>
+              
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Root directory - All your files and folders
+              </p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+       <%!-- Upload Section --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Upload Files</h3>
+        </div>
+        
+        <form phx-submit="save_attachments">
+          <%!-- File Upload Area --%>
+          <div
+            phx-drop-target={@uploads.attachments.ref}
+            id="upload-area"
+            class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors duration-200"
+          >
+            <div class="space-y-1 text-center flex flex-col items-center">
+              <.icon
+                name="hero-cloud-arrow-up"
+                class="w-12 h-12 text-gray-400 dark:text-gray-500"
+              />
+              <div class="flex text-sm">
+                <label
+                  for={@uploads.attachments.ref}
+                  class="relative cursor-pointer rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                >
+                  <span>Upload files</span>
+                  <.live_file_input upload={@uploads.attachments} class="sr-only" />
+                </label>
+                <p class="pl-1 text-gray-500 dark:text-gray-400">or drag and drop</p>
+              </div>
+              
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Any file type up to 100MB each
+              </p>
+            </div>
+          </div>
+           <%!-- Upload Progress --%>
+          <div class="mt-4 space-y-2">
+            <%= for entry <- @uploads.attachments.entries do %>
+              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <.icon
+                        name="hero-document"
+                        class="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3"
+                      />
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                          {entry.client_name}
+                        </p>
+                        
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          {format_bytes(entry.client_size)} • {entry.client_type}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    phx-click="cancel_upload"
+                    phx-value-ref={entry.ref}
+                    class="ml-4 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                 <%!-- Progress Bar --%>
+                <div class="mt-3">
+                  <div class="bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div
+                      class="bg-indigo-600 dark:bg-indigo-500 h-2 rounded-full transition-all duration-300"
+                      style={"width: #{entry.progress}%"}
+                    >
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-between text-xs mt-1 text-gray-600 dark:text-gray-300">
+                    <span>{entry.progress}% uploaded</span>
+                    <span>{if entry.done?, do: "Complete", else: "Uploading..."}</span>
+                  </div>
+                </div>
+                 <%!-- Upload Errors --%>
+                <%= for err <- upload_errors(@uploads.attachments, entry) do %>
+                  <div class="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                    <p class="text-sm text-red-600 dark:text-red-400">
+                      Upload error: {humanize_upload_error(err)}
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </form>
+      </div>
+       <%!-- Folder Creation Section --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Create Folder</h3>
+        </div>
+        
+        <form phx-submit="create_folder" class="flex gap-4">
+          <input
+            type="text"
+            name="name"
+            placeholder="Enter folder name..."
+            class="input input-bordered flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            required
+          />
+          <button type="submit" class="btn btn-primary">
+            <.icon name="hero-folder-plus" class="w-4 h-4 mr-2" /> Create Folder
+          </button>
+        </form>
+      </div>
+       <%!-- Search and Filter Bar --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex flex-col lg:flex-row gap-4">
+          <%!-- Search --%>
+          <div class="flex-1">
+            <form phx-submit="search" class="relative">
+              <input
+                type="text"
+                name="q"
+                value={@search}
+                placeholder="Search assets by filename, description..."
+                class="input input-bordered w-full pr-20 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <%= if @search != "" do %>
+                  <button
+                    type="button"
+                    phx-click="clear_search"
+                    class="btn btn-ghost btn-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    <.icon name="hero-x-mark" class="w-4 h-4" />
+                  </button>
+                <% end %>
+                
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <.icon name="hero-magnifying-glass" class="w-4 h-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+           <%!-- View Mode Toggle --%>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-active">
+                <.icon name="hero-squares-2x2" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+           <%!-- Filters --%>
+          <div class="flex gap-2 items-center">
+            <select
+              name="access_level"
+              phx-change="filter_change"
+              class="select select-bordered select-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            >
+              <option value="">All Access Levels</option>
+              
+              <option value="public" selected={@filter_access_level == "public"}>Public</option>
+              
+              <option value="limited" selected={@filter_access_level == "limited"}>
+                Limited
+              </option>
+              
+              <option value="restricted" selected={@filter_access_level == "restricted"}>
+                Restricted
+              </option>
+            </select>
+            <select
+              name="file_type"
+              phx-change="filter_change"
+              class="select select-bordered select-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            >
+              <option value="">All File Types</option>
+              
+              <option value="document" selected={@filter_file_type == "document"}>
+                Document
+              </option>
+              
+              <option value="image" selected={@filter_file_type == "image"}>Image</option>
+              
+              <option value="video" selected={@filter_file_type == "video"}>Video</option>
+              
+              <option value="audio" selected={@filter_file_type == "audio"}>Audio</option>
+              
+              <option value="archive" selected={@filter_file_type == "archive"}>Archive</option>
+              
+              <option value="software" selected={@filter_file_type == "software"}>
+                Software
+              </option>
+              
+              <option value="other" selected={@filter_file_type == "other"}>Other</option>
+            </select>
+            <select
+              name="attachable_type"
+              phx-change="filter_change"
+              class="select select-bordered select-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            >
+              <option value="">All Types</option>
+              
+              <option value="collection" selected={@filter_attachable_type == "collection"}>
+                Collections
+              </option>
+              
+              <option value="item" selected={@filter_attachable_type == "item"}>Items</option>
+              
+              <option value="asset_vault" selected={@filter_attachable_type == "asset_vault"}>
+                Asset Vault
+              </option>
+            </select>
+            <%= if @active_filters_count > 0 do %>
+              <button
+                phx-click="clear_filters"
+                class="btn btn-ghost btn-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                Clear ({@active_filters_count})
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+       <%!-- Stats Cards --%>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div class="stat-title text-gray-600 dark:text-gray-400">Total Assets</div>
+          
+          <div class="stat-value text-primary">{@attachments_count}</div>
+        </div>
+        
+        <div class="stat bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div class="stat-title text-gray-600 dark:text-gray-400">Images</div>
+          
+          <div class="stat-value text-success">
+            {Enum.count(@attachments_list, &(&1.file_type == "image"))}
+          </div>
+        </div>
+        
+        <div class="stat bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div class="stat-title text-gray-600 dark:text-gray-400">Documents</div>
+          
+          <div class="stat-value text-info">
+            {Enum.count(@attachments_list, &(&1.file_type == "document"))}
+          </div>
+        </div>
+        
+        <div class="stat bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div class="stat-title text-gray-600 dark:text-gray-400">Other Files</div>
+          
+          <div class="stat-value text-warning">
+            {Enum.count(@attachments_list, &(&1.file_type not in ["image", "document"]))}
+          </div>
+        </div>
+      </div>
+       <%!-- Assets Grid/List View --%>
+      <%= if @attachments_empty? do %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+          <.icon
+            name="hero-photo"
+            class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+          />
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            No assets found
+          </h3>
+          
+          <p class="text-gray-500 dark:text-gray-400">
+            <%= if @search != "" or @active_filters_count > 0 do %>
+              Try adjusting your search or filters
+            <% else %>
+              No assets have been uploaded yet
+            <% end %>
+          </p>
+        </div>
+      <% else %>
+        <%= if @loading_folder do %>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4">
+            </div>
+            
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Loading folder...
+            </h3>
+            
+            <p class="text-gray-500 dark:text-gray-400">
+              Please wait while we load the folder contents
+            </p>
+          </div>
+        <% else %>
+          <%!-- Grid View --%>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div
+                :for={{id, attachment} <- @streams.attachments}
+                id={id}
+                class={"group relative #{if attachment.attachable_type == "folder", do: "bg-blue-50 dark:bg-blue-900/20", else: "bg-gray-50 dark:bg-gray-700"} rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"}
+              >
+                <%!-- Thumbnail/Icon --%>
+                <div class="aspect-square bg-gray-100 dark:bg-gray-600 flex items-center justify-center p-4">
+                  <%= if attachment.attachable_type == "folder" do %>
+                    <.icon
+                      name="hero-folder"
+                      class="w-12 h-12 text-blue-500 dark:text-blue-400"
+                    />
+                  <% else %>
+                    <%= if has_thumbnail?(attachment) do %>
+                      <img
+                        src={thumbnail_url(attachment)}
+                        alt={attachment.original_name}
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    <% else %>
+                      <.icon
+                        name={file_type_icon(attachment.file_type)}
+                        class="w-12 h-12 text-gray-400 dark:text-gray-500"
+                      />
+                    <% end %>
+                  <% end %>
+                </div>
+                 <%!-- Overlay Actions --%>
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div class="flex gap-2">
+                    <%= if attachment.attachable_type == "folder" do %>
+                      <%!-- Navigate into folder --%>
+                      <button
+                        phx-click="navigate_folder"
+                        phx-value-id={attachment.id}
+                        class="btn btn-sm btn-circle btn-ghost text-white"
+                      >
+                        <.icon name="hero-folder-open" class="w-4 h-4" />
+                      </button>
+                    <% else %>
+                      <%!-- View/Download --%>
+                      <.link
+                        href={~p"/attachments/#{attachment.id}/download"}
+                        class="btn btn-sm btn-circle btn-ghost text-white"
+                        target="_blank"
+                      >
+                        <.icon name="hero-arrow-down-tray" class="w-4 h-4" />
+                      </.link> <%!-- Manage Access --%>
+                      <%= if VoileWeb.Auth.Authorization.can?(@current_user, "attachments.update") do %>
+                        <.link
+                          navigate={~p"/manage/catalog/attachments/#{attachment.id}/access"}
+                          class="btn btn-sm btn-circle btn-ghost text-white"
+                        >
+                          <.icon name="hero-lock-closed" class="w-4 h-4" />
+                        </.link>
+                      <% end %>
+                    <% end %>
+                     <%!-- Delete --%>
+                    <%= if VoileWeb.Auth.Authorization.can?(@current_user, "attachments.delete") do %>
+                      <button
+                        phx-click={
+                          if attachment.attachable_type == "folder",
+                            do: "delete_folder",
+                            else: "delete"
+                        }
+                        phx-value-id={attachment.id}
+                        phx-confirm={
+                          if attachment.attachable_type == "folder",
+                            do:
+                              "Are you sure you want to delete this folder and all its contents?",
+                            else: "Are you sure you want to delete this asset?"
+                        }
+                        class="btn btn-sm btn-circle btn-ghost text-white hover:bg-red-500"
+                      >
+                        <.icon name="hero-trash" class="w-4 h-4" />
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+                 <%!-- File Info --%>
+                <div class="p-3">
+                  <div
+                    class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    title={attachment.original_name}
+                  >
+                    {attachment.original_name}
+                  </div>
+                  
+                  <%= if attachment.attachable_type == "folder" do %>
+                    <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                      Created {format_datetime(attachment.inserted_at)}
+                    </div>
+                    
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {count_folder_items(attachment.id)} items
+                    </div>
+                  <% else %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {format_file_size(attachment.file_size)}
+                    </div>
+                  <% end %>
+                  
+                  <div class="flex items-center gap-1 mt-2">
+                    <%= if attachment.attachable_type == "folder" do %>
+                      <span class="badge badge-xs badge-info">Folder</span>
+                    <% else %>
+                      <span class={"badge badge-xs #{access_level_badge_class(attachment.access_level)}"}>
+                        {String.capitalize(attachment.access_level)}
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+           <%!-- Pagination --%>
+          <%= if @total_pages > 1 do %>
+            <div class="flex justify-center items-center gap-2 p-4">
+              <button
+                phx-click="paginate"
+                phx-value-page={max(@page - 1, 1)}
+                disabled={@page == 1}
+                class="btn btn-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Previous
+              </button>
+              <span class="text-sm text-gray-600 dark:text-gray-400">
+                Page {@page} of {@total_pages}
+              </span>
+              <button
+                phx-click="paginate"
+                phx-value-page={min(@page + 1, @total_pages)}
+                disabled={@page == @total_pages}
+                class="btn btn-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Next
+              </button>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -191,6 +191,10 @@ defmodule VoileWeb.Router do
             live "/", Dashboard.Catalog.Attachment.Index, :index
             live "/:id/access", Dashboard.Catalog.Attachment.Index, :manage_access
           end
+
+          scope "/asset-vault" do
+            live "/", Dashboard.Catalog.AssetVault.Index, :index
+          end
         end
 
         scope "/glam" do
