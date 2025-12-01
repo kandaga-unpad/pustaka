@@ -31,6 +31,7 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
     current_user = get_current_user(conn)
 
     tokens = System.list_user_api_tokens(current_user)
+
     conn
     |> put_view(VoileWeb.API.V1.UserApiTokenJson)
     |> render(:index, tokens: tokens)
@@ -71,7 +72,11 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
   swagger_path :show do
     get("/v1/tokens/{id}")
     summary("Get API token")
-    description("Returns details of a specific API token. Only the token creator or super admins can view token details.")
+
+    description(
+      "Returns details of a specific API token. Only the token creator or super admins can view token details."
+    )
+
     produces("application/json")
     tag("API Tokens")
     security([%{Bearer: []}])
@@ -90,7 +95,9 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
     current_user = get_current_user(conn)
 
     with token <- System.get_api_token(id),
-         true <- token && (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)) do
+         true <-
+           token &&
+             (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)) do
       conn
       |> put_view(VoileWeb.API.V1.UserApiTokenJson)
       |> render(:show, token: token)
@@ -102,7 +109,11 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
   swagger_path :update do
     put("/v1/tokens/{id}")
     summary("Update API token")
-    description("Updates an existing API token. Only the token creator or super admins can perform this action.")
+
+    description(
+      "Updates an existing API token. Only the token creator or super admins can perform this action."
+    )
+
     produces("application/json")
     consumes("application/json")
     tag("API Tokens")
@@ -110,7 +121,10 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
 
     parameters do
       id(:path, :string, "Token ID", required: true, format: "uuid")
-      token(:body, Schema.ref(:UserApiTokenUpdateInput), "Token update parameters", required: true)
+
+      token(:body, Schema.ref(:UserApiTokenUpdateInput), "Token update parameters",
+        required: true
+      )
     end
 
     response(200, "OK", Schema.ref(:UserApiTokenResponse))
@@ -125,7 +139,9 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
     current_user = get_current_user(conn)
 
     with token <- System.get_api_token(id),
-         true <- token && (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
+         true <-
+           token &&
+             (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
          {:ok, token} <- System.update_api_token(token, token_params) do
       conn
       |> put_view(VoileWeb.API.V1.UserApiTokenJson)
@@ -139,7 +155,11 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
   swagger_path :delete do
     PhoenixSwagger.Path.delete("/v1/tokens/{id}")
     summary("Revoke API token")
-    description("Revokes (deletes) an API token. Only the token creator or super admins can perform this action.")
+
+    description(
+      "Revokes (deletes) an API token. Only the token creator or super admins can perform this action."
+    )
+
     produces("application/json")
     tag("API Tokens")
     security([%{Bearer: []}])
@@ -158,7 +178,9 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
     current_user = get_current_user(conn)
 
     with token <- System.get_api_token(id),
-         true <- token && (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
+         true <-
+           token &&
+             (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
          {:ok, _token} <- System.revoke_api_token(token) do
       send_resp(conn, :no_content, "")
     else
@@ -169,7 +191,11 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
   swagger_path :rotate do
     post("/v1/tokens/{user_api_token_id}/rotate")
     summary("Rotate API token")
-    description("Rotates an API token, generating a new token value while keeping the same ID and settings. Only the token creator or super admins can perform this action.")
+
+    description(
+      "Rotates an API token, generating a new token value while keeping the same ID and settings. Only the token creator or super admins can perform this action."
+    )
+
     produces("application/json")
     tag("API Tokens")
     security([%{Bearer: []}])
@@ -188,7 +214,9 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
     current_user = get_current_user(conn)
 
     with token <- System.get_api_token(id),
-         true <- token && (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
+         true <-
+           token &&
+             (token.user_id == current_user.id || Authorization.is_super_admin?(current_user)),
          {:ok, {new_token, plain_token}} <- System.rotate_api_token(token) do
       conn
       |> put_view(VoileWeb.API.V1.UserApiTokenJson)
@@ -209,7 +237,15 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
             id(:string, "Unique identifier (UUID)", required: true, format: "uuid")
             name(:string, "Token name", required: true)
             description(:string, "Token description")
-            scopes(:array, "Token scopes - available options: read, write, delete, admin, users:read, users:write", items: %{type: :string}, required: true, enum: ["read", "write", "delete", "admin", "users:read", "users:write"])
+
+            scopes(
+              :array,
+              "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+              items: %{type: :string},
+              required: true,
+              enum: ["read", "write", "delete", "admin", "users:read", "users:write"]
+            )
+
             last_used_at(:string, "Last used timestamp", format: "date-time")
             last_used_ip(:string, "Last used IP address")
             expires_at(:string, "Expiration timestamp", format: "date-time")
@@ -227,7 +263,15 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
           properties do
             name(:string, "Token name", required: true)
             description(:string, "Token description")
-            scopes(:array, "Token scopes - available options: read, write, delete, admin, users:read, users:write", items: %{type: :string}, required: true, enum: ["read", "write", "delete", "admin", "users:read", "users:write"])
+
+            scopes(
+              :array,
+              "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+              items: %{type: :string},
+              required: true,
+              enum: ["read", "write", "delete", "admin", "users:read", "users:write"]
+            )
+
             expires_at(:string, "Expiration timestamp", format: "date-time")
             ip_whitelist(:array, "IP whitelist", items: %{type: :string})
           end
@@ -240,7 +284,14 @@ defmodule VoileWeb.API.V1.UserApiTokenController do
           properties do
             name(:string, "Token name")
             description(:string, "Token description")
-            scopes(:array, "Token scopes - available options: read, write, delete, admin, users:read, users:write", items: %{type: :string}, enum: ["read", "write", "delete", "admin", "users:read", "users:write"])
+
+            scopes(
+              :array,
+              "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+              items: %{type: :string},
+              enum: ["read", "write", "delete", "admin", "users:read", "users:write"]
+            )
+
             expires_at(:string, "Expiration timestamp", format: "date-time")
             ip_whitelist(:array, "IP whitelist", items: %{type: :string})
           end

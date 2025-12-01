@@ -230,14 +230,15 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
     token_params = process_token_params(token_params)
 
     # Set default scopes for regular users if none provided
-    token_params = if socket.assigns.is_admin do
-      token_params
-    else
-      Map.update(token_params, "scopes", ["read"], fn
-        scopes when is_list(scopes) and length(scopes) > 0 -> scopes
-        _ -> ["read"]
-      end)
-    end
+    token_params =
+      if socket.assigns.is_admin do
+        token_params
+      else
+        Map.update(token_params, "scopes", ["read"], fn
+          scopes when is_list(scopes) and length(scopes) > 0 -> scopes
+          _ -> ["read"]
+        end)
+      end
 
     System.create_api_token(socket.assigns.current_user, token_params)
   end

@@ -487,7 +487,8 @@ defmodule VoileWeb.Router do
         Bearer: %{
           type: "apiKey",
           name: "token",
-          description: "API Token can be provided via `token` query parameter or `Authorization: Bearer <token>` header",
+          description:
+            "API Token can be provided via `token` query parameter or `Authorization: Bearer <token>` header",
           in: "query"
         }
       },
