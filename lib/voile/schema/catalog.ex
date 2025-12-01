@@ -58,7 +58,7 @@ defmodule Voile.Schema.Catalog do
       |> limit(^per_page)
       |> offset(^offset)
 
-    # Only preload necessary associations for list view (not items or collection_fields)
+    # Only preload necessary associations for list view (not items)
     collections =
       Repo.all(query)
       |> Repo.preload([
@@ -75,7 +75,7 @@ defmodule Voile.Schema.Catalog do
 
     total_count =
       count_query
-      |> maybe_search_collections(search)
+      |> maybe_search_collections_for_count(search)
       |> apply_collection_filters(filters)
       |> Repo.one()
 
@@ -90,10 +90,10 @@ defmodule Voile.Schema.Catalog do
     like = "%#{search}%"
 
     from c in query,
+      as: :collection,
       left_join: creator in assoc(c, :mst_creator),
       left_join: node in assoc(c, :node),
       left_join: rc in assoc(c, :resource_class),
-      left_join: cf in assoc(c, :collection_fields),
       where:
         ilike(c.title, ^like) or
           ilike(c.description, ^like) or
@@ -103,13 +103,34 @@ defmodule Voile.Schema.Catalog do
           ilike(c.access_level, ^like) or
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
-          ilike(rc.label, ^like) or
-          ilike(cf.value, ^like)
+          ilike(rc.label, ^like)
   end
 
   defp maybe_search_collections(query, _), do: query
 
-  defp apply_collection_filters(query, filters) when filters == %{}, do: query
+  defp maybe_search_collections_for_count(query, nil), do: query
+
+  defp maybe_search_collections_for_count(query, search)
+       when is_binary(search) and search != "" do
+    like = "%#{search}%"
+
+    from c in query,
+      left_join: creator in assoc(c, :mst_creator),
+      left_join: node in assoc(c, :node),
+      left_join: rc in assoc(c, :resource_class),
+      where:
+        ilike(c.title, ^like) or
+          ilike(c.description, ^like) or
+          ilike(c.collection_type, ^like) or
+          ilike(c.collection_code, ^like) or
+          ilike(c.status, ^like) or
+          ilike(c.access_level, ^like) or
+          ilike(creator.creator_name, ^like) or
+          ilike(node.name, ^like) or
+          ilike(rc.label, ^like)
+  end
+
+  defp maybe_search_collections_for_count(query, _), do: query
 
   defp apply_collection_filters(query, filters) do
     query

@@ -8,7 +8,7 @@
       "email": "chrisna.adhi@unpad.ac.id"
     }
   },
-  "host": "10.92.53.245:4000",
+  "host": "localhost:4000",
   "definitions": {
     "Transaction": {
       "description": "A circulation transaction entity",
@@ -568,6 +568,82 @@
         "id"
       ],
       "title": "User",
+      "type": "object"
+    },
+    "UserApiToken": {
+      "description": "An API token for user authentication",
+      "properties": {
+        "description": {
+          "description": "Token description",
+          "type": "string"
+        },
+        "expires_at": {
+          "description": "Expiration timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique identifier (UUID)",
+          "format": "uuid",
+          "type": "string"
+        },
+        "inserted_at": {
+          "description": "Creation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "is_active": {
+          "description": "Whether the token is active",
+          "type": "boolean"
+        },
+        "last_used_at": {
+          "description": "Last used timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "last_used_ip": {
+          "description": "Last used IP address",
+          "type": "string"
+        },
+        "name": {
+          "description": "Token name",
+          "type": "string"
+        },
+        "revoked_at": {
+          "description": "Revocation timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "scopes": {
+          "description": "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+          "enum": [
+            "read",
+            "write",
+            "delete",
+            "admin",
+            "users:read",
+            "users:write"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "updated_at": {
+          "description": "Last update timestamp",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "updated_at",
+        "inserted_at",
+        "is_active",
+        "scopes",
+        "name",
+        "id"
+      ],
+      "title": "UserApiToken",
       "type": "object"
     },
     "CirculationResponse": {
@@ -1285,6 +1361,133 @@
       ],
       "title": "UserResponse",
       "type": "object"
+    },
+    "UserApiTokensResponse": {
+      "description": "Response containing a list of API tokens",
+      "properties": {
+        "data": {
+          "description": "List of tokens",
+          "items": {
+            "$ref": "#/definitions/UserApiToken"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "UserApiTokensResponse",
+      "type": "object"
+    },
+    "UserApiTokenInput": {
+      "description": "Input schema for creating a new API token",
+      "properties": {
+        "description": {
+          "description": "Token description",
+          "type": "string"
+        },
+        "expires_at": {
+          "description": "Expiration timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "ip_whitelist": {
+          "description": "IP whitelist",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Token name",
+          "type": "string"
+        },
+        "scopes": {
+          "description": "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+          "enum": [
+            "read",
+            "write",
+            "delete",
+            "admin",
+            "users:read",
+            "users:write"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "scopes",
+        "name"
+      ],
+      "title": "UserApiTokenInput",
+      "type": "object"
+    },
+    "UserApiTokenResponse": {
+      "description": "Response containing a single API token",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/UserApiToken",
+          "description": "Token data"
+        },
+        "token": {
+          "description": "Plain token value (only returned on creation/rotation)",
+          "type": "string"
+        },
+        "warning": {
+          "description": "Warning message about token security",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "UserApiTokenResponse",
+      "type": "object"
+    },
+    "UserApiTokenUpdateInput": {
+      "description": "Input schema for updating an API token",
+      "properties": {
+        "description": {
+          "description": "Token description",
+          "type": "string"
+        },
+        "expires_at": {
+          "description": "Expiration timestamp",
+          "format": "date-time",
+          "type": "string"
+        },
+        "ip_whitelist": {
+          "description": "IP whitelist",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Token name",
+          "type": "string"
+        },
+        "scopes": {
+          "description": "Token scopes - available options: read, write, delete, admin, users:read, users:write",
+          "enum": [
+            "read",
+            "write",
+            "delete",
+            "admin",
+            "users:read",
+            "users:write"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "title": "UserApiTokenUpdateInput",
+      "type": "object"
     }
   },
   "tags": [
@@ -1314,12 +1517,15 @@
     }
   ],
   "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
   "securityDefinitions": {
     "Bearer": {
       "in": "query",
       "name": "token",
       "type": "apiKey",
-      "description": "API Token must be provided via `token` query parameter"
+      "description": "API Token can be provided via `token` query parameter or `Authorization: Bearer <token>` header"
     }
   },
   "consumes": [
@@ -1327,9 +1533,6 @@
   ],
   "produces": [
     "application/json"
-  ],
-  "schemes": [
-    "http"
   ],
   "paths": {
     "/v1/circulation/{identifier}": {
@@ -2426,6 +2629,286 @@
         "summary": "Update an item",
         "tags": [
           "Items"
+        ]
+      }
+    },
+    "/v1/tokens": {
+      "get": {
+        "description": "Returns a list of API tokens for the authenticated user",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.index",
+        "parameters": [],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserApiTokensResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List API tokens",
+        "tags": [
+          "API Tokens"
+        ]
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates a new API token for the authenticated user",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.create",
+        "parameters": [
+          {
+            "description": "Token parameters",
+            "in": "body",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create API token",
+        "tags": [
+          "API Tokens"
+        ]
+      }
+    },
+    "/v1/tokens/{id}": {
+      "delete": {
+        "description": "Revokes (deletes) an API token. Only the token creator or super admins can perform this action.",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.delete",
+        "parameters": [
+          {
+            "description": "Token ID",
+            "format": "uuid",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Revoke API token",
+        "tags": [
+          "API Tokens"
+        ]
+      },
+      "get": {
+        "description": "Returns details of a specific API token. Only the token creator or super admins can view token details.",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.show",
+        "parameters": [
+          {
+            "description": "Token ID",
+            "format": "uuid",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Get API token",
+        "tags": [
+          "API Tokens"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Updates an existing API token. Only the token creator or super admins can perform this action.",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.update",
+        "parameters": [
+          {
+            "description": "Token ID",
+            "format": "uuid",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Token update parameters",
+            "in": "body",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenUpdateInput"
+            }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Update API token",
+        "tags": [
+          "API Tokens"
+        ]
+      }
+    },
+    "/v1/tokens/{user_api_token_id}/rotate": {
+      "post": {
+        "description": "Rotates an API token, generating a new token value while keeping the same ID and settings. Only the token creator or super admins can perform this action.",
+        "operationId": "VoileWeb.API.V1.UserApiTokenController.rotate",
+        "parameters": [
+          {
+            "description": "Token ID",
+            "format": "uuid",
+            "in": "path",
+            "name": "user_api_token_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserApiTokenResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Rotate API token",
+        "tags": [
+          "API Tokens"
         ]
       }
     },
