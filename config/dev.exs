@@ -51,7 +51,7 @@ config :assent,
 config :voile, VoileWeb.Endpoint,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [
-    ip: {127, 0, 0, 1},
+    ip: {0, 0, 0, 0},
     port: String.to_integer(System.get_env("PORT") || "4000")
   ],
   check_origin: false,

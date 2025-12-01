@@ -99,31 +99,94 @@ document.addEventListener("voile:set-active-tab", (e) => {
 });
 
 // Handle copy to clipboard
-document.addEventListener("voile:copy-to-clipboard", (e) => {
+document.addEventListener("voile:copy-to-clipboard", async (e) => {
   try {
-    const targetSelector = e.detail?.to;
+    // For token copy functionality, we hardcode the selector
+    const targetSelector = "#new-token-value";
     const successMessage = e.detail?.success_message || "Copied!";
 
     if (targetSelector) {
       const input = document.querySelector(targetSelector);
       if (input) {
-        input.select();
-        document.execCommand("copy");
+        const textToCopy = input.value || input.textContent;
 
-        // Show temporary success feedback
-        const originalText = e.target?.textContent;
-        if (e.target) {
-          e.target.textContent = successMessage;
-          setTimeout(() => {
-            if (originalText) e.target.textContent = originalText;
-          }, 2000);
+        // Try modern Clipboard API first (requires HTTPS)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(textToCopy);
+            showSuccessFeedback(e.target, successMessage);
+            return;
+          } catch (clipboardErr) {
+            // Fall back to legacy method
+          }
         }
+
+        // Fallback to legacy method
+        try {
+          input.select();
+          input.setSelectionRange(0, 99999); // For mobile devices
+          const successful = document.execCommand("copy");
+          if (successful) {
+            showSuccessFeedback(e.target, successMessage);
+            return;
+          }
+        } catch (legacyErr) {
+          // Continue to next fallback
+        }
+
+        // Last resort: try to copy using a temporary textarea
+        try {
+          const textArea = document.createElement("textarea");
+          textArea.value = textToCopy;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          const successful = document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          if (successful) {
+            showSuccessFeedback(e.target, successMessage);
+            return;
+          }
+        } catch (fallbackErr) {
+          // All methods failed
+        }
+
+        // If all methods fail, show error feedback
+        showErrorFeedback(e.target, "Copy failed");
+      } else {
+        console.error("Target element not found:", targetSelector);
       }
     }
   } catch (err) {
     console.error("Error handling voile:copy-to-clipboard", err);
   }
 });
+
+function showSuccessFeedback(element, message) {
+  if (element) {
+    const originalText = element.textContent;
+    element.textContent = message;
+    setTimeout(() => {
+      if (originalText) element.textContent = originalText;
+    }, 2000);
+  }
+}
+
+function showErrorFeedback(element, message) {
+  if (element) {
+    const originalText = element.textContent;
+    element.textContent = message;
+    element.style.color = "red";
+    setTimeout(() => {
+      if (originalText) element.textContent = originalText;
+      element.style.color = "";
+    }, 2000);
+  }
+}
 
 let header = document.getElementById("navigationHeader");
 let sticky = header?.offsetTop;

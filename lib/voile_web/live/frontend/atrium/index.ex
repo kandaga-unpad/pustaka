@@ -1,5 +1,6 @@
 defmodule VoileWeb.Frontend.Atrium.Index do
   use VoileWeb, :live_view
+  use Gettext, backend: VoileWeb.Gettext
 
   alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
@@ -255,11 +256,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       {:ok} ->
         case Circulation.get_transaction(tx_id) do
           nil ->
-            {:noreply, socket |> put_flash(:error, "Transaction not found")}
+            {:noreply, socket |> put_flash(:error, gettext("Transaction not found"))}
 
           tx ->
             if tx.member_id != member.id do
-              {:noreply, socket |> put_flash(:error, "You can only renew your own loans")}
+              {:noreply,
+               socket |> put_flash(:error, gettext("You can only renew your own loans"))}
             else
               {:noreply,
                socket
@@ -314,7 +316,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
            |> assign(:renewing_loan_id, nil)
            |> put_flash(
              :info,
-             "Loan renewed successfully! New due date: #{new_due_date}"
+             gettext("Loan renewed successfully! New due date: %{new_due_date}",
+               new_due_date: new_due_date
+             )
            )
            |> assign(loans: loans, loans_total_pages: loans_total_pages)}
 
@@ -322,22 +326,22 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           error_message =
             case reason do
               :max_renewals_reached ->
-                "Maximum renewals reached for this item"
+                gettext("Maximum renewals reached for this item")
 
               :overdue ->
-                "Cannot renew overdue items. Please return or contact library staff"
+                gettext("Cannot renew overdue items. Please return or contact library staff")
 
               :has_holds ->
-                "Cannot renew - this item has pending reservations"
+                gettext("Cannot renew - this item has pending reservations")
 
               _ ->
-                "Could not renew loan: #{inspect(reason)}"
+                gettext("Could not renew loan: %{reason}", reason: inspect(reason))
             end
 
           {:noreply, socket |> assign(:renewing_loan_id, nil) |> put_flash(:error, error_message)}
       end
     else
-      {:noreply, socket |> put_flash(:error, "Transaction not found")}
+      {:noreply, socket |> put_flash(:error, gettext("Transaction not found"))}
     end
   end
 
@@ -360,7 +364,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           fine = Circulation.get_fine!(fine_id)
 
           if fine.member_id != member.id do
-            {:noreply, socket |> put_flash(:error, "You can only pay your own fines")}
+            {:noreply, socket |> put_flash(:error, gettext("You can only pay your own fines"))}
           else
             case Circulation.pay_fine(fine_id, dec, "cash", member.id, nil) do
               {:ok, _updated} ->
@@ -373,20 +377,25 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                 {:noreply,
                  socket
-                 |> put_flash(:info, "Fine payment successful")
+                 |> put_flash(:info, gettext("Fine payment successful"))
                  |> assign(fines: fines, fines_total_pages: fines_total_pages)}
 
               {:error, reason} ->
-                {:noreply, socket |> put_flash(:error, "Payment failed: #{inspect(reason)}")}
+                {:noreply,
+                 socket
+                 |> put_flash(
+                   :error,
+                   gettext("Payment failed: %{reason}", reason: inspect(reason))
+                 )}
             end
           end
         rescue
           _ ->
-            {:noreply, socket |> put_flash(:error, "Fine not found")}
+            {:noreply, socket |> put_flash(:error, gettext("Fine not found"))}
         end
 
       :error ->
-        {:noreply, socket |> put_flash(:error, "Invalid amount")}
+        {:noreply, socket |> put_flash(:error, gettext("Invalid amount"))}
     end
   end
 
@@ -447,11 +456,15 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                  status: payment.status
                }
              )
-             |> put_flash(:info, "Payment link created successfully!")}
+             |> put_flash(:info, gettext("Payment link created successfully!"))}
 
           {:error, reason} ->
             {:noreply,
-             socket |> put_flash(:error, "Failed to create payment link: #{inspect(reason)}")}
+             socket
+             |> put_flash(
+               :error,
+               gettext("Failed to create payment link: %{reason}", reason: inspect(reason))
+             )}
         end
     end
   end
@@ -461,7 +474,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   end
 
   def handle_event("copy_payment_link", _params, socket) do
-    {:noreply, put_flash(socket, :info, "Payment link copied to clipboard!")}
+    {:noreply, put_flash(socket, :info, gettext("Payment link copied to clipboard!"))}
   end
 
   def handle_event("dismiss_notification_badge", _params, socket) do
@@ -479,7 +492,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         {:noreply, socket |> push_event("redirect", %{url: payment.payment_url})}
 
       {:error, _} ->
-        {:noreply, socket |> put_flash(:error, "Payment link not found")}
+        {:noreply, socket |> put_flash(:error, gettext("Payment link not found"))}
     end
   end
 
@@ -509,10 +522,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           {:noreply,
            socket
            |> assign(:profile_form, to_form(changeset))
-           |> put_flash(:info, "User image deleted successfully")}
+           |> put_flash(:info, gettext("User image deleted successfully"))}
 
         {:error, _changeset} ->
-          {:noreply, put_flash(socket, :error, "Failed to delete user image")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to delete user image"))}
       end
     else
       # just clear any preview value in the form params
@@ -522,7 +535,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       {:noreply,
        socket
        |> assign(:profile_form, to_form(changeset))
-       |> put_flash(:info, "User image removed")}
+       |> put_flash(:info, gettext("User image removed"))}
     end
   end
 
@@ -552,7 +565,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         # Update assigns so the UI (header/profile) reflects the saved user immediately
         socket =
           socket
-          |> put_flash(:info, "Profile updated")
+          |> put_flash(:info, gettext("Profile updated"))
           |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)
           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, user))
 
@@ -861,12 +874,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <h1 class="text-2xl font-semibold">Welcome back, {@current_scope.user.fullname}</h1>
 
               <p class="mt-1 text-sm opacity-90">
-                This is your Atrium — a personalized member dashboard.
+                {gettext("This is your Atrium — a personalized member dashboard.")}
               </p>
 
               <div class="mt-3 flex items-center gap-3 text-sm">
                 <span class="px-3 py-1 bg-white/20 rounded-full">
-                  Fines:
+                  {gettext("Fines:")}
                   <strong class="ml-1">
                     Rp {AtriumHelper.format_currency(@total_unpaid_fines_amount)}
                   </strong>
@@ -894,36 +907,42 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               </div>
 
               <div class="mt-4 text-sm space-y-2">
-                <div><strong>Email:</strong> {@current_scope.user.email}</div>
+                <div><strong>{gettext("Email:")}</strong> {@current_scope.user.email}</div>
 
                 <div>
-                  <strong>Member type:</strong> {AtriumHelper.user_type_name(@current_scope.user)}
+                  <strong>{gettext("Member type:")}</strong> {AtriumHelper.user_type_name(
+                    @current_scope.user
+                  )}
                 </div>
 
                 <div>
-                  <strong>Location Node:</strong> {AtriumHelper.node_name(@current_scope.user)}
+                  <strong>{gettext("Location Node:")}</strong> {AtriumHelper.node_name(
+                    @current_scope.user
+                  )}
                 </div>
               </div>
 
               <div class="mt-6">
-                <h6 class="text-sm font-medium text-voile-muted mb-3">Circulation Summary</h6>
+                <h6 class="text-sm font-medium text-voile-muted mb-3">
+                  {gettext("Circulation Summary")}
+                </h6>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
-                    <div class="text-xs text-voile-muted">Active Loans</div>
+                    <div class="text-xs text-voile-muted">{gettext("Active Loans")}</div>
 
                     <div class="text-lg font-semibold">{@total_loans}</div>
                   </div>
 
                   <div class="p-3 bg-voile-neutral rounded-lg text-center">
-                    <div class="text-xs text-voile-muted">Unpaid Fines</div>
+                    <div class="text-xs text-voile-muted">{gettext("Unpaid Fines")}</div>
 
                     <div class="text-lg font-semibold">
                       Rp {AtriumHelper.format_currency(@total_unpaid_fines_amount)}
                     </div>
 
                     <div class="text-xs text-voile-muted mt-1">
-                      {@total_unpaid_fines} fine(s)
+                      {@total_unpaid_fines} {gettext("fine(s)")}
                     </div>
                   </div>
                 </div>
@@ -935,7 +954,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     phx-value-tab="circulation"
                     class="w-full primary-btn"
                   >
-                    View Circulation
+                    {gettext("View Circulation")}
                   </.button>
                 </div>
               </div>
@@ -954,8 +973,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 <%= for {tab, idx} <- Enum.with_index(@tabs) do %>
                   <% tab_str = Atom.to_string(tab) %> <% label =
                     case tab do
-                      :fine_history -> "Fine History"
-                      :loan_history -> "Loan History"
+                      :fine_history -> gettext("Fine History")
+                      :loan_history -> gettext("Loan History")
                       _ -> String.capitalize(tab_str)
                     end %>
                   <button
@@ -977,7 +996,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     id="tab-settings"
                     class="p-4 rounded-md border border-voile-light dark:border-voile-dark"
                   >
-                    <h4 class="text-lg font-semibold mb-4">Account Settings</h4>
+                    <h4 class="text-lg font-semibold mb-4">{gettext("Account Settings")}</h4>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div class="space-y-4">
@@ -988,18 +1007,27 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           phx-change="validate_profile"
                         >
                           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <.input field={@profile_form[:fullname]} type="text" label="Full name" />
+                            <.input
+                              field={@profile_form[:fullname]}
+                              type="text"
+                              label={gettext("Full name")}
+                            />
                             <.input
                               field={@profile_form[:username]}
                               type="text"
-                              label="Username"
+                              label={gettext("Username")}
                               disabled
                             />
                           </div>
 
-                          <.input field={@profile_form[:email]} type="email" label="Email" disabled />
+                          <.input
+                            field={@profile_form[:email]}
+                            type="email"
+                            label={gettext("Email")}
+                            disabled
+                          />
                           <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Profile image
+                            {gettext("Profile image")}
                           </label>
                           <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
                             <%= if @profile_form.params["user_image"] && @profile_form.params["user_image"] != "" do %>
@@ -1041,11 +1069,15 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </div>
 
                           <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <.input field={@profile_form[:website]} type="url" label="Website" />
+                            <.input
+                              field={@profile_form[:website]}
+                              type="url"
+                              label={gettext("Website")}
+                            />
                             <.input
                               field={@profile_form[:twitter]}
                               type="text"
-                              label="Twitter"
+                              label={gettext("Twitter")}
                               placeholder="@username"
                             />
                           </div>
@@ -1054,72 +1086,86 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <.input
                               field={@user_profile_form[:fullname]}
                               type="text"
-                              label="Full name"
+                              label={gettext("Full name")}
                             />
                             <.input
                               field={@user_profile_form[:phone_number]}
                               type="text"
-                              label="Phone number"
+                              label={gettext("Phone number")}
                             />
-                            <.input field={@user_profile_form[:address]} type="text" label="Address" />
+                            <.input
+                              field={@user_profile_form[:address]}
+                              type="text"
+                              label={gettext("Address")}
+                            />
                             <.input
                               field={@user_profile_form[:birth_date]}
                               type="date"
-                              label="Birth date"
+                              label={gettext("Birth date")}
                             />
                             <.input
                               field={@user_profile_form[:birth_place]}
                               type="text"
-                              label="Birth place"
+                              label={gettext("Birth place")}
                             />
-                            <.input field={@user_profile_form[:gender]} type="text" label="Gender" />
+                            <.input
+                              field={@user_profile_form[:gender]}
+                              type="text"
+                              label={gettext("Gender")}
+                            />
                             <.input
                               field={@user_profile_form[:registration_date]}
                               type="date"
-                              label="Registration date"
+                              label={gettext("Registration date")}
                               disabled
                             />
                             <.input
                               field={@user_profile_form[:expiry_date]}
                               type="date"
-                              label="Expiry date"
+                              label={gettext("Expiry date")}
                               disabled
                             />
                             <.input
                               field={@user_profile_form[:organization]}
                               type="text"
-                              label="Organization"
+                              label={gettext("Organization")}
                             />
                             <.input
                               field={@user_profile_form[:department]}
                               type="text"
-                              label="Department"
+                              label={gettext("Department")}
                             />
                             <.input
                               field={@user_profile_form[:position]}
                               type="text"
-                              label="Position"
+                              label={gettext("Position")}
                             />
                           </div>
                           <hr class="my-4" />
-                          <h5 class="text-sm font-medium mb-2">Member profile details</h5>
+                          <h5 class="text-sm font-medium mb-2">
+                            {gettext("Member profile details")}
+                          </h5>
 
                           <div class="text-sm text-voile-muted mb-3 space-y-1">
-                            <p>Role: {AtriumHelper.role_name(@current_scope.user)}</p>
-
-                            <p>Member type: {AtriumHelper.user_type_name(@current_scope.user)}</p>
-
-                            <p>Node: {AtriumHelper.node_name(@current_scope.user)}</p>
-
-                            <p>Confirmed at: {@current_scope.user.confirmed_at}</p>
+                            <p>{gettext("Role:")} {AtriumHelper.role_name(@current_scope.user)}</p>
 
                             <p>
-                              Last login: {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
+                              {gettext("Member type:")} {AtriumHelper.user_type_name(
+                                @current_scope.user
+                              )}
+                            </p>
+
+                            <p>{gettext("Node:")} {AtriumHelper.node_name(@current_scope.user)}</p>
+
+                            <p>{gettext("Confirmed at:")} {@current_scope.user.confirmed_at}</p>
+
+                            <p>
+                              {gettext("Last login:")} {@current_scope.user.last_login} ({@current_scope.user.last_login_ip})
                             </p>
                           </div>
 
                           <div class="mt-3 grid grid-cols-1 gap-2">
-                            <.button phx-disable-with="Saving...">Save Profile</.button>
+                            <.button phx-disable-with="Saving...">{gettext("Save Profile")}</.button>
                           </div>
                         </.form>
                       </div>
@@ -1127,7 +1173,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                       <div>
                         <%= if @has_password do %>
                           <%!-- Change Password Form (for users with existing password) --%>
-                          <h5 class="text-lg font-semibold mb-4">Change Password</h5>
+                          <h5 class="text-lg font-semibold mb-4">{gettext("Change Password")}</h5>
 
                           <.form
                             for={@password_form}
@@ -1147,31 +1193,33 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             <.input
                               field={@password_form[:password]}
                               type="password"
-                              label="New password"
+                              label={gettext("New password")}
                               required
                             />
                             <.input
                               field={@password_form[:password_confirmation]}
                               type="password"
-                              label="Confirm new password"
+                              label={gettext("Confirm new password")}
                             />
                             <.input
                               field={@password_form[:current_password]}
                               name="current_password"
                               type="password"
-                              label="Current password"
+                              label={gettext("Current password")}
                               id="current_password_for_password"
                               value={@current_password}
                               required
                             />
                             <div class="mt-3">
-                              <.button phx-disable-with="Changing...">Change Password</.button>
+                              <.button phx-disable-with="Changing...">
+                                {gettext("Change Password")}
+                              </.button>
                             </div>
                           </.form>
 
                           <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                             <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                              <strong>Forgot your current password?</strong>
+                              <strong>{gettext("Forgot your current password?")}</strong>
                             </div>
 
                             <.button
@@ -1179,11 +1227,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               phx-click="request_password_reset"
                             >
                               <.icon name="hero-envelope" class="w-5 h-5 mr-2" />
-                              Request Password Reset Email
+                              {gettext("Request Password Reset Email")}
                             </.button>
 
                             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                              We'll send you a secure link to reset your password via email.
+                              {gettext(
+                                "We'll send you a secure link to reset your password via email."
+                              )}
                             </p>
                           </div>
                         <% else %>
@@ -1195,16 +1245,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"
                               />
                               <div class="text-sm text-blue-800 dark:text-blue-200">
-                                <p class="font-medium mb-1">No Password Set</p>
+                                <p class="font-medium mb-1">{gettext("No Password Set")}</p>
 
                                 <p>
-                                  You currently don't have a password for your account. You can set one by requesting a password reset link via email.
+                                  {gettext(
+                                    "You currently don't have a password for your account. You can set one by requesting a password reset link via email."
+                                  )}
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                          <h5 class="text-lg font-semibold mb-4">Set Up Password</h5>
+                          <h5 class="text-lg font-semibold mb-4">{gettext("Set Up Password")}</h5>
 
                           <div class="space-y-4">
                             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
@@ -1220,13 +1272,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                 <div class="flex-1">
                                   <h6 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                    Secure Password Setup
+                                    {gettext("Secure Password Setup")}
                                   </h6>
 
                                   <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                    For security reasons, we'll send you a secure link to
+                                    {gettext("For security reasons, we'll send you a secure link to")}
                                     <strong>{@current_email}</strong>
-                                    where you can safely set up your password.
+                                    {gettext("where you can safely set up your password.")}
                                   </p>
 
                                   <.button
@@ -1235,7 +1287,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     class="w-full"
                                   >
                                     <.icon name="hero-envelope" class="w-5 h-5 mr-2" />
-                                    Send Password Setup Link
+                                    {gettext("Send Password Setup Link")}
                                   </.button>
                                 </div>
                               </div>
@@ -1272,11 +1324,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
                       <div class="flex items-start justify-between">
                         <div>
-                          <h4 class="text-lg font-semibold">Your Active Loans</h4>
+                          <h4 class="text-lg font-semibold">{gettext("Your Active Loans")}</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Showing {length(@loans || [])} of <strong>{@total_loans}</strong>
-                            active loans
+                            {gettext("Showing")} {length(@loans || [])} {gettext("of")}
+                            <strong>{@total_loans}</strong>
+                            {gettext("active loans")}
                           </div>
                         </div>
 
@@ -1290,13 +1343,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               phx-click="loans_prev"
                               disabled={@loans_page <= 1}
                             >
-                              Prev
+                              {gettext("Prev")}
                             </.button>
                             <.button
                               phx-click="loans_next"
                               disabled={@loans_page >= @loans_total_pages}
                             >
-                              Next
+                              {gettext("Next")}
                             </.button>
                           </div>
                         <% end %>
@@ -1304,7 +1357,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                       <div class="mt-4">
                         <%= if @loans == [] do %>
-                          <p class="text-sm text-voile-muted">You have no active loans.</p>
+                          <p class="text-sm text-voile-muted">
+                            {gettext("You have no active loans.")}
+                          </p>
                         <% else %>
                           <ul class="space-y-3">
                             <%= for tx <- @loans do %>
@@ -1352,29 +1407,37 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       <% is_overdue -> %>
                                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 font-medium">
                                           <.icon name="hero-exclamation-circle" class="w-3 h-3 mr-1" />
-                                          Overdue by {abs(days_until_due)} day(s)
+                                          {gettext("Overdue by")} {abs(days_until_due)} {gettext(
+                                            "day(s)"
+                                          )}
                                         </span>
                                       <% is_due_soon -> %>
                                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-medium">
                                           <.icon name="hero-clock" class="w-3 h-3 mr-1" />
-                                          Due in {days_until_due} day(s)
+                                          {gettext("Due in")} {days_until_due} {gettext("day(s)")}
                                         </span>
                                       <% true -> %>
                                         <span class="text-voile-muted">
                                           <.icon
                                             name="hero-calendar"
                                             class="w-3 h-3 inline mr-1"
-                                          /> Due: {Calendar.strftime(tx.due_date, "%b %d, %Y")}
+                                          /> {gettext("Due:")} {Calendar.strftime(
+                                            tx.due_date,
+                                            "%b %d, %Y"
+                                          )}
                                         </span>
                                     <% end %>
 
                                     <span class="text-voile-muted">
                                       <.icon name="hero-arrow-path" class="w-3 h-3 inline mr-1" />
-                                      Renewed: {tx.renewal_count}/{max_renewals}
+                                      {gettext("Renewed:")} {tx.renewal_count}/{max_renewals}
                                     </span>
                                     <%= if tx.transaction_date do %>
                                       <span class="text-voile-muted">
-                                        Borrowed: {Calendar.strftime(tx.transaction_date, "%b %d")}
+                                        {gettext("Borrowed:")} {Calendar.strftime(
+                                          tx.transaction_date,
+                                          "%b %d"
+                                        )}
                                       </span>
                                     <% end %>
                                   </div>
@@ -1385,33 +1448,38 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                         <% is_overdue -> %>
                                           <span class="inline-flex items-center text-red-600 dark:text-red-400">
                                             <.icon name="hero-x-circle" class="w-3 h-3 mr-1" />
-                                            Cannot renew overdue items
+                                            {gettext("Cannot renew overdue items")}
                                           </span>
                                         <% not can_renew_type -> %>
                                           <span class="inline-flex items-center text-gray-500">
                                             <.icon name="hero-no-symbol" class="w-3 h-3 mr-1" />
-                                            Renewals not available for your member type
+                                            {gettext("Renewals not available for your member type")}
                                           </span>
                                         <% tx.renewal_count >= max_renewals -> %>
                                           <span class="inline-flex items-center text-gray-500">
                                             <.icon name="hero-no-symbol" class="w-3 h-3 mr-1" />
-                                            Maximum renewals reached
+                                            {gettext("Maximum renewals reached")}
                                           </span>
                                         <% too_late_to_renew -> %>
                                           <span class="inline-flex items-center text-amber-600 dark:text-amber-400">
                                             <.icon name="hero-clock" class="w-3 h-3 mr-1" />
-                                            Too late to renew (must renew at least 1 day before due)
-                                            <br /> Please contact library staff for assistance.
+                                            {gettext(
+                                              "Too late to renew (must renew at least 1 day before due)"
+                                            )}
+                                            <br /> {gettext(
+                                              "Please contact library staff for assistance."
+                                            )}
                                           </span>
                                         <% too_early_to_renew -> %>
                                           <span class="inline-flex items-center text-blue-600 dark:text-blue-400">
                                             <.icon
                                               name="hero-information-circle"
                                               class="w-3 h-3 mr-1"
-                                            /> Available for renewal in {days_until_due - 3} day(s)
+                                            /> {gettext("Available for renewal in")} {days_until_due -
+                                              3} {gettext("day(s)")}
                                           </span>
                                         <% true -> %>
-                                          <span>Cannot renew this item</span>
+                                          <span>{gettext("Cannot renew this item")}</span>
                                       <% end %>
                                     </div>
                                   <% else %>
@@ -1419,7 +1487,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       <div class="mt-2 text-xs text-green-600 dark:text-green-400">
                                         <span class="inline-flex items-center">
                                           <.icon name="hero-check-circle" class="w-3 h-3 mr-1" />
-                                          Renewal available now
+                                          {gettext("Renewal available now")}
                                         </span>
                                       </div>
                                     <% end %>
@@ -1464,7 +1532,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       disabled={renew_disabled}
                                       class={"inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors " <> (if renew_disabled, do: "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed", else: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md")}
                                     >
-                                      <.icon name="hero-arrow-path" class="w-4 h-4 mr-1.5" /> Renew
+                                      <.icon name="hero-arrow-path" class="w-4 h-4 mr-1.5" /> {gettext(
+                                        "Renew"
+                                      )}
                                     </button>
                                   <% end %>
                                 </div>
@@ -1508,11 +1578,13 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                           <div class="flex-1">
                             <div class="text-sm font-medium text-blue-900 dark:text-blue-100">
-                              Processing your payment...
+                              {gettext("Processing your payment...")}
                             </div>
 
                             <div class="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
-                              Please wait while we confirm your payment with the payment gateway.
+                              {gettext(
+                                "Please wait while we confirm your payment with the payment gateway."
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1522,11 +1594,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
                       <div class="flex items-start justify-between">
                         <div>
-                          <h4 class="text-lg font-semibold">Outstanding Fines</h4>
+                          <h4 class="text-lg font-semibold">{gettext("Outstanding Fines")}</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Showing {length(@fines || [])} of <strong>{@total_unpaid_fines}</strong>
-                            unpaid fines
+                            {gettext("Showing")} {length(@fines || [])} {gettext("of")}
+                            <strong>{@total_unpaid_fines}</strong>
+                            {gettext("unpaid fines")}
                           </div>
                         </div>
 
@@ -1560,10 +1633,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                               class="w-16 h-16 mx-auto text-green-500 mb-4"
                             />
                             <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                              No Outstanding Fines
+                              {gettext("No Outstanding Fines")}
                             </p>
 
-                            <p class="text-sm text-voile-muted mt-1">You're all clear! 🎉</p>
+                            <p class="text-sm text-voile-muted mt-1">
+                              {gettext("You're all clear! 🎉")}
+                            </p>
                           </div>
                         <% else %>
                           <ul class="space-y-3">
@@ -1594,19 +1669,21 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                   <div class="flex items-center gap-4 text-xs text-voile-muted">
                                     <span>
-                                      Type:
+                                      {gettext("Type:")}
                                       <strong class="text-gray-700 dark:text-gray-300">
                                         {String.upcase(f.fine_type || "")}
                                       </strong>
                                     </span>
                                     <span>
-                                      Balance:
+                                      {gettext("Balance:")}
                                       <strong class="text-red-600 dark:text-red-400">
                                         Rp {f.balance}
                                       </strong>
                                     </span>
                                     <%= if f.fine_date do %>
-                                      <span>Date: {Calendar.strftime(f.fine_date, "%Y-%m-%d")}</span>
+                                      <span>
+                                        {gettext("Date:")} {Calendar.strftime(f.fine_date, "%Y-%m-%d")}
+                                      </span>
                                     <% end %>
                                   </div>
 
@@ -1625,11 +1702,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                           <div>
                                             <div class="text-xs font-semibold text-green-800 dark:text-green-300">
-                                              Payment Link Ready
+                                              {gettext("Payment Link Ready")}
                                             </div>
 
                                             <div class="text-xs text-green-700 dark:text-green-400">
-                                              Click to view or pay online
+                                              {gettext("Click to view or pay online")}
                                             </div>
                                           </div>
                                         </div>
@@ -1642,7 +1719,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           <.icon
                                             name="hero-arrow-top-right-on-square"
                                             class="w-4 h-4 inline mr-1"
-                                          /> View Link
+                                          /> {gettext("View Link")}
                                         </button>
                                       </div>
                                     </div>
@@ -1657,7 +1734,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                                     >
                                       <.icon name="hero-credit-card" class="w-4 h-4 inline mr-1" />
-                                      Pay Online
+                                      {gettext("Pay Online")}
                                     </button>
                                   <% else %>
                                     <button
@@ -1666,12 +1743,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                       class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-sm rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
                                     >
                                       <.icon name="hero-link" class="w-4 h-4 inline mr-1" />
-                                      Generate Payment
+                                      {gettext("Generate Payment")}
                                     </button>
                                   <% end %>
 
                                   <div class="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
-                                    or pay in person at library
+                                    {gettext("or pay in person at library")}
                                   </div>
                                 </div>
                               </li>
@@ -1688,10 +1765,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
                       <div class="flex items-start justify-between mb-4">
                         <div>
-                          <h4 class="text-lg font-semibold">Fine Payment History</h4>
+                          <h4 class="text-lg font-semibold">{gettext("Fine Payment History")}</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Showing {length(@fine_history || [])} paid/waived fines
+                            {gettext("Showing")} {length(@fine_history || [])} {gettext(
+                              "paid/waived fines"
+                            )}
                           </div>
                         </div>
 
@@ -1718,11 +1797,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         <div class="text-center py-12">
                           <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
                           <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            No Fine History
+                            {gettext("No Fine History")}
                           </p>
 
                           <p class="text-sm text-voile-muted mt-1">
-                            You haven't paid any fines yet.
+                            {gettext("You haven't paid any fines yet.")}
                           </p>
                         </div>
                       <% else %>
@@ -1749,20 +1828,23 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                 <div class="flex items-center gap-4 text-xs text-voile-muted">
                                   <span>
-                                    Type:
+                                    {gettext("Type:")}
                                     <strong class="text-gray-700 dark:text-gray-300">
                                       {String.upcase(fine.fine_type || "")}
                                     </strong>
                                   </span>
                                   <span>
-                                    Amount:
+                                    {gettext("Amount:")}
                                     <strong class="text-green-600 dark:text-green-400">
                                       Rp {Decimal.to_string(fine.amount)}
                                     </strong>
                                   </span>
                                   <%= if fine.payment_date do %>
                                     <span>
-                                      Paid: {Calendar.strftime(fine.payment_date, "%Y-%m-%d")}
+                                      {gettext("Paid:")} {Calendar.strftime(
+                                        fine.payment_date,
+                                        "%Y-%m-%d"
+                                      )}
                                     </span>
                                   <% end %>
                                 </div>
@@ -1786,7 +1868,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
                                   <%= if fine.payment_method do %>
                                     <span class="text-xs text-gray-600 dark:text-gray-400">
-                                      via {String.upcase(fine.payment_method)}
+                                      {gettext("via")} {String.upcase(fine.payment_method)}
                                     </span>
                                   <% end %>
                                 </div>
@@ -1797,7 +1879,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                   navigate={~p"/atrium/fine_detail/#{fine.id}"}
                                   class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
                                 >
-                                  <.icon name="hero-eye" class="w-4 h-4 inline mr-1" /> View Details
+                                  <.icon name="hero-eye" class="w-4 h-4 inline mr-1" /> {gettext(
+                                    "View Details"
+                                  )}
                                 </.link>
                               </div>
                             </li>
@@ -1813,10 +1897,12 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                     <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
                       <div class="flex items-start justify-between mb-4">
                         <div>
-                          <h4 class="text-lg font-semibold">Loan History</h4>
+                          <h4 class="text-lg font-semibold">{gettext("Loan History")}</h4>
 
                           <div class="text-sm text-voile-muted mt-1">
-                            Showing {length(@loan_history || [])} completed loans
+                            {gettext("Showing")} {length(@loan_history || [])} {gettext(
+                              "completed loans"
+                            )}
                           </div>
                         </div>
 
@@ -1843,11 +1929,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                         <div class="text-center py-12">
                           <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
                           <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                            No Loan History
+                            {gettext("No Loan History")}
                           </p>
 
                           <p class="text-sm text-voile-muted mt-1">
-                            You haven't returned any books yet.
+                            {gettext("You haven't returned any books yet.")}
                           </p>
                         </div>
                       <% else %>
@@ -1875,13 +1961,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 <div class="flex items-center gap-4 text-xs text-voile-muted">
                                   <%= if tx.borrow_date do %>
                                     <span>
-                                      Borrowed: {Calendar.strftime(tx.borrow_date, "%Y-%m-%d")}
+                                      {gettext("Borrowed:")} {Calendar.strftime(
+                                        tx.borrow_date,
+                                        "%Y-%m-%d"
+                                      )}
                                     </span>
                                   <% end %>
 
                                   <%= if tx.return_date do %>
                                     <span>
-                                      Returned: {Calendar.strftime(tx.return_date, "%Y-%m-%d")}
+                                      {gettext("Returned:")} {Calendar.strftime(
+                                        tx.return_date,
+                                        "%Y-%m-%d"
+                                      )}
                                     </span>
                                   <% end %>
                                 </div>
@@ -1932,16 +2024,18 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             </div>
 
             <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Payment Link Ready!
+              {gettext("Payment Link Ready!")}
             </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Your payment link has been created. Use it to pay your fine online.
+              {gettext("Your payment link has been created. Use it to pay your fine online.")}
             </p>
           </div>
           <!-- Amount -->
           <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-6 text-center border border-indigo-200 dark:border-indigo-800">
-            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Amount to Pay</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+              {gettext("Amount to Pay")}
+            </div>
 
             <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
               Rp {@payment_link_data.amount}
@@ -1950,7 +2044,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           <!-- Payment Link with Copy Button -->
           <div class="space-y-3">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Payment Link
+              {gettext("Payment Link")}
             </label>
 
             <div class="flex gap-2">
@@ -1977,7 +2071,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
             <p class="text-xs text-gray-500 dark:text-gray-400">
               <.icon name="hero-information-circle" class="w-4 h-4 inline mr-1" />
-              Click the link to copy it to your clipboard
+              {gettext("Click the link to copy it to your clipboard")}
             </p>
           </div>
           <!-- Action Buttons -->
@@ -1987,7 +2081,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               phx-click="close_payment_modal"
               class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
             >
-              Close
+              {gettext("Close")}
             </button>
 
             <a
@@ -1995,7 +2089,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               target="_blank"
               class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl text-center"
             >
-              <.icon name="hero-arrow-top-right-on-square" class="w-5 h-5 inline mr-2" /> Pay Now
+              <.icon name="hero-arrow-top-right-on-square" class="w-5 h-5 inline mr-2" /> {gettext(
+                "Pay Now"
+              )}
             </a>
           </div>
           <!-- Additional Info -->
@@ -2006,13 +2102,15 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                 class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"
               />
               <div class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <p class="font-medium">Important Notes:</p>
+                <p class="font-medium">{gettext("Important Notes:")}</p>
 
                 <ul class="list-disc list-inside space-y-1 text-xs">
-                  <li>This payment link is valid for 24 hours</li>
-                  <li>You can access this link anytime from the Fines tab</li>
-                  <li>Payment will be processed by Xendit (secure payment gateway)</li>
-                  <li>Your fine status will update automatically after successful payment</li>
+                  <li>{gettext("This payment link is valid for 24 hours")}</li>
+                  <li>{gettext("You can access this link anytime from the Fines tab")}</li>
+                  <li>{gettext("Payment will be processed by Xendit (secure payment gateway)")}</li>
+                  <li>
+                    {gettext("Your fine status will update automatically after successful payment")}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -2042,11 +2140,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         <!-- Header -->
         <div class="mb-6">
           <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            Confirm Loan Renewal
+            {gettext("Confirm Loan Renewal")}
           </h3>
 
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Please review the details before confirming
+            {gettext("Please review the details before confirming")}
           </p>
         </div>
         <!-- Book Info -->
@@ -2075,10 +2173,10 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
               <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <%= if tx.item do %>
-                  <p><span class="font-medium">Item Code:</span> {tx.item.item_code}</p>
+                  <p><span class="font-medium">{gettext("Item Code:")}</span> {tx.item.item_code}</p>
 
                   <%= if tx.item.location do %>
-                    <p><span class="font-medium">Location:</span> {tx.item.location}</p>
+                    <p><span class="font-medium">{gettext("Location:")}</span> {tx.item.location}</p>
                   <% end %>
                 <% end %>
               </div>
@@ -2091,7 +2189,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
             <!-- Current Due Date -->
             <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <div class="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
-                Current Due Date
+                {gettext("Current Due Date")}
               </div>
 
               <div class="text-lg font-semibold text-red-700 dark:text-red-300">
@@ -2100,16 +2198,16 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
               <div class="text-xs text-red-600 dark:text-red-400 mt-1">
                 <%= if days_until_current_due > 0 do %>
-                  {days_until_current_due} days remaining
+                  {days_until_current_due} {gettext("days remaining")}
                 <% else %>
-                  Due today
+                  {gettext("Due today")}
                 <% end %>
               </div>
             </div>
             <!-- New Due Date -->
             <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
-                New Due Date
+                {gettext("New Due Date")}
               </div>
 
               <div class="text-lg font-semibold text-green-700 dark:text-green-300">
@@ -2117,38 +2215,38 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               </div>
 
               <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                +{loan_period_days} days extension
+                +{loan_period_days} {gettext("days extension")}
               </div>
             </div>
           </div>
 
           <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <h5 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3">
-              Transaction Details
+              {gettext("Transaction Details")}
             </h5>
 
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span class="text-blue-600 dark:text-blue-400">Transaction Date:</span>
+                <span class="text-blue-600 dark:text-blue-400">{gettext("Transaction Date:")}</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
                   {Calendar.strftime(tx.transaction_date, "%b %d, %Y")}
                 </div>
               </div>
 
               <div>
-                <span class="text-blue-600 dark:text-blue-400">Renewal Count:</span>
+                <span class="text-blue-600 dark:text-blue-400">{gettext("Renewal Count:")}</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
                   {tx.renewal_count} / {(member.user_type && member.user_type.max_renewals) || 0}
                 </div>
               </div>
 
               <div>
-                <span class="text-blue-600 dark:text-blue-400">Status:</span>
+                <span class="text-blue-600 dark:text-blue-400">{gettext("Status:")}</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100 capitalize">{tx.status}</div>
               </div>
 
               <div>
-                <span class="text-blue-600 dark:text-blue-400">Member Type:</span>
+                <span class="text-blue-600 dark:text-blue-400">{gettext("Member Type:")}</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
                   {(member.user_type && member.user_type.name) || "Standard"}
                 </div>
@@ -2164,28 +2262,33 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
             />
             <div class="text-sm text-amber-800 dark:text-amber-200">
-              <p class="font-medium mb-1">Important Information:</p>
+              <p class="font-medium mb-1">{gettext("Important Information:")}</p>
 
               <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-300">
-                <li>This renewal will extend your loan period by {loan_period_days} days</li>
-
                 <li>
-                  You will have {(member.user_type &&
-                                    member.user_type.max_renewals - tx.renewal_count - 1) || 0} renewal(s) left after this
+                  {gettext("This renewal will extend your loan period by")} {loan_period_days} {gettext(
+                    "days"
+                  )}
                 </li>
 
-                <li>Late returns may result in fines</li>
+                <li>
+                  {gettext("You will have")} {(member.user_type &&
+                                                 member.user_type.max_renewals - tx.renewal_count - 1) ||
+                    0} {gettext("renewal(s) left after this")}
+                </li>
 
-                <li>This action cannot be undone</li>
+                <li>{gettext("Late returns may result in fines")}</li>
+
+                <li>{gettext("This action cannot be undone")}</li>
               </ul>
             </div>
           </div>
         </div>
         <!-- Actions -->
         <div class="mt-6 flex gap-3 justify-end">
-          <.button type="button" phx-click="close_renewal_modal">Cancel</.button>
+          <.button type="button" phx-click="close_renewal_modal">{gettext("Cancel")}</.button>
           <.button type="button" phx-click="confirm_renew_loan">
-            <.icon name="hero-check-circle" class="w-5 h-5 mr-2" /> Confirm Renewal
+            <.icon name="hero-check-circle" class="w-5 h-5 mr-2" /> {gettext("Confirm Renewal")}
           </.button>
         </div>
       </.modal>

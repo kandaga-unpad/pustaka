@@ -440,7 +440,17 @@ defmodule VoileWeb.Layouts do
                 >
                   ♥
                 </span>
-                <span>using Elixir & Phoenix</span>
+                <span>
+                  using
+                  <a
+                    href="https://github.com/curatorian/voile"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:text-white transition-colors"
+                  >
+                    Voile
+                  </a>
+                </span>
               </div>
             </div>
           </div>

@@ -401,7 +401,7 @@ defmodule VoileWeb.Router do
   scope "/api", VoileWeb do
     pipe_through :api
 
-    get "/info", API.InfoController, :info
+    get "/", API.InfoController, :info
 
     scope "/v1" do
       pipe_through :api_authenticated
@@ -473,6 +473,8 @@ defmodule VoileWeb.Router do
           email: "chrisna.adhi@unpad.ac.id"
         }
       },
+      host: "10.92.53.245:4000",
+      schemes: ["http"],
       tags: [
         %{name: "Collections", description: "Collection management endpoints"},
         %{name: "Items", description: "Item management endpoints"},
