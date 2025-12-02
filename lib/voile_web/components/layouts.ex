@@ -55,10 +55,13 @@ defmodule VoileWeb.Layouts do
     app_logo = System.get_setting_value("app_logo_url", nil)
     app_main_color = System.get_setting_value("app_main_color", nil)
     app_secondary_color = System.get_setting_value("app_secondary_color", nil)
+    app_contact_email = System.get_setting_value("app_contact_email", "curatorian_id@gmail.com")
+
     assigns = assign(assigns, :app_name, app_name)
     assigns = assign(assigns, :app_logo, app_logo)
     assigns = assign(assigns, :app_main_color, app_main_color)
     assigns = assign(assigns, :app_secondary_color, app_secondary_color)
+    assigns = assign(assigns, :app_contact_email, app_contact_email)
 
     ~H"""
     <div class="bg-voile-primary text-white px-3 py-1 text-sm font-semibold">
@@ -66,7 +69,7 @@ defmodule VoileWeb.Layouts do
         {gettext("If you need information about %{app_name}, please contact %{link}.",
           app_name: @app_name,
           link:
-            "<a href='https://github.com/curatorian' target='_blank' class='text-white underline'>Curatorian</a>"
+            "<a href='mailto:#{@app_contact_email}' target='_blank' class='text-white underline'>#{@app_name}</a>"
         )
         |> Phoenix.HTML.raw()}
       </p>

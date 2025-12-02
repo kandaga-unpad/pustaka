@@ -4,7 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Voile" suffix=" · the Magic Library">
+    <% app_name = Voile.Schema.System.get_setting_value("app_name", "Voile") %>
+    <% app_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", "/images/v.png") %>
+    <.live_title default={app_name} suffix=" · GLAM Management System">
       {assigns[:page_title]}
     </.live_title>
     
@@ -29,7 +31,7 @@
       </style>
     <% end %>
      <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
-    <link rel="icon" href={~p"/images/v.png"} type="image/x-icon" />
+    <link rel="icon" href={app_logo_url} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
