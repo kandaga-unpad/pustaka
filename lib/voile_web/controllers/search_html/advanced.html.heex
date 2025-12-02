@@ -4,10 +4,14 @@
     <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Advanced Search</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {gettext("Advanced Search")}
+          </h1>
 
           <p class="text-gray-600 dark:text-gray-300 mt-1">
-            Search {String.downcase(search_page_description(@glam_type))} with specific criteria
+            {gettext("Search %{glam_type} with specific criteria",
+              glam_type: String.downcase(search_page_description(@glam_type))
+            )}
           </p>
         </div>
 
@@ -15,7 +19,7 @@
           href={~p"/search"}
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
-          ← Simple Search
+          ← {gettext("Simple Search")}
         </.link>
       </div>
     </div>
@@ -25,18 +29,18 @@
         <!-- Search Type -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Search In
+            {gettext("Search In")}
           </label>
           <select
             name="type"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="collections" selected={@search_type == "collections"}>
-              Collections Only
+              {gettext("Collections Only")}
             </option>
 
             <option value="both" selected={@search_type == "both"}>
-              Collections with GLAM Filtering
+              {gettext("Collections with GLAM Filtering")}
             </option>
           </select>
         </div>
@@ -44,26 +48,26 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Title
+              {gettext("Title")}
             </label>
             <input
               type="text"
               name="search[title]"
               value={Map.get(@search_params, "title", "")}
-              placeholder="Enter title..."
+              placeholder={gettext("Enter title...")}
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Creator/Author
+              {gettext("Creator/Author")}
             </label>
             <input
               type="text"
               name="search[creator]"
               value={Map.get(@search_params, "creator", "")}
-              placeholder="Enter creator name..."
+              placeholder={gettext("Enter creator name...")}
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
@@ -71,32 +75,32 @@
         <!-- Collection-specific Fields -->
         <div class="border-t border-gray-200 dark:border-gray-600 pt-6" id="collection-fields">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Collection Criteria
+            {gettext("Collection Criteria")}
           </h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
+                {gettext("Description")}
               </label>
               <input
                 type="text"
                 name="search[description]"
                 value={Map.get(@search_params, "description", "")}
-                placeholder="Enter description keywords..."
+                placeholder={gettext("Enter description keywords...")}
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Collection Code
+                {gettext("Collection Code")}
               </label>
               <input
                 type="text"
                 name="search[collection_code]"
                 value={Map.get(@search_params, "collection_code", "")}
-                placeholder="Enter collection code..."
+                placeholder={gettext("Enter collection code...")}
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
@@ -105,53 +109,53 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                GLAM Type
+                {gettext("GLAM Type")}
               </label>
               <select
                 name="search[resource_glam_type]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any GLAM Type</option>
+                <option value="">{gettext("Any GLAM Type")}</option>
 
                 <option
                   value="Gallery"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Gallery"}
                 >
-                  Gallery
+                  {gettext("Gallery")}
                 </option>
 
                 <option
                   value="Library"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Library"}
                 >
-                  Library
+                  {gettext("Library")}
                 </option>
 
                 <option
                   value="Archive"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Archive"}
                 >
-                  Archive
+                  {gettext("Archive")}
                 </option>
 
                 <option
                   value="Museum"
                   selected={Map.get(@search_params, "resource_glam_type", "") == "Museum"}
                 >
-                  Museum
+                  {gettext("Museum")}
                 </option>
               </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Resource Class
+                {gettext("Resource Class")}
               </label>
               <input
                 type="text"
                 name="search[resource_class]"
                 value={Map.get(@search_params, "resource_class", "")}
-                placeholder="Search by resource class label..."
+                placeholder={gettext("Search by resource class label...")}
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
@@ -160,73 +164,73 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Status
+                {gettext("Status")}
               </label>
               <select
                 name="search[status]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any Status</option>
+                <option value="">{gettext("Any Status")}</option>
 
                 <option
                   value="draft"
                   selected={Map.get(@search_params, "status", "") == "draft"}
                 >
-                  Draft
+                  {gettext("Draft")}
                 </option>
 
                 <option
                   value="pending"
                   selected={Map.get(@search_params, "status", "") == "pending"}
                 >
-                  Pending
+                  {gettext("Pending")}
                 </option>
 
                 <option
                   value="published"
                   selected={Map.get(@search_params, "status", "") == "published"}
                 >
-                  Published
+                  {gettext("Published")}
                 </option>
 
                 <option
                   value="archived"
                   selected={Map.get(@search_params, "status", "") == "archived"}
                 >
-                  Archived
+                  {gettext("Archived")}
                 </option>
               </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Access Level
+                {gettext("Access Level")}
               </label>
               <select
                 name="search[access_level]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any Access Level</option>
+                <option value="">{gettext("Any Access Level")}</option>
 
                 <option
                   value="public"
                   selected={Map.get(@search_params, "access_level", "") == "public"}
                 >
-                  Public
+                  {gettext("Public")}
                 </option>
 
                 <option
                   value="private"
                   selected={Map.get(@search_params, "access_level", "") == "private"}
                 >
-                  Private
+                  {gettext("Private")}
                 </option>
 
                 <option
                   value="restricted"
                   selected={Map.get(@search_params, "access_level", "") == "restricted"}
                 >
-                  Restricted
+                  {gettext("Restricted")}
                 </option>
               </select>
             </div>
@@ -235,13 +239,13 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Collection Location
+                {gettext("Collection Location")}
               </label>
               <select
                 name="search[unit_id]"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">Any Unit</option>
+                <option value="">{gettext("Any Unit")}</option>
 
                 <%= for node <- @nodes do %>
                   <option
@@ -253,6 +257,233 @@
                 <% end %>
               </select>
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {gettext("Collection Type")}
+              </label>
+              <input
+                type="text"
+                name="search[collection_type]"
+                value={Map.get(@search_params, "collection_type", "")}
+                placeholder={gettext("Enter collection type...")}
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+            </div>
+          </div>
+          
+<!-- Creator Details -->
+          <div class="border-t border-gray-200 dark:border-gray-600 pt-6 mt-6">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+              {gettext("Creator Details")}
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Creator Type")}
+                </label>
+                <select
+                  name="search[creator_type]"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="">{gettext("Any Type")}</option>
+
+                  <option
+                    value="Person"
+                    selected={Map.get(@search_params, "creator_type", "") == "Person"}
+                  >
+                    {gettext("Person")}
+                  </option>
+
+                  <option
+                    value="Organization"
+                    selected={Map.get(@search_params, "creator_type", "") == "Organization"}
+                  >
+                    {gettext("Organization")}
+                  </option>
+
+                  <option
+                    value="Group"
+                    selected={Map.get(@search_params, "creator_type", "") == "Group"}
+                  >
+                    {gettext("Group")}
+                  </option>
+
+                  <option
+                    value="Conference"
+                    selected={Map.get(@search_params, "creator_type", "") == "Conference"}
+                  >
+                    {gettext("Conference")}
+                  </option>
+
+                  <option
+                    value="Event"
+                    selected={Map.get(@search_params, "creator_type", "") == "Event"}
+                  >
+                    {gettext("Event")}
+                  </option>
+
+                  <option
+                    value="Project"
+                    selected={Map.get(@search_params, "creator_type", "") == "Project"}
+                  >
+                    {gettext("Project")}
+                  </option>
+
+                  <option
+                    value="Institution"
+                    selected={Map.get(@search_params, "creator_type", "") == "Institution"}
+                  >
+                    {gettext("Institution")}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Creator Affiliation")}
+                </label>
+                <input
+                  type="text"
+                  name="search[creator_affiliation]"
+                  value={Map.get(@search_params, "creator_affiliation", "")}
+                  placeholder={gettext("Enter creator affiliation...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Creator Contact")}
+                </label>
+                <input
+                  type="text"
+                  name="search[creator_contact]"
+                  value={Map.get(@search_params, "creator_contact", "")}
+                  placeholder={gettext("Enter creator contact...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Resource Template")}
+                </label>
+                <input
+                  type="text"
+                  name="search[resource_template]"
+                  value={Map.get(@search_params, "resource_template", "")}
+                  placeholder={gettext("Search by template label...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- Node/Unit Details -->
+          <div class="border-t border-gray-200 dark:border-gray-600 pt-6 mt-6">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+              {gettext("Unit/Location Details")}
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Unit Name")}
+                </label>
+                <input
+                  type="text"
+                  name="search[node_name]"
+                  value={Map.get(@search_params, "node_name", "")}
+                  placeholder={gettext("Enter unit name...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Unit Abbreviation")}
+                </label>
+                <input
+                  type="text"
+                  name="search[node_abbr]"
+                  value={Map.get(@search_params, "node_abbr", "")}
+                  placeholder={gettext("Enter unit abbreviation...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+          </div>
+          
+<!-- User Details -->
+          <div class="border-t border-gray-200 dark:border-gray-600 pt-6 mt-6">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+              {gettext("User Details")}
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Created By")}
+                </label>
+                <input
+                  type="text"
+                  name="search[created_by]"
+                  value={Map.get(@search_params, "created_by", "")}
+                  placeholder={gettext("Enter creator name, username, or email...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Updated By")}
+                </label>
+                <input
+                  type="text"
+                  name="search[updated_by]"
+                  value={Map.get(@search_params, "updated_by", "")}
+                  placeholder={gettext("Enter updater name, username, or email...")}
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- Sort Order Range -->
+          <div class="border-t border-gray-200 dark:border-gray-600 pt-6 mt-6">
+            <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+              {gettext("Sort Order Range")}
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Minimum Sort Order")}
+                </label>
+                <input
+                  type="number"
+                  name="search[sort_order_min]"
+                  value={Map.get(@search_params, "sort_order_min", "")}
+                  placeholder="0"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {gettext("Maximum Sort Order")}
+                </label>
+                <input
+                  type="number"
+                  name="search[sort_order_max]"
+                  value={Map.get(@search_params, "sort_order_max", "")}
+                  placeholder="100"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
           </div>
         </div>
         <!-- Search Actions -->
@@ -261,14 +492,14 @@
             type="submit"
             class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Search
+            {gettext("Search")}
           </button>
           <button
             type="reset"
             class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             onclick="window.location.href = '/search/advanced'"
           >
-            Reset
+            {gettext("Reset")}
           </button>
         </div>
       </form>
@@ -279,7 +510,7 @@
         <!-- Results Summary -->
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <p class="text-gray-700 dark:text-gray-300">
-            Found <strong>{@results.total_results}</strong> collections
+            {gettext("Found %{count} collections", count: @results.total_results)}
           </p>
         </div>
         <!-- Collections Results -->
@@ -287,7 +518,7 @@
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm">
             <div class="p-4 border-b border-gray-200 dark:border-gray-600">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Collections ({@results.collections.total})
+                {gettext("Collections (%{count})", count: @results.collections.total)}
               </h2>
             </div>
 
@@ -305,7 +536,7 @@
                       <% else %>
                         <div class="w-16 h-26 bg-gray-200 dark:bg-gray-500 flex items-center justify-center rounded-md">
                           <span class="text-gray-500 dark:text-gray-400 text-sm text-center">
-                            No Image
+                            {gettext("No Image")}
                           </span>
                         </div>
                       <% end %>
@@ -332,11 +563,17 @@
 
                       <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <%= if collection.mst_creator do %>
-                          <span>By: {collection.mst_creator.creator_name}</span>
+                          <span>
+                            {gettext("By: %{creator}",
+                              creator: collection.mst_creator.creator_name
+                            )}
+                          </span>
                         <% end %>
 
                         <span>
-                          Type: {String.capitalize(collection.collection_type || "Unknown")}
+                          {gettext("Type: %{type}",
+                            type: String.capitalize(collection.collection_type || "Unknown")
+                          )}
                         </span>
                         <%= if collection.resource_class do %>
                           <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -382,11 +619,17 @@
 
                       <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <%= if collection.mst_creator do %>
-                          <span>By: {collection.mst_creator.creator_name}</span>
+                          <span>
+                            {gettext("By: %{creator}",
+                              creator: collection.mst_creator.creator_name
+                            )}
+                          </span>
                         <% end %>
 
                         <span>
-                          Type: {String.capitalize(collection.collection_type || "Unknown")}
+                          {gettext("Type: %{type}",
+                            type: String.capitalize(collection.collection_type || "Unknown")
+                          )}
                         </span>
                         <%= if collection.resource_class do %>
                           <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -426,7 +669,7 @@
                       }
                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      ← Previous
+                      ← {gettext("Previous")}
                     </.link>
                   <% end %>
 
@@ -466,7 +709,7 @@
                       }
                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      Next →
+                      {gettext("Next")} →
                     </.link>
                   <% end %>
                 </div>
@@ -487,7 +730,7 @@
                       }
                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      ← Previous
+                      ← {gettext("Previous")}
                     </.link>
                   <% end %>
 
@@ -527,16 +770,17 @@
                       }
                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                      Next →
+                      {gettext("Next")} →
                     </.link>
                   <% end %>
                 </div>
                 <!-- Results per page information -->
                 <div class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-                  Showing {(@page - 1) * @results.per_page + 1} to {min(
-                    @page * @results.per_page,
-                    @results.total_results
-                  )} of {@results.total_results} results
+                  {gettext("Showing %{from} to %{to} of %{total} results",
+                    from: (@page - 1) * @results.per_page + 1,
+                    to: min(@page * @results.per_page, @results.total_results),
+                    total: @results.total_results
+                  )}
                 </div>
               <% end %>
             <% end %>
@@ -561,21 +805,25 @@
           >
           </path>
         </svg>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {gettext("No results found")}
+        </h3>
 
-        <p class="text-gray-600 dark:text-gray-300 mb-4">No items match your search criteria.</p>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">
+          {gettext("No items match your search criteria.")}
+        </p>
 
         <div class="text-sm text-gray-500 dark:text-gray-400">
-          <p>Try:</p>
+          <p>{gettext("Try:")}</p>
 
           <ul class="list-disc list-inside mt-2 space-y-1">
-            <li>Removing some search criteria</li>
+            <li>{gettext("Removing some search criteria")}</li>
 
-            <li>Using more general terms</li>
+            <li>{gettext("Using more general terms")}</li>
 
-            <li>Checking different status or availability options</li>
+            <li>{gettext("Checking different status or availability options")}</li>
 
-            <li>Trying a simple search instead</li>
+            <li>{gettext("Trying a simple search instead")}</li>
           </ul>
         </div>
       </div>

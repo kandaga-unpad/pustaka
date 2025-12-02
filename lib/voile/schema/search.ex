@@ -29,7 +29,14 @@ defmodule Voile.Schema.Search do
 
     query_string
     |> build_collection_search_query(filters)
-    |> paginate_results(page, per_page)
+    |> paginate_results(page, per_page, [
+      :resource_class,
+      :resource_template,
+      :mst_creator,
+      :node,
+      :collection_fields,
+      :items
+    ])
   end
 
   @doc """
@@ -52,7 +59,7 @@ defmodule Voile.Schema.Search do
 
     query_string
     |> build_item_search_query(filters)
-    |> paginate_results(page, per_page)
+    |> paginate_results(page, per_page, [:collection, :node])
   end
 
   @doc """
@@ -132,24 +139,14 @@ defmodule Voile.Schema.Search do
 
     base_query =
       from c in Collection,
+        as: :collection,
         left_join: creator in Creator,
         on: c.creator_id == creator.id,
-        left_join: cf in CollectionField,
-        on: c.id == cf.collection_id,
         where:
           ilike(c.title, ^search_term) or
             ilike(c.description, ^search_term) or
-            ilike(creator.creator_name, ^search_term) or
-            ilike(cf.value, ^search_term),
-        distinct: c.id,
-        preload: [
-          :resource_class,
-          :resource_template,
-          :mst_creator,
-          :node,
-          :collection_fields,
-          :items
-        ]
+            ilike(creator.creator_name, ^search_term),
+        distinct: c.id
 
     apply_collection_filters(base_query, filters)
   end
@@ -159,26 +156,18 @@ defmodule Voile.Schema.Search do
 
     base_query =
       from i in Item,
+        as: :item,
         left_join: c in Collection,
         on: i.collection_id == c.id,
         left_join: creator in Creator,
         on: c.creator_id == creator.id,
-        left_join: ifv in ItemFieldValue,
-        on: i.id == ifv.item_id,
         where:
           ilike(c.title, ^search_term) or
             ilike(c.description, ^search_term) or
             ilike(creator.creator_name, ^search_term) or
             ilike(i.item_code, ^search_term) or
             ilike(i.inventory_code, ^search_term) or
-            ilike(i.location, ^search_term) or
-            ilike(ifv.value, ^search_term),
-        distinct: i.id,
-        preload: [
-          :collection,
-          :node,
-          :attachments
-        ]
+            ilike(i.location, ^search_term)
 
     apply_item_filters(base_query, filters)
   end
@@ -190,15 +179,7 @@ defmodule Voile.Schema.Search do
         on: c.creator_id == creator.id,
         left_join: cf in CollectionField,
         on: c.id == cf.collection_id,
-        distinct: c.id,
-        preload: [
-          :resource_class,
-          :resource_template,
-          :mst_creator,
-          :node,
-          :collection_fields,
-          :items
-        ]
+        distinct: c.id
 
     query =
       Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
@@ -281,7 +262,7 @@ defmodule Voile.Schema.Search do
     end)
   end
 
-  defp paginate_results(query, page, per_page) do
+  defp paginate_results(query, page, per_page, preloads \\ []) do
     offset = (page - 1) * per_page
 
     total_count =
@@ -296,6 +277,7 @@ defmodule Voile.Schema.Search do
       |> limit(^per_page)
       |> offset(^offset)
       |> Repo.all()
+      |> Repo.preload(preloads)
 
     total_pages = ceil(total_count / per_page)
 

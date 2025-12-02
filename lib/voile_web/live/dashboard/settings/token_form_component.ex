@@ -182,13 +182,13 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
     {:noreply, push_navigate(socket, to: ~p"/manage/settings/api_manager")}
   end
 
-  defp handle_token_success(socket, token, plain_token) do
+  defp handle_token_success(socket, _token, plain_token) do
     if plain_token do
       # Send message to parent to show token details modal
-      send(self(), {:token_created_with_value, token, plain_token})
+      send(self(), {:token_created_with_value, plain_token})
     else
       # Send regular token created message
-      send(self(), {:token_created, token})
+      send(self(), {:token_created})
     end
 
     {:noreply, socket}
@@ -228,6 +228,17 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
   defp save_token(socket, :create, token_params) do
     # Process scopes from checkbox array
     token_params = process_token_params(token_params)
+
+    # Set default scopes for regular users if none provided
+    token_params =
+      if socket.assigns.is_admin do
+        token_params
+      else
+        Map.update(token_params, "scopes", ["read"], fn
+          scopes when is_list(scopes) and length(scopes) > 0 -> scopes
+          _ -> ["read"]
+        end)
+      end
 
     System.create_api_token(socket.assigns.current_user, token_params)
   end

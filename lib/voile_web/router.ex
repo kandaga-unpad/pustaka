@@ -473,7 +473,7 @@ defmodule VoileWeb.Router do
           email: "chrisna.adhi@unpad.ac.id"
         }
       },
-      host: "10.92.53.245:4000",
+      # host: "10.92.53.245:4000",
       schemes: ["http"],
       tags: [
         %{name: "Collections", description: "Collection management endpoints"},
@@ -487,7 +487,8 @@ defmodule VoileWeb.Router do
         Bearer: %{
           type: "apiKey",
           name: "token",
-          description: "API Token must be provided via `token` query parameter",
+          description:
+            "API Token can be provided via `token` query parameter or `Authorization: Bearer <token>` header",
           in: "query"
         }
       },

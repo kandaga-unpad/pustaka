@@ -657,7 +657,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
   end
 
   @impl true
-  def handle_info({:token_created_with_value, _created_token, plain_token}, socket) do
+  def handle_info({:token_created_with_value, plain_token}, socket) do
     {:noreply,
      socket
      |> assign(:show_modal, false)

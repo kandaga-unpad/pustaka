@@ -22,7 +22,7 @@ defmodule Voile.Search.Collections do
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
         where: c.status == "published",
-        preload: [resource_class: rc, mst_creator: creator]
+        preload: [resource_class: rc, mst_creator: creator, collection_fields: [], items: []]
 
     # Add search conditions
     search_query =
@@ -99,12 +99,27 @@ defmodule Voile.Search.Collections do
     unit_id_filter = Map.get(params, "unit_id", "")
     resource_glam_type_filter = Map.get(params, "resource_glam_type", "")
     resource_class_filter = Map.get(params, "resource_class", "")
+    collection_type_filter = Map.get(params, "collection_type", "")
+    creator_type_filter = Map.get(params, "creator_type", "")
+    creator_affiliation_filter = Map.get(params, "creator_affiliation", "")
+    creator_contact_filter = Map.get(params, "creator_contact", "")
+    resource_template_filter = Map.get(params, "resource_template", "")
+    node_name_filter = Map.get(params, "node_name", "")
+    node_abbr_filter = Map.get(params, "node_abbr", "")
+    created_by_filter = Map.get(params, "created_by", "")
+    updated_by_filter = Map.get(params, "updated_by", "")
+    sort_order_min_filter = Map.get(params, "sort_order_min", "")
+    sort_order_max_filter = Map.get(params, "sort_order_max", "")
 
     base_query =
       from c in Collection,
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
-        preload: [resource_class: rc, mst_creator: creator]
+        left_join: template in assoc(c, :resource_template),
+        left_join: node_join in assoc(c, :node),
+        left_join: created_by_user in assoc(c, :created_by),
+        left_join: updated_by_user in assoc(c, :updated_by),
+        preload: [resource_class: rc, mst_creator: creator, collection_fields: [], items: []]
 
     # Apply filters
     filtered_query =
@@ -120,6 +135,17 @@ defmodule Voile.Search.Collections do
       |> filter_by_unit_id(unit_id_filter)
       |> filter_by_resource_glam_type(resource_glam_type_filter)
       |> filter_by_resource_class(resource_class_filter)
+      |> filter_by_collection_type(collection_type_filter)
+      |> filter_by_creator_type(creator_type_filter)
+      |> filter_by_creator_affiliation(creator_affiliation_filter)
+      |> filter_by_creator_contact(creator_contact_filter)
+      |> filter_by_resource_template(resource_template_filter)
+      |> filter_by_node_name(node_name_filter)
+      |> filter_by_node_abbr(node_abbr_filter)
+      |> filter_by_created_by(created_by_filter)
+      |> filter_by_updated_by(updated_by_filter)
+      |> filter_by_sort_order_min(sort_order_min_filter)
+      |> filter_by_sort_order_max(sort_order_max_filter)
 
     # Get total count for pagination
     total_count = Repo.aggregate(filtered_query, :count, :id)
@@ -297,5 +323,93 @@ defmodule Voile.Search.Collections do
 
   defp filter_by_resource_class(query, resource_class) do
     where(query, [c, rc], ilike(rc.label, ^"%#{resource_class}%"))
+  end
+
+  defp filter_by_collection_type(query, ""), do: query
+
+  defp filter_by_collection_type(query, collection_type) do
+    where(query, [c], ilike(c.collection_type, ^"%#{collection_type}%"))
+  end
+
+  defp filter_by_creator_type(query, ""), do: query
+
+  defp filter_by_creator_type(query, creator_type) do
+    where(query, [c, _rc, creator_join], creator_join.type == ^creator_type)
+  end
+
+  defp filter_by_creator_affiliation(query, ""), do: query
+
+  defp filter_by_creator_affiliation(query, affiliation) do
+    where(query, [c, _rc, creator_join], ilike(creator_join.affiliation, ^"%#{affiliation}%"))
+  end
+
+  defp filter_by_creator_contact(query, ""), do: query
+
+  defp filter_by_creator_contact(query, contact) do
+    where(query, [c, _rc, creator_join], ilike(creator_join.creator_contact, ^"%#{contact}%"))
+  end
+
+  defp filter_by_resource_template(query, ""), do: query
+
+  defp filter_by_resource_template(query, template_label) do
+    where(
+      query,
+      [c, _rc, _creator, _node, template],
+      ilike(template.label, ^"%#{template_label}%")
+    )
+  end
+
+  defp filter_by_node_name(query, ""), do: query
+
+  defp filter_by_node_name(query, node_name) do
+    where(query, [c, _rc, _creator, node_join], ilike(node_join.name, ^"%#{node_name}%"))
+  end
+
+  defp filter_by_node_abbr(query, ""), do: query
+
+  defp filter_by_node_abbr(query, node_abbr) do
+    where(query, [c, _rc, _creator, node_join], ilike(node_join.abbr, ^"%#{node_abbr}%"))
+  end
+
+  defp filter_by_created_by(query, ""), do: query
+
+  defp filter_by_created_by(query, created_by_name) do
+    where(
+      query,
+      [c, _rc, _creator, _node, _template, created_by_user],
+      ilike(created_by_user.fullname, ^"%#{created_by_name}%") or
+        ilike(created_by_user.username, ^"%#{created_by_name}%") or
+        ilike(created_by_user.email, ^"%#{created_by_name}%")
+    )
+  end
+
+  defp filter_by_updated_by(query, ""), do: query
+
+  defp filter_by_updated_by(query, updated_by_name) do
+    where(
+      query,
+      [c, _rc, _creator, _node, _template, _created_by, updated_by_user],
+      ilike(updated_by_user.fullname, ^"%#{updated_by_name}%") or
+        ilike(updated_by_user.username, ^"%#{updated_by_name}%") or
+        ilike(updated_by_user.email, ^"%#{updated_by_name}%")
+    )
+  end
+
+  defp filter_by_sort_order_min(query, ""), do: query
+
+  defp filter_by_sort_order_min(query, min_order) do
+    case Integer.parse(min_order) do
+      {min_val, ""} -> where(query, [c], c.sort_order >= ^min_val)
+      _ -> query
+    end
+  end
+
+  defp filter_by_sort_order_max(query, ""), do: query
+
+  defp filter_by_sort_order_max(query, max_order) do
+    case Integer.parse(max_order) do
+      {max_val, ""} -> where(query, [c], c.sort_order <= ^max_val)
+      _ -> query
+    end
   end
 end
