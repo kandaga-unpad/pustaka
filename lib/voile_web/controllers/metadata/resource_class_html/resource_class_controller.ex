@@ -15,10 +15,11 @@ defmodule VoileWeb.ResourceClassController do
 
   def index(conn, _params) do
     page = Map.get(conn.params, "page", "1") |> String.to_integer()
+    search_keyword = Map.get(conn.params, "search", "")
     per_page = 10
 
     {resource_class_collection, total_pages} =
-      Metadata.list_resource_classes_paginated(page, per_page)
+      Metadata.list_resource_classes_paginated(page, per_page, search_keyword)
 
     conn
     |> assign(:resource_class_collection, resource_class_collection)

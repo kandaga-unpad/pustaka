@@ -179,7 +179,21 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiJSON do
     %{
       id: item.id,
       item_code: item.item_code,
-      inventory_code: item.inventory_code
+      inventory_code: item.inventory_code,
+      title: item.collection && item.collection.title,
+      collection_code: item.collection && item.collection.collection_code,
+      collection: render_history_collection(item.collection)
+    }
+  end
+
+  defp render_history_collection(nil), do: nil
+  defp render_history_collection(%Ecto.Association.NotLoaded{}), do: nil
+
+  defp render_history_collection(collection) do
+    %{
+      id: collection.id,
+      title: collection.title,
+      collection_code: collection.collection_code
     }
   end
 

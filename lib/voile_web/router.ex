@@ -410,10 +410,29 @@ defmodule VoileWeb.Router do
       resources "/items", API.V1.Items.ItemApiController, except: [:new, :edit]
       resources "/fines", API.V1.Fines.FineApiController, except: [:new, :edit]
       resources "/users", API.V1.Users.UserApiController, only: [:index, :show]
-      resources "/circulation", API.V1.Circulation.CirculationApiController, except: [:new, :edit]
+
+      get "/circulation/:identifier", API.V1.Circulation.CirculationApiController, :show
+
+      get "/circulation/:identifier/transactions",
+          API.V1.Circulation.CirculationApiController,
+          :transactions
+
+      get "/circulation/:identifier/history",
+          API.V1.Circulation.CirculationApiController,
+          :history
+
+      get "/circulation/:identifier/fines", API.V1.Circulation.CirculationApiController, :fines
 
       resources "/circulation_history", API.V1.CirculationHistory.CirculationHistoryApiController,
         except: [:new, :edit]
+
+      get "/collection_types", API.V1.CollectionTypes.CollectionTypeApiController, :index
+
+      get "/collection_types/details",
+          API.V1.CollectionTypes.CollectionTypeApiController,
+          :details
+
+      get "/units", API.V1.Unit.UnitApiController, :index
 
       resources "/tokens", API.V1.UserApiTokenController,
         only: [:index, :create, :show, :update, :delete] do
@@ -481,7 +500,10 @@ defmodule VoileWeb.Router do
         %{name: "Users", description: "User management endpoints"},
         %{name: "Circulation", description: "Circulation management endpoints"},
         %{name: "CirculationHistory", description: "Circulation history endpoints"},
-        %{name: "Fines", description: "Fine management endpoints"}
+        %{name: "Fines", description: "Fine management endpoints"},
+        %{name: "API Tokens", description: "Managing API Token endpoints"},
+        %{name: "Units", description: "Unit / Faculty / Node endpoints"},
+        %{name: "Collection Types", description: "Collection Type endpoints"}
       ],
       securityDefinitions: %{
         Bearer: %{

@@ -37,18 +37,20 @@ defmodule VoileWeb.PageLive.About do
               </div>
 
               <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Voile, the Magic Library
+                {gettext("Voile, the Magic Library")}
               </h1>
 
               <p
                 class="text-xl md:text-2xl font-semibold mb-6"
                 style={"color: #{@app_main_color};"}
               >
-                Virtual Organized of Information & Library Ecosystem
+                {gettext("Virtual Organized of Information & Library Ecosystem")}
               </p>
 
               <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                A next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology.
+                {gettext(
+                  "A next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology."
+                )}
               </p>
             </div>
           </div>
@@ -68,11 +70,13 @@ defmodule VoileWeb.PageLive.About do
               </div>
 
               <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                Digital Transformation
+                {gettext("Digital Transformation")}
               </h3>
 
               <p class="text-gray-600 dark:text-gray-300">
-                VOILE reimagines the cultural institution experience by providing a fully digital ecosystem that caters to libraries while also supporting galleries, archives, and museums.
+                {gettext(
+                  "VOILE reimagines the cultural institution experience by providing a fully digital ecosystem that caters to libraries while also supporting galleries, archives, and museums."
+                )}
               </p>
             </div>
 
@@ -88,11 +92,13 @@ defmodule VoileWeb.PageLive.About do
               </div>
 
               <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                Robust Architecture
+                {gettext("Robust Architecture")}
               </h3>
 
               <p class="text-gray-600 dark:text-gray-300">
-                Built with Elixir and Phoenix, leveraging high concurrency, fault tolerance, and real-time performance for a scalable platform.
+                {gettext(
+                  "Built with Elixir and Phoenix, leveraging high concurrency, fault tolerance, and real-time performance for a scalable platform."
+                )}
               </p>
             </div>
 
@@ -108,11 +114,13 @@ defmodule VoileWeb.PageLive.About do
               </div>
 
               <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                User-Centric Design
+                {gettext("User-Centric Design")}
               </h3>
 
               <p class="text-gray-600 dark:text-gray-300">
-                Inspired by violet and purple hues, offering a visually engaging experience that evokes the magic of ancient libraries and cultural heritage.
+                {gettext(
+                  "Inspired by violet and purple hues, offering a visually engaging experience that evokes the magic of ancient libraries and cultural heritage."
+                )}
               </p>
             </div>
           </div>
@@ -124,10 +132,10 @@ defmodule VoileWeb.PageLive.About do
         >
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-              <h2 class="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">{gettext("Key Features")}</h2>
 
               <p class="text-white/80 text-lg">
-                Powerful tools for modern library management
+                {gettext("Powerful tools for modern library management")}
               </p>
             </div>
 
@@ -140,11 +148,13 @@ defmodule VoileWeb.PageLive.About do
 
                   <div>
                     <h4 class="text-lg font-semibold mb-2">
-                      Advanced Cataloging & Metadata Management
+                      {gettext("Advanced Cataloging & Metadata Management")}
                     </h4>
 
                     <p class="text-white/80 text-sm">
-                      Efficiently manage diverse collections with sophisticated indexing, metadata tagging, and categorization tools.
+                      {gettext(
+                        "Efficiently manage diverse collections with sophisticated indexing, metadata tagging, and categorization tools."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -157,10 +167,14 @@ defmodule VoileWeb.PageLive.About do
                   </div>
 
                   <div>
-                    <h4 class="text-lg font-semibold mb-2">Dynamic Search & Retrieval</h4>
+                    <h4 class="text-lg font-semibold mb-2">
+                      {gettext("Dynamic Search & Retrieval")}
+                    </h4>
 
                     <p class="text-white/80 text-sm">
-                      Robust search functionalities including filters, metadata searches, and full-text search capabilities.
+                      {gettext(
+                        "Robust search functionalities including filters, metadata searches, and full-text search capabilities."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -174,11 +188,13 @@ defmodule VoileWeb.PageLive.About do
 
                   <div>
                     <h4 class="text-lg font-semibold mb-2">
-                      User Authentication & Personalization
+                      {gettext("User Authentication & Personalization")}
                     </h4>
 
                     <p class="text-white/80 text-sm">
-                      Secure access controls with personalized experiences, ensuring safe and engaging interactions.
+                      {gettext(
+                        "Secure access controls with personalized experiences, ensuring safe and engaging interactions."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -191,10 +207,14 @@ defmodule VoileWeb.PageLive.About do
                   </div>
 
                   <div>
-                    <h4 class="text-lg font-semibold mb-2">Data Analytics & Reporting</h4>
+                    <h4 class="text-lg font-semibold mb-2">
+                      {gettext("Data Analytics & Reporting")}
+                    </h4>
 
                     <p class="text-white/80 text-sm">
-                      Integrated analytics offer insights into user behavior and collection usage for data-driven decisions.
+                      {gettext(
+                        "Integrated analytics offer insights into user behavior and collection usage for data-driven decisions."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -207,10 +227,12 @@ defmodule VoileWeb.PageLive.About do
                   </div>
 
                   <div>
-                    <h4 class="text-lg font-semibold mb-2">Scalable Ecosystem</h4>
+                    <h4 class="text-lg font-semibold mb-2">{gettext("Scalable Ecosystem")}</h4>
 
                     <p class="text-white/80 text-sm">
-                      Designed for growth, handling increasing data loads ideal for academic libraries and cultural institutions.
+                      {gettext(
+                        "Designed for growth, handling increasing data loads ideal for academic libraries and cultural institutions."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -223,10 +245,12 @@ defmodule VoileWeb.PageLive.About do
                   </div>
 
                   <div>
-                    <h4 class="text-lg font-semibold mb-2">GLAM Integration</h4>
+                    <h4 class="text-lg font-semibold mb-2">{gettext("GLAM Integration")}</h4>
 
                     <p class="text-white/80 text-sm">
-                      Unified support for Galleries, Libraries, Archives, and Museums in a single platform.
+                      {gettext(
+                        "Unified support for Galleries, Libraries, Archives, and Museums in a single platform."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -239,7 +263,7 @@ defmodule VoileWeb.PageLive.About do
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12 border border-gray-200 dark:border-gray-700">
             <div class="text-center mb-8">
               <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Our Vision
+                {gettext("Our Vision")}
               </h2>
 
               <div
@@ -251,11 +275,15 @@ defmodule VoileWeb.PageLive.About do
 
             <div class="prose prose-lg dark:prose-invert max-w-none">
               <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-6">
-                VOILE is more than just a library management system—it's a <strong style={"color: #{@app_main_color};"}>digital sanctuary for cultural preservation and discovery</strong>. By uniting classical library principles with GLAM concepts and cutting-edge technology, VOILE aims to enhance how libraries operate while simultaneously supporting galleries, archives, and museums.
+                {gettext(
+                  "VOILE is more than just a library management system—it's a digital sanctuary for cultural preservation and discovery. By uniting classical library principles with GLAM concepts and cutting-edge technology, VOILE aims to enhance how libraries operate while simultaneously supporting galleries, archives, and museums."
+                )}
               </p>
 
               <p class="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                This integrated approach empowers users to explore and engage with a rich tapestry of cultural heritage, transforming the way knowledge and art are experienced in the digital age.
+                {gettext(
+                  "This integrated approach empowers users to explore and engage with a rich tapestry of cultural heritage, transforming the way knowledge and art are experienced in the digital age."
+                )}
               </p>
             </div>
           </div>
@@ -265,11 +293,11 @@ defmodule VoileWeb.PageLive.About do
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
               <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Built with Modern Technology
+                {gettext("Built with Modern Technology")}
               </h2>
 
               <p class="text-gray-600 dark:text-gray-300 text-lg">
-                Powered by industry-leading tools and frameworks
+                {gettext("Powered by industry-leading tools and frameworks")}
               </p>
             </div>
 
@@ -279,7 +307,7 @@ defmodule VoileWeb.PageLive.About do
                   <span style={"color: #{@app_main_color};"}>
                     <.icon name="hero-server" class="w-6 h-6" />
                   </span>
-                  Server
+                  {gettext("Server")}
                 </h3>
 
                 <ul class="space-y-3">
@@ -326,7 +354,7 @@ defmodule VoileWeb.PageLive.About do
                   <span style={"color: #{@app_secondary_color};"}>
                     <.icon name="hero-computer-desktop" class="w-6 h-6" />
                   </span>
-                  Client
+                  {gettext("Client")}
                 </h3>
 
                 <ul class="space-y-3">
@@ -374,7 +402,7 @@ defmodule VoileWeb.PageLive.About do
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div class="text-center">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">
-              Developer
+              {gettext("Developer")}
             </h2>
 
             <div class="inline-flex items-center gap-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
@@ -396,7 +424,7 @@ defmodule VoileWeb.PageLive.About do
                   @chrisnaadhi
                 </a>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400">GitHub</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("GitHub")}</p>
               </div>
             </div>
           </div>
@@ -408,11 +436,13 @@ defmodule VoileWeb.PageLive.About do
         >
           <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl md:text-4xl font-bold mb-6">
-              Ready to Experience the Magic?
+              {gettext("Ready to Experience the Magic?")}
             </h2>
 
             <p class="text-xl text-white/80 mb-8">
-              Explore our collections and discover the future of digital library management
+              {gettext(
+                "Explore our collections and discover the future of digital library management"
+              )}
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -421,7 +451,7 @@ defmodule VoileWeb.PageLive.About do
                 class="inline-flex items-center justify-center px-8 py-4 bg-white font-semibold rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
                 style={"color: #{@app_main_color};"}
               >
-                <.icon name="hero-home" class="w-5 h-5 mr-2" /> Back to Home
+                <.icon name="hero-home" class="w-5 h-5 mr-2" /> {gettext("Back to Home")}
               </.link>
 
               <%= if assigns[:current_scope] && assigns[:current_scope].user do %>
@@ -429,14 +459,16 @@ defmodule VoileWeb.PageLive.About do
                   navigate={~p"/atrium"}
                   class="inline-flex items-center justify-center px-8 py-4 bg-white/20 text-white font-semibold rounded-lg shadow-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
                 >
-                  <.icon name="hero-user-circle" class="w-5 h-5 mr-2" /> Go to Your Atrium
+                  <.icon name="hero-user-circle" class="w-5 h-5 mr-2" /> {gettext("Go to Your Atrium")}
                 </.link>
               <% else %>
                 <.link
                   navigate={~p"/login"}
                   class="inline-flex items-center justify-center px-8 py-4 bg-white/20 text-white font-semibold rounded-lg shadow-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
                 >
-                  <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5 mr-2" /> Get Started
+                  <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5 mr-2" /> {gettext(
+                    "Get Started"
+                  )}
                 </.link>
               <% end %>
             </div>

@@ -294,11 +294,49 @@ defmodule Voile.Schema.Metadata do
     Repo.all(ResourceClass)
   end
 
-  def list_resource_classes_paginated(page, per_page) do
+  def list_resource_classes_paginated(page, per_page, search_keyword) do
     offset = (page - 1) * per_page
 
     query =
       from(rc in ResourceClass,
+        order_by: [asc: rc.label],
+        limit: ^per_page,
+        offset: ^offset,
+        where:
+          ilike(rc.label, ^"%#{search_keyword}%") or ilike(rc.local_name, ^"%#{search_keyword}%")
+      )
+
+    resource_class_collection =
+      query
+      |> Repo.all()
+      |> Repo.preload([:vocabulary])
+
+    total_count = Repo.aggregate(ResourceClass, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {resource_class_collection, total_pages}
+  end
+
+  def list_glam_type_based_resource_classes() do
+    query =
+      from(rc in ResourceClass,
+        where: not is_nil(rc.glam_type),
+        group_by: rc.glam_type,
+        select: {rc.glam_type, count(rc.id)},
+        order_by: [asc: rc.glam_type]
+      )
+
+    query
+    |> Repo.all()
+    |> Enum.map(fn {glam_type, count} -> %{name: glam_type, total_count: count} end)
+  end
+
+  def list_glam_type_based_resource_classes(glam_type, page, per_page) do
+    offset = (page - 1) * per_page
+
+    query =
+      from(rc in ResourceClass,
+        where: rc.glam_type == ^glam_type,
         order_by: [asc: rc.label],
         limit: ^per_page,
         offset: ^offset
@@ -309,7 +347,7 @@ defmodule Voile.Schema.Metadata do
       |> Repo.all()
       |> Repo.preload([:vocabulary])
 
-    total_count = Repo.aggregate(ResourceClass, :count, :id)
+    total_count = Repo.aggregate(query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
     {resource_class_collection, total_pages}

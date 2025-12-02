@@ -15,6 +15,8 @@ defmodule Voile.Schema.Library.Circulation do
     Transaction
   }
 
+  alias Voile.Schema.System.LibHoliday
+
   alias Client.Xendit
 
   # Circulation History Base CRUD
@@ -241,15 +243,18 @@ defmodule Voile.Schema.Library.Circulation do
 
   def get_circulation_history(id) do
     case Repo.get(CirculationHistory, id) do
-      nil -> nil
-      history -> Repo.preload(history, [
-        :member,
-        :item,
-        :transaction,
-        :reservation,
-        :fine,
-        :processed_by
-      ])
+      nil ->
+        nil
+
+      history ->
+        Repo.preload(history, [
+          :member,
+          :item,
+          :transaction,
+          :reservation,
+          :fine,
+          :processed_by
+        ])
     end
   end
 
@@ -1179,6 +1184,62 @@ defmodule Voile.Schema.Library.Circulation do
   # ============================================================================
 
   @doc """
+  Determines whether to skip holidays in fine calculation based on library configuration.
+  If no holidays are configured (library is open all day), skip holidays in calculation.
+  If holidays are configured, use business days only.
+  """
+  def should_skip_holidays_in_fines?(unit_id \\ nil) do
+    # If no holidays or schedules are configured, library is open all day
+    # so we should count all calendar days (skip_holidays = true)
+    has_holidays = has_any_holidays_configured?(unit_id)
+    has_weekly_schedule = has_weekly_schedule_configured?(unit_id)
+
+    not (has_holidays or has_weekly_schedule)
+  end
+
+  @doc """
+  Checks if any holidays are configured for the library.
+  """
+  def has_any_holidays_configured?(unit_id \\ nil) do
+    import Ecto.Query
+
+    query =
+      from h in LibHoliday,
+        where: h.schedule_type == "holiday" and h.is_active == true,
+        limit: 1
+
+    query =
+      if unit_id do
+        from(h in query, where: h.unit_id == ^unit_id)
+      else
+        query
+      end
+
+    Repo.exists?(query)
+  end
+
+  @doc """
+  Checks if weekly schedule is configured for the library.
+  """
+  def has_weekly_schedule_configured?(unit_id \\ nil) do
+    import Ecto.Query
+
+    query =
+      from h in LibHoliday,
+        where: h.schedule_type == "schedule" and h.is_active == true,
+        limit: 1
+
+    query =
+      if unit_id do
+        from(h in query, where: h.unit_id == ^unit_id)
+      else
+        query
+      end
+
+    Repo.exists?(query)
+  end
+
+  @doc """
   Calculate the number of days a transaction is overdue.
 
   Options:
@@ -1269,15 +1330,13 @@ defmodule Voile.Schema.Library.Circulation do
   - skip_holidays: boolean (default: false) - when true, counts ALL calendar days for fines;
     when false, excludes holidays/weekends from fine calculation
   """
-  def return_item(transaction_id, librarian_id, attrs \\ %{}, opts \\ []) do
-    skip_holidays = Keyword.get(opts, :skip_holidays, false)
-
+  def return_item(transaction_id, librarian_id, attrs \\ %{}) do
     Repo.transaction(fn ->
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
            # Check if overdue BEFORE completing the transaction
            {:ok, fine_data} <-
-             prepare_fine_if_overdue(transaction, member.user_type, skip_holidays),
+             prepare_fine_if_overdue(transaction, member.user_type),
            # Extract fine_amount from fine_data to store in transaction
            fine_amount <- extract_fine_amount(fine_data),
            {:ok, transaction} <-
@@ -1910,7 +1969,7 @@ defmodule Voile.Schema.Library.Circulation do
   def get_member_history(member_id) do
     CirculationHistory
     |> where([ch], ch.member_id == ^member_id)
-    |> preload([:item, :transaction, :reservation, :processed_by])
+    |> preload([:item, :transaction, :reservation, :processed_by, item: [:collection]])
     |> order_by([ch], desc: ch.event_date)
     |> Repo.all()
   end
@@ -2554,9 +2613,12 @@ defmodule Voile.Schema.Library.Circulation do
 
   defp calculate_and_create_fine_if_needed(
          %Transaction{} = transaction,
-         %MemberType{} = member_type,
-         skip_holidays \\ false
+         %MemberType{} = member_type
        ) do
+    # Automatically determine whether to skip holidays based on library configuration
+    # If no holidays are configured, library is open all day, so count all calendar days
+    skip_holidays = should_skip_holidays_in_fines?()
+
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
       daily_fine = member_type.fine_per_day || Decimal.new("1.00")
@@ -2600,9 +2662,11 @@ defmodule Voile.Schema.Library.Circulation do
   # Prepare fine data before transaction is completed (while return_date is still nil)
   defp prepare_fine_if_overdue(
          %Transaction{} = transaction,
-         %MemberType{} = member_type,
-         skip_holidays
+         %MemberType{} = member_type
        ) do
+    # Automatically determine whether to skip holidays based on library configuration
+    skip_holidays = should_skip_holidays_in_fines?()
+
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
       daily_fine = member_type.fine_per_day || Decimal.new("1.00")

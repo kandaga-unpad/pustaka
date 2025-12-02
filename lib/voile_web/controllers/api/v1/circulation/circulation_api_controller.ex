@@ -246,7 +246,7 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
       CirculationHistory:
         swagger_schema do
           title("CirculationHistory")
-          description("A circulation history entry")
+          description("A circulation history entry with enhanced item and collection details")
 
           properties do
             id(:string, "Unique identifier (UUID)", required: true, format: "uuid")
@@ -258,11 +258,11 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
             ip_address(:string, "IP address")
             user_agent(:string, "User agent")
             member_id(:string, "Member ID", format: "uuid")
-            item_id(:string, "Item ID", format: "uuid")
-            transaction_id(:string, "Transaction ID", format: "uuid")
-            reservation_id(:string, "Reservation ID", format: "uuid")
-            fine_id(:string, "Fine ID", format: "uuid")
-            processed_by_id(:string, "Processed by user ID", format: "uuid")
+            item(Schema.ref(:HistoryItem), "Item details with collection information")
+            transaction(Schema.ref(:HistoryTransaction), "Transaction details")
+            reservation(Schema.ref(:HistoryReservation), "Reservation details")
+            fine(Schema.ref(:HistoryFine), "Fine details")
+            processed_by(Schema.ref(:ProcessedBy), "User who processed this event")
             inserted_at(:string, "Creation timestamp", format: "date-time")
             updated_at(:string, "Last update timestamp", format: "date-time")
           end
@@ -410,6 +410,75 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
             page_size: 10,
             total_pages: 5
           })
+        end,
+      HistoryItem:
+        swagger_schema do
+          title("HistoryItem")
+          description("Item details in circulation history")
+
+          properties do
+            id(:string, "Item ID", format: "uuid")
+            item_code(:string, "Item code")
+            inventory_code(:string, "Inventory code")
+            title(:string, "Item title")
+            collection_code(:string, "Collection code")
+            collection(Schema.ref(:HistoryCollection), "Collection details")
+          end
+        end,
+      HistoryCollection:
+        swagger_schema do
+          title("HistoryCollection")
+          description("Collection details in circulation history")
+
+          properties do
+            id(:string, "Collection ID", format: "uuid")
+            title(:string, "Collection title")
+            collection_code(:string, "Collection code")
+          end
+        end,
+      HistoryTransaction:
+        swagger_schema do
+          title("HistoryTransaction")
+          description("Transaction details in circulation history")
+
+          properties do
+            id(:string, "Transaction ID", format: "uuid")
+            status(:string, "Transaction status")
+            transaction_type(:string, "Transaction type")
+          end
+        end,
+      HistoryReservation:
+        swagger_schema do
+          title("HistoryReservation")
+          description("Reservation details in circulation history")
+
+          properties do
+            id(:string, "Reservation ID", format: "uuid")
+            status(:string, "Reservation status")
+            priority(:integer, "Reservation priority")
+          end
+        end,
+      HistoryFine:
+        swagger_schema do
+          title("HistoryFine")
+          description("Fine details in circulation history")
+
+          properties do
+            id(:string, "Fine ID", format: "uuid")
+            amount(:number, "Fine amount", format: "decimal")
+            fine_type(:string, "Fine type")
+          end
+        end,
+      ProcessedBy:
+        swagger_schema do
+          title("ProcessedBy")
+          description("User who processed the circulation event")
+
+          properties do
+            id(:string, "User ID", format: "uuid")
+            username(:string, "Username")
+            fullname(:string, "Full name")
+          end
         end
     }
   end

@@ -13,8 +13,8 @@ defmodule VoileWeb.PageLiveTest do
   test "GET /about", %{conn: conn} do
     {:ok, _about_live, html} = live(conn, ~p"/about")
 
-    assert html =~ "Tentang Voile"
-    assert html =~ "Hey there"
+    assert html =~ "Voile, the Magic Library"
+    assert html =~ "Virtual Organized of Information &amp; Library Ecosystem"
   end
 
   test "search functionality", %{conn: conn} do
