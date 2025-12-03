@@ -50,7 +50,7 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
     filters = build_filters_from_params(params)
     active_count = count_active_filters(filters)
 
-    {attachments, total_pages} = list_attachments_paginated(page, per_page, search, filters)
+    {attachments, total_pages, _} = list_attachments_paginated(page, per_page, search, filters)
 
     # Preload associations for display
     attachments =
@@ -115,7 +115,7 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
       attachable_type: socket.assigns.filter_attachable_type
     }
 
-    {attachments, total_pages} = list_attachments_paginated(page, per_page, search, filters)
+    {attachments, total_pages, _} = list_attachments_paginated(page, per_page, search, filters)
 
     attachments =
       attachments
@@ -224,7 +224,7 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
       |> offset(^offset)
       |> Repo.all()
 
-    {attachments, total_pages}
+    {attachments, total_pages, total_count}
   end
 
   defp build_filters_from_params(params) do

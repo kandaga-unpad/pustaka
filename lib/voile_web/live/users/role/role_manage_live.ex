@@ -12,7 +12,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
       is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
 
-      {roles, total_pages} = PermissionManager.list_roles_paginated(1, 10)
+      {roles, total_pages, _} = PermissionManager.list_roles_paginated(1, 10)
 
       socket =
         socket
@@ -57,7 +57,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
     socket = assign(socket, searching: true)
 
     if query == "" do
-      {roles, total_pages} = PermissionManager.list_roles_paginated(1, socket.assigns.per_page)
+      {roles, total_pages, _} = PermissionManager.list_roles_paginated(1, socket.assigns.per_page)
 
       socket =
         socket
@@ -86,7 +86,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
     page = String.to_integer(page)
     per_page = socket.assigns.per_page
 
-    {roles, total_pages} = PermissionManager.list_roles_paginated(page, per_page)
+    {roles, total_pages, _} = PermissionManager.list_roles_paginated(page, per_page)
 
     socket =
       socket
@@ -138,14 +138,14 @@ defmodule VoileWeb.Users.Role.ManageLive do
       <.header>
         Role Management
         <:subtitle>Manage system roles and their permissions</:subtitle>
-
+        
         <:actions>
           <%= if @is_super_admin do %>
             <.link patch={~p"/manage/settings/roles/new"}><.button>New Role</.button></.link>
           <% end %>
         </:actions>
       </.header>
-
+      
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -153,7 +153,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
             current_path={@current_path}
           />
         </div>
-
+        
         <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="mb-6">
             <.form for={%{}} as={:search} phx-change="search" class="flex gap-4">
@@ -177,21 +177,20 @@ defmodule VoileWeb.Users.Role.ManageLive do
                         stroke-width="4"
                       >
                       </circle>
-
+                      
                       <path
                         class="opacity-75"
                         fill="currentColor"
                         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                       >
                       </path>
-                    </svg>
-                     <span class="text-sm text-gray-500">Searching...</span>
+                    </svg> <span class="text-sm text-gray-500">Searching...</span>
                   </div>
                 <% end %>
               </div>
             </.form>
           </div>
-
+          
           <.table
             id="roles"
             rows={@streams.roles}
@@ -207,27 +206,27 @@ defmodule VoileWeb.Users.Role.ManageLive do
                 <% end %>
               </div>
             </:col>
-
+            
             <:col :let={{_id, role}} label="Description">{role.description || "-"}</:col>
-
+            
             <:col :let={{_id, role}} label="Permissions">
               <span class="text-sm text-gray-500">{length(role.permissions || [])} permissions</span>
             </:col>
-
+            
             <:col :let={{_id, role}} label="Users">
               <span class="text-sm text-gray-500">{count_users_with_role(role.id)} users</span>
             </:col>
-
+            
             <:action :let={{_id, role}}>
               <div class="sr-only">
                 <.link navigate={~p"/manage/settings/roles/#{role}"}>Show</.link>
               </div>
-
+              
               <%= if @is_super_admin do %>
                 <.link patch={~p"/manage/settings/roles/#{role}/edit"}>Edit</.link>
               <% end %>
             </:action>
-
+            
             <:action :let={{id, role}}>
               <%= if @is_super_admin and not role.is_system_role do %>
                 <.link
@@ -239,7 +238,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
               <% end %>
             </:action>
           </.table>
-          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+           <.pagination page={@page} total_pages={@total_pages} event="paginate" />
         </div>
       </div>
     </div>

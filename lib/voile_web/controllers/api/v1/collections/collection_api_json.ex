@@ -10,7 +10,8 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
       pagination: %{
         page_number: pagination.page_number,
         page_size: pagination.page_size,
-        total_pages: pagination.total_pages
+        total_pages: pagination.total_pages,
+        total_count: pagination.total_count
       }
     }
   end

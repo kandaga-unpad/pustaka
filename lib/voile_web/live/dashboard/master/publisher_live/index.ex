@@ -19,7 +19,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Index do
     else
       page = 1
       per_page = 10
-      {publishers, total_pages} = Master.list_mst_publishers_paginated(page, per_page)
+      {publishers, total_pages, _} = Master.list_mst_publishers_paginated(page, per_page)
 
       socket =
         socket
@@ -76,13 +76,13 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
-    {publishers, total_publishers} = Master.list_mst_publishers_paginated(page, per_page)
+    {publishers, total_pages, _} = Master.list_mst_publishers_paginated(page, per_page)
 
     socket =
       socket
       |> assign(:publishers, publishers)
       |> assign(:page, page)
-      |> assign(:total_pages, total_publishers)
+      |> assign(:total_pages, total_pages)
 
     {:noreply, socket}
   end

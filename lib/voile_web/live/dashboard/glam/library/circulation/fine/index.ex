@@ -33,7 +33,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
       per_page = 15
       filters = %{status: "all", type: "all"}
 
-      {fines, total_pages} =
+      {fines, total_pages, _} =
         if is_super_admin do
           Circulation.list_fines_paginated_with_filters(page, per_page, filters)
         else
@@ -89,7 +89,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
        |> assign(:item_search_text, "")
        |> assign(:selected_item_id, nil)}
     else
-      {items, _total_pages} = Catalog.search_items_paginated(q, 1, 10)
+      {items, _total_pages, _} = Catalog.search_items_paginated(q, 1, 10)
 
       {:noreply,
        socket
@@ -184,7 +184,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
       type: socket.assigns.filter_type
     }
 
-    {fines, total_pages} =
+    {fines, total_pages, _} =
       if is_super_admin do
         Circulation.list_fines_paginated_with_filters(page, per_page, filters)
       else
@@ -211,7 +211,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
       type: socket.assigns.filter_type
     }
 
-    {fines, total_pages} =
+    {fines, total_pages, _} =
       if is_super_admin do
         Circulation.list_fines_paginated_with_filters(page, per_page, filters)
       else

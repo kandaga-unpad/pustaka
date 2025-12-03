@@ -19,7 +19,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.Index do
     else
       page = 1
       per_page = 10
-      {places, total_pages} = Master.list_mst_places_paginated(page, per_page)
+      {places, total_pages, _} = Master.list_mst_places_paginated(page, per_page)
 
       socket =
         socket
@@ -73,7 +73,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
-    {places, total_pages} = Master.list_mst_places_paginated(page, per_page)
+    {places, total_pages, _} = Master.list_mst_places_paginated(page, per_page)
 
     socket =
       socket

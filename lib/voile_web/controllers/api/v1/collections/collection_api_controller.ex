@@ -50,13 +50,14 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
       node_id: Map.get(params, "unit_id")
     }
 
-    {collections, total_pages} =
+    {collections, total_pages, total_count} =
       Catalog.list_collections_paginated(page, 10, search_keyword, filters)
 
     pagination = %{
       page_number: page,
       page_size: 10,
-      total_pages: total_pages
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn

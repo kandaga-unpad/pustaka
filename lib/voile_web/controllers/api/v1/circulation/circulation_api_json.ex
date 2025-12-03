@@ -32,7 +32,12 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiJSON do
   def transactions(%{user: user, transactions: transactions, pagination: pagination}) do
     %{
       data: render_transactions(transactions),
-      pagination: pagination,
+      pagination: %{
+        page_number: pagination.page_number,
+        page_size: pagination.page_size,
+        total_pages: pagination.total_pages,
+        total_count: pagination.total_count
+      },
       user: render_user(user)
     }
   end
@@ -43,7 +48,12 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiJSON do
   def history(%{user: user, history: history, pagination: pagination}) do
     %{
       data: render_circulation_history(history),
-      pagination: pagination,
+      pagination: %{
+        page_number: pagination.page_number,
+        page_size: pagination.page_size,
+        total_pages: pagination.total_pages,
+        total_count: pagination.total_count
+      },
       user: render_user(user)
     }
   end

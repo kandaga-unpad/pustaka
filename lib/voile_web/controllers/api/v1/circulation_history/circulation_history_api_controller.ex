@@ -28,13 +28,14 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
   def index(conn, params) do
     page = Map.get(params, "page", "1") |> String.to_integer()
 
-    {circulation_history, total_pages} =
+    {circulation_history, total_pages, total_count} =
       Circulation.list_circulation_history_paginated(page, 10)
 
     pagination = %{
       page_number: page,
       page_size: 10,
-      total_pages: total_pages
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn
@@ -88,7 +89,9 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
       circulation_history(
         :body,
         Schema.ref(:CirculationHistoryInput),
-        "Circulation history parameters", required: true)
+        "Circulation history parameters",
+        required: true
+      )
     end
 
     response(201, "Created", Schema.ref(:CirculationHistoryResponse))
@@ -131,7 +134,9 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
       circulation_history(
         :body,
         Schema.ref(:CirculationHistoryInput),
-        "Circulation history parameters", required: true)
+        "Circulation history parameters",
+        required: true
+      )
     end
 
     response(200, "OK", Schema.ref(:CirculationHistoryResponse))

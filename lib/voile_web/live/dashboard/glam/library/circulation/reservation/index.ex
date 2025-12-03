@@ -32,7 +32,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
       page = 1
       per_page = 15
 
-      {reservations, total_pages} =
+      {reservations, total_pages, _} =
         if is_super_admin do
           Circulation.list_reservations_paginated(page, per_page)
         else
@@ -208,7 +208,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
 
     filters = %{status: socket.assigns.filter_status}
 
-    {reservations, total_pages} =
+    {reservations, total_pages, _} =
       if is_super_admin do
         Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
       else
@@ -236,7 +236,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Index do
     node_id = socket.assigns.node_id
     filters = %{status: socket.assigns.filter_status}
 
-    {reservations, total_pages} =
+    {reservations, total_pages, _} =
       if is_super_admin do
         Circulation.list_reservations_paginated_with_filters(page, per_page, filters)
       else

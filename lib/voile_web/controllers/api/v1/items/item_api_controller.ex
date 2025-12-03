@@ -30,13 +30,14 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
     page = Map.get(params, "page", "1") |> String.to_integer()
     search_keyword = Map.get(params, "search", "")
 
-    {items, total_pages} =
+    {items, total_pages, total_count} =
       Catalog.list_items_paginated(page, 10, search_keyword)
 
     pagination = %{
       page_number: page,
       page_size: 10,
-      total_pages: total_pages
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn

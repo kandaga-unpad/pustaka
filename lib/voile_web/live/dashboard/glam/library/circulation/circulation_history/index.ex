@@ -30,7 +30,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
       page = 1
       per_page = 20
 
-      {history, total_pages} =
+      {history, total_pages, _} =
         if is_super_admin do
           Circulation.list_circulation_history_paginated(page, per_page)
         else
@@ -138,7 +138,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
       to: Map.get(socket.assigns, :date_to)
     }
 
-    {history, total_pages} =
+    {history, total_pages, _} =
       if is_super_admin do
         Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
       else
@@ -172,7 +172,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
       to: Map.get(socket.assigns, :date_to)
     }
 
-    {history, total_pages} =
+    {history, total_pages, _} =
       if is_super_admin do
         Circulation.list_circulation_history_paginated_with_filters(page, per_page, filters)
       else

@@ -20,7 +20,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
       page = 1
       per_page = 10
 
-      {member_types, total_pages} = Master.list_mst_member_types_paginated(page, per_page)
+      {member_types, total_pages, _} = Master.list_mst_member_types_paginated(page, per_page)
 
       socket =
         socket
@@ -77,7 +77,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
-    {member_types, total_pages} = Master.list_mst_member_types_paginated(page, per_page)
+    {member_types, total_pages, _} = Master.list_mst_member_types_paginated(page, per_page)
 
     socket =
       socket

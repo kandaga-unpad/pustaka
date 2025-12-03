@@ -82,13 +82,14 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
     per_page = Map.get(conn.params, "per_page", "10") |> String.to_integer()
 
     with {:ok, user} <- get_user_by_identifier(identifier) do
-      {transactions, total_pages} =
+      {transactions, total_pages, total_count} =
         Circulation.list_member_active_transactions_paginated(user.id, page, per_page)
 
       pagination = %{
         page_number: page,
         page_size: per_page,
-        total_pages: total_pages
+        total_pages: total_pages,
+        total_count: total_count
       }
 
       conn
@@ -132,7 +133,7 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
     per_page = Map.get(conn.params, "per_page", "10") |> String.to_integer()
 
     with {:ok, user} <- get_user_by_identifier(identifier) do
-      {history, total_pages} =
+      {history, total_pages, total_count} =
         Circulation.list_circulation_history_paginated_with_filters_by_member(
           user.id,
           page,
@@ -142,7 +143,8 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
       pagination = %{
         page_number: page,
         page_size: per_page,
-        total_pages: total_pages
+        total_pages: total_pages,
+        total_count: total_count
       }
 
       conn
@@ -186,13 +188,14 @@ defmodule VoileWeb.API.V1.Circulation.CirculationApiController do
     per_page = Map.get(conn.params, "per_page", "10") |> String.to_integer()
 
     with {:ok, user} <- get_user_by_identifier(identifier) do
-      {fines, total_pages} =
+      {fines, total_pages, total_count} =
         Circulation.list_member_unpaid_fines_paginated(user.id, page, per_page)
 
       pagination = %{
         page_number: page,
         page_size: per_page,
-        total_pages: total_pages
+        total_pages: total_pages,
+        total_count: total_count
       }
 
       conn

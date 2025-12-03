@@ -43,12 +43,10 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
     glam_type = Map.get(params, "glam_type", "")
 
     {collection_types, total_pages} =
-      case glam_type do
-        "" ->
-          Metadata.list_glam_type_based_resource_classes()
-
-        _ ->
-          Metadata.list_glam_type_based_resource_classes(glam_type, page, 10)
+      if glam_type == "" do
+        {Metadata.list_glam_type_based_resource_classes(), 1}
+      else
+        Metadata.list_glam_type_based_resource_classes(glam_type, page, 10)
       end
 
     pagination = %{
@@ -88,7 +86,7 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
     page = Map.get(params, "page", "1") |> String.to_integer()
     search_keyword = Map.get(params, "search", "")
 
-    {collection_types, total_pages} =
+    {collection_types, total_pages, _} =
       Metadata.list_resource_classes_paginated(page, 10, search_keyword)
 
     pagination = %{

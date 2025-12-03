@@ -17,6 +17,10 @@ defmodule VoileWeb.API.V1.Users.UserApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      node_id(:query, :string, "Filter by node ID", required: false)
+      gender(:query, :string, "Filter by gender", required: false)
+      manually_suspended(:query, :boolean, "Filter by manual suspension status", required: false)
+      organization(:query, :string, "Filter by organization", required: false)
     end
 
     response(200, "OK", Schema.ref(:UsersResponse))
@@ -28,12 +32,35 @@ defmodule VoileWeb.API.V1.Users.UserApiController do
   def index(conn, params) do
     page = Map.get(params, "page", "1") |> String.to_integer()
 
-    {users, total_pages} = Accounts.list_users_paginated(page, 10)
+    filters = %{}
+
+    filters =
+      if params["node_id"] && params["node_id"] != "",
+        do: Map.put(filters, "node_id", params["node_id"]),
+        else: filters
+
+    filters =
+      if params["gender"] && params["gender"] != "",
+        do: Map.put(filters, "gender", params["gender"]),
+        else: filters
+
+    filters =
+      if params["manually_suspended"],
+        do: Map.put(filters, "manually_suspended", params["manually_suspended"] == "true"),
+        else: filters
+
+    filters =
+      if params["organization"] && params["organization"] != "",
+        do: Map.put(filters, "organization", params["organization"]),
+        else: filters
+
+    {users, total_pages, total_count} = Accounts.list_users_paginated(page, 10, filters)
 
     pagination = %{
       page_number: page,
       page_size: 10,
-      total_pages: total_pages
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn

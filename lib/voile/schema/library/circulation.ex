@@ -42,7 +42,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(CirculationHistory, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {circulation_history, total_pages}
+    {circulation_history, total_pages, total_count}
   end
 
   def list_circulation_history_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
@@ -125,7 +125,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {circulation_history, total_pages}
+    {circulation_history, total_pages, total_count}
   end
 
   @doc """
@@ -225,7 +225,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {circulation_history, total_pages}
+    {circulation_history, total_pages, total_count}
   end
 
   def get_circulation_history!(id) do
@@ -321,7 +321,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(Fine, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {fines, total_pages}
+    {fines, total_pages, total_count}
   end
 
   def list_fines_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
@@ -379,7 +379,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {fines, total_pages}
+    {fines, total_pages, total_count}
   end
 
   @doc """
@@ -451,7 +451,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {fines, total_pages}
+    {fines, total_pages, total_count}
   end
 
   def get_fine!(id) do
@@ -562,7 +562,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(Requisition, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {requisitions, total_pages}
+    {requisitions, total_pages, total_count}
   end
 
   def list_requisitions_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
@@ -610,7 +610,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {requisitions, total_pages}
+    {requisitions, total_pages, total_count}
   end
 
   def list_requisitions_paginated_with_filters_by_node(
@@ -664,7 +664,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {requisitions, total_pages}
+    {requisitions, total_pages, total_count}
   end
 
   def get_requisition!(id) do
@@ -745,7 +745,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(Reservation, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {reservations, total_pages}
+    {reservations, total_pages, total_count}
   end
 
   def list_reservations_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
@@ -785,7 +785,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {reservations, total_pages}
+    {reservations, total_pages, total_count}
   end
 
   @doc """
@@ -839,7 +839,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {reservations, total_pages}
+    {reservations, total_pages, total_count}
   end
 
   def get_reservation!(id) do
@@ -915,7 +915,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(Transaction, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {transactions, total_pages}
+    {transactions, total_pages, total_count}
   end
 
   def list_transaction_paginated_with_filter(page \\ 1, per_page \\ 10, filters \\ %{}) do
@@ -1004,7 +1004,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {transactions, total_pages}
+    {transactions, total_pages, total_count}
   end
 
   @doc """
@@ -1104,7 +1104,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {transactions, total_pages}
+    {transactions, total_pages, total_count}
   end
 
   def count_of_collection_based_on_status(status) do
@@ -1408,7 +1408,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {transactions, total_pages}
+    {transactions, total_pages, total_count}
   end
 
   @doc """
@@ -1793,7 +1793,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {fines, total_pages}
+    {fines, total_pages, total_count}
   end
 
   @doc """
@@ -1844,7 +1844,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {fines, total_pages}
+    {fines, total_pages, total_count}
   end
 
   @doc """
@@ -1882,7 +1882,7 @@ defmodule Voile.Schema.Library.Circulation do
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {transactions, total_pages}
+    {transactions, total_pages, total_count}
   end
 
   @doc """
@@ -2033,7 +2033,7 @@ defmodule Voile.Schema.Library.Circulation do
       |> offset(^offset)
       |> Repo.all()
 
-    {history, total_pages}
+    {history, total_pages, total_count}
   end
 
   # ============================================================================

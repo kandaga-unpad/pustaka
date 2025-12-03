@@ -32,7 +32,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
       per_page = 15
       filters = %{status: "all", type: "all"}
 
-      {requisitions, total_pages} =
+      {requisitions, total_pages, _} =
         if is_super_admin do
           Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
         else
@@ -195,7 +195,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
       type: socket.assigns.filter_type
     }
 
-    {requisitions, total_pages} =
+    {requisitions, total_pages, _} =
       if is_super_admin do
         Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
       else
@@ -227,7 +227,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Requisition.Index do
       type: socket.assigns.filter_type
     }
 
-    {requisitions, total_pages} =
+    {requisitions, total_pages, _} =
       if is_super_admin do
         Circulation.list_requisitions_paginated_with_filters(page, per_page, filters)
       else

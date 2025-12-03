@@ -1,4 +1,4 @@
-defmodule VoileWeb.API.V1.Unit.UnitApiJson do
+defmodule VoileWeb.API.V1.Unit.UnitApiJSON do
   alias Voile.Schema.System.Node
 
   @doc """

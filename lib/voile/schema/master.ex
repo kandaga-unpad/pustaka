@@ -52,7 +52,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Creator, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {creators, total_pages}
+    {creators, total_pages, total_count}
   end
 
   @doc """
@@ -205,7 +205,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Frequency, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {frequencies, total_pages}
+    {frequencies, total_pages, total_count}
   end
 
   @doc """
@@ -318,7 +318,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(MemberType, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {member_types, total_pages}
+    {member_types, total_pages, total_count}
   end
 
   @doc """
@@ -452,7 +452,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Location, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {locations, total_pages}
+    {locations, total_pages, total_count}
   end
 
   @doc """
@@ -568,7 +568,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Places, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {places, total_pages}
+    {places, total_pages, total_count}
   end
 
   @doc """
@@ -684,7 +684,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Publishers, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {publishers, total_pages}
+    {publishers, total_pages, total_count}
   end
 
   @doc """
@@ -800,7 +800,7 @@ defmodule Voile.Schema.Master do
     total_count = Repo.aggregate(Topic, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {topics, total_pages}
+    {topics, total_pages, total_count}
   end
 
   @doc """

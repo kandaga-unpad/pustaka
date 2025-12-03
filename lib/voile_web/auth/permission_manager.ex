@@ -39,7 +39,7 @@ defmodule VoileWeb.Auth.PermissionManager do
 
     total_count = Repo.aggregate(Permission, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
-    {permissions, total_pages}
+    {permissions, total_pages, total_count}
   end
 
   @doc """
@@ -67,7 +67,7 @@ defmodule VoileWeb.Auth.PermissionManager do
 
     total_count = Repo.aggregate(Role, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
-    {roles, total_pages}
+    {roles, total_pages, total_count}
   end
 
   @doc """

@@ -222,21 +222,44 @@ defmodule Voile.Schema.Accounts do
   @doc """
   Gets all users with paginated results
   """
-  def list_users_paginated(page \\ 1, per_page \\ 10) do
+  def list_users_paginated(page \\ 1, per_page \\ 10, filters \\ %{}) do
     offset = (page - 1) * per_page
 
-    query =
-      from u in User,
-        preload: [:roles, :user_type],
-        order_by: [desc: u.inserted_at],
-        limit: ^per_page,
-        offset: ^offset
+    # Build base query with filters
+    base_query = from u in User, preload: [:roles, :user_type, :node]
 
-    users = Repo.all(query)
+    # Apply filters conditionally
+    base_query =
+      if Map.has_key?(filters, "node_id"),
+        do: where(base_query, [u], u.node_id == ^filters["node_id"]),
+        else: base_query
 
-    total_count = Repo.aggregate(User, :count, :id)
+    base_query =
+      if Map.has_key?(filters, "gender"),
+        do: where(base_query, [u], u.gender == ^filters["gender"]),
+        else: base_query
+
+    base_query =
+      if Map.has_key?(filters, "manually_suspended"),
+        do: where(base_query, [u], u.manually_suspended == ^filters["manually_suspended"]),
+        else: base_query
+
+    base_query =
+      if Map.has_key?(filters, "organization"),
+        do: where(base_query, [u], u.organization == ^filters["organization"]),
+        else: base_query
+
+    # Order by inserted_at desc
+    base_query = order_by(base_query, [u], desc: u.inserted_at)
+
+    # Query for users with limit and offset
+    users_query = base_query |> limit(^per_page) |> offset(^offset)
+    users = Repo.all(users_query)
+
+    # Total count with filters applied
+    total_count = Repo.aggregate(base_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
-    {users, total_pages}
+    {users, total_pages, total_count}
   end
 
   @doc """

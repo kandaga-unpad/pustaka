@@ -18,7 +18,7 @@ defmodule VoileWeb.ResourceClassController do
     search_keyword = Map.get(conn.params, "search", "")
     per_page = 10
 
-    {resource_class_collection, total_pages} =
+    {resource_class_collection, total_pages, _} =
       Metadata.list_resource_classes_paginated(page, per_page, search_keyword)
 
     conn

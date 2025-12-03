@@ -18,7 +18,7 @@ defmodule VoileWeb.PropertyController do
     vocabulary_id = Map.get(params, "vocabulary_id", nil)
     per_page = 10
 
-    {metadata_properties, total_pages} =
+    {metadata_properties, total_pages, _} =
       case vocabulary_id do
         nil ->
           Metadata.list_metadata_properties_paginated(page, per_page)

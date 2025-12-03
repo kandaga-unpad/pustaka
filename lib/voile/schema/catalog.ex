@@ -81,7 +81,7 @@ defmodule Voile.Schema.Catalog do
 
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {collections, total_pages}
+    {collections, total_pages, total_count}
   end
 
   defp maybe_search_collections(query, nil), do: query
@@ -721,21 +721,11 @@ defmodule Voile.Schema.Catalog do
         |> Repo.all()
       end
 
-    # Only count if we actually need pagination info
-    total_pages =
-      if page == 1 and length(items) < per_page do
-        1
-      else
-        # Simple count without preloads or complex joins.
-        # Use Repo.aggregate/3 which avoids propagating ORDER BY into the
-        # generated COUNT SQL (Postgres errors if ORDER BY is present on a
-        # plain aggregate query without GROUP BY).
-        total_count = Repo.aggregate(query, :count, :id)
+    # Always calculate total_count for consistent API
+    total_count = Repo.aggregate(query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-        div(total_count + per_page - 1, per_page)
-      end
-
-    {items, total_pages}
+    {items, total_pages, total_count}
   end
 
   defp maybe_search_items(query, nil), do: query
@@ -913,7 +903,7 @@ defmodule Voile.Schema.Catalog do
 
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {items, total_pages}
+    {items, total_pages, total_count}
   end
 
   def item_available?(item_id) do
@@ -998,7 +988,7 @@ defmodule Voile.Schema.Catalog do
     total_count = Repo.aggregate(base_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {items, total_pages}
+    {items, total_pages, total_count}
   end
 
   @doc """

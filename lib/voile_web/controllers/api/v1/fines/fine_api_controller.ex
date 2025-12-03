@@ -28,13 +28,14 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   def index(conn, params) do
     page = Map.get(params, "page", "1") |> String.to_integer()
 
-    {fines, total_pages} =
+    {fines, total_pages, total_count} =
       Circulation.list_fines_paginated(page, 10)
 
     pagination = %{
       page_number: page,
       page_size: 10,
-      total_pages: total_pages
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn

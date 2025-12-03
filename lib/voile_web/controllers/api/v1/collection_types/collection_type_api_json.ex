@@ -10,7 +10,8 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiJSON do
       pagination: %{
         page_number: pagination.page_number,
         page_size: pagination.page_size,
-        total_pages: pagination.total_pages
+        total_pages: pagination.total_pages,
+        total_count: pagination.total_count
       }
     }
   end
@@ -43,8 +44,13 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiJSON do
   defp vocabulary_data(vocabulary) do
     %{
       id: vocabulary.id,
-      name: vocabulary.name,
-      description: vocabulary.description
+      label: vocabulary.label,
+      prefix: vocabulary.prefix,
+      namespace_url: vocabulary.namespace_url,
+      information: vocabulary.information,
+      owner_id: vocabulary.owner_id,
+      inserted_at: vocabulary.inserted_at,
+      updated_at: vocabulary.updated_at
     }
   end
 end

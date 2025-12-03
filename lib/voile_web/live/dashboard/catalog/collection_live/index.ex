@@ -126,7 +126,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       search = socket.assigns.search || ""
       filters = socket.assigns.filters || %{}
 
-      {collections, total_pages} =
+      {collections, total_pages, _} =
         Catalog.list_collections_paginated(page, per_page, search, filters)
 
       socket
@@ -174,7 +174,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     search = socket.assigns.search || ""
     filters = socket.assigns.filters || %{}
 
-    {collections, total_pages} =
+    {collections, total_pages, _} =
       Catalog.list_collections_paginated(page, per_page, search, filters)
 
     socket
@@ -204,7 +204,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     # Count active filters
     active_count = count_active_filters(filters)
 
-    {collections, total_pages} =
+    {collections, total_pages, _} =
       Catalog.list_collections_paginated(page, per_page, search, filters)
 
     # Also refresh tree collections
@@ -281,7 +281,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         page = socket.assigns[:page] || 1
         per_page = 10
 
-        {collections, total_pages} =
+        {collections, total_pages, _} =
           Catalog.list_collections_paginated(page, per_page, search, filters)
 
         socket =
@@ -324,7 +324,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         search = socket.assigns.search
         filters = socket.assigns.filters
 
-        {collections, total_pages} =
+        {collections, total_pages, _} =
           Catalog.list_collections_paginated(page, per_page, search, filters)
 
         socket
@@ -345,7 +345,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     search = socket.assigns[:search] || ""
     filters = socket.assigns.filters
 
-    {collections, total_pages} =
+    {collections, total_pages, _} =
       Catalog.list_collections_paginated(page, per_page, search, filters)
 
     socket =

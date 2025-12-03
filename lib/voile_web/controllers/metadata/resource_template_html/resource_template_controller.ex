@@ -12,7 +12,7 @@ defmodule VoileWeb.ResourceTemplateController do
     page = Map.get(conn.params, "page", "1") |> String.to_integer()
     per_page = 10
 
-    {resource_template_collection, total_pages} =
+    {resource_template_collection, total_pages, _} =
       Metadata.list_resource_templates_paginated(page, per_page)
 
     conn

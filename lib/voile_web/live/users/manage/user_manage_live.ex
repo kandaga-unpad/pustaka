@@ -225,7 +225,10 @@ defmodule VoileWeb.Users.ManageLive do
           "node_id" => enforced_node_filter
         })
       else
-        Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+        {users, total_pages, _} =
+          Accounts.list_users_paginated(socket.assigns.page, socket.assigns.per_page)
+
+        {users, total_pages}
       end
 
     socket =
@@ -315,8 +318,12 @@ defmodule VoileWeb.Users.ManageLive do
         Accounts.search_users_paginated(page, per_page, params)
       else
         case socket.assigns[:enforced_node_filter] do
-          nil -> Accounts.list_users_paginated(page, per_page)
-          node_id -> Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
+          nil ->
+            {users, total_pages, _} = Accounts.list_users_paginated(page, per_page)
+            {users, total_pages}
+
+          node_id ->
+            Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
         end
       end
 
@@ -350,8 +357,12 @@ defmodule VoileWeb.Users.ManageLive do
       no_filters? ->
         {users, total_pages} =
           case socket.assigns[:enforced_node_filter] do
-            nil -> Accounts.list_users_paginated(page, per_page)
-            node_id -> Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
+            nil ->
+              {users, total_pages, _} = Accounts.list_users_paginated(page, per_page)
+              {users, total_pages}
+
+            node_id ->
+              Accounts.search_users_paginated(page, per_page, %{"node_id" => node_id})
           end
 
         socket =

@@ -34,7 +34,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
       page = 1
       per_page = 15
 
-      {transactions, total_pages} =
+      {transactions, total_pages, _} =
         reload_transactions_for(node_id, is_super_admin, page, per_page)
 
       {count_active_collection, count_overdue_collection, count_returned_collection} =
@@ -490,7 +490,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
     page = String.to_integer(page)
     per_page = 15
 
-    {transactions, total_pages} = Circulation.list_transactions_paginated(page, per_page)
+    {transactions, total_pages, _} = Circulation.list_transactions_paginated(page, per_page)
 
     socket =
       socket
@@ -532,7 +532,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
     search_query = Map.get(socket.assigns, :search_query, "")
     filters = %{status: filter_status, query: search_query}
 
-    {transactions, total_pages} =
+    {transactions, total_pages, _} =
       cond do
         is_super_admin and is_nil(node_id) ->
           Voile.Schema.Library.Circulation.list_transaction_paginated_with_filter(

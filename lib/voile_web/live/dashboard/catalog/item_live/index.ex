@@ -21,7 +21,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     filters = Catalog.apply_role_based_filters(current_user, filters)
 
     # Load the first page of items on initial mount with role-based filters applied
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page, search, filters)
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
 
     # Get user's node for automatic filtering
     user_node_id = current_user.node_id
@@ -94,7 +94,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     search = socket.assigns.search || ""
     filters = socket.assigns.filters || %{}
 
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page, search, filters)
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
 
     socket
     |> stream(:items, items, reset: true)
@@ -132,7 +132,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       page = socket.assigns[:page] || 1
       per_page = 10
 
-      {items, total_pages} = Catalog.list_items_paginated(page, per_page, search, filters)
+      {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
 
       socket =
         socket
@@ -163,7 +163,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     search = socket.assigns[:search] || ""
     filters = socket.assigns[:filters] || %{}
 
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page, search, filters)
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
 
     socket =
       socket
@@ -185,7 +185,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     filters = socket.assigns[:filters] || %{}
 
     # perform the search and show results with filters
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page, q, filters)
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, q, filters)
 
     query_time = System.monotonic_time(:millisecond) - start_time
     IO.puts("Search query took #{query_time}ms for search term: '#{q}'")
@@ -209,7 +209,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     per_page = 10
     filters = socket.assigns[:filters] || %{}
 
-    {items, total_pages} = Catalog.list_items_paginated(page, per_page, "", filters)
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, "", filters)
 
     socket =
       socket

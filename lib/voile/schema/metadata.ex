@@ -162,7 +162,7 @@ defmodule Voile.Schema.Metadata do
     total_count = Repo.aggregate(Property, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {properties, total_pages}
+    {properties, total_pages, total_count}
   end
 
   @doc """
@@ -171,9 +171,15 @@ defmodule Voile.Schema.Metadata do
   def list_metadata_properties_by_vocabulary_paginated(vocabulary_id, page, per_page) do
     offset = (page - 1) * per_page
 
-    query =
+    base_query =
       from(p in Property,
-        where: p.vocabulary_id == ^vocabulary_id,
+        where: p.vocabulary_id == ^vocabulary_id
+      )
+
+    total_count = Repo.aggregate(base_query, :count, :id)
+
+    query =
+      from([p] in base_query,
         order_by: [asc: p.label],
         limit: ^per_page,
         offset: ^offset
@@ -184,10 +190,9 @@ defmodule Voile.Schema.Metadata do
       |> Repo.all()
       |> Repo.preload([:vocabulary])
 
-    total_count = Repo.aggregate(Property, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {properties, total_pages}
+    {properties, total_pages, total_count}
   end
 
   @doc """
@@ -297,13 +302,19 @@ defmodule Voile.Schema.Metadata do
   def list_resource_classes_paginated(page, per_page, search_keyword) do
     offset = (page - 1) * per_page
 
-    query =
+    base_query =
       from(rc in ResourceClass,
-        order_by: [asc: rc.label],
-        limit: ^per_page,
-        offset: ^offset,
         where:
           ilike(rc.label, ^"%#{search_keyword}%") or ilike(rc.local_name, ^"%#{search_keyword}%")
+      )
+
+    total_count = Repo.aggregate(base_query, :count, :id)
+
+    query =
+      from([rc] in base_query,
+        order_by: [asc: rc.id],
+        limit: ^per_page,
+        offset: ^offset
       )
 
     resource_class_collection =
@@ -311,10 +322,9 @@ defmodule Voile.Schema.Metadata do
       |> Repo.all()
       |> Repo.preload([:vocabulary])
 
-    total_count = Repo.aggregate(ResourceClass, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_class_collection, total_pages}
+    {resource_class_collection, total_pages, total_count}
   end
 
   def list_glam_type_based_resource_classes() do
@@ -337,7 +347,7 @@ defmodule Voile.Schema.Metadata do
     query =
       from(rc in ResourceClass,
         where: rc.glam_type == ^glam_type,
-        order_by: [asc: rc.label],
+        order_by: [asc: rc.id],
         limit: ^per_page,
         offset: ^offset
       )
@@ -350,7 +360,7 @@ defmodule Voile.Schema.Metadata do
     total_count = Repo.aggregate(query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_class_collection, total_pages}
+    {resource_class_collection, total_pages, total_count}
   end
 
   @doc """
@@ -465,7 +475,7 @@ defmodule Voile.Schema.Metadata do
     total_count = Repo.aggregate(ResourceTemplate, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_template_collection, total_pages}
+    {resource_template_collection, total_pages, total_count}
   end
 
   @doc """
@@ -675,8 +685,9 @@ defmodule Voile.Schema.Metadata do
 
     vocabulary_data = Repo.all(query)
     total_count = Repo.aggregate(Vocabulary, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-    {vocabulary_data, total_count}
+    {vocabulary_data, total_pages, total_count}
   end
 
   def list_metadata_page(:property, page, per_page) do
@@ -691,8 +702,9 @@ defmodule Voile.Schema.Metadata do
 
     property_data = Repo.all(query)
     total_count = Repo.aggregate(Property, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-    {property_data, total_count}
+    {property_data, total_pages, total_count}
   end
 
   def list_metadata_page(:resource_class, page, per_page) do
@@ -707,8 +719,9 @@ defmodule Voile.Schema.Metadata do
 
     resource_class_data = Repo.all(query)
     total_count = Repo.aggregate(ResourceClass, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_class_data, total_count}
+    {resource_class_data, total_pages, total_count}
   end
 
   def list_metadata_page(:resource_template, page, per_page) do
@@ -723,8 +736,9 @@ defmodule Voile.Schema.Metadata do
 
     resource_template_data = Repo.all(query)
     total_count = Repo.aggregate(ResourceTemplate, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_template_data, total_count}
+    {resource_template_data, total_pages, total_count}
   end
 
   def list_metadata_page(:resource_template_property, page, per_page) do
@@ -739,7 +753,8 @@ defmodule Voile.Schema.Metadata do
 
     resource_template_property_data = Repo.all(query)
     total_count = Repo.aggregate(ResourceTemplateProperty, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
 
-    {resource_template_property_data, total_count}
+    {resource_template_property_data, total_pages, total_count}
   end
 end
