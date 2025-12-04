@@ -14,7 +14,7 @@ defmodule Voile.Schema.System.Node do
   @doc false
   def changeset(node, attrs) do
     node
-    |> cast(attrs, [:name, :abbr, :image])
+    |> cast(attrs, [:name, :abbr, :image, :description])
     |> validate_required([:name, :abbr])
   end
 end

@@ -29,8 +29,16 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
         enum: ["public", "private", "restricted"]
       )
 
-      glam_type(:query, :string, "Filter by GLAM type", required: false)
-      unit_id(:query, :integer, "Filter by organization unit/node ID", required: false)
+      glam_type(:query, :string, "Filter by GLAM type",
+        required: false,
+        enum: ["gallery", "library", "archive", "museum"]
+      )
+
+      unit_id(:query, :integer, "Filter by organization unit/node ID",
+        required: false,
+        enum: Enum.to_list(1..21),
+        example: 5
+      )
     end
 
     response(200, "OK", Schema.ref(:CollectionsResponse))

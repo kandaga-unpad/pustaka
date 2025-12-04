@@ -385,6 +385,7 @@ defmodule VoileWeb.Router do
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
           live "/holidays", Dashboard.Settings.HolidayLive, :index
+          live "/nodes", Dashboard.Settings.SystemNodeLive, :index
 
           live "/api_manager", Dashboard.Settings.ApiManager, :index
 

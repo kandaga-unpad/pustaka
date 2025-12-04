@@ -80,7 +80,7 @@ msgid "Browse Collections"
 msgstr "Browse Collections"
 
 #: lib/voile_web/components/core_components.ex:185
-#: lib/voile_web/live/frontend/atrium/index.ex:2289
+#: lib/voile_web/live/frontend/atrium/index.ex:2300
 #: lib/voile_web/live/users/auth/user_login_live.ex:31
 #, elixir-autogen, elixir-format
 msgid "Cancel"
@@ -115,7 +115,7 @@ msgstr "Collection Highlights"
 #: lib/voile_web/components/layouts.ex:512
 #: lib/voile_web/components/layouts.ex:676
 #: lib/voile_web/components/voile_dashboard_components.ex:124
-#: lib/voile_web/controllers/error_html/404.html.heex:74
+#: lib/voile_web/controllers/error_html/404.html.heex:70
 #: lib/voile_web/live/dashboard/catalog/index.ex:232
 #, elixir-autogen, elixir-format
 msgid "Collections"
@@ -217,8 +217,8 @@ msgstr "Hello, %{name}!"
 #: lib/voile_web/components/layouts.ex:510
 #: lib/voile_web/components/layouts.ex:674
 #: lib/voile_web/components/voile_dashboard_components.ex:81
-#: lib/voile_web/controllers/error_html/401.html.heex:60
-#: lib/voile_web/controllers/error_html/404.html.heex:64
+#: lib/voile_web/controllers/error_html/401.html.heex:56
+#: lib/voile_web/controllers/error_html/404.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Home"
 msgstr "Home"
@@ -383,8 +383,8 @@ msgstr "Showing %{start} to %{end} of %{total} entries"
 ## Authentication
 #: lib/voile_web/components/layouts.ex:256
 #: lib/voile_web/components/layouts.ex:663
-#: lib/voile_web/controllers/error_html/401.html.heex:35
-#: lib/voile_web/controllers/error_html/401.html.heex:64
+#: lib/voile_web/controllers/error_html/401.html.heex:31
+#: lib/voile_web/controllers/error_html/401.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr "Sign in"
@@ -620,7 +620,7 @@ msgid "Borrowed"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:418
-#: lib/voile_web/live/frontend/atrium/index.ex:2084
+#: lib/voile_web/live/frontend/atrium/index.ex:2093
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Close"
 msgstr "close"
@@ -772,7 +772,7 @@ msgstr "Atrium"
 #: lib/voile_web/controllers/search_html/advanced.html.heex:712
 #: lib/voile_web/controllers/search_html/advanced.html.heex:773
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:282
-#: lib/voile_web/live/frontend/atrium/index.ex:1352
+#: lib/voile_web/live/frontend/atrium/index.ex:1359
 #, elixir-autogen, elixir-format
 msgid "Next"
 msgstr ""
@@ -815,7 +815,7 @@ msgid "Quick Links"
 msgstr ""
 
 #: lib/voile_web/components/layouts.ex:374
-#: lib/voile_web/controllers/error_html/401.html.heex:70
+#: lib/voile_web/controllers/error_html/401.html.heex:66
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr ""
@@ -831,8 +831,8 @@ msgid "Renewed"
 msgstr ""
 
 #: lib/voile_web/components/layouts.ex:331
-#: lib/voile_web/controllers/error_html/404.html.heex:68
-#: lib/voile_web/controllers/error_html/404.html.heex:70
+#: lib/voile_web/controllers/error_html/404.html.heex:64
+#: lib/voile_web/controllers/error_html/404.html.heex:66
 #: lib/voile_web/controllers/search_html/advanced.html.heex:495
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Search"
@@ -895,8 +895,8 @@ msgid "Welcome back to"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:289
-#: lib/voile_web/live/frontend/atrium/index.ex:1330
-#: lib/voile_web/live/frontend/atrium/index.ex:1600
+#: lib/voile_web/live/frontend/atrium/index.ex:1338
+#: lib/voile_web/live/frontend/atrium/index.ex:1610
 #, elixir-autogen, elixir-format
 msgid "of"
 msgstr ""
@@ -911,25 +911,25 @@ msgstr ""
 msgid "💡 Try searching for: books, manuscripts, paintings, or historical documents"
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/503.html.heex:85
+#: lib/voile_web/controllers/error_html/503.html.heex:72
 #, elixir-autogen, elixir-format
 msgid "Applying small updates to improve performance and stability."
 msgstr "Applying small updates to improve performance and stability."
 
-#: lib/voile_web/controllers/error_html/401.html.heex:51
-#: lib/voile_web/controllers/error_html/404.html.heex:55
-#: lib/voile_web/controllers/error_html/503.html.heex:58
+#: lib/voile_web/controllers/error_html/401.html.heex:47
+#: lib/voile_web/controllers/error_html/404.html.heex:51
+#: lib/voile_web/controllers/error_html/503.html.heex:48
 #, elixir-autogen, elixir-format
 msgid "Contact Developer"
 msgstr "Contact Developer"
 
-#: lib/voile_web/controllers/error_html/500.html.heex:39
-#: lib/voile_web/controllers/error_html/503.html.heex:51
+#: lib/voile_web/controllers/error_html/500.html.heex:35
+#: lib/voile_web/controllers/error_html/503.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "Contact support"
 msgstr "Contact support"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:83
+#: lib/voile_web/controllers/error_html/503.html.heex:70
 #, elixir-autogen, elixir-format
 msgid "Deploying updates"
 msgstr "Deploying updates"
@@ -939,19 +939,19 @@ msgstr "Deploying updates"
 msgid "Discover our curated collections"
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/503.html.heex:110
+#: lib/voile_web/controllers/error_html/503.html.heex:94
 #, elixir-autogen, elixir-format
 msgid "ETA"
 msgstr "ETA"
 
-#: lib/voile_web/controllers/error_html/401.html.heex:20
-#: lib/voile_web/controllers/error_html/404.html.heex:20
-#: lib/voile_web/controllers/error_html/503.html.heex:26
+#: lib/voile_web/controllers/error_html/401.html.heex:17
+#: lib/voile_web/controllers/error_html/404.html.heex:17
+#: lib/voile_web/controllers/error_html/503.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Error occurred at:"
 msgstr "Error occurred at:"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:112
+#: lib/voile_web/controllers/error_html/503.html.heex:96
 #, elixir-autogen, elixir-format
 msgid "Expected to be back within a few minutes — thanks for your patience."
 msgstr "Expected to be back within a few minutes — thanks for your patience."
@@ -961,154 +961,154 @@ msgstr "Expected to be back within a few minutes — thanks for your patience."
 msgid "Labels"
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/503.html.heex:98
+#: lib/voile_web/controllers/error_html/503.html.heex:82
 #, elixir-autogen, elixir-format
 msgid "Maintenance tasks"
 msgstr "Maintenance tasks"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:124
+#: lib/voile_web/controllers/error_html/503.html.heex:108
 #, elixir-autogen, elixir-format
 msgid "No user data is affected during this maintenance window."
 msgstr "No user data is affected during this maintenance window."
 
-#: lib/voile_web/controllers/error_html/503.html.heex:43
+#: lib/voile_web/controllers/error_html/503.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Return home"
 msgstr "Return home"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:100
+#: lib/voile_web/controllers/error_html/503.html.heex:84
 #, elixir-autogen, elixir-format
 msgid "Routine checks and small fixes being applied by the ops team."
 msgstr "Routine checks and small fixes being applied by the ops team."
 
-#: lib/voile_web/controllers/error_html/503.html.heex:122
+#: lib/voile_web/controllers/error_html/503.html.heex:106
 #, elixir-autogen, elixir-format
 msgid "Safety"
 msgstr "Safety"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:23
+#: lib/voile_web/controllers/error_html/503.html.heex:15
 #, elixir-autogen, elixir-format
 msgid "Service Unavailable"
 msgstr "Service Unavailable"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:132
+#: lib/voile_web/controllers/error_html/503.html.heex:116
 #, elixir-autogen, elixir-format
 msgid "Status & updates"
 msgstr "Status & updates"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:134
+#: lib/voile_web/controllers/error_html/503.html.heex:118
 #, elixir-autogen, elixir-format
 msgid "Subscribe or check our status page for real-time updates."
 msgstr "Subscribe or check our status page for real-time updates."
 
-#: lib/voile_web/controllers/error_html/503.html.heex:140
+#: lib/voile_web/controllers/error_html/503.html.heex:124
 #, elixir-autogen, elixir-format
 msgid "View status"
 msgstr "View status"
 
-#: lib/voile_web/controllers/error_html/503.html.heex:69
+#: lib/voile_web/controllers/error_html/503.html.heex:59
 #, elixir-autogen, elixir-format
 msgid "We have taken the service offline temporarily to perform maintenance and deploy reliability improvements. This is a short, planned interruption — no user data will be affected."
 msgstr "We have taken the service offline temporarily to perform maintenance and deploy reliability improvements. This is a short, planned interruption — no user data will be affected."
 
-#: lib/voile_web/controllers/error_html/503.html.heex:32
+#: lib/voile_web/controllers/error_html/503.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "We're currently performing maintenance to improve reliability. Some features may be unavailable. We'll be back shortly."
 msgstr "We're currently performing maintenance to improve reliability. Some features may be unavailable. We'll be back shortly."
 
-#: lib/voile_web/controllers/error_html/503.html.heex:67
+#: lib/voile_web/controllers/error_html/503.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "What's happening"
 msgstr "What's happening"
 
-#: lib/voile_web/controllers/error_html/401.html.heex:42
-#: lib/voile_web/controllers/error_html/404.html.heex:37
-#: lib/voile_web/controllers/error_html/500.html.heex:32
+#: lib/voile_web/controllers/error_html/401.html.heex:38
+#: lib/voile_web/controllers/error_html/404.html.heex:33
+#: lib/voile_web/controllers/error_html/500.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Back to home"
 msgstr "Back to home"
 
-#: lib/voile_web/controllers/error_html/404.html.heex:76
+#: lib/voile_web/controllers/error_html/404.html.heex:72
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr "Browse"
 
 #: lib/voile_web/components/layouts.ex:382
-#: lib/voile_web/controllers/error_html/401.html.heex:78
-#: lib/voile_web/controllers/error_html/404.html.heex:82
+#: lib/voile_web/controllers/error_html/401.html.heex:74
+#: lib/voile_web/controllers/error_html/404.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "Contact"
 msgstr "Contact"
 
-#: lib/voile_web/controllers/error_html/401.html.heex:76
-#: lib/voile_web/controllers/error_html/404.html.heex:80
+#: lib/voile_web/controllers/error_html/401.html.heex:72
+#: lib/voile_web/controllers/error_html/404.html.heex:76
 #, elixir-autogen, elixir-format
 msgid "Help"
 msgstr "Help"
 
-#: lib/voile_web/controllers/error_html/401.html.heex:57
-#: lib/voile_web/controllers/error_html/404.html.heex:61
+#: lib/voile_web/controllers/error_html/401.html.heex:53
+#: lib/voile_web/controllers/error_html/404.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "Helpful links"
 msgstr "Helpful links"
 
-#: lib/voile_web/controllers/error_html/401.html.heex:61
-#: lib/voile_web/controllers/error_html/404.html.heex:65
+#: lib/voile_web/controllers/error_html/401.html.heex:57
+#: lib/voile_web/controllers/error_html/404.html.heex:61
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Open"
 
-#: lib/voile_web/controllers/error_html/404.html.heex:17
+#: lib/voile_web/controllers/error_html/404.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr "Page not found"
 
-#: lib/voile_web/controllers/error_html/404.html.heex:44
+#: lib/voile_web/controllers/error_html/404.html.heex:40
 #, elixir-autogen, elixir-format
 msgid "Search the library"
 msgstr "Search the library"
 
-#: lib/voile_web/controllers/error_html/404.html.heex:26
+#: lib/voile_web/controllers/error_html/404.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "The page you were looking for could not be found. It may have been moved or deleted, or the link is incorrect."
 msgstr "The page you were looking for could not be found. It may have been moved or deleted, or the link is incorrect."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:58
+#: lib/voile_web/controllers/error_html/500.html.heex:54
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Error ID"
 msgstr "Error!"
 
-#: lib/voile_web/controllers/error_html/500.html.heex:61
+#: lib/voile_web/controllers/error_html/500.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "If available, include the request ID from the logs when contacting support."
 msgstr "If available, include the request ID from the logs when contacting support."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:50
+#: lib/voile_web/controllers/error_html/500.html.heex:46
 #, elixir-autogen, elixir-format
 msgid "If the problem persists, contact support with the action you were performing."
 msgstr "If the problem persists, contact support with the action you were performing."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:47
+#: lib/voile_web/controllers/error_html/500.html.heex:43
 #, elixir-autogen, elixir-format
 msgid "Refresh the page — sometimes transient errors recover quickly."
 msgstr "Refresh the page — sometimes transient errors recover quickly."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:18
+#: lib/voile_web/controllers/error_html/500.html.heex:15
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Something went wrong"
 msgstr "Something went wrong"
 
-#: lib/voile_web/controllers/error_html/500.html.heex:48
+#: lib/voile_web/controllers/error_html/500.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Try again in a few minutes."
 msgstr "Try again in a few minutes."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:21
+#: lib/voile_web/controllers/error_html/500.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "We're experiencing an unexpected error. Our team has been notified, and we're working on a fix."
 msgstr "We're experiencing an unexpected error. Our team has been notified, and we're working on a fix."
 
-#: lib/voile_web/controllers/error_html/500.html.heex:45
+#: lib/voile_web/controllers/error_html/500.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "What you can try"
 msgstr "What you can try"
@@ -1169,27 +1169,28 @@ msgstr ""
 msgid "Access Level"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:999
+#: lib/voile_web/live/frontend/atrium/index.ex:1002
 #, elixir-autogen, elixir-format
 msgid "Account Settings"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:932
+#: lib/voile_web/live/frontend/atrium/index.ex:935
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Active Loans"
 msgstr "Actions"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1099
+#: lib/voile_web/live/frontend/atrium/index.ex:1102
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:154
 #, elixir-autogen, elixir-format
 msgid "Address"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2037
+#: lib/voile_web/live/frontend/atrium/index.ex:2047
 #, elixir-autogen, elixir-format
 msgid "Amount to Pay"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1837
+#: lib/voile_web/live/frontend/atrium/index.ex:1848
 #, elixir-autogen, elixir-format
 msgid "Amount:"
 msgstr ""
@@ -1229,28 +1230,28 @@ msgstr "Archives"
 msgid "Archived"
 msgstr "Archives"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1478
+#: lib/voile_web/live/frontend/atrium/index.ex:1488
 #, elixir-autogen, elixir-format
 msgid "Available for renewal in"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1678
+#: lib/voile_web/live/frontend/atrium/index.ex:1687
 #, elixir-autogen, elixir-format
 msgid "Balance:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1104
+#: lib/voile_web/live/frontend/atrium/index.ex:1107
 #, elixir-autogen, elixir-format
 msgid "Birth date"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1109
+#: lib/voile_web/live/frontend/atrium/index.ex:1112
 #, elixir-autogen, elixir-format
 msgid "Birth place"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1437
-#: lib/voile_web/live/frontend/atrium/index.ex:1964
+#: lib/voile_web/live/frontend/atrium/index.ex:1445
+#: lib/voile_web/live/frontend/atrium/index.ex:1974
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Borrowed:"
 msgstr ""
@@ -1261,28 +1262,28 @@ msgstr ""
 msgid "By: %{creator}"
 msgstr "by %{creator}"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:335
+#: lib/voile_web/live/frontend/atrium/index.ex:338
 #, elixir-autogen, elixir-format
 msgid "Cannot renew - this item has pending reservations"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1451
+#: lib/voile_web/live/frontend/atrium/index.ex:1458
 #, elixir-autogen, elixir-format
 msgid "Cannot renew overdue items"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:332
+#: lib/voile_web/live/frontend/atrium/index.ex:335
 #, elixir-autogen, elixir-format
 msgid "Cannot renew overdue items. Please return or contact library staff"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1482
+#: lib/voile_web/live/frontend/atrium/index.ex:1492
 #, elixir-autogen, elixir-format
 msgid "Cannot renew this item"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1176
-#: lib/voile_web/live/frontend/atrium/index.ex:1215
+#: lib/voile_web/live/frontend/atrium/index.ex:1179
+#: lib/voile_web/live/frontend/atrium/index.ex:1218
 #, elixir-autogen, elixir-format
 msgid "Change Password"
 msgstr ""
@@ -1292,17 +1293,17 @@ msgstr ""
 msgid "Checking different status or availability options"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:927
+#: lib/voile_web/live/frontend/atrium/index.ex:930
 #, elixir-autogen, elixir-format
 msgid "Circulation Summary"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2074
+#: lib/voile_web/live/frontend/atrium/index.ex:2081
 #, elixir-autogen, elixir-format
 msgid "Click the link to copy it to your clipboard"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1709
+#: lib/voile_web/live/frontend/atrium/index.ex:1718
 #, elixir-autogen, elixir-format
 msgid "Click to view or pay online"
 msgstr ""
@@ -1347,27 +1348,27 @@ msgstr ""
 msgid "Conference"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2143
+#: lib/voile_web/live/frontend/atrium/index.ex:2154
 #, elixir-autogen, elixir-format
 msgid "Confirm Loan Renewal"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2291
+#: lib/voile_web/live/frontend/atrium/index.ex:2302
 #, elixir-autogen, elixir-format
 msgid "Confirm Renewal"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1202
+#: lib/voile_web/live/frontend/atrium/index.ex:1205
 #, elixir-autogen, elixir-format
 msgid "Confirm new password"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1160
+#: lib/voile_web/live/frontend/atrium/index.ex:1163
 #, elixir-autogen, elixir-format
 msgid "Confirmed at:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:338
+#: lib/voile_web/live/frontend/atrium/index.ex:341
 #, elixir-autogen, elixir-format
 msgid "Could not renew loan: %{reason}"
 msgstr ""
@@ -1402,22 +1403,22 @@ msgstr ""
 msgid "Creator/Author"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2192
+#: lib/voile_web/live/frontend/atrium/index.ex:2203
 #, elixir-autogen, elixir-format
 msgid "Current Due Date"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1208
+#: lib/voile_web/live/frontend/atrium/index.ex:1211
 #, elixir-autogen, elixir-format
 msgid "Current password"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1685
+#: lib/voile_web/live/frontend/atrium/index.ex:1694
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Date:"
 msgstr "Date"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1136
+#: lib/voile_web/live/frontend/atrium/index.ex:1139
 #, elixir-autogen, elixir-format
 msgid "Department"
 msgstr ""
@@ -1432,27 +1433,28 @@ msgstr ""
 msgid "Draft"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1417
+#: lib/voile_web/live/frontend/atrium/index.ex:1422
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Due in"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2203
+#: lib/voile_web/live/frontend/atrium/index.ex:2214
 #, elixir-autogen, elixir-format
 msgid "Due today"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1424
+#: lib/voile_web/live/frontend/atrium/index.ex:1431
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Due:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1026
+#: lib/voile_web/live/frontend/atrium/index.ex:1029
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:50
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:910
+#: lib/voile_web/live/frontend/atrium/index.ex:913
 #, elixir-autogen, elixir-format
 msgid "Email:"
 msgstr ""
@@ -1517,52 +1519,52 @@ msgstr ""
 msgid "Event"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1125
+#: lib/voile_web/live/frontend/atrium/index.ex:1128
 #, elixir-autogen, elixir-format
 msgid "Expiry date"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:466
+#: lib/voile_web/live/frontend/atrium/index.ex:469
 #, elixir-autogen, elixir-format
 msgid "Failed to create payment link: %{reason}"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:528
+#: lib/voile_web/live/frontend/atrium/index.ex:531
 #, elixir-autogen, elixir-format
 msgid "Failed to delete user image"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:976
+#: lib/voile_web/live/frontend/atrium/index.ex:979
 #, elixir-autogen, elixir-format
 msgid "Fine History"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1768
+#: lib/voile_web/live/frontend/atrium/index.ex:1779
 #, elixir-autogen, elixir-format
 msgid "Fine Payment History"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:394
+#: lib/voile_web/live/frontend/atrium/index.ex:397
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Fine not found"
 msgstr "Page not found"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:380
+#: lib/voile_web/live/frontend/atrium/index.ex:383
 #, elixir-autogen, elixir-format
 msgid "Fine payment successful"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:882
+#: lib/voile_web/live/frontend/atrium/index.ex:885
 #, elixir-autogen, elixir-format
 msgid "Fines:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1279
+#: lib/voile_web/live/frontend/atrium/index.ex:1282
 #, elixir-autogen, elixir-format
 msgid "For security reasons, we'll send you a secure link to"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1222
+#: lib/voile_web/live/frontend/atrium/index.ex:1225
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Forgot your current password?"
 msgstr ""
@@ -1572,8 +1574,8 @@ msgstr ""
 msgid "Found %{count} collections"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1013
-#: lib/voile_web/live/frontend/atrium/index.ex:1089
+#: lib/voile_web/live/frontend/atrium/index.ex:1016
+#: lib/voile_web/live/frontend/atrium/index.ex:1092
 #, elixir-autogen, elixir-format
 msgid "Full name"
 msgstr ""
@@ -1588,12 +1590,13 @@ msgstr ""
 msgid "Gallery"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1114
+#: lib/voile_web/live/frontend/atrium/index.ex:1117
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:177
 #, elixir-autogen, elixir-format
 msgid "Gender"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1746
+#: lib/voile_web/live/frontend/atrium/index.ex:1755
 #, elixir-autogen, elixir-format
 msgid "Generate Payment"
 msgstr ""
@@ -1603,12 +1606,12 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2265
+#: lib/voile_web/live/frontend/atrium/index.ex:2276
 #, elixir-autogen, elixir-format
 msgid "Important Information:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2105
+#: lib/voile_web/live/frontend/atrium/index.ex:2113
 #, elixir-autogen, elixir-format
 msgid "Important Notes:"
 msgstr ""
@@ -1618,22 +1621,22 @@ msgstr ""
 msgid "Institution"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:398
+#: lib/voile_web/live/frontend/atrium/index.ex:401
 #, elixir-autogen, elixir-format
 msgid "Invalid amount"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2176
+#: lib/voile_web/live/frontend/atrium/index.ex:2187
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Item Code:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1163
+#: lib/voile_web/live/frontend/atrium/index.ex:1166
 #, elixir-autogen, elixir-format
 msgid "Last login:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2280
+#: lib/voile_web/live/frontend/atrium/index.ex:2291
 #, elixir-autogen, elixir-format
 msgid "Late returns may result in fines"
 msgstr ""
@@ -1643,28 +1646,28 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:977
-#: lib/voile_web/live/frontend/atrium/index.ex:1900
+#: lib/voile_web/live/frontend/atrium/index.ex:980
+#: lib/voile_web/live/frontend/atrium/index.ex:1910
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Loan History"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:319
+#: lib/voile_web/live/frontend/atrium/index.ex:322
 #, elixir-autogen, elixir-format
 msgid "Loan renewed successfully! New due date: %{new_due_date}"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:919
+#: lib/voile_web/live/frontend/atrium/index.ex:922
 #, elixir-autogen, elixir-format
 msgid "Location Node:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2179
+#: lib/voile_web/live/frontend/atrium/index.ex:2190
 #, elixir-autogen, elixir-format
 msgid "Location:"
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/401.html.heex:66
+#: lib/voile_web/controllers/error_html/401.html.heex:62
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Login"
 msgstr ""
@@ -1674,28 +1677,28 @@ msgstr ""
 msgid "Maximum Sort Order"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1461
+#: lib/voile_web/live/frontend/atrium/index.ex:1470
 #, elixir-autogen, elixir-format
 msgid "Maximum renewals reached"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:329
+#: lib/voile_web/live/frontend/atrium/index.ex:332
 #, elixir-autogen, elixir-format
 msgid "Maximum renewals reached for this item"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2249
+#: lib/voile_web/live/frontend/atrium/index.ex:2260
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member Type:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1146
+#: lib/voile_web/live/frontend/atrium/index.ex:1149
 #, elixir-autogen, elixir-format
 msgid "Member profile details"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:913
-#: lib/voile_web/live/frontend/atrium/index.ex:1153
+#: lib/voile_web/live/frontend/atrium/index.ex:916
+#: lib/voile_web/live/frontend/atrium/index.ex:1156
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member type:"
 msgstr ""
@@ -1710,17 +1713,17 @@ msgstr ""
 msgid "Museum"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2210
+#: lib/voile_web/live/frontend/atrium/index.ex:2221
 #, elixir-autogen, elixir-format
 msgid "New Due Date"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1196
+#: lib/voile_web/live/frontend/atrium/index.ex:1199
 #, elixir-autogen, elixir-format
 msgid "New password"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1800
+#: lib/voile_web/live/frontend/atrium/index.ex:1811
 #, elixir-autogen, elixir-format
 msgid "No Fine History"
 msgstr ""
@@ -1730,17 +1733,17 @@ msgstr ""
 msgid "No Image"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1932
+#: lib/voile_web/live/frontend/atrium/index.ex:1942
 #, elixir-autogen, elixir-format
 msgid "No Loan History"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1636
+#: lib/voile_web/live/frontend/atrium/index.ex:1645
 #, elixir-autogen, elixir-format
 msgid "No Outstanding Fines"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1248
+#: lib/voile_web/live/frontend/atrium/index.ex:1251
 #, elixir-autogen, elixir-format
 msgid "No Password Set"
 msgstr ""
@@ -1750,78 +1753,78 @@ msgstr ""
 msgid "No items match your search criteria."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1158
+#: lib/voile_web/live/frontend/atrium/index.ex:1161
 #, elixir-autogen, elixir-format
 msgid "Node:"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:303
-#: lib/voile_web/live/frontend/atrium/index.ex:1131
+#: lib/voile_web/live/frontend/atrium/index.ex:1134
 #, elixir-autogen, elixir-format
 msgid "Organization"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1597
+#: lib/voile_web/live/frontend/atrium/index.ex:1607
 #, elixir-autogen, elixir-format
 msgid "Outstanding Fines"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1410
+#: lib/voile_web/live/frontend/atrium/index.ex:1416
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Overdue by"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1844
+#: lib/voile_web/live/frontend/atrium/index.ex:1855
 #, elixir-autogen, elixir-format
 msgid "Paid:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2092
+#: lib/voile_web/live/frontend/atrium/index.ex:2100
 #, elixir-autogen, elixir-format
 msgid "Pay Now"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1737
+#: lib/voile_web/live/frontend/atrium/index.ex:1745
 #, elixir-autogen, elixir-format
 msgid "Pay Online"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2047
+#: lib/voile_web/live/frontend/atrium/index.ex:2057
 #, elixir-autogen, elixir-format
 msgid "Payment Link"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1705
+#: lib/voile_web/live/frontend/atrium/index.ex:1714
 #, elixir-autogen, elixir-format
 msgid "Payment Link Ready"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2027
+#: lib/voile_web/live/frontend/atrium/index.ex:2037
 #, elixir-autogen, elixir-format
 msgid "Payment Link Ready!"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:388
+#: lib/voile_web/live/frontend/atrium/index.ex:391
 #, elixir-autogen, elixir-format
 msgid "Payment failed: %{reason}"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:477
+#: lib/voile_web/live/frontend/atrium/index.ex:480
 #, elixir-autogen, elixir-format
 msgid "Payment link copied to clipboard!"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:459
+#: lib/voile_web/live/frontend/atrium/index.ex:462
 #, elixir-autogen, elixir-format
 msgid "Payment link created successfully!"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:495
+#: lib/voile_web/live/frontend/atrium/index.ex:498
 #, elixir-autogen, elixir-format
 msgid "Payment link not found"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2110
+#: lib/voile_web/live/frontend/atrium/index.ex:2120
 #, elixir-autogen, elixir-format
 msgid "Payment will be processed by Xendit (secure payment gateway)"
 msgstr ""
@@ -1836,32 +1839,32 @@ msgstr ""
 msgid "Person"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1094
+#: lib/voile_web/live/frontend/atrium/index.ex:1097
 #, elixir-autogen, elixir-format
 msgid "Phone number"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1469
+#: lib/voile_web/live/frontend/atrium/index.ex:1479
 #, elixir-autogen, elixir-format
 msgid "Please contact library staff for assistance."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2147
+#: lib/voile_web/live/frontend/atrium/index.ex:2158
 #, elixir-autogen, elixir-format
 msgid "Please review the details before confirming"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1585
+#: lib/voile_web/live/frontend/atrium/index.ex:1595
 #, elixir-autogen, elixir-format
 msgid "Please wait while we confirm your payment with the payment gateway."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1141
+#: lib/voile_web/live/frontend/atrium/index.ex:1144
 #, elixir-autogen, elixir-format
 msgid "Position"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1346
+#: lib/voile_web/live/frontend/atrium/index.ex:1353
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Prev"
 msgstr ""
@@ -1871,17 +1874,17 @@ msgstr ""
 msgid "Private"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1581
+#: lib/voile_web/live/frontend/atrium/index.ex:1591
 #, elixir-autogen, elixir-format
 msgid "Processing your payment..."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1030
+#: lib/voile_web/live/frontend/atrium/index.ex:1033
 #, elixir-autogen, elixir-format
 msgid "Profile image"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:568
+#: lib/voile_web/live/frontend/atrium/index.ex:571
 #, elixir-autogen, elixir-format
 msgid "Profile updated"
 msgstr ""
@@ -1901,7 +1904,7 @@ msgstr ""
 msgid "Published"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1119
+#: lib/voile_web/live/frontend/atrium/index.ex:1122
 #, elixir-autogen, elixir-format
 msgid "Registration date"
 msgstr ""
@@ -1911,32 +1914,32 @@ msgstr ""
 msgid "Removing some search criteria"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1535
+#: lib/voile_web/live/frontend/atrium/index.ex:1546
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Renew"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2237
+#: lib/voile_web/live/frontend/atrium/index.ex:2248
 #, elixir-autogen, elixir-format
 msgid "Renewal Count:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1490
+#: lib/voile_web/live/frontend/atrium/index.ex:1499
 #, elixir-autogen, elixir-format
 msgid "Renewal available now"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1456
+#: lib/voile_web/live/frontend/atrium/index.ex:1464
 #, elixir-autogen, elixir-format
 msgid "Renewals not available for your member type"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1433
+#: lib/voile_web/live/frontend/atrium/index.ex:1439
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Renewed:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1230
+#: lib/voile_web/live/frontend/atrium/index.ex:1232
 #, elixir-autogen, elixir-format
 msgid "Request Password Reset Email"
 msgstr ""
@@ -1961,17 +1964,17 @@ msgstr ""
 msgid "Restricted"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1973
+#: lib/voile_web/live/frontend/atrium/index.ex:1983
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Returned:"
 msgstr "Return home"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1150
+#: lib/voile_web/live/frontend/atrium/index.ex:1153
 #, elixir-autogen, elixir-format
 msgid "Role:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1168
+#: lib/voile_web/live/frontend/atrium/index.ex:1171
 #, elixir-autogen, elixir-format
 msgid "Save Profile"
 msgstr ""
@@ -1996,25 +1999,25 @@ msgstr ""
 msgid "Search by template label..."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1275
+#: lib/voile_web/live/frontend/atrium/index.ex:1278
 #, elixir-autogen, elixir-format
 msgid "Secure Password Setup"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1290
+#: lib/voile_web/live/frontend/atrium/index.ex:1293
 #, elixir-autogen, elixir-format
 msgid "Send Password Setup Link"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1259
+#: lib/voile_web/live/frontend/atrium/index.ex:1262
 #, elixir-autogen, elixir-format
 msgid "Set Up Password"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1330
-#: lib/voile_web/live/frontend/atrium/index.ex:1600
-#: lib/voile_web/live/frontend/atrium/index.ex:1771
-#: lib/voile_web/live/frontend/atrium/index.ex:1903
+#: lib/voile_web/live/frontend/atrium/index.ex:1338
+#: lib/voile_web/live/frontend/atrium/index.ex:1610
+#: lib/voile_web/live/frontend/atrium/index.ex:1782
+#: lib/voile_web/live/frontend/atrium/index.ex:1913
 #, elixir-autogen, elixir-format
 msgid "Showing"
 msgstr ""
@@ -2025,7 +2028,7 @@ msgid "Showing %{from} to %{to} of %{total} results"
 msgstr ""
 
 ## Authentication
-#: lib/voile_web/controllers/error_html/401.html.heex:72
+#: lib/voile_web/controllers/error_html/401.html.heex:68
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Sign up"
 msgstr "Sign in"
@@ -2040,27 +2043,27 @@ msgstr ""
 msgid "Sort Order Range"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2244
+#: lib/voile_web/live/frontend/atrium/index.ex:2255
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Status:"
 msgstr "Status"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2282
+#: lib/voile_web/live/frontend/atrium/index.ex:2293
 #, elixir-autogen, elixir-format
 msgid "This action cannot be undone"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:877
+#: lib/voile_web/live/frontend/atrium/index.ex:880
 #, elixir-autogen, elixir-format
 msgid "This is your Atrium — a personalized member dashboard."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2108
+#: lib/voile_web/live/frontend/atrium/index.ex:2116
 #, elixir-autogen, elixir-format
 msgid "This payment link is valid for 24 hours"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2269
+#: lib/voile_web/live/frontend/atrium/index.ex:2280
 #, elixir-autogen, elixir-format
 msgid "This renewal will extend your loan period by"
 msgstr ""
@@ -2070,23 +2073,23 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1466
+#: lib/voile_web/live/frontend/atrium/index.ex:1476
 #, elixir-autogen, elixir-format
 msgid "Too late to renew (must renew at least 1 day before due)"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2230
+#: lib/voile_web/live/frontend/atrium/index.ex:2241
 #, elixir-autogen, elixir-format
 msgid "Transaction Date:"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2225
+#: lib/voile_web/live/frontend/atrium/index.ex:2236
 #, elixir-autogen, elixir-format
 msgid "Transaction Details"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:259
-#: lib/voile_web/live/frontend/atrium/index.ex:344
+#: lib/voile_web/live/frontend/atrium/index.ex:262
+#: lib/voile_web/live/frontend/atrium/index.ex:347
 #, elixir-autogen, elixir-format
 msgid "Transaction not found"
 msgstr ""
@@ -2101,13 +2104,13 @@ msgstr ""
 msgid "Trying a simple search instead"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1080
+#: lib/voile_web/live/frontend/atrium/index.ex:1083
 #, elixir-autogen, elixir-format
 msgid "Twitter"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1672
-#: lib/voile_web/live/frontend/atrium/index.ex:1831
+#: lib/voile_web/live/frontend/atrium/index.ex:1681
+#: lib/voile_web/live/frontend/atrium/index.ex:1842
 #, elixir-autogen, elixir-format
 msgid "Type:"
 msgstr ""
@@ -2118,7 +2121,7 @@ msgstr ""
 msgid "Type: %{type}"
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/401.html.heex:17
+#: lib/voile_web/controllers/error_html/401.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Unauthorized"
 msgstr ""
@@ -2138,7 +2141,7 @@ msgstr ""
 msgid "Unit/Location Details"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:938
+#: lib/voile_web/live/frontend/atrium/index.ex:941
 #, elixir-autogen, elixir-format
 msgid "Unpaid Fines"
 msgstr ""
@@ -2153,17 +2156,18 @@ msgstr ""
 msgid "User Details"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:525
+#: lib/voile_web/live/frontend/atrium/index.ex:528
 #, elixir-autogen, elixir-format
 msgid "User image deleted successfully"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:538
+#: lib/voile_web/live/frontend/atrium/index.ex:541
 #, elixir-autogen, elixir-format
 msgid "User image removed"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1018
+#: lib/voile_web/live/frontend/atrium/index.ex:1021
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:136
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
@@ -2173,159 +2177,159 @@ msgstr ""
 msgid "Using more general terms"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:957
+#: lib/voile_web/live/frontend/atrium/index.ex:960
 #, elixir-autogen, elixir-format
 msgid "View Circulation"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1882
+#: lib/voile_web/live/frontend/atrium/index.ex:1892
 #, elixir-autogen, elixir-format
 msgid "View Details"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1722
+#: lib/voile_web/live/frontend/atrium/index.ex:1731
 #, elixir-autogen, elixir-format, fuzzy
 msgid "View Link"
 msgstr "View"
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1234
+#: lib/voile_web/live/frontend/atrium/index.ex:1237
 #, elixir-autogen, elixir-format
 msgid "We'll send you a secure link to reset your password via email."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1075
+#: lib/voile_web/live/frontend/atrium/index.ex:1078
 #, elixir-autogen, elixir-format
 msgid "Website"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2109
+#: lib/voile_web/live/frontend/atrium/index.ex:2118
 #, elixir-autogen, elixir-format
 msgid "You can access this link anytime from the Fines tab"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:367
+#: lib/voile_web/live/frontend/atrium/index.ex:370
 #, elixir-autogen, elixir-format
 msgid "You can only pay your own fines"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:264
+#: lib/voile_web/live/frontend/atrium/index.ex:267
 #, elixir-autogen, elixir-format
 msgid "You can only renew your own loans"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1251
+#: lib/voile_web/live/frontend/atrium/index.ex:1254
 #, elixir-autogen, elixir-format
 msgid "You currently don't have a password for your account. You can set one by requesting a password reset link via email."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1361
+#: lib/voile_web/live/frontend/atrium/index.ex:1368
 #, elixir-autogen, elixir-format
 msgid "You have no active loans."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1804
+#: lib/voile_web/live/frontend/atrium/index.ex:1815
 #, elixir-autogen, elixir-format
 msgid "You haven't paid any fines yet."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1936
+#: lib/voile_web/live/frontend/atrium/index.ex:1946
 #, elixir-autogen, elixir-format
 msgid "You haven't returned any books yet."
 msgstr ""
 
-#: lib/voile_web/controllers/error_html/401.html.heex:26
+#: lib/voile_web/controllers/error_html/401.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "You need to be logged in to access this page. Please sign in to continue."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2275
+#: lib/voile_web/live/frontend/atrium/index.ex:2286
 #, elixir-autogen, elixir-format
 msgid "You will have"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1640
+#: lib/voile_web/live/frontend/atrium/index.ex:1649
 #, elixir-autogen, elixir-format
 msgid "You're all clear! 🎉"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1327
+#: lib/voile_web/live/frontend/atrium/index.ex:1335
 #, elixir-autogen, elixir-format
 msgid "Your Active Loans"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2112
+#: lib/voile_web/live/frontend/atrium/index.ex:2123
 #, elixir-autogen, elixir-format
 msgid "Your fine status will update automatically after successful payment"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2031
+#: lib/voile_web/live/frontend/atrium/index.ex:2041
 #, elixir-autogen, elixir-format
 msgid "Your payment link has been created. Use it to pay your fine online."
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1332
+#: lib/voile_web/live/frontend/atrium/index.ex:1339
 #, elixir-autogen, elixir-format
 msgid "active loans"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1903
+#: lib/voile_web/live/frontend/atrium/index.ex:1913
 #, elixir-autogen, elixir-format
 msgid "completed loans"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1410
-#: lib/voile_web/live/frontend/atrium/index.ex:1417
-#: lib/voile_web/live/frontend/atrium/index.ex:1479
+#: lib/voile_web/live/frontend/atrium/index.ex:1418
+#: lib/voile_web/live/frontend/atrium/index.ex:1424
+#: lib/voile_web/live/frontend/atrium/index.ex:1489
 #, elixir-autogen, elixir-format
 msgid "day(s)"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2269
+#: lib/voile_web/live/frontend/atrium/index.ex:2280
 #, elixir-autogen, elixir-format
 msgid "days"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2218
+#: lib/voile_web/live/frontend/atrium/index.ex:2229
 #, elixir-autogen, elixir-format
 msgid "days extension"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2201
+#: lib/voile_web/live/frontend/atrium/index.ex:2212
 #, elixir-autogen, elixir-format
 msgid "days remaining"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:945
+#: lib/voile_web/live/frontend/atrium/index.ex:948
 #, elixir-autogen, elixir-format
 msgid "fine(s)"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1751
+#: lib/voile_web/live/frontend/atrium/index.ex:1762
 #, elixir-autogen, elixir-format
 msgid "or pay in person at library"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1771
+#: lib/voile_web/live/frontend/atrium/index.ex:1782
 #, elixir-autogen, elixir-format
 msgid "paid/waived fines"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:2277
+#: lib/voile_web/live/frontend/atrium/index.ex:2288
 #, elixir-autogen, elixir-format
 msgid "renewal(s) left after this"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1602
+#: lib/voile_web/live/frontend/atrium/index.ex:1611
 #, elixir-autogen, elixir-format
 msgid "unpaid fines"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1871
+#: lib/voile_web/live/frontend/atrium/index.ex:1881
 #, elixir-autogen, elixir-format
 msgid "via"
 msgstr ""
 
-#: lib/voile_web/live/frontend/atrium/index.ex:1281
+#: lib/voile_web/live/frontend/atrium/index.ex:1283
 #, elixir-autogen, elixir-format
 msgid "where you can safely set up your password."
 msgstr ""
@@ -2335,172 +2339,172 @@ msgstr ""
 msgid "A next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:143
+#: lib/voile_web/live/page_live/about.ex:151
 #, elixir-autogen, elixir-format
 msgid "Advanced Cataloging & Metadata Management"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:424
+#: lib/voile_web/live/page_live/about.ex:454
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Home"
 msgstr "Back to home"
 
-#: lib/voile_web/live/page_live/about.ex:95
+#: lib/voile_web/live/page_live/about.ex:99
 #, elixir-autogen, elixir-format
 msgid "Built with Elixir and Phoenix, leveraging high concurrency, fault tolerance, and real-time performance for a scalable platform."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:268
+#: lib/voile_web/live/page_live/about.ex:296
 #, elixir-autogen, elixir-format
 msgid "Built with Modern Technology"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:329
+#: lib/voile_web/live/page_live/about.ex:357
 #, elixir-autogen, elixir-format
 msgid "Client"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:194
+#: lib/voile_web/live/page_live/about.ex:211
 #, elixir-autogen, elixir-format
 msgid "Data Analytics & Reporting"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:213
+#: lib/voile_web/live/page_live/about.ex:233
 #, elixir-autogen, elixir-format
 msgid "Designed for growth, handling increasing data loads ideal for academic libraries and cultural institutions."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:377
+#: lib/voile_web/live/page_live/about.ex:405
 #, elixir-autogen, elixir-format
 msgid "Developer"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:71
+#: lib/voile_web/live/page_live/about.ex:73
 #, elixir-autogen, elixir-format
 msgid "Digital Transformation"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:160
+#: lib/voile_web/live/page_live/about.ex:171
 #, elixir-autogen, elixir-format
 msgid "Dynamic Search & Retrieval"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:147
+#: lib/voile_web/live/page_live/about.ex:155
 #, elixir-autogen, elixir-format
 msgid "Efficiently manage diverse collections with sophisticated indexing, metadata tagging, and categorization tools."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:415
+#: lib/voile_web/live/page_live/about.ex:443
 #, elixir-autogen, elixir-format
 msgid "Explore our collections and discover the future of digital library management"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:226
+#: lib/voile_web/live/page_live/about.ex:248
 #, elixir-autogen, elixir-format
 msgid "GLAM Integration"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:439
+#: lib/voile_web/live/page_live/about.ex:469
 #, elixir-autogen, elixir-format
 msgid "Get Started"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:399
+#: lib/voile_web/live/page_live/about.ex:427
 #, elixir-autogen, elixir-format
 msgid "GitHub"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:432
+#: lib/voile_web/live/page_live/about.ex:462
 #, elixir-autogen, elixir-format
 msgid "Go to Your Atrium"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:115
+#: lib/voile_web/live/page_live/about.ex:121
 #, elixir-autogen, elixir-format
 msgid "Inspired by violet and purple hues, offering a visually engaging experience that evokes the magic of ancient libraries and cultural heritage."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:197
+#: lib/voile_web/live/page_live/about.ex:215
 #, elixir-autogen, elixir-format
 msgid "Integrated analytics offer insights into user behavior and collection usage for data-driven decisions."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:127
+#: lib/voile_web/live/page_live/about.ex:135
 #, elixir-autogen, elixir-format
 msgid "Key Features"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:242
+#: lib/voile_web/live/page_live/about.ex:266
 #, elixir-autogen, elixir-format
 msgid "Our Vision"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:272
+#: lib/voile_web/live/page_live/about.ex:300
 #, elixir-autogen, elixir-format
 msgid "Powered by industry-leading tools and frameworks"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:130
+#: lib/voile_web/live/page_live/about.ex:138
 #, elixir-autogen, elixir-format
 msgid "Powerful tools for modern library management"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:411
+#: lib/voile_web/live/page_live/about.ex:439
 #, elixir-autogen, elixir-format
 msgid "Ready to Experience the Magic?"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:91
+#: lib/voile_web/live/page_live/about.ex:95
 #, elixir-autogen, elixir-format
 msgid "Robust Architecture"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:163
+#: lib/voile_web/live/page_live/about.ex:175
 #, elixir-autogen, elixir-format
 msgid "Robust search functionalities including filters, metadata searches, and full-text search capabilities."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:210
+#: lib/voile_web/live/page_live/about.ex:230
 #, elixir-autogen, elixir-format
 msgid "Scalable Ecosystem"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:181
+#: lib/voile_web/live/page_live/about.ex:195
 #, elixir-autogen, elixir-format
 msgid "Secure access controls with personalized experiences, ensuring safe and engaging interactions."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:282
+#: lib/voile_web/live/page_live/about.ex:310
 #, elixir-autogen, elixir-format
 msgid "Server"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:258
+#: lib/voile_web/live/page_live/about.ex:284
 #, elixir-autogen, elixir-format
 msgid "This integrated approach empowers users to explore and engage with a rich tapestry of cultural heritage, transforming the way knowledge and art are experienced in the digital age."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:229
+#: lib/voile_web/live/page_live/about.ex:251
 #, elixir-autogen, elixir-format
 msgid "Unified support for Galleries, Libraries, Archives, and Museums in a single platform."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:177
+#: lib/voile_web/live/page_live/about.ex:191
 #, elixir-autogen, elixir-format
 msgid "User Authentication & Personalization"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:111
+#: lib/voile_web/live/page_live/about.ex:117
 #, elixir-autogen, elixir-format
 msgid "User-Centric Design"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:254
+#: lib/voile_web/live/page_live/about.ex:278
 #, elixir-autogen, elixir-format
 msgid "VOILE is more than just a library management system—it's a digital sanctuary for cultural preservation and discovery. By uniting classical library principles with GLAM concepts and cutting-edge technology, VOILE aims to enhance how libraries operate while simultaneously supporting galleries, archives, and museums."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:75
+#: lib/voile_web/live/page_live/about.ex:77
 #, elixir-autogen, elixir-format
 msgid "VOILE reimagines the cultural institution experience by providing a fully digital ecosystem that caters to libraries while also supporting galleries, archives, and museums."
 msgstr ""
@@ -2508,4 +2512,174 @@ msgstr ""
 #: lib/voile_web/live/page_live/about.ex:47
 #, elixir-autogen, elixir-format
 msgid "Virtual Organized of Information & Library Ecosystem"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:147
+#, elixir-autogen, elixir-format
+msgid "+62 812-3456-7890"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Complete Profile"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:17
+#, elixir-autogen, elixir-format
+msgid "Complete Your Profile"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:108
+#, elixir-autogen, elixir-format
+msgid "Complete your profile to unlock all features. A unique identifier has been assigned to you."
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:170
+#, elixir-autogen, elixir-format
+msgid "Date of Birth"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Enter your 12-digit NPM or 15-16 digit NIP"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:181
+#, elixir-autogen, elixir-format
+msgid "Female"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:128
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Full Name"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:294
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:301
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:313
+#, elixir-autogen, elixir-format
+msgid "Identifier"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:72
+#, elixir-autogen, elixir-format
+msgid "Institutional Account Detected"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:83
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Institutional Email"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:164
+#, elixir-autogen, elixir-format
+msgid "Jakarta"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:129
+#, elixir-autogen, elixir-format
+msgid "John Doe"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:180
+#, elixir-autogen, elixir-format
+msgid "Male"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:298
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:310
+#, elixir-autogen, elixir-format
+msgid "NIP (Lecturer ID)"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:300
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:312
+#, elixir-autogen, elixir-format
+msgid "NPM (Student ID)"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "NPM (Student ID) / NIP (Lecturer ID)"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:299
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:311
+#, elixir-autogen, elixir-format
+msgid "Number ID"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:182
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:146
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Phone Number"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Place of Birth"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:41
+#, elixir-autogen, elixir-format
+msgid "Please fill these form with your personal details to complete your profile. We have accepted your registration, the last step is to complete your profile."
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:205
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Position/Title"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:364
+#, elixir-autogen, elixir-format
+msgid "Profile completed successfully!"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:212
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Saving..."
+msgstr "Searching..."
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:179
+#, elixir-autogen, elixir-format
+msgid "Select Gender"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:19
+#, elixir-autogen, elixir-format
+msgid "Tell us a bit about yourself to get started"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:39
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Welcome Back!"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:106
+#, elixir-autogen, elixir-format
+msgid "Welcome to Voile!"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Welcome! Please provide your Student ID (NPM) or Lecturer ID (NIP) to complete your profile."
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Your complete address"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:206
+#, elixir-autogen, elixir-format
+msgid "Your role or position"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "johndoe"
 msgstr ""

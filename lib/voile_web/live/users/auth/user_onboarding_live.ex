@@ -14,9 +14,9 @@ defmodule VoileWeb.UserOnboardingLive do
             </div>
 
             <.header>
-              Complete Your Profile
+              {gettext("Complete Your Profile")}
               <:subtitle>
-                Tell us a bit about yourself to get started
+                {gettext("Tell us a bit about yourself to get started")}
               </:subtitle>
             </.header>
           </div>
@@ -36,9 +36,11 @@ defmodule VoileWeb.UserOnboardingLive do
                     class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                   />
                   <div class="text-sm text-green-800 dark:text-green-300">
-                    <p class="font-semibold mb-1">Welcome Back!</p>
+                    <p class="font-semibold mb-1">{gettext("Welcome Back!")}</p>
                     <p>
-                      Your identifier has been found in our system. You can keep using your personal email or switch to an institutional email if you have one.
+                      {gettext(
+                        "Please fill these form with your personal details to complete your profile. We have accepted your registration, the last step is to complete your profile."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -47,7 +49,7 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:email]}
                 type="email"
-                label="Email"
+                label={gettext("Email")}
                 placeholder="your.email@example.com"
                 phx-debounce="300"
               />
@@ -69,9 +71,11 @@ defmodule VoileWeb.UserOnboardingLive do
                     class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                   />
                   <div class="text-sm text-blue-800 dark:text-blue-300">
-                    <p class="font-semibold mb-1">Institutional Account Detected</p>
+                    <p class="font-semibold mb-1">{gettext("Institutional Account Detected")}</p>
                     <p>
-                      Welcome! Please provide your Student ID (NPM) or Lecturer ID (NIP) to complete your profile.
+                      {gettext(
+                        "Welcome! Please provide your Student ID (NPM) or Lecturer ID (NIP) to complete your profile."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -80,7 +84,7 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:email]}
                 type="email"
-                label="Institutional Email"
+                label={gettext("Institutional Email")}
                 readonly
                 disabled
               />
@@ -88,8 +92,8 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:identifier]}
                 type="text"
-                label="NPM (Student ID) / NIP (Lecturer ID)"
-                placeholder="Enter your 12-digit NPM or 15-16 digit NIP"
+                label={gettext("NPM (Student ID) / NIP (Lecturer ID)")}
+                placeholder={gettext("Enter your 12-digit NPM or 15-16 digit NIP")}
                 required
                 phx-debounce="300"
               />
@@ -103,9 +107,11 @@ defmodule VoileWeb.UserOnboardingLive do
                     class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                   />
                   <div class="text-sm text-green-800 dark:text-green-300">
-                    <p class="font-semibold mb-1">Welcome to Voile!</p>
+                    <p class="font-semibold mb-1">{gettext("Welcome to Voile!")}</p>
                     <p>
-                      Complete your profile to unlock all features. A unique identifier has been assigned to you.
+                      {gettext(
+                        "Complete your profile to unlock all features. A unique identifier has been assigned to you."
+                      )}
                     </p>
                   </div>
                 </div>
@@ -125,16 +131,16 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:fullname]}
                 type="text"
-                label="Full Name"
-                placeholder="John Doe"
+                label={gettext("Full Name")}
+                placeholder={gettext("Chrisna Adhi Pranoto")}
                 required
               />
 
               <.input
                 field={@form[:username]}
                 type="text"
-                label="Username"
-                placeholder="johndoe"
+                label={gettext("Username")}
+                placeholder={gettext("chrisnaadhi")}
                 required
                 disabled
               />
@@ -143,16 +149,16 @@ defmodule VoileWeb.UserOnboardingLive do
             <.input
               field={@form[:phone_number]}
               type="tel"
-              label="Phone Number"
-              placeholder="+62 812-3456-7890"
+              label={gettext("Phone Number")}
+              placeholder={gettext("+62 812-3456-7890")}
               required
             />
 
             <.input
               field={@form[:address]}
               type="textarea"
-              label="Address"
-              placeholder="Your complete address"
+              label={gettext("Address")}
+              placeholder={gettext("Your complete address")}
               rows="3"
             />
 
@@ -160,26 +166,26 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:birth_place]}
                 type="text"
-                label="Place of Birth"
-                placeholder="Jakarta"
+                label={gettext("Place of Birth")}
+                placeholder={gettext("Jakarta")}
               />
 
               <.input
                 field={@form[:birth_date]}
                 type="date"
-                label="Date of Birth"
+                label={gettext("Date of Birth")}
               />
             </div>
 
             <.input
               field={@form[:gender]}
               type="select"
-              label="Gender"
+              label={gettext("Gender")}
               options={[
-                {"Select Gender", ""},
-                {"Male", "male"},
-                {"Female", "female"},
-                {"Other", "other"}
+                {gettext("Select Gender"), ""},
+                {gettext("Male"), "male"},
+                {gettext("Female"), "female"},
+                {gettext("Other"), "other"}
               ]}
             />
 
@@ -202,17 +208,19 @@ defmodule VoileWeb.UserOnboardingLive do
             <.input
               field={@form[:position]}
               type="text"
-              label="Position/Title"
-              placeholder="Your role or position"
+              label={gettext("Position/Title")}
+              placeholder={gettext("Your role or position")}
             />
 
             <div class="flex gap-4 pt-6">
               <.button
                 type="submit"
-                phx-disable-with="Saving..."
+                phx-disable-with={gettext("Saving...")}
                 class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
               >
-                <.icon name="hero-check" class="w-5 h-5 inline-block mr-2" /> Complete Profile
+                <.icon name="hero-check" class="w-5 h-5 inline-block mr-2" /> {gettext(
+                  "Complete Profile"
+                )}
               </.button>
             </div>
           </.form>
@@ -291,14 +299,14 @@ defmodule VoileWeb.UserOnboardingLive do
 
   defp is_institutional_email?(_), do: false
 
-  defp identifier_label(nil), do: "Identifier"
+  defp identifier_label(nil), do: gettext("Identifier")
 
   defp identifier_label(value) when is_binary(value) do
     case String.length(value) do
-      length when length >= 15 -> "NIP (Lecturer ID)"
-      length when length == 14 -> "Number ID"
-      length when length == 12 -> "NPM (Student ID)"
-      _ -> "Identifier"
+      length when length >= 15 -> gettext("NIP (Lecturer ID)")
+      length when length == 14 -> gettext("Number ID")
+      length when length == 12 -> gettext("NPM (Student ID)")
+      _ -> gettext("Identifier")
     end
   end
 
@@ -307,10 +315,10 @@ defmodule VoileWeb.UserOnboardingLive do
     str_value = to_string(value)
 
     case String.length(str_value) do
-      length when length >= 15 -> "NIP (Lecturer ID)"
-      length when length == 14 -> "Number ID"
-      length when length == 12 -> "NPM (Student ID)"
-      _ -> "Identifier"
+      length when length >= 15 -> gettext("NIP (Lecturer ID)")
+      length when length == 14 -> gettext("Number ID")
+      length when length == 12 -> gettext("NPM (Student ID)")
+      _ -> gettext("Identifier")
     end
   end
 
@@ -361,7 +369,7 @@ defmodule VoileWeb.UserOnboardingLive do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Profile completed successfully!")
+         |> put_flash(:info, gettext("Profile completed successfully!"))
          |> push_navigate(to: redirect_path)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

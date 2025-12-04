@@ -1,15 +1,12 @@
-<% app_main_color = assigns[:app_main_color] || "#9333ea"
-app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
+<% app_contact_email =
+  Voile.Schema.System.get_setting_value("app_contact_email") || "hi@curatorian.id" %>
 
 <Layouts.app flash={assigns[:flash] || %{}} current_scope={assigns[:current_scope]}>
   <div class="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div class="space-y-6">
-          <div
-            class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-lg"
-            style={"background: linear-gradient(135deg, " <> app_main_color <> ", " <> app_secondary_color <> ");"}
-          >
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-lg bg-red-600">
             <.icon name="hero-lock-closed" class="w-10 h-10 text-white" />
           </div>
 
@@ -30,7 +27,6 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             <.link
               href={~p"/users/log_in"}
               class="inline-flex w-full items-center gap-2 px-5 py-3 rounded-md bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
-              style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
             >
               <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" /> {gettext("Sign in")}
             </.link>
@@ -74,7 +70,7 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             </li>
             <li class="flex items-center justify-between">
               <div class="text-sm text-gray-700 dark:text-gray-200">{gettext("Help")}</div>
-              <.link href="mailto:support@yourorg.example" class="text-sm text-indigo-600">
+              <.link href={"mailto:" <> app_contact_email} class="text-sm text-indigo-600">
                 {gettext("Contact")}
               </.link>
             </li>

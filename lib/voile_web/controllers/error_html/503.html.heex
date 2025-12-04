@@ -1,21 +1,13 @@
-<% # Use app theme colors when available (fallback to violet hues used in About)
-app_main_color = assigns[:app_main_color] || "#9333ea"
-app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
+<% app_contact_email =
+  Voile.Schema.System.get_setting_value("app_contact_email") || "hi@curatorian.id" %>
 
 <Layouts.app flash={assigns[:flash] || %{}} current_scope={assigns[:current_scope]}>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
     <header class="relative overflow-hidden">
-      <div
-        class="absolute inset-0 pointer-events-none"
-        style={"background: linear-gradient(135deg, " <> app_main_color <> "22, " <> app_secondary_color <> "11); filter: blur(36px);"}
-      >
-      </div>
+      <div class="absolute inset-0 pointer-events-none"></div>
 
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div
-          class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 shadow-2xl"
-          style={"background: linear-gradient(135deg, " <> app_main_color <> ", " <> app_secondary_color <> ");"}
-        >
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 shadow-2xl bg-red-600">
           <.icon name="hero-server-stack" class="w-12 h-12 text-white" />
         </div>
 
@@ -38,21 +30,19 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
           <.link
             href={~p"/"}
             class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 shadow hover:shadow-md"
-            style={"border:1px solid " <> app_main_color <> "20; color: " <> app_main_color <> ";"}
           >
             <.icon name="hero-home" class="w-5 h-5 mr-2" /> {gettext("Return home")}
           </.link>
 
           <.link
-            href="mailto:support@yourorg.example"
+            href={"mailto:" <> app_contact_email}
             class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-transparent border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-            style={"border-color: " <> app_secondary_color <> "33;"}
           >
             <.icon name="hero-envelope" class="w-5 h-5 mr-2" /> {gettext("Contact support")}
           </.link>
 
           <.link
-            href="mailto:chrisna.adhi@unpad.ac.id"
+            href={"mailto:" <> app_contact_email}
             class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
             <.icon name="hero-envelope" class="w-5 h-5 mr-2" /> {gettext("Contact Developer")}
@@ -73,10 +63,7 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
 
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <li class="flex items-start gap-3">
-              <div
-                class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
-                style={"background-color: " <> app_main_color <> "10; color: " <> app_main_color <> ";"}
-              >
+              <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
                 <.icon name="hero-rocket-launch" class="w-5 h-5" />
               </div>
               <div>
@@ -88,10 +75,7 @@ app_secondary_color = assigns[:app_secondary_color] || "#7c3aed" %>
             </li>
 
             <li class="flex items-start gap-3">
-              <div
-                class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
-                style={"background-color: " <> app_secondary_color <> "10; color: " <> app_secondary_color <> ";"}
-              >
+              <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                 <.icon name="hero-cog" class="w-5 h-5" />
               </div>
               <div>
