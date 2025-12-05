@@ -35,6 +35,18 @@ echo -e "${GREEN}================================${NC}"
 print_status "Pulling latest changes..."
 git pull
 
+# Download Tailwind binary if not present
+print_status "Preparing Tailwind binary..."
+mkdir -p _build
+if [ ! -f "_build/tailwind-linux-x64" ]; then
+    print_status "Downloading Tailwind..."
+    curl -L https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.7/tailwindcss-linux-x64 \
+        -o _build/tailwind-linux-x64
+    chmod +x _build/tailwind-linux-x64
+else
+    print_status "Tailwind binary already exists"
+fi
+
 # Build new image
 print_status "Building new image..."
 podman build -t voile:latest -f Containerfile .
