@@ -52,9 +52,6 @@ COPY assets assets
 COPY rel rel
 COPY scripts scripts
 
-COPY _build/tailwind-linux-x64 /app/_build/tailwind-linux-x64
-RUN chmod +x /app/_build/tailwind-linux-x64
-
 # compile and build assets and release
 RUN mix do compile
 RUN mix assets.deploy
