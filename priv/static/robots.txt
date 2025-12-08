@@ -1,5 +1,35 @@
 # See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
 #
-# To ban all spiders from the entire site uncomment the next two lines:
+# This robots.txt allows web crawlers to access public content while blocking
+# sensitive administrative and API endpoints.
+
+# Allow all web crawlers to access the site
+User-agent: *
+
+# Allow crawling of all public content (default behavior)
+Allow: /
+
+# Disallow crawling of administrative/management areas
+Disallow: /manage/
+
+# Disallow crawling of API endpoints (require authentication)
+Disallow: /api/
+
+# Disallow crawling of development routes
+Disallow: /dev/
+
+# Disallow crawling of authentication-related pages
+Disallow: /auth/
+
+# Disallow crawling of user account pages (authentication required)
+Disallow: /users/
+
+# Disallow crawling of webhook endpoints
+Disallow: /webhooks/
+
+# If you have a sitemap, uncomment and update the URL below
+# Sitemap: https://yourdomain.com/sitemap.xml
+
+# To ban all spiders from the entire site, uncomment the next two lines:
 # User-agent: *
 # Disallow: /
