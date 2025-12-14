@@ -1,15 +1,14 @@
 <section class="flex flex-col gap-4">
   <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
-
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:items-start">
     <%!-- Left Panel: Search and Selection --%>
     <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Select Items</h2>
-
+        
         <.back navigate="/manage/catalog/items">Back</.back>
       </div>
-      <%!-- Group by Collection Toggle --%>
+       <%!-- Group by Collection Toggle --%>
       <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
         <label class="flex items-center gap-2 cursor-pointer">
           <input
@@ -26,7 +25,7 @@
           Search and select entire collections to print all their items at once
         </p>
       </div>
-      <%!-- Search --%>
+       <%!-- Search --%>
       <.form for={%{}} phx-submit="search" phx-change="search" id="search-form" class="mb-4">
         <.input
           type="text"
@@ -40,7 +39,7 @@
           phx-debounce="300"
         />
       </.form>
-      <%!-- Selection Actions --%>
+       <%!-- Selection Actions --%>
       <%= if (@group_by_collection and length(@collections) > 0) or
               (not @group_by_collection and length(@items) > 0) do %>
         <div class="flex gap-2 mb-4">
@@ -53,7 +52,7 @@
               Select All
             </button>
           <% end %>
-
+          
           <button
             type="button"
             phx-click="deselect_all"
@@ -61,13 +60,10 @@
           >
             Clear
           </button>
-
-          <span class="text-xs text-gray-600 py-1">
-            {length(@selected_items)} selected
-          </span>
+          <span class="text-xs text-gray-600 py-1">{length(@selected_items)} selected</span>
         </div>
       <% end %>
-      <%!-- Items or Collections List --%>
+       <%!-- Items or Collections List --%>
       <div class="space-y-2 h-[500px] overflow-y-auto">
         <%= if @search == "" do %>
           <div class="text-center py-8 text-gray-500">
@@ -97,6 +93,7 @@
                   </div>
                 </div>
               <% end %>
+              
               <div id="collections" phx-update="stream">
                 <%= for {id, collection} <- @streams.collections || [] do %>
                   <div id={id}>
@@ -110,23 +107,30 @@
                         name="hero-book-open"
                         class="w-5 h-5 mt-1 text-blue-600 flex-shrink-0"
                       />
-
                       <div class="flex-1 min-w-0">
-                        <div class="font-medium text-sm text-gray-900 dark:text-white">
-                          {collection.title}
+                        <div class="flex items-center justify-between gap-2">
+                          <div class="font-medium text-sm text-gray-900 dark:text-white">
+                            {collection.title}
+                          </div>
+                          
+                          <%= if Map.get(collection, :item_count) do %>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {collection.item_count} item{if collection.item_count != 1, do: "s"}
+                            </span>
+                          <% end %>
                         </div>
-
+                        
                         <div class="text-xs text-gray-600 dark:text-gray-400">
                           Code: {collection.collection_code || "N/A"}
                         </div>
-
+                        
                         <%= if collection.mst_creator do %>
                           <div class="text-xs text-gray-500">
                             Author: {collection.mst_creator.creator_name}
                           </div>
                         <% end %>
                       </div>
-
+                      
                       <.icon
                         name="hero-plus-circle"
                         class="w-5 h-5 mt-1 text-green-600 flex-shrink-0"
@@ -152,6 +156,7 @@
                   </div>
                 </div>
               <% end %>
+              
               <div id="items" phx-update="stream">
                 <%= for {id, item} <- @streams.items || [] do %>
                   <div id={id}>
@@ -163,16 +168,15 @@
                         checked={to_string(item.id) in @selected_items}
                         class="mt-1"
                       />
-
                       <div class="flex-1 min-w-0">
                         <div class="font-medium text-sm text-gray-900 dark:text-white truncate">
                           {item.collection.title}
                         </div>
-
+                        
                         <div class="text-xs text-gray-600 dark:text-gray-400">
                           Code: {item.item_code || "N/A"}
                         </div>
-
+                        
                         <div class="text-xs text-gray-500">
                           Location: {item.location ||
                             (item.item_location && item.item_location.name) ||
@@ -188,10 +192,10 @@
         <% end %>
       </div>
     </div>
-    <%!-- Right Panel: Label Configuration --%>
+     <%!-- Right Panel: Label Configuration --%>
     <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 h-[730px] flex flex-col">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Label Settings</h2>
-
+      
       <.form
         for={%{}}
         phx-change="update_label_config"
@@ -203,88 +207,69 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Label Size
           </label>
-
           <select
             name="label_size"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value="small" selected={@label_size == "small"}>Small (4cm × 2cm)</option>
+            <option value="small" selected={@label_size == "small"}>Small (10.5cm × 3cm)</option>
+            
             <option value="medium" selected={@label_size == "medium"}>
-              Medium (6cm × 3cm)
+              Medium (10.5cm × 4cm)
             </option>
-            <option value="large" selected={@label_size == "large"}>Large (8cm × 4cm)</option>
+            
+            <option value="large" selected={@label_size == "large"}>Large (10.5cm × 5cm)</option>
           </select>
         </div>
-        <%!-- Labels per Row --%>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Labels per Row
-          </label>
-
-          <select
-            name="labels_per_row"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value="2" selected={@labels_per_row == 2}>2</option>
-            <option value="3" selected={@labels_per_row == 3}>3</option>
-            <option value="4" selected={@labels_per_row == 4}>4</option>
-            <option value="5" selected={@labels_per_row == 5}>5</option>
-          </select>
-        </div>
-        <%!-- Font Size --%>
+         <%!-- Font Size --%>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Font Size
           </label>
-
           <select
             name="font_size"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="xs" selected={@font_size == "xs"}>Extra Small</option>
+            
             <option value="sm" selected={@font_size == "sm"}>Small</option>
+            
             <option value="base" selected={@font_size == "base"}>Medium</option>
+            
             <option value="lg" selected={@font_size == "lg"}>Large</option>
           </select>
         </div>
-        <%!-- Include Options --%>
+         <%!-- Include Options --%>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Include on Label
           </label>
-
           <label class="flex items-center gap-2">
             <input
               type="checkbox"
               name="include_barcode"
               value="true"
               checked={@include_barcode}
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">Barcode/QR Code</span>
+            /> <span class="text-sm text-gray-700 dark:text-gray-300">Barcode/QR Code</span>
           </label>
-
           <label class="flex items-center gap-2">
             <input
               type="checkbox"
               name="include_location"
               value="true"
               checked={@include_location}
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">Location</span>
+            /> <span class="text-sm text-gray-700 dark:text-gray-300">Location</span>
           </label>
-
           <label class="flex items-center gap-2">
             <input
               type="checkbox"
               name="include_call_number"
               value="true"
               checked={@include_call_number}
-            />
-            <span class="text-sm text-gray-700 dark:text-gray-300">Call Number</span>
+            /> <span class="text-sm text-gray-700 dark:text-gray-300">Call Number</span>
           </label>
         </div>
       </.form>
-      <%!-- Print Button --%>
+       <%!-- Print Button --%>
       <%= if length(@selected_items) > 0 do %>
         <button
           type="button"
@@ -297,8 +282,7 @@
       <% end %>
     </div>
   </div>
-
-  <%!-- Preview Panel (Full Width Below) --%>
+   <%!-- Preview Panel (Full Width Below) --%>
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
       Preview
@@ -308,12 +292,13 @@
         </span>
       <% end %>
     </h2>
-
+    
     <%= if length(@selected_items) == 0 do %>
       <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-8 bg-gray-50 dark:bg-gray-700">
         <div class="text-center text-gray-500">
           <.icon name="hero-document" class="w-16 h-16 mx-auto mb-3 opacity-50" />
           <p class="text-base font-medium mb-1">No Labels Selected</p>
+          
           <p class="text-sm">Select items from the list above to preview their labels</p>
         </div>
       </div>
@@ -341,7 +326,7 @@
     <% end %>
   </div>
 </section>
-<%!-- Print Styles --%>
+ <%!-- Print Styles --%>
 <style>
   @media print {
     /* Hide everything except the print container */
@@ -419,7 +404,7 @@
     }
   }
 </style>
-<%!-- Hidden Print Container --%>
+ <%!-- Hidden Print Container --%>
 <div id="print-labels" style="display: none;">
   <div
     class="print-grid grid gap-4 justify-items-center"

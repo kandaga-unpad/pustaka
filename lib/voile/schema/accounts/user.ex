@@ -217,6 +217,35 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_email(opts)
   end
 
+  def update_user_profile_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [
+      :fullname,
+      :password,
+      :user_image,
+      :groups,
+      :twitter,
+      :facebook,
+      :linkedin,
+      :instagram,
+      :website,
+      :last_login,
+      :last_login_ip,
+      # Profile fields
+      :address,
+      :phone_number,
+      :birth_date,
+      :birth_place,
+      :gender,
+      :registration_date,
+      :expiry_date,
+      :organization,
+      :department,
+      :position
+    ])
+    |> validate_password(opts)
+  end
+
   @doc """
   A user changeset for onboarding that requires essential profile fields.
   """

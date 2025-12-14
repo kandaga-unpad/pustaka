@@ -10,17 +10,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
     ~H"""
     <div>
       <h3>Attachments Data</h3>
-
+      
       <div class="flex">
-        <h6 class="text-orange-500">{@collection.title}</h6>
-
-        <h6>'s Attachments Details</h6>
+        <h6>
+          <span class="text-orange-500 font-bold">{@collection.title}</span>'s Attachments Details
+        </h6>
       </div>
-
+      
       <div>
         <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>Kembali</.back>
       </div>
-
+      
       <div class="flex gap-4 w-full my-5">
         <div class="flex items-start justify-center w-96">
           <%= if @collection.thumbnail do %>
@@ -34,18 +34,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
             </div>
           <% end %>
         </div>
-
+        
         <.list>
           <:item title="Title">{@collection.title || "-"}</:item>
-
+          
           <:item title="Creator">
             {(@collection.mst_creator && @collection.mst_creator.creator_name) || "No creator"}
           </:item>
-
+          
           <:item title="Description">{@collection.description || "-"}</:item>
-
+          
           <:item title="Status">{@collection.status || "-"}</:item>
-
+          
           <:item title="Thumbnail">
             <.link
               navigate={@collection.thumbnail}
@@ -55,14 +55,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
               View
             </.link>
           </:item>
-
+          
           <:item title="Access Level">{@collection.access_level || "-"}</:item>
         </.list>
       </div>
-
+      
       <div class="mt-8 border-t pt-8">
         <h5 class="my-5">Attachments List</h5>
-
+        
         <div>
           <.live_component
             module={AttachmentUpload}
@@ -72,7 +72,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
           />
         </div>
       </div>
-
+      
       <div class="flex items-center justify-center">
         <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>Kembali</.back>
       </div>

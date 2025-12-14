@@ -39,10 +39,14 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
     group_by_collection = socket.assigns.group_by_collection
 
     if group_by_collection do
-      # Search for collections
+      # Search for collections with item counts
       collections =
         if query != "" do
           Catalog.search_collections(query)
+          |> Enum.map(fn collection ->
+            item_count = Catalog.count_items_by_collection(collection.id)
+            Map.put(collection, :item_count, item_count)
+          end)
         else
           []
         end
@@ -169,10 +173,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
     socket =
       socket
       |> assign(:label_size, params["label_size"] || socket.assigns.label_size)
-      |> assign(
-        :labels_per_row,
-        String.to_integer(params["labels_per_row"] || "#{socket.assigns.labels_per_row}")
-      )
+      |> assign(:labels_per_row, 2)
       |> assign(
         :include_barcode,
         params["include_barcode"] == "true"

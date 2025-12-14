@@ -872,6 +872,11 @@ defmodule Voile.Schema.Catalog do
     |> Repo.aggregate(:count, :id)
   end
 
+  def count_items_by_collection(collection_id) do
+    from(i in Item, where: i.collection_id == ^collection_id)
+    |> Repo.aggregate(:count, :id)
+  end
+
   def list_available_items do
     query =
       from(i in Item,
@@ -1381,7 +1386,14 @@ defmodule Voile.Schema.Catalog do
   Get file path for serving
   """
   def get_file_url(%Attachment{} = attachment) do
-    "/uploads/attachments/#{Path.basename(attachment.file_path)}"
+    # Return the file path as-is if it already contains the full path
+    # This handles both asset_vault files and regular attachment files
+    if attachment.file_path && String.starts_with?(attachment.file_path, "/uploads") do
+      attachment.file_path
+    else
+      # Fallback for legacy attachments that only have filename
+      "/uploads/attachments/#{Path.basename(attachment.file_path)}"
+    end
   end
 
   # Private functions
@@ -1396,12 +1408,20 @@ defmodule Voile.Schema.Catalog do
     entity_type = get_entity_type(entity)
     entity_id = entity.id
 
+    # Extract file_key from file_url
+    file_key = extract_file_key_from_url(file_url)
+
+    # Get unit_id from entity if available
+    unit_id = Map.get(entity, :unit_id)
+
     attrs = %{
       # Extract filename from URL
       file_name: Path.basename(file_url),
       original_name: filename,
       # Store the full URL/path
       file_path: file_url,
+      # Store storage key for Client.Storage operations
+      file_key: file_key,
       file_size: file_size,
       mime_type: content_type,
       file_type: Attachment.determine_file_type(content_type),
@@ -1413,7 +1433,8 @@ defmodule Voile.Schema.Catalog do
         original_size: file_size
       },
       attachable_id: entity_id,
-      attachable_type: entity_type
+      attachable_type: entity_type,
+      unit_id: unit_id
     }
 
     %Attachment{}
@@ -1446,6 +1467,25 @@ defmodule Voile.Schema.Catalog do
 
   defp get_entity_type(%Collection{}), do: "collection"
   defp get_entity_type(%Item{}), do: "item"
+
+  # Extract file key from storage URL for Client.Storage operations
+  # Handles both /uploads/path and full URLs
+  defp extract_file_key_from_url(file_url) when is_binary(file_url) do
+    cond do
+      String.starts_with?(file_url, "/uploads/") ->
+        String.trim_leading(file_url, "/uploads/")
+
+      String.contains?(file_url, "/uploads/") ->
+        file_url
+        |> String.split("/uploads/")
+        |> List.last()
+
+      true ->
+        file_url
+    end
+  end
+
+  defp extract_file_key_from_url(_), do: nil
 
   @doc """
   Get attachment statistics for an entity

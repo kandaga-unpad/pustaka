@@ -8,6 +8,8 @@ defmodule Voile.Schema.Catalog.Attachment do
     field :file_name, :string
     field :original_name, :string
     field :file_path, :string
+    # Storage key/path for Client.Storage operations (e.g., "thumbnails/abc123.jpg")
+    field :file_key, :string
     field :file_size, :integer
     field :mime_type, :string
     field :file_type, :string
@@ -15,6 +17,9 @@ defmodule Voile.Schema.Catalog.Attachment do
     field :sort_order, :integer, default: 0
     field :is_primary, :boolean, default: false
     field :metadata, :map, default: %{}
+
+    # Organizational unit reference
+    field :unit_id, :integer
 
     # Polymorphic associations
     field :attachable_id, :binary_id
@@ -59,6 +64,7 @@ defmodule Voile.Schema.Catalog.Attachment do
       :file_name,
       :original_name,
       :file_path,
+      :file_key,
       :file_size,
       :mime_type,
       :file_type,
@@ -69,6 +75,7 @@ defmodule Voile.Schema.Catalog.Attachment do
       :attachable_id,
       :attachable_type,
       :parent_id,
+      :unit_id,
       :access_level,
       :embargo_start_date,
       :embargo_end_date,

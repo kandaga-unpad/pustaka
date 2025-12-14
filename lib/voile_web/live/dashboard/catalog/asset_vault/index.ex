@@ -2,8 +2,9 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Repo
-  alias Voile.Schema.Catalog.Attachment
+  alias Voile.Schema.Catalog.{Attachment, Collection}
   alias VoileWeb.Auth.Authorization
+  alias Client.Storage
   import Ecto.Query
 
   @impl true
@@ -40,12 +41,13 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
         |> assign(:sidebar_collapsed, false)
         |> assign(:root_folders, list_root_folders())
         |> assign(:folder_path_ids, get_folder_path_ids(nil))
+        |> assign(:show_rename_modal, false)
+        |> assign(:rename_folder_id, nil)
+        |> assign(:rename_folder_name, "")
         |> allow_upload(:attachments,
           accept: :any,
           max_entries: 10,
-          max_file_size: 100_000_000,
-          progress: &handle_progress/3,
-          auto_upload: true
+          max_file_size: 100_000_000
         )
 
       {:ok, socket}
@@ -102,14 +104,39 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
     authorize!(socket, "attachments.delete")
 
     attachment = Repo.get!(Attachment, id)
+
+    # If this is a collection thumbnail, nullify the collection's thumbnail field
+    if attachment.attachable_type == "asset_vault" && attachment.attachable_id do
+      case Repo.get(Collection, attachment.attachable_id) do
+        nil ->
+          :ok
+
+        collection ->
+          # Check if this attachment's file_key matches the collection's thumbnail
+          if collection.thumbnail && String.contains?(collection.thumbnail, attachment.file_key) do
+            Repo.update(Ecto.Changeset.change(collection, %{thumbnail: nil}))
+            IO.puts("✅ Nullified thumbnail for collection #{collection.id}")
+          end
+      end
+    end
+
+    # Delete file from filesystem if it's not a folder
+    if attachment.attachable_type != "folder" && attachment.file_path do
+      delete_file_from_storage(attachment.file_path)
+    end
+
     {:ok, _} = Repo.delete(attachment)
+
+    updated_list = Enum.reject(socket.assigns.attachments_list, &(&1.id == attachment.id))
+    new_count = length(updated_list)
 
     socket =
       socket
       |> put_flash(:info, "Attachment deleted successfully")
       |> stream_delete(:attachments, attachment)
-      |> assign(:attachments_list, List.delete(socket.assigns.attachments_list, attachment))
-      |> assign(:attachments_count, max((socket.assigns[:attachments_count] || 1) - 1, 0))
+      |> assign(:attachments_list, updated_list)
+      |> assign(:attachments_count, new_count)
+      |> assign(:attachments_empty?, updated_list == [])
 
     {:noreply, socket}
   end
@@ -235,23 +262,37 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
 
   @impl true
   def handle_event("navigate_folder", %{"id" => folder_id}, socket) do
-    # Get the folder
-    folder = Repo.get!(Attachment, folder_id)
+    # Handle empty string as root navigation
+    if folder_id == "" do
+      # Navigate to root
+      socket =
+        socket
+        |> assign(:current_folder_id, nil)
+        |> assign(:breadcrumbs, [%{name: "Asset Vault", id: nil}])
+        |> assign(:page, 1)
+        |> assign(:loading_folder, true)
+        |> assign(:folder_path_ids, [])
 
-    # Update breadcrumbs - rebuild path to this folder
-    breadcrumbs = build_breadcrumbs_to_folder(folder)
+      {:noreply, apply_action(socket, :index, %{})}
+    else
+      # Get the folder
+      folder = Repo.get!(Attachment, folder_id)
 
-    # Update current folder and show loading state
-    socket =
-      socket
-      |> assign(:current_folder_id, folder.id)
-      |> assign(:breadcrumbs, breadcrumbs)
-      |> assign(:page, 1)
-      |> assign(:loading_folder, true)
-      |> assign(:folder_path_ids, get_folder_path_ids(folder.id))
+      # Update breadcrumbs - rebuild path to this folder
+      breadcrumbs = build_breadcrumbs_to_folder(folder)
 
-    # Load folder contents
-    {:noreply, apply_action(socket, :index, %{})}
+      # Update current folder and show loading state
+      socket =
+        socket
+        |> assign(:current_folder_id, folder.id)
+        |> assign(:breadcrumbs, breadcrumbs)
+        |> assign(:page, 1)
+        |> assign(:loading_folder, true)
+        |> assign(:folder_path_ids, get_folder_path_ids(folder.id))
+
+      # Load folder contents
+      {:noreply, apply_action(socket, :index, %{})}
+    end
   end
 
   @impl true
@@ -285,6 +326,84 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   end
 
   @impl true
+  def handle_event("open_rename_modal", %{"id" => id}, socket) do
+    folder = Repo.get!(Attachment, id)
+
+    socket =
+      socket
+      |> assign(:show_rename_modal, true)
+      |> assign(:rename_folder_id, id)
+      |> assign(:rename_folder_name, folder.file_name)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("close_rename_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:show_rename_modal, false)
+      |> assign(:rename_folder_id, nil)
+      |> assign(:rename_folder_name, "")
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("rename_folder", %{"name" => new_name}, socket) do
+    authorize!(socket, "attachments.update")
+
+    folder = Repo.get!(Attachment, socket.assigns.rename_folder_id)
+
+    case Repo.update(Attachment.changeset(folder, %{file_name: new_name})) do
+      {:ok, _updated_folder} ->
+        # Refresh the list
+        page = socket.assigns.page
+        per_page = 24
+        search = socket.assigns.search
+
+        filters = %{
+          access_level: socket.assigns.filter_access_level,
+          file_type: socket.assigns.filter_file_type,
+          attachable_type: socket.assigns.filter_attachable_type
+        }
+
+        {attachments, total_pages} =
+          list_attachments_paginated(
+            page,
+            per_page,
+            search,
+            filters,
+            socket.assigns.current_folder_id
+          )
+
+        attachments =
+          attachments
+          |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
+
+        socket =
+          socket
+          |> stream(:attachments, attachments, reset: true)
+          |> assign(:attachments_list, attachments)
+          |> assign(:attachments_count, length(attachments))
+          |> assign(:total_pages, total_pages)
+          |> assign(:attachments_empty?, attachments == [])
+          |> assign(:root_folders, list_root_folders())
+          |> assign(:folder_path_ids, get_folder_path_ids(socket.assigns.current_folder_id))
+          |> assign(:show_rename_modal, false)
+          |> assign(:rename_folder_id, nil)
+          |> assign(:rename_folder_name, "")
+          |> put_flash(:info, "Folder renamed successfully")
+
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        {:noreply,
+         put_flash(socket, :error, "Failed to rename folder: #{inspect(changeset.errors)}")}
+    end
+  end
+
+  @impl true
   def handle_event("delete_folder", %{"id" => id}, socket) do
     authorize!(socket, "attachments.delete")
 
@@ -296,13 +415,19 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
     if children_count > 0 do
       {:noreply, put_flash(socket, :error, "Cannot delete folder that contains items")}
     else
+      # Delete folder from filesystem (it's just a record, no physical file)
       {:ok, _} = Repo.delete(folder)
+
+      updated_list = Enum.reject(socket.assigns.attachments_list, &(&1.id == folder.id))
+      new_count = length(updated_list)
 
       socket =
         socket
         |> put_flash(:info, "Folder deleted successfully")
         |> stream_delete(:attachments, folder)
-        |> assign(:attachments_count, max((socket.assigns[:attachments_count] || 1) - 1, 0))
+        |> assign(:attachments_list, updated_list)
+        |> assign(:attachments_count, new_count)
+        |> assign(:attachments_empty?, updated_list == [])
         |> assign(:root_folders, list_root_folders())
         |> assign(:folder_path_ids, get_folder_path_ids(socket.assigns.current_folder_id))
 
@@ -317,51 +442,55 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
 
   @impl true
   def handle_event("save_attachments", _params, socket) do
-    results = consume_uploaded_entries(socket, :attachments, &upload_attachment/2)
+    current_folder_id = socket.assigns.current_folder_id
+
+    results =
+      consume_uploaded_entries(socket, :attachments, fn meta, entry ->
+        upload_attachment(meta, entry, current_folder_id)
+      end)
+
     successful_uploads = Enum.filter(results, &match?({:ok, _}, &1))
     failed_uploads = Enum.filter(results, &match?({:error, _}, &1))
 
-    if Enum.empty?(failed_uploads) do
-      attachment_ids = Enum.map(successful_uploads, fn {:ok, id} -> id end)
+    socket =
+      if Enum.empty?(failed_uploads) do
+        # Refresh the attachments list
+        page = socket.assigns.page
+        per_page = 24
+        search = socket.assigns.search
 
-      # Refresh the attachments list
-      page = socket.assigns.page
-      per_page = 24
-      search = socket.assigns.search
+        filters = %{
+          access_level: socket.assigns.filter_access_level,
+          file_type: socket.assigns.filter_file_type,
+          attachable_type: socket.assigns.filter_attachable_type
+        }
 
-      filters = %{
-        access_level: socket.assigns.filter_access_level,
-        file_type: socket.assigns.filter_file_type,
-        attachable_type: socket.assigns.filter_attachable_type
-      }
+        {attachments, total_pages} =
+          list_attachments_paginated(
+            page,
+            per_page,
+            search,
+            filters,
+            socket.assigns.current_folder_id
+          )
 
-      {attachments, total_pages} =
-        list_attachments_paginated(
-          page,
-          per_page,
-          search,
-          filters,
-          socket.assigns.current_folder_id
-        )
+        attachments =
+          attachments
+          |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
 
-      attachments =
-        attachments
-        |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
-
-      socket =
         socket
         |> stream(:attachments, attachments, reset: true)
         |> assign(:attachments_list, attachments)
         |> assign(:attachments_count, length(attachments))
         |> assign(:total_pages, total_pages)
         |> assign(:attachments_empty?, attachments == [])
-        |> put_flash(:info, "Successfully uploaded #{length(attachment_ids)} file(s)")
+        |> put_flash(:info, "Successfully uploaded #{length(successful_uploads)} file(s)")
+      else
+        error_messages = Enum.map(failed_uploads, fn {:error, msg} -> msg end)
+        put_flash(socket, :error, "Upload failed: #{Enum.join(error_messages, "; ")}")
+      end
 
-      {:noreply, socket}
-    else
-      error_messages = Enum.map(failed_uploads, fn {:error, msg} -> msg end)
-      {:noreply, put_flash(socket, :error, "Upload failed: #{Enum.join(error_messages, "; ")}")}
-    end
+    {:noreply, socket}
   end
 
   @impl true
@@ -369,8 +498,8 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
     {:noreply, cancel_upload(socket, :attachments, ref)}
   end
 
-  # Upload progress handler
-  def handle_progress(:attachments, _entry, socket) do
+  @impl true
+  def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
 
@@ -389,7 +518,7 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
       end
 
     # Only show asset_vault and folder types
-    query = from a in query, where: a.attachable_type in ["asset_vault", "folder"]
+    query = from a in query, where: a.attachable_type in ["asset_vault", "folder", "collection"]
 
     query =
       if search != "" do
@@ -555,10 +684,10 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   defp format_bytes(bytes), do: "#{Float.round(bytes / 1_073_741_824, 1)} GB"
 
   # Upload attachment function for consume_uploaded_entries
-  defp upload_attachment(
-         %{path: temp_path, client_name: filename, client_type: mime_type},
-         socket
-       ) do
+  defp upload_attachment(%{path: temp_path}, entry, current_folder_id) do
+    filename = entry.client_name
+    mime_type = entry.client_type
+
     # Upload file using Client.Storage
     case Client.Storage.upload(
            %{
@@ -585,7 +714,7 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
           mime_type: mime_type,
           file_type: file_type,
           attachable_type: "asset_vault",
-          parent_id: socket.assigns.current_folder_id,
+          parent_id: current_folder_id,
           access_level: "public"
         }
 
@@ -603,6 +732,34 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   end
 
   # Helper functions
+  defp delete_file_from_storage(file_path) do
+    # Extract the file key from the file path
+    # For local storage: "/uploads/asset_vault/97/filename.png"
+    # For S3: full S3 URL
+    file_key =
+      if String.starts_with?(file_path, "/uploads") do
+        # Local storage - strip leading slash and "uploads/" prefix
+        file_path
+        |> String.trim_leading("/")
+        |> String.replace_prefix("uploads/", "")
+      else
+        # S3 or other storage - extract key from URL
+        Storage.S3.extract_file_key_from_url(file_path)
+      end
+
+    # Attempt to delete the file, but don't fail if it doesn't exist
+    case Storage.delete(file_key) do
+      {:ok, _} ->
+        :ok
+
+      {:error, reason} ->
+        # Log the error but don't fail the deletion
+        require Logger
+        Logger.warning("Failed to delete file from storage: #{inspect(reason)}")
+        :ok
+    end
+  end
+
   defp count_folder_items(folder_id) do
     Repo.aggregate(
       from(a in Attachment, where: a.parent_id == ^folder_id),

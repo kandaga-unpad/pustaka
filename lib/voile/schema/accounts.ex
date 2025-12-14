@@ -475,7 +475,7 @@ defmodule Voile.Schema.Accounts do
 
   def update_profile_user(%User{} = user, attrs) do
     user
-    |> User.update_profile_changeset(attrs)
+    |> User.update_user_profile_changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, user} ->

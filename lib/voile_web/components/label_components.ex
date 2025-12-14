@@ -28,53 +28,45 @@ defmodule VoileWeb.Components.LabelComponents do
           <div class="w-full flex justify-center mb-2">
             {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
           </div>
+          
           <div class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1">
             {@item.barcode || "000000"}
           </div>
         </div>
       <% end %>
-
-      <%!-- Right Side: Metadata --%>
+       <%!-- Right Side: Metadata --%>
       <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
         <%!-- App Branding --%>
         <div class="bg-gray-50 border-b border-gray-200 px-2 py-1 flex items-center justify-center gap-1">
           <%= if @app_logo do %>
             <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
           <% end %>
-          <span class="text-sm font-bold text-gray-700">{@app_name}</span>
+           <span class="text-sm font-bold text-gray-700">{@app_name}</span>
         </div>
-
-        <%!-- Color Bars (Flag on top) --%>
+         <%!-- Color Bars (Flag on top) --%>
         <div class="flex flex-col h-3 flex-shrink-0">
           <div class={["flex-1", book_type_color(@item)]} title={get_book_type(@item)}></div>
+          
           <div class={["flex-1", ddc_color(@item)]} title={"DDC: #{get_ddc_class(@item)}"}></div>
         </div>
-
+        
         <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
           <%!-- Collection Title (line-clamped for long titles) --%>
           <div class="font-bold text-gray-900 line-clamp-2 leading-tight text-xs">
             {@item.collection.title}
           </div>
-
-          <%!-- Author --%>
+           <%!-- Author --%>
           <%= if get_author(@item) != "N/A" do %>
-            <div class="text-gray-600 text-[0.65rem] italic line-clamp-1">
-              {get_author(@item)}
-            </div>
+            <div class="text-gray-600 text-[0.65rem] italic line-clamp-1">{get_author(@item)}</div>
           <% end %>
-
-          <%!-- Call Number --%>
+           <%!-- Call Number --%>
           <%= if @include_call_number do %>
-            <div class="font-mono text-gray-800 font-semibold text-xs">
-              {get_call_number(@item)}
-            </div>
+            <div class="font-mono text-gray-800 font-semibold text-xs">{get_call_number(@item)}</div>
           <% end %>
-
-          <%!-- Node Name --%>
+           <%!-- Node Name --%>
           <%= if @include_location do %>
-            <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
-              <.icon name="hero-map-pin" class="w-2.5 h-2.5 inline" />
-              {get_node_name(@item)}
+            <div class="text-gray-600 text-[0.5rem] mt-1">
+              <.icon name="hero-map-pin" class="w-2.5 h-2.5 inline" /> {get_node_name(@item)}
             </div>
           <% end %>
         </div>
@@ -109,18 +101,18 @@ defmodule VoileWeb.Components.LabelComponents do
             class="w-full flex justify-center mb-2"
             style="width: 100% !important; display: flex !important; justify-content: center !important; margin-bottom: 0.5rem !important;"
           >
-            {Phoenix.HTML.raw(generate_barcode(@item.item_code || "000000"))}
+            {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
           </div>
+          
           <div
             class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1"
             style="text-align: center !important; font-size: 0.5rem !important; font-family: ui-monospace, monospace !important; color: #374151 !important; word-break: break-all !important; padding-left: 0.25rem !important; padding-right: 0.25rem !important;"
           >
-            {@item.item_code || "000000"}
+            {@item.barcode || "000000"}
           </div>
         </div>
       <% end %>
-
-      <%!-- Right Side: Metadata --%>
+       <%!-- Right Side: Metadata --%>
       <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
         <%!-- App Branding --%>
         <div
@@ -130,6 +122,7 @@ defmodule VoileWeb.Components.LabelComponents do
           <%= if @app_logo do %>
             <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
           <% end %>
+          
           <span
             class="text-sm font-bold text-gray-700"
             style="color: #374151 !important; font-size: 0.875rem !important; font-weight: 700 !important;"
@@ -137,38 +130,29 @@ defmodule VoileWeb.Components.LabelComponents do
             {@app_name}
           </span>
         </div>
-
-        <%!-- Color Bars (Flag on top) with inline styles for print --%>
+         <%!-- Color Bars (Flag on top) with inline styles for print --%>
         <div class="flex flex-col h-6 flex-shrink-0">
           <div class={["flex-1", book_type_color(@item)]} style={book_type_color_style(@item)}></div>
+          
           <div class={["flex-1", ddc_color(@item)]} style={ddc_color_style(@item)}></div>
         </div>
-
+        
         <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
           <%!-- Collection Title (line-clamped for long titles) --%>
           <div class="font-bold text-gray-900 leading-tight text-xs line-clamp-2">
             {@item.collection.title}
           </div>
-
-          <%!-- Author --%>
+           <%!-- Author --%>
           <%= if get_author(@item) != "N/A" do %>
-            <div class="text-gray-700 text-[0.65rem] italic line-clamp-1">
-              {get_author(@item)}
-            </div>
+            <div class="text-gray-700 text-[0.65rem] italic line-clamp-1">{get_author(@item)}</div>
           <% end %>
-
-          <%!-- Call Number --%>
+           <%!-- Call Number --%>
           <%= if @include_call_number do %>
-            <div class="font-mono text-gray-800 font-bold text-xs">
-              {get_call_number(@item)}
-            </div>
+            <div class="font-mono text-gray-800 font-bold text-xs">{get_call_number(@item)}</div>
           <% end %>
-
-          <%!-- Node Name --%>
+           <%!-- Node Name --%>
           <%= if @include_location do %>
-            <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
-              📍 {get_node_name(@item)}
-            </div>
+            <div class="text-gray-600 text-[0.5rem] mt-1">📍 {get_node_name(@item)}</div>
           <% end %>
         </div>
       </div>
@@ -176,10 +160,15 @@ defmodule VoileWeb.Components.LabelComponents do
     """
   end
 
-  defp size_class("small"), do: "w-80 h-32 text-xs"
-  defp size_class("medium"), do: "w-96 h-40 text-sm"
-  defp size_class("large"), do: "w-[28rem] h-48 text-base"
-  defp size_class(_), do: "w-96 h-40 text-sm"
+  # A4 paper width ~21cm, 2 labels per row with margins
+  # All labels use 10.5cm width to prevent text cropping
+  # Small: 10.5cm × 3cm
+  # Medium: 10.5cm × 4cm
+  # Large: 10.5cm × 5cm
+  defp size_class("small"), do: "w-[24.8rem] h-[7rem] text-xs"
+  defp size_class("medium"), do: "w-[24.8rem] h-[9.5rem] text-sm"
+  defp size_class("large"), do: "w-[24.8rem] h-[11.8rem] text-base"
+  defp size_class(_), do: "w-[24.8rem] h-[9.5rem] text-sm"
 
   defp font_class("xs"), do: "text-xs"
   defp font_class("sm"), do: "text-sm"
@@ -223,26 +212,26 @@ defmodule VoileWeb.Components.LabelComponents do
         ddc_class = String.to_integer(digits)
 
         cond do
-          # 000-099: Computer Science, Information & General Works
-          ddc_class >= 0 && ddc_class < 100 -> "bg-red-400"
-          # 100-199: Philosophy & Psychology
-          ddc_class >= 100 && ddc_class < 200 -> "bg-pink-400"
-          # 200-299: Religion
-          ddc_class >= 200 && ddc_class < 300 -> "bg-purple-400"
-          # 300-399: Social Sciences
-          ddc_class >= 300 && ddc_class < 400 -> "bg-blue-400"
-          # 400-499: Language
-          ddc_class >= 400 && ddc_class < 500 -> "bg-cyan-400"
-          # 500-599: Science
-          ddc_class >= 500 && ddc_class < 600 -> "bg-teal-400"
-          # 600-699: Technology
-          ddc_class >= 600 && ddc_class < 700 -> "bg-green-400"
-          # 700-799: Arts & Recreation
-          ddc_class >= 700 && ddc_class < 800 -> "bg-yellow-400"
-          # 800-899: Literature
-          ddc_class >= 800 && ddc_class < 900 -> "bg-amber-400"
-          # 900-999: History & Geography
-          ddc_class >= 900 && ddc_class < 1000 -> "bg-rose-400"
+          # 000-099: Computer Science, Information & General Works - Blue
+          ddc_class >= 0 && ddc_class < 100 -> "bg-blue-500"
+          # 100-199: Philosophy & Psychology - Purple
+          ddc_class >= 100 && ddc_class < 200 -> "bg-purple-500"
+          # 200-299: Religion - Yellow/Gold
+          ddc_class >= 200 && ddc_class < 300 -> "bg-yellow-500"
+          # 300-399: Social Sciences - Green
+          ddc_class >= 300 && ddc_class < 400 -> "bg-green-500"
+          # 400-499: Language - Cyan
+          ddc_class >= 400 && ddc_class < 500 -> "bg-cyan-500"
+          # 500-599: Science - Teal
+          ddc_class >= 500 && ddc_class < 600 -> "bg-teal-500"
+          # 600-699: Technology - Orange
+          ddc_class >= 600 && ddc_class < 700 -> "bg-orange-500"
+          # 700-799: Arts & Recreation - Pink
+          ddc_class >= 700 && ddc_class < 800 -> "bg-pink-500"
+          # 800-899: Literature - Indigo
+          ddc_class >= 800 && ddc_class < 900 -> "bg-indigo-500"
+          # 900-999: History & Geography - Amber/Brown
+          ddc_class >= 900 && ddc_class < 1000 -> "bg-amber-600"
           # Bright red for unknown
           true -> "bg-red-600"
         end
@@ -262,16 +251,26 @@ defmodule VoileWeb.Components.LabelComponents do
         ddc_class = String.to_integer(digits)
 
         cond do
-          ddc_class >= 0 && ddc_class < 100 -> "background-color: #f87171 !important;"
-          ddc_class >= 100 && ddc_class < 200 -> "background-color: #f9a8d4 !important;"
-          ddc_class >= 200 && ddc_class < 300 -> "background-color: #c084fc !important;"
-          ddc_class >= 300 && ddc_class < 400 -> "background-color: #60a5fa !important;"
-          ddc_class >= 400 && ddc_class < 500 -> "background-color: #22d3ee !important;"
-          ddc_class >= 500 && ddc_class < 600 -> "background-color: #2dd4bf !important;"
-          ddc_class >= 600 && ddc_class < 700 -> "background-color: #4ade80 !important;"
-          ddc_class >= 700 && ddc_class < 800 -> "background-color: #facc15 !important;"
-          ddc_class >= 800 && ddc_class < 900 -> "background-color: #fbbf24 !important;"
-          ddc_class >= 900 && ddc_class < 1000 -> "background-color: #fb7185 !important;"
+          # 000-099: Computer Science - Blue
+          ddc_class >= 0 && ddc_class < 100 -> "background-color: #3b82f6 !important;"
+          # 100-199: Philosophy - Purple
+          ddc_class >= 100 && ddc_class < 200 -> "background-color: #a855f7 !important;"
+          # 200-299: Religion - Yellow/Gold
+          ddc_class >= 200 && ddc_class < 300 -> "background-color: #eab308 !important;"
+          # 300-399: Social Sciences - Green
+          ddc_class >= 300 && ddc_class < 400 -> "background-color: #22c55e !important;"
+          # 400-499: Language - Cyan
+          ddc_class >= 400 && ddc_class < 500 -> "background-color: #06b6d4 !important;"
+          # 500-599: Science - Teal
+          ddc_class >= 500 && ddc_class < 600 -> "background-color: #14b8a6 !important;"
+          # 600-699: Technology - Orange
+          ddc_class >= 600 && ddc_class < 700 -> "background-color: #f97316 !important;"
+          # 700-799: Arts - Pink
+          ddc_class >= 700 && ddc_class < 800 -> "background-color: #ec4899 !important;"
+          # 800-899: Literature - Indigo
+          ddc_class >= 800 && ddc_class < 900 -> "background-color: #6366f1 !important;"
+          # 900-999: History - Amber/Brown
+          ddc_class >= 900 && ddc_class < 1000 -> "background-color: #d97706 !important;"
           # Bright red for unknown
           true -> "background-color: #dc2626 !important;"
         end
@@ -313,24 +312,16 @@ defmodule VoileWeb.Components.LabelComponents do
   end
 
   defp get_call_number(item) do
-    # Try to get call number from collection_fields first
+    # Get call number from collection_fields only
     call_number_field =
       Enum.find(item.collection.collection_fields || [], fn field ->
         field.name == "callNumber"
       end)
 
-    cond do
-      call_number_field && call_number_field.value != "" ->
-        call_number_field.value
-
-      item.collection.collection_code && item.collection.collection_code != "" ->
-        item.collection.collection_code
-
-      item.item_code && item.item_code != "" ->
-        item.item_code
-
-      true ->
-        "N/A"
+    if call_number_field && call_number_field.value != "" do
+      call_number_field.value
+    else
+      "-"
     end
   end
 

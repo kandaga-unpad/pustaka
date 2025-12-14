@@ -12,7 +12,7 @@ defmodule Voile.Migration.BiblioImporter do
   import Ecto.Query
 
   alias Voile.Repo
-  alias Voile.Schema.Catalog.{Collection, CollectionField}
+  alias Voile.Schema.Catalog.{Collection, CollectionField, Attachment}
   alias Voile.Schema.Master.Creator
   alias Voile.Schema.System.Node
   alias Voile.Schema.Metadata.ResourceClass
@@ -533,10 +533,19 @@ defmodule Voile.Migration.BiblioImporter do
 
   # Process a batch of bibliography data with single transaction
   defp process_biblio_batch(batch, stats_ref) do
-    {collections, all_fields, line_nums} =
+    {collections, all_fields, line_nums, image_metadata_list} =
       batch
-      |> Enum.reduce({[], [], []}, fn {collection, fields, line_num}, {colls, all_flds, lines} ->
-        {[collection | colls], all_flds ++ fields, [line_num | lines]}
+      |> Enum.reduce({[], [], [], []}, fn {collection, fields, line_num},
+                                          {colls, all_flds, lines, img_meta} ->
+        # Extract image metadata and clean collection
+        metadata = Map.get(collection, :__image_metadata__)
+        clean_collection = Map.delete(collection, :__image_metadata__)
+
+        metadata_entry =
+          if metadata, do: {collection.id, collection.old_biblio_id, metadata}, else: nil
+
+        {[clean_collection | colls], all_flds ++ fields, [line_num | lines],
+         [metadata_entry | img_meta]}
       end)
 
     # Track attempted collections
@@ -553,6 +562,11 @@ defmodule Voile.Migration.BiblioImporter do
             )
 
           :ets.update_counter(stats_ref, :collections_inserted, count)
+
+          # Create attachment records for thumbnails
+          if count > 0 do
+            create_thumbnail_attachments(image_metadata_list, stats_ref)
+          end
 
           # Track failures
           failed_count = length(collections) - count
@@ -764,9 +778,9 @@ defmodule Voile.Migration.BiblioImporter do
           publisher_name = get_publisher_name_cached(publisher_id, unit_publisher_mappings)
 
           # Defer image processing for better performance
-          thumbnail_path =
+          {thumbnail_path, image_metadata} =
             if skip_images do
-              nil
+              {nil, nil}
             else
               # Debug: Print what we got in the image column
               if image && String.trim(image) != "" do
@@ -774,14 +788,14 @@ defmodule Voile.Migration.BiblioImporter do
               end
 
               # Store image URL for batch processing later, or process immediately for small batches
-              case download_image_optimized(image, unit_id) do
-                {:ok, path} ->
+              case download_image_with_metadata(image, unit_id) do
+                {:ok, path, metadata} ->
                   IO.puts("✅ Successfully processed image for biblio_id: #{biblio_id} -> #{path}")
-                  path
+                  {path, metadata}
 
                 {:error, reason} ->
                   IO.puts("❌ Failed to process image for biblio_id: #{biblio_id}: #{reason}")
-                  nil
+                  {nil, nil}
               end
             end
 
@@ -823,7 +837,9 @@ defmodule Voile.Migration.BiblioImporter do
             type_id: resource_type_id,
             unit_id: unit_id,
             inserted_at: now,
-            updated_at: now
+            updated_at: now,
+            # Store metadata for attachment creation
+            __image_metadata__: image_metadata
           }
 
           # Build collection fields (include original biblio id for later remapping)
@@ -881,10 +897,11 @@ defmodule Voile.Migration.BiblioImporter do
     |> Enum.with_index()
     |> Enum.reduce([], fn {{field_name, property}, index}, acc ->
       case Map.get(field_values, field_name) do
-        value when value != nil and value != "" ->
-          trimmed_value = String.trim(value)
+        value when not is_nil(value) ->
+          trimmed_value = safe_string_trim(value)
 
-          if trimmed_value != "" do
+          # Use comprehensive null check
+          if not is_null_value?(trimmed_value) do
             field = %{
               collection_id: collection_id,
               # temporary marker to remap to actual DB id after collection insert
@@ -902,6 +919,10 @@ defmodule Voile.Migration.BiblioImporter do
 
             [field | acc]
           else
+            # Optional debug: uncomment to see why fields are skipped
+            # if field_name == "call_number" do
+            #   IO.puts("⚠️ Skipping call_number for biblio_id #{old_biblio_id}: value='#{inspect(value)}'")
+            # end
             acc
           end
 
@@ -932,14 +953,91 @@ defmodule Voile.Migration.BiblioImporter do
     end
   end
 
-  # Optimized image download with better error handling
-  defp download_image_optimized(image_url, _unit_id) when image_url in [nil, ""],
+  # Helper to check if a value is effectively null/empty
+  # Handles various null representations common in CSV exports
+  defp is_null_value?(value) when value in [nil, ""], do: true
+
+  defp is_null_value?(value) when is_binary(value) do
+    trimmed = String.trim(value)
+    # Check for common null representations
+    trimmed == "" or
+      trimmed == "\\N" or
+      trimmed == "NULL" or
+      trimmed == "null" or
+      trimmed == "N/A" or
+      trimmed == "n/a" or
+      trimmed == "-" or
+      String.match?(trimmed, ~r/^\s*$/)
+  end
+
+  defp is_null_value?(_), do: false
+
+  # Download image and return metadata for attachment creation
+  defp download_image_with_metadata(image_url, _unit_id) when image_url in [nil, ""],
     do: {:error, "No image URL"}
 
-  defp download_image_optimized(image_url, unit_id) do
-    # For now, defer to original implementation but could be optimized further
-    # with connection pooling, parallel downloads, etc.
-    download_image(image_url, unit_id)
+  defp download_image_with_metadata(image_url, unit_id) do
+    cleaned_path = String.trim(image_url)
+
+    if cleaned_path == "" do
+      {:error, "Empty image URL"}
+    else
+      # Download to temporary file first
+      case download_to_temp_file(cleaned_path) do
+        {:ok, temp_path, content_type} ->
+          try do
+            # Get file size
+            {:ok, stat} = File.stat(temp_path)
+            file_size = stat.size
+
+            # Determine file extension
+            file_extension = Path.extname(cleaned_path) |> String.downcase()
+            file_extension = if file_extension == "", do: ".jpg", else: file_extension
+
+            # Extract original filename
+            original_filename = Path.basename(cleaned_path, Path.extname(cleaned_path))
+            temp_filename = "#{original_filename}#{file_extension}"
+
+            # Create Plug.Upload struct
+            upload = %Plug.Upload{
+              path: temp_path,
+              filename: temp_filename,
+              content_type: content_type
+            }
+
+            # Upload using Storage module
+            case Client.Storage.upload(upload,
+                   folder: "old_thumbnail",
+                   unit_id: unit_id,
+                   generate_filename: true,
+                   preserve_extension: true
+                 ) do
+              {:ok, file_url} ->
+                # Extract file key from URL
+                file_key = extract_file_key_from_url(file_url)
+
+                metadata = %{
+                  file_key: file_key,
+                  file_url: file_url,
+                  original_filename: temp_filename,
+                  file_size: file_size,
+                  mime_type: content_type,
+                  unit_id: unit_id
+                }
+
+                {:ok, file_url, metadata}
+
+              {:error, reason} ->
+                {:error, "Storage upload failed: #{reason}"}
+            end
+          after
+            File.rm(temp_path)
+          end
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    end
   end
 
   # Helper function to get primary creator name from cached data
@@ -1228,21 +1326,27 @@ defmodule Voile.Migration.BiblioImporter do
     |> Enum.reduce([], fn {{field_name, property}, index}, acc ->
       value = Map.get(field_values, field_name)
 
-      if value && String.trim(value) != "" do
-        field = %{
-          collection_id: collection_id,
-          property_id: property.id,
-          name: property.local_name,
-          label: property.label,
-          value: String.trim(value),
-          value_lang: "id",
-          type_value: property.type_value,
-          sort_order: index,
-          inserted_at: now,
-          updated_at: now
-        }
+      if value do
+        trimmed_value = safe_string_trim(value)
+        # Use comprehensive null check
+        if not is_null_value?(trimmed_value) do
+          field = %{
+            collection_id: collection_id,
+            property_id: property.id,
+            name: property.local_name,
+            label: property.label,
+            value: trimmed_value,
+            value_lang: "id",
+            type_value: property.type_value,
+            sort_order: index,
+            inserted_at: now,
+            updated_at: now
+          }
 
-        [field | acc]
+          [field | acc]
+        else
+          acc
+        end
       else
         acc
       end
@@ -1719,5 +1823,246 @@ defmodule Voile.Migration.BiblioImporter do
     random_suffix = :crypto.strong_rand_bytes(3) |> Base.encode16(case: :lower)
 
     "COLLECTION-#{unit}-#{collection_type}-#{timestamp}-#{random_suffix}"
+  end
+
+  # Create attachment records for imported thumbnails
+  # Organizes thumbnails in folder structure: Collection Thumbnails > Unit Name > files
+  defp create_thumbnail_attachments(metadata_list, stats_ref) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # Filter out nil entries and group by unit_id
+    metadata_by_unit =
+      metadata_list
+      |> Enum.filter(&(&1 != nil))
+      |> Enum.group_by(fn {_collection_id, _old_biblio_id, metadata} -> metadata.unit_id end)
+
+    if map_size(metadata_by_unit) == 0 do
+      0
+    else
+      # Get or create root "Collection Thumbnails" folder
+      {:ok, root_folder_id} = ensure_root_thumbnails_folder()
+
+      # Process each unit's thumbnails
+      total_count =
+        Enum.reduce(metadata_by_unit, 0, fn {unit_id, unit_metadata}, acc ->
+          # Get or create unit folder under root
+          unit_folder_id = get_or_create_unit_thumbnail_folder(unit_id, root_folder_id, now)
+
+          # Prepare attachment records with proper hierarchy
+          attachments =
+            unit_metadata
+            |> Enum.map(fn {collection_id, _old_biblio_id, metadata} ->
+              %{
+                id: Ecto.UUID.generate(),
+                # Use asset_vault type so it shows in Asset Vault
+                attachable_type: "asset_vault",
+                # Store collection_id for reference
+                attachable_id: collection_id,
+                file_name: metadata.original_filename,
+                file_key: metadata.file_key,
+                file_size: metadata.file_size,
+                mime_type: metadata.mime_type,
+                unit_id: metadata.unit_id,
+                # Place in unit folder
+                parent_id: unit_folder_id,
+                inserted_at: now,
+                updated_at: now
+              }
+            end)
+
+          # Batch insert for this unit
+          try do
+            {count, _} =
+              Repo.insert_all(Attachment, attachments, on_conflict: :nothing, returning: false)
+
+            IO.puts("✅ Created #{count} thumbnail attachments for unit #{unit_id}")
+            acc + count
+          rescue
+            e ->
+              IO.puts(
+                "⚠️ Failed to create thumbnail attachments for unit #{unit_id}: #{Exception.message(e)}"
+              )
+
+              :ets.update_counter(stats_ref, :errors, length(attachments))
+              acc
+          end
+        end)
+
+      IO.puts("✅ Total thumbnail attachments created: #{total_count}")
+      total_count
+    end
+  end
+
+  # Get or create root "Collection Thumbnails" folder in Asset Vault
+  defp ensure_root_thumbnails_folder do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    folder_name = "Collection Thumbnails"
+
+    query =
+      from(a in Attachment,
+        where:
+          a.attachable_type == "folder" and
+            a.file_name == ^folder_name and
+            is_nil(a.parent_id),
+        select: a.id,
+        limit: 1
+      )
+
+    case Repo.one(query) do
+      nil ->
+        folder_id = Ecto.UUID.generate()
+
+        folder = %{
+          id: folder_id,
+          attachable_type: "folder",
+          attachable_id: nil,
+          file_name: folder_name,
+          file_key: nil,
+          file_size: 0,
+          mime_type: nil,
+          unit_id: nil,
+          parent_id: nil,
+          inserted_at: now,
+          updated_at: now
+        }
+
+        {1, _} = Repo.insert_all(Attachment, [folder], returning: false)
+        IO.puts("✅ Created root folder: #{folder_name}")
+        {:ok, folder_id}
+
+      folder_id ->
+        {:ok, folder_id}
+    end
+  end
+
+  # Get or create unit-specific folder under root thumbnails folder
+  defp get_or_create_unit_thumbnail_folder(unit_id, parent_folder_id, now) do
+    # Get unit name for folder
+    unit_name =
+      case Repo.get(Node, unit_id) do
+        nil -> "Unit #{unit_id}"
+        node -> node.name || node.abbr || "Unit #{unit_id}"
+      end
+
+    query =
+      from(a in Attachment,
+        where:
+          a.attachable_type == "folder" and
+            a.file_name == ^unit_name and
+            a.parent_id == ^parent_folder_id,
+        select: a.id,
+        limit: 1
+      )
+
+    case Repo.one(query) do
+      nil ->
+        folder_id = Ecto.UUID.generate()
+
+        folder = %{
+          id: folder_id,
+          attachable_type: "folder",
+          attachable_id: nil,
+          file_name: unit_name,
+          file_key: nil,
+          file_size: 0,
+          mime_type: nil,
+          unit_id: unit_id,
+          parent_id: parent_folder_id,
+          inserted_at: now,
+          updated_at: now
+        }
+
+        {1, _} = Repo.insert_all(Attachment, [folder], returning: false)
+        IO.puts("✅ Created unit folder: #{unit_name}")
+        folder_id
+
+      folder_id ->
+        folder_id
+    end
+  end
+
+  # Extract file key from storage URL
+  # Handles both /uploads/path and full URLs
+  defp extract_file_key_from_url(file_url) when is_binary(file_url) do
+    cond do
+      String.starts_with?(file_url, "/uploads/") ->
+        String.trim_leading(file_url, "/uploads/")
+
+      String.contains?(file_url, "/uploads/") ->
+        file_url
+        |> String.split("/uploads/")
+        |> List.last()
+
+      true ->
+        file_url
+    end
+  end
+
+  defp extract_file_key_from_url(_), do: nil
+
+  # Ensure a virtual folder exists in the attachment table
+  # Creates folder hierarchy if needed
+  # Returns {:ok, folder_id} or {:error, reason}
+  def ensure_virtual_folder(folder_path, unit_id, parent_id \\ nil) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    folder_name = Path.basename(folder_path)
+
+    # Check if folder already exists
+    query =
+      from(a in Attachment,
+        where:
+          a.attachable_type == "folder" and
+            a.file_name == ^folder_name and
+            a.unit_id == ^unit_id,
+        where: (is_nil(^parent_id) and is_nil(a.parent_id)) or a.parent_id == ^parent_id,
+        select: a.id,
+        limit: 1
+      )
+
+    case Repo.one(query) do
+      nil ->
+        # Create new virtual folder
+        folder_attrs = %{
+          id: Ecto.UUID.generate(),
+          attachable_type: "folder",
+          attachable_id: nil,
+          file_name: folder_name,
+          file_key: nil,
+          file_size: 0,
+          mime_type: nil,
+          unit_id: unit_id,
+          parent_id: parent_id,
+          inserted_at: now,
+          updated_at: now
+        }
+
+        try do
+          {1, [result]} = Repo.insert_all(Attachment, [folder_attrs], returning: [:id])
+          {:ok, result.id}
+        rescue
+          e ->
+            {:error, "Failed to create virtual folder: #{Exception.message(e)}"}
+        end
+
+      folder_id ->
+        {:ok, folder_id}
+    end
+  end
+
+  # Ensure virtual folder hierarchy exists
+  # Creates all parent folders if needed
+  # Returns {:ok, leaf_folder_id} or {:error, reason}
+  def ensure_virtual_folder_hierarchy(folder_path, unit_id, root_parent_id \\ nil) do
+    # Split path into segments
+    segments = Path.split(folder_path) |> Enum.reject(&(&1 in [".", "/", "\\"]))
+
+    # Create folders from root to leaf
+    Enum.reduce_while(segments, {:ok, root_parent_id}, fn segment, {:ok, current_parent_id} ->
+      case ensure_virtual_folder(segment, unit_id, current_parent_id) do
+        {:ok, folder_id} -> {:cont, {:ok, folder_id}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
   end
 end

@@ -45,6 +45,7 @@ npm-debug.log
 *.bat
 
 # Private Assets
+/priv/static/uploads/asset_vault/*
 /priv/static/uploads/thumbnail/*
 /priv/static/uploads/thumbnails/*
 /priv/static/uploads/files/*

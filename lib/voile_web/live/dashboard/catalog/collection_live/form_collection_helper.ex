@@ -471,11 +471,23 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
           collection = socket.assigns.collection
           unit_id = collection.unit_id || socket.assigns.form.params["unit_id"]
 
-          Storage.upload(upload,
-            folder: "thumbnails",
-            generate_filename: true,
-            unit_id: unit_id
-          )
+          # Get file size
+          {:ok, stat} = File.stat(path)
+          file_size = stat.size
+
+          case Storage.upload(upload,
+                 folder: "thumbnails",
+                 generate_filename: true,
+                 unit_id: unit_id
+               ) do
+            {:ok, file_url} ->
+              # Create attachment record for thumbnail
+              create_thumbnail_attachment(collection, file_url, entry, file_size, unit_id)
+              {:ok, file_url}
+
+            error ->
+              error
+          end
         end)
 
       case result do
@@ -506,6 +518,53 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     else
       {:noreply, socket}
     end
+  end
+
+  # Create attachment record for collection thumbnail
+  defp create_thumbnail_attachment(collection, file_url, entry, file_size, unit_id) do
+    # Extract file_key from file_url
+    file_key =
+      cond do
+        String.starts_with?(file_url, "/uploads/") ->
+          String.trim_leading(file_url, "/uploads/")
+
+        String.contains?(file_url, "/uploads/") ->
+          file_url |> String.split("/uploads/") |> List.last()
+
+        true ->
+          file_url
+      end
+
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # If collection already exists (edit mode), create attachment
+    # For new collections, attachment will be created on save via separate mechanism if needed
+    if collection.id do
+      attrs = %{
+        id: Ecto.UUID.generate(),
+        attachable_type: "collection",
+        attachable_id: collection.id,
+        file_name: Path.basename(file_url),
+        original_name: entry.client_name,
+        file_path: file_url,
+        file_key: file_key,
+        file_size: file_size,
+        mime_type: entry.client_type,
+        file_type: Voile.Schema.Catalog.Attachment.determine_file_type(entry.client_type),
+        description: "Collection thumbnail",
+        unit_id: unit_id,
+        parent_id: nil,
+        is_primary: true,
+        sort_order: 0,
+        inserted_at: now,
+        updated_at: now
+      }
+
+      # Use insert_all to avoid changeset overhead for batch operations
+      Voile.Repo.insert_all(Voile.Schema.Catalog.Attachment, [attrs], on_conflict: :nothing)
+    end
+
+    :ok
   end
 
   def save_collection(socket, :edit, collection_params) do
