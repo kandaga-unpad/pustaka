@@ -19,62 +19,65 @@ defmodule VoileWeb.Components.LabelComponents do
 
     ~H"""
     <div class={[
-      "print-label border-2 border-dashed border-gray-300 rounded overflow-hidden bg-white flex flex-col",
+      "print-label border-2 border-dashed border-gray-300 rounded overflow-hidden bg-white flex flex-row",
       size_class(@size)
     ]}>
-      <%!-- App Branding --%>
-      <div class="bg-gray-50 border-b border-gray-200 px-2 py-2 flex items-center justify-center gap-2">
-        <%= if @app_logo do %>
-          <img src={@app_logo} alt={@app_name} class="h-8 w-auto" />
-        <% end %>
-        <span class="text-base font-bold text-gray-700">{@app_name}</span>
-      </div>
+      <%!-- Left Side: Barcode --%>
+      <%= if @include_barcode do %>
+        <div class="flex-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center">
+          <div class="w-full flex justify-center mb-2">
+            {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
+          </div>
+          <div class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1">
+            {@item.barcode || "000000"}
+          </div>
+        </div>
+      <% end %>
 
-      <%!-- Color Bars (Flag on top) --%>
-      <div class="flex flex-col h-5 flex-shrink-0">
-        <div class={["flex-1", book_type_color(@item)]} title={get_book_type(@item)}></div>
-        <div class={["flex-1", ddc_color(@item)]} title={"DDC: #{get_ddc_class(@item)}"}></div>
-      </div>
-
-      <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
-        <%!-- Collection Title (line-clamped for long titles) --%>
-        <div class="font-bold text-gray-900 line-clamp-3 leading-tight text-xs">
-          {@item.collection.title}
+      <%!-- Right Side: Metadata --%>
+      <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
+        <%!-- App Branding --%>
+        <div class="bg-gray-50 border-b border-gray-200 px-2 py-1 flex items-center justify-center gap-1">
+          <%= if @app_logo do %>
+            <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
+          <% end %>
+          <span class="text-sm font-bold text-gray-700">{@app_name}</span>
         </div>
 
-        <%!-- Author --%>
-        <%= if get_author(@item) != "N/A" do %>
-          <div class="text-gray-600 text-[0.65rem] italic line-clamp-1">
-            {get_author(@item)}
-          </div>
-        <% end %>
+        <%!-- Color Bars (Flag on top) --%>
+        <div class="flex flex-col h-3 flex-shrink-0">
+          <div class={["flex-1", book_type_color(@item)]} title={get_book_type(@item)}></div>
+          <div class={["flex-1", ddc_color(@item)]} title={"DDC: #{get_ddc_class(@item)}"}></div>
+        </div>
 
-        <%!-- Call Number --%>
-        <%= if @include_call_number do %>
-          <div class="font-mono text-gray-800 font-semibold text-xs">
-            {get_call_number(@item)}
+        <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
+          <%!-- Collection Title (line-clamped for long titles) --%>
+          <div class="font-bold text-gray-900 line-clamp-2 leading-tight text-xs">
+            {@item.collection.title}
           </div>
-        <% end %>
 
-        <%!-- Node Name --%>
-        <%= if @include_location do %>
-          <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
-            <.icon name="hero-map-pin" class="w-2.5 h-2.5 inline" />
-            {get_node_name(@item)}
-          </div>
-        <% end %>
-
-        <%!-- Barcode --%>
-        <%= if @include_barcode do %>
-          <div class="mt-2 pt-2 border-t border-gray-300 flex flex-col items-center">
-            <div class="w-full px-2 flex justify-center">
-              {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
+          <%!-- Author --%>
+          <%= if get_author(@item) != "N/A" do %>
+            <div class="text-gray-600 text-[0.65rem] italic line-clamp-1">
+              {get_author(@item)}
             </div>
-            <div class="text-center text-[0.5rem] font-mono mt-1 text-gray-700 break-all px-1">
-              {@item.barcode || "000000"}
+          <% end %>
+
+          <%!-- Call Number --%>
+          <%= if @include_call_number do %>
+            <div class="font-mono text-gray-800 font-semibold text-xs">
+              {get_call_number(@item)}
             </div>
-          </div>
-        <% end %>
+          <% end %>
+
+          <%!-- Node Name --%>
+          <%= if @include_location do %>
+            <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
+              <.icon name="hero-map-pin" class="w-2.5 h-2.5 inline" />
+              {get_node_name(@item)}
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
     """
@@ -93,88 +96,90 @@ defmodule VoileWeb.Components.LabelComponents do
 
     ~H"""
     <div class={[
-      "print-label border border-gray-400 overflow-hidden bg-white flex flex-col",
+      "print-label border border-gray-400 overflow-hidden bg-white flex flex-row",
       size_class(@size)
     ]}>
-      <%!-- App Branding --%>
-      <div
-        class="bg-gray-50 border-b border-gray-300 px-2 py-2 flex items-center justify-center gap-2"
-        style="background-color: #f9fafb !important; border-bottom: 1px solid #d1d5db !important;"
-      >
-        <%= if @app_logo do %>
-          <img src={@app_logo} alt={@app_name} class="h-8 w-auto" />
-        <% end %>
-        <span
-          class="text-base font-bold text-gray-700"
-          style="color: #374151 !important; font-size: 1rem !important; font-weight: 700 !important;"
+      <%!-- Left Side: Barcode --%>
+      <%= if @include_barcode do %>
+        <div
+          class="flex-1 border-r border-gray-400 p-2 flex flex-col items-center justify-center"
+          style="border-right: 1px solid #9ca3af !important;"
         >
-          {@app_name}
-        </span>
-      </div>
+          <div
+            class="w-full flex justify-center mb-2"
+            style="width: 100% !important; display: flex !important; justify-content: center !important; margin-bottom: 0.5rem !important;"
+          >
+            {Phoenix.HTML.raw(generate_barcode(@item.item_code || "000000"))}
+          </div>
+          <div
+            class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1"
+            style="text-align: center !important; font-size: 0.5rem !important; font-family: ui-monospace, monospace !important; color: #374151 !important; word-break: break-all !important; padding-left: 0.25rem !important; padding-right: 0.25rem !important;"
+          >
+            {@item.item_code || "000000"}
+          </div>
+        </div>
+      <% end %>
 
-      <%!-- Color Bars (Flag on top) with inline styles for print --%>
-      <div class="flex flex-col h-10 flex-shrink-0">
-        <div class={["flex-1", book_type_color(@item)]} style={book_type_color_style(@item)}></div>
-        <div class={["flex-1", ddc_color(@item)]} style={ddc_color_style(@item)}></div>
-      </div>
-
-      <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
-        <%!-- Collection Title (line-clamped for long titles) --%>
-        <div class="font-bold text-gray-900 leading-tight text-xs line-clamp-3">
-          {@item.collection.title}
+      <%!-- Right Side: Metadata --%>
+      <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
+        <%!-- App Branding --%>
+        <div
+          class="bg-gray-50 border-b border-gray-300 px-2 py-1 flex items-center justify-center gap-1"
+          style="background-color: #f9fafb !important; border-bottom: 1px solid #d1d5db !important;"
+        >
+          <%= if @app_logo do %>
+            <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
+          <% end %>
+          <span
+            class="text-sm font-bold text-gray-700"
+            style="color: #374151 !important; font-size: 0.875rem !important; font-weight: 700 !important;"
+          >
+            {@app_name}
+          </span>
         </div>
 
-        <%!-- Author --%>
-        <%= if get_author(@item) != "N/A" do %>
-          <div class="text-gray-700 text-[0.65rem] italic line-clamp-1">
-            {get_author(@item)}
-          </div>
-        <% end %>
+        <%!-- Color Bars (Flag on top) with inline styles for print --%>
+        <div class="flex flex-col h-6 flex-shrink-0">
+          <div class={["flex-1", book_type_color(@item)]} style={book_type_color_style(@item)}></div>
+          <div class={["flex-1", ddc_color(@item)]} style={ddc_color_style(@item)}></div>
+        </div>
 
-        <%!-- Call Number --%>
-        <%= if @include_call_number do %>
-          <div class="font-mono text-gray-800 font-bold text-xs">
-            {get_call_number(@item)}
+        <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
+          <%!-- Collection Title (line-clamped for long titles) --%>
+          <div class="font-bold text-gray-900 leading-tight text-xs line-clamp-2">
+            {@item.collection.title}
           </div>
-        <% end %>
 
-        <%!-- Node Name --%>
-        <%= if @include_location do %>
-          <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
-            📍 {get_node_name(@item)}
-          </div>
-        <% end %>
-
-        <%!-- Barcode --%>
-        <%= if @include_barcode do %>
-          <div
-            class="mt-2 pt-2 border-t border-gray-300 flex flex-col items-center"
-            style="margin-top: 0.5rem !important; padding-top: 0.5rem !important; border-top: 1px solid #d1d5db !important;"
-          >
-            <div
-              class="w-full px-2 flex justify-center"
-              style="width: 100% !important; padding-left: 0.5rem !important; padding-right: 0.5rem !important; display: flex !important; justify-content: center !important;"
-            >
-              {Phoenix.HTML.raw(generate_barcode(@item.item_code || "000000"))}
+          <%!-- Author --%>
+          <%= if get_author(@item) != "N/A" do %>
+            <div class="text-gray-700 text-[0.65rem] italic line-clamp-1">
+              {get_author(@item)}
             </div>
+          <% end %>
 
-            <div
-              class="text-center text-[0.5rem] font-mono mt-1 text-gray-700 break-all px-1"
-              style="text-align: center !important; font-size: 0.5rem !important; font-family: ui-monospace, monospace !important; margin-top: 0.25rem !important; color: #374151 !important; word-break: break-all !important; padding-left: 0.25rem !important; padding-right: 0.25rem !important;"
-            >
-              {@item.item_code || "000000"}
+          <%!-- Call Number --%>
+          <%= if @include_call_number do %>
+            <div class="font-mono text-gray-800 font-bold text-xs">
+              {get_call_number(@item)}
             </div>
-          </div>
-        <% end %>
+          <% end %>
+
+          <%!-- Node Name --%>
+          <%= if @include_location do %>
+            <div class="text-gray-600 text-[0.6rem] mt-1 line-clamp-1">
+              📍 {get_node_name(@item)}
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
     """
   end
 
-  defp size_class("small"), do: "w-80 text-xs"
-  defp size_class("medium"), do: "w-96 text-sm"
-  defp size_class("large"), do: "w-[28rem] text-base"
-  defp size_class(_), do: "w-96 text-sm"
+  defp size_class("small"), do: "w-80 h-32 text-xs"
+  defp size_class("medium"), do: "w-96 h-40 text-sm"
+  defp size_class("large"), do: "w-[28rem] h-48 text-base"
+  defp size_class(_), do: "w-96 h-40 text-sm"
 
   defp font_class("xs"), do: "text-xs"
   defp font_class("sm"), do: "text-sm"
