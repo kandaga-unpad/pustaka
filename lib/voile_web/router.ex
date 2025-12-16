@@ -49,6 +49,7 @@ defmodule VoileWeb.Router do
       live "/", PageLive.Home, :index
 
       live "/about", PageLive.About, :index
+      live "/ebook", PageLive.Ebook, :index
       live "/search/dashboard", SearchDashboardLive, :index
 
       # LiveView search (optional alternative)

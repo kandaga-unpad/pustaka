@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/voile_web/live/page_live/home.ex:202
+#: lib/voile_web/live/page_live/home.ex:203
 #, elixir-autogen
 msgid "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
 msgstr ""
@@ -29,7 +29,7 @@ msgstr "Actions"
 msgid "Active"
 msgstr "Active"
 
-#: lib/voile_web/live/page_live/home.ex:410
+#: lib/voile_web/live/page_live/home.ex:679
 #, elixir-autogen, elixir-format
 msgid "Active Users"
 msgstr "Active Users"
@@ -37,8 +37,9 @@ msgstr "Active Users"
 ## Homepage translations
 #: lib/voile_web/controllers/search_html/advanced.html.heex:8
 #: lib/voile_web/live/frontend/collections/index.ex:177
-#: lib/voile_web/live/page_live/home.ex:216
+#: lib/voile_web/live/page_live/home.ex:217
 #: lib/voile_web/live/page_live/home.ex:256
+#: lib/voile_web/live/page_live/home.ex:509
 #, elixir-autogen, elixir-format
 msgid "Advanced Search"
 msgstr "Advanced Search"
@@ -74,7 +75,10 @@ msgid "Attempting to reconnect"
 msgstr ""
 
 #: lib/voile_web/live/frontend/collections/index.ex:164
-#: lib/voile_web/live/page_live/home.ex:612
+#: lib/voile_web/live/page_live/ebook.ex:242
+#: lib/voile_web/live/page_live/ebook.ex:304
+#: lib/voile_web/live/page_live/home.ex:425
+#: lib/voile_web/live/page_live/home.ex:907
 #, elixir-autogen, elixir-format
 msgid "Browse Collections"
 msgstr "Browse Collections"
@@ -101,12 +105,12 @@ msgstr "Catalog Dashboard"
 msgid "Close search"
 msgstr "Close search"
 
-#: lib/voile_web/live/page_live/home.ex:345
+#: lib/voile_web/live/page_live/home.ex:614
 #, elixir-autogen, elixir-format
 msgid "Collection Categories"
 msgstr "Collection Categories"
 
-#: lib/voile_web/live/page_live/home.ex:267
+#: lib/voile_web/live/page_live/home.ex:539
 #, elixir-autogen, elixir-format
 msgid "Collection Highlights"
 msgstr "Collection Highlights"
@@ -121,7 +125,7 @@ msgstr "Collection Highlights"
 msgid "Collections"
 msgstr "Collections"
 
-#: lib/voile_web/live/page_live/home.ex:227
+#: lib/voile_web/live/page_live/home.ex:228
 #, elixir-autogen, elixir-format
 msgid "Cover Background"
 msgstr "Cover Background"
@@ -160,7 +164,7 @@ msgstr "Date"
 msgid "Delete"
 msgstr "Delete"
 
-#: lib/voile_web/live/page_live/home.ex:271
+#: lib/voile_web/live/page_live/home.ex:543
 #, elixir-autogen, elixir-format
 msgid "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
 msgstr "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
@@ -180,8 +184,8 @@ msgstr "Editing item %{id}"
 msgid "Error!"
 msgstr "Error!"
 
-#: lib/voile_web/live/page_live/home.ex:565
-#: lib/voile_web/live/page_live/home.ex:617
+#: lib/voile_web/live/page_live/home.ex:834
+#: lib/voile_web/live/page_live/home.ex:881
 #, elixir-autogen, elixir-format
 msgid "Explore All Collections"
 msgstr "Explore All Collections"
@@ -196,7 +200,7 @@ msgstr "Export"
 msgid "Export started"
 msgstr "Export started"
 
-#: lib/voile_web/live/page_live/home.ex:472
+#: lib/voile_web/live/page_live/home.ex:741
 #, elixir-autogen, elixir-format
 msgid "Featured Collections"
 msgstr "Featured Collections"
@@ -231,12 +235,12 @@ msgstr "Home"
 msgid "Items"
 msgstr "Items"
 
-#: lib/voile_web/live/page_live/home.ex:442
+#: lib/voile_web/live/page_live/home.ex:711
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr "Joined"
 
-#: lib/voile_web/live/page_live/home.ex:218
+#: lib/voile_web/live/page_live/home.ex:219
 #, elixir-autogen, elixir-format
 msgid "Keyword"
 msgstr "Keyword"
@@ -288,22 +292,22 @@ msgstr "Master Dashboard"
 msgid "Name"
 msgstr "Name"
 
-#: lib/voile_web/live/page_live/home.ex:584
+#: lib/voile_web/live/page_live/home.ex:853
 #, elixir-autogen, elixir-format
 msgid "Navigate the digital sanctuary"
 msgstr "Navigate the digital sanctuary"
 
-#: lib/voile_web/live/page_live/home.ex:373
+#: lib/voile_web/live/page_live/home.ex:642
 #, elixir-autogen, elixir-format
 msgid "New Additions"
 msgstr "New Additions"
 
-#: lib/voile_web/live/page_live/home.ex:451
+#: lib/voile_web/live/page_live/home.ex:720
 #, elixir-autogen, elixir-format
 msgid "No active users"
 msgstr "No active users"
 
-#: lib/voile_web/live/page_live/home.ex:549
+#: lib/voile_web/live/page_live/home.ex:818
 #, elixir-autogen, elixir-format
 msgid "No collections available yet"
 msgstr "No collections available yet"
@@ -313,12 +317,12 @@ msgstr "No collections available yet"
 msgid "No data available"
 msgstr "No data available"
 
-#: lib/voile_web/live/page_live/home.ex:393
+#: lib/voile_web/live/page_live/home.ex:662
 #, elixir-autogen, elixir-format
 msgid "No new additions this week"
 msgstr "No new additions this week"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:259
+#: lib/voile_web/components/voile_dashboard_components.ex:269
 #: lib/voile_web/controllers/search_html/advanced.html.heex:809
 #, elixir-autogen, elixir-format
 msgid "No results found"
@@ -340,17 +344,17 @@ msgstr "Per Node Statistics"
 msgid "Products"
 msgstr "Products"
 
-#: lib/voile_web/live/page_live/home.ex:581
+#: lib/voile_web/live/page_live/home.ex:850
 #, elixir-autogen, elixir-format
 msgid "Quick Access"
 msgstr "Quick Access"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:167
+#: lib/voile_web/components/voile_dashboard_components.ex:177
 #, elixir-autogen, elixir-format
 msgid "Quick Search"
 msgstr "Quick Search"
 
-#: lib/voile_web/live/page_live/home.ex:476
+#: lib/voile_web/live/page_live/home.ex:745
 #, elixir-autogen, elixir-format
 msgid "Recently added to our library"
 msgstr "Recently added to our library"
@@ -360,7 +364,7 @@ msgstr "Recently added to our library"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:180
+#: lib/voile_web/components/voile_dashboard_components.ex:190
 #, elixir-autogen, elixir-format
 msgid "Search collections, items, authors..."
 msgstr "Search collections, items, authors..."
@@ -370,7 +374,7 @@ msgstr "Search collections, items, authors..."
 msgid "Search collections..."
 msgstr "Search collections..."
 
-#: lib/voile_web/components/voile_dashboard_components.ex:207
+#: lib/voile_web/components/voile_dashboard_components.ex:217
 #, elixir-autogen, elixir-format
 msgid "Searching..."
 msgstr "Searching..."
@@ -399,7 +403,7 @@ msgstr "Signed in as %{name}"
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/voile_web/live/page_live/home.ex:553
+#: lib/voile_web/live/page_live/home.ex:822
 #, elixir-autogen, elixir-format
 msgid "Start building your digital library"
 msgstr "Start building your digital library"
@@ -440,12 +444,12 @@ msgid "Total"
 msgstr "Total"
 
 #: lib/voile_web/live/dashboard/catalog/index.ex:58
-#: lib/voile_web/live/page_live/home.ex:322
+#: lib/voile_web/live/page_live/home.ex:591
 #, elixir-autogen, elixir-format
 msgid "Total Collections"
 msgstr "Total Collections"
 
-#: lib/voile_web/live/page_live/home.ex:330
+#: lib/voile_web/live/page_live/home.ex:599
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Total Items"
 msgstr "Total items"
@@ -455,12 +459,12 @@ msgstr "Total items"
 msgid "Total items"
 msgstr "Total items"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:262
+#: lib/voile_web/components/voile_dashboard_components.ex:272
 #, elixir-autogen, elixir-format
 msgid "Try a different search term"
 msgstr "Try a different search term"
 
-#: lib/voile_web/live/page_live/home.ex:382
+#: lib/voile_web/live/page_live/home.ex:651
 #, elixir-autogen, elixir-format
 msgid "Untitled"
 msgstr "Untitled"
@@ -492,19 +496,19 @@ msgstr "Welcome, %{name}!"
 msgid "You can check your collection data here"
 msgstr "You can check your collection data here"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:241
+#: lib/voile_web/components/voile_dashboard_components.ex:251
 #, elixir-autogen, elixir-format
 msgid "by %{creator}"
 msgstr "by %{creator}"
 
 #: lib/voile_web/components/core_components.ex:92
 #: lib/voile_web/components/core_components.ex:244
-#: lib/voile_web/components/voile_dashboard_components.ex:581
+#: lib/voile_web/components/voile_dashboard_components.ex:592
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "close"
 
-#: lib/voile_web/live/page_live/home.ex:601
+#: lib/voile_web/live/page_live/home.ex:870
 #, elixir-autogen, elixir-format
 msgid "collections"
 msgstr "collections"
@@ -765,6 +769,7 @@ msgid "Museums"
 msgstr ""
 
 #: lib/voile_web/components/layouts.ex:351
+#: lib/voile_web/live/page_live/home.ex:476
 #, elixir-autogen, elixir-format, fuzzy
 msgid "My Atrium"
 msgstr "Atrium"
@@ -875,6 +880,7 @@ msgstr ""
 
 ## Authentication
 #: lib/voile_web/components/layouts.ex:368
+#: lib/voile_web/live/page_live/home.ex:939
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Sign In"
 msgstr "Sign in"
@@ -1114,7 +1120,7 @@ msgid "What you can try"
 msgstr "What you can try"
 
 #: lib/voile_web/live/page_live/about.ex:40
-#: lib/voile_web/live/page_live/home.ex:199
+#: lib/voile_web/live/page_live/home.ex:200
 #, elixir-autogen, elixir-format
 msgid "Voile, the Magic Library"
 msgstr ""
@@ -1180,7 +1186,7 @@ msgid "Active Loans"
 msgstr "Actions"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1102
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:154
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "Address"
 msgstr ""
@@ -1221,6 +1227,7 @@ msgid "Any Unit"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:138
+#: lib/voile_web/live/page_live/home.ex:345
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Archive"
 msgstr "Archives"
@@ -1449,7 +1456,7 @@ msgid "Due:"
 msgstr ""
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1029
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:50
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:52
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
@@ -1586,12 +1593,13 @@ msgid "GLAM Type"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:124
+#: lib/voile_web/live/page_live/home.ex:273
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Gallery"
 msgstr ""
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1117
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:177
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:183
 #, elixir-autogen, elixir-format
 msgid "Gender"
 msgstr ""
@@ -1642,6 +1650,7 @@ msgid "Late returns may result in fines"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:131
+#: lib/voile_web/live/page_live/home.ex:313
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Library"
 msgstr ""
@@ -1709,6 +1718,7 @@ msgid "Minimum Sort Order"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:145
+#: lib/voile_web/live/page_live/home.ex:377
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Museum"
 msgstr ""
@@ -2167,7 +2177,7 @@ msgid "User image removed"
 msgstr ""
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1021
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:136
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:142
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
@@ -2345,6 +2355,7 @@ msgid "Advanced Cataloging & Metadata Management"
 msgstr ""
 
 #: lib/voile_web/live/page_live/about.ex:454
+#: lib/voile_web/live/page_live/ebook.ex:310
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Home"
 msgstr "Back to home"
@@ -2514,12 +2525,12 @@ msgstr ""
 msgid "Virtual Organized of Information & Library Ecosystem"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:147
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:153
 #, elixir-autogen, elixir-format
 msgid "+62 812-3456-7890"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:215
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:221
 #, elixir-autogen, elixir-format
 msgid "Complete Profile"
 msgstr ""
@@ -2529,97 +2540,92 @@ msgstr ""
 msgid "Complete Your Profile"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:108
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:112
 #, elixir-autogen, elixir-format
 msgid "Complete your profile to unlock all features. A unique identifier has been assigned to you."
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:170
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:176
 #, elixir-autogen, elixir-format
 msgid "Date of Birth"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:92
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:96
 #, elixir-autogen, elixir-format
 msgid "Enter your 12-digit NPM or 15-16 digit NIP"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:181
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:187
 #, elixir-autogen, elixir-format
 msgid "Female"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:128
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:134
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Full Name"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:294
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:301
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:313
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:302
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:309
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:321
 #, elixir-autogen, elixir-format
 msgid "Identifier"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:72
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:74
 #, elixir-autogen, elixir-format
 msgid "Institutional Account Detected"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:83
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:87
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Institutional Email"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:164
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:170
 #, elixir-autogen, elixir-format
 msgid "Jakarta"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:129
-#, elixir-autogen, elixir-format
-msgid "John Doe"
-msgstr ""
-
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:180
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:186
 #, elixir-autogen, elixir-format
 msgid "Male"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:298
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:310
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:306
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:318
 #, elixir-autogen, elixir-format
 msgid "NIP (Lecturer ID)"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:300
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:312
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:308
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:320
 #, elixir-autogen, elixir-format
 msgid "NPM (Student ID)"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:91
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:95
 #, elixir-autogen, elixir-format
 msgid "NPM (Student ID) / NIP (Lecturer ID)"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:299
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:311
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:307
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:319
 #, elixir-autogen, elixir-format
 msgid "Number ID"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:182
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:188
 #, elixir-autogen, elixir-format
 msgid "Other"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:146
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:152
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone Number"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:163
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:169
 #, elixir-autogen, elixir-format
 msgid "Place of Birth"
 msgstr ""
@@ -2629,22 +2635,22 @@ msgstr ""
 msgid "Please fill these form with your personal details to complete your profile. We have accepted your registration, the last step is to complete your profile."
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:205
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:211
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Position/Title"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:364
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:372
 #, elixir-autogen, elixir-format
 msgid "Profile completed successfully!"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:212
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:218
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Saving..."
 msgstr "Searching..."
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:179
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "Select Gender"
 msgstr ""
@@ -2654,32 +2660,353 @@ msgstr ""
 msgid "Tell us a bit about yourself to get started"
 msgstr ""
 
+#: lib/voile_web/live/page_live/home.ex:895
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:39
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Welcome Back!"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:106
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:110
 #, elixir-autogen, elixir-format
 msgid "Welcome to Voile!"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:74
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:76
 #, elixir-autogen, elixir-format
 msgid "Welcome! Please provide your Student ID (NPM) or Lecturer ID (NIP) to complete your profile."
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:155
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "Your complete address"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:206
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Your role or position"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:137
+#: lib/voile_web/live/page_live/home.ex:525
+#, elixir-autogen, elixir-format, fuzzy
+msgid "About Voile"
+msgstr "About"
+
+#: lib/voile_web/live/page_live/ebook.ex:207
 #, elixir-autogen, elixir-format
-msgid "johndoe"
+msgid "Access control ensures only authorized users can view protected content."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:463
+#, elixir-autogen, elixir-format
+msgid "Access digital library with built-in reader for seamless reading"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:281
+#, elixir-autogen, elixir-format
+msgid "Art collection management"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:383
+#, elixir-autogen, elixir-format
+msgid "Artifact cataloging"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:302
+#, elixir-autogen, elixir-format
+msgid "Artist & creator tracking"
+msgstr ""
+
+#: lib/voile_web/components/voile_dashboard_components.ex:154
+#, elixir-autogen, elixir-format
+msgid "Asset Vault"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:492
+#, elixir-autogen, elixir-format
+msgid "Become a Member"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:319
+#, elixir-autogen, elixir-format
+msgid "Book & media cataloging"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:443
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Browse Items"
+msgstr "Browse"
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Chrisna Adhi Pranoto"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:324
+#, elixir-autogen, elixir-format
+msgid "Circulation & borrowing"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:263
+#, elixir-autogen, elixir-format
+msgid "Click on a collection item to view its details and attached e-books."
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:280
+#, elixir-autogen, elixir-format
+msgid "Click the read button to open the e-book in our full-featured reader."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:398
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Collection provenance"
+msgstr "Collections"
+
+#: lib/voile_web/live/page_live/home.ex:898
+#, elixir-autogen, elixir-format
+msgid "Continue your journey through our collections"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:933
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Create Account"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:393
+#, elixir-autogen, elixir-format
+msgid "Cultural heritage tracking"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:366
+#, elixir-autogen, elixir-format
+msgid "Digital archiving"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:351
+#, elixir-autogen, elixir-format
+msgid "Document preservation"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:188
+#, elixir-autogen, elixir-format
+msgid "Download Support"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:191
+#, elixir-autogen, elixir-format
+msgid "Download books for offline reading whenever you need them."
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:42
+#, elixir-autogen, elixir-format
+msgid "E-Book Reader"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:170
+#, elixir-autogen, elixir-format
+msgid "Easy Navigation"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:119
+#, elixir-autogen, elixir-format
+msgid "Enhanced Reading"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:140
+#, elixir-autogen, elixir-format
+msgid "Everything you need for a great reading experience"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:412
+#, elixir-autogen, elixir-format
+msgid "Everything you need to discover and manage cultural resources"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:388
+#, elixir-autogen, elixir-format
+msgid "Exhibition curation"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:288
+#, elixir-autogen, elixir-format
+msgid "Exhibition planning"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:408
+#, elixir-autogen, elixir-format
+msgid "Explore Features"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:947
+#, elixir-autogen, elixir-format
+msgid "Explore as Guest"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:429
+#, elixir-autogen, elixir-format
+msgid "Explore comprehensive catalog across all GLAM categories with advanced filtering"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:295
+#, elixir-autogen, elixir-format
+msgid "Explore our digital collection and dive into your next book"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:334
+#, elixir-autogen, elixir-format
+msgid "Fine & reservation system"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:152
+#, elixir-autogen, elixir-format
+msgid "Full-Screen Mode"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:123
+#, elixir-autogen, elixir-format
+msgid "Full-screen reading mode, page navigation, and zoom controls for an optimal reading experience."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:913
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Go to My Atrium"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:356
+#, elixir-autogen, elixir-format
+msgid "Historical records"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:222
+#, elixir-autogen, elixir-format
+msgid "How to Use"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:155
+#, elixir-autogen, elixir-format
+msgid "Immerse yourself in your reading with distraction-free full-screen viewing."
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:49
+#, elixir-autogen, elixir-format
+msgid "Immersive Digital Reading Experience"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:922
+#, elixir-autogen, elixir-format
+msgid "Join our community and unlock access to thousands of books, artworks, and cultural treasures"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:173
+#, elixir-autogen, elixir-format
+msgid "Jump between pages quickly with intuitive controls and page indicators."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:529
+#, elixir-autogen, elixir-format
+msgid "Learn about our mission, technology, and the team"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:480
+#, elixir-autogen, elixir-format
+msgid "Manage your borrowings, reservations, fines, and reading history"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:361
+#, elixir-autogen, elixir-format
+msgid "Manuscript management"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:329
+#, elixir-autogen, elixir-format
+msgid "Member management"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:75
+#, elixir-autogen, elixir-format
+msgid "Multiple Formats"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:246
+#, elixir-autogen, elixir-format
+msgid "Navigate to the collections page and find the book you want to read."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:513
+#, elixir-autogen, elixir-format
+msgid "Powerful search tools with filters and metadata queries"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:459
+#, elixir-autogen, elixir-format
+msgid "Read E-Books"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:101
+#, elixir-autogen, elixir-format
+msgid "Read comfortably on any device with our adaptive interface that works across desktop, tablet, and mobile."
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:53
+#, elixir-autogen, elixir-format
+msgid "Read digital books seamlessly with our advanced e-book reader supporting PDF and EPUB formats. Experience modern reading with full-screen views, navigation controls, and responsive design."
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:137
+#, elixir-autogen, elixir-format
+msgid "Reader Features"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:292
+#, elixir-autogen, elixir-format
+msgid "Ready to Start Reading?"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:918
+#, elixir-autogen, elixir-format
+msgid "Ready to Start Your Journey?"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:496
+#, elixir-autogen, elixir-format
+msgid "Register to borrow items, make reservations, and track history"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:97
+#, elixir-autogen, elixir-format
+msgid "Responsive Design"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:204
+#, elixir-autogen, elixir-format
+msgid "Secure Access"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:259
+#, elixir-autogen, elixir-format
+msgid "Select a Book"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:276
+#, elixir-autogen, elixir-format
+msgid "Start Reading"
+msgstr ""
+
+#: lib/voile_web/live/page_live/ebook.ex:79
+#, elixir-autogen, elixir-format
+msgid "Support for PDF and EPUB formats ensuring compatibility with most digital book collections."
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:447
+#, elixir-autogen, elixir-format
+msgid "View individual items with detailed metadata and full information"
+msgstr ""
+
+#: lib/voile_web/live/page_live/home.ex:295
+#, elixir-autogen, elixir-format
+msgid "Visual materials cataloging"
+msgstr ""
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "chrisnaadhi"
 msgstr ""

@@ -4,7 +4,7 @@ msgstr ""
 "Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/voile_web/live/page_live/home.ex:202
+#: lib/voile_web/live/page_live/home.ex:203
 #, elixir-autogen
 msgid "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
 msgstr "Voile adalah gerbang Anda menuju dunia khazanah budaya. Bayangkan melangkah ke suaka digital tempat perpustakaan, museum, dan arsip menyatu dalam satu ruang intuitif. Baik Anda mencari bacaan menarik berikutnya, menjelajahi karya seni langka, atau menyelami arsip bersejarah, Voile menawarkan koleksi yang dikurasi dengan indah di ujung jari Anda. Telusuri beragam koleksi, temukan permata tersembunyi, dan biarkan rasa ingin tahu Anda menuntun Anda dalam perjalanan penemuan. Dengan Voile, setiap klik membuka pintu inspirasi dan pembelajaran dalam lingkungan yang ramah pengguna dan menarik."
@@ -30,7 +30,7 @@ msgstr "Aksi"
 msgid "Active"
 msgstr "Aktif"
 
-#: lib/voile_web/live/page_live/home.ex:410
+#: lib/voile_web/live/page_live/home.ex:679
 #, elixir-autogen, elixir-format
 msgid "Active Users"
 msgstr "Pengguna Aktif"
@@ -38,8 +38,9 @@ msgstr "Pengguna Aktif"
 ## Homepage translations
 #: lib/voile_web/controllers/search_html/advanced.html.heex:8
 #: lib/voile_web/live/frontend/collections/index.ex:177
-#: lib/voile_web/live/page_live/home.ex:216
+#: lib/voile_web/live/page_live/home.ex:217
 #: lib/voile_web/live/page_live/home.ex:256
+#: lib/voile_web/live/page_live/home.ex:509
 #, elixir-autogen, elixir-format
 msgid "Advanced Search"
 msgstr "Pencarian Lanjutan"
@@ -75,7 +76,10 @@ msgid "Attempting to reconnect"
 msgstr "Mencoba menyambung kembali"
 
 #: lib/voile_web/live/frontend/collections/index.ex:164
-#: lib/voile_web/live/page_live/home.ex:612
+#: lib/voile_web/live/page_live/ebook.ex:242
+#: lib/voile_web/live/page_live/ebook.ex:304
+#: lib/voile_web/live/page_live/home.ex:425
+#: lib/voile_web/live/page_live/home.ex:907
 #, elixir-autogen, elixir-format
 msgid "Browse Collections"
 msgstr "Telusuri Koleksi"
@@ -102,12 +106,12 @@ msgstr "Dasbor Katalog"
 msgid "Close search"
 msgstr "Tutup pencarian"
 
-#: lib/voile_web/live/page_live/home.ex:345
+#: lib/voile_web/live/page_live/home.ex:614
 #, elixir-autogen, elixir-format
 msgid "Collection Categories"
 msgstr "Kategori Koleksi"
 
-#: lib/voile_web/live/page_live/home.ex:267
+#: lib/voile_web/live/page_live/home.ex:539
 #, elixir-autogen, elixir-format
 msgid "Collection Highlights"
 msgstr "Sorotan Koleksi"
@@ -122,7 +126,7 @@ msgstr "Sorotan Koleksi"
 msgid "Collections"
 msgstr "Koleksi"
 
-#: lib/voile_web/live/page_live/home.ex:227
+#: lib/voile_web/live/page_live/home.ex:228
 #, elixir-autogen, elixir-format
 msgid "Cover Background"
 msgstr "Latar Belakang Sampul"
@@ -161,7 +165,7 @@ msgstr "Tanggal"
 msgid "Delete"
 msgstr "Hapus"
 
-#: lib/voile_web/live/page_live/home.ex:271
+#: lib/voile_web/live/page_live/home.ex:543
 #, elixir-autogen, elixir-format
 msgid "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
 msgstr "Temukan koleksi dalam suaka digital kami, dari koleksi langka hingga komunitas aktif, Anda dapat mencari tentang apa saja. Berikut lokasi dan statistik koleksi kami."
@@ -181,8 +185,8 @@ msgstr "Mengedit item %{id}"
 msgid "Error!"
 msgstr "Kesalahan!"
 
-#: lib/voile_web/live/page_live/home.ex:565
-#: lib/voile_web/live/page_live/home.ex:617
+#: lib/voile_web/live/page_live/home.ex:834
+#: lib/voile_web/live/page_live/home.ex:881
 #, elixir-autogen, elixir-format
 msgid "Explore All Collections"
 msgstr "Jelajahi Semua Koleksi"
@@ -197,7 +201,7 @@ msgstr "Ekspor"
 msgid "Export started"
 msgstr "Ekspor dimulai"
 
-#: lib/voile_web/live/page_live/home.ex:472
+#: lib/voile_web/live/page_live/home.ex:741
 #, elixir-autogen, elixir-format
 msgid "Featured Collections"
 msgstr "Koleksi Unggulan"
@@ -232,12 +236,12 @@ msgstr "Beranda"
 msgid "Items"
 msgstr "Item"
 
-#: lib/voile_web/live/page_live/home.ex:442
+#: lib/voile_web/live/page_live/home.ex:711
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr "Bergabung"
 
-#: lib/voile_web/live/page_live/home.ex:218
+#: lib/voile_web/live/page_live/home.ex:219
 #, elixir-autogen, elixir-format
 msgid "Keyword"
 msgstr "Kata Kunci"
@@ -289,22 +293,22 @@ msgstr "Dasbor Master"
 msgid "Name"
 msgstr "Nama"
 
-#: lib/voile_web/live/page_live/home.ex:584
+#: lib/voile_web/live/page_live/home.ex:853
 #, elixir-autogen, elixir-format
 msgid "Navigate the digital sanctuary"
 msgstr "Navigasi suaka digital"
 
-#: lib/voile_web/live/page_live/home.ex:373
+#: lib/voile_web/live/page_live/home.ex:642
 #, elixir-autogen, elixir-format
 msgid "New Additions"
 msgstr "Penambahan Baru"
 
-#: lib/voile_web/live/page_live/home.ex:451
+#: lib/voile_web/live/page_live/home.ex:720
 #, elixir-autogen, elixir-format
 msgid "No active users"
 msgstr "Tidak ada pengguna aktif"
 
-#: lib/voile_web/live/page_live/home.ex:549
+#: lib/voile_web/live/page_live/home.ex:818
 #, elixir-autogen, elixir-format
 msgid "No collections available yet"
 msgstr "Belum ada koleksi tersedia"
@@ -314,12 +318,12 @@ msgstr "Belum ada koleksi tersedia"
 msgid "No data available"
 msgstr "Tidak ada data tersedia"
 
-#: lib/voile_web/live/page_live/home.ex:393
+#: lib/voile_web/live/page_live/home.ex:662
 #, elixir-autogen, elixir-format
 msgid "No new additions this week"
 msgstr "Tidak ada penambahan baru minggu ini"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:259
+#: lib/voile_web/components/voile_dashboard_components.ex:269
 #: lib/voile_web/controllers/search_html/advanced.html.heex:809
 #, elixir-autogen, elixir-format
 msgid "No results found"
@@ -341,17 +345,17 @@ msgstr "Statistik Per Node"
 msgid "Products"
 msgstr "Produk"
 
-#: lib/voile_web/live/page_live/home.ex:581
+#: lib/voile_web/live/page_live/home.ex:850
 #, elixir-autogen, elixir-format
 msgid "Quick Access"
 msgstr "Akses Cepat"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:167
+#: lib/voile_web/components/voile_dashboard_components.ex:177
 #, elixir-autogen, elixir-format
 msgid "Quick Search"
 msgstr "Pencarian Cepat"
 
-#: lib/voile_web/live/page_live/home.ex:476
+#: lib/voile_web/live/page_live/home.ex:745
 #, elixir-autogen, elixir-format
 msgid "Recently added to our library"
 msgstr "Baru ditambahkan ke perpustakaan kami"
@@ -361,7 +365,7 @@ msgstr "Baru ditambahkan ke perpustakaan kami"
 msgid "Refresh"
 msgstr "Segarkan"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:180
+#: lib/voile_web/components/voile_dashboard_components.ex:190
 #, elixir-autogen, elixir-format
 msgid "Search collections, items, authors..."
 msgstr "Cari koleksi, item, penulis..."
@@ -371,7 +375,7 @@ msgstr "Cari koleksi, item, penulis..."
 msgid "Search collections..."
 msgstr "Cari koleksi..."
 
-#: lib/voile_web/components/voile_dashboard_components.ex:207
+#: lib/voile_web/components/voile_dashboard_components.ex:217
 #, elixir-autogen, elixir-format
 msgid "Searching..."
 msgstr "Mencari..."
@@ -400,7 +404,7 @@ msgstr "Masuk sebagai %{name}"
 msgid "Something went wrong!"
 msgstr "Terjadi kesalahan!"
 
-#: lib/voile_web/live/page_live/home.ex:553
+#: lib/voile_web/live/page_live/home.ex:822
 #, elixir-autogen, elixir-format
 msgid "Start building your digital library"
 msgstr "Mulai membangun perpustakaan digital Anda"
@@ -441,12 +445,12 @@ msgid "Total"
 msgstr "Total"
 
 #: lib/voile_web/live/dashboard/catalog/index.ex:58
-#: lib/voile_web/live/page_live/home.ex:322
+#: lib/voile_web/live/page_live/home.ex:591
 #, elixir-autogen, elixir-format
 msgid "Total Collections"
 msgstr "Total Koleksi"
 
-#: lib/voile_web/live/page_live/home.ex:330
+#: lib/voile_web/live/page_live/home.ex:599
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Total Items"
 msgstr "Total item"
@@ -456,12 +460,12 @@ msgstr "Total item"
 msgid "Total items"
 msgstr "Total item"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:262
+#: lib/voile_web/components/voile_dashboard_components.ex:272
 #, elixir-autogen, elixir-format
 msgid "Try a different search term"
 msgstr "Coba istilah pencarian yang berbeda"
 
-#: lib/voile_web/live/page_live/home.ex:382
+#: lib/voile_web/live/page_live/home.ex:651
 #, elixir-autogen, elixir-format
 msgid "Untitled"
 msgstr "Tanpa Judul"
@@ -493,19 +497,19 @@ msgstr "Selamat datang, %{name}!"
 msgid "You can check your collection data here"
 msgstr "Anda dapat memeriksa data koleksi Anda di sini"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:241
+#: lib/voile_web/components/voile_dashboard_components.ex:251
 #, elixir-autogen, elixir-format
 msgid "by %{creator}"
 msgstr "oleh %{creator}"
 
 #: lib/voile_web/components/core_components.ex:92
 #: lib/voile_web/components/core_components.ex:244
-#: lib/voile_web/components/voile_dashboard_components.ex:581
+#: lib/voile_web/components/voile_dashboard_components.ex:592
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "tutup"
 
-#: lib/voile_web/live/page_live/home.ex:601
+#: lib/voile_web/live/page_live/home.ex:870
 #, elixir-autogen, elixir-format
 msgid "collections"
 msgstr "koleksi"
@@ -766,6 +770,7 @@ msgid "Museums"
 msgstr "Museum"
 
 #: lib/voile_web/components/layouts.ex:351
+#: lib/voile_web/live/page_live/home.ex:476
 #, elixir-autogen, elixir-format, fuzzy
 msgid "My Atrium"
 msgstr "Atrium"
@@ -876,6 +881,7 @@ msgstr "Mengirim..."
 
 ## Authentication
 #: lib/voile_web/components/layouts.ex:368
+#: lib/voile_web/live/page_live/home.ex:939
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Sign In"
 msgstr "Masuk"
@@ -1115,7 +1121,7 @@ msgid "What you can try"
 msgstr "Apa yang bisa Anda coba"
 
 #: lib/voile_web/live/page_live/about.ex:40
-#: lib/voile_web/live/page_live/home.ex:199
+#: lib/voile_web/live/page_live/home.ex:200
 #, elixir-autogen, elixir-format
 msgid "Voile, the Magic Library"
 msgstr "Voile, the Magic Library"
@@ -1181,7 +1187,7 @@ msgid "Active Loans"
 msgstr "Pinjaman Aktif"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1102
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:154
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "Address"
 msgstr "Alamat"
@@ -1222,6 +1228,7 @@ msgid "Any Unit"
 msgstr "Unit Apa Saja"
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:138
+#: lib/voile_web/live/page_live/home.ex:345
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Archive"
 msgstr "Arsip"
@@ -1450,7 +1457,7 @@ msgid "Due:"
 msgstr "Jatuh Tempo"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1029
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:50
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:52
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "Email"
@@ -1587,12 +1594,13 @@ msgid "GLAM Type"
 msgstr "Tipe GLAM"
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:124
+#: lib/voile_web/live/page_live/home.ex:273
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Gallery"
 msgstr "Galeri"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1117
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:177
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:183
 #, elixir-autogen, elixir-format
 msgid "Gender"
 msgstr "Jenis kelamin"
@@ -1643,6 +1651,7 @@ msgid "Late returns may result in fines"
 msgstr "Pengembalian terlambat dapat mengakibatkan denda"
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:131
+#: lib/voile_web/live/page_live/home.ex:313
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Library"
 msgstr "Perpustakaan"
@@ -1710,6 +1719,7 @@ msgid "Minimum Sort Order"
 msgstr "Urutan Sort Minimum"
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:145
+#: lib/voile_web/live/page_live/home.ex:377
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Museum"
 msgstr "Museum"
@@ -2168,7 +2178,7 @@ msgid "User image removed"
 msgstr "Gambar pengguna dihapus"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1021
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:136
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:142
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr "Nama pengguna"
@@ -2346,6 +2356,7 @@ msgid "Advanced Cataloging & Metadata Management"
 msgstr "Katalogisasi Lanjutan & Manajemen Metadata"
 
 #: lib/voile_web/live/page_live/about.ex:454
+#: lib/voile_web/live/page_live/ebook.ex:310
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Home"
 msgstr "Kembali ke beranda"
@@ -2515,12 +2526,12 @@ msgstr "VOILE membayangkan ulang pengalaman institusi budaya dengan menyediakan 
 msgid "Virtual Organized of Information & Library Ecosystem"
 msgstr "Ekosistem Perpustakaan & Informasi Terorganisir Virtual"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:147
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:153
 #, elixir-autogen, elixir-format
 msgid "+62 812-3456-7890"
 msgstr "+62 812-3456-7890"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:215
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:221
 #, elixir-autogen, elixir-format
 msgid "Complete Profile"
 msgstr "Lengkapi Profil"
@@ -2530,97 +2541,92 @@ msgstr "Lengkapi Profil"
 msgid "Complete Your Profile"
 msgstr "Lengkapi Profil Anda"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:108
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:112
 #, elixir-autogen, elixir-format
 msgid "Complete your profile to unlock all features. A unique identifier has been assigned to you."
 msgstr "Lengkapi profil Anda untuk membuka semua fitur. Sebuah pengenal unik telah diberikan kepada Anda."
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:170
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:176
 #, elixir-autogen, elixir-format
 msgid "Date of Birth"
 msgstr "Tanggal Lahir"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:92
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:96
 #, elixir-autogen, elixir-format
 msgid "Enter your 12-digit NPM or 15-16 digit NIP"
 msgstr "Masukkan NPM 12 digit atau NIP 15-16 digit Anda"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:181
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:187
 #, elixir-autogen, elixir-format
 msgid "Female"
 msgstr "Perempuan"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:128
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:134
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Full Name"
 msgstr "Nama lengkap"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:294
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:301
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:313
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:302
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:309
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:321
 #, elixir-autogen, elixir-format
 msgid "Identifier"
 msgstr "Pengenal"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:72
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:74
 #, elixir-autogen, elixir-format
 msgid "Institutional Account Detected"
 msgstr "Akun Institusi Terdeteksi"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:83
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:87
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Institutional Email"
 msgstr "Institusi"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:164
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:170
 #, elixir-autogen, elixir-format
 msgid "Jakarta"
 msgstr "Jakarta"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:129
-#, elixir-autogen, elixir-format
-msgid "John Doe"
-msgstr "Chrisna Adhi"
-
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:180
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:186
 #, elixir-autogen, elixir-format
 msgid "Male"
 msgstr "Laki-laki"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:298
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:310
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:306
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:318
 #, elixir-autogen, elixir-format
 msgid "NIP (Lecturer ID)"
 msgstr "NIP (ID Dosen)"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:300
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:312
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:308
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:320
 #, elixir-autogen, elixir-format
 msgid "NPM (Student ID)"
 msgstr "NPM (ID Mahasiswa)"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:91
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:95
 #, elixir-autogen, elixir-format
 msgid "NPM (Student ID) / NIP (Lecturer ID)"
 msgstr "NPM (ID Mahasiswa) / NIP (ID Dosen)"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:299
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:311
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:307
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:319
 #, elixir-autogen, elixir-format
 msgid "Number ID"
 msgstr "Nomor ID"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:182
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:188
 #, elixir-autogen, elixir-format
 msgid "Other"
 msgstr "Lainnya"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:146
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:152
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone Number"
 msgstr "Nomor telepon"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:163
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:169
 #, elixir-autogen, elixir-format
 msgid "Place of Birth"
 msgstr "Tempat Lahir"
@@ -2630,22 +2636,22 @@ msgstr "Tempat Lahir"
 msgid "Please fill these form with your personal details to complete your profile. We have accepted your registration, the last step is to complete your profile."
 msgstr "Silakan isi formulir ini dengan data pribadi Anda untuk menyelesaikan profil Anda. Kami telah menerima pendaftaran Anda; langkah terakhir adalah menyelesaikan profil."
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:205
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:211
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Position/Title"
 msgstr "Posisi"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:364
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:372
 #, elixir-autogen, elixir-format
 msgid "Profile completed successfully!"
 msgstr "Profil berhasil diselesaikan!"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:212
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:218
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Saving..."
 msgstr "Mencari..."
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:179
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "Select Gender"
 msgstr "Pilih Jenis Kelamin"
@@ -2655,32 +2661,353 @@ msgstr "Pilih Jenis Kelamin"
 msgid "Tell us a bit about yourself to get started"
 msgstr "Ceritakan sedikit tentang diri Anda untuk memulai"
 
+#: lib/voile_web/live/page_live/home.ex:895
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:39
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Welcome Back!"
 msgstr "Selamat datang kembali di"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:106
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:110
 #, elixir-autogen, elixir-format
 msgid "Welcome to Voile!"
 msgstr "Selamat datang di Voile!"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:74
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:76
 #, elixir-autogen, elixir-format
 msgid "Welcome! Please provide your Student ID (NPM) or Lecturer ID (NIP) to complete your profile."
 msgstr "Selamat! Silakan berikan NPM (ID Mahasiswa) atau NIP (ID Dosen) Anda untuk menyelesaikan profil."
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:155
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "Your complete address"
 msgstr "Alamat lengkap Anda"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:206
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Your role or position"
 msgstr "Peran atau posisi Anda"
 
-#: lib/voile_web/live/users/auth/user_onboarding_live.ex:137
+#: lib/voile_web/live/page_live/home.ex:525
+#, elixir-autogen, elixir-format, fuzzy
+msgid "About Voile"
+msgstr "Tentang"
+
+#: lib/voile_web/live/page_live/ebook.ex:207
 #, elixir-autogen, elixir-format
-msgid "johndoe"
-msgstr "johndoe"
+msgid "Access control ensures only authorized users can view protected content."
+msgstr "Kontrol akses memastikan hanya pengguna yang berwenang yang dapat melihat konten terlindungi."
+
+#: lib/voile_web/live/page_live/home.ex:463
+#, elixir-autogen, elixir-format
+msgid "Access digital library with built-in reader for seamless reading"
+msgstr "Akses perpustakaan digital dengan pembaca bawaan untuk pengalaman membaca yang lancar"
+
+#: lib/voile_web/live/page_live/home.ex:281
+#, elixir-autogen, elixir-format
+msgid "Art collection management"
+msgstr "Pengelolaan koleksi seni"
+
+#: lib/voile_web/live/page_live/home.ex:383
+#, elixir-autogen, elixir-format
+msgid "Artifact cataloging"
+msgstr "Katalogisasi artefak"
+
+#: lib/voile_web/live/page_live/home.ex:302
+#, elixir-autogen, elixir-format
+msgid "Artist & creator tracking"
+msgstr "Pelacakan seniman & kreator"
+
+#: lib/voile_web/components/voile_dashboard_components.ex:154
+#, elixir-autogen, elixir-format
+msgid "Asset Vault"
+msgstr "Brankas Aset"
+
+#: lib/voile_web/live/page_live/home.ex:492
+#, elixir-autogen, elixir-format
+msgid "Become a Member"
+msgstr "Jadi Anggota"
+
+#: lib/voile_web/live/page_live/home.ex:319
+#, elixir-autogen, elixir-format
+msgid "Book & media cataloging"
+msgstr "Katalogisasi buku & media"
+
+#: lib/voile_web/live/page_live/home.ex:443
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Browse Items"
+msgstr "Jelajahi"
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Chrisna Adhi Pranoto"
+msgstr "Chrisna Adhi Pranoto"
+
+#: lib/voile_web/live/page_live/home.ex:324
+#, elixir-autogen, elixir-format
+msgid "Circulation & borrowing"
+msgstr "Sirkulasi & peminjaman"
+
+#: lib/voile_web/live/page_live/ebook.ex:263
+#, elixir-autogen, elixir-format
+msgid "Click on a collection item to view its details and attached e-books."
+msgstr "Klik item koleksi untuk melihat detailnya dan e-book yang terlampir."
+
+#: lib/voile_web/live/page_live/ebook.ex:280
+#, elixir-autogen, elixir-format
+msgid "Click the read button to open the e-book in our full-featured reader."
+msgstr "Klik tombol baca untuk membuka e-book di pembaca lengkap kami."
+
+#: lib/voile_web/live/page_live/home.ex:398
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Collection provenance"
+msgstr "Koleksi"
+
+#: lib/voile_web/live/page_live/home.ex:898
+#, elixir-autogen, elixir-format
+msgid "Continue your journey through our collections"
+msgstr "Lanjutkan perjalanan Anda melalui koleksi kami"
+
+#: lib/voile_web/live/page_live/home.ex:933
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Create Account"
+msgstr "Buat disini"
+
+#: lib/voile_web/live/page_live/home.ex:393
+#, elixir-autogen, elixir-format
+msgid "Cultural heritage tracking"
+msgstr "Pelacakan warisan budaya"
+
+#: lib/voile_web/live/page_live/home.ex:366
+#, elixir-autogen, elixir-format
+msgid "Digital archiving"
+msgstr "Pengarsipan digital"
+
+#: lib/voile_web/live/page_live/home.ex:351
+#, elixir-autogen, elixir-format
+msgid "Document preservation"
+msgstr "Preservasi dokumen"
+
+#: lib/voile_web/live/page_live/ebook.ex:188
+#, elixir-autogen, elixir-format
+msgid "Download Support"
+msgstr "Dukungan Unduh"
+
+#: lib/voile_web/live/page_live/ebook.ex:191
+#, elixir-autogen, elixir-format
+msgid "Download books for offline reading whenever you need them."
+msgstr "Unduh buku untuk dibaca offline kapan pun Anda membutuhkannya."
+
+#: lib/voile_web/live/page_live/ebook.ex:42
+#, elixir-autogen, elixir-format
+msgid "E-Book Reader"
+msgstr "Pembaca E-Book"
+
+#: lib/voile_web/live/page_live/ebook.ex:170
+#, elixir-autogen, elixir-format
+msgid "Easy Navigation"
+msgstr "Navigasi Mudah"
+
+#: lib/voile_web/live/page_live/ebook.ex:119
+#, elixir-autogen, elixir-format
+msgid "Enhanced Reading"
+msgstr "Pengalaman Membaca Maksimal"
+
+#: lib/voile_web/live/page_live/ebook.ex:140
+#, elixir-autogen, elixir-format
+msgid "Everything you need for a great reading experience"
+msgstr "Semua yang Anda butuhkan untuk pengalaman membaca yang menyenangkan"
+
+#: lib/voile_web/live/page_live/home.ex:412
+#, elixir-autogen, elixir-format
+msgid "Everything you need to discover and manage cultural resources"
+msgstr "Semua yang Anda butuhkan untuk menemukan dan mengelola sumber daya budaya"
+
+#: lib/voile_web/live/page_live/home.ex:388
+#, elixir-autogen, elixir-format
+msgid "Exhibition curation"
+msgstr "Kurasi pameran"
+
+#: lib/voile_web/live/page_live/home.ex:288
+#, elixir-autogen, elixir-format
+msgid "Exhibition planning"
+msgstr "Perencanaan pameran"
+
+#: lib/voile_web/live/page_live/home.ex:408
+#, elixir-autogen, elixir-format
+msgid "Explore Features"
+msgstr "Jelajahi Fitur"
+
+#: lib/voile_web/live/page_live/home.ex:947
+#, elixir-autogen, elixir-format
+msgid "Explore as Guest"
+msgstr "Jelajahi sebagai Tamu"
+
+#: lib/voile_web/live/page_live/home.ex:429
+#, elixir-autogen, elixir-format
+msgid "Explore comprehensive catalog across all GLAM categories with advanced filtering"
+msgstr "Jelajahi katalog lengkap di semua kategori GLAM dengan filter lanjutan"
+
+#: lib/voile_web/live/page_live/ebook.ex:295
+#, elixir-autogen, elixir-format
+msgid "Explore our digital collection and dive into your next book"
+msgstr "Jelajahi koleksi digital kami dan mulai membaca buku berikutnya"
+
+#: lib/voile_web/live/page_live/home.ex:334
+#, elixir-autogen, elixir-format
+msgid "Fine & reservation system"
+msgstr "Sistem denda & reservasi"
+
+#: lib/voile_web/live/page_live/ebook.ex:152
+#, elixir-autogen, elixir-format
+msgid "Full-Screen Mode"
+msgstr "Mode Layar Penuh"
+
+#: lib/voile_web/live/page_live/ebook.ex:123
+#, elixir-autogen, elixir-format
+msgid "Full-screen reading mode, page navigation, and zoom controls for an optimal reading experience."
+msgstr "Mode baca layar penuh, navigasi halaman, dan kontrol zoom untuk pengalaman membaca yang optimal."
+
+#: lib/voile_web/live/page_live/home.ex:913
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Go to My Atrium"
+msgstr "Pergi ke Atrium Anda"
+
+#: lib/voile_web/live/page_live/home.ex:356
+#, elixir-autogen, elixir-format
+msgid "Historical records"
+msgstr "Rekaman bersejarah"
+
+#: lib/voile_web/live/page_live/ebook.ex:222
+#, elixir-autogen, elixir-format
+msgid "How to Use"
+msgstr "Cara Menggunakan"
+
+#: lib/voile_web/live/page_live/ebook.ex:155
+#, elixir-autogen, elixir-format
+msgid "Immerse yourself in your reading with distraction-free full-screen viewing."
+msgstr "Nikmati bacaan Anda dengan tampilan layar penuh tanpa gangguan."
+
+#: lib/voile_web/live/page_live/ebook.ex:49
+#, elixir-autogen, elixir-format
+msgid "Immersive Digital Reading Experience"
+msgstr "Pengalaman Membaca Digital yang Menyenangkan"
+
+#: lib/voile_web/live/page_live/home.ex:922
+#, elixir-autogen, elixir-format
+msgid "Join our community and unlock access to thousands of books, artworks, and cultural treasures"
+msgstr "Bergabunglah dengan komunitas kami dan dapatkan akses ke ribuan buku, karya seni, dan khazanah budaya"
+
+#: lib/voile_web/live/page_live/ebook.ex:173
+#, elixir-autogen, elixir-format
+msgid "Jump between pages quickly with intuitive controls and page indicators."
+msgstr "Berpindah halaman dengan cepat menggunakan kontrol intuitif dan indikator halaman."
+
+#: lib/voile_web/live/page_live/home.ex:529
+#, elixir-autogen, elixir-format
+msgid "Learn about our mission, technology, and the team"
+msgstr "Pelajari misi, teknologi, dan tim kami"
+
+#: lib/voile_web/live/page_live/home.ex:480
+#, elixir-autogen, elixir-format
+msgid "Manage your borrowings, reservations, fines, and reading history"
+msgstr "Kelola peminjaman, reservasi, denda, dan riwayat baca Anda"
+
+#: lib/voile_web/live/page_live/home.ex:361
+#, elixir-autogen, elixir-format
+msgid "Manuscript management"
+msgstr "Pengelolaan manuskrip"
+
+#: lib/voile_web/live/page_live/home.ex:329
+#, elixir-autogen, elixir-format
+msgid "Member management"
+msgstr "Pengelolaan anggota"
+
+#: lib/voile_web/live/page_live/ebook.ex:75
+#, elixir-autogen, elixir-format
+msgid "Multiple Formats"
+msgstr "Berbagai Format"
+
+#: lib/voile_web/live/page_live/ebook.ex:246
+#, elixir-autogen, elixir-format
+msgid "Navigate to the collections page and find the book you want to read."
+msgstr "Buka halaman koleksi dan temukan buku yang ingin Anda baca."
+
+#: lib/voile_web/live/page_live/home.ex:513
+#, elixir-autogen, elixir-format
+msgid "Powerful search tools with filters and metadata queries"
+msgstr "Alat pencarian canggih dengan filter dan kueri metadata"
+
+#: lib/voile_web/live/page_live/home.ex:459
+#, elixir-autogen, elixir-format
+msgid "Read E-Books"
+msgstr "Baca E-Book"
+
+#: lib/voile_web/live/page_live/ebook.ex:101
+#, elixir-autogen, elixir-format
+msgid "Read comfortably on any device with our adaptive interface that works across desktop, tablet, and mobile."
+msgstr "Baca dengan nyaman di perangkat apa pun dengan antarmuka adaptif yang bekerja di desktop, tablet, dan ponsel."
+
+#: lib/voile_web/live/page_live/ebook.ex:53
+#, elixir-autogen, elixir-format
+msgid "Read digital books seamlessly with our advanced e-book reader supporting PDF and EPUB formats. Experience modern reading with full-screen views, navigation controls, and responsive design."
+msgstr "Baca buku digital dengan lancar menggunakan pembaca e-book canggih kami yang mendukung format PDF dan EPUB. Nikmati pengalaman membaca modern dengan tampilan layar penuh, kontrol navigasi, dan desain responsif."
+
+#: lib/voile_web/live/page_live/ebook.ex:137
+#, elixir-autogen, elixir-format
+msgid "Reader Features"
+msgstr "Fitur Pembaca"
+
+#: lib/voile_web/live/page_live/ebook.ex:292
+#, elixir-autogen, elixir-format
+msgid "Ready to Start Reading?"
+msgstr "Siap Mulai Membaca?"
+
+#: lib/voile_web/live/page_live/home.ex:918
+#, elixir-autogen, elixir-format
+msgid "Ready to Start Your Journey?"
+msgstr "Siap Memulai Perjalanan Anda?"
+
+#: lib/voile_web/live/page_live/home.ex:496
+#, elixir-autogen, elixir-format
+msgid "Register to borrow items, make reservations, and track history"
+msgstr "Daftar untuk meminjam item, melakukan reservasi, dan melacak riwayat"
+
+#: lib/voile_web/live/page_live/ebook.ex:97
+#, elixir-autogen, elixir-format
+msgid "Responsive Design"
+msgstr "Desain Responsif"
+
+#: lib/voile_web/live/page_live/ebook.ex:204
+#, elixir-autogen, elixir-format
+msgid "Secure Access"
+msgstr "Akses Aman"
+
+#: lib/voile_web/live/page_live/ebook.ex:259
+#, elixir-autogen, elixir-format
+msgid "Select a Book"
+msgstr "Pilih Buku"
+
+#: lib/voile_web/live/page_live/ebook.ex:276
+#, elixir-autogen, elixir-format
+msgid "Start Reading"
+msgstr "Mulai Membaca"
+
+#: lib/voile_web/live/page_live/ebook.ex:79
+#, elixir-autogen, elixir-format
+msgid "Support for PDF and EPUB formats ensuring compatibility with most digital book collections."
+msgstr "Mendukung format PDF dan EPUB yang memastikan kompatibilitas dengan sebagian besar koleksi buku digital."
+
+#: lib/voile_web/live/page_live/home.ex:447
+#, elixir-autogen, elixir-format
+msgid "View individual items with detailed metadata and full information"
+msgstr "Lihat item secara detail dengan metadata lengkap dan informasi penuh"
+
+#: lib/voile_web/live/page_live/home.ex:295
+#, elixir-autogen, elixir-format
+msgid "Visual materials cataloging"
+msgstr "Katalogisasi materi visual"
+
+#: lib/voile_web/live/users/auth/user_onboarding_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "chrisnaadhi"
+msgstr "chrisnaadhi"

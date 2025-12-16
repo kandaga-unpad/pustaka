@@ -33,8 +33,8 @@ defmodule VoileWeb.Users.ManageLive.Show do
 
     socket =
       socket
-      |> assign(user: user)
-      |> assign(current_path: "/manage/settings/users/#{id}")
+      |> assign(:user, user)
+      |> assign(:current_path, "/manage/settings/users/#{id}")
       |> assign(:manually_suspended, manually_suspended?)
       |> assign(:fine_suspended, fine_suspended?)
       |> assign(:suspended, manually_suspended? || fine_suspended?)
@@ -173,7 +173,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                               </div>
                             <% end %>
                             
-                            <%= if @user.suspended_by do %>
+                            <%= if @user.suspended_by_id do %>
                               <div>
                                 <span class="font-semibold">Suspended By:</span>
                                 <div>
@@ -560,7 +560,8 @@ defmodule VoileWeb.Users.ManageLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    user = Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node])
+    user =
+      Accounts.get_user!(id) |> Voile.Repo.preload([:roles, :user_type, :node, :suspended_by])
 
     # When the live action is :edit or :new (modal open), ensure the
     # component props expected by the modal are present in assigns so
