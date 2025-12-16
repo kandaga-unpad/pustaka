@@ -2373,8 +2373,15 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp validate_reservation_eligibility(%User{user_type: member_type, id: member_id}) do
+  defp validate_reservation_eligibility(%User{user_type: member_type, id: member_id} = member) do
     cond do
+      Voile.Schema.Accounts.is_manually_suspended?(member) ->
+        reason = member.suspension_reason || "Account suspended"
+        {:error, "Cannot make reservations: #{reason}"}
+
+      member_privileges_suspended?(member_id) ->
+        {:error, "Cannot make reservations: Outstanding fines exceed maximum limit"}
+
       not member_type.can_reserve ->
         {:error, "Member type cannot make reservations"}
 
@@ -2395,11 +2402,23 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp validate_renewal_eligibility(%Transaction{renewal_count: current_renewals}, %MemberType{
-         max_renewals: max_renewals,
-         can_renew: can_renew
-       }) do
+  defp validate_renewal_eligibility(
+         %Transaction{renewal_count: current_renewals, member_id: member_id} = _transaction,
+         %MemberType{
+           max_renewals: max_renewals,
+           can_renew: can_renew
+         }
+       ) do
+    member = Repo.get!(Voile.Schema.Accounts.User, member_id)
+
     cond do
+      Voile.Schema.Accounts.is_manually_suspended?(member) ->
+        reason = member.suspension_reason || "Account suspended"
+        {:error, "Cannot renew items: #{reason}"}
+
+      member_privileges_suspended?(member_id) ->
+        {:error, "Cannot renew items: Outstanding fines exceed maximum limit"}
+
       not can_renew ->
         {:error, "Member type cannot renew items"}
 

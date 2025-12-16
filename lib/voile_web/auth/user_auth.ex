@@ -33,21 +33,30 @@ defmodule VoileWeb.UserAuth do
   or falls back to the `signed_in_path/1`.
   """
   def log_in_user(conn, user, params \\ %{}) do
-    user_return_to = get_session(conn, :user_return_to)
+    # Check if user is suspended
+    if Accounts.is_manually_suspended?(user) do
+      reason = user.suspension_reason || "Your account has been suspended"
 
-    # Update last_login and last_login_ip
-    ip =
-      case Tuple.to_list(conn.remote_ip) do
-        [a, b, c, d] -> Enum.join([a, b, c, d], ".")
-        _ -> nil
-      end
+      conn
+      |> put_flash(:error, "Login failed: #{reason}. Please contact support for assistance.")
+      |> redirect(to: ~p"/login")
+    else
+      user_return_to = get_session(conn, :user_return_to)
 
-    Accounts.update_user_login(user, %{last_login: DateTime.utc_now(), last_login_ip: ip})
+      # Update last_login and last_login_ip
+      ip =
+        case Tuple.to_list(conn.remote_ip) do
+          [a, b, c, d] -> Enum.join([a, b, c, d], ".")
+          _ -> nil
+        end
 
-    conn
-    |> create_or_extend_session(user, params)
-    |> assign(:current_scope, Scope.for_user(user))
-    |> redirect(to: user_return_to || signed_in_path(user))
+      Accounts.update_user_login(user, %{last_login: DateTime.utc_now(), last_login_ip: ip})
+
+      conn
+      |> create_or_extend_session(user, params)
+      |> assign(:current_scope, Scope.for_user(user))
+      |> redirect(to: user_return_to || signed_in_path(user))
+    end
   end
 
   @doc """
@@ -73,15 +82,26 @@ defmodule VoileWeb.UserAuth do
   Authenticates the user by looking into the session and remember me token.
 
   Will reissue the session token if it is older than the configured age.
+  Also checks if the user is suspended and logs them out if so.
   """
   def fetch_current_scope_for_user(conn, _opts) do
     with {token, conn} <- ensure_user_token(conn),
          {user, token_inserted_at} <- Accounts.get_user_by_session_token(token) do
       user = Voile.Repo.preload(user, [:user_role_assignments, :node, :roles, :user_type])
 
-      conn
-      |> assign(:current_scope, Scope.for_user(user))
-      |> maybe_reissue_user_session_token(user, token_inserted_at)
+      # Check if user is suspended
+      if Accounts.is_manually_suspended?(user) do
+        conn
+        |> put_flash(
+          :error,
+          "Your account has been suspended: #{user.suspension_reason || "Contact support for details"}"
+        )
+        |> log_out_user()
+      else
+        conn
+        |> assign(:current_scope, Scope.for_user(user))
+        |> maybe_reissue_user_session_token(user, token_inserted_at)
+      end
     else
       nil -> assign(conn, :current_scope, Scope.for_user(nil))
     end
@@ -414,7 +434,19 @@ defmodule VoileWeb.UserAuth do
 
       user = Voile.Repo.preload(user, [:roles, :user_type, :node])
 
-      Scope.for_user(user)
+      # Check if user is suspended
+      if user && Accounts.is_manually_suspended?(user) do
+        # Disconnect the socket
+        reason = user.suspension_reason || "Your account has been suspended"
+
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "Access denied: #{reason}")
+        |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+        Scope.for_user(nil)
+      else
+        Scope.for_user(user)
+      end
     end)
   end
 

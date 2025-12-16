@@ -1256,7 +1256,7 @@ defmodule Voile.Schema.Accounts do
   def suspend_user(%User{} = user, attrs) do
     changeset =
       user
-      |> User.changeset(
+      |> User.suspension_changeset(
         Map.merge(attrs, %{
           manually_suspended: true,
           suspended_at: DateTime.utc_now()

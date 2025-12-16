@@ -53,7 +53,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
         User Profile
         <:subtitle>Personal and account information</:subtitle>
       </.header>
-
+      
       <div class="flex gap-4">
         <div class="w-full max-w-64">
           <.dashboard_settings_sidebar
@@ -61,11 +61,11 @@ defmodule VoileWeb.Users.ManageLive.Show do
             current_path={@current_path}
           />
         </div>
-
+        
         <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/settings/users"}>Back to Users</.back>
-
+            
             <div class="flex gap-2">
               <%= if can?(@current_scope.user, "users.update") do %>
                 <%= if @manually_suspended do %>
@@ -83,14 +83,14 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" /> Suspend Account
                   </button>
                 <% end %>
-
+                
                 <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
                   Edit
                 </.link>
               <% end %>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
             <div class="flex flex-col items-center">
               <div class="mb-4">
@@ -107,9 +107,9 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   </div>
                 <% end %>
               </div>
-
+              
               <h2 class="text-2xl font-bold mb-1">{@user.fullname || @user.username}</h2>
-
+              
               <div class="flex flex-wrap gap-2 mb-4 justify-center">
                 <%= if Ecto.assoc_loaded?(@user.roles) and length(@user.roles) > 0 do %>
                   <%= for role <- @user.roles do %>
@@ -122,7 +122,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     No roles assigned
                   </span>
                 <% end %>
-
+                
                 <%= if @user.confirmed_at do %>
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                     Active
@@ -132,7 +132,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     Pending
                   </span>
                 <% end %>
-                <%!-- Suspension Status Badge --%>
+                 <%!-- Suspension Status Badge --%>
                 <%= if @user.user_type_id do %>
                   <%= if @suspended do %>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
@@ -145,7 +145,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   <% end %>
                 <% end %>
               </div>
-
+              
               <div class="w-full mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <%!-- Manual Suspension Alert --%>
                 <%= if @manually_suspended do %>
@@ -154,16 +154,15 @@ defmodule VoileWeb.Users.ManageLive.Show do
                       <div class="flex-shrink-0">
                         <.icon name="hero-no-symbol" class="h-5 w-5 text-red-400" />
                       </div>
-
+                      
                       <div class="ml-3 flex-1">
-                        <h3 class="text-sm font-medium text-red-800">
-                          Account Manually Suspended
-                        </h3>
-
+                        <h3 class="text-sm font-medium text-red-800">Account Manually Suspended</h3>
+                        
                         <div class="mt-2 text-sm text-red-700">
                           <p class="font-semibold">Reason:</p>
+                          
                           <p class="mt-1 italic">{@user.suspension_reason || "No reason provided"}</p>
-
+                          
                           <div class="mt-3 grid grid-cols-2 gap-4">
                             <%= if @user.suspended_at do %>
                               <div>
@@ -173,7 +172,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                                 </div>
                               </div>
                             <% end %>
-
+                            
                             <%= if @user.suspended_by do %>
                               <div>
                                 <span class="font-semibold">Suspended By:</span>
@@ -182,7 +181,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                                 </div>
                               </div>
                             <% end %>
-
+                            
                             <%= if @user.suspension_ends_at do %>
                               <div class="col-span-2">
                                 <span class="font-semibold">Suspension Ends:</span>
@@ -204,24 +203,24 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </div>
                   </div>
                 <% end %>
-                <%!-- Fine-Based Suspension Warning Alert --%>
+                 <%!-- Fine-Based Suspension Warning Alert --%>
                 <%= if @user.user_type_id && @fine_suspended do %>
                   <div class="col-span-2 bg-red-50 border-l-4 border-red-400 p-4 rounded">
                     <div class="flex items-start">
                       <div class="flex-shrink-0">
                         <.icon name="hero-exclamation-triangle" class="h-5 w-5 text-red-400" />
                       </div>
-
+                      
                       <div class="ml-3">
                         <h3 class="text-sm font-medium text-red-800">
                           Member Privileges Suspended (Outstanding Fines)
                         </h3>
-
+                        
                         <div class="mt-2 text-sm text-red-700">
                           <p>
                             This member cannot borrow items due to outstanding fines exceeding the maximum limit.
                           </p>
-
+                          
                           <div class="mt-2 flex items-center gap-4">
                             <div>
                               <span class="font-semibold">Outstanding Fines:</span>
@@ -229,7 +228,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                                 Rp {Decimal.to_string(@outstanding_fines)}
                               </span>
                             </div>
-
+                            
                             <%= if @user.user_type && @user.user_type.max_fine do %>
                               <div>
                                 <span class="font-semibold">Maximum Allowed:</span>
@@ -237,7 +236,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                               </div>
                             <% end %>
                           </div>
-
+                          
                           <div class="mt-3">
                             <.link
                               navigate={~p"/manage/glam/library/ledger"}
@@ -252,24 +251,20 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </div>
                   </div>
                 <% end %>
-                <%!-- Fine Status Info (Good Standing) --%>
+                 <%!-- Fine Status Info (Good Standing) --%>
                 <%= if @user.user_type_id && !@suspended && Decimal.compare(@outstanding_fines, Decimal.new("0")) == :gt do %>
                   <div class="col-span-2 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
                     <div class="flex items-start">
                       <div class="flex-shrink-0">
                         <.icon name="hero-information-circle" class="h-5 w-5 text-yellow-400" />
                       </div>
-
+                      
                       <div class="ml-3">
-                        <h3 class="text-sm font-medium text-yellow-800">
-                          Outstanding Fines
-                        </h3>
-
+                        <h3 class="text-sm font-medium text-yellow-800">Outstanding Fines</h3>
+                        
                         <div class="mt-2 text-sm text-yellow-700">
-                          <p>
-                            Member has outstanding fines but is still within the allowed limit.
-                          </p>
-
+                          <p>Member has outstanding fines but is still within the allowed limit.</p>
+                          
                           <div class="mt-2 flex items-center gap-4">
                             <div>
                               <span class="font-semibold">Current Balance:</span>
@@ -277,7 +272,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                                 Rp {Decimal.to_string(@outstanding_fines)}
                               </span>
                             </div>
-
+                            
                             <%= if @user.user_type && @user.user_type.max_fine do %>
                               <div>
                                 <span class="font-semibold">Maximum Allowed:</span>
@@ -290,39 +285,39 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </div>
                   </div>
                 <% end %>
-
+                
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Email</div>
-
+                  
                   <div class="font-medium">{@user.email}</div>
                 </div>
-
+                
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Username</div>
-
+                  
                   <div class="font-medium">{@user.username}</div>
                 </div>
-
+                
                 <%= if @user.identifier do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">Identifier</div>
-
+                    
                     <div class="font-medium">{@user.identifier}</div>
                   </div>
                 <% end %>
-
+                
                 <%= if Ecto.assoc_loaded?(@user.user_type) && @user.user_type do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">User Type</div>
-
+                    
                     <div class="font-medium">{@user.user_type.name}</div>
                   </div>
                 <% end %>
-
+                
                 <%= if @user.groups && @user.groups != [] do %>
                   <div class="col-span-2">
                     <div class="text-gray-500 text-xs uppercase mb-1">Groups</div>
-
+                    
                     <div class="flex flex-wrap gap-2">
                       <%= for group <- @user.groups do %>
                         <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
@@ -332,18 +327,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </div>
                   </div>
                 <% end %>
-
+                
                 <%= if @user.node_id do %>
                   <div>
                     <div class="text-gray-500 text-xs uppercase mb-1">Node ID</div>
-
+                    
                     <div class="font-medium">{@user.node.name}</div>
                   </div>
                 <% end %>
-
+                
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Last Login</div>
-
+                  
                   <div class="font-medium">
                     <%= if @user.last_login do %>
                       {FormatIndonesiaTime.format_utc_to_jakarta(@user.last_login)}
@@ -352,42 +347,42 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     <% end %>
                   </div>
                 </div>
-
+                
                 <div>
                   <div class="text-gray-500 text-xs uppercase mb-1">Last Login IP</div>
-
+                  
                   <div class="font-medium">{@user.last_login_ip || "-"}</div>
                 </div>
               </div>
-
+              
               <div class="w-full mt-8">
                 <div class="text-gray-500 text-xs uppercase mb-2">Social & Links</div>
-
+                
                 <div class="flex flex-wrap gap-4">
                   <%= if @user.twitter do %>
                     <a href={@user.twitter} class="text-blue-400 hover:underline" target="_blank">
                       Twitter
                     </a>
                   <% end %>
-
+                  
                   <%= if @user.facebook do %>
                     <a href={@user.facebook} class="text-blue-600 hover:underline" target="_blank">
                       Facebook
                     </a>
                   <% end %>
-
+                  
                   <%= if @user.linkedin do %>
                     <a href={@user.linkedin} class="text-blue-700 hover:underline" target="_blank">
                       LinkedIn
                     </a>
                   <% end %>
-
+                  
                   <%= if @user.instagram do %>
                     <a href={@user.instagram} class="text-pink-500 hover:underline" target="_blank">
                       Instagram
                     </a>
                   <% end %>
-
+                  
                   <%= if @user.website do %>
                     <a href={@user.website} class="text-gray-700 hover:underline" target="_blank">
                       Website
@@ -395,7 +390,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
                   <% end %>
                 </div>
               </div>
-
+              
               <div class="w-full mt-8 text-xs text-gray-400 text-center">
                 User ID: {@user.id} &middot; Created: {Calendar.strftime(
                   @user.inserted_at,
@@ -406,7 +401,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
           </div>
         </div>
       </div>
-
+      
       <.modal
         :if={@live_action in [:new, :edit]}
         id="user-modal"
@@ -425,7 +420,7 @@ defmodule VoileWeb.Users.ManageLive.Show do
           patch={~p"/manage/settings/users/#{@user.id}"}
         />
       </.modal>
-      <%!-- Suspend Modal --%>
+       <%!-- Suspend Modal --%>
       <.modal
         :if={@suspend_modal_visible}
         id="suspend-modal"
@@ -437,16 +432,16 @@ defmodule VoileWeb.Users.ManageLive.Show do
             <div class="p-2 rounded-full bg-red-100 text-red-600">
               <.icon name="hero-no-symbol" class="w-5 h-5" />
             </div>
-
+            
             <div>
               <h3 class="text-lg font-semibold text-gray-900">Suspend User Account</h3>
-
+              
               <p class="text-sm text-gray-600">
                 This will prevent the user from borrowing items. You must provide a reason for the suspension.
               </p>
             </div>
           </div>
-
+          
           <.form :let={f} for={@suspend_form} id="suspend-form" phx-submit="confirm_suspend">
             <div class="space-y-4">
               <.input
@@ -458,7 +453,6 @@ defmodule VoileWeb.Users.ManageLive.Show do
                 required
                 rows="4"
               />
-
               <.input
                 field={f[:suspension_ends_at]}
                 name="suspension_ends_at"
@@ -466,14 +460,10 @@ defmodule VoileWeb.Users.ManageLive.Show do
                 label="Suspension End Date (Optional - leave empty for indefinite)"
               />
             </div>
-
+            
             <div class="mt-6 flex justify-end items-center space-x-3">
-              <button type="button" phx-click="cancel_suspend" class="cancel-btn">
-                Cancel
-              </button>
-              <button type="submit" class="danger-btn">
-                Confirm Suspension
-              </button>
+              <button type="button" phx-click="cancel_suspend" class="cancel-btn">Cancel</button>
+              <button type="submit" class="danger-btn">Confirm Suspension</button>
             </div>
           </.form>
         </div>
@@ -526,10 +516,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
          |> put_flash(:info, "User account has been suspended")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        require Logger
+        Logger.error("Failed to suspend user: #{inspect(changeset.errors)}")
+
+        error_message =
+          changeset.errors
+          |> Enum.map(fn {field, {msg, _}} -> "#{field}: #{msg}" end)
+          |> Enum.join(", ")
+
         {:noreply,
          socket
          |> assign(:suspend_form, to_form(changeset))
-         |> put_flash(:error, "Failed to suspend user account")}
+         |> put_flash(:error, "Failed to suspend user account: #{error_message}")}
     end
   end
 

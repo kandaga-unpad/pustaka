@@ -247,6 +247,23 @@ defmodule Voile.Schema.Accounts.User do
   end
 
   @doc """
+  A user changeset for suspension operations.
+
+  This changeset only handles suspension-related fields and does not
+  validate password or other user fields.
+  """
+  def suspension_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :manually_suspended,
+      :suspension_reason,
+      :suspended_at,
+      :suspended_by_id,
+      :suspension_ends_at
+    ])
+  end
+
+  @doc """
   A user changeset for onboarding that requires essential profile fields.
   """
   def onboarding_changeset(user, attrs) do
