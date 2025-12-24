@@ -627,7 +627,7 @@ msgstr ""
 #: lib/voile_web/live/frontend/atrium/index.ex:2093
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Close"
-msgstr "close"
+msgstr "Close"
 
 #: lib/voile_web/live/users/auth/user_login_live.ex:96
 #, elixir-autogen, elixir-format
@@ -1977,7 +1977,7 @@ msgstr ""
 #: lib/voile_web/live/frontend/atrium/index.ex:1983
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Returned:"
-msgstr "Return home"
+msgstr "Returned:"
 
 #: lib/voile_web/live/frontend/atrium/index.ex:1153
 #, elixir-autogen, elixir-format

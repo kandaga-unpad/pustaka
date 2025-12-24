@@ -180,9 +180,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
       predicted_fine =
         if Transaction.overdue?(transaction) do
-          days = Transaction.days_overdue(transaction)
+          # Use the same calculation logic as actual fine calculation
+          skip_holidays = Circulation.should_skip_holidays_in_fines?()
+          days = Transaction.calculate_days_overdue(transaction, skip_holidays)
           daily = member.user_type.fine_per_day || Decimal.new("1.00")
-          Decimal.mult(Decimal.new(days), daily)
+          fine_amount = Decimal.mult(Decimal.new(days), daily)
+
+          # Apply max fine limit if configured (same as actual calculation)
+          if is_nil(member.user_type.max_fine) or
+               Decimal.compare(member.user_type.max_fine, Decimal.new("0")) == :eq do
+            fine_amount
+          else
+            Decimal.min(fine_amount, member.user_type.max_fine)
+          end
         else
           Decimal.new("0")
         end
@@ -1743,11 +1753,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <.button
                   type="button"
                   phx-click="close_modal"
-                  class="bg-gray-500 hover:bg-gray-600 text-white"
+                  class="warning-btn"
                 >
                   Cancel
                 </.button>
-                <.button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white">
+                <.button type="submit" class="cancel-btn">
                   Confirm Waive
                 </.button>
               </div>
@@ -1831,7 +1841,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     type="button"
                     phx-click="generate_payment_link"
                     phx-value-fine_id={@modal_data.fine.id}
-                    class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
+                    class="success-btn"
                   >
                     <.icon name="hero-link" class="w-4 h-4 mr-1" /> Generate Payment Link
                   </.button>
@@ -1843,7 +1853,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <input
                   type="number"
                   name="amount"
-                  value={Decimal.to_string(@modal_data.fine.balance)}
+                  value="0"
                   class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
                   required
                 />
