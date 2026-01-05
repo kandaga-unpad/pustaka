@@ -1,0 +1,83 @@
+<div>
+  <.header>
+    Request Transfer Location
+    <:subtitle>Request to transfer this item to another location</:subtitle>
+  </.header>
+
+  <.form
+    for={@form}
+    id="transfer-request-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+  >
+    <div class="space-y-4">
+      <!-- Current Location (Read-only) -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Current Location</h4>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Current Node
+            </label>
+
+            <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {(@item.node && @item.node.name) || "Not assigned"}
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Current Location
+            </label>
+
+            <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@item.location || "Not specified"}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+<!-- Target Location -->
+      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 dark:text-white mb-3">Transfer To</h4>
+
+        <div class="space-y-4">
+          <.input
+            field={@form[:to_node_id]}
+            type="select"
+            label="Target Node"
+            options={Enum.map(@nodes, &{&1.name, &1.id})}
+            prompt="Select target node"
+            required
+          />
+
+          <.input
+            field={@form[:to_location]}
+            type="text"
+            label="Target Location"
+            placeholder="e.g. Shelf A-12, Room 101"
+            required
+          />
+        </div>
+      </div>
+      
+<!-- Reason -->
+      <.input
+        field={@form[:reason]}
+        type="textarea"
+        label="Reason for Transfer"
+        placeholder="Explain why this item needs to be transferred..."
+        required
+        rows="4"
+      />
+    </div>
+
+    <div class="mt-6">
+      <.button phx-disable-with="Creating..." class="w-full">
+        Submit Transfer Request
+      </.button>
+    </div>
+  </.form>
+</div>

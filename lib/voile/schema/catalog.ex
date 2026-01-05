@@ -5,7 +5,15 @@ defmodule Voile.Schema.Catalog do
 
   import Ecto.Query, warn: false
   alias Voile.Repo
-  alias Voile.Schema.Catalog.{Collection, Item, CollectionField, ItemFieldValue, Attachment}
+
+  alias Voile.Schema.Catalog.{
+    Collection,
+    Item,
+    CollectionField,
+    ItemFieldValue,
+    Attachment,
+    TransferRequest
+  }
 
   @doc """
   Returns the list of collections.
@@ -1553,4 +1561,177 @@ defmodule Voile.Schema.Catalog do
   end
 
   def find_item_by_barcode(_), do: nil
+
+  ## Transfer Requests
+
+  @doc """
+  Returns the list of transfer_requests with optional filtering.
+
+  ## Examples
+
+      iex> list_transfer_requests()
+      [%TransferRequest{}, ...]
+
+      iex> list_transfer_requests(%{status: "pending"})
+      [%TransferRequest{status: "pending"}, ...]
+  """
+  def list_transfer_requests(filters \\ %{}) do
+    query = from(tr in TransferRequest)
+
+    query
+    |> apply_transfer_filters(filters)
+    |> order_by([tr], desc: tr.inserted_at)
+    |> Repo.all()
+    |> Repo.preload(
+      item: [:collection, :node],
+      from_node: [],
+      to_node: [],
+      requested_by: [],
+      reviewed_by: []
+    )
+  end
+
+  defp apply_transfer_filters(query, filters) do
+    Enum.reduce(filters, query, fn
+      {:status, status}, q when not is_nil(status) ->
+        from tr in q, where: tr.status == ^status
+
+      {:to_node_id, node_id}, q when not is_nil(node_id) ->
+        from tr in q, where: tr.to_node_id == ^node_id
+
+      {:from_node_id, node_id}, q when not is_nil(node_id) ->
+        from tr in q, where: tr.from_node_id == ^node_id
+
+      {:requested_by_id, user_id}, q when not is_nil(user_id) ->
+        from tr in q, where: tr.requested_by_id == ^user_id
+
+      {:item_id, item_id}, q when not is_nil(item_id) ->
+        from tr in q, where: tr.item_id == ^item_id
+
+      _, q ->
+        q
+    end)
+  end
+
+  @doc """
+  Gets a single transfer_request.
+  """
+  def get_transfer_request!(id) do
+    Repo.get!(TransferRequest, id)
+    |> Repo.preload(
+      item: [:collection, :node],
+      from_node: [],
+      to_node: [],
+      requested_by: [],
+      reviewed_by: []
+    )
+  end
+
+  @doc """
+  Creates a transfer_request.
+  """
+  def create_transfer_request(attrs \\ %{}) do
+    %TransferRequest{}
+    |> TransferRequest.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a transfer_request.
+  """
+  def update_transfer_request(%TransferRequest{} = transfer_request, attrs) do
+    transfer_request
+    |> TransferRequest.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Reviews a transfer request (approve or deny).
+  """
+  def review_transfer_request(%TransferRequest{} = transfer_request, attrs) do
+    transfer_request
+    |> TransferRequest.review_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Approves a transfer request and executes the location transfer.
+  """
+  def approve_transfer_request(%TransferRequest{} = transfer_request, reviewed_by_id) do
+    Repo.transaction(fn ->
+      # Update transfer request status
+      {:ok, transfer_request} =
+        review_transfer_request(transfer_request, %{
+          status: "approved",
+          reviewed_by_id: reviewed_by_id,
+          reviewed_at: DateTime.utc_now()
+        })
+
+      # Get the item and update its location
+      item = get_item!(transfer_request.item_id)
+
+      {:ok, item} =
+        update_item(item, %{
+          unit_id: transfer_request.to_node_id,
+          location: transfer_request.to_location
+        })
+
+      # Mark transfer as completed
+      {:ok, transfer_request} =
+        update_transfer_request(transfer_request, %{
+          completed_at: DateTime.utc_now()
+        })
+
+      {transfer_request, item}
+    end)
+  end
+
+  @doc """
+  Denies a transfer request.
+  """
+  def deny_transfer_request(%TransferRequest{} = transfer_request, reviewed_by_id, notes \\ nil) do
+    review_transfer_request(transfer_request, %{
+      status: "denied",
+      reviewed_by_id: reviewed_by_id,
+      reviewed_at: DateTime.utc_now(),
+      notes: notes
+    })
+  end
+
+  @doc """
+  Cancels a transfer request (by requester).
+  """
+  def cancel_transfer_request(%TransferRequest{} = transfer_request) do
+    update_transfer_request(transfer_request, %{
+      status: "cancelled"
+    })
+  end
+
+  @doc """
+  Deletes a transfer_request.
+  """
+  def delete_transfer_request(%TransferRequest{} = transfer_request) do
+    Repo.delete(transfer_request)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking transfer_request changes.
+  """
+  def change_transfer_request(%TransferRequest{} = transfer_request, attrs \\ %{}) do
+    TransferRequest.changeset(transfer_request, attrs)
+  end
+
+  @doc """
+  Get pending transfer requests for a specific node (target node).
+  """
+  def list_pending_transfers_for_node(node_id) do
+    list_transfer_requests(%{status: "pending", to_node_id: node_id})
+  end
+
+  @doc """
+  Get transfer request history for an item.
+  """
+  def list_transfer_history_for_item(item_id) do
+    list_transfer_requests(%{item_id: item_id})
+  end
 end

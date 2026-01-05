@@ -41,8 +41,21 @@ defmodule VoileWeb.Users.ManageLive.Show do
       |> assign(:outstanding_fines, outstanding_fines)
       |> assign(:suspend_modal_visible, false)
       |> assign(:suspend_form, to_form(%{}))
+      |> assign(:can_suspend, can_suspend_user?(socket.assigns.current_scope.user, user))
 
     {:ok, socket}
+  end
+
+  # Helper to determine if current user can suspend the target user
+  defp can_suspend_user?(current_user, target_user) do
+    cond do
+      # Cannot suspend yourself
+      current_user.id == target_user.id -> false
+      # Cannot suspend super admins
+      is_super_admin?(target_user) -> false
+      # Otherwise, allow if user has permission
+      true -> true
+    end
   end
 
   @impl true
@@ -76,14 +89,18 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     <.icon name="hero-check-circle" class="w-4 h-4 mr-2" /> Unsuspend Account
                   </button>
                 <% else %>
-                  <button
-                    phx-click="show_suspend_modal"
-                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" /> Suspend Account
-                  </button>
+                  <%= if @can_suspend do %>
+                    <button
+                      phx-click="show_suspend_modal"
+                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      <.icon name="hero-no-symbol" class="w-4 h-4 mr-2" /> Suspend Account
+                    </button>
+                  <% end %>
                 <% end %>
+              <% end %>
 
+              <%= if can?(@current_scope.user, "users.update") do %>
                 <.link patch={~p"/manage/settings/users/#{@user.id}/show/edit"} class="primary-btn">
                   Edit
                 </.link>

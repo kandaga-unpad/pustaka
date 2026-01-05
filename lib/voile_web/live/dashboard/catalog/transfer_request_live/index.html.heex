@@ -1,0 +1,164 @@
+<section class="flex flex-col gap-4">
+  <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
+  <div class="bg-white dark:bg-gray-700 py-4 px-8 rounded-xl shadow-md">
+    <.header>
+      Transfer Requests
+      <:subtitle>Manage location transfer requests for items</:subtitle>
+    </.header>
+    
+<!-- Filters -->
+    <div class="flex gap-4 my-6">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Filter by Status
+        </label>
+
+        <select
+          phx-change="filter"
+          name="status"
+          class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+        >
+          <option value="">All Statuses</option>
+          <option value="pending" selected={@status_filter == "pending"}>Pending</option>
+          <option value="approved" selected={@status_filter == "approved"}>Approved</option>
+          <option value="denied" selected={@status_filter == "denied"}>Denied</option>
+          <option value="cancelled" selected={@status_filter == "cancelled"}>Cancelled</option>
+        </select>
+      </div>
+
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Filter by Target Node
+        </label>
+
+        <select
+          phx-change="filter_node"
+          name="node_id"
+          class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+        >
+          <option value="">All Nodes</option>
+          <%= for node <- @nodes do %>
+            <option value={node.id} selected={to_string(@node_filter) == to_string(node.id)}>
+              {node.name}
+            </option>
+          <% end %>
+        </select>
+      </div>
+    </div>
+    
+<!-- Transfer Requests Table -->
+    <%= if length(@transfer_requests) > 0 do %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+          <thead class="bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Item
+              </th>
+
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                From
+              </th>
+
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                To
+              </th>
+
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Status
+              </th>
+
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Requested By
+              </th>
+
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Date
+              </th>
+
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200">
+            <%= for transfer <- @transfer_requests do %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td class="px-4 py-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {transfer.item.item_code}
+                  </div>
+
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {transfer.item.collection.title}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4">
+                  <div class="text-sm text-gray-900 dark:text-gray-100">
+                    {(transfer.from_node && transfer.from_node.name) || "—"}
+                  </div>
+
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {transfer.from_location || "—"}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {transfer.to_node.name}
+                  </div>
+
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {transfer.to_location}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4">{status_badge(transfer.status)}</td>
+
+                <td class="px-4 py-4">
+                  <div class="text-sm text-gray-900 dark:text-gray-100">
+                    {transfer.requested_by.email}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4">
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {Calendar.strftime(transfer.inserted_at, "%Y-%m-%d %H:%M")}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4 text-right text-sm font-medium">
+                  <div class="flex gap-2 justify-end">
+                    <.link
+                      navigate={~p"/manage/transfers/#{transfer.id}"}
+                      class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
+                    >
+                      View
+                    </.link>
+
+                    <%= if transfer.status == "pending" && transfer.requested_by_id == @current_scope.user.id do %>
+                      <button
+                        phx-click="delete"
+                        phx-value-id={transfer.id}
+                        data-confirm="Are you sure you want to delete this transfer request?"
+                        class="text-red-600 hover:text-red-900 dark:text-red-400"
+                      >
+                        Delete
+                      </button>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <p class="text-gray-500 dark:text-gray-400">No transfer requests found.</p>
+      </div>
+    <% end %>
+  </div>
+</section>

@@ -198,6 +198,11 @@ defmodule VoileWeb.Router do
           end
         end
 
+        scope "/transfers" do
+          live "/", Dashboard.Catalog.TransferRequestLive.Index, :index
+          live "/:id", Dashboard.Catalog.TransferRequestLive.Show, :show
+        end
+
         scope "/glam" do
           live "/", Dashboard.Glam.Index, :index
 

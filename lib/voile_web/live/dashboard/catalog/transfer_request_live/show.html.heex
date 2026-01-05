@@ -1,0 +1,224 @@
+<section class="flex flex-col gap-4">
+  <.dashboard_menu_bar active_menu={@current_uri} user={@current_scope.user} />
+  <div class="bg-white dark:bg-gray-700 py-4 px-8 rounded-xl shadow-md">
+    <.back navigate={~p"/manage/transfers"}>Back to transfer requests</.back>
+
+    <.header>
+      Transfer Request Details
+      <:subtitle>ID: {@transfer_request.id}</:subtitle>
+
+      <:actions>
+        {status_badge(@transfer_request.status)}
+      </:actions>
+    </.header>
+
+    <div class="mt-6 space-y-6">
+      <!-- Item Information -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Item Information</h3>
+
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Item Code</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.item.item_code}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Inventory Code</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.item.inventory_code}
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Collection</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.item.collection.title}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Status</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.item.status}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Availability</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.item.availability}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      
+<!-- Transfer Details -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Transfer Details</h3>
+
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">From Node</dt>
+
+            <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {(@transfer_request.from_node && @transfer_request.from_node.name) || "—"}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">To Node</dt>
+
+            <dd class="mt-1 text-sm font-semibold text-voile-primary">
+              {@transfer_request.to_node.name}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">From Location</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.from_location || "—"}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">To Location</dt>
+
+            <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {@transfer_request.to_location}
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Reason</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.reason}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      
+<!-- Request Information -->
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Request Information
+        </h3>
+
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Requested By</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {@transfer_request.requested_by.email}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Request Date</dt>
+
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {Calendar.strftime(@transfer_request.inserted_at, "%Y-%m-%d %H:%M")}
+            </dd>
+          </div>
+
+          <%= if @transfer_request.reviewed_by do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Reviewed By</dt>
+
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {@transfer_request.reviewed_by.email}
+              </dd>
+            </div>
+
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Review Date</dt>
+
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {Calendar.strftime(@transfer_request.reviewed_at, "%Y-%m-%d %H:%M")}
+              </dd>
+            </div>
+          <% end %>
+
+          <%= if @transfer_request.notes do %>
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Review Notes</dt>
+
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {@transfer_request.notes}
+              </dd>
+            </div>
+          <% end %>
+
+          <%= if @transfer_request.completed_at do %>
+            <div class="sm:col-span-2">
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Completed At</dt>
+
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {Calendar.strftime(@transfer_request.completed_at, "%Y-%m-%d %H:%M")}
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+      
+<!-- Review Actions (only for pending requests) -->
+      <%= if @can_review do %>
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Review This Request
+          </h3>
+
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            You are authorized to review this transfer request as it is targeted to your node.
+          </p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Review Notes (Optional for approval, required for denial)
+              </label>
+
+              <textarea
+                phx-change="validate_notes"
+                name="notes"
+                rows="3"
+                class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+                placeholder="Add notes about your decision..."
+              >{@review_notes}</textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                phx-click="approve"
+                data-confirm="Are you sure you want to approve this transfer? The item location will be updated immediately."
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              >
+                Approve Transfer
+              </button>
+
+              <button
+                phx-click="deny"
+                phx-value-notes={@review_notes}
+                data-confirm="Are you sure you want to deny this transfer request?"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+              >
+                Deny Transfer
+              </button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <.back navigate={~p"/manage/transfers"}>Back to transfer requests</.back>
+  </div>
+</section>

@@ -264,7 +264,13 @@ defmodule VoileWeb.Layouts do
     <!-- Search panel (hidden by default) -->
     <.search_panel id="searchPanel" />
     <!-- Mobile navigation component -->
-    <.mobile_nav id="mobileNav" current_scope={@current_scope} />
+    <.mobile_nav
+      id="mobileNav"
+      current_scope={@current_scope}
+      mobile_nav_logo={@app_logo}
+      mobile_nav_app_name={@app_name}
+      mobile_nav_current_path={@current_path}
+    />
     <main class="min-h-screen w-full h-full">{render_slot(@inner_block)}</main>
 
     <footer class="bg-gray-900 dark:bg-gray-950 text-gray-300">
@@ -518,6 +524,9 @@ defmodule VoileWeb.Layouts do
   # Mobile nav function component inlined per request
   attr :id, :string, required: true
   attr :current_scope, :map, default: nil
+  attr :mobile_nav_logo, :string, default: nil
+  attr :mobile_nav_app_name, :string, default: "Voile"
+  attr :mobile_nav_current_path, :string, default: nil
 
   def mobile_nav(assigns) do
     assigns = assign_new(assigns, :nav_items, fn -> mobile_nav_items() end)
@@ -548,35 +557,19 @@ defmodule VoileWeb.Layouts do
       <!-- slide-in panel -->
       <aside
         data-mobile-panel
-        class="hidden fixed inset-y-0 left-0 w-72 max-w-full transform -translate-x-full transition-transform duration-200 bg-white dark:bg-gray-800 shadow-lg z-50"
+        class="hidden fixed inset-y-0 left-0 w-72 max-w-full transform -translate-x-full transition-transform duration-200 bg-white dark:bg-gray-800 shadow-lg z-50 flex flex-col"
         role="dialog"
         aria-modal="true"
       >
-        <div class="p-4 border-b border-base-200 dark:border-gray-700 flex items-center justify-between">
-          <a href="/" class="flex items-center gap-2">
-            <img src={~p"/images/v.png"} width="28" /> <span class="font-semibold">Voile</span>
-          </a>
-          <%!-- <div class="flex items-center gap-2">
-            <.button
-              phx-click={
-                JS.toggle(
-                  to: "#searchPanel",
-                  in: "block",
-                  out: "hidden",
-                  display: "block"
-                )
-                |> JS.toggle(
-                  to: "#mobileNav [data-mobile-backdrop]",
-                  in: "hidden",
-                  out: "block",
-                  display: "block"
-                )
-              }
-              aria-label="Open search"
-              class="p-2"
-            >
-              <.icon name="hero-magnifying-glass" />
-            </.button>
+        <div class="flex-1 overflow-y-auto">
+          <div class="p-4 border-b border-base-200 dark:border-gray-700 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+              <img src={@mobile_nav_logo} width="28" />
+              <span class="font-semibold text-lg">
+                {@mobile_nav_app_name}
+              </span>
+            </a>
+            <.link navigate="/search" class="p-2"><.icon name="hero-magnifying-glass" /></.link>
             <button
               phx-click={
                 JS.toggle(
@@ -598,72 +591,54 @@ defmodule VoileWeb.Layouts do
             >
               <.icon name="hero-x-mark" />
             </button>
-          </div> --%>
-          <.link navigate="/search" class="p-2"><.icon name="hero-magnifying-glass" /></.link>
-          <button
-            phx-click={
-              JS.toggle(
-                to: "#mobileNav [data-mobile-backdrop]",
-                in: "block opacity-100 pointer-events-auto",
-                out: "hidden opacity-0 pointer-events-none",
-                display: "block"
-              )
-              |> JS.toggle(
-                to: "#mobileNav [data-mobile-panel]",
-                in: "block translate-x-0",
-                out: "hidden -translate-x-full",
-                display: "block"
-              )
-              |> JS.dispatch("voile:mobile-nav-toggled")
-            }
-            aria-label="Close"
-            class="p-2"
-          >
-            <.icon name="hero-x-mark" />
-          </button>
-        </div>
-
-        <nav class="p-4">
-          <ul class="flex flex-col gap-3">
-            <%= for item <- @nav_items do %>
-              <li>
-                <%= if item.href do %>
-                  <.link href={item.href} class="block py-2 px-3 rounded hover:bg-base-200">
-                    {item.label}
-                  </.link>
-                <% else %>
-                  <span class="block py-2 px-3">{item.label}</span>
-                <% end %>
-              </li>
-            <% end %>
-          </ul>
-
-          <div class="mt-6">
-            <%= if @current_scope do %>
-              <p class="text-sm mb-2">
-                {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
-              </p>
-
-              <div class="flex flex-col gap-2">
-                <%= if has_dashboard_access?(@current_scope.user) do %>
-                  <.link navigate="/manage" class="primary-btn w-full text-center">
-                    {gettext("Dashboard")}
-                  </.link>
-                <% else %>
-                  <.link navigate="/atrium" class="primary-btn w-full text-center">
-                    {gettext("Atrium")}
-                  </.link>
-                <% end %>
-
-                <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
-                  {gettext("Log out")}
-                </.link>
-              </div>
-            <% else %>
-              <.link navigate="/login" class="default-btn w-full">{gettext("Sign in")}</.link>
-            <% end %>
           </div>
-        </nav>
+
+          <nav class="p-4">
+            <ul class="flex flex-col gap-3">
+              <%= for item <- @nav_items do %>
+                <li>
+                  <%= if item.href do %>
+                    <.link href={item.href} class="block py-2 px-3 rounded hover:bg-base-200">
+                      {item.label}
+                    </.link>
+                  <% else %>
+                    <span class="block py-2 px-3">{item.label}</span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+
+            <div class="mt-6">
+              <%= if @current_scope do %>
+                <p class="text-sm mb-2">
+                  {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
+                </p>
+
+                <div class="flex flex-col gap-2">
+                  <%= if has_dashboard_access?(@current_scope.user) do %>
+                    <.link navigate="/manage" class="primary-btn w-full text-center">
+                      {gettext("Dashboard")}
+                    </.link>
+                  <% else %>
+                    <.link navigate="/atrium" class="primary-btn w-full text-center">
+                      {gettext("Atrium")}
+                    </.link>
+                  <% end %>
+
+                  <.link href="/users/log_out" method="delete" class="cancel-btn w-full text-center">
+                    {gettext("Log out")}
+                  </.link>
+                </div>
+              <% else %>
+                <.link navigate="/login" class="default-btn w-full">{gettext("Sign in")}</.link>
+              <% end %>
+            </div>
+          </nav>
+        </div>
+        <div class="p-4 border-t border-base-200 dark:border-gray-700 flex items-center justify-end gap-4">
+          <Layouts.theme_toggle />
+          <.locale_switcher current_path={@mobile_nav_current_path} />
+        </div>
       </aside>
     </div>
     """

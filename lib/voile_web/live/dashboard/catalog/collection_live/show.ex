@@ -46,8 +46,27 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:collection, collection)
       |> assign(:patch, ~p"/manage/catalog/collections/#{collection}")
       |> assign(:back_query_params, query_params)
+      |> assign(:transfer_item, nil)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("request_transfer", %{"item-id" => item_id}, socket) do
+    item = Catalog.get_item!(item_id)
+
+    {:noreply,
+     socket
+     |> assign(:transfer_item, item)
+     |> assign(:live_action, :request_transfer)}
+  end
+
+  @impl true
+  def handle_event("cancel_transfer", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:transfer_item, nil)
+     |> assign(:live_action, :show)}
   end
 
   @impl true

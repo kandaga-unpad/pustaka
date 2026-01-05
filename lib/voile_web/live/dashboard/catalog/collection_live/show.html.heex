@@ -156,9 +156,13 @@
                   >
                     Item Detail
                   </.link>
-                  <.link navigate="#" class="warning-btn text-sm rounded-lg w-full">
+                  <button
+                    phx-click="request_transfer"
+                    phx-value-item-id={item.id}
+                    class="warning-btn text-sm rounded-lg w-full"
+                  >
                     Transfer Location
-                  </.link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -271,6 +275,24 @@
         patch={~p"/manage/catalog/collections/#{@collection}"}
       />
     </.collection_modal>
+
+    <%!-- Transfer Request Modal --%>
+    <.modal
+      :if={@live_action == :request_transfer && @transfer_item}
+      id="transfer-modal"
+      show
+      on_cancel={JS.push("cancel_transfer")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Catalog.TransferRequestLive.FormComponent}
+        id={:new}
+        title="Request Transfer Location"
+        action={:new}
+        item={@transfer_item}
+        current_scope={@current_scope}
+        patch={~p"/manage/catalog/collections/#{@collection}"}
+      />
+    </.modal>
 
     <%!-- confirm-close removed: closing will navigate back to index directly --%>
   </div>

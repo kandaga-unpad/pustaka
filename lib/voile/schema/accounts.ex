@@ -1278,7 +1278,7 @@ defmodule Voile.Schema.Accounts do
   """
   def unsuspend_user(%User{} = user) do
     user
-    |> User.changeset(%{
+    |> User.suspension_changeset(%{
       manually_suspended: false,
       suspension_reason: nil,
       suspended_at: nil,

@@ -22,7 +22,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
 
   import Ecto.Query
   alias Voile.Repo
-  alias Voile.Schema.Accounts.{User, Role, UserRoleAssignment}
+  alias Voile.Schema.Accounts.{User, Role, UserRoleAssignment, CollectionPermission}
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Metadata.ResourceClass
   alias VoileWeb.Auth.Authorization
@@ -52,7 +52,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
   def can_manage_glam_collection?(%User{} = user, %Collection{} = collection) do
     cond do
       # Super admin can manage everything
-      is_super_admin?(user) ->
+      Authorization.is_super_admin?(user) ->
         true
 
       # Check if user has the appropriate GLAM curator role for this collection
@@ -89,7 +89,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
   def can_create_glam_collection?(%User{} = user, glam_type)
       when glam_type in ["Gallery", "Library", "Archive", "Museum"] do
     cond do
-      is_super_admin?(user) ->
+      Authorization.is_super_admin?(user) ->
         true
 
       has_glam_curator_role?(user, glam_type) ->
@@ -111,7 +111,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
       ["Library", "Archive"]
   """
   def get_user_glam_types(%User{} = user) do
-    if is_super_admin?(user) do
+    if Authorization.is_super_admin?(user) do
       ["Gallery", "Library", "Archive", "Museum"]
     else
       # Get all GLAM types from role assignments
@@ -186,7 +186,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
   Check if user is a super admin.
   """
   def is_super_admin?(%User{} = user) do
-    has_role?(user, "super_admin") || has_role?(user, "admin")
+    Authorization.is_super_admin?(user)
   end
 
   @doc """
@@ -199,7 +199,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
       |> Repo.all()
   """
   def scope_collections_by_glam_role(query, %User{} = user) do
-    if is_super_admin?(user) do
+    if Authorization.is_super_admin?(user) do
       query
     else
       glam_types = get_user_glam_types(user)
@@ -253,7 +253,7 @@ defmodule VoileWeb.Auth.GLAMAuthorization do
   defp has_direct_collection_permission?(%User{} = user, %Collection{} = collection) do
     # Check if user has owner or editor permission on this specific collection
     query =
-      from cp in Voile.Schema.Accounts.CollectionPermission,
+      from cp in CollectionPermission,
         where: cp.collection_id == ^collection.id,
         where: cp.user_id == ^user.id,
         where: cp.permission_level in ["owner", "editor"]

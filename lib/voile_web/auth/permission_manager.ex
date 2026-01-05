@@ -322,7 +322,38 @@ defmodule VoileWeb.Auth.PermissionManager do
         action: "archive",
         description: "Archive collections"
       },
-
+      # Transfer Requests
+      %{
+        name: "transfer_requests.create",
+        resource: "transfer_requests",
+        action: "create",
+        description: "Create transfer requests"
+      },
+      %{
+        name: "transfer_requests.read",
+        resource: "transfer_requests",
+        action: "read",
+        description: "View transfer requests"
+      },
+      %{
+        name: "transfer_requests.update",
+        resource: "transfer_requests",
+        action: "update",
+        description: "Update transfer requests"
+      },
+      %{
+        name: "transfer_requests.delete",
+        resource: "transfer_requests",
+        action: "delete",
+        description: "Delete transfer requests"
+      },
+      %{
+        name: "transfer_requests.review",
+        resource: "transfer_requests",
+        action: "review",
+        description: "Review and approve/deny transfer requests"
+      },
+      # Items
       # Item permissions
       %{
         name: "items.create",
@@ -488,6 +519,11 @@ defmodule VoileWeb.Auth.PermissionManager do
           "collections.delete",
           "collections.publish",
           "collections.archive",
+          "transfer_requests.create",
+          "transfer_requests.read",
+          "transfer_requests.update",
+          "transfer_requests.delete",
+          "transfer_requests.review",
           "items.create",
           "items.read",
           "items.update",
@@ -595,6 +631,11 @@ defmodule VoileWeb.Auth.PermissionManager do
           "collections.delete",
           "collections.publish",
           "collections.archive",
+          "transfer_requests.create",
+          "transfer_requests.read",
+          "transfer_requests.update",
+          "transfer_requests.delete",
+          "transfer_requests.review",
           "items.create",
           "items.read",
           "items.update",
