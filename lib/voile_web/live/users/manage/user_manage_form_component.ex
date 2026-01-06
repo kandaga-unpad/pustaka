@@ -348,7 +348,7 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
   end
 
   defp save_user(socket, :edit, user_params, role_ids) do
-    case Accounts.update_profile_user(socket.assigns.user, user_params) do
+    case Accounts.admin_update_user(socket.assigns.user, user_params) do
       {:ok, user} ->
         # Update role assignments
         update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
@@ -361,7 +361,10 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to update user. Please check the form for errors.")
+         |> assign_form(changeset)}
     end
   end
 
@@ -379,7 +382,10 @@ defmodule VoileWeb.Users.ManageLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to create user. Please check the form for errors.")
+         |> assign_form(changeset)}
     end
   end
 

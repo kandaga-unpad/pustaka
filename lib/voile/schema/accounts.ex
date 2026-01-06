@@ -486,6 +486,23 @@ defmodule Voile.Schema.Accounts do
     end
   end
 
+  @doc """
+  Updates a user by admin without requiring password.
+  Used for administrative user management where password changes are optional.
+  """
+  def admin_update_user(%User{} = user, attrs) do
+    user
+    |> User.update_profile_changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        {:ok, Repo.preload(user, [:roles, :user_type, :user_role_assignments])}
+
+      error ->
+        error
+    end
+  end
+
   def update_user_login(%User{} = user, attrs) do
     user
     |> User.login_changeset(attrs)

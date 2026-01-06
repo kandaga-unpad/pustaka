@@ -611,4 +611,14 @@ defmodule VoileWeb.Users.ManageLive.Show do
 
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_info({VoileWeb.Users.ManageLive.FormComponent, {:saved, user}}, socket) do
+    # Reload user with all associations after save
+    user =
+      Accounts.get_user!(user.id)
+      |> Voile.Repo.preload([:roles, :user_type, :node, :suspended_by])
+
+    {:noreply, assign(socket, :user, user)}
+  end
 end
