@@ -153,6 +153,16 @@ defmodule VoileWeb.VoileDashboardComponents do
           >
             {gettext("Asset Vault")}
           </.link>
+          <.link
+            patch="/manage/transfers"
+            class={[
+              "dashboard-menu-btn",
+              @active_menu |> String.starts_with?("/manage/transfers") &&
+                "dashboard-menu-btn-active"
+            ]}
+          >
+            {gettext("Transfers")}
+          </.link>
         </div>
       </div>
 

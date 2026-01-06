@@ -70,19 +70,25 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
   end
 
   defp status_badge(status) do
-    {color_class, label} =
+    {color_class, icon, label} =
       case status do
-        "pending" -> {"bg-yellow-100 text-yellow-800", "Pending"}
-        "approved" -> {"bg-green-100 text-green-800", "Approved"}
-        "denied" -> {"bg-red-100 text-red-800", "Denied"}
-        "cancelled" -> {"bg-gray-100 text-gray-800", "Cancelled"}
-        _ -> {"bg-gray-100 text-gray-800", String.capitalize(status)}
+        "pending" -> 
+          {"bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200", "hero-clock", "Pending"}
+        "approved" -> 
+          {"bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200", "hero-check-circle", "Approved"}
+        "denied" -> 
+          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle", "Denied"}
+        "cancelled" -> 
+          {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200", "hero-minus-circle", "Cancelled"}
+        _ -> 
+          {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200", "hero-question-mark-circle", String.capitalize(status)}
       end
 
-    assigns = %{class: color_class, label: label}
+    assigns = %{class: color_class, icon: icon, label: label}
 
     ~H"""
-    <span class={"#{@class} text-xs font-medium px-2.5 py-1 rounded-full"}>
+    <span class={"inline-flex items-center gap-1.5 #{@class} text-sm font-semibold px-4 py-2 rounded-full"}>
+      <.icon name={@icon} class="w-5 h-5" />
       {@label}
     </span>
     """
