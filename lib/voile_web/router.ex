@@ -203,6 +203,14 @@ defmodule VoileWeb.Router do
           live "/:id", Dashboard.Catalog.TransferRequestLive.Show, :show
         end
 
+        scope "/stock-opname" do
+          live "/", Dashboard.StockOpnameLive.Index, :index
+          live "/new", Dashboard.StockOpnameLive.New, :new
+          live "/:id", Dashboard.StockOpnameLive.Show, :show
+          live "/:id/scan", Dashboard.StockOpnameLive.Scan, :scan
+          live "/:id/review", Dashboard.StockOpnameLive.Review, :review
+        end
+
         scope "/glam" do
           live "/", Dashboard.Glam.Index, :index
 
