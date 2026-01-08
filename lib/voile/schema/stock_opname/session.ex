@@ -1,9 +1,9 @@
-defmodule Voile.Schema.Catalog.StockOpnameSession do
+defmodule Voile.Schema.StockOpname.Session do
   use Ecto.Schema
   import Ecto.Changeset
 
   alias Voile.Schema.Accounts.User
-  alias Voile.Schema.Catalog.{StockOpnameItem, LibrarianAssignment}
+  alias Voile.Schema.StockOpname.{Item, LibrarianAssignment}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -45,15 +45,15 @@ defmodule Voile.Schema.Catalog.StockOpnameSession do
     belongs_to :reviewed_by, User, foreign_key: :reviewed_by_id, type: :binary_id
 
     # Associations
-    has_many :items, StockOpnameItem, foreign_key: :session_id
+    has_many :items, Item, foreign_key: :session_id
     has_many :librarian_assignments, LibrarianAssignment, foreign_key: :session_id
 
     timestamps(type: :utc_datetime)
   end
 
-  @statuses ~w(draft in_progress completed pending_review approved rejected cancelled)
+  @statuses ~w(draft initializing in_progress completed pending_review approved rejected cancelled)
   @scope_types ~w(all collection location)
-  @collection_types ~w(gallery archive museum library)
+  @collection_types ~w(Gallery Archive Museum Library)
 
   @doc false
   def changeset(session, attrs) do
@@ -99,6 +99,10 @@ defmodule Voile.Schema.Catalog.StockOpnameSession do
     )
     |> validate_collection_types()
     |> maybe_generate_session_code()
+    |> unique_constraint(:session_code,
+      name: :stock_opname_sessions_session_code_index,
+      message: "session code already exists"
+    )
   end
 
   defp validate_collection_types(changeset) do
@@ -116,12 +120,19 @@ defmodule Voile.Schema.Catalog.StockOpnameSession do
     if get_field(changeset, :session_code) do
       changeset
     else
-      # Generate code like "SO-2026-001"
+      # Generate code like "SO-2026-ABC123"
       now = DateTime.utc_now()
       year = now.year
-      # Use microsecond for uniqueness
-      sequence = String.pad_leading(to_string(now.microsecond |> elem(0) |> rem(1000)), 3, "0")
-      code = "SO-#{year}-#{sequence}"
+      # Use timestamp + random string for uniqueness
+      timestamp = :os.system_time(:millisecond)
+
+      random_suffix =
+        timestamp
+        |> Integer.to_string(36)
+        |> String.upcase()
+        |> String.slice(-6..-1)
+
+      code = "SO-#{year}-#{random_suffix}"
       put_change(changeset, :session_code, code)
     end
   end

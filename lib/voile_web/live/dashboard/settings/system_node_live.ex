@@ -10,10 +10,8 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
     ~H"""
     <.header>
       System Nodes / Units Management
-      <:subtitle>
-        Manage library branches, units, and organizational nodes
-      </:subtitle>
-
+      <:subtitle>Manage library branches, units, and organizational nodes</:subtitle>
+      
       <:actions>
         <.button phx-click="new_node" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Node
@@ -28,7 +26,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           current_path={@current_path}
         />
       </div>
-
+      
       <div class="space-y-6 flex-1">
         <!-- Node Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -37,42 +35,38 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               <div class="flex-shrink-0">
                 <.icon name="hero-building-library" class="h-8 w-8 text-voile-primary" />
               </div>
-
+              
               <div class="ml-4">
                 <div class="text-2xl font-bold">{length(@nodes)}</div>
-
+                
                 <div class="text-sm font-medium">Total Nodes</div>
               </div>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-photo" class="h-8 w-8 text-voile-success" />
               </div>
-
+              
               <div class="ml-4">
-                <div class="text-2xl font-bold">
-                  {Enum.count(@nodes, &(&1.image != nil))}
-                </div>
-
+                <div class="text-2xl font-bold">{Enum.count(@nodes, &(&1.image != nil))}</div>
+                
                 <div class="text-sm font-medium">With Images</div>
               </div>
             </div>
           </div>
-
+          
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-check-circle" class="h-8 w-8 text-voile-info" />
               </div>
-
+              
               <div class="ml-4">
-                <div class="text-2xl font-bold">
-                  {Enum.count(@nodes, &(&1.abbr != nil))}
-                </div>
-
+                <div class="text-2xl font-bold">{Enum.count(@nodes, &(&1.abbr != nil))}</div>
+                
                 <div class="text-sm font-medium">With Abbreviations</div>
               </div>
             </div>
@@ -84,7 +78,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
             <.icon name="hero-information-circle" class="h-5 w-5 text-voile-info" />
             <div class="ml-3">
               <h3 class="text-sm font-medium text-voile-info">About System Nodes</h3>
-
+              
               <p class="mt-2 text-sm text-voile-info">
                 Nodes represent organizational units such as library branches, departments, or locations.
                 Each node can have its own logo, abbreviation, and description for better organization.
@@ -96,12 +90,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 dark:border-gray-600 sm:px-6">
             <h3 class="text-lg leading-6 font-medium">Nodes List</h3>
-
-            <div class="mt-1 text-sm">
-              Manage and organize your system nodes
-            </div>
+            
+            <div class="mt-1 text-sm">Manage and organize your system nodes</div>
           </div>
-
+          
           <div class="px-4 py-5 sm:p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <%= for node <- @nodes do %>
@@ -132,35 +124,34 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                   <!-- Node Info -->
                   <div class="p-4">
                     <h4 class="text-lg font-semibold mb-2 line-clamp-1">{node.name}</h4>
-
+                    
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 min-h-[2.5rem]">
                       {node.description || "No description provided"}
                     </p>
                     <!-- Actions -->
-                    <div class="flex items-center justify-between gap-2">
-                      <div class="text-xs text-gray-500">
-                        ID: {node.id}
+                    <%= if @current_scope.user && VoileWeb.Auth.Authorization.is_super_admin?(@current_scope.user) do %>
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="text-xs text-gray-500">ID: {node.id}</div>
+                        
+                        <div class="flex gap-2">
+                          <.button
+                            phx-click="edit_node"
+                            phx-value-id={node.id}
+                            class="text-xs !px-3 !py-1.5 info-btn"
+                          >
+                            <.icon name="hero-pencil" class="w-3 h-3 mr-1" /> Edit
+                          </.button>
+                          <.button
+                            phx-click="delete_node"
+                            phx-value-id={node.id}
+                            data-confirm="Are you sure you want to delete this node? This action cannot be undone."
+                            class="text-xs !px-3 !py-1.5 danger-btn"
+                          >
+                            <.icon name="hero-trash" class="w-3 h-3 mr-1" /> Delete
+                          </.button>
+                        </div>
                       </div>
-
-                      <div class="flex gap-2">
-                        <.button
-                          phx-click="edit_node"
-                          phx-value-id={node.id}
-                          class="text-xs !px-3 !py-1.5 info-btn"
-                        >
-                          <.icon name="hero-pencil" class="w-3 h-3 mr-1" /> Edit
-                        </.button>
-
-                        <.button
-                          phx-click="delete_node"
-                          phx-value-id={node.id}
-                          data-confirm="Are you sure you want to delete this node? This action cannot be undone."
-                          class="text-xs !px-3 !py-1.5 danger-btn"
-                        >
-                          <.icon name="hero-trash" class="w-3 h-3 mr-1" /> Delete
-                        </.button>
-                      </div>
-                    </div>
+                    <% end %>
                   </div>
                 </div>
               <% end %>
@@ -172,11 +163,11 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4"
                   />
                   <h3 class="text-lg font-medium mb-2">No nodes yet</h3>
-
+                  
                   <p class="text-sm text-gray-500 mb-4">
                     Get started by creating your first system node
                   </p>
-
+                  
                   <.button phx-click="new_node" class="primary-btn">
                     <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add First Node
                   </.button>
@@ -194,7 +185,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           <h3 class="text-lg font-medium mb-4">
             {if @form_node, do: "Edit Node", else: "Add New Node"}
           </h3>
-
+          
           <.form for={@form} id="node-form" phx-submit="save_node" phx-change="validate_node">
             <.input field={@form[:name]} type="text" label="Node Name" required />
             <.input
@@ -203,13 +194,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               label="Abbreviation"
               placeholder="e.g., MAIN, BR1"
               required
-            />
-            <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
+            /> <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
             <!-- Image Upload Section -->
             <div class="mt-4">
-              <label class="block text-sm font-medium mb-2">
-                Node Image/Logo
-              </label>
+              <label class="block text-sm font-medium mb-2">Node Image/Logo</label>
               <!-- Current Image Preview -->
               <%= if @image_preview || (@form_node && @form_node.image) do %>
                 <div class="mb-3 relative inline-block">
@@ -218,7 +206,6 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     alt="Node preview"
                     class="h-32 w-auto rounded-lg border-2 border-gray-300 dark:border-gray-600 object-cover"
                   />
-
                   <button
                     type="button"
                     phx-click="remove_image"
@@ -248,10 +235,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                 <%= for entry <- @uploads.node_image.entries do %>
                   <div class="mt-2 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                     <div class="flex items-center justify-between mb-1">
-                      <span class="text-sm font-medium truncate flex-1">
-                        {entry.client_name}
-                      </span>
-
+                      <span class="text-sm font-medium truncate flex-1">{entry.client_name}</span>
                       <button
                         type="button"
                         phx-click="cancel_upload"
@@ -261,7 +245,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                         <.icon name="hero-x-mark" class="w-4 h-4" />
                       </button>
                     </div>
-
+                    
                     <div class="w-full bg-gray-200 rounded-full h-2">
                       <div
                         class="bg-voile-primary h-2 rounded-full transition-all duration-300"
@@ -271,17 +255,13 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     </div>
                     <!-- Upload Errors -->
                     <%= for err <- upload_errors(@uploads.node_image, entry) do %>
-                      <p class="text-xs text-red-500 mt-1">
-                        {error_to_string(err)}
-                      </p>
+                      <p class="text-xs text-red-500 mt-1">{error_to_string(err)}</p>
                     <% end %>
                   </div>
                 <% end %>
                 <!-- General Upload Errors -->
                 <%= for err <- upload_errors(@uploads.node_image) do %>
-                  <p class="text-xs text-red-500 mt-2">
-                    {error_to_string(err)}
-                  </p>
+                  <p class="text-xs text-red-500 mt-2">{error_to_string(err)}</p>
                 <% end %>
               </div>
             </div>
@@ -291,7 +271,6 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               name="node[image]"
               value={@image_preview || (@form_node && @form_node.image) || ""}
             />
-
             <div class="flex items-center justify-end space-x-2 mt-6">
               <.button
                 type="button"

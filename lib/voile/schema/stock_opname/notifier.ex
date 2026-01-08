@@ -1,4 +1,4 @@
-defmodule Voile.Schema.Catalog.StockOpnameNotifier do
+defmodule Voile.Schema.StockOpname.Notifier do
   @moduledoc """
   Delivers notifications for stock opname events.
   """
@@ -10,20 +10,20 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   # TODO: Get admin email from Settings context
   defp get_admin_email do
     # Placeholder - should be retrieved from Settings context
-    "admin@example.com"
+    "perpustakaan@unpad.ac.id"
   end
 
   @doc """
   Deliver notification when session is started and librarians are assigned.
   """
   def deliver_session_started_notification(session, librarians) do
-    session_url = url("/dashboard/stock-opname/#{session.id}")
+    session_url = url("/manage/stock-opname/#{session.id}")
 
     librarians
     |> Enum.map(fn librarian ->
       new()
-      |> to({librarian.full_name || librarian.email, librarian.email})
-      |> from({"Voile System", "noreply@voile.app"})
+      |> to({librarian.fullname || librarian.email, librarian.email})
+      |> from({"Voile System", "perpustakaan@unpad.ac.id"})
       |> subject("Stock Opname Session Started: #{session.title}")
       |> html_body("""
       <h2>Stock Opname Session Started</h2>
@@ -58,15 +58,15 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   """
   def deliver_librarian_completed_notification(session, librarian, assignment) do
     admin_email = get_admin_email()
-    session_url = url("/dashboard/stock-opname/#{session.id}")
+    session_url = url("/manage/stock-opname/#{session.id}")
 
     new()
     |> to(admin_email)
-    |> from({"Voile System", "noreply@voile.app"})
+    |> from({"Voile System", "perpustakaan@unpad.ac.id"})
     |> subject("Librarian Completed Work: #{session.title}")
     |> html_body("""
     <h2>Librarian Completed Work Session</h2>
-    <p><strong>#{librarian.full_name || librarian.email}</strong> has completed their work on the stock opname session:</p>
+    <p><strong>#{librarian.fullname || librarian.email}</strong> has completed their work on the stock opname session:</p>
     <ul>
       <li><strong>Session:</strong> #{session.title} (#{session.session_code})</li>
       <li><strong>Items Checked:</strong> #{assignment.items_checked}</li>
@@ -76,7 +76,7 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
     |> text_body("""
     Librarian Completed Work Session
 
-    #{librarian.full_name || librarian.email} has completed their work on the stock opname session:
+    #{librarian.fullname || librarian.email} has completed their work on the stock opname session:
 
     Session: #{session.title} (#{session.session_code})
     Items Checked: #{assignment.items_checked}
@@ -91,11 +91,11 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   """
   def deliver_session_completed_notification(session) do
     admin_email = get_admin_email()
-    review_url = url("/dashboard/stock-opname/#{session.id}/review")
+    review_url = url("/manage/stock-opname/#{session.id}/review")
 
     new()
     |> to(admin_email)
-    |> from({"Voile System", "noreply@voile.app"})
+    |> from({"Voile System", "perpustakaan@unpad.ac.id"})
     |> subject("Stock Opname Ready for Review: #{session.title}")
     |> html_body("""
     <h2>Stock Opname Session Ready for Review</h2>
@@ -129,13 +129,13 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   Deliver notification when session is approved.
   """
   def deliver_session_approved_notification(session, librarians) do
-    session_url = url("/dashboard/stock-opname/#{session.id}")
+    session_url = url("/manage/stock-opname/#{session.id}")
 
     librarians
     |> Enum.map(fn librarian ->
       new()
-      |> to({librarian.full_name || librarian.email, librarian.email})
-      |> from({"Voile System", "noreply@voile.app"})
+      |> to({librarian.fullname || librarian.email, librarian.email})
+      |> from({"Voile System", "perpustakaan@unpad.ac.id"})
       |> subject("Stock Opname Approved: #{session.title}")
       |> html_body("""
       <h2>Stock Opname Session Approved</h2>
@@ -160,13 +160,13 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   Deliver notification when session is rejected.
   """
   def deliver_session_rejected_notification(session, librarians, reason) do
-    session_url = url("/dashboard/stock-opname/#{session.id}")
+    session_url = url("/manage/stock-opname/#{session.id}")
 
     librarians
     |> Enum.map(fn librarian ->
       new()
-      |> to({librarian.full_name || librarian.email, librarian.email})
-      |> from({"Voile System", "noreply@voile.app"})
+      |> to({librarian.fullname || librarian.email, librarian.email})
+      |> from({"Voile System", "perpustakaan@unpad.ac.id"})
       |> subject("Stock Opname Rejected: #{session.title}")
       |> html_body("""
       <h2>Stock Opname Session Rejected</h2>
@@ -193,13 +193,13 @@ defmodule Voile.Schema.Catalog.StockOpnameNotifier do
   Deliver notification when revision is requested.
   """
   def deliver_revision_requested_notification(session, librarians, notes) do
-    session_url = url("/dashboard/stock-opname/#{session.id}/scan")
+    session_url = url("/manage/stock-opname/#{session.id}/scan")
 
     librarians
     |> Enum.map(fn librarian ->
       new()
-      |> to({librarian.full_name || librarian.email, librarian.email})
-      |> from({"Voile System", "noreply@voile.app"})
+      |> to({librarian.fullname || librarian.email, librarian.email})
+      |> from({"Voile System", "perpustakaan@unpad.ac.id"})
       |> subject("Stock Opname Revision Requested: #{session.title}")
       |> html_body("""
       <h2>Stock Opname Revision Requested</h2>

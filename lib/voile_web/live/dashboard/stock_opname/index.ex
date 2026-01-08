@@ -1,7 +1,7 @@
 defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Schema.Catalog
+  alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
 
   def render(assigns) do
@@ -99,20 +99,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
               </div>
             </div>
           </div>
-           <%!-- Librarian Assignments --%>
-          <div :if={@can_create and session.librarian_assignments != []} class="mb-4">
-            <p class="text-sm font-medium text-gray-700 mb-2">Assigned Librarians:</p>
-            
-            <div class="flex flex-wrap gap-2">
-              <span
-                :for={assignment <- session.librarian_assignments}
-                class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-              >
-                {assignment.user.full_name || assignment.user.email}
-                <.work_status_badge status={assignment.work_status} class="ml-2" />
-              </span>
-            </div>
-          </div>
            <%!-- Statistics --%>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div class="text-center">
@@ -144,7 +130,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
            <%!-- Metadata --%>
           <div class="text-xs text-gray-500 mb-4">
             <p>
-              Created by {session.created_by.full_name || session.created_by.email} on {format_date(
+              Created by {session.created_by.fullname || session.created_by.email} on {format_date(
                 session.inserted_at
               )}
             </p>
@@ -302,9 +288,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   end
 
   def handle_event("start_session", %{"id" => id}, socket) do
-    session = Catalog.get_stock_opname_session!(id)
+    session = StockOpname.get_session_without_items!(id)
 
-    case Catalog.start_stock_opname_session(session, socket.assigns.current_user) do
+    case StockOpname.start_session(session, socket.assigns.current_user) do
       {:ok, _session} ->
         socket =
           socket
@@ -322,9 +308,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   end
 
   def handle_event("complete_session", %{"id" => id}, socket) do
-    session = Catalog.get_stock_opname_session!(id)
+    session = StockOpname.get_session_without_items!(id)
 
-    case Catalog.complete_stock_opname_session(session, socket.assigns.current_user) do
+    case StockOpname.complete_session(session, socket.assigns.current_user) do
       {:ok, _session} ->
         socket =
           socket
@@ -339,9 +325,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   end
 
   def handle_event("cancel_session", %{"id" => id}, socket) do
-    session = Catalog.get_stock_opname_session!(id)
+    session = StockOpname.get_session_without_items!(id)
 
-    case Catalog.cancel_stock_opname_session(session, socket.assigns.current_user) do
+    case StockOpname.cancel_session(session, socket.assigns.current_user) do
       {:ok, _session} ->
         socket =
           socket
@@ -365,7 +351,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
       |> maybe_put(:to_date, parse_date(filters.to_date))
 
     {sessions, total_pages, total_count} =
-      Catalog.list_stock_opname_sessions(page, per_page, filter_map)
+      StockOpname.list_sessions(page, per_page, filter_map)
 
     socket
     |> assign(:sessions, sessions)
@@ -403,6 +389,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
     color_class =
       case assigns.status do
         "draft" -> "bg-gray-100 text-gray-800"
+        "initializing" -> "bg-purple-100 text-purple-800 animate-pulse"
         "in_progress" -> "bg-blue-100 text-blue-800"
         "completed" -> "bg-yellow-100 text-yellow-800"
         "pending_review" -> "bg-orange-100 text-orange-800"
@@ -415,6 +402,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
     label =
       case assigns.status do
         "draft" -> "Draft"
+        "initializing" -> "Initializing..."
         "in_progress" -> "In Progress"
         "completed" -> "Completed"
         "pending_review" -> "Pending Review"
@@ -433,32 +421,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
     """
   end
 
-  defp work_status_badge(assigns) do
-    color_class =
-      case assigns.status do
-        "pending" -> "bg-gray-100 text-gray-700"
-        "in_progress" -> "bg-blue-100 text-blue-700"
-        "completed" -> "bg-green-100 text-green-700"
-        _ -> "bg-gray-100 text-gray-700"
-      end
-
-    label =
-      case assigns.status do
-        "pending" -> "Pending"
-        "in_progress" -> "Working"
-        "completed" -> "Done"
-        _ -> assigns.status
-      end
-
-    assigns = assign(assigns, :color_class, color_class) |> assign(:label, label)
-
-    ~H"""
-    <span class={"inline-flex items-center px-1.5 py-0.5 text-xs rounded #{@color_class}"}>
-      {@label}
-    </span>
-    """
-  end
-
   defp calculate_progress(session) do
     if session.total_items > 0 do
       Float.round(session.checked_items / session.total_items * 100, 1)
@@ -472,7 +434,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   end
 
   defp can_complete?(session) do
-    Catalog.all_librarians_completed?(session)
+    StockOpname.all_librarians_completed?(session)
   end
 
   defp format_date(datetime) do

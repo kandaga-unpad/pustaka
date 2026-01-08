@@ -6,7 +6,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   import Ecto.Query
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
-  alias Voile.Schema.Catalog.{StockOpnameSession, LibrarianAssignment}
+  alias Voile.Schema.StockOpname.{Session, LibrarianAssignment}
   alias VoileWeb.Auth.Authorization
 
   @doc """
@@ -28,7 +28,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Check if user can start a stock opname session (Super Admin only).
   """
-  def can_start_session?(%User{} = user, %StockOpnameSession{}) do
+  def can_start_session?(%User{} = user, %Session{}) do
     Authorization.is_super_admin?(user)
   end
 
@@ -44,7 +44,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Check if user can complete a stock opname session (Super Admin only).
   """
-  def can_complete_session?(%User{} = user, %StockOpnameSession{}) do
+  def can_complete_session?(%User{} = user, %Session{}) do
     Authorization.is_super_admin?(user)
   end
 
@@ -58,9 +58,27 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_complete_session?(_, _), do: false
 
   @doc """
+  Check if user can delete a stock opname session (Super Admin only).
+  Only approved or cancelled sessions can be deleted.
+  """
+  def can_delete_session?(%User{} = user, %Session{status: status})
+      when status in ["approved", "cancelled"] do
+    Authorization.is_super_admin?(user)
+  end
+
+  def can_delete_session?(%Phoenix.LiveView.Socket{} = socket, session) do
+    case socket.assigns[:current_scope] do
+      %{user: user} when not is_nil(user) -> can_delete_session?(user, session)
+      _ -> false
+    end
+  end
+
+  def can_delete_session?(_, _), do: false
+
+  @doc """
   Check if user can approve/reject stock opname sessions (Super Admin only).
   """
-  def can_approve_session?(%User{} = user, %StockOpnameSession{}) do
+  def can_approve_session?(%User{} = user, %Session{}) do
     Authorization.is_super_admin?(user)
   end
 
@@ -76,7 +94,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Check if user can scan items in a session (assigned librarian only).
   """
-  def can_scan_items?(%User{} = user, %StockOpnameSession{} = session) do
+  def can_scan_items?(%User{} = user, %Session{} = session) do
     # Super admins can scan
     if Authorization.is_super_admin?(user) do
       true
@@ -98,7 +116,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Check if user can complete their work session (assigned librarian with scanned items).
   """
-  def can_complete_work?(%User{} = user, %StockOpnameSession{} = session) do
+  def can_complete_work?(%User{} = user, %Session{} = session) do
     if is_assigned_librarian?(user.id, session.id) do
       # Check if librarian has scanned at least one item
       assignment = get_assignment(user.id, session.id)
@@ -120,7 +138,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Check if user can view a stock opname session (assigned librarian or admin).
   """
-  def can_view_session?(%User{} = user, %StockOpnameSession{} = session) do
+  def can_view_session?(%User{} = user, %Session{} = session) do
     Authorization.is_super_admin?(user) or is_assigned_librarian?(user.id, session.id)
   end
 
@@ -172,7 +190,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Authorize user for scanning items or raise unauthorized error.
   """
-  def authorize_scanning!(%User{} = user, %StockOpnameSession{} = session) do
+  def authorize_scanning!(%User{} = user, %Session{} = session) do
     if can_scan_items?(user, session) do
       :ok
     else
@@ -191,7 +209,7 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   @doc """
   Authorize user for session approval or raise unauthorized error.
   """
-  def authorize_approval!(%User{} = user, %StockOpnameSession{} = session) do
+  def authorize_approval!(%User{} = user, %Session{} = session) do
     if can_approve_session?(user, session) do
       :ok
     else

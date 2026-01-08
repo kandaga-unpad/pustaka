@@ -216,6 +216,30 @@ defmodule VoileWeb.Auth.PermissionManager do
   end
 
   @doc """
+  Lists all users assigned to a specific role by role name.
+  Returns a list of User structs (not UserRoleAssignments).
+
+  ## Examples
+
+      iex> list_users_with_role_by_name("librarian")
+      [%User{}, ...]
+
+  """
+  def list_users_with_role_by_name(role_name) when is_binary(role_name) do
+    from(u in Voile.Schema.Accounts.User,
+      join: ura in UserRoleAssignment,
+      on: ura.user_id == u.id,
+      join: r in Role,
+      on: r.id == ura.role_id,
+      where: r.name == ^role_name,
+      where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+      order_by: [asc: u.fullname, asc: u.email],
+      distinct: u.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Get all roles assigned to a user.
   """
   def list_user_roles(user_id, opts \\ []) do

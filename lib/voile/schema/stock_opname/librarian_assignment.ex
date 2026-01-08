@@ -1,9 +1,9 @@
-defmodule Voile.Schema.Catalog.LibrarianAssignment do
+defmodule Voile.Schema.StockOpname.LibrarianAssignment do
   use Ecto.Schema
   import Ecto.Changeset
 
   alias Voile.Schema.Accounts.User
-  alias Voile.Schema.Catalog.StockOpnameSession
+  alias Voile.Schema.StockOpname.Session
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -15,7 +15,7 @@ defmodule Voile.Schema.Catalog.LibrarianAssignment do
     field :completed_at, :utc_datetime
     field :notes, :string
 
-    belongs_to :session, StockOpnameSession, type: :binary_id
+    belongs_to :session, Session, type: :binary_id
     belongs_to :user, User, type: :binary_id
 
     timestamps(type: :utc_datetime)
@@ -66,3 +66,4 @@ defmodule Voile.Schema.Catalog.LibrarianAssignment do
     end
   end
 end
+

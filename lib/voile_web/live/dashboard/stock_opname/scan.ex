@@ -1,8 +1,8 @@
 defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
 
   def render(assigns) do
@@ -84,8 +84,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 value={@search_term}
                 placeholder="Scan barcode or enter item code..."
                 autofocus
-                phx-hook="AutoFocus"
                 id="scan-input"
+                phx-change="update_search_term"
+                phx-keydown="scan_input_keydown"
                 class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
             </div>
@@ -102,12 +103,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             Supports barcode, legacy item code, or item code search
           </p>
         </form>
-         <%!-- Keyboard Shortcuts Help --%>
-        <div class="text-xs text-gray-500 flex gap-4">
-          <span>
-            <kbd class="px-2 py-1 bg-gray-100 rounded">Ctrl+Enter</kbd> Quick check (no changes)
-          </span> <span><kbd class="px-2 py-1 bg-gray-100 rounded">Esc</kbd> Clear input</span>
-        </div>
       </div>
        <%!-- Duplicate Results (if multiple items found) --%>
       <div
@@ -144,7 +139,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         </div>
       </div>
        <%!-- Current Item Detail Card --%>
-      <div :if={@current_item} class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <div
+        :if={@current_item}
+        class="bg-white rounded-lg shadow-lg p-6 mb-6"
+        phx-window-keydown="keyboard_shortcut"
+        phx-key="Enter"
+      >
         <div class="flex justify-between items-start mb-4">
           <h3 class="text-xl font-semibold text-gray-900">Item Details</h3>
           
@@ -156,117 +156,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <.icon name="hero-x-mark" class="w-6 h-6" />
           </button>
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <%!-- Current Values (Before) --%>
-          <div class="space-y-3">
-            <h4 class="font-medium text-gray-700 border-b pb-2">Current Information</h4>
-            
-            <div>
-              <label class="text-xs font-medium text-gray-500">Item Code</label>
-              <p class="text-sm font-mono">{@current_item.item_code}</p>
-            </div>
-            
-            <div>
-              <label class="text-xs font-medium text-gray-500">Inventory Code</label>
-              <p class="text-sm font-mono">{@current_item.inventory_code}</p>
-            </div>
-            
-            <div :if={@current_item.barcode}>
-              <label class="text-xs font-medium text-gray-500">Barcode</label>
-              <p class="text-sm font-mono">{@current_item.barcode}</p>
-            </div>
-            
-            <div :if={@current_item.legacy_item_code}>
-              <label class="text-xs font-medium text-gray-500">Legacy Item Code</label>
-              <p class="text-sm font-mono">{@current_item.legacy_item_code}</p>
-            </div>
-            
-            <div>
-              <label class="text-xs font-medium text-gray-500">Collection</label>
-              <p class="text-sm">{@current_item.collection_title}</p>
-            </div>
-          </div>
-           <%!-- Update Form --%>
-          <div class="space-y-3">
-            <h4 class="font-medium text-gray-700 border-b pb-2">Update Information</h4>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-              <select
-                name="status"
-                phx-change="update_field"
-                class="w-full rounded-lg border-gray-300 text-sm"
-              >
-                <option
-                  :for={{label, value} <- Item.status_options()}
-                  value={value}
-                  selected={value == @updated_values.status}
-                >
-                  {label}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Condition</label>
-              <select
-                name="condition"
-                phx-change="update_field"
-                class="w-full rounded-lg border-gray-300 text-sm"
-              >
-                <option
-                  :for={{label, value} <- Item.condition_options()}
-                  value={value}
-                  selected={value == @updated_values.condition}
-                >
-                  {label}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Availability</label>
-              <select
-                name="availability"
-                phx-change="update_field"
-                class="w-full rounded-lg border-gray-300 text-sm"
-              >
-                <option
-                  :for={{label, value} <- Item.availability_options()}
-                  value={value}
-                  selected={value == @updated_values.availability}
-                >
-                  {label}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={@updated_values.location}
-                phx-change="update_field"
-                phx-debounce="300"
-                class="w-full rounded-lg border-gray-300 text-sm"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Notes</label> <textarea
-                name="notes"
-                phx-change="update_field"
-                phx-debounce="300"
-                rows="3"
-                class="w-full rounded-lg border-gray-300 text-sm"
-              >{@updated_values.notes}</textarea>
-            </div>
-          </div>
-        </div>
-         <%!-- Actions --%>
-        <div class="flex gap-3 pt-4 border-t border-gray-200">
+         <%!-- Actions at Top --%>
+        <div class="flex gap-3 mb-6 pb-4 border-b border-gray-200">
           <button
             type="button"
             phx-click="check_item"
@@ -282,12 +173,165 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             Cancel
           </button>
         </div>
+        
+        <div class="space-y-6">
+          <%!-- Identification Section --%>
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+            <h4 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <.icon name="hero-identification" class="w-5 h-5 text-blue-600" /> Item Identification
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Item Code <span class="text-gray-400 text-xs">(Read-only)</span>
+                </label>
+                <div class="bg-white px-4 py-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-700">
+                  {@current_item.item.item_code}
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Inventory Code <span class="text-gray-400 text-xs">(Read-only)</span>
+                </label>
+                <div class="bg-white px-4 py-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-700">
+                  {@current_item.item.inventory_code}
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Barcode <span class="text-gray-400 text-xs">(Read-only)</span>
+                </label>
+                <div class="bg-white px-4 py-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-700">
+                  {@current_item.item.barcode || "N/A"}
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Legacy Item Code <span class="text-gray-400 text-xs">(Read-only)</span>
+                </label>
+                <div class="bg-white px-4 py-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-700">
+                  {@current_item.item.legacy_item_code || "N/A"}
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Collection <span class="text-gray-400 text-xs">(Read-only)</span>
+              </label>
+              <div class="bg-white px-4 py-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                {@current_item.collection.title}
+              </div>
+            </div>
+          </div>
+           <%!-- Status & Condition Section --%>
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+            <h4 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <.icon name="hero-clipboard-document-check" class="w-5 h-5 text-green-600" />
+              Status & Condition
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  name="status"
+                  phx-change="update_field"
+                  class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all text-sm bg-white"
+                >
+                  <option
+                    :for={{label, value} <- Item.status_options()}
+                    value={value}
+                    selected={value == @updated_values.status}
+                  >
+                    {label}
+                  </option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+                <select
+                  name="condition"
+                  phx-change="update_field"
+                  class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all text-sm bg-white"
+                >
+                  <option
+                    :for={{label, value} <- Item.condition_options()}
+                    value={value}
+                    selected={value == @updated_values.condition}
+                  >
+                    {label}
+                  </option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                <select
+                  name="availability"
+                  phx-change="update_field"
+                  class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all text-sm bg-white"
+                >
+                  <option
+                    :for={{label, value} <- Item.availability_options()}
+                    value={value}
+                    selected={value == @updated_values.availability}
+                  >
+                    {label}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+           <%!-- Location & Notes Section --%>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+            <h4 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <.icon name="hero-map-pin" class="w-5 h-5 text-purple-600" /> Location & Notes
+            </h4>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={@updated_values.location}
+                  phx-change="update_field"
+                  phx-debounce="300"
+                  placeholder="Enter item location"
+                  class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label> <textarea
+                  name="notes"
+                  phx-change="update_field"
+                  phx-debounce="300"
+                  rows="4"
+                  placeholder="Add any observations or remarks..."
+                  class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm resize-none"
+                >{@updated_values.notes}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
        <%!-- Recently Scanned Items --%>
       <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Recently Scanned</h3>
         
         <div id="recently-scanned" phx-update="stream" class="space-y-2">
+          <div id="empty-state" class="hidden only:block text-center text-gray-500 py-8">
+            <.icon name="hero-inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400" />
+            <p>No items scanned yet. Start scanning to see items here.</p>
+          </div>
+          
           <div
             :for={{dom_id, opname_item} <- @streams.recent_items}
             id={dom_id}
@@ -295,9 +339,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           >
             <div class="flex justify-between items-center">
               <div class="flex-1">
-                <p class="font-medium text-gray-900">{opname_item.item_code}</p>
+                <p class="font-medium text-gray-900">
+                  {if opname_item.item, do: opname_item.item.item_code, else: "N/A"}
+                </p>
                 
-                <p class="text-sm text-gray-600">{opname_item.collection_title}</p>
+                <p class="text-sm text-gray-600">
+                  {if opname_item.collection, do: opname_item.collection.title, else: "N/A"}
+                </p>
               </div>
               
               <div class="flex items-center gap-3">
@@ -311,11 +359,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               </div>
             </div>
           </div>
-        </div>
-        
-        <div :if={length(@streams.recent_items) == 0} class="text-center text-gray-500 py-8">
-          <.icon name="hero-inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400" />
-          <p>No items scanned yet. Start scanning to see items here.</p>
         </div>
       </div>
        <%!-- Complete Work Button --%>
@@ -342,33 +385,42 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   end
 
   def mount(%{"id" => id}, _session, socket) do
-    session = Catalog.get_stock_opname_session!(id)
+    session = StockOpname.get_session_without_items!(id)
     current_user = socket.assigns.current_scope.user
 
     # Verify permission
     case StockOpnameAuthorization.can_scan_items?(current_user, session) do
       true ->
-        {:ok, librarian_progress} = Catalog.get_librarian_progress(session, current_user)
+        # Get librarian progress (handles super admins gracefully)
+        case StockOpname.get_librarian_progress(session, current_user) do
+          {:ok, librarian_progress} ->
+            # Load recent items (database query with LIMIT for efficiency)
+            recent_items =
+              StockOpname.list_recent_checked_items_by_user(session, current_user, 10)
 
-        # Load recent items
-        recent_items =
-          Catalog.list_session_items(session, "checked")
-          |> Enum.filter(fn item -> item.checked_by_id == current_user.id end)
-          |> Enum.take(10)
+            socket =
+              socket
+              |> assign(:page_title, "Scan Items - #{session.title}")
+              |> assign(:session, session)
+              |> assign(:current_user, current_user)
+              |> assign(:librarian_progress, librarian_progress)
+              |> assign(:search_term, "")
+              |> assign(:current_item, nil)
+              |> assign(:duplicate_items, [])
+              |> assign(:updated_values, %{})
+              |> assign(:recent_items_count, length(recent_items))
+              |> stream(:recent_items, recent_items)
 
-        socket =
-          socket
-          |> assign(:page_title, "Scan Items - #{session.title}")
-          |> assign(:session, session)
-          |> assign(:current_user, current_user)
-          |> assign(:librarian_progress, librarian_progress)
-          |> assign(:search_term, "")
-          |> assign(:current_item, nil)
-          |> assign(:duplicate_items, [])
-          |> assign(:updated_values, %{})
-          |> stream(:recent_items, recent_items)
+            {:ok, socket}
 
-        {:ok, socket}
+          {:error, :not_assigned} ->
+            socket =
+              socket
+              |> put_flash(:error, "You are not assigned to this session.")
+              |> redirect(to: ~p"/manage/stock-opname")
+
+            {:ok, socket}
+        end
 
       false ->
         socket =
@@ -386,7 +438,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     if term == "" do
       {:noreply, assign(socket, :search_term, "")}
     else
-      items = Catalog.find_items_for_scanning(socket.assigns.session, term)
+      items = StockOpname.find_items_for_scanning(socket.assigns.session, term)
 
       socket =
         case length(items) do
@@ -434,27 +486,64 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   def handle_event("check_item", _params, socket) do
     opname_item = socket.assigns.current_item
     updated = socket.assigns.updated_values
+    original_item = opname_item.item
 
-    attrs = %{
-      "status_after" => updated.status,
-      "condition_after" => updated.condition,
-      "availability_after" => updated.availability,
-      "location_after" => updated.location,
-      "notes" => updated.notes
-    }
+    # Build changes map - only include fields that actually changed
+    changes = %{}
 
-    case Catalog.check_item_in_session(
+    changes =
+      if updated.status && updated.status != original_item.status,
+        do: Map.put(changes, "status", updated.status),
+        else: changes
+
+    changes =
+      if updated.condition && updated.condition != original_item.condition,
+        do: Map.put(changes, "condition", updated.condition),
+        else: changes
+
+    changes =
+      if updated.availability && updated.availability != original_item.availability,
+        do: Map.put(changes, "availability", updated.availability),
+        else: changes
+
+    changes =
+      if updated.location && updated.location != original_item.location,
+        do: Map.put(changes, "location", updated.location),
+        else: changes
+
+    case StockOpname.check_item(
            socket.assigns.session,
            opname_item.id,
-           attrs,
+           changes,
+           updated.notes,
            socket.assigns.current_user
          ) do
       {:ok, checked_item} ->
         # Refresh session and progress
-        session = Catalog.get_stock_opname_session!(socket.assigns.session.id)
+        session = StockOpname.get_session!(socket.assigns.session.id)
 
         {:ok, librarian_progress} =
-          Catalog.get_librarian_progress(session, socket.assigns.current_user)
+          StockOpname.get_librarian_progress(session, socket.assigns.current_user)
+
+        # Limit stream to 10 items - if we have 10, we need to remove the oldest before adding new
+        socket =
+          if socket.assigns.recent_items_count >= 10 do
+            # Get the 9 most recent items (database will handle filtering and limiting)
+            recent =
+              StockOpname.list_recent_checked_items_by_user(
+                session,
+                socket.assigns.current_user,
+                9
+              )
+
+            socket
+            |> stream(:recent_items, [checked_item | recent], reset: true)
+            |> assign(:recent_items_count, 10)
+          else
+            socket
+            |> stream_insert(:recent_items, checked_item, at: 0)
+            |> assign(:recent_items_count, socket.assigns.recent_items_count + 1)
+          end
 
         socket =
           socket
@@ -463,7 +552,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           |> assign(:current_item, nil)
           |> assign(:search_term, "")
           |> assign(:updated_values, %{})
-          |> stream_insert(:recent_items, checked_item, at: 0)
           |> put_flash(:info, "Item checked successfully!")
 
         {:noreply, socket}
@@ -484,8 +572,47 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     {:noreply, socket}
   end
 
+  def handle_event("keyboard_shortcut", %{"key" => "Enter", "ctrlKey" => true}, socket) do
+    # Ctrl+Enter pressed - trigger check_item if current_item exists
+    if socket.assigns.current_item do
+      handle_event("check_item", %{}, socket)
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("keyboard_shortcut", _params, socket) do
+    # Other key combinations - ignore
+    {:noreply, socket}
+  end
+
+  def handle_event("scan_input_keydown", %{"key" => "Enter", "ctrlKey" => true}, socket) do
+    # Ctrl+Enter in scan input - submit the form
+    term = String.trim(socket.assigns.search_term)
+
+    if term != "" do
+      handle_event("scan_item", %{"search_term" => term}, socket)
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("scan_input_keydown", %{"key" => "Escape"}, socket) do
+    # Escape key - clear the input
+    {:noreply, assign(socket, :search_term, "")}
+  end
+
+  def handle_event("scan_input_keydown", _params, socket) do
+    # Other keys - ignore
+    {:noreply, socket}
+  end
+
+  def handle_event("update_search_term", %{"search_term" => term}, socket) do
+    {:noreply, assign(socket, :search_term, term)}
+  end
+
   def handle_event("complete_work", _params, socket) do
-    case Catalog.complete_librarian_work(
+    case StockOpname.complete_librarian_work(
            socket.assigns.session,
            socket.assigns.current_user,
            nil
@@ -510,11 +637,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       |> put_flash(:warning, "This item has already been checked.")
       |> assign(:search_term, "")
     else
+      # Load the current values from the actual item
+      # Initialize updated_values with current item values
       updated_values = %{
-        status: opname_item.status_before,
-        condition: opname_item.condition_before,
-        availability: opname_item.availability_before,
-        location: opname_item.location_before,
+        status: opname_item.item.status,
+        condition: opname_item.item.condition,
+        availability: opname_item.item.availability,
+        location: opname_item.item.location,
         notes: opname_item.notes || ""
       }
 

@@ -5,13 +5,17 @@
       <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
         <.icon name="hero-arrow-path-rounded-square" class="w-6 h-6 text-white" />
       </div>
+      
       <div>
         <h2 class="text-xl font-bold text-white">Request Transfer Location</h2>
-        <p class="text-indigo-100 text-sm mt-1">Submit a request to move this item to another location</p>
+        
+        <p class="text-indigo-100 text-sm mt-1">
+          Submit a request to move this item to another location
+        </p>
       </div>
     </div>
   </div>
-
+  
   <.form
     for={@form}
     id="transfer-request-form"
@@ -26,24 +30,23 @@
         <div class="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
           <.icon name="hero-map-pin" class="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </div>
+        
         <h4 class="font-semibold text-gray-900 dark:text-white">Current Location</h4>
       </div>
-
+      
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <label class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            <.icon name="hero-building-library" class="w-4 h-4" />
-            Current Node
+            <.icon name="hero-building-library" class="w-4 h-4" /> Current Node
           </label>
           <p class="text-base font-semibold text-gray-900 dark:text-gray-100">
             {(@item.node && @item.node.name) || "Not assigned"}
           </p>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <label class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            <.icon name="hero-map" class="w-4 h-4" />
-            Current Location
+            <.icon name="hero-map" class="w-4 h-4" /> Current Location
           </label>
           <p class="text-base font-semibold text-gray-900 dark:text-gray-100">
             {@item.location || "Not specified"}
@@ -51,16 +54,16 @@
         </div>
       </div>
     </div>
-    
     <!-- Target Location -->
     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-5 border-2 border-indigo-200 dark:border-indigo-800">
       <div class="flex items-center gap-2 mb-4">
         <div class="p-2 bg-indigo-500 rounded-lg">
           <.icon name="hero-arrow-right" class="w-5 h-5 text-white" />
         </div>
+        
         <h4 class="font-semibold text-gray-900 dark:text-white">Transfer Destination</h4>
       </div>
-
+      
       <div class="space-y-4">
         <.input
           field={@form[:to_node_id]}
@@ -70,7 +73,6 @@
           prompt="Select target node"
           required
         />
-
         <.input
           field={@form[:to_location]}
           type="text"
@@ -80,7 +82,6 @@
         />
       </div>
     </div>
-    
     <!-- Reason -->
     <div>
       <.input
@@ -92,14 +93,13 @@
         rows="4"
       />
     </div>
-
+    
     <div class="flex gap-3 pt-4">
-      <.button 
-        phx-disable-with="Submitting..." 
+      <.button
+        phx-disable-with="Submitting..."
         class="flex-1 inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
       >
-        <.icon name="hero-paper-airplane" class="w-5 h-5" />
-        Submit Transfer Request
+        <.icon name="hero-paper-airplane" class="w-5 h-5" /> Submit Transfer Request
       </.button>
     </div>
   </.form>

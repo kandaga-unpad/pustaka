@@ -1,7 +1,7 @@
 defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Schema.Catalog
+  alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
 
   def render(assigns) do
@@ -108,7 +108,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           >
             <div class="flex-1">
               <p class="font-medium text-gray-900">
-                {assignment.user.full_name || assignment.user.email}
+                {assignment.user.fullname || assignment.user.email}
               </p>
               
               <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
@@ -144,12 +144,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
                 
                 <p class="text-xs text-gray-500 mt-1">
                   Inventory: {item.inventory_code}
-                  <span :if={item.barcode}> • Barcode:  {item.barcode}</span>
+                  <span :if={item.barcode}> • Barcode:     {item.barcode}</span>
                 </p>
               </div>
               
               <p class="text-xs text-gray-600">
-                Checked by: {item.checked_by.full_name || item.checked_by.email}
+                Checked by: {item.checked_by.fullname || item.checked_by.email}
               </p>
             </div>
             
@@ -237,7 +237,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
                 
                 <p class="text-xs text-gray-500 mt-1">
                   Inventory: {item.inventory_code}
-                  <span :if={item.barcode}> • Barcode:  {item.barcode}</span>
+                  <span :if={item.barcode}> • Barcode:     {item.barcode}</span>
                 </p>
               </div>
               
@@ -341,7 +341,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   end
 
   def mount(%{"id" => id}, _session, socket) do
-    session = Catalog.get_stock_opname_session!(id)
+    session = StockOpname.get_session_without_items!(id)
     current_user = socket.assigns.current_scope.user
 
     # Verify permission
@@ -362,9 +362,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
         {:ok, socket}
       else
-        all_items = Catalog.list_session_items(session)
-        items_with_changes = Enum.filter(all_items, & &1.has_changes)
-        missing_items = Enum.filter(all_items, &(&1.check_status == "missing"))
+        items_with_changes = StockOpname.list_items_with_changes(session)
+        missing_items = StockOpname.list_missing_items(session)
 
         socket =
           socket
@@ -383,7 +382,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   end
 
   def handle_event("approve", %{"approved_notes" => notes}, socket) do
-    case Catalog.approve_stock_opname_session(
+    case StockOpname.approve_session(
            socket.assigns.session,
            socket.assigns.current_user,
            notes
@@ -405,7 +404,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
     if String.trim(notes) == "" do
       {:noreply, put_flash(socket, :error, "Revision notes are required")}
     else
-      case Catalog.request_session_revision(
+      case StockOpname.request_session_revision(
              socket.assigns.session,
              socket.assigns.current_user,
              notes
@@ -428,7 +427,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
     if String.trim(reason) == "" do
       {:noreply, put_flash(socket, :error, "Rejection reason is required")}
     else
-      case Catalog.reject_stock_opname_session(
+      case StockOpname.reject_session(
              socket.assigns.session,
              socket.assigns.current_user,
              reason

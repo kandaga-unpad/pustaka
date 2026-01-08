@@ -3,8 +3,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
 
   import Ecto.Query
 
-  alias Voile.Schema.{Catalog, System}
-  alias Voile.Schema.Catalog.StockOpnameSession
+  alias Voile.Schema.{System, StockOpname}
+  alias Voile.Schema.StockOpname.Session
   alias VoileWeb.Auth.StockOpnameAuthorization
 
   def render(assigns) do
@@ -178,13 +178,31 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Select Location <span class="text-red-500">*</span>
             </label>
-            <select name="scope_id" class="w-full rounded-lg border-gray-300" required>
+            <select
+              name="scope_id"
+              class="w-full rounded-lg border-gray-300"
+              required={@scope_type == "location"}
+            >
               <option value="">Choose a location...</option>
               
               <option :for={location <- @locations} value={location.id}>
                 {location.location_name}
               </option>
             </select>
+            <p class="text-xs text-gray-500 mt-1">
+              Stock opname will only include items in this specific location
+            </p>
+          </div>
+           <%!-- All Scope Info --%>
+          <div :if={@scope_type == "all"} class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center gap-2">
+              <.icon name="hero-information-circle" class="w-5 h-5 text-blue-600" />
+              <span class="text-sm font-medium text-blue-900">Full Node Coverage</span>
+            </div>
+            
+            <p class="text-sm text-blue-700 mt-2">
+              Stock opname will include all items in the selected nodes and collection types, without location restrictions.
+            </p>
           </div>
            <%!-- Expected Item Count --%>
           <div :if={@estimated_items > 0} class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -223,9 +241,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <div class="flex-1">
-                  <span class="text-sm font-medium text-gray-700">
-                    {user.full_name || user.email}
-                  </span>
+                  <span class="text-sm font-medium text-gray-700">{user.fullname || user.email}</span>
                   <p class="text-xs text-gray-500">{user.email}</p>
                 </div>
               </label>
@@ -251,6 +267,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
             <button
               type="submit"
               disabled={!@can_submit}
+              phx-disable-with="Creating..."
               class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
             >
               Create Session
@@ -278,7 +295,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
         librarians = list_librarians()
         locations = Voile.Schema.Master.list_mst_locations()
 
-        changeset = StockOpnameSession.changeset(%StockOpnameSession{}, %{})
+        changeset = Session.changeset(%Session{}, %{})
 
         socket =
           socket
@@ -381,7 +398,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
   def handle_event("search_collections", %{"value" => query}, socket) do
     results =
       if String.length(query) >= 2 do
-        Catalog.search_potential_parent_collections(query, nil, 10)
+        Voile.Schema.Catalog.search_potential_parent_collections(query, nil, 10)
       else
         []
       end
@@ -402,42 +419,73 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
 
   def handle_event("validate", params, socket) do
     changeset =
-      %StockOpnameSession{}
-      |> StockOpnameSession.changeset(params)
+      %Session{}
+      |> Session.changeset(params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
   def handle_event("save", params, socket) do
+    require Logger
     attrs = build_session_attrs(params, socket.assigns)
 
-    case Catalog.create_stock_opname_session(attrs, socket.assigns.current_user) do
-      {:ok, session} ->
-        # Assign librarians
-        case Catalog.assign_librarians_to_session(
-               session,
-               socket.assigns.selected_librarian_ids,
-               socket.assigns.current_user
-             ) do
-          {:ok, _} ->
-            socket =
-              socket
-              |> put_flash(:info, "Stock opname session created successfully!")
-              |> redirect(to: ~p"/manage/stock-opname/#{session.id}")
+    try do
+      case StockOpname.create_session(attrs, socket.assigns.current_user) do
+        {:ok, session} ->
+          Logger.info("Session created: #{session.id}")
 
-            {:noreply, socket}
+          # Assign librarians
+          case StockOpname.assign_librarians(
+                 session,
+                 socket.assigns.selected_librarian_ids,
+                 socket.assigns.current_user
+               ) do
+            {:ok, updated_session} ->
+              Logger.info(
+                "Librarians assigned successfully, navigating to session #{updated_session.id}"
+              )
 
-          {:error, _} ->
-            {:noreply, put_flash(socket, :error, "Failed to assign librarians")}
-        end
+              {:noreply,
+               socket
+               |> put_flash(:info, "Stock opname session created successfully!")
+               |> push_navigate(to: ~p"/manage/stock-opname/#{updated_session.id}")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
+            {:error, :no_librarians_assigned} ->
+              Logger.error("No librarians assigned error")
+              {:noreply, put_flash(socket, :error, "At least one librarian must be assigned")}
+
+            {:error, error} ->
+              Logger.error("Failed to assign librarians: #{inspect(error)}")
+
+              {:noreply,
+               put_flash(socket, :error, "Failed to assign librarians: #{inspect(error)}")}
+          end
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          Logger.error("Session creation failed: #{inspect(changeset.errors)}")
+
+          socket =
+            socket
+            |> assign(:form, to_form(changeset))
+            |> put_flash(:error, "Failed to create session. Please check the form for errors.")
+
+          {:noreply, socket}
+
+        {:error, error} ->
+          Logger.error("Unexpected error creating session: #{inspect(error)}")
+          {:noreply, put_flash(socket, :error, "An unexpected error occurred: #{inspect(error)}")}
+      end
+    rescue
+      e ->
+        Logger.error("Exception in save handler: #{inspect(e)}\n#{Exception.format_stacktrace()}")
+        {:noreply, put_flash(socket, :error, "An unexpected error occurred: #{inspect(e)}")}
     end
   end
 
   defp build_session_attrs(params, assigns) do
+    session_params = params["session"] || %{}
+
     scope_id =
       case assigns.scope_type do
         "collection" ->
@@ -451,13 +499,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
       end
 
     %{
-      "title" => params["title"],
-      "description" => params["description"],
+      "title" => session_params["title"],
+      "description" => session_params["description"],
       "node_ids" => assigns.selected_node_ids,
       "collection_types" => assigns.selected_collection_types,
       "scope_type" => assigns.scope_type,
       "scope_id" => scope_id,
-      "notes" => params["notes"]
+      "notes" => session_params["notes"]
     }
   end
 
@@ -476,7 +524,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
           where: i.unit_id in ^assigns.selected_node_ids,
           join: c in Voile.Schema.Catalog.Collection,
           on: c.id == i.collection_id,
-          where: c.collection_type in ^assigns.selected_collection_types
+          join: rc in Voile.Schema.Metadata.ResourceClass,
+          on: rc.id == c.type_id,
+          where: rc.glam_type in ^assigns.selected_collection_types
 
       query =
         case assigns.scope_type do
@@ -514,21 +564,16 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
   end
 
   defp list_librarians do
-    # Get users with librarian role
-    # For now, get all users - should be filtered by role
-    from(u in Voile.Schema.Accounts.User,
-      order_by: [asc: u.full_name, asc: u.email],
-      limit: 100
-    )
-    |> Voile.Repo.all()
+    # Get users with librarian role through role assignments
+    VoileWeb.Auth.PermissionManager.list_users_with_role_by_name("librarian")
   end
 
   defp collection_type_options do
     [
-      {"Gallery", "gallery"},
-      {"Archive", "archive"},
-      {"Museum", "museum"},
-      {"Library", "library"}
+      {"Gallery", "Gallery"},
+      {"Archive", "Archive"},
+      {"Museum", "Museum"},
+      {"Library", "Library"}
     ]
   end
 

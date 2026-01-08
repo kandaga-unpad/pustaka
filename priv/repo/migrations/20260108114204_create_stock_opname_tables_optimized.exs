@@ -1,4 +1,4 @@
-defmodule Voile.Repo.Migrations.CreateStockOpnameTables do
+defmodule Voile.Repo.Migrations.CreateStockOpnameTablesOptimized do
   use Ecto.Migration
 
   def change do
@@ -73,7 +73,7 @@ defmodule Voile.Repo.Migrations.CreateStockOpnameTables do
     create index(:stock_opname_librarian_assignments, [:work_status])
     create unique_index(:stock_opname_librarian_assignments, [:session_id, :user_id])
 
-    # Stock Opname Items table
+    # Stock Opname Items table - OPTIMIZED with JSONB
     create table(:stock_opname_items, primary_key: false) do
       add :id, :binary_id, primary_key: true
 
@@ -84,26 +84,12 @@ defmodule Voile.Repo.Migrations.CreateStockOpnameTables do
       add :item_id, references(:items, type: :binary_id, on_delete: :delete_all), null: false
       add :collection_id, references(:collections, type: :binary_id, on_delete: :delete_all)
 
-      # Snapshot of item data at scan time
-      add :item_code, :string
-      add :inventory_code, :string
-      add :barcode, :string
-      add :legacy_item_code, :string
-      add :collection_title, :string
+      # Changes recorded by librarian (JSONB - only stores differences)
+      # Example: {"status": "damaged", "condition": "poor", "location": "Storage Room"}
+      add :changes, :jsonb
 
-      # Before state (current in database)
-      add :status_before, :string
-      add :condition_before, :string
-      add :availability_before, :string
-      add :location_before, :string
-      add :item_location_id_before, :integer
-
-      # After state (as checked by librarian)
-      add :status_after, :string
-      add :condition_after, :string
-      add :availability_after, :string
-      add :location_after, :string
-      add :item_location_id_after, :integer
+      # Audit trail
+      add :scanned_barcode, :string
 
       # Check result
       add :check_status, :string, null: false, default: "pending"
@@ -120,5 +106,8 @@ defmodule Voile.Repo.Migrations.CreateStockOpnameTables do
     create index(:stock_opname_items, [:check_status])
     create index(:stock_opname_items, [:checked_by_id])
     create unique_index(:stock_opname_items, [:session_id, :item_id])
+
+    # GIN index for JSONB queries on changes column
+    create index(:stock_opname_items, [:changes], using: :gin)
   end
 end
