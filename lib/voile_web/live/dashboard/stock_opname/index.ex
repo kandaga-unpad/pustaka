@@ -6,230 +6,327 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
 
   def render(assigns) do
     ~H"""
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Stock Opname Sessions</h1>
-        
-        <.link
-          :if={@can_create}
-          navigate={~p"/manage/stock-opname/new"}
-          class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-        >
-          <.icon name="hero-plus" class="w-5 h-5 mr-2" /> New Session
-        </.link>
-      </div>
-       <%!-- Filters --%>
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <form phx-change="filter" phx-submit="filter" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select name="status" class="w-full rounded-md border-gray-300">
-              <option value="">All Status</option>
-              
-              <option
-                :for={{label, value} <- status_options()}
-                value={value}
-                selected={@filters.status == value}
-              >
-                {label}
-              </option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-            <input
-              type="date"
-              name="from_date"
-              value={@filters.from_date}
-              class="w-full rounded-md border-gray-300"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-            <input
-              type="date"
-              name="to_date"
-              value={@filters.to_date}
-              class="w-full rounded-md border-gray-300"
-            />
-          </div>
-          
-          <div class="flex items-end">
-            <button
-              type="button"
-              phx-click="clear_filters"
-              class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </form>
-      </div>
-       <%!-- Sessions List --%>
-      <div class="space-y-4">
-        <div
-          :for={session <- @sessions}
-          class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
-                <h3 class="text-xl font-semibold text-gray-900">{session.title}</h3>
-                 <.session_status_badge status={session.status} />
-              </div>
-              
-              <p class="text-sm text-gray-600 mb-1">Code: {session.session_code}</p>
-              
-              <p :if={session.description} class="text-sm text-gray-500">{session.description}</p>
-            </div>
-          </div>
-           <%!-- Progress Bar --%>
-          <div class="mb-4">
-            <div class="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Progress</span> <span>{session.checked_items} / {session.total_items} items</span>
-            </div>
-            
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div
-                class="bg-blue-600 h-2 rounded-full transition-all"
-                style={"width: #{calculate_progress(session)}%"}
-              >
-              </div>
-            </div>
-          </div>
-           <%!-- Statistics --%>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div class="text-center">
-              <p class="text-2xl font-bold text-blue-600">{session.checked_items}</p>
-              
-              <p class="text-xs text-gray-500">Checked</p>
-            </div>
-            
-            <div class="text-center">
-              <p class="text-2xl font-bold text-red-600">{session.missing_items}</p>
-              
-              <p class="text-xs text-gray-500">Missing</p>
-            </div>
-            
-            <div class="text-center">
-              <p class="text-2xl font-bold text-yellow-600">{session.items_with_changes}</p>
-              
-              <p class="text-xs text-gray-500">With Changes</p>
-            </div>
-            
-            <div class="text-center">
-              <p class="text-2xl font-bold text-gray-600">
-                {session.total_items - session.checked_items}
-              </p>
-              
-              <p class="text-xs text-gray-500">Pending</p>
-            </div>
-          </div>
-           <%!-- Metadata --%>
-          <div class="text-xs text-gray-500 mb-4">
-            <p>
-              Created by {session.created_by.fullname || session.created_by.email} on {format_date(
-                session.inserted_at
-              )}
+            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
+              Stock Opname
+            </h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Manage and monitor inventory checking sessions
             </p>
-            
-            <p :if={session.started_at}>Started: {format_datetime(session.started_at)}</p>
-            
-            <p :if={session.completed_at}>Completed: {format_datetime(session.completed_at)}</p>
           </div>
-           <%!-- Actions --%>
-          <div class="flex gap-2 flex-wrap">
-            <.link
-              navigate={~p"/manage/stock-opname/#{session.id}"}
-              class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded transition-colors"
-            >
-              View Details
-            </.link>
-            <.link
-              :if={can_scan?(session, @current_user) and session.status == "in_progress"}
-              navigate={~p"/manage/stock-opname/#{session.id}/scan"}
-              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
-            >
-              Continue Scanning
-            </.link>
-            <.link
-              :if={@can_create and session.status == "pending_review"}
-              navigate={~p"/manage/stock-opname/#{session.id}/review"}
-              class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
-            >
-              Review & Approve
-            </.link>
-            <button
-              :if={@can_create and session.status == "draft"}
-              phx-click="start_session"
-              phx-value-id={session.id}
-              class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
-              data-confirm="Start this stock opname session? Librarians will be notified."
-            >
-              Start Session
-            </button>
-            <button
-              :if={@can_create and session.status == "in_progress" and can_complete?(session)}
-              phx-click="complete_session"
-              phx-value-id={session.id}
-              class="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded transition-colors"
-              data-confirm="Complete this session? All unscanned items will be marked as missing."
-            >
-              Complete Session
-            </button>
-            <button
-              :if={@can_create and session.status in ["draft", "in_progress"]}
-              phx-click="cancel_session"
-              phx-value-id={session.id}
-              class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"
-              data-confirm="Cancel this session? This cannot be undone."
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-         <%!-- Empty State --%>
-        <div :if={@sessions == []} class="text-center py-12">
-          <.icon name="hero-document-magnifying-glass" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No Stock Opname Sessions</h3>
-          
-          <p class="text-gray-500 mb-4">
-            {if @can_create,
-              do: "Create your first stock opname session to start inventory checking.",
-              else: "No sessions have been assigned to you yet."}
-          </p>
-          
+
           <.link
             :if={@can_create}
-            navigate={~p"/manage/stock-opname/new"}
-            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            navigate={~p"/manage/stock_opname/new"}
+            class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-105"
           >
-            <.icon name="hero-plus" class="w-5 h-5 mr-2" /> Create Session
+            <.icon name="hero-plus" class="w-5 h-5 mr-2" /> New Session
           </.link>
         </div>
-      </div>
-       <%!-- Pagination --%>
-      <div :if={@total_pages > 1} class="mt-6 flex justify-center">
-        <nav class="flex items-center gap-2">
-          <button
-            :if={@page > 1}
-            phx-click="paginate"
-            phx-value-page={@page - 1}
-            class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+        <%!-- Filters --%>
+        <div class="bg-white/80 dark:bg-gray-800 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-6 mb-8">
+          <div class="flex items-center gap-2 mb-4">
+            <.icon name="hero-funnel" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filter Sessions</h2>
+          </div>
+          <form phx-change="filter" phx-submit="filter" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                name="status"
+                class="w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all dark:bg-gray-700 dark:text-gray-200"
+              >
+                <option value="">All Status</option>
+
+                <option
+                  :for={{label, value} <- status_options()}
+                  value={value}
+                  selected={@filters.status == value}
+                >
+                  {label}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                From Date
+              </label>
+              <input
+                type="date"
+                name="from_date"
+                value={@filters.from_date}
+                class="w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all dark:bg-gray-700 dark:text-gray-200"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                To Date
+              </label>
+              <input
+                type="date"
+                name="to_date"
+                value={@filters.to_date}
+                class="w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all dark:bg-gray-700 dark:text-gray-200"
+              />
+            </div>
+
+            <div class="flex items-end">
+              <button
+                type="button"
+                phx-click="clear_filters"
+                class="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <.icon name="hero-x-mark" class="w-4 h-4" /> Clear Filters
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+        <%!-- Sessions List --%>
+        <div class="space-y-6">
+          <div
+            :for={session <- @sessions}
+            class="bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden group"
           >
-            Previous
-          </button> <span class="px-4 py-2 text-gray-700">Page {@page} of {@total_pages}</span>
-          <button
-            :if={@page < @total_pages}
-            phx-click="paginate"
-            phx-value-page={@page + 1}
-            class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Next
-          </button>
-        </nav>
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <.icon
+                      name="hero-clipboard-document-list"
+                      class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                    />
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                      {session.title}
+                    </h3>
+                    <.session_status_badge status={session.status} />
+                  </div>
+
+                  <div class="flex items-center gap-4 text-sm">
+                    <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                      <.icon name="hero-hashtag" class="w-4 h-4" />
+                      <span class="font-mono font-semibold">{session.session_code}</span>
+                    </span>
+                  </div>
+
+                  <p
+                    :if={session.description}
+                    class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2"
+                  >
+                    {session.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6">
+              <%!-- Progress Bar --%>
+              <div class="mb-6">
+                <div class="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  <span class="flex items-center gap-1.5">
+                    <.icon name="hero-chart-bar" class="w-4 h-4" /> Progress
+                  </span>
+                  <span class="text-blue-600 dark:text-blue-400">
+                    {session.checked_items} / {session.total_items} items
+                  </span>
+                </div>
+
+                <div class="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden shadow-inner">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out shadow-sm"
+                    style={"width: #{calculate_progress(session)}%"}
+                  >
+                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+              <%!-- Statistics --%>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 text-center border border-blue-200/50 dark:border-blue-700/50 shadow-sm">
+                  <p class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 mb-1">
+                    {session.checked_items}
+                  </p>
+                  <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                    Checked
+                  </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl p-4 text-center border border-red-200/50 dark:border-red-700/50 shadow-sm">
+                  <p class="text-3xl font-extrabold text-red-600 dark:text-red-400 mb-1">
+                    {session.missing_items}
+                  </p>
+                  <p class="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide">
+                    Missing
+                  </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl p-4 text-center border border-amber-200/50 dark:border-amber-700/50 shadow-sm">
+                  <p class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mb-1">
+                    {session.items_with_changes}
+                  </p>
+                  <p class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+                    Changes
+                  </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-xl p-4 text-center border border-gray-200/50 dark:border-gray-600/50 shadow-sm">
+                  <p class="text-3xl font-extrabold text-gray-600 dark:text-gray-400 mb-1">
+                    {session.total_items - session.checked_items}
+                  </p>
+                  <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                    Pending
+                  </p>
+                </div>
+              </div>
+              <%!-- Metadata --%>
+              <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-6 border border-gray-200/50 dark:border-gray-700/50">
+                <div class="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
+                  <div class="flex items-center gap-1.5">
+                    <.icon name="hero-user-circle" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span>
+                      Created by
+                      <span class="font-semibold text-gray-900 dark:text-gray-200">
+                        {session.created_by.fullname || session.created_by.email}
+                      </span>
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-1.5">
+                    <.icon name="hero-calendar" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span>{format_date(session.inserted_at)}</span>
+                  </div>
+
+                  <div :if={session.started_at} class="flex items-center gap-1.5">
+                    <.icon name="hero-play" class="w-4 h-4 text-green-500" />
+                    <span>
+                      Started:
+                      <span class="font-semibold">{format_datetime(session.started_at)}</span>
+                    </span>
+                  </div>
+
+                  <div :if={session.completed_at} class="flex items-center gap-1.5">
+                    <.icon name="hero-check-circle" class="w-4 h-4 text-blue-500" />
+                    <span>
+                      Completed:
+                      <span class="font-semibold">{format_datetime(session.completed_at)}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <%!-- Actions --%>
+              <div class="flex gap-2 flex-wrap">
+                <.link
+                  navigate={~p"/manage/stock_opname/#{session.id}"}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200"
+                >
+                  <.icon name="hero-eye" class="w-4 h-4" /> View Details
+                </.link>
+                <.link
+                  :if={can_scan?(session, @current_user) and session.status == "in_progress"}
+                  navigate={~p"/manage/stock_opname/#{session.id}/scan"}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-blue-500/30 hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-200"
+                >
+                  <.icon name="hero-qr-code" class="w-4 h-4" /> Continue Scanning
+                </.link>
+                <.link
+                  :if={@can_create and session.status == "pending_review"}
+                  navigate={~p"/manage/stock_opname/#{session.id}/review"}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-green-500/30 hover:shadow-lg hover:shadow-green-500/40 transition-all duration-200"
+                >
+                  <.icon name="hero-clipboard-document-check" class="w-4 h-4" /> Review & Approve
+                </.link>
+                <button
+                  :if={@can_create and session.status == "draft"}
+                  phx-click="start_session"
+                  phx-value-id={session.id}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-green-500/30 hover:shadow-lg hover:shadow-green-500/40 transition-all duration-200"
+                  data-confirm="Start this stock opname session? Librarians will be notified."
+                >
+                  <.icon name="hero-play" class="w-4 h-4" /> Start Session
+                </button>
+                <button
+                  :if={@can_create and session.status == "in_progress" and can_complete?(session)}
+                  phx-click="complete_session"
+                  phx-value-id={session.id}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-orange-500/30 hover:shadow-lg hover:shadow-orange-500/40 transition-all duration-200"
+                  data-confirm="Complete this session? All unscanned items will be marked as missing."
+                >
+                  <.icon name="hero-check-badge" class="w-4 h-4" /> Complete Session
+                </button>
+                <button
+                  :if={@can_create and session.status in ["draft", "in_progress"]}
+                  phx-click="cancel_session"
+                  phx-value-id={session.id}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-red-500/30 hover:shadow-lg hover:shadow-red-500/40 transition-all duration-200"
+                  data-confirm="Cancel this session? This cannot be undone."
+                >
+                  <.icon name="hero-x-circle" class="w-4 h-4" /> Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          <%!-- Empty State --%>
+          <div :if={@sessions == []} class="text-center py-16">
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl p-12 max-w-md mx-auto border border-blue-200/50 dark:border-blue-700/50 shadow-sm">
+              <div class="bg-white dark:bg-gray-800 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-md">
+                <.icon
+                  name="hero-document-magnifying-glass"
+                  class="w-10 h-10 text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                No Stock Opname Sessions
+              </h3>
+
+              <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                {if @can_create,
+                  do: "Create your first stock opname session to start inventory checking.",
+                  else: "No sessions have been assigned to you yet."}
+              </p>
+
+              <.link
+                :if={@can_create}
+                navigate={~p"/manage/stock_opname/new"}
+                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-105"
+              >
+                <.icon name="hero-plus" class="w-5 h-5 mr-2" /> Create Session
+              </.link>
+            </div>
+          </div>
+        </div>
+        <%!-- Pagination --%>
+        <div :if={@total_pages > 1} class="mt-8 flex justify-center">
+          <nav class="flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-2">
+            <button
+              :if={@page > 1}
+              phx-click="paginate"
+              phx-value-page={@page - 1}
+              class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-gray-200 font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200"
+            >
+              <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
+            </button>
+            <span class="px-6 py-2 text-gray-700 dark:text-gray-300 font-semibold">
+              Page <span class="text-blue-600 dark:text-blue-400">{@page}</span> of {@total_pages}
+            </span>
+            <button
+              :if={@page < @total_pages}
+              phx-click="paginate"
+              phx-value-page={@page + 1}
+              class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-gray-200 font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200"
+            >
+              Next <.icon name="hero-chevron-right" class="w-4 h-4" />
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
     """
@@ -388,15 +485,32 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   defp session_status_badge(assigns) do
     color_class =
       case assigns.status do
-        "draft" -> "bg-gray-100 text-gray-800"
-        "initializing" -> "bg-purple-100 text-purple-800 animate-pulse"
-        "in_progress" -> "bg-blue-100 text-blue-800"
-        "completed" -> "bg-yellow-100 text-yellow-800"
-        "pending_review" -> "bg-orange-100 text-orange-800"
-        "approved" -> "bg-green-100 text-green-800"
-        "rejected" -> "bg-red-100 text-red-800"
-        "cancelled" -> "bg-gray-100 text-gray-800"
-        _ -> "bg-gray-100 text-gray-800"
+        "draft" ->
+          "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300"
+
+        "initializing" ->
+          "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 animate-pulse"
+
+        "in_progress" ->
+          "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300"
+
+        "completed" ->
+          "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300"
+
+        "pending_review" ->
+          "bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300"
+
+        "approved" ->
+          "bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300"
+
+        "rejected" ->
+          "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300"
+
+        "cancelled" ->
+          "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300"
+
+        _ ->
+          "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300"
       end
 
     label =
@@ -415,7 +529,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
     assigns = assign(assigns, :color_class, color_class) |> assign(:label, label)
 
     ~H"""
-    <span class={"inline-flex items-center px-2 py-1 text-xs font-medium rounded #{@color_class}"}>
+    <span class={"inline-flex items-center px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full border shadow-sm #{@color_class}"}>
       {@label}
     </span>
     """

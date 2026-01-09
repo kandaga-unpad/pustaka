@@ -317,7 +317,7 @@ defmodule VoileWeb.PageLive.About do
                       style={"background-color: #{@app_main_color};"}
                     >
                     </span>
-                    <span><strong>Elixir</strong> v1.18.0</span>
+                    <span><strong>Elixir</strong></span>
                   </li>
 
                   <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
@@ -326,7 +326,7 @@ defmodule VoileWeb.PageLive.About do
                       style={"background-color: #{@app_main_color};"}
                     >
                     </span>
-                    <span><strong>Phoenix</strong> v1.17.20</span>
+                    <span><strong>Phoenix</strong></span>
                   </li>
 
                   <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
@@ -335,7 +335,7 @@ defmodule VoileWeb.PageLive.About do
                       style={"background-color: #{@app_main_color};"}
                     >
                     </span>
-                    <span><strong>Erlang (BEAM VM)</strong> OTP 27.1</span>
+                    <span><strong>Erlang (BEAM VM)</strong></span>
                   </li>
 
                   <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
@@ -344,7 +344,7 @@ defmodule VoileWeb.PageLive.About do
                       style={"background-color: #{@app_main_color};"}
                     >
                     </span>
-                    <span><strong>PostgreSQL</strong> 14 or newer</span>
+                    <span><strong>PostgreSQL</strong></span>
                   </li>
                 </ul>
               </div>

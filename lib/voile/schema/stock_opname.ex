@@ -415,16 +415,23 @@ defmodule Voile.Schema.StockOpname do
     assignment =
       Repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
 
-    if assignment do
-      assignment
-      |> Ecto.Changeset.change(%{
-        work_status: "completed",
-        completed_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        notes: notes
-      })
-      |> Repo.update()
-    else
-      {:error, :not_assigned}
+    cond do
+      assignment ->
+        # Regular librarian - update their assignment
+        assignment
+        |> Ecto.Changeset.change(%{
+          work_status: "completed",
+          completed_at: DateTime.utc_now() |> DateTime.truncate(:second),
+          notes: notes
+        })
+        |> Repo.update()
+
+      VoileWeb.Auth.Authorization.is_super_admin?(user) ->
+        # Super admin without assignment - allow completion (they can scan without assignment)
+        {:ok, :completed}
+
+      true ->
+        {:error, :not_assigned}
     end
   end
 
@@ -541,15 +548,22 @@ defmodule Voile.Schema.StockOpname do
       end
     end)
     |> Ecto.Multi.update(:update_item, fn %{lock_item: opname_item} ->
-      opname_item
-      |> Item.changeset(%{
+      attrs = %{
         changes: changes || %{},
         check_status: "checked",
         scanned_at: DateTime.utc_now() |> DateTime.truncate(:second),
         checked_by_id: user.id,
         notes: notes,
         has_changes: map_size(changes || %{}) > 0
-      })
+      }
+
+      require Logger
+      Logger.debug("Check item attrs: #{inspect(attrs)}")
+      Logger.debug("Changes map: #{inspect(changes)}")
+      Logger.debug("Notes: #{inspect(notes)}")
+
+      opname_item
+      |> Item.changeset(attrs)
     end)
     |> Ecto.Multi.run(:update_counters, fn repo, %{update_item: updated_item} ->
       # Update session counters
@@ -558,6 +572,15 @@ defmodule Voile.Schema.StockOpname do
       new_checked_count =
         from(oi in Item,
           where: oi.session_id == ^session.id and oi.check_status == "checked"
+        )
+        |> repo.aggregate(:count, :id)
+
+      # Count missing items based on availability field in changes JSONB
+      new_missing_count =
+        from(oi in Item,
+          where:
+            oi.session_id == ^session.id and
+              fragment("?->>'availability' = 'missing'", oi.changes)
         )
         |> repo.aggregate(:count, :id)
 
@@ -570,6 +593,7 @@ defmodule Voile.Schema.StockOpname do
       session
       |> Ecto.Changeset.change(%{
         checked_items: new_checked_count,
+        missing_items: new_missing_count,
         items_with_changes: new_changes_count
       })
       |> repo.update()
@@ -624,6 +648,40 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  Recalculate and update session counters based on actual item states.
+  Useful for fixing counter drift or after manual database updates.
+  """
+  def recalculate_session_counters(%Session{} = session) do
+    checked_count =
+      from(oi in Item,
+        where: oi.session_id == ^session.id and oi.check_status == "checked"
+      )
+      |> Repo.aggregate(:count, :id)
+
+    # Count missing items based on availability field in changes JSONB
+    missing_count =
+      from(oi in Item,
+        where:
+          oi.session_id == ^session.id and fragment("?->>'availability' = 'missing'", oi.changes)
+      )
+      |> Repo.aggregate(:count, :id)
+
+    changes_count =
+      from(oi in Item,
+        where: oi.session_id == ^session.id and oi.has_changes == true
+      )
+      |> Repo.aggregate(:count, :id)
+
+    session
+    |> Ecto.Changeset.change(%{
+      checked_items: checked_count,
+      missing_items: missing_count,
+      items_with_changes: changes_count
+    })
+    |> Repo.update()
+  end
+
+  @doc """
   List session items filtered by check status.
   """
   def list_session_items(%Session{} = session, check_status \\ nil) do
@@ -674,17 +732,82 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  List items with changes with pagination.
+  """
+  def list_items_with_changes_paginated(%Session{} = session, page \\ 1, per_page \\ 20) do
+    query =
+      from(oi in Item,
+        where: oi.session_id == ^session.id,
+        where: oi.has_changes == true,
+        order_by: [desc: oi.updated_at],
+        preload: [:item, :collection, :checked_by]
+      )
+
+    total_count = Repo.aggregate(query, :count, :id)
+    total_pages = ceil(total_count / per_page)
+
+    items =
+      query
+      |> limit(^per_page)
+      |> offset(^((page - 1) * per_page))
+      |> Repo.all()
+
+    %{
+      items: items,
+      page: page,
+      per_page: per_page,
+      total_count: total_count,
+      total_pages: total_pages,
+      has_prev: page > 1,
+      has_next: page < total_pages
+    }
+  end
+
+  @doc """
   List missing items for a session.
   Optimized query with database-level filtering.
+  Missing items are tracked by changes->>'availability' = 'missing'.
   """
   def list_missing_items(%Session{} = session) do
     from(oi in Item,
       where: oi.session_id == ^session.id,
-      where: oi.check_status == "missing",
+      where: fragment("?->>'availability' = 'missing'", oi.changes),
       order_by: [desc: oi.updated_at],
       preload: [:item, :collection, :checked_by]
     )
     |> Repo.all()
+  end
+
+  @doc """
+  List missing items with pagination.
+  """
+  def list_missing_items_paginated(%Session{} = session, page \\ 1, per_page \\ 20) do
+    query =
+      from(oi in Item,
+        where: oi.session_id == ^session.id,
+        where: fragment("?->>'availability' = 'missing'", oi.changes),
+        order_by: [desc: oi.updated_at],
+        preload: [:item, :collection, :checked_by]
+      )
+
+    total_count = Repo.aggregate(query, :count, :id)
+    total_pages = ceil(total_count / per_page)
+
+    items =
+      query
+      |> limit(^per_page)
+      |> offset(^((page - 1) * per_page))
+      |> Repo.all()
+
+    %{
+      items: items,
+      page: page,
+      per_page: per_page,
+      total_count: total_count,
+      total_pages: total_pages,
+      has_prev: page > 1,
+      has_next: page < total_pages
+    }
   end
 
   @doc """
@@ -835,13 +958,13 @@ defmodule Voile.Schema.StockOpname do
 
     Ecto.Multi.new()
     |> Ecto.Multi.run(:apply_changes, fn repo, _changes ->
-      # Step 1: Bulk update missing items with a single UPDATE query
-      {missing_count, _} =
+      # Step 1: Mark all unchecked (pending) items as missing in catalog
+      {unchecked_count, _} =
         from(i in CatalogItem,
           join: oi in Item,
           on: oi.item_id == i.id,
           where: oi.session_id == ^session.id,
-          where: oi.check_status == "missing"
+          where: oi.check_status == "pending"
         )
         |> repo.update_all(
           set: [
@@ -851,8 +974,25 @@ defmodule Voile.Schema.StockOpname do
           ]
         )
 
-      # Step 2: Get items with changes using a stream for memory efficiency
-      items_query =
+      # Step 2: Mark items with availability changed to "missing" in catalog
+      {missing_count, _} =
+        from(i in CatalogItem,
+          join: oi in Item,
+          on: oi.item_id == i.id,
+          where: oi.session_id == ^session.id,
+          where: fragment("?->>'availability' = 'missing'", oi.changes)
+        )
+        |> repo.update_all(
+          set: [
+            availability: "missing",
+            updated_by_id: admin_user.id,
+            updated_at: now
+          ]
+        )
+
+      # Step 3: Apply changes from JSONB to catalog items
+      # Use efficient batch updates for large datasets (500k+ items)
+      items_with_changes =
         from(oi in Item,
           where: oi.session_id == ^session.id,
           where: oi.has_changes == true,
@@ -863,40 +1003,103 @@ defmodule Voile.Schema.StockOpname do
             changes: oi.changes
           }
         )
+        |> repo.all()
 
-      # Step 3: Use Task.async_stream for concurrent updates with backpressure
-      # This processes items in parallel while limiting memory usage
-      {changes_count, failed_updates} =
-        items_query
-        |> repo.stream()
-        |> Task.async_stream(
-          fn %{item_id: item_id, changes: changes} ->
-            update_attrs = Map.merge(changes, %{"updated_by_id" => admin_user.id})
+      # Process in chunks of 1000 to avoid memory issues
+      changes_count =
+        items_with_changes
+        |> Enum.chunk_every(1000)
+        |> Enum.reduce(0, fn chunk, acc ->
+          # Build batch update queries for each field that changed
+          # Batch update status
+          status_updates =
+            chunk
+            |> Enum.filter(&Map.has_key?(&1.changes, "status"))
+            |> Enum.map(&{&1.item_id, &1.changes["status"]})
 
-            from(i in CatalogItem, where: i.id == ^item_id)
-            |> repo.update_all(set: build_update_set(update_attrs, now))
-          end,
-          max_concurrency: System.schedulers_online() * 2,
-          timeout: :infinity,
-          ordered: false
-        )
-        |> Enum.reduce({0, []}, fn
-          {:ok, {1, _}}, {success, failed} ->
-            {success + 1, failed}
+          if status_updates != [] do
+            {ids, values} = Enum.unzip(status_updates)
 
-          {:ok, {0, _}}, {success, failed} ->
-            {success, failed}
+            repo.query!(
+              "UPDATE items SET status = data.value, updated_by_id = $1, updated_at = $2
+               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
+               WHERE items.id = data.id",
+              [admin_user.id, now, ids, values]
+            )
+          end
 
-          {:error, reason}, {success, failed} ->
-            {success, [reason | failed]}
+          # Batch update condition
+          condition_updates =
+            chunk
+            |> Enum.filter(&Map.has_key?(&1.changes, "condition"))
+            |> Enum.map(&{&1.item_id, &1.changes["condition"]})
+
+          if condition_updates != [] do
+            {ids, values} = Enum.unzip(condition_updates)
+
+            repo.query!(
+              "UPDATE items SET condition = data.value, updated_by_id = $1, updated_at = $2
+               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
+               WHERE items.id = data.id",
+              [admin_user.id, now, ids, values]
+            )
+          end
+
+          # Batch update availability
+          availability_updates =
+            chunk
+            |> Enum.filter(&Map.has_key?(&1.changes, "availability"))
+            |> Enum.map(&{&1.item_id, &1.changes["availability"]})
+
+          if availability_updates != [] do
+            {ids, values} = Enum.unzip(availability_updates)
+
+            repo.query!(
+              "UPDATE items SET availability = data.value, updated_by_id = $1, updated_at = $2
+               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
+               WHERE items.id = data.id",
+              [admin_user.id, now, ids, values]
+            )
+          end
+
+          # Batch update location
+          location_updates =
+            chunk
+            |> Enum.filter(&Map.has_key?(&1.changes, "location"))
+            |> Enum.map(&{&1.item_id, &1.changes["location"]})
+
+          if location_updates != [] do
+            {ids, values} = Enum.unzip(location_updates)
+
+            repo.query!(
+              "UPDATE items SET location = data.value, updated_by_id = $1, updated_at = $2
+               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
+               WHERE items.id = data.id",
+              [admin_user.id, now, ids, values]
+            )
+          end
+
+          # Batch update item_location_id
+          item_location_updates =
+            chunk
+            |> Enum.filter(&Map.has_key?(&1.changes, "item_location_id"))
+            |> Enum.map(&{&1.item_id, &1.changes["item_location_id"]})
+
+          if item_location_updates != [] do
+            {ids, values} = Enum.unzip(item_location_updates)
+
+            repo.query!(
+              "UPDATE items SET item_location_id = data.value, updated_by_id = $1, updated_at = $2
+               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::integer[]) as value) AS data
+               WHERE items.id = data.id",
+              [admin_user.id, now, ids, values]
+            )
+          end
+
+          acc + length(chunk)
         end)
 
-      if failed_updates != [] do
-        require Logger
-        Logger.warning("#{length(failed_updates)} items failed to update during approval")
-      end
-
-      {:ok, {changes_count, missing_count}}
+      {:ok, {changes_count, missing_count, unchecked_count}}
     end)
     |> Ecto.Multi.update(:update_session, fn _changes ->
       session
@@ -913,31 +1116,6 @@ defmodule Voile.Schema.StockOpname do
       {:ok, %{update_session: session}} -> {:ok, session}
       {:error, _step, error, _changes} -> {:error, error}
     end
-  end
-
-  # Helper function to build dynamic update set from JSONB changes
-  defp build_update_set(changes, now) do
-    base = [updated_at: now]
-
-    Enum.reduce(changes, base, fn
-      {"status", value}, acc when is_binary(value) ->
-        Keyword.put(acc, :status, value)
-
-      {"condition", value}, acc when is_binary(value) ->
-        Keyword.put(acc, :condition, value)
-
-      {"availability", value}, acc when is_binary(value) ->
-        Keyword.put(acc, :availability, value)
-
-      {"location_id", value}, acc ->
-        Keyword.put(acc, :location_id, value)
-
-      {"updated_by_id", value}, acc ->
-        Keyword.put(acc, :updated_by_id, value)
-
-      _other, acc ->
-        acc
-    end)
   end
 
   def approve_session(%Session{}, _admin_user, _notes) do

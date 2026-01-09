@@ -11,183 +11,197 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       <%!-- Header --%>
       <div class="mb-6">
         <.link
-          navigate={~p"/manage/stock-opname"}
-          class="text-blue-600 hover:text-blue-700 flex items-center gap-2 mb-4"
+          navigate={~p"/manage/stock_opname"}
+          class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Sessions
         </.link>
         <div class="flex justify-between items-start">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">{@session.title}</h1>
-            
-            <p class="text-gray-600 mt-1">Code: {@session.session_code}</p>
-            
-            <p :if={@session.description} class="text-gray-600 text-sm mt-2">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{@session.title}</h1>
+
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Code: {@session.session_code}</p>
+
+            <p :if={@session.description} class="text-gray-600 dark:text-gray-400 text-sm mt-2">
               {@session.description}
             </p>
           </div>
-           <.session_status_badge status={@session.status} />
+          <.session_status_badge status={@session.status} />
         </div>
       </div>
-       <%!-- Initialization Progress Banner --%>
+      <%!-- Initialization Progress Banner --%>
       <div
         :if={@session.status == "initializing"}
-        class="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-6"
+        class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-6"
       >
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-3">
             <div class="animate-spin">
-              <.icon name="hero-arrow-path" class="w-6 h-6 text-purple-600" />
+              <.icon name="hero-arrow-path" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
-            
+
             <div>
-              <h3 class="text-lg font-semibold text-purple-900">Initializing Session Items...</h3>
-              
-              <p class="text-sm text-purple-700">
+              <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-300">
+                Initializing Session Items...
+              </h3>
+
+              <p class="text-sm text-purple-700 dark:text-purple-400">
                 Adding items to stock opname session. This may take a moment for large collections.
               </p>
             </div>
           </div>
         </div>
-        
+
         <div class="mt-4">
           <div class="flex justify-between text-sm mb-2">
-            <span class="text-purple-700">
+            <span class="text-purple-700 dark:text-purple-400">
               Items Added: <span class="font-bold">{@items_added}</span>
               / {if @session.total_items > 0, do: @session.total_items, else: "calculating..."}
             </span>
-            <span :if={@session.total_items > 0} class="text-purple-700">
+            <span :if={@session.total_items > 0} class="text-purple-700 dark:text-purple-400">
               {calculate_init_progress(@items_added, @session.total_items)}%
             </span>
           </div>
-          
-          <div class="w-full bg-purple-200 rounded-full h-3">
+
+          <div class="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-3">
             <div
-              class="bg-purple-600 h-3 rounded-full transition-all duration-300"
+              class="bg-purple-600 dark:bg-purple-500 h-3 rounded-full transition-all duration-300"
               style={"width: #{calculate_init_progress(@items_added, @session.total_items)}%"}
             >
             </div>
           </div>
         </div>
       </div>
-       <%!-- Session Info Card --%>
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Session Information</h2>
-        
+      <%!-- Session Info Card --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Session Information
+        </h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
-            <p class="text-xs font-medium text-gray-500">Created By</p>
-            
-            <p class="text-sm mt-1">{@session.created_by.fullname || @session.created_by.email}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Created By</p>
+
+            <p class="text-sm mt-1 dark:text-gray-300">
+              {@session.created_by.fullname || @session.created_by.email}
+            </p>
           </div>
-          
+
           <div>
-            <p class="text-xs font-medium text-gray-500">Created Date</p>
-            
-            <p class="text-sm mt-1">{format_date(@session.inserted_at)}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Created Date</p>
+
+            <p class="text-sm mt-1 dark:text-gray-300">{format_date(@session.inserted_at)}</p>
           </div>
-          
+
           <div :if={@session.started_at}>
-            <p class="text-xs font-medium text-gray-500">Started</p>
-            
-            <p class="text-sm mt-1">{format_datetime(@session.started_at)}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Started</p>
+
+            <p class="text-sm mt-1 dark:text-gray-300">{format_datetime(@session.started_at)}</p>
           </div>
-          
+
           <div :if={@session.completed_at}>
-            <p class="text-xs font-medium text-gray-500">Completed</p>
-            
-            <p class="text-sm mt-1">{format_datetime(@session.completed_at)}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Completed</p>
+
+            <p class="text-sm mt-1 dark:text-gray-300">{format_datetime(@session.completed_at)}</p>
           </div>
         </div>
       </div>
-       <%!-- Statistics Cards --%>
+      <%!-- Statistics Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-gray-600">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
               {if @session.status == "initializing", do: "Expected Items", else: "Total Items"}
             </p>
-             <.icon name="hero-inbox-stack" class="w-6 h-6 text-gray-400" />
+            <.icon name="hero-inbox-stack" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
-          
-          <p class="text-3xl font-bold text-gray-900">{@session.total_items}</p>
+
+          <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{@session.total_items}</p>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm p-6">
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-gray-600">Checked</p>
-             <.icon name="hero-check-circle" class="w-6 h-6 text-green-400" />
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Checked</p>
+            <.icon name="hero-check-circle" class="w-6 h-6 text-green-400" />
           </div>
-          
-          <p class="text-3xl font-bold text-green-600">{@session.checked_items}</p>
-          
-          <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+
+          <p class="text-3xl font-bold text-green-600 dark:text-green-500">
+            {@session.checked_items}
+          </p>
+
+          <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              class="bg-green-600 h-2 rounded-full"
+              class="bg-green-600 dark:bg-green-500 h-2 rounded-full"
               style={"width: #{calculate_progress(@session)}%"}
             >
             </div>
           </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm p-6">
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-gray-600">Missing</p>
-             <.icon name="hero-exclamation-triangle" class="w-6 h-6 text-red-400" />
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Missing</p>
+            <.icon name="hero-exclamation-triangle" class="w-6 h-6 text-red-400" />
           </div>
-          
-          <p class="text-3xl font-bold text-red-600">{@session.missing_items}</p>
+
+          <p class="text-3xl font-bold text-red-600 dark:text-red-500">{@session.missing_items}</p>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-sm p-6">
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-gray-600">With Changes</p>
-             <.icon name="hero-pencil" class="w-6 h-6 text-yellow-400" />
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">With Changes</p>
+            <.icon name="hero-pencil" class="w-6 h-6 text-yellow-400" />
           </div>
-          
-          <p class="text-3xl font-bold text-yellow-600">{@session.items_with_changes}</p>
+
+          <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-500">
+            {@session.items_with_changes}
+          </p>
         </div>
       </div>
-       <%!-- Librarian Progress (Admin Only) --%>
-      <div :if={@can_create} class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Librarian Progress</h2>
-        
+      <%!-- Librarian Progress (Admin Only) --%>
+      <div :if={@can_create} class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Librarian Progress
+        </h2>
+
         <div class="space-y-3">
           <div
             :for={assignment <- @session.librarian_assignments}
-            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
           >
             <div class="flex-1">
-              <p class="font-medium text-gray-900">
+              <p class="font-medium text-gray-900 dark:text-gray-100">
                 {assignment.user.fullname || assignment.user.email}
               </p>
-              
-              <p class="text-sm text-gray-600">{assignment.user.email}</p>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400">{assignment.user.email}</p>
             </div>
-            
+
             <div class="flex items-center gap-4">
               <div class="text-right">
-                <p class="text-sm font-medium text-gray-900">{assignment.items_checked} items</p>
-                
-                <p class="text-xs text-gray-500">checked</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {assignment.items_checked} items
+                </p>
+
+                <p class="text-xs text-gray-500 dark:text-gray-400">checked</p>
               </div>
-               <.work_status_badge status={assignment.work_status} />
+              <.work_status_badge status={assignment.work_status} />
             </div>
           </div>
         </div>
       </div>
-       <%!-- Actions --%>
+      <%!-- Actions --%>
       <div class="flex gap-3 mb-6 flex-wrap">
         <.link
           :if={@can_scan and @session.status == "in_progress"}
-          navigate={~p"/manage/stock-opname/#{@session.id}/scan"}
+          navigate={~p"/manage/stock_opname/#{@session.id}/scan"}
           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
         >
           <.icon name="hero-qr-code" class="w-5 h-5 inline mr-2" /> Continue Scanning
         </.link>
         <.link
           :if={@can_create and @session.status == "pending_review"}
-          navigate={~p"/manage/stock-opname/#{@session.id}/review"}
+          navigate={~p"/manage/stock_opname/#{@session.id}/review"}
           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
         >
           <.icon name="hero-clipboard-document-check" class="w-5 h-5 inline mr-2" /> Review & Approve
@@ -208,9 +222,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
           <.icon name="hero-trash" class="w-5 h-5 inline mr-2" /> Delete Session
         </button>
       </div>
-       <%!-- Tabs --%>
-      <div class="bg-white rounded-lg shadow-sm">
-        <div class="border-b border-gray-200">
+      <%!-- Tabs --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <div class="border-b border-gray-200 dark:border-gray-700">
           <nav class="flex -mb-px">
             <button
               :for={tab <- ["all", "checked", "pending", "missing", "with_changes", "librarians"]}
@@ -219,8 +233,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
               class={[
                 "px-6 py-3 text-sm font-medium border-b-2 transition-colors",
                 if(@current_tab == tab,
-                  do: "border-blue-600 text-blue-600",
-                  else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  do: "border-blue-600 text-blue-600 dark:text-blue-400",
+                  else:
+                    "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                 )
               ]}
             >
@@ -230,110 +245,122 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             </button>
           </nav>
         </div>
-         <%!-- Librarians Tab Content --%>
+        <%!-- Librarians Tab Content --%>
         <div :if={@current_tab == "librarians"} class="p-6">
           <div class="space-y-4">
             <div
               :for={assignment <- @session.librarian_assignments}
-              class="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+              class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
             >
               <div class="flex justify-between items-start">
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900">
+                  <p class="font-medium text-gray-900 dark:text-gray-100">
                     {assignment.user.fullname || assignment.user.email}
                   </p>
-                  
-                  <p class="text-sm text-gray-600">{assignment.user.email}</p>
-                  
-                  <p :if={assignment.user.department} class="text-xs text-gray-500 mt-1">
+
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{assignment.user.email}</p>
+
+                  <p
+                    :if={assignment.user.department}
+                    class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+                  >
                     {assignment.user.department}
                   </p>
                 </div>
-                 <.work_status_badge status={assignment.work_status} />
+                <.work_status_badge status={assignment.work_status} />
               </div>
-              
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div>
-                  <p class="text-xs text-gray-500">Items Checked</p>
-                  
-                  <p class="text-lg font-semibold text-gray-900">{assignment.items_checked}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Items Checked</p>
+
+                  <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {assignment.items_checked}
+                  </p>
                 </div>
-                
+
                 <div :if={assignment.started_at}>
-                  <p class="text-xs text-gray-500">Started At</p>
-                  
-                  <p class="text-sm text-gray-700">{format_datetime(assignment.started_at)}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Started At</p>
+
+                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                    {format_datetime(assignment.started_at)}
+                  </p>
                 </div>
-                
+
                 <div :if={assignment.completed_at}>
-                  <p class="text-xs text-gray-500">Completed At</p>
-                  
-                  <p class="text-sm text-gray-700">{format_datetime(assignment.completed_at)}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Completed At</p>
+
+                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                    {format_datetime(assignment.completed_at)}
+                  </p>
                 </div>
-                
+
                 <div :if={!is_nil(assignment.completed_at) && !is_nil(assignment.started_at)}>
-                  <p class="text-xs text-gray-500">Duration</p>
-                  
-                  <p class="text-sm text-gray-700">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Duration</p>
+
+                  <p class="text-sm text-gray-700 dark:text-gray-300">
                     {calculate_duration(assignment.started_at, assignment.completed_at)}
                   </p>
                 </div>
               </div>
-              
-              <div :if={assignment.notes} class="mt-3 text-sm text-gray-600">
-                <p class="text-xs font-medium text-gray-500 mb-1">Notes:</p>
-                
+
+              <div :if={assignment.notes} class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Notes:</p>
+
                 <p>{assignment.notes}</p>
               </div>
             </div>
           </div>
-          
+
           <div :if={@session.librarian_assignments == []} class="text-center py-12">
-            <.icon name="hero-user-group" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <p class="text-gray-500">No librarians assigned to this session</p>
+            <.icon
+              name="hero-user-group"
+              class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+            />
+            <p class="text-gray-500 dark:text-gray-400">No librarians assigned to this session</p>
           </div>
         </div>
-         <%!-- Items List --%>
+        <%!-- Items List --%>
         <div :if={@current_tab != "librarians"} class="p-6">
           <div class="space-y-2">
             <div
               :for={item <- @displayed_items}
-              class="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+              class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
             >
               <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900">
+                  <p class="font-medium text-gray-900 dark:text-gray-100">
                     {if item.item, do: item.item.item_code, else: "N/A"}
                   </p>
-                  
-                  <p class="text-sm text-gray-600">
+
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
                     {if item.collection, do: item.collection.title, else: "N/A"}
                   </p>
                 </div>
-                 <.item_check_badge status={item.check_status} />
+                <.item_check_badge status={item.check_status} />
               </div>
-              
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600">
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600 dark:text-gray-400">
                 <div>
                   <span class="font-medium">Inventory:</span> {if item.item,
                     do: item.item.inventory_code,
                     else: "N/A"}
                 </div>
-                
+
                 <div :if={item.item && item.item.barcode}>
                   <span class="font-medium">Barcode:</span> {item.item.barcode}
                 </div>
-                
+
                 <div :if={item.scanned_barcode}>
                   <span class="font-medium">Scanned:</span> {item.scanned_barcode}
                 </div>
-                
+
                 <div :if={item.checked_by}>
                   <div>
                     <span class="font-medium">Checked by:</span> {item.checked_by.fullname ||
                       item.checked_by.email}
                   </div>
-                  
+
                   <div>
                     <span class="font-medium">Checked at:</span> {FormatIndonesiaTime.format_utc_to_jakarta(
                       item.scanned_at
@@ -341,57 +368,62 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   </div>
                 </div>
               </div>
-               <%!-- Show changes from JSONB if any --%>
-              <div :if={item.has_changes && item.changes} class="mt-3 pt-3 border-t border-gray-200">
-                <p class="text-xs font-medium text-yellow-700 mb-2">Changes Found:</p>
-                
+              <%!-- Show changes from JSONB if any --%>
+              <div
+                :if={item.has_changes && item.changes}
+                class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"
+              >
+                <p class="text-xs font-medium text-yellow-700 dark:text-yellow-500 mb-2">
+                  Changes Found:
+                </p>
+
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div :for={{field, new_value} <- item.changes} class="col-span-2">
-                    <span class="text-gray-500">{String.capitalize(field)}:</span>
-                    <span class="text-green-600 font-medium">{new_value}</span>
+                    <span class="text-gray-500 dark:text-gray-400">{String.capitalize(field)}:</span>
+                    <span class="text-green-600 dark:text-green-400 font-medium">{new_value}</span>
                   </div>
                 </div>
               </div>
-              
-              <div :if={item.notes} class="mt-2 text-xs text-gray-600">
+
+              <div :if={item.notes} class="mt-2 text-xs text-gray-600 dark:text-gray-400">
                 <span class="font-medium">Notes:</span> {item.notes}
               </div>
             </div>
           </div>
-          
+
           <div :if={@displayed_items == []} class="text-center py-12">
-            <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <p class="text-gray-500">No items in this category</p>
+            <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <p class="text-gray-500 dark:text-gray-400">No items in this category</p>
           </div>
-           <%!-- Pagination Controls --%>
+          <%!-- Pagination Controls --%>
           <div
             :if={@current_tab != "librarians" && @pagination.total_pages > 1}
-            class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200"
+            class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"
           >
-            <div class="text-sm text-gray-700">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
               Showing {@pagination.page * @pagination.per_page - @pagination.per_page + 1} to {min(
                 @pagination.page * @pagination.per_page,
                 @pagination.total_count
               )} of {@pagination.total_count} items
             </div>
-            
+
             <div class="flex gap-2">
               <button
                 :if={@pagination.has_prev}
                 phx-click="paginate"
                 phx-value-page={@pagination.page - 1}
-                class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
               >
                 Previous
               </button>
-              <span class="px-3 py-2 text-sm text-gray-700">
+              <span class="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
                 Page {@pagination.page} of {@pagination.total_pages}
               </span>
               <button
                 :if={@pagination.has_next}
                 phx-click="paginate"
                 phx-value-page={@pagination.page + 1}
-                class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
               >
                 Next
               </button>
@@ -532,7 +564,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         socket =
           socket
           |> put_flash(:info, "Session completed and ready for review!")
-          |> redirect(to: ~p"/manage/stock-opname")
+          |> redirect(to: ~p"/manage/stock_opname")
 
         {:noreply, socket}
 
@@ -550,7 +582,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         socket =
           socket
           |> put_flash(:info, "Session deleted successfully!")
-          |> redirect(to: ~p"/manage/stock-opname")
+          |> redirect(to: ~p"/manage/stock_opname")
 
         {:noreply, socket}
 
@@ -617,7 +649,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     case tab do
       "all" -> session.total_items
       "checked" -> session.checked_items
-      "pending" -> session.total_items - session.checked_items - session.missing_items
+      "pending" -> session.total_items - session.checked_items
       "missing" -> session.missing_items
       "with_changes" -> session.items_with_changes
       _ -> 0

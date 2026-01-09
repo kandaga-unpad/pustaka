@@ -128,10 +128,59 @@
   id="notification-component"
   notifications={@notifications}
 />
-<footer class="flex flex-col items-center bg-gray-700 dark:bg-gray-800 text-white">
-  <div class="py-5">
-    <p class="font-semibold">
-      {assigns[:app_name] || Voile.Schema.System.get_setting_value("app_name", "Voile")} - Curatorian Developer | 2024 - {Date.utc_today().year}
-    </p>
+<footer class="bg-gray-800 flex w-full mx-auto items-center justify-center px-5 py-10 w-full">
+  <div class="max-w-7xl w-full border-t border-gray-600 pt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-400">
+        <p>
+          &copy; 2024 - {get_year()} {assigns[:app_name] ||
+            Voile.Schema.System.get_setting_value("app_name", "Voile")}. {gettext(
+            "All rights reserved."
+          )}
+        </p>
+
+        <p class="mt-1 text-xs">
+          {gettext("Powered by")}
+          <a
+            href="https://github.com/curatorian"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-white transition-colors"
+            style={
+                    "hover:color: #{assigns[:app_main_color] ||
+            Voile.Schema.System.get_setting_value("app_main_color", "#9333ea")}"
+                  }
+          >
+            Curatorian Developer
+          </a>
+        </p>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div class="text-xs text-gray-500">
+          <span>Built with</span>
+          <span
+            class="mx-1"
+            style={
+                    "hover:color: #{assigns[:app_main_color] ||
+            Voile.Schema.System.get_setting_value("app_main_color", "#9333ea")}"
+                  }
+          >
+            ♥
+          </span>
+          <span>
+            using
+            <a
+              href="https://github.com/curatorian/voile"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-white transition-colors"
+            >
+              Voile
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>

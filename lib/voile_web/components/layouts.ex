@@ -422,7 +422,7 @@ defmodule VoileWeb.Layouts do
         <div class="border-t border-gray-800 pt-8">
           <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-sm text-gray-400">
-              <p>&copy; {get_year()} {@app_name}. {gettext("All rights reserved.")}</p>
+              <p>&copy; 2024 - {get_year()} {@app_name}. {gettext("All rights reserved.")}</p>
 
               <p class="mt-1 text-xs">
                 {gettext("Powered by")}
