@@ -2702,7 +2702,7 @@ defmodule Voile.Schema.Library.Circulation do
        ) do
     # Automatically determine whether to skip holidays based on library configuration
     # Handle both keyword list and map for opts
-    skip_holidays = 
+    skip_holidays =
       cond do
         is_list(opts) -> Keyword.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
         is_map(opts) -> Map.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
