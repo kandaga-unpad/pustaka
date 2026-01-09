@@ -77,6 +77,13 @@ defmodule Voile.Schema.System do
   end
 
   @doc """
+  Updates node loan rules specifically.
+  """
+  def update_node_rules(%Node{} = node, attrs) do
+    update_node(node, attrs)
+  end
+
+  @doc """
   Deletes a node.
 
   ## Examples

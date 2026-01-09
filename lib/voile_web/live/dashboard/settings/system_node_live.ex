@@ -16,6 +16,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         <.button phx-click="new_node" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Node
         </.button>
+        <.button
+          href={~p"/manage/settings/nodes/rules"}
+          class="warning-btn"
+        >
+          <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> Configure Rules
+        </.button>
       </:actions>
     </.header>
 

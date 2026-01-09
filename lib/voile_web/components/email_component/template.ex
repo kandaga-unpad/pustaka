@@ -984,7 +984,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_started(session, librarian) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
     <!DOCTYPE html>
@@ -1109,7 +1109,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_librarian_completed(session, librarian, assignment) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
     <!DOCTYPE html>
@@ -1227,7 +1227,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_completed(session) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    review_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}/review"
+    review_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}/review"
 
     """
     <!DOCTYPE html>
@@ -1383,7 +1383,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_approved(session, librarian) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
     <!DOCTYPE html>
@@ -1519,7 +1519,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_rejected(session, librarian, reason) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
     <!DOCTYPE html>
@@ -1656,7 +1656,7 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_revision_requested(session, librarian, notes) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock-opname/#{session.id}/scan"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}/scan"
 
     """
     <!DOCTYPE html>

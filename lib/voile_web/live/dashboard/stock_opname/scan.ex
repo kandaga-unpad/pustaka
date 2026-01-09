@@ -9,133 +9,258 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
 
   def render(assigns) do
     ~H"""
-    <div class="container mx-auto px-4 py-6">
+    <%!-- Load html5-qrcode library from CDN --%>
+    <script
+      src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
+      phx-track-static
+    >
+    </script>
+
+    <style>
+      /* Ensure scanner video is visible */
+      #scanner-video video {
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+      }
+
+      #scanner-video canvas {
+        width: 100% !important;
+        height: auto !important;
+      }
+
+      #scanner-video {
+        position: relative !important;
+      }
+    </style>
+
+    <div class="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-7xl">
       <%!-- Header --%>
-      <div class="mb-6">
+      <div class="mb-4 sm:mb-6">
         <.link
           navigate={~p"/manage/stock_opname/#{@session.id}"}
-          class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
+          class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Session
         </.link>
-        <div class="flex justify-between items-start">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{@session.title}</h1>
-
-            <p class="text-gray-600 dark:text-gray-400">Session Code: {@session.session_code}</p>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+          <div class="flex-1">
+            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 break-words">
+              {@session.title}
+            </h1>
+            
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+              Code: {@session.session_code}
+            </p>
           </div>
-          <.session_status_badge status={@session.status} />
+           <.session_status_badge status={@session.status} />
         </div>
       </div>
-      <%!-- Progress Bar --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Your Progress</h2>
-
-          <span class="text-sm text-gray-600 dark:text-gray-400">
+       <%!-- Progress Bar --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 mb-2">
+          <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Your Progress
+          </h2>
+          
+          <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             {@librarian_progress.items_checked} / {@session.total_items} items
           </span>
         </div>
-
-        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+        
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 mb-3 sm:mb-4">
           <div
-            class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-500"
+            class="bg-blue-600 dark:bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-500"
             style={"width: #{calculate_progress(@librarian_progress.items_checked, @session.total_items)}%"}
           >
           </div>
         </div>
-        <%!-- Statistics --%>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="text-center">
-            <p class="text-2xl font-bold text-blue-600 dark:text-blue-500">
+         <%!-- Statistics --%>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+          <div class="text-center p-2 sm:p-0">
+            <p class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-500">
               {@session.checked_items}
             </p>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">Total Checked</p>
           </div>
-
-          <div class="text-center">
-            <p class="text-2xl font-bold text-gray-600 dark:text-gray-400">
+          
+          <div class="text-center p-2 sm:p-0">
+            <p class="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-400">
               {@session.total_items - @session.checked_items}
             </p>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">Remaining</p>
           </div>
-
-          <div class="text-center">
-            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-500">
+          
+          <div class="text-center p-2 sm:p-0">
+            <p class="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-500">
               {@session.items_with_changes}
             </p>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">With Changes</p>
           </div>
-
-          <div class="text-center">
-            <p class="text-2xl font-bold text-green-600 dark:text-green-500">
+          
+          <div class="text-center p-2 sm:p-0">
+            <p class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-500">
               {@librarian_progress.items_checked}
             </p>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">Your Checks</p>
           </div>
         </div>
       </div>
-      <%!-- Scanner Interface --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Scan Item</h2>
-
-        <form phx-submit="scan_item" class="mb-4">
+       <%!-- Scanner Interface --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+        <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+          Scan Item
+        </h2>
+         <%!-- Camera Scanner Section --%>
+        <div class="mb-4 sm:mb-6">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-3">
+            <h3 class="text-sm sm:text-md font-medium text-gray-700 dark:text-gray-300">
+              Camera Scanner
+            </h3>
+            
+            <button
+              type="button"
+              phx-click="toggle_scanner_mode"
+              class="text-xs sm:text-sm px-3 py-2 sm:px-0 sm:py-0 bg-blue-50 sm:bg-transparent dark:bg-blue-900/20 sm:dark:bg-transparent rounded-lg sm:rounded-none text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium sm:font-normal text-center"
+            >
+              {if @scanner_mode == "camera", do: "📝 Use Manual Input", else: "📷 Use Camera"}
+            </button>
+          </div>
+           <%!-- Camera Scanner UI --%>
+          <div
+            :if={@scanner_mode == "camera"}
+            id="barcode-scanner"
+            phx-hook="BarcodeScanner"
+            phx-update="ignore"
+            class="space-y-3"
+          >
+            <%!-- Video Container --%>
+            <div
+              id="scanner-video"
+              class="w-full bg-gray-900 rounded-lg overflow-hidden relative"
+              style="min-height: 250px; max-width: 100%; margin: 0 auto;"
+            >
+            </div>
+             <%!-- Scanner Controls --%>
+            <div class="flex gap-2">
+              <button
+                id="start-scanner-btn"
+                type="button"
+                class="flex-1 px-3 sm:px-4 py-3 sm:py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation"
+              >
+                <.icon name="hero-camera" class="w-5 h-5" />
+                <span class="hidden sm:inline">Start Camera</span><span class="sm:hidden">Start</span>
+              </button>
+              <button
+                id="stop-scanner-btn"
+                type="button"
+                style="display: none;"
+                class="flex-1 px-3 sm:px-4 py-3 sm:py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation"
+              >
+                <.icon name="hero-x-mark" class="w-5 h-5" />
+                <span class="hidden sm:inline">Stop Camera</span><span class="sm:hidden">Stop</span>
+              </button>
+              <button
+                id="switch-camera-btn"
+                type="button"
+                style="display: none;"
+                class="px-3 sm:px-4 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-lg transition-colors touch-manipulation"
+                title="Switch Camera"
+              >
+                <.icon name="hero-arrow-path" class="w-5 h-5" />
+              </button>
+            </div>
+            
+            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-1">
+              <.icon name="hero-information-circle" class="w-4 h-4 inline" />
+              Position the barcode in the scanning area. Auto-scans when detected.
+            </p>
+             <%!-- Troubleshooting Tips --%>
+            <details class="text-xs text-gray-600 dark:text-gray-400">
+              <summary class="cursor-pointer hover:text-gray-800 dark:hover:text-gray-200">
+                Camera not working? Click for help
+              </summary>
+              
+              <ul class="mt-2 ml-4 list-disc space-y-1">
+                <li>Make sure no other app is using your camera</li>
+                
+                <li>Check browser permissions and allow camera access</li>
+                
+                <li>Try refreshing the page</li>
+                
+                <li>Try switching to manual input mode</li>
+                
+                <li>On mobile, ensure your browser has camera permissions in system settings</li>
+              </ul>
+            </details>
+          </div>
+        </div>
+         <%!-- Manual Input Form --%>
+        <form
+          :if={@scanner_mode == "manual"}
+          phx-submit="scan_item"
+          class="mb-4"
+        >
           <div class="flex gap-2">
             <div class="flex-1">
               <input
                 type="text"
                 name="search_term"
                 value={@search_term}
-                placeholder="Scan barcode or enter item code..."
+                placeholder="Barcode or item code..."
                 autofocus
                 id="scan-input"
                 phx-change="update_search_term"
                 phx-keydown="scan_input_keydown"
-                class="w-full px-4 py-3 text-lg border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-100"
+                class="w-full px-3 sm:px-4 py-3 text-base sm:text-lg border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-100 touch-manipulation"
               />
             </div>
-
+            
             <button
               type="submit"
-              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              class="px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-lg transition-colors touch-manipulation"
             >
-              <.icon name="hero-magnifying-glass" class="w-6 h-6" />
+              <.icon name="hero-magnifying-glass" class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
-
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Supports barcode, legacy item code, or item code search
+          
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2 px-1">
+            Barcode, legacy code, or item code
           </p>
         </form>
       </div>
-      <%!-- Duplicate Results (if multiple items found) --%>
+       <%!-- Duplicate Results (if multiple items found) --%>
       <div
         :if={@duplicate_items != []}
-        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mb-6"
+        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-6 mb-4 sm:mb-6"
       >
-        <h3 class="text-lg font-semibold text-yellow-900 dark:text-yellow-300 mb-4">
-          Multiple Items Found - Select One
+        <h3 class="text-base sm:text-lg font-semibold text-yellow-900 dark:text-yellow-300 mb-3 sm:mb-4">
+          Multiple Items - Select One
         </h3>
-
-        <div class="space-y-3">
+        
+        <div class="space-y-2 sm:space-y-3">
           <button
             :for={opname_item <- @duplicate_items}
             type="button"
             phx-click="select_item"
             phx-value-id={opname_item.id}
-            class="w-full text-left p-4 bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-600 hover:border-yellow-500 dark:hover:border-yellow-500 rounded-lg transition-colors"
+            class="w-full text-left p-3 sm:p-4 bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-600 hover:border-yellow-500 active:border-yellow-600 dark:hover:border-yellow-500 rounded-lg transition-colors touch-manipulation"
           >
-            <div class="flex justify-between items-start">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
               <div class="flex-1">
-                <p class="font-semibold text-gray-900 dark:text-gray-100">{opname_item.item_code}</p>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">{opname_item.collection_title}</p>
-
-                <div class="flex gap-4 mt-2 text-xs text-gray-500 dark:text-gray-500">
+                <p class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">
+                  {opname_item.item_code}
+                </p>
+                
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  {opname_item.collection_title}
+                </p>
+                
+                <div class="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-500">
                   <span>Inventory: {opname_item.inventory_code}</span>
                   <span :if={opname_item.barcode}>Barcode: {opname_item.barcode}</span>
                   <span :if={opname_item.legacy_item_code}>
@@ -143,65 +268,69 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   </span>
                 </div>
               </div>
-              <.item_check_badge status={opname_item.check_status} />
+               <.item_check_badge status={opname_item.check_status} />
             </div>
           </button>
         </div>
       </div>
-      <%!-- Current Item Detail Card --%>
+       <%!-- Current Item Detail Card --%>
       <div
         :if={@current_item}
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-6 mb-4 sm:mb-6"
         phx-window-keydown="keyboard_shortcut"
         phx-key="Enter"
       >
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Item Details</h3>
-
+        <div class="flex justify-between items-start mb-3 sm:mb-4">
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Item Details
+          </h3>
+          
           <button
             type="button"
             phx-click="clear_item"
-            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
+            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 p-1 touch-manipulation"
           >
             <.icon name="hero-x-mark" class="w-6 h-6" />
           </button>
         </div>
-        <%!-- Actions at Top --%>
-        <div class="flex gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+         <%!-- Actions at Top --%>
+        <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
           <button
             type="button"
             phx-click="check_item"
-            class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+            class="flex-1 px-3 sm:px-4 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium rounded-lg transition-colors text-sm sm:text-base touch-manipulation"
           >
-            <.icon name="hero-check-circle" class="w-5 h-5 inline mr-2" /> Mark as Checked
+            <.icon name="hero-check-circle" class="w-5 h-5 inline mr-1 sm:mr-2" /> <span class="hidden sm:inline">Mark as </span>Checked
           </button>
           <button
             type="button"
             phx-click="clear_item"
-            class="px-4 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition-colors"
+            class="px-3 sm:px-4 py-3 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition-colors text-sm sm:text-base touch-manipulation"
           >
             Cancel
           </button>
         </div>
-
-        <div class="space-y-6">
+        
+        <div class="space-y-3 sm:space-y-6">
           <%!-- Identification Section --%>
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6">
-            <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <.icon name="hero-identification" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              Item Identification
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 sm:p-6">
+            <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
+              <.icon
+                name="hero-identification"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400"
+              /> Item Identification
             </h4>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
                   Item Code <span class="text-gray-400 dark:text-gray-500 text-xs">(Read-only)</span>
                 </label>
-                <div class="bg-white dark:bg-gray-700 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 font-mono text-sm text-gray-700 dark:text-gray-300">
+                <div class="bg-white dark:bg-gray-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-200 dark:border-gray-600 font-mono text-xs sm:text-sm text-gray-700 dark:text-gray-300 break-all">
                   {@current_item.item.item_code}
                 </div>
               </div>
-
+              
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Inventory Code
@@ -211,7 +340,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {@current_item.item.inventory_code}
                 </div>
               </div>
-
+              
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Barcode <span class="text-gray-400 dark:text-gray-500 text-xs">(Read-only)</span>
@@ -220,7 +349,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {@current_item.item.barcode || "N/A"}
                 </div>
               </div>
-
+              
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Legacy Item Code
@@ -231,7 +360,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 </div>
               </div>
             </div>
-
+            
             <div class="mt-4">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Collection <span class="text-gray-400 dark:text-gray-500 text-xs">(Read-only)</span>
@@ -241,25 +370,25 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               </div>
             </div>
           </div>
-          <%!-- Status & Condition Section --%>
-          <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6">
-            <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+           <%!-- Status & Condition Section --%>
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 sm:p-6">
+            <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
               <.icon
                 name="hero-clipboard-document-check"
-                class="w-5 h-5 text-green-600 dark:text-green-400"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400"
               /> Status & Condition
             </h4>
-
+            
             <form phx-change="update_field">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
                     Status
                   </label>
                   <select
                     name="status"
                     phx-change="update_field"
-                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all text-sm bg-white dark:bg-gray-700 dark:text-gray-200"
+                    class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
                   >
                     <option
                       :for={{label, value} <- Item.status_options()}
@@ -270,7 +399,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     </option>
                   </select>
                 </div>
-
+                
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Condition
@@ -289,7 +418,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     </option>
                   </select>
                 </div>
-
+                
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Availability
@@ -311,13 +440,15 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               </div>
             </form>
           </div>
-          <%!-- Location & Notes Section --%>
-          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-6">
-            <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <.icon name="hero-map-pin" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              Location & Notes
+           <%!-- Location & Notes Section --%>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-3 sm:p-6">
+            <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
+              <.icon
+                name="hero-map-pin"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400"
+              /> Location & Notes
             </h4>
-
+            
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -329,6 +460,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm dark:bg-gray-700 dark:text-gray-200"
                   >
                     <option value="">-- Select Room (Optional) --</option>
+                    
                     <option
                       :for={location <- @locations}
                       value={location.id}
@@ -341,7 +473,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   </select>
                 </form>
               </div>
-
+              
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Free-text Location
@@ -357,7 +489,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   />
                 </form>
               </div>
-
+              
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Notes
@@ -376,10 +508,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           </div>
         </div>
       </div>
-      <%!-- Recently Scanned Items --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recently Scanned</h3>
-
+       <%!-- Recently Scanned Items --%>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+          Recently Scanned
+        </h3>
+        
         <div id="recently-scanned" phx-update="stream" class="space-y-2">
           <div
             id="empty-state"
@@ -388,32 +522,33 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <.icon name="hero-inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
             <p>No items scanned yet. Start scanning to see items here.</p>
           </div>
-
+          
           <div
             :for={{dom_id, opname_item} <- @streams.recent_items}
             id={dom_id}
-            class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            class="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
           >
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0 sm:items-center">
               <div class="flex-1">
-                <p class="font-medium text-gray-900 dark:text-gray-100">
+                <p class="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 break-all">
                   {if opname_item.item, do: opname_item.item.item_code, else: "N/A"}
                 </p>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                   {if opname_item.collection, do: opname_item.collection.title, else: "N/A"}
                 </p>
               </div>
-
-              <div class="flex items-center gap-3">
+              
+              <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <.item_check_badge status={opname_item.check_status} />
                 <span
                   :if={opname_item.has_changes}
-                  class="text-xs text-yellow-600 dark:text-yellow-500"
+                  class="text-xs text-yellow-600 dark:text-yellow-500 whitespace-nowrap"
                 >
-                  <.icon name="hero-pencil" class="w-4 h-4 inline" /> Modified
+                  <.icon name="hero-pencil" class="w-3 h-3 sm:w-4 sm:h-4 inline" />
+                  <span class="hidden sm:inline">Modified</span>
                 </span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">
+                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                   {format_time(opname_item.scanned_at || opname_item.updated_at)}
                 </span>
               </div>
@@ -421,24 +556,24 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           </div>
         </div>
       </div>
-      <%!-- Complete Work Button --%>
-      <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="font-semibold text-blue-900 dark:text-blue-300 mb-1">
+       <%!-- Complete Work Button --%>
+      <div class="mt-4 sm:mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0 sm:items-center">
+          <div class="flex-1">
+            <h3 class="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-300 mb-1">
               Finished checking items?
             </h3>
-
-            <p class="text-sm text-blue-700 dark:text-blue-400">
-              Mark your work session as completed when you're done.
+            
+            <p class="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
+              Mark your work session as completed.
             </p>
           </div>
-
+          
           <button
             type="button"
             phx-click="complete_work"
             disabled={@librarian_progress.items_checked == 0}
-            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+            class="w-full sm:w-auto px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-sm sm:text-base touch-manipulation"
           >
             Complete My Work
           </button>
@@ -472,6 +607,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               |> assign(:current_user, current_user)
               |> assign(:librarian_progress, librarian_progress)
               |> assign(:search_term, "")
+              |> assign(:scanner_mode, "manual")
               |> assign(:current_item, nil)
               |> assign(:duplicate_items, [])
               |> assign(:updated_values, %{})
@@ -726,6 +862,46 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
 
   def handle_event("update_search_term", %{"search_term" => term}, socket) do
     {:noreply, assign(socket, :search_term, term)}
+  end
+
+  def handle_event("toggle_scanner_mode", _params, socket) do
+    new_mode = if socket.assigns.scanner_mode == "camera", do: "manual", else: "camera"
+    {:noreply, assign(socket, :scanner_mode, new_mode)}
+  end
+
+  def handle_event("barcode_scanned", %{"barcode" => barcode}, socket) do
+    # Automatically search for the scanned barcode
+    items = StockOpname.find_items_for_scanning(socket.assigns.session, barcode)
+
+    socket =
+      case length(items) do
+        0 ->
+          socket
+          |> put_flash(:error, "Item not found: #{barcode}")
+
+        1 ->
+          [opname_item] = items
+          load_item_for_checking(socket, opname_item)
+
+        _ ->
+          socket
+          |> assign(:duplicate_items, items)
+          |> put_flash(:info, "Multiple items found. Please select one.")
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("scanner_error", %{"error" => error}, socket) do
+    {:noreply, put_flash(socket, :error, "Scanner error: #{error}")}
+  end
+
+  def handle_event("scanner_started", _params, socket) do
+    {:noreply, put_flash(socket, :info, "Camera started. Position barcode in view.")}
+  end
+
+  def handle_event("scanner_stopped", _params, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("complete_work", _params, socket) do

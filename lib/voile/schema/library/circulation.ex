@@ -9,6 +9,7 @@ defmodule Voile.Schema.Library.Circulation do
   alias Voile.Schema.Library.{
     CirculationHistory,
     Fine,
+    LoanRuleResolver,
     Payment,
     Requisition,
     Reservation,
@@ -1304,15 +1305,21 @@ defmodule Voile.Schema.Library.Circulation do
   # ============================================================================
 
   @doc """
-  Creates a transaction (checkout) - respects member type policies.
+  Creates a transaction (checkout) - respects node and member type policies.
+
+  Pass `node` in attrs to apply node-specific rules:
+    checkout_item(member_id, item_id, librarian_id, %{node: node})
   """
   def checkout_item(member_id, item_id, librarian_id, attrs \\ %{}) do
     Repo.transaction(fn ->
+      node = Map.get(attrs, :node)
+
       with {:ok, member} <- get_member_with_type(member_id),
            {:ok, item} <- validate_item_available(item_id),
-           {:ok, _} <- validate_member_checkout_eligibility(member),
+           {:ok, _} <- validate_member_checkout_eligibility(member, node),
            {:ok, _} <- validate_collection_access(member, item),
-           {:ok, transaction} <- create_checkout_transaction(member, item, librarian_id, attrs),
+           {:ok, transaction} <-
+             create_checkout_transaction(member, item, librarian_id, attrs, node),
            {:ok, _item} <- update_item_availability(item, "loaned"),
            {:ok, _history} <- record_circulation_history(transaction, "loan") do
         transaction
@@ -1326,17 +1333,20 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Returns an item (return).
 
-  Options:
+  Options in attrs:
   - skip_holidays: boolean (default: false) - when true, counts ALL calendar days for fines;
     when false, excludes holidays/weekends from fine calculation
+  - node: Node struct (optional) - for node-based fine calculation
   """
   def return_item(transaction_id, librarian_id, attrs \\ %{}) do
     Repo.transaction(fn ->
+      node = Map.get(attrs, :node)
+
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
            # Check if overdue BEFORE completing the transaction
            {:ok, fine_data} <-
-             prepare_fine_if_overdue(transaction, member.user_type),
+             prepare_fine_if_overdue(transaction, member.user_type, node, attrs),
            # Extract fine_amount from fine_data to store in transaction
            fine_amount <- extract_fine_amount(fine_data),
            {:ok, transaction} <-
@@ -2308,10 +2318,10 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp validate_member_checkout_eligibility(%User{user_type: member_type} = member) do
+  defp validate_member_checkout_eligibility(%User{user_type: member_type} = member, node \\ nil) do
     with {:ok, _} <- check_manual_suspension(member),
-         {:ok, _} <- check_concurrent_loan_limit(member, member_type),
-         {:ok, _} <- check_fine_limit(member, member_type) do
+         {:ok, _} <- check_concurrent_loan_limit(member, member_type, node),
+         {:ok, _} <- check_fine_limit(member, member_type, node) do
       {:ok, :eligible}
     else
       {:error, reason} -> {:error, reason}
@@ -2327,22 +2337,26 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp check_concurrent_loan_limit(%User{id: member_id}, %MemberType{
-         max_concurrent_loans: max_loans
-       }) do
+  defp check_concurrent_loan_limit(%User{id: member_id}, %MemberType{} = member_type, node) do
     current_loans =
       Transaction
       |> where([t], t.member_id == ^member_id and t.status == "active")
       |> Repo.aggregate(:count, :id)
 
-    if current_loans >= (max_loans || 0) do
+    rules = LoanRuleResolver.resolve_rules(node, member_type)
+    max_loans = rules.max_concurrent_loans
+
+    if current_loans >= max_loans do
       {:error, "Maximum concurrent loans limit (#{max_loans}) reached"}
     else
       {:ok, :within_limit}
     end
   end
 
-  defp check_fine_limit(%User{id: member_id}, %MemberType{max_fine: max_fine}) do
+  defp check_fine_limit(%User{id: member_id}, %MemberType{} = member_type, node) do
+    rules = LoanRuleResolver.resolve_rules(node, member_type)
+    max_fine = rules.max_fine
+
     if is_nil(max_fine) do
       {:ok, :no_limit}
     else
@@ -2450,9 +2464,10 @@ defmodule Voile.Schema.Library.Circulation do
          %User{user_type: member_type} = member,
          %Item{} = item,
          librarian_id,
-         attrs
+         attrs,
+         node \\ nil
        ) do
-    due_date = calculate_due_date_for_member_type(member_type)
+    due_date = calculate_due_date_for_member_type(member_type, node)
 
     transaction_attrs =
       Map.merge(attrs, %{
@@ -2681,32 +2696,40 @@ defmodule Voile.Schema.Library.Circulation do
   # Prepare fine data before transaction is completed (while return_date is still nil)
   defp prepare_fine_if_overdue(
          %Transaction{} = transaction,
-         %MemberType{} = member_type
+         %MemberType{} = member_type,
+         node \\ nil,
+         opts \\ []
        ) do
     # Automatically determine whether to skip holidays based on library configuration
-    skip_holidays = should_skip_holidays_in_fines?()
+    # Handle both keyword list and map for opts
+    skip_holidays = 
+      cond do
+        is_list(opts) -> Keyword.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
+        is_map(opts) -> Map.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
+        true -> should_skip_holidays_in_fines?()
+      end
 
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
-      daily_fine = member_type.fine_per_day || Decimal.new("1.00")
-      fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
+
+      # Use LoanRuleResolver for node-aware fine calculation
+      rules = LoanRuleResolver.resolve_rules(node, member_type)
+      fine_amount = Decimal.mult(Decimal.new(days_overdue), rules.fine_per_day)
 
       # Apply max fine limit if configured
-      # nil or Decimal.new("0") = no cap, use full calculated amount
-      # any other positive value = cap at that amount
       final_amount =
-        if is_nil(member_type.max_fine) or
-             Decimal.compare(member_type.max_fine, Decimal.new("0")) == :eq do
+        if is_nil(rules.max_fine) or
+             Decimal.compare(rules.max_fine, Decimal.new("0")) == :eq do
           fine_amount
         else
-          Decimal.min(fine_amount, member_type.max_fine)
+          Decimal.min(fine_amount, rules.max_fine)
         end
 
       fine_description =
         if skip_holidays do
-          "Late return fine - #{days_overdue} calendar days overdue at #{daily_fine}/day (all days counted)"
+          "Late return fine - #{days_overdue} calendar days overdue at #{rules.fine_per_day}/day (all days counted)"
         else
-          "Late return fine - #{days_overdue} business days overdue at #{daily_fine}/day (holidays excluded)"
+          "Late return fine - #{days_overdue} business days overdue at #{rules.fine_per_day}/day (holidays excluded)"
         end
 
       {:ok,
@@ -2760,15 +2783,15 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   # Member Type Policy Calculations
-  defp calculate_due_date_for_member_type(%MemberType{max_days: max_days}) do
-    # Default to 14 days if not configured
-    loan_days = max_days || 14
+  defp calculate_due_date_for_member_type(%MemberType{} = member_type, node \\ nil) do
+    rules = LoanRuleResolver.resolve_rules(node, member_type)
+    loan_days = rules.max_days
     DateTime.add(DateTime.utc_now(), loan_days * 24 * 60 * 60, :second)
   end
 
-  defp calculate_renewal_due_date(current_due_date, %MemberType{max_days: max_days}) do
-    # Default to 14 days if not configured
-    loan_days = max_days || 14
+  defp calculate_renewal_due_date(current_due_date, %MemberType{} = member_type, node \\ nil) do
+    rules = LoanRuleResolver.resolve_rules(node, member_type)
+    loan_days = rules.max_days
     DateTime.add(current_due_date, loan_days * 24 * 60 * 60, :second)
   end
 

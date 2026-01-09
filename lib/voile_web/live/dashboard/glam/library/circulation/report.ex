@@ -456,7 +456,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {transaction.member.full_name}
+                      {transaction.member.fullname}
                     </div>
                     
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -466,7 +466,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                   
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900 dark:text-gray-100">
-                      {transaction.item.title}
+                      {transaction.item.collection.title}
                     </div>
                     
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -481,7 +481,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                   </td>
                   
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format_datetime(transaction.checkout_date)}
+                    {format_datetime(transaction.transaction_date)}
                   </td>
                   
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">

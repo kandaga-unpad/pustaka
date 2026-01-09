@@ -37,21 +37,21 @@ defmodule VoileWeb.VoileDashboardComponents do
   def nav_bar(assigns) do
     ~H"""
     <div class="w-full bg-white dark:bg-gray-700 flex items-center my-5 p-5 rounded-lg gap-6">
-      <div class="nav-bar-logo">
+      <div class="nav-bar-logo flex-shrink-0">
         <.link patch="/manage#">
           <%= if Voile.Schema.System.get_setting_value("app_logo_url", nil) do %>
             <img
               src={Voile.Schema.System.get_setting_value("app_logo_url", nil)}
-              class="h-full w-24 object-cover"
+              class="h-full w-16 object-cover"
               alt="App Logo"
             />
           <% else %>
-            <img src="/images/v.png" class="w-24 h-full" alt="Voile Logo" />
+            <img src="/images/v.png" class="w-16 h-full" alt="Voile Logo" />
           <% end %>
         </.link>
       </div>
-
-      <div class="w-full text-voile-primary flex gap-4">
+       <%!-- Desktop Menu --%>
+      <div class="hidden lg:flex w-full text-voile-primary gap-4">
         <.link
           patch="/manage"
           class={["default-menu", @active_nav == "/manage" && "active-menu"]}
@@ -67,8 +67,8 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         <% end %>
       </div>
-
-      <div class="w-full flex justify-end gap-3">
+       <%!-- Desktop Actions --%>
+      <div class="hidden lg:flex w-full justify-end gap-3">
         <Layouts.theme_toggle />
         <.link
           href="/users/log_out"
@@ -104,15 +104,29 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def dashboard_menu_bar(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full h-full flex items-center justify-between">
-      <div class="flex flex-col items-start justify-between gap-10 w-full">
-        <div>
-          <h5>{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
+    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full h-full flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+      <div class="flex flex-col items-start justify-between gap-4 lg:gap-10 w-full">
+        <div class="w-full flex items-center justify-between">
+          <div>
+            <h5 class="text-lg md:text-xl">{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
 
-          <p>{gettext("You can check your collection data here")}</p>
+            <p class="text-sm md:text-base">{gettext("You can check your collection data here")}</p>
+          </div>
+           <%!-- Mobile/Tablet Menu Toggle --%>
+          <button
+            type="button"
+            phx-click={
+              JS.show(to: "#dashboard-mobile-menu-backdrop")
+              |> JS.show(to: "#dashboard-mobile-menu-panel")
+            }
+            class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
+          </button>
         </div>
-
-        <div class="flex gap-2">
+         <%!-- Desktop Menu (wrapped flex) --%>
+        <div class="hidden lg:flex gap-2 flex-wrap">
           <.link
             patch="/manage/catalog/collections"
             class={[
@@ -176,7 +190,205 @@ defmodule VoileWeb.VoileDashboardComponents do
         </div>
       </div>
 
-      <div><.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" /></div>
+      <div class="hidden lg:block flex-shrink-0">
+        <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Mobile menu overlay for dashboard navigation (completely separate from page flow)
+  Must be placed at root level of your LiveView template
+
+  ## Example
+      <.dashboard_mobile_menu active_menu={@current_path} />
+  """
+  attr :active_menu, :string, default: ""
+
+  def dashboard_mobile_menu(assigns) do
+    ~H"""
+    <%!-- Backdrop --%>
+    <div
+      id="dashboard-mobile-menu-backdrop"
+      phx-click={
+        JS.hide(to: "#dashboard-mobile-menu-backdrop") |> JS.hide(to: "#dashboard-mobile-menu-panel")
+      }
+      class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] lg:hidden"
+      aria-hidden="true"
+    /> <%!-- Slide-up Panel --%>
+    <div
+      id="dashboard-mobile-menu-panel"
+      class="hidden fixed inset-x-0 bottom-0 bg-white dark:bg-gray-800 shadow-2xl z-[70] rounded-t-3xl max-h-[85vh] overflow-y-auto lg:hidden"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {gettext("Quick Navigation")}
+          </h3>
+
+          <button
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-backdrop")
+              |> JS.hide(to: "#dashboard-mobile-menu-panel")
+            }
+            aria-label="Close menu"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <.icon name="hero-x-mark" class="h-6 w-6" />
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <.link
+            patch="/manage/catalog/collections"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/catalog/collections") &&
+                "border-voile-primary bg-voile-primary/10 dark:bg-voile-primary/20",
+              !(@active_menu |> String.starts_with?("/manage/catalog/collections")) &&
+                "border-gray-200 dark:border-gray-700 active:border-voile-primary"
+            ]}
+          >
+            <.icon name="hero-folder" class="h-8 w-8 mb-2 text-voile-primary" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Collections")}
+            </span>
+          </.link>
+          <.link
+            patch="/manage/catalog/items"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/catalog/items") &&
+                "border-voile-info bg-voile-info/10 dark:bg-voile-info/20",
+              !(@active_menu |> String.starts_with?("/manage/catalog/items")) &&
+                "border-gray-200 dark:border-gray-700 active:border-voile-info"
+            ]}
+          >
+            <.icon name="hero-document" class="h-8 w-8 mb-2 text-voile-info" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Items")}
+            </span>
+          </.link>
+          <.link
+            patch="/manage/catalog/labels"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/catalog/labels") &&
+                "border-voile-warning bg-voile-warning/10 dark:bg-voile-warning/20",
+              !(@active_menu |> String.starts_with?("/manage/catalog/labels")) &&
+                "border-gray-200 dark:border-gray-700 active:border-voile-warning"
+            ]}
+          >
+            <.icon name="hero-tag" class="h-8 w-8 mb-2 text-voile-warning" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Labels")}
+            </span>
+          </.link>
+          <.link
+            navigate="/manage/catalog/asset-vault"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/catalog/asset-vault") &&
+                "border-voile-success bg-voile-success/10 dark:bg-voile-success/20",
+              !(@active_menu |> String.starts_with?("/manage/catalog/asset-vault")) &&
+                "border-gray-200 dark:border-gray-700 active:border-voile-success"
+            ]}
+          >
+            <.icon name="hero-archive-box" class="h-8 w-8 mb-2 text-voile-success" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Asset Vault")}
+            </span>
+          </.link>
+          <.link
+            patch="/manage/transfers"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/transfers") &&
+                "border-voile-accent bg-voile-accent/10 dark:bg-voile-accent/20",
+              !(@active_menu |> String.starts_with?("/manage/transfers")) &&
+                "border-gray-200 dark:border-gray-700 active:border-voile-accent"
+            ]}
+          >
+            <.icon name="hero-arrow-path" class="h-8 w-8 mb-2 text-voile-accent" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Transfers")}
+            </span>
+          </.link>
+          <.link
+            patch="/manage/stock_opname"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/stock_opname") &&
+                "border-purple-600 bg-purple-600/10 dark:bg-purple-600/20",
+              !(@active_menu |> String.starts_with?("/manage/stock_opname")) &&
+                "border-gray-200 dark:border-gray-700 active:border-purple-600"
+            ]}
+          >
+            <.icon name="hero-clipboard-document-check" class="h-8 w-8 mb-2 text-purple-600" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Stock Opname")}
+            </span>
+          </.link>
+        </div>
+
+        <%!-- Action Buttons --%>
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div class="grid grid-cols-3 gap-3">
+            <.link
+              href="/"
+              phx-click={JS.hide(to: "#dashboard-mobile-menu-panel") |> JS.hide(to: "#dashboard-mobile-menu-backdrop")}
+              class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 transition-all active:scale-95 active:border-voile-primary"
+            >
+              <.icon name="hero-home" class="h-6 w-6 mb-1 text-gray-700 dark:text-gray-300" />
+              <span class="text-xs font-medium text-center text-gray-900 dark:text-white">
+                {gettext("Home")}
+              </span>
+            </.link>
+
+            <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700">
+              <Layouts.theme_toggle />
+            </div>
+
+            <.link
+              href="/users/log_out"
+              method="delete"
+              class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-voile-error transition-all active:scale-95 bg-voile-error/10 dark:bg-voile-error/20"
+            >
+              <.icon name="hero-arrow-right-on-rectangle" class="h-6 w-6 mb-1 text-voile-error" />
+              <span class="text-xs font-medium text-center text-voile-error">
+                {gettext("Logout")}
+              </span>
+            </.link>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end
@@ -521,7 +733,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               <%= if Map.get(item, :icon) do %>
                 <.icon name={item.icon} class="w-5 h-5" />
               <% end %>
-              {item.label}
+               {item.label}
             </.link>
           </li>
         <% end %>
@@ -883,7 +1095,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           />
         </div>
       </div>
-      <%!-- Decorative background pattern --%>
+       <%!-- Decorative background pattern --%>
       <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
         <.icon name={@icon} class="w-full h-full text-white" />
       </div>
@@ -962,7 +1174,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
         </div>
       </div>
-      <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
+       <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
     </.link>
     """
   end

@@ -28,6 +28,7 @@ import { SearchDropdown } from "./hooks/search_dropdown_hook";
 import { SearchPanel } from "./hooks/search_panel_hook";
 import { TurnstileHook } from "phoenix_turnstile";
 import { EbookReader } from "./hooks/ebook_reader_hook";
+import { BarcodeScanner } from "./hooks/barcode_scanner";
 import topbar from "../vendor/topbar";
 import DragDrop from "./hooks/sortable";
 import DragUpload from "./hooks/draggable_area";
@@ -66,6 +67,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     SearchFocus,
     SearchResultsLoading,
     NotificationSound,
+    BarcodeScanner,
     Turnstile: TurnstileHook,
     EbookReader,
     ...colocatedHooks,

@@ -3,6 +3,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Show do
   import VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
   import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
+  alias Voile.Repo
   alias Voile.Schema.Library.Circulation
   alias VoileWeb.Auth.Authorization
 
@@ -53,8 +54,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Show do
   @impl true
   def handle_event("return", %{"id" => id}, socket) do
     current_user_id = socket.assigns.current_scope.user.id
+    transaction = Circulation.get_transaction!(id) |> Repo.preload(item: :node)
 
-    case Circulation.return_item(id, current_user_id) do
+    case Circulation.return_item(id, current_user_id, %{node: transaction.item.node}) do
       {:ok, transaction} ->
         fine =
           case Circulation.get_fine_by_transaction(transaction.id) do
@@ -288,7 +290,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Show do
         :error -> Decimal.new("0")
       end
 
-    case Circulation.return_item(transaction_id, current_user_id) do
+    transaction_preloaded =
+      Circulation.get_transaction!(transaction_id) |> Repo.preload(item: :node)
+
+    case Circulation.return_item(transaction_id, current_user_id, %{
+           node: transaction_preloaded.item.node
+         }) do
       {:ok, transaction} ->
         # After return, check if a fine exists for the transaction
         fine =

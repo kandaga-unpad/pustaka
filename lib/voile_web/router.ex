@@ -400,6 +400,7 @@ defmodule VoileWeb.Router do
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
           live "/holidays", Dashboard.Settings.HolidayLive, :index
           live "/nodes", Dashboard.Settings.SystemNodeLive, :index
+          live "/nodes/rules", Dashboard.Settings.SystemNodeRulesLive, :index
 
           live "/api_manager", Dashboard.Settings.ApiManager, :index
 

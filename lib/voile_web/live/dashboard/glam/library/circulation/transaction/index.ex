@@ -133,10 +133,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
               {:noreply, socket}
 
             member ->
-              item = Catalog.get_item_by_code!(item_id)
+              item = Catalog.get_item_by_code!(item_id) |> Repo.preload(:node)
               librarian = socket.assigns.current_scope.user.id
 
-              case Circulation.checkout_item(member.id, item.id, librarian) do
+              case Circulation.checkout_item(member.id, item.id, librarian, %{node: item.node}) do
                 {:ok, transaction} ->
                   socket =
                     socket
@@ -167,8 +167,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Transaction.Index do
       {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
     else
       current_user_id = socket.assigns.current_scope.user.id
+      transaction = Circulation.get_transaction!(id) |> Repo.preload(item: :node)
 
-      case Circulation.return_item(id, current_user_id) do
+      case Circulation.return_item(id, current_user_id, %{node: transaction.item.node}) do
         {:ok, transaction} ->
           socket =
             socket
