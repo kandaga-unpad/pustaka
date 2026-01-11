@@ -1,11 +1,10 @@
 defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   use VoileWeb, :live_view_dashboard
 
+  alias Voile.Repo
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.StockOpname
-  alias Voile.Schema.Master.Location
   alias VoileWeb.Auth.StockOpnameAuthorization
-  import Ecto.Query
 
   def render(assigns) do
     ~H"""
@@ -312,7 +311,108 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         </div>
         
         <div class="space-y-3 sm:space-y-6">
-          <%!-- Identification Section --%>
+          <%!-- Collection Information Section --%>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-3 sm:p-6">
+            <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
+              <.icon
+                name="hero-book-open"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400"
+              /> Collection Information
+            </h4>
+            
+            <form phx-change="update_field">
+              <div class="space-y-3 sm:space-y-4">
+                <div>
+                  <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                    Title <span class="text-xs text-blue-600 dark:text-blue-400">(Editable)</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="collection_title"
+                    value={@updated_values.collection_title}
+                    phx-debounce="300"
+                    class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-xs sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
+                  />
+                </div>
+                 <%!-- Creator/Author Search with Dropdown --%>
+                <div class="relative">
+                  <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                    Author/Creator
+                    <span class="text-xs text-blue-600 dark:text-blue-400">(Searchable)</span>
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="text"
+                      value={@creator_input}
+                      phx-keyup="search_creator"
+                      phx-debounce="300"
+                      placeholder="Type to search creators..."
+                      class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-xs sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
+                    /> <%!-- Creator Suggestions Dropdown --%>
+                    <div
+                      :if={@creator_suggestions != []}
+                      class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    >
+                      <button
+                        :for={creator <- @creator_suggestions}
+                        type="button"
+                        phx-click="select_creator"
+                        phx-value-id={creator.id}
+                        class="w-full text-left px-3 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs sm:text-sm text-gray-700 dark:text-gray-200 border-b last:border-b-0 border-gray-100 dark:border-gray-600"
+                      >
+                        {creator.creator_name}
+                      </button>
+                    </div>
+                  </div>
+                   <%!-- Selected Creator Display --%>
+                  <div :if={@updated_values[:creator_id]} class="mt-2 flex items-center gap-2">
+                    <span class="text-xs text-green-600 dark:text-green-400">
+                      <.icon name="hero-check-circle" class="w-4 h-4 inline" />
+                      Selected: {@creator_input}
+                    </span>
+                    <button
+                      type="button"
+                      phx-click="clear_creator"
+                      class="text-xs text-red-600 hover:text-red-700 dark:text-red-400"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Start typing to search existing creators from database
+                  </p>
+                </div>
+                 <%!-- Display other collection fields --%>
+                <div
+                  :if={@current_item.collection.collection_fields != []}
+                  class="pt-2 border-t border-purple-200 dark:border-purple-800"
+                >
+                  <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                    Additional Metadata:
+                  </p>
+                  
+                  <div class="space-y-2">
+                    <div
+                      :for={
+                        field <-
+                          Enum.filter(@current_item.collection.collection_fields, fn f ->
+                            f.name not in ["creator", "author", "dcterms:creator"]
+                          end)
+                      }
+                      class="bg-white dark:bg-gray-700/50 rounded p-2"
+                    >
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                        {field.label || field.name}:
+                      </span>
+                      <span class="text-xs text-gray-800 dark:text-gray-200 ml-2">{field.value}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+           <%!-- Identification Section --%>
           <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 sm:p-6">
             <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
               <.icon
@@ -358,15 +458,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 <div class="bg-white dark:bg-gray-700 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 font-mono text-sm text-gray-700 dark:text-gray-300">
                   {@current_item.item.legacy_item_code || "N/A"}
                 </div>
-              </div>
-            </div>
-            
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Collection <span class="text-gray-400 dark:text-gray-500 text-xs">(Read-only)</span>
-              </label>
-              <div class="bg-white dark:bg-gray-700 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300">
-                {@current_item.collection.title}
               </div>
             </div>
           </div>
@@ -452,31 +543,33 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Predefined Location (Room)
+                  Place <span class="text-xs text-gray-500">(from master places)</span>
                 </label>
                 <form phx-change="update_field">
                   <select
-                    name="item_location_id"
+                    name="place"
                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm dark:bg-gray-700 dark:text-gray-200"
                   >
-                    <option value="">-- Select Room (Optional) --</option>
+                    <option value="">-- Select Place (Optional) --</option>
                     
                     <option
-                      :for={location <- @locations}
-                      value={location.id}
-                      selected={
-                        to_string(@updated_values[:item_location_id]) == to_string(location.id)
-                      }
+                      :for={place <- @places}
+                      value={place.name}
+                      selected={@updated_values[:place] == place.name}
                     >
-                      {location.location_name} - {location.location_place}
+                      {place.name}
                     </option>
                   </select>
                 </form>
+                
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Standardized places for node: {@current_item.item.node.name}
+                </p>
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Free-text Location
+                  Detailed Location <span class="text-xs text-gray-500">(free text)</span>
                 </label>
                 <form phx-change="update_field">
                   <input
@@ -484,10 +577,14 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     name="location"
                     value={@updated_values.location}
                     phx-debounce="300"
-                    placeholder="Enter any location description"
+                    placeholder="e.g., Shelf 3A, Row 5, Box 12..."
                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm dark:bg-gray-700 dark:text-gray-200"
                   />
                 </form>
+                
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Add specific details about the item's location
+                </p>
               </div>
               
               <div>
@@ -597,8 +694,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             recent_items =
               StockOpname.list_recent_checked_items_by_user(session, current_user, 10)
 
-            # Load locations for the user's node
-            locations = load_locations_for_user(current_user)
+            # Load places from mst_places for location dropdown
+            places = Voile.Schema.Master.list_mst_places()
 
             socket =
               socket
@@ -611,8 +708,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               |> assign(:current_item, nil)
               |> assign(:duplicate_items, [])
               |> assign(:updated_values, %{})
-              |> assign(:locations, locations)
+              |> assign(:places, places)
               |> assign(:recent_items_count, length(recent_items))
+              |> assign(:creator_input, "")
+              |> assign(:creator_suggestions, [])
               |> stream(:recent_items, recent_items)
 
             {:ok, socket}
@@ -708,30 +807,31 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     opname_item = socket.assigns.current_item
     updated = socket.assigns.updated_values
     original_item = opname_item.item
+    original_collection = opname_item.collection
 
-    # Build changes map - only include fields that actually changed
-    changes = %{}
+    # Build item changes map - only include fields that actually changed
+    item_changes = %{}
 
-    changes =
+    item_changes =
       if Map.has_key?(updated, :status) && updated.status != original_item.status,
-        do: Map.put(changes, "status", updated.status),
-        else: changes
+        do: Map.put(item_changes, "status", updated.status),
+        else: item_changes
 
-    changes =
+    item_changes =
       if Map.has_key?(updated, :condition) && updated.condition != original_item.condition,
-        do: Map.put(changes, "condition", updated.condition),
-        else: changes
+        do: Map.put(item_changes, "condition", updated.condition),
+        else: item_changes
 
-    changes =
+    item_changes =
       if Map.has_key?(updated, :availability) &&
            updated.availability != original_item.availability,
-         do: Map.put(changes, "availability", updated.availability),
-         else: changes
+         do: Map.put(item_changes, "availability", updated.availability),
+         else: item_changes
 
-    changes =
+    item_changes =
       if Map.has_key?(updated, :location) && updated.location != original_item.location,
-        do: Map.put(changes, "location", updated.location),
-        else: changes
+        do: Map.put(item_changes, "location", updated.location),
+        else: item_changes
 
     # Handle item_location_id (convert empty string to nil for comparison)
     updated_location_id =
@@ -742,27 +842,40 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         id -> id
       end
 
-    changes =
+    item_changes =
       if Map.has_key?(updated, :item_location_id) &&
            updated_location_id != original_item.item_location_id,
-         do: Map.put(changes, "item_location_id", updated_location_id),
-         else: changes
+         do: Map.put(item_changes, "item_location_id", updated_location_id),
+         else: item_changes
+
+    # Build collection changes map
+    collection_changes = %{}
+
+    collection_changes =
+      if Map.has_key?(updated, :collection_title) &&
+           updated.collection_title != original_collection.title,
+         do: Map.put(collection_changes, "title", updated.collection_title),
+         else: collection_changes
+
+    # Handle creator_id changes (proper reference to mst_creator)
+    collection_changes =
+      if Map.has_key?(updated, :creator_id) &&
+           updated.creator_id != original_collection.creator_id,
+         do: Map.put(collection_changes, "creator_id", updated.creator_id),
+         else: collection_changes
 
     require Logger
     Logger.debug("=== CHECK ITEM DEBUG ===")
     Logger.debug("Updated values: #{inspect(updated)}")
-
-    Logger.debug(
-      "Original item: status=#{original_item.status}, condition=#{original_item.condition}, availability=#{original_item.availability}"
-    )
-
-    Logger.debug("Changes map: #{inspect(changes)}")
+    Logger.debug("Item changes: #{inspect(item_changes)}")
+    Logger.debug("Collection changes: #{inspect(collection_changes)}")
     Logger.debug("Notes: #{inspect(updated.notes)}")
 
-    case StockOpname.check_item(
+    case StockOpname.check_item_with_collection(
            socket.assigns.session,
            opname_item.id,
-           changes,
+           item_changes,
+           collection_changes,
            updated.notes,
            socket.assigns.current_user
          ) do
@@ -904,6 +1017,48 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     {:noreply, socket}
   end
 
+  def handle_event("search_creator", %{"value" => query}, socket) do
+    # Don't search if query is too short or creator already selected
+    if String.trim(query) == "" or String.length(String.trim(query)) < 2 do
+      {:noreply, assign(socket, creator_input: query, creator_suggestions: [])}
+    else
+      suggestions = Voile.Schema.Master.search_mst_creator_names(query, 10)
+      {:noreply, assign(socket, creator_input: query, creator_suggestions: suggestions)}
+    end
+  end
+
+  def handle_event("select_creator", %{"id" => creator_id}, socket) do
+    creator =
+      Enum.find(socket.assigns.creator_suggestions, fn c -> to_string(c.id) == creator_id end)
+
+    if creator do
+      updated_values =
+        socket.assigns.updated_values
+        |> Map.put(:creator_id, creator.id)
+        |> Map.put(:collection_author, creator.creator_name)
+
+      {:noreply,
+       socket
+       |> assign(:creator_input, creator.creator_name)
+       |> assign(:creator_suggestions, [])
+       |> assign(:updated_values, updated_values)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("clear_creator", _params, socket) do
+    updated_values =
+      socket.assigns.updated_values
+      |> Map.delete(:creator_id)
+      |> Map.put(:collection_author, "")
+
+    {:noreply,
+     socket
+     |> assign(:creator_input, "")
+     |> assign(:updated_values, updated_values)}
+  end
+
   def handle_event("complete_work", _params, socket) do
     case StockOpname.complete_librarian_work(
            socket.assigns.session,
@@ -930,21 +1085,59 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       |> put_flash(:warning, "This item has already been checked.")
       |> assign(:search_term, "")
     else
+      # Preload collection with creator and collection_fields, and item with node
+      opname_item =
+        Repo.preload(opname_item, collection: [:mst_creator, :collection_fields], item: :node)
+
+      # Filter places by item's node - get the node_id from the item
+      _item_node_id = opname_item.item.unit_id
+
+      # For now, since mst_places doesn't have node_id, we show all places
+      # TODO: Add node_id to mst_places table and filter here
+      # filtered_places = Enum.filter(socket.assigns.places, fn place -> place.node_id == item_node_id end)
+
       # Load the current values from the actual item
       # Initialize updated_values with current item values
+      author_name = get_collection_author(opname_item.collection) || ""
+
       updated_values = %{
         status: opname_item.item.status,
         condition: opname_item.item.condition,
         availability: opname_item.item.availability,
-        location: opname_item.item.location,
+        # Will be selected from dropdown
+        place: "",
+        # Free text field
+        location: opname_item.item.location || "",
         item_location_id: opname_item.item.item_location_id,
-        notes: opname_item.notes || ""
+        notes: opname_item.notes || "",
+        # Collection fields
+        collection_title: opname_item.collection.title || "",
+        collection_author: author_name,
+        creator_id: opname_item.collection.creator_id
       }
 
       socket
       |> assign(:current_item, opname_item)
       |> assign(:updated_values, updated_values)
+      |> assign(:creator_input, author_name)
+      |> assign(:creator_suggestions, [])
       |> assign(:search_term, "")
+    end
+  end
+
+  defp get_collection_author(collection) do
+    cond do
+      collection.mst_creator && collection.mst_creator.creator_name ->
+        collection.mst_creator.creator_name
+
+      true ->
+        # Try to find author from collection_fields
+        author_field =
+          Enum.find(collection.collection_fields || [], fn field ->
+            field.name in ["creator", "author", "dcterms:creator"]
+          end)
+
+        if author_field, do: author_field.value, else: ""
     end
   end
 
@@ -999,28 +1192,5 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
 
   defp format_time(datetime) do
     Calendar.strftime(datetime, "%H:%M:%S")
-  end
-
-  defp load_locations_for_user(user) do
-    # Get user's node_id from their roles or default node
-    node_id = get_user_node_id(user)
-
-    from(l in Location,
-      where: l.is_active == true,
-      where: l.node_id == ^node_id,
-      order_by: [asc: l.location_name]
-    )
-    |> Voile.Repo.all()
-  end
-
-  defp get_user_node_id(user) do
-    # Try to get node_id from user's roles, otherwise use a default
-    # This assumes you have a way to determine user's node
-    # Adjust based on your actual implementation
-    case user do
-      %{roles: [%{node_id: node_id} | _]} when not is_nil(node_id) -> node_id
-      # Default node if none found
-      _ -> 1
-    end
   end
 end

@@ -26,6 +26,10 @@ config :voile,
   ecto_repos: [Voile.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# Configure Hammer rate limiter
+config :hammer,
+  backend: {:my_hammer_backend, []}
+
 # Configures the endpoint
 config :voile, VoileWeb.Endpoint,
   url: [host: "localhost"],

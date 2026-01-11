@@ -52,6 +52,7 @@ defmodule Voile.MixProject do
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.26"},
       {:hackney, "~> 1.18"},
+      {:hammer, "~> 7.0"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.2.0",

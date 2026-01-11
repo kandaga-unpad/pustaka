@@ -515,6 +515,157 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  Check an item with collection updates during a stock opname session.
+
+  This function marks the item as checked and can update both item fields
+  and collection metadata (title, author).
+
+  ## Parameters
+  - session: The stock opname session
+  - opname_item_id: The ID of the stock_opname_item record
+  - item_changes: Map of item field changes, e.g. %{\"status\" => \"damaged\"}
+  - collection_changes: Map of collection changes, e.g. %{\"title\" => \"New Title\", \"author\" => \"Author Name\"}
+  - notes: Optional notes about the check
+  - user: The librarian checking the item
+
+  ## Returns
+  - {:ok, updated_item} on success
+  - {:error, reason} on failure
+  """
+  @dialyzer {:nowarn_function, check_item_with_collection: 6}
+  def check_item_with_collection(
+        %Session{} = session,
+        opname_item_id,
+        item_changes,
+        collection_changes,
+        notes,
+        user
+      ) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:lock_item, fn repo, _changes ->
+      opname_item =
+        from(oi in Item,
+          where: oi.id == ^opname_item_id and oi.session_id == ^session.id,
+          lock: "FOR UPDATE",
+          preload: [collection: :collection_fields]
+        )
+        |> repo.one()
+
+      if opname_item do
+        {:ok, opname_item}
+      else
+        {:error, :not_found}
+      end
+    end)
+    |> Ecto.Multi.run(:update_collection, fn repo, %{lock_item: opname_item} ->
+      if map_size(collection_changes) > 0 do
+        collection = opname_item.collection
+
+        collection_attrs = %{}
+
+        # Update title if changed
+        collection_attrs =
+          if Map.has_key?(collection_changes, "title"),
+            do: Map.put(collection_attrs, :title, collection_changes["title"]),
+            else: collection_attrs
+
+        # Update creator_id if changed (proper reference to mst_creator)
+        collection_attrs =
+          if Map.has_key?(collection_changes, "creator_id"),
+            do: Map.put(collection_attrs, :creator_id, collection_changes["creator_id"]),
+            else: collection_attrs
+
+        if map_size(collection_attrs) > 0 do
+          collection
+          |> Ecto.Changeset.change(collection_attrs)
+          |> repo.update()
+        else
+          {:ok, collection}
+        end
+      else
+        {:ok, opname_item.collection}
+      end
+    end)
+    |> Ecto.Multi.update(:update_item, fn %{lock_item: opname_item} ->
+      all_changes = Map.merge(item_changes || %{}, collection_changes || %{})
+
+      attrs = %{
+        changes: all_changes,
+        check_status: "checked",
+        scanned_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        checked_by_id: user.id,
+        notes: notes,
+        has_changes: map_size(all_changes) > 0
+      }
+
+      opname_item
+      |> Item.changeset(attrs)
+    end)
+    |> Ecto.Multi.run(:update_counters, fn repo, %{update_item: updated_item} ->
+      session = repo.get!(Session, session.id)
+
+      new_checked_count =
+        from(oi in Item,
+          where: oi.session_id == ^session.id and oi.check_status == "checked"
+        )
+        |> repo.aggregate(:count, :id)
+
+      new_missing_count =
+        from(oi in Item,
+          where:
+            oi.session_id == ^session.id and
+              fragment("?->>'availability' = 'missing'", oi.changes)
+        )
+        |> repo.aggregate(:count, :id)
+
+      new_changes_count =
+        from(oi in Item,
+          where: oi.session_id == ^session.id and oi.has_changes == true
+        )
+        |> repo.aggregate(:count, :id)
+
+      session
+      |> Ecto.Changeset.change(%{
+        checked_items: new_checked_count,
+        missing_items: new_missing_count,
+        items_with_changes: new_changes_count
+      })
+      |> repo.update()
+
+      assignment = repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
+
+      if assignment do
+        librarian_checked_count =
+          from(oi in Item,
+            where: oi.session_id == ^session.id and oi.checked_by_id == ^user.id
+          )
+          |> repo.aggregate(:count, :id)
+
+        assignment
+        |> Ecto.Changeset.change(items_checked: librarian_checked_count)
+        |> repo.update!()
+      end
+
+      {:ok, updated_item}
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{update_item: opname_item}} ->
+        opname_item =
+          Repo.preload(opname_item, [
+            :item,
+            :checked_by,
+            collection: [:mst_creator, :collection_fields]
+          ])
+
+        {:ok, opname_item}
+
+      {:error, _step, error, _changes} ->
+        {:error, error}
+    end
+  end
+
+  @doc """
   Mark an item as checked with changes recorded in JSONB.
 
   ## Parameters

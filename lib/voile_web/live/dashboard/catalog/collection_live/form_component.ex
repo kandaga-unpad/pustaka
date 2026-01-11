@@ -369,15 +369,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               required_value={true}
             />
           <% else %>
-            <input type="hidden" name={@form[:status].name} value="draft" />
-            <.input
-              field={@form[:status]}
-              type="select"
-              label="Status (Auto-set to Draft)"
-              options={[{"Draft", "draft"}]}
-              required_value={true}
-              disabled={true}
-            /> <input type="hidden" name={@form[:access_level].name} value="private" />
+            <input type="hidden" name={@form[:status].name} value={@form[:status].value || "pending"} />
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <strong>Note:</strong>
+              Click "Save Collection" to submit for review (pending), or "Save as Draft" to save without submitting.
+            </p>
+             <input type="hidden" name={@form[:access_level].name} value="private" />
             <.input
               field={@form[:access_level]}
               type="select"
@@ -1022,12 +1019,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
              collection.unit_id
          end
 
-       # RBAC: Force status and access_level for non-super admin
+       # RBAC: Default status - pending for librarians (submit for review), super_admin can choose
        default_status =
          if is_super_admin?(assigns.current_scope.user) do
            collection.status || "draft"
          else
-           "draft"
+           # For librarians, default to pending (will be set to draft if they click "Save as Draft")
+           collection.status || "pending"
          end
 
        default_access_level =
@@ -1114,13 +1112,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         Map.put(updated_params, "unit_id", socket.assigns.current_scope.user.node_id)
       end
 
-    # RBAC: Force status and access_level for non-super admin users
+    # RBAC: Force access_level for non-super admin users, but allow draft/pending status
     updated_params =
       if is_super_admin?(socket.assigns.current_scope.user) do
         updated_params
       else
         updated_params
-        |> Map.put("status", "draft")
         |> Map.put("access_level", "private")
       end
 
@@ -1277,13 +1274,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   def handle_event("save", _params, socket) do
     collection_params = socket.assigns.form.params
 
-    # RBAC: Force status and access_level for non-super admin users
+    # RBAC: For librarians, save button submits for review (pending status)
     collection_params =
       if is_super_admin?(socket.assigns.current_scope.user) do
         collection_params
       else
         collection_params
-        |> Map.put("status", "draft")
+        |> Map.put("status", "pending")
         |> Map.put("access_level", "private")
       end
 

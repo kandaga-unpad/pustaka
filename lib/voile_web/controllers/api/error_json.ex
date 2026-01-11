@@ -11,6 +11,16 @@ defmodule VoileWeb.API.ErrorJSON do
     %{error: %{message: "Not Found", code: 404, details: assigns[:message] || nil}}
   end
 
+  def render("429.json", assigns) do
+    %{
+      error: %{
+        message: assigns[:error] || "Too Many Requests",
+        code: 429,
+        retry_after_ms: assigns[:retry_after_ms]
+      }
+    }
+  end
+
   def render("500.json", assigns) do
     %{error: %{message: "Internal Server Error", code: 500, details: assigns[:message] || nil}}
   end

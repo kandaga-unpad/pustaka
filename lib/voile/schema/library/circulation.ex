@@ -2318,7 +2318,7 @@ defmodule Voile.Schema.Library.Circulation do
     end
   end
 
-  defp validate_member_checkout_eligibility(%User{user_type: member_type} = member, node \\ nil) do
+  defp validate_member_checkout_eligibility(%User{user_type: member_type} = member, node) do
     with {:ok, _} <- check_manual_suspension(member),
          {:ok, _} <- check_concurrent_loan_limit(member, member_type, node),
          {:ok, _} <- check_fine_limit(member, member_type, node) do
@@ -2465,7 +2465,7 @@ defmodule Voile.Schema.Library.Circulation do
          %Item{} = item,
          librarian_id,
          attrs,
-         node \\ nil
+         node
        ) do
     due_date = calculate_due_date_for_member_type(member_type, node)
 
@@ -2697,17 +2697,11 @@ defmodule Voile.Schema.Library.Circulation do
   defp prepare_fine_if_overdue(
          %Transaction{} = transaction,
          %MemberType{} = member_type,
-         node \\ nil,
-         opts \\ []
+         node,
+         opts
        ) do
     # Automatically determine whether to skip holidays based on library configuration
-    # Handle both keyword list and map for opts
-    skip_holidays =
-      cond do
-        is_list(opts) -> Keyword.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
-        is_map(opts) -> Map.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
-        true -> should_skip_holidays_in_fines?()
-      end
+    skip_holidays = Map.get(opts, :skip_holidays, should_skip_holidays_in_fines?())
 
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
@@ -2783,7 +2777,7 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   # Member Type Policy Calculations
-  defp calculate_due_date_for_member_type(%MemberType{} = member_type, node \\ nil) do
+  defp calculate_due_date_for_member_type(%MemberType{} = member_type, node) do
     rules = LoanRuleResolver.resolve_rules(node, member_type)
     loan_days = rules.max_days
     DateTime.add(DateTime.utc_now(), loan_days * 24 * 60 * 60, :second)

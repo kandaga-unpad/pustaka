@@ -12,10 +12,8 @@ defmodule VoileWeb.UserRegistrationLive do
           <div class="flex items-center justify-center">
             <div class="max-w-sm text-center">
               <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
-              <h3 class="mt-6 text-lg font-semibold">
-                {gettext("Create your account")}
-              </h3>
-
+              <h3 class="mt-6 text-lg font-semibold">{gettext("Create your account")}</h3>
+              
               <p class="mt-2 text-sm">
                 {gettext(
                   "Join %{app_name} today and start explore collection, manage your favorite items, and connect with us.",
@@ -24,7 +22,7 @@ defmodule VoileWeb.UserRegistrationLive do
               </p>
             </div>
           </div>
-
+          
           <div class="default-card shadow rounded-lg border border-gray-100 p-6 md:p-8">
             <.header>
               {gettext("Register for an account")}
@@ -36,12 +34,11 @@ defmodule VoileWeb.UserRegistrationLive do
                     class="font-semibold text-voile-primary hover:underline ml-1"
                   >
                     {gettext("Log in")}
-                  </.link>
-                  {gettext("to your account now.")}
+                  </.link> {gettext("to your account now.")}
                 </span>
               </:subtitle>
             </.header>
-
+            
             <.form
               for={@form}
               id="registration_form"
@@ -59,13 +56,13 @@ defmodule VoileWeb.UserRegistrationLive do
                 </.button>
               </div>
             </.form>
-
+            
             <div class="my-6 flex items-center gap-3">
               <hr class="flex-1 border-gray-300" />
               <span class="text-sm">{gettext("or register with")}</span>
               <hr class="flex-1 border-gray-300" />
             </div>
-
+            
             <.button
               phx-click="google_auth"
               class="w-full btn border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50"
@@ -74,8 +71,7 @@ defmodule VoileWeb.UserRegistrationLive do
                 src={~p"/images/google_img.png"}
                 class="inline h-5 w-5 mr-2"
                 alt="Google logo"
-              />
-              <span>{gettext("Continue with Google")}</span>
+              /> <span>{gettext("Continue with Google")}</span>
             </.button>
           </div>
         </div>
@@ -134,6 +130,18 @@ defmodule VoileWeb.UserRegistrationLive do
          |> push_navigate(to: ~p"/users/pending_confirmation?email=#{user.email}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        # Check if there's a username error and add a flash message
+        socket =
+          if Keyword.has_key?(changeset.errors, :username) do
+            put_flash(
+              socket,
+              :error,
+              "The username generated from your email is already taken. Please try a different email address."
+            )
+          else
+            socket
+          end
+
         {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
     end
   end

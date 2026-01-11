@@ -439,6 +439,167 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
+  Get list of collections with status 'pending' for review.
+
+  ## Examples
+
+      iex> list_pending_collections()
+      [%Collection{status: "pending"}, ...]
+
+  """
+  def list_pending_collections do
+    from(c in Collection,
+      where: c.status == "pending",
+      order_by: [desc: c.inserted_at],
+      preload: [
+        :resource_class,
+        :mst_creator,
+        :node,
+        :collection_fields,
+        :items,
+        :created_by,
+        :updated_by
+      ]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Get paginated list of pending collections for review.
+
+  ## Examples
+
+      iex> list_pending_collections_paginated(1, 10)
+      {[%Collection{}], total_pages, total_count}
+
+  """
+  def list_pending_collections_paginated(page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from c in Collection,
+        where: c.status in ["pending", "draft"],
+        order_by: [desc: c.inserted_at],
+        limit: ^per_page,
+        offset: ^offset,
+        preload: [
+          :resource_class,
+          :mst_creator,
+          :node,
+          :collection_fields,
+          :items,
+          :created_by,
+          :updated_by
+        ]
+
+    collections = Repo.all(query)
+
+    total_count =
+      from(c in Collection, where: c.status == "pending", select: count(c.id))
+      |> Repo.one()
+
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {collections, total_pages, total_count}
+  end
+
+  @doc """
+  Approve a collection (change status from 'pending' to 'published').
+  Note: requires reviewed_at, reviewed_by_id, review_notes fields in collections table.
+
+  ## Examples
+
+      iex> approve_collection(collection, reviewer_user, "Looks good")
+      {:ok, %Collection{status: "published"}}
+
+  """
+  def approve_collection(collection, reviewer_user, notes \\ nil)
+
+  def approve_collection(%Collection{status: status} = collection, reviewer_user, notes)
+      when status in ["pending", "draft"] do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # Build attrs map dynamically based on available fields
+    attrs = %{
+      status: "published",
+      updated_by_id: reviewer_user.id,
+      updated_at: now
+    }
+
+    # Add review fields if they exist in the schema
+    attrs =
+      if Map.has_key?(collection, :reviewed_at) do
+        attrs
+        |> Map.put(:reviewed_at, now)
+        |> Map.put(:reviewed_by_id, reviewer_user.id)
+        |> Map.put(:review_notes, notes)
+      else
+        attrs
+      end
+
+    changeset = Ecto.Changeset.change(collection, attrs)
+    Repo.update(changeset)
+  end
+
+  def approve_collection(%Collection{}, _reviewer_user, _notes) do
+    {:error, :invalid_status}
+  end
+
+  @doc """
+  Reject a collection (change status from 'pending' to 'draft').
+  Note: requires reviewed_at, reviewed_by_id, review_notes fields in collections table.
+
+  ## Examples
+
+      iex> reject_collection(collection, reviewer_user, "Needs more information")
+      {:ok, %Collection{status: "draft"}}
+
+  """
+  def reject_collection(%Collection{status: status} = collection, reviewer_user, reason)
+      when status in ["pending", "draft"] do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # Build attrs map dynamically based on available fields
+    attrs = %{
+      status: "draft",
+      updated_by_id: reviewer_user.id,
+      updated_at: now
+    }
+
+    # Add review fields if they exist in the schema
+    attrs =
+      if Map.has_key?(collection, :reviewed_at) do
+        attrs
+        |> Map.put(:reviewed_at, now)
+        |> Map.put(:reviewed_by_id, reviewer_user.id)
+        |> Map.put(:review_notes, reason)
+      else
+        attrs
+      end
+
+    changeset = Ecto.Changeset.change(collection, attrs)
+    Repo.update(changeset)
+  end
+
+  def reject_collection(%Collection{}, _reviewer_user, _reason) do
+    {:error, :invalid_status}
+  end
+
+  @doc """
+  Count pending collections.
+
+  ## Examples
+
+      iex> count_pending_collections()
+      5
+
+  """
+  def count_pending_collections do
+    from(c in Collection, where: c.status in ["pending", "draft"])
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
   Get collections organized in a hierarchical tree structure.
   Now with pagination to prevent loading too many records at once.
 

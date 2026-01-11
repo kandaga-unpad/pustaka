@@ -180,6 +180,7 @@ defmodule Voile.Schema.Accounts.User do
     |> validate_email(opts)
     |> validate_password(opts)
     |> generate_username_based_on_email_if_username_is_empty()
+    |> validate_username(opts)
   end
 
   def update_profile_changeset(user, attrs, opts \\ []) do

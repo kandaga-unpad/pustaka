@@ -487,7 +487,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
         socket =
           socket
           |> put_flash(:info, "Node rules updated successfully!")
-          |> push_navigate(to: ~p"/dashboard/settings/system/node-rules")
+          |> push_navigate(to: ~p"/manage/settings/nodes/rules")
 
         {:noreply, socket}
 

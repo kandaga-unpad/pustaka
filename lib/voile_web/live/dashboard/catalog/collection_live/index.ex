@@ -55,6 +55,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       # Count active filters (excluding auto-applied role-based filters for display)
       active_count = count_active_filters(filters)
 
+      # Count pending collections for review badge (only for reviewers)
+      pending_count =
+        if can_review_collections?(current_user) do
+          Catalog.count_pending_collections()
+        else
+          0
+        end
+
       socket =
         socket
         # Initialize empty stream to prevent errors when modal opens
@@ -78,6 +86,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:step, 1)
         |> assign(:show_add_collection_field, true)
         |> assign(:time_identifier, time_identifier)
+        |> assign(:pending_count, pending_count)
         # Filter-related assigns (set from applied role-based filters)
         |> assign(:filters, filters)
         |> assign(:user_node_id, user_node_id)
@@ -493,5 +502,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       end
 
     params
+  end
+
+  # Helper function to check if user can review collections
+  defp can_review_collections?(user) do
+    user = Repo.preload(user, :roles)
+
+    Enum.any?(user.roles, fn role ->
+      role.name in ["super_admin", "admin", "editor"]
+    end)
   end
 end

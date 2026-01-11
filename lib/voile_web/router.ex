@@ -24,6 +24,7 @@ defmodule VoileWeb.Router do
   pipeline :api_authenticated do
     plug :accepts, ["json"]
     plug VoileWeb.Plugs.APIAuthorization
+    plug VoileWeb.Plugs.APIRateLimiter, limit: 100, scale_ms: 60_000, authenticated_limit: 1000
   end
 
   scope "/", VoileWeb do
@@ -172,6 +173,8 @@ defmodule VoileWeb.Router do
             live "/", Dashboard.Catalog.CollectionLive.Index, :index
             live "/new", Dashboard.Catalog.CollectionLive.Index, :new
             live "/import", Dashboard.Catalog.CollectionLive.Import, :import
+            live "/review", Dashboard.Catalog.CollectionLive.Review, :index
+            live "/review/:id", Dashboard.Catalog.CollectionLive.Review, :review
             live "/:id/edit", Dashboard.Catalog.CollectionLive.Index, :edit
 
             live "/:id", Dashboard.Catalog.CollectionLive.Show, :show

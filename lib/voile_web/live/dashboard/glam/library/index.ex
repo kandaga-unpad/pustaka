@@ -531,7 +531,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
     transaction = Circulation.get_transaction!(transaction_id) |> Repo.preload(item: :node)
 
     case Circulation.return_item(transaction_id, current_user_id, %{node: transaction.item.node}) do
-      {:ok, returned_transaction} ->
+      {:ok, _returned_transaction} ->
         socket =
           socket
           |> assign(:quick_return_visible, false)

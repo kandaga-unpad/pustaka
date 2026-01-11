@@ -42,6 +42,21 @@
             <.icon name="hero-squares-2x2" class="w-4 h-4 mr-1" /> {gettext("Tree View")}
           <% end %>
         </.button>
+        <%= if can_review_collections?(@current_scope.user) do %>
+          <.link navigate={~p"/manage/catalog/collections/review"}>
+            <.button class="btn bg-yellow-600 hover:bg-yellow-700 text-white relative">
+              <.icon name="hero-clipboard-document-check" class="w-4 h-4 mr-1" /> {gettext(
+                "Review"
+              )}
+              <%= if assigns[:pending_count] && @pending_count > 0 do %>
+                <span class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                  {@pending_count}
+                </span>
+              <% end %>
+            </.button>
+          </.link>
+        <% end %>
+        
         <%= if can?(@current_scope.user, "collections.create") do %>
           <%!-- <.link navigate={~p"/manage/catalog/collections/import"}>
             <.button class="btn btn-outline">
