@@ -125,8 +125,8 @@ defmodule VoileWeb.VoileDashboardComponents do
             <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
           </button>
         </div>
-         <%!-- Desktop Menu (wrapped flex) --%>
-        <div class="hidden lg:flex gap-2 flex-wrap">
+         <%!-- Navigation Menu (Always visible, responsive) --%>
+        <div class="flex gap-2 flex-wrap w-full">
           <.link
             patch="/manage/catalog/collections"
             class={[
@@ -193,18 +193,53 @@ defmodule VoileWeb.VoileDashboardComponents do
       <div class="hidden lg:block flex-shrink-0">
         <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
       </div>
-       <%!-- Fixed Bottom Navigation for Mobile/Tablet --%>
-      <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 px-4 py-3 shadow-lg">
+    </div>
+     <%!-- Fixed Bottom Navigation for Mobile/Tablet --%>
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-lg">
+      <div class="grid grid-cols-5 gap-1 px-2 py-2">
+        <%!-- Dashboard --%>
+        <.link
+          patch="/manage"
+          class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+        >
+          <.icon name="hero-home" class="h-6 w-6 text-voile-primary" />
+          <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Dashboard")}</span>
+        </.link>
+         <%!-- Catalogs --%>
+        <.link
+          patch="/manage/catalog"
+          class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+        >
+          <.icon name="hero-folder" class="h-6 w-6 text-voile-info" />
+          <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Catalogs")}</span>
+        </.link>
+         <%!-- GLAM --%>
+        <.link
+          patch="/manage/glam"
+          class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+        >
+          <.icon name="hero-building-library" class="h-6 w-6 text-voile-warning" />
+          <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("GLAM")}</span>
+        </.link>
+         <%!-- Settings --%>
+        <.link
+          patch="/manage/settings"
+          class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+        >
+          <.icon name="hero-cog-6-tooth" class="h-6 w-6 text-voile-success" />
+          <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Settings")}</span>
+        </.link>
+         <%!-- Quick Menu --%>
         <button
           type="button"
           phx-click={
             JS.show(to: "#dashboard-mobile-menu-backdrop")
             |> JS.show(to: "#dashboard-mobile-menu-panel")
           }
-          class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-voile-primary text-white hover:bg-voile-primary/90 transition-colors"
+          class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
-          <.icon name="hero-squares-2x2" class="h-5 w-5" />
-          <span class="font-medium">{gettext("Quick Navigation")}</span>
+          <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
+          <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("More")}</span>
         </button>
       </div>
     </div>

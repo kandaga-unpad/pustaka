@@ -1,5 +1,4 @@
 <section class="flex flex-col gap-4">
-  <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
     <!-- Header with icon -->
     <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-6">
@@ -7,15 +6,15 @@
         <div class="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
           <.icon name="hero-arrow-path-rounded-square" class="w-8 h-8 text-white" />
         </div>
-        
+
         <div>
           <h1 class="text-2xl font-bold text-white">Transfer Requests</h1>
-          
+
           <p class="text-indigo-100 mt-1">Manage item location transfers across nodes</p>
         </div>
       </div>
     </div>
-    
+
     <div class="px-8 py-6">
       <!-- Filters with improved styling -->
       <div class="flex flex-col sm:flex-row gap-4 mb-6">
@@ -29,19 +28,19 @@
             class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
           >
             <option value="">All Statuses</option>
-            
+
             <option value="pending" selected={@status_filter == "pending"}>⏳ Pending</option>
-            
+
             <option value="approved" selected={@status_filter == "approved"}>✅ Approved</option>
-            
+
             <option value="denied" selected={@status_filter == "denied"}>❌ Denied</option>
-            
+
             <option value="cancelled" selected={@status_filter == "cancelled"}>
               ⛔ Cancelled
             </option>
           </select>
         </div>
-        
+
         <div class="flex-1">
           <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <.icon name="hero-building-library" class="w-4 h-4" /> Filter by Target Node
@@ -52,7 +51,7 @@
             class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
           >
             <option value="">All Nodes</option>
-            
+
             <%= for node <- @nodes do %>
               <option value={node.id} selected={to_string(@node_filter) == to_string(node.id)}>
                 {node.name}
@@ -74,31 +73,31 @@
                       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         {transfer.item.item_code}
                       </h3>
-                       {status_badge(transfer.status)}
+                      {status_badge(transfer.status)}
                     </div>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-400 ml-8">
                       {transfer.item.collection.title}
                     </p>
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <!-- From Location -->
                   <div class="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                     <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                       <.icon name="hero-map-pin" class="w-5 h-5 text-blue-600 dark:text-blue-300" />
                     </div>
-                    
+
                     <div class="flex-1 min-w-0">
                       <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                         From
                       </p>
-                      
+
                       <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {(transfer.from_node && transfer.from_node.name) || "—"}
                       </p>
-                      
+
                       <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
                         {transfer.from_location || "—"}
                       </p>
@@ -119,16 +118,16 @@
                         class="w-5 h-5 text-indigo-600 dark:text-indigo-300"
                       />
                     </div>
-                    
+
                     <div class="flex-1 min-w-0">
                       <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                         To
                       </p>
-                      
+
                       <p class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 truncate">
                         {transfer.to_node.name}
                       </p>
-                      
+
                       <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
                         {transfer.to_location}
                       </p>
@@ -142,13 +141,13 @@
                       <.icon name="hero-user" class="w-4 h-4" />
                       <span>{transfer.requested_by.email}</span>
                     </div>
-                    
+
                     <div class="flex items-center gap-1.5">
                       <.icon name="hero-clock" class="w-4 h-4" />
                       <span>{Calendar.strftime(transfer.inserted_at, "%b %d, %Y %H:%M")}</span>
                     </div>
                   </div>
-                  
+
                   <div class="flex gap-2">
                     <.link
                       navigate={~p"/manage/transfers/#{transfer.id}"}
@@ -177,11 +176,11 @@
           <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
             <.icon name="hero-inbox" class="w-8 h-8 text-gray-400" />
           </div>
-          
+
           <p class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
             No transfer requests found
           </p>
-          
+
           <p class="text-sm text-gray-500 dark:text-gray-400">
             Try adjusting your filters or create a new transfer request
           </p>

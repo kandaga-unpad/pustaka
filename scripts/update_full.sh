@@ -60,7 +60,7 @@ fi
 
 # Step 1: Pull latest changes
 print_step "1/7: Pulling latest changes from git..."
-git pull origin main || git pull origin master
+git pull
 
 # Step 2: Backup database
 print_step "2/7: Creating database backup..."

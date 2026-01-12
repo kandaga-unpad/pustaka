@@ -6,7 +6,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
 
   def render(assigns) do
     ~H"""
-    <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
