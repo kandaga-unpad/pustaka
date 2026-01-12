@@ -503,6 +503,16 @@ defmodule Voile.Schema.Accounts do
     end
   end
 
+  @doc """
+  Updates a user's password by admin (super admin only).
+  Used for administrative password resets.
+  """
+  def admin_update_user_password(%User{} = user, attrs) do
+    user
+    |> User.password_changeset(attrs)
+    |> Repo.update()
+  end
+
   def update_user_login(%User{} = user, attrs) do
     user
     |> User.login_changeset(attrs)

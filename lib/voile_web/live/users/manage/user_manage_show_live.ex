@@ -42,6 +42,8 @@ defmodule VoileWeb.Users.ManageLive.Show do
       |> assign(:suspend_modal_visible, false)
       |> assign(:suspend_form, to_form(%{}))
       |> assign(:can_suspend, can_suspend_user?(socket.assigns.current_scope.user, user))
+      |> assign(:password_modal_visible, false)
+      |> assign(:password_form, to_form(%{}))
 
     {:ok, socket}
   end
@@ -98,6 +100,15 @@ defmodule VoileWeb.Users.ManageLive.Show do
                     </button>
                   <% end %>
                 <% end %>
+              <% end %>
+              <%!-- Change Password Button (Super Admin Only) --%>
+              <%= if is_super_admin?(@current_scope.user) && @user.id != @current_scope.user.id do %>
+                <button
+                  phx-click="show_password_modal"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <.icon name="hero-key" class="w-4 h-4 mr-2" /> Change Password
+                </button>
               <% end %>
 
               <%= if can?(@current_scope.user, "users.update") do %>
@@ -485,6 +496,62 @@ defmodule VoileWeb.Users.ManageLive.Show do
           </.form>
         </div>
       </.modal>
+      <%!-- Change Password Modal --%>
+      <.modal
+        :if={@password_modal_visible}
+        id="password-modal"
+        show
+        on_cancel={JS.push("cancel_password_change")}
+      >
+        <div class="space-y-4">
+          <div class="flex items-center justify-center space-x-3">
+            <div class="p-2 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+              <.icon name="hero-key" class="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold">Change User Password</h3>
+
+              <p class="text-sm text-gray-600">
+                Set a new password for {@user.fullname || @user.username}
+              </p>
+            </div>
+          </div>
+
+          <.form :let={f} for={@password_form} id="password-form" phx-submit="confirm_password_change">
+            <div class="space-y-4">
+              <.input
+                field={f[:new_password]}
+                name="new_password"
+                type="password"
+                label="New Password"
+                placeholder="Enter new password"
+                required
+                autocomplete="new-password"
+              />
+              <.input
+                field={f[:password_confirmation]}
+                name="password_confirmation"
+                type="password"
+                label="Confirm New Password"
+                placeholder="Confirm new password"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+
+            <div class="mt-6 flex justify-end items-center space-x-3">
+              <button type="button" phx-click="cancel_password_change" class="cancel-btn">
+                Cancel
+              </button>
+
+              <button type="submit" class="primary-btn" phx-disable-with="Changing...">
+                Change Password
+              </button>
+            </div>
+          </.form>
+        </div>
+      </.modal>
     </div>
     """
   end
@@ -545,6 +612,61 @@ defmodule VoileWeb.Users.ManageLive.Show do
          socket
          |> assign(:suspend_form, to_form(changeset))
          |> put_flash(:error, "Failed to suspend user account: #{error_message}")}
+    end
+  end
+
+  @impl true
+  def handle_event("show_password_modal", _params, socket) do
+    {:noreply, assign(socket, :password_modal_visible, true)}
+  end
+
+  @impl true
+  def handle_event("cancel_password_change", _params, socket) do
+    {:noreply, assign(socket, :password_modal_visible, false)}
+  end
+
+  @impl true
+  def handle_event("confirm_password_change", params, socket) do
+    # Only super admins can change passwords
+    unless VoileWeb.Auth.Authorization.is_super_admin?(socket) do
+      {:noreply, put_flash(socket, :error, "Only super admins can change user passwords")}
+    else
+      new_password = params["new_password"]
+      password_confirmation = params["password_confirmation"]
+
+      cond do
+        new_password != password_confirmation ->
+          {:noreply, put_flash(socket, :error, "Passwords do not match")}
+
+        String.length(new_password) < 8 ->
+          {:noreply, put_flash(socket, :error, "Password must be at least 8 characters long")}
+
+        true ->
+          case Accounts.admin_update_user_password(socket.assigns.user, %{
+                 "password" => new_password,
+                 "password_confirmation" => password_confirmation
+               }) do
+            {:ok, _user} ->
+              {:noreply,
+               socket
+               |> assign(:password_modal_visible, false)
+               |> put_flash(:info, "Password changed successfully")}
+
+            {:error, %Ecto.Changeset{} = changeset} ->
+              require Logger
+              Logger.error("Failed to change password: #{inspect(changeset.errors)}")
+
+              error_message =
+                changeset.errors
+                |> Enum.map(fn {field, {msg, _}} -> "#{field}: #{msg}" end)
+                |> Enum.join(", ")
+
+              {:noreply,
+               socket
+               |> assign(:password_form, to_form(changeset))
+               |> put_flash(:error, "Failed to change password: #{error_message}")}
+          end
+      end
     end
   end
 

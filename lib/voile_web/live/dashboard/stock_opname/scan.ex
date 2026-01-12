@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   def render(assigns) do
     ~H"""
@@ -47,26 +48,26 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 break-words">
               {@session.title}
             </h1>
-            
+
             <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               Code: {@session.session_code}
             </p>
           </div>
-           <.session_status_badge status={@session.status} />
+          <.session_status_badge status={@session.status} />
         </div>
       </div>
-       <%!-- Progress Bar --%>
+      <%!-- Progress Bar --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 mb-2">
           <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
             Your Progress
           </h2>
-          
+
           <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             {@librarian_progress.items_checked} / {@session.total_items} items
           </span>
         </div>
-        
+
         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 mb-3 sm:mb-4">
           <div
             class="bg-blue-600 dark:bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-500"
@@ -74,53 +75,53 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           >
           </div>
         </div>
-         <%!-- Statistics --%>
+        <%!-- Statistics --%>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <div class="text-center p-2 sm:p-0">
             <p class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-500">
               {@session.checked_items}
             </p>
-            
+
             <p class="text-xs text-gray-500 dark:text-gray-400">Total Checked</p>
           </div>
-          
+
           <div class="text-center p-2 sm:p-0">
             <p class="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-400">
               {@session.total_items - @session.checked_items}
             </p>
-            
+
             <p class="text-xs text-gray-500 dark:text-gray-400">Remaining</p>
           </div>
-          
+
           <div class="text-center p-2 sm:p-0">
             <p class="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-500">
               {@session.items_with_changes}
             </p>
-            
+
             <p class="text-xs text-gray-500 dark:text-gray-400">With Changes</p>
           </div>
-          
+
           <div class="text-center p-2 sm:p-0">
             <p class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-500">
               {@librarian_progress.items_checked}
             </p>
-            
+
             <p class="text-xs text-gray-500 dark:text-gray-400">Your Checks</p>
           </div>
         </div>
       </div>
-       <%!-- Scanner Interface --%>
+      <%!-- Scanner Interface --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
         <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
           Scan Item
         </h2>
-         <%!-- Camera Scanner Section --%>
+        <%!-- Camera Scanner Section --%>
         <div class="mb-4 sm:mb-6">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-3">
             <h3 class="text-sm sm:text-md font-medium text-gray-700 dark:text-gray-300">
               Camera Scanner
             </h3>
-            
+
             <button
               type="button"
               phx-click="toggle_scanner_mode"
@@ -129,7 +130,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               {if @scanner_mode == "camera", do: "📝 Use Manual Input", else: "📷 Use Camera"}
             </button>
           </div>
-           <%!-- Camera Scanner UI --%>
+          <%!-- Camera Scanner UI --%>
           <div
             :if={@scanner_mode == "camera"}
             id="barcode-scanner"
@@ -144,7 +145,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               style="min-height: 250px; max-width: 100%; margin: 0 auto;"
             >
             </div>
-             <%!-- Scanner Controls --%>
+            <%!-- Scanner Controls --%>
             <div class="flex gap-2">
               <button
                 id="start-scanner-btn"
@@ -173,32 +174,32 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 <.icon name="hero-arrow-path" class="w-5 h-5" />
               </button>
             </div>
-            
+
             <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-1">
               <.icon name="hero-information-circle" class="w-4 h-4 inline" />
               Position the barcode in the scanning area. Auto-scans when detected.
             </p>
-             <%!-- Troubleshooting Tips --%>
+            <%!-- Troubleshooting Tips --%>
             <details class="text-xs text-gray-600 dark:text-gray-400">
               <summary class="cursor-pointer hover:text-gray-800 dark:hover:text-gray-200">
                 Camera not working? Click for help
               </summary>
-              
+
               <ul class="mt-2 ml-4 list-disc space-y-1">
                 <li>Make sure no other app is using your camera</li>
-                
+
                 <li>Check browser permissions and allow camera access</li>
-                
+
                 <li>Try refreshing the page</li>
-                
+
                 <li>Try switching to manual input mode</li>
-                
+
                 <li>On mobile, ensure your browser has camera permissions in system settings</li>
               </ul>
             </details>
           </div>
         </div>
-         <%!-- Manual Input Form --%>
+        <%!-- Manual Input Form --%>
         <form
           :if={@scanner_mode == "manual"}
           phx-submit="scan_item"
@@ -218,7 +219,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 class="w-full px-3 sm:px-4 py-3 text-base sm:text-lg border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-100 touch-manipulation"
               />
             </div>
-            
+
             <button
               type="submit"
               class="px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-lg transition-colors touch-manipulation"
@@ -226,13 +227,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               <.icon name="hero-magnifying-glass" class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
-          
+
           <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2 px-1">
             Barcode, legacy code, or item code
           </p>
         </form>
       </div>
-       <%!-- Duplicate Results (if multiple items found) --%>
+      <%!-- Duplicate Results (if multiple items found) --%>
       <div
         :if={@duplicate_items != []}
         class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-6 mb-4 sm:mb-6"
@@ -240,7 +241,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         <h3 class="text-base sm:text-lg font-semibold text-yellow-900 dark:text-yellow-300 mb-3 sm:mb-4">
           Multiple Items - Select One
         </h3>
-        
+
         <div class="space-y-2 sm:space-y-3">
           <button
             :for={opname_item <- @duplicate_items}
@@ -254,11 +255,11 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 <p class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">
                   {opname_item.item_code}
                 </p>
-                
+
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   {opname_item.collection_title}
                 </p>
-                
+
                 <div class="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-500">
                   <span>Inventory: {opname_item.inventory_code}</span>
                   <span :if={opname_item.barcode}>Barcode: {opname_item.barcode}</span>
@@ -267,12 +268,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   </span>
                 </div>
               </div>
-               <.item_check_badge status={opname_item.check_status} />
+              <.item_check_badge status={opname_item.check_status} />
             </div>
           </button>
         </div>
       </div>
-       <%!-- Current Item Detail Card --%>
+      <%!-- Current Item Detail Card --%>
       <div
         :if={@current_item}
         class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-6 mb-4 sm:mb-6"
@@ -283,7 +284,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
             Item Details
           </h3>
-          
+
           <button
             type="button"
             phx-click="clear_item"
@@ -292,7 +293,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <.icon name="hero-x-mark" class="w-6 h-6" />
           </button>
         </div>
-         <%!-- Actions at Top --%>
+        <%!-- Actions at Top --%>
         <div class="flex gap-2 sm:gap-3 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
           <button
             type="button"
@@ -309,7 +310,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             Cancel
           </button>
         </div>
-        
+
         <div class="space-y-3 sm:space-y-6">
           <%!-- Collection Information Section --%>
           <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-3 sm:p-6">
@@ -319,7 +320,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400"
               /> Collection Information
             </h4>
-            
+
             <form phx-change="update_field">
               <div class="space-y-3 sm:space-y-4">
                 <div>
@@ -334,7 +335,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-xs sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
                   />
                 </div>
-                 <%!-- Creator/Author Search with Dropdown --%>
+                <%!-- Creator/Author Search with Dropdown --%>
                 <div class="relative">
                   <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
                     Author/Creator
@@ -362,9 +363,22 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       >
                         {creator.creator_name}
                       </button>
+                      <%!-- Load More Button --%>
+                      <div
+                        :if={not @creator_suggestions_done}
+                        class="border-t border-gray-200 dark:border-gray-600"
+                      >
+                        <button
+                          type="button"
+                          phx-click="load_more_creator_suggestions"
+                          class="w-full text-left px-3 py-2 text-xs sm:text-sm text-blue-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 dark:text-blue-400"
+                        >
+                          Load More...
+                        </button>
+                      </div>
                     </div>
                   </div>
-                   <%!-- Selected Creator Display --%>
+                  <%!-- Selected Creator Display --%>
                   <div :if={@updated_values[:creator_id]} class="mt-2 flex items-center gap-2">
                     <span class="text-xs text-green-600 dark:text-green-400">
                       <.icon name="hero-check-circle" class="w-4 h-4 inline" />
@@ -378,21 +392,24 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       Clear
                     </button>
                   </div>
-                  
+
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Start typing to search existing creators from database
                   </p>
                 </div>
-                 <%!-- Display other collection fields --%>
-                <div
-                  :if={@current_item.collection.collection_fields != []}
-                  class="pt-2 border-t border-purple-200 dark:border-purple-800"
-                >
-                  <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                    Additional Metadata:
-                  </p>
+                <%!-- Display and edit collection fields --%>
+                <div class="pt-2 border-t border-purple-200 dark:border-purple-800">
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      Additional Metadata:
+                    </p>
+                    <!-- Add Field button removed -->
+                  </div>
                   
+    <!-- Add new field dropdown removed -->
+
                   <div class="space-y-2">
+                    <%!-- Existing collection fields (editable) --%>
                     <div
                       :for={
                         field <-
@@ -402,17 +419,72 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       }
                       class="bg-white dark:bg-gray-700/50 rounded p-2"
                     >
-                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        {field.label || field.name}:
-                      </span>
-                      <span class="text-xs text-gray-800 dark:text-gray-200 ml-2">{field.value}</span>
+                      <div class="flex items-start gap-2">
+                        <div class="flex-1">
+                          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            {field.label || field.name}
+                          </label>
+                          <input
+                            type="text"
+                            name={"collection_field_#{field.id}"}
+                            value={Map.get(@collection_field_edits, field.id, field.value)}
+                            phx-change="update_collection_field"
+                            phx-value-field-id={field.id}
+                            phx-debounce="300"
+                            class="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          phx-click="remove_collection_field"
+                          phx-value-field-id={field.id}
+                          class="text-red-600 hover:text-red-700 dark:text-red-400 mt-5"
+                          title="Remove field"
+                        >
+                          <.icon name="hero-x-mark" class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <%!-- New fields being added --%>
+                    <div
+                      :for={
+                        {field_key, field_data} <- Map.get(@collection_field_edits, :new_fields, %{})
+                      }
+                      class="bg-green-50 dark:bg-green-900/20 rounded p-2 border border-green-300 dark:border-green-700"
+                    >
+                      <div class="flex items-start gap-2">
+                        <div class="flex-1">
+                          <label class="block text-xs font-medium text-green-700 dark:text-green-400 mb-1">
+                            {field_data.label} <span class="text-xs">(New)</span>
+                          </label>
+                          <input
+                            type="text"
+                            name={"new_collection_field_#{field_key}"}
+                            value={field_data.value}
+                            phx-change="update_new_collection_field"
+                            phx-value-field-key={field_key}
+                            phx-debounce="300"
+                            class="w-full px-2 py-1 text-xs rounded border border-green-300 dark:border-green-600 dark:bg-gray-700 dark:text-gray-200"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          phx-click="cancel_new_collection_field"
+                          phx-value-field-key={field_key}
+                          class="text-red-600 hover:text-red-700 dark:text-red-400 mt-5"
+                          title="Cancel adding field"
+                        >
+                          <.icon name="hero-x-mark" class="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </form>
           </div>
-           <%!-- Identification Section --%>
+          <%!-- Identification Section --%>
           <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 sm:p-6">
             <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
               <.icon
@@ -420,7 +492,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400"
               /> Item Identification
             </h4>
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
@@ -430,7 +502,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {@current_item.item.item_code}
                 </div>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Inventory Code
@@ -440,7 +512,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {@current_item.item.inventory_code}
                 </div>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Barcode <span class="text-gray-400 dark:text-gray-500 text-xs">(Read-only)</span>
@@ -449,7 +521,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {@current_item.item.barcode || "N/A"}
                 </div>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Legacy Item Code
@@ -461,7 +533,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               </div>
             </div>
           </div>
-           <%!-- Status & Condition Section --%>
+          <%!-- Status & Condition Section --%>
           <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 sm:p-6">
             <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
               <.icon
@@ -469,7 +541,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 class="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400"
               /> Status & Condition
             </h4>
-            
+
             <form phx-change="update_field">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
@@ -490,7 +562,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     </option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Condition
@@ -509,7 +581,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     </option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Availability
@@ -531,7 +603,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               </div>
             </form>
           </div>
-           <%!-- Location & Notes Section --%>
+          <%!-- Location & Notes Section --%>
           <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-3 sm:p-6">
             <h4 class="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4 flex items-center gap-2">
               <.icon
@@ -539,7 +611,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400"
               /> Location & Notes
             </h4>
-            
+
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -551,7 +623,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm dark:bg-gray-700 dark:text-gray-200"
                   >
                     <option value="">-- Select Place (Optional) --</option>
-                    
+
                     <option
                       :for={place <- @places}
                       value={place.name}
@@ -561,12 +633,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     </option>
                   </select>
                 </form>
-                
+
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Standardized places for node: {@current_item.item.node.name}
                 </p>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Detailed Location <span class="text-xs text-gray-500">(free text)</span>
@@ -581,12 +653,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                     class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm dark:bg-gray-700 dark:text-gray-200"
                   />
                 </form>
-                
+
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Add specific details about the item's location
                 </p>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Notes
@@ -605,12 +677,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           </div>
         </div>
       </div>
-       <%!-- Recently Scanned Items --%>
+      <%!-- Recently Scanned Items --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-6">
         <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
           Recently Scanned
         </h3>
-        
+
         <div id="recently-scanned" phx-update="stream" class="space-y-2">
           <div
             id="empty-state"
@@ -619,7 +691,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             <.icon name="hero-inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
             <p>No items scanned yet. Start scanning to see items here.</p>
           </div>
-          
+
           <div
             :for={{dom_id, opname_item} <- @streams.recent_items}
             id={dom_id}
@@ -630,12 +702,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 <p class="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 break-all">
                   {if opname_item.item, do: opname_item.item.item_code, else: "N/A"}
                 </p>
-                
+
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                   {if opname_item.collection, do: opname_item.collection.title, else: "N/A"}
                 </p>
               </div>
-              
+
               <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <.item_check_badge status={opname_item.check_status} />
                 <span
@@ -646,26 +718,28 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   <span class="hidden sm:inline">Modified</span>
                 </span>
                 <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                  {format_time(opname_item.scanned_at || opname_item.updated_at)}
+                  {FormatIndonesiaTime.format_utc_to_jakarta(
+                    opname_item.scanned_at || opname_item.updated_at
+                  )}
                 </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-       <%!-- Complete Work Button --%>
+      <%!-- Complete Work Button --%>
       <div class="mt-4 sm:mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0 sm:items-center">
           <div class="flex-1">
             <h3 class="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-300 mb-1">
               Finished checking items?
             </h3>
-            
+
             <p class="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
               Mark your work session as completed.
             </p>
           </div>
-          
+
           <button
             type="button"
             phx-click="complete_work"
@@ -712,6 +786,11 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
               |> assign(:recent_items_count, length(recent_items))
               |> assign(:creator_input, "")
               |> assign(:creator_suggestions, [])
+              |> assign(:creator_suggestions_offset, 0)
+              |> assign(:creator_suggestions_done, false)
+              |> assign(:available_metadata_properties, [])
+              |> assign(:collection_field_edits, %{})
+              |> assign(:show_add_field_dropdown, false)
               |> stream(:recent_items, recent_items)
 
             {:ok, socket}
@@ -808,6 +887,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     updated = socket.assigns.updated_values
     original_item = opname_item.item
     original_collection = opname_item.collection
+    collection_field_edits = socket.assigns.collection_field_edits
 
     # Build item changes map - only include fields that actually changed
     item_changes = %{}
@@ -864,11 +944,27 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
          do: Map.put(collection_changes, "creator_id", updated.creator_id),
          else: collection_changes
 
+    # Handle collection_field changes
+    collection_field_changes =
+      build_collection_field_changes(
+        original_collection.collection_fields,
+        collection_field_edits
+      )
+
+    # Add collection_field_changes to collection_changes if there are any
+    collection_changes =
+      if collection_field_changes != %{} do
+        Map.put(collection_changes, "collection_field_changes", collection_field_changes)
+      else
+        collection_changes
+      end
+
     require Logger
     Logger.debug("=== CHECK ITEM DEBUG ===")
     Logger.debug("Updated values: #{inspect(updated)}")
     Logger.debug("Item changes: #{inspect(item_changes)}")
     Logger.debug("Collection changes: #{inspect(collection_changes)}")
+    Logger.debug("Collection field edits: #{inspect(collection_field_edits)}")
     Logger.debug("Notes: #{inspect(updated.notes)}")
 
     case StockOpname.check_item_with_collection(
@@ -880,8 +976,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
            socket.assigns.current_user
          ) do
       {:ok, checked_item} ->
-        # Refresh session and progress
-        session = StockOpname.get_session!(socket.assigns.session.id)
+        # Efficient: do NOT preload all items, just reload session meta
+        session = StockOpname.get_session_without_items!(socket.assigns.session.id)
 
         {:ok, librarian_progress} =
           StockOpname.get_librarian_progress(session, socket.assigns.current_user)
@@ -1018,12 +1114,45 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
   end
 
   def handle_event("search_creator", %{"value" => query}, socket) do
-    # Don't search if query is too short or creator already selected
-    if String.trim(query) == "" or String.length(String.trim(query)) < 2 do
-      {:noreply, assign(socket, creator_input: query, creator_suggestions: [])}
+    trimmed = String.trim(query)
+
+    if trimmed == "" or String.length(trimmed) < 2 do
+      {:noreply,
+       assign(socket,
+         creator_input: query,
+         creator_suggestions: [],
+         creator_suggestions_offset: 0,
+         creator_suggestions_done: false
+       )}
     else
-      suggestions = Voile.Schema.Master.search_mst_creator_names(query, 10)
-      {:noreply, assign(socket, creator_input: query, creator_suggestions: suggestions)}
+      suggestions = Voile.Schema.Master.search_mst_creator_names(trimmed, 20, 0)
+      done = length(suggestions) < 20
+
+      {:noreply,
+       assign(socket,
+         creator_input: query,
+         creator_suggestions: suggestions,
+         creator_suggestions_offset: 20,
+         creator_suggestions_done: done
+       )}
+    end
+  end
+
+  def handle_event("load_more_creator_suggestions", _params, socket) do
+    trimmed = String.trim(socket.assigns.creator_input || "")
+    offset = socket.assigns.creator_suggestions_offset || 0
+
+    if trimmed == "" or String.length(trimmed) < 2 or socket.assigns.creator_suggestions_done do
+      {:noreply, socket}
+    else
+      more = Voile.Schema.Master.search_mst_creator_names(trimmed, 20, offset)
+      done = length(more) < 20
+
+      {:noreply,
+       socket
+       |> assign(:creator_suggestions, socket.assigns.creator_suggestions ++ more)
+       |> assign(:creator_suggestions_offset, offset + 20)
+       |> assign(:creator_suggestions_done, done)}
     end
   end
 
@@ -1041,6 +1170,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
        socket
        |> assign(:creator_input, creator.creator_name)
        |> assign(:creator_suggestions, [])
+       |> assign(:creator_suggestions_offset, 0)
+       |> assign(:creator_suggestions_done, false)
        |> assign(:updated_values, updated_values)}
     else
       {:noreply, socket}
@@ -1056,7 +1187,134 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     {:noreply,
      socket
      |> assign(:creator_input, "")
+     |> assign(:creator_suggestions, [])
+     |> assign(:creator_suggestions_offset, 0)
+     |> assign(:creator_suggestions_done, false)
      |> assign(:updated_values, updated_values)}
+  end
+
+  def handle_event("update_collection_field", params, socket) do
+    require Logger
+    Logger.debug("update_collection_field params: #{inspect(params)}")
+
+    # Get field name from _target
+    field_name =
+      case params["_target"] do
+        [field_name] -> field_name
+        [field_name | _] -> field_name
+        _ -> nil
+      end
+
+    # Extract field_id from the field name
+    field_id =
+      if field_name && String.starts_with?(field_name, "collection_field_") do
+        String.replace(field_name, "collection_field_", "")
+      else
+        params["field-id"]
+      end
+
+    if field_name && Map.has_key?(params, field_name) && field_id do
+      value = params[field_name]
+      collection_field_edits =
+        Map.put(socket.assigns.collection_field_edits, field_id, value)
+
+      Logger.debug("Collection field updated: #{field_id} = #{value}")
+
+      {:noreply, assign(socket, :collection_field_edits, collection_field_edits)}
+    else
+      Logger.debug("Could not extract collection field from params")
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("update_new_collection_field", params, socket) do
+    require Logger
+    Logger.debug("update_new_collection_field params: #{inspect(params)}")
+
+    # Get field name from _target
+    field_name =
+      case params["_target"] do
+        [field_name] -> field_name
+        [field_name | _] -> field_name
+        _ -> nil
+      end
+
+    # Extract field_key from the field name
+    field_key =
+      if field_name && String.starts_with?(field_name, "new_collection_field_") do
+        String.replace(field_name, "new_collection_field_", "")
+      else
+        params["field-key"]
+      end
+
+    if field_name && Map.has_key?(params, field_name) && field_key do
+      value = params[field_name]
+      collection_field_edits =
+        update_in(
+          socket.assigns.collection_field_edits,
+          [:new_fields, field_key],
+          fn field_data ->
+            Map.put(field_data, :value, value)
+          end
+        )
+
+      Logger.debug("New collection field updated: #{field_key} = #{value}")
+
+      {:noreply, assign(socket, :collection_field_edits, collection_field_edits)}
+    else
+      Logger.debug("Could not extract new collection field from params")
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("remove_collection_field", %{"field-id" => field_id}, socket) do
+    # Mark field for deletion
+    collection_field_edits =
+      Map.update(
+        socket.assigns.collection_field_edits,
+        :deleted_fields,
+        [field_id],
+        fn deleted -> [field_id | deleted] end
+      )
+
+    {:noreply, assign(socket, :collection_field_edits, collection_field_edits)}
+  end
+
+  def handle_event("cancel_new_collection_field", %{"field-key" => field_key}, socket) do
+    # Get the property to add back to available list
+    new_field_data = get_in(socket.assigns.collection_field_edits, [:new_fields, field_key])
+
+    property =
+      if new_field_data do
+        # Find the property from the original list by using the collection template
+        opname_item = socket.assigns.current_item
+
+        if opname_item.collection.resource_template do
+          opname_item.collection.resource_template.template_properties
+          |> Enum.find(fn tp -> tp.property.id == new_field_data.property_id end)
+          |> case do
+            nil -> nil
+            tp -> tp.property
+          end
+        end
+      end
+
+    # Remove from new_fields
+    collection_field_edits =
+      update_in(socket.assigns.collection_field_edits, [:new_fields], fn fields ->
+        Map.delete(fields || %{}, field_key)
+      end)
+
+    # Add property back to available list if found
+    socket =
+      if property do
+        available_properties = [property | socket.assigns.available_metadata_properties]
+        assign(socket, :available_metadata_properties, available_properties)
+      else
+        socket
+      end
+
+    {:noreply, assign(socket, :collection_field_edits, collection_field_edits)}
   end
 
   def handle_event("complete_work", _params, socket) do
@@ -1084,10 +1342,35 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       socket
       |> put_flash(:warning, "This item has already been checked.")
       |> assign(:search_term, "")
+      |> assign(:metadata_search, "")
+      |> assign(:filtered_metadata_properties, [])
     else
-      # Preload collection with creator and collection_fields, and item with node
+      # Preload collection with creator, collection_fields, resource_template, and item with node
       opname_item =
-        Repo.preload(opname_item, collection: [:mst_creator, :collection_fields], item: :node)
+        Repo.preload(opname_item,
+          collection: [
+            :mst_creator,
+            :collection_fields,
+            resource_template: [template_properties: :property]
+          ],
+          item: :node
+        )
+
+      # Get available metadata properties from the collection's template
+      available_properties =
+        if opname_item.collection.resource_template do
+          opname_item.collection.resource_template.template_properties
+          |> Enum.map(& &1.property)
+          |> Enum.filter(fn prop ->
+            # Exclude properties already in collection_fields and creator-related fields
+            !Enum.any?(opname_item.collection.collection_fields, fn field ->
+              field.name == prop.name
+            end) and
+              prop.name not in ["creator", "author", "dcterms:creator"]
+          end)
+        else
+          []
+        end
 
       # Filter places by item's node - get the node_id from the item
       _item_node_id = opname_item.item.unit_id
@@ -1116,13 +1399,78 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         creator_id: opname_item.collection.creator_id
       }
 
+      # Always assign :metadata_search and :filtered_metadata_properties
       socket
       |> assign(:current_item, opname_item)
       |> assign(:updated_values, updated_values)
       |> assign(:creator_input, author_name)
       |> assign(:creator_suggestions, [])
+      |> assign(:creator_suggestions_offset, 0)
+      |> assign(:creator_suggestions_done, false)
+      |> assign(:available_metadata_properties, available_properties)
+      |> assign(:filtered_metadata_properties, available_properties)
+      |> assign(:metadata_search, "")
+      |> assign(:collection_field_edits, %{})
+      |> assign(:show_add_field_dropdown, false)
       |> assign(:search_term, "")
     end
+  end
+
+  defp build_collection_field_changes(original_fields, edits) do
+    changes = %{}
+
+    # Handle updated fields
+    updated_fields =
+      original_fields
+      |> Enum.filter(fn field ->
+        edited_value = Map.get(edits, field.id)
+        edited_value && edited_value != field.value
+      end)
+      |> Enum.map(fn field ->
+        %{
+          id: field.id,
+          value: Map.get(edits, field.id)
+        }
+      end)
+
+    changes =
+      if updated_fields != [] do
+        Map.put(changes, :updated, updated_fields)
+      else
+        changes
+      end
+
+    # Handle new fields
+    new_fields =
+      edits
+      |> Map.get(:new_fields, %{})
+      |> Enum.map(fn {_key, field_data} ->
+        %{
+          property_id: field_data.property_id,
+          name: field_data.name,
+          label: field_data.label,
+          value: field_data.value
+        }
+      end)
+
+    changes =
+      if new_fields != [] do
+        Map.put(changes, :new, new_fields)
+      else
+        changes
+      end
+
+    # Handle deleted fields
+    deleted_fields = Map.get(edits, :deleted_fields, [])
+
+    changes =
+      if deleted_fields != [] do
+        Map.put(changes, :deleted, deleted_fields)
+      else
+        changes
+      end
+
+    changes
   end
 
   defp get_collection_author(collection) do
@@ -1163,7 +1511,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     assigns = assign(assigns, :color, color) |> assign(:label, label)
 
     ~H"""
-    <span class={"inline-flex items-center px-3 py-1 text-sm font-medium rounded-full #{@color}"}>
+    <span class={["inline-flex items-center px-3 py-1 text-sm font-medium rounded-full", @color]}>
       {@label}
     </span>
     """
@@ -1182,15 +1530,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
     assigns = assign(assigns, :color, color) |> assign(:label, label)
 
     ~H"""
-    <span class={"inline-flex items-center px-2 py-1 text-xs font-medium rounded #{@color}"}>
+    <span class={["inline-flex items-center px-2 py-1 text-xs font-medium rounded", @color]}>
       {@label}
     </span>
     """
-  end
-
-  defp format_time(nil), do: ""
-
-  defp format_time(datetime) do
-    Calendar.strftime(datetime, "%H:%M:%S")
   end
 end

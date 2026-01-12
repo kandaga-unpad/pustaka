@@ -73,13 +73,14 @@ defmodule Voile.Schema.Master do
   @doc """
   Search creators but return only minimal fields (id and creator_name) to reduce data transfer.
   """
-  def search_mst_creator_names(query, limit \\ 10) when is_binary(query) do
+  def search_mst_creator_names(query, limit \\ 10, offset \\ 0) when is_binary(query) do
     q = "%" <> String.replace(query, "%", "\\%") <> "%"
 
     Creator
     |> where([c], ilike(c.creator_name, ^q))
     |> order_by([c], asc: c.creator_name)
     |> limit(^limit)
+    |> offset(^offset)
     |> select([c], %{id: c.id, creator_name: c.creator_name})
     |> Repo.all()
   end

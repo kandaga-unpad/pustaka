@@ -331,8 +331,15 @@ defmodule VoileWeb.UserOnboardingLive do
       identifier = "#{timestamp}#{random}" |> Decimal.new()
 
       # Update user with identifier
-      {:ok, updated_user} = Accounts.update_profile_user(user, %{identifier: identifier})
-      updated_user
+      case Accounts.update_profile_user(user, %{identifier: identifier}) do
+        {:ok, updated_user} ->
+          updated_user
+
+        {:error, _changeset} ->
+          # If update fails (e.g., password validation for OAuth users), just return user
+          # The identifier will be set during onboarding completion
+          user
+      end
     else
       user
     end

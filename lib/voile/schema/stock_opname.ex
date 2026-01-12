@@ -586,6 +586,53 @@ defmodule Voile.Schema.StockOpname do
         {:ok, opname_item.collection}
       end
     end)
+    |> Ecto.Multi.run(:handle_collection_field_changes, fn repo,
+                                                           %{
+                                                             lock_item: _opname_item,
+                                                             update_collection: collection
+                                                           } ->
+      case Map.get(collection_changes, "collection_field_changes") do
+        nil ->
+          {:ok, :no_changes}
+
+        field_changes ->
+          # Handle updated fields
+          if Map.has_key?(field_changes, :updated) do
+            Enum.each(field_changes.updated, fn %{id: field_id, value: new_value} ->
+              from(cf in Voile.Schema.Catalog.CollectionField,
+                where: cf.id == ^field_id and cf.collection_id == ^collection.id
+              )
+              |> repo.update_all(set: [value: new_value, updated_at: DateTime.utc_now()])
+            end)
+          end
+
+          # Handle new fields
+          if Map.has_key?(field_changes, :new) do
+            Enum.each(field_changes.new, fn field_data ->
+              %Voile.Schema.Catalog.CollectionField{
+                collection_id: collection.id,
+                property_id: field_data.property_id,
+                name: field_data.name,
+                label: field_data.label,
+                value: field_data.value
+              }
+              |> repo.insert!()
+            end)
+          end
+
+          # Handle deleted fields
+          if Map.has_key?(field_changes, :deleted) do
+            Enum.each(field_changes.deleted, fn field_id ->
+              from(cf in Voile.Schema.Catalog.CollectionField,
+                where: cf.id == ^field_id and cf.collection_id == ^collection.id
+              )
+              |> repo.delete_all()
+            end)
+          end
+
+          {:ok, :applied}
+      end
+    end)
     |> Ecto.Multi.update(:update_item, fn %{lock_item: opname_item} ->
       all_changes = Map.merge(item_changes || %{}, collection_changes || %{})
 
@@ -601,40 +648,72 @@ defmodule Voile.Schema.StockOpname do
       opname_item
       |> Item.changeset(attrs)
     end)
-    |> Ecto.Multi.run(:update_counters, fn repo, %{update_item: updated_item} ->
+    |> Ecto.Multi.run(:update_counters, fn repo,
+                                           %{lock_item: old_item, update_item: updated_item} ->
       session = repo.get!(Session, session.id)
 
-      new_checked_count =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.check_status == "checked"
-        )
-        |> repo.aggregate(:count, :id)
+      # Get old and new values
+      old_status = old_item.check_status
+      old_has_changes = old_item.has_changes
 
-      new_missing_count =
-        from(oi in Item,
-          where:
-            oi.session_id == ^session.id and
-              fragment("?->>'availability' = 'missing'", oi.changes)
-        )
-        |> repo.aggregate(:count, :id)
+      new_status = updated_item.check_status
+      new_has_changes = updated_item.has_changes
 
-      new_changes_count =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.has_changes == true
-        )
-        |> repo.aggregate(:count, :id)
+      checked_items_delta =
+        cond do
+          old_status != "checked" and new_status == "checked" -> 1
+          old_status == "checked" and new_status != "checked" -> -1
+          true -> 0
+        end
 
-      session
-      |> Ecto.Changeset.change(%{
-        checked_items: new_checked_count,
-        missing_items: new_missing_count,
-        items_with_changes: new_changes_count
-      })
-      |> repo.update()
+      items_with_changes_delta =
+        cond do
+          !old_has_changes and new_has_changes -> 1
+          old_has_changes and !new_has_changes -> -1
+          true -> 0
+        end
+
+      missing_items_delta =
+        cond do
+          old_status != "missing" and new_status == "missing" -> 1
+          old_status == "missing" and new_status != "missing" -> -1
+          true -> 0
+        end
+
+      session_changes = %{}
+
+      session_changes =
+        if checked_items_delta != 0,
+          do:
+            Map.put(session_changes, :checked_items, session.checked_items + checked_items_delta),
+          else: session_changes
+
+      session_changes =
+        if items_with_changes_delta != 0,
+          do:
+            Map.put(
+              session_changes,
+              :items_with_changes,
+              session.items_with_changes + items_with_changes_delta
+            ),
+          else: session_changes
+
+      session_changes =
+        if missing_items_delta != 0,
+          do:
+            Map.put(session_changes, :missing_items, session.missing_items + missing_items_delta),
+          else: session_changes
+
+      if map_size(session_changes) > 0 do
+        session
+        |> Ecto.Changeset.change(session_changes)
+        |> repo.update()
+      end
 
       assignment = repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
 
       if assignment do
+        # Optionally, you can optimize this as well, but for now keep as is:
         librarian_checked_count =
           from(oi in Item,
             where: oi.session_id == ^session.id and oi.checked_by_id == ^user.id
@@ -726,12 +805,10 @@ defmodule Voile.Schema.StockOpname do
         )
         |> repo.aggregate(:count, :id)
 
-      # Count missing items based on availability field in changes JSONB
+      # Count missing items based on check_status
       new_missing_count =
         from(oi in Item,
-          where:
-            oi.session_id == ^session.id and
-              fragment("?->>'availability' = 'missing'", oi.changes)
+          where: oi.session_id == ^session.id and oi.check_status == "missing"
         )
         |> repo.aggregate(:count, :id)
 
@@ -787,7 +864,7 @@ defmodule Voile.Schema.StockOpname do
     %{
       total_items: session.total_items,
       checked_items: session.checked_items,
-      pending_items: session.total_items - session.checked_items,
+      pending_items: session.total_items - session.checked_items - session.missing_items,
       missing_items: session.missing_items,
       items_with_changes: session.items_with_changes,
       progress_percentage:
@@ -809,11 +886,10 @@ defmodule Voile.Schema.StockOpname do
       )
       |> Repo.aggregate(:count, :id)
 
-    # Count missing items based on availability field in changes JSONB
+    # Count missing items based on check_status
     missing_count =
       from(oi in Item,
-        where:
-          oi.session_id == ^session.id and fragment("?->>'availability' = 'missing'", oi.changes)
+        where: oi.session_id == ^session.id and oi.check_status == "missing"
       )
       |> Repo.aggregate(:count, :id)
 
@@ -1044,12 +1120,15 @@ defmodule Voile.Schema.StockOpname do
       {:ok, count}
     end)
     |> Ecto.Multi.run(:update_session, fn repo, %{flag_missing: missing_count} ->
-      session
+      # Reload session to get current counters
+      current_session = repo.get!(Session, session.id)
+
+      current_session
       |> Ecto.Changeset.change(%{
         status: "pending_review",
         completed_at: DateTime.utc_now() |> DateTime.truncate(:second),
         updated_by_id: admin_user.id,
-        missing_items: missing_count
+        missing_items: current_session.missing_items + missing_count
       })
       |> repo.update()
     end)

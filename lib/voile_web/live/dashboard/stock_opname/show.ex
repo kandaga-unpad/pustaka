@@ -249,7 +249,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         <div :if={@current_tab == "librarians"} class="p-6">
           <div class="space-y-4">
             <div
-              :for={assignment <- @session.librarian_assignments}
+              :for={assignment <- @displayed_items}
               class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
             >
               <div class="flex justify-between items-start">
@@ -312,7 +312,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             </div>
           </div>
 
-          <div :if={@session.librarian_assignments == []} class="text-center py-12">
+          <div :if={@displayed_items == []} class="text-center py-12">
             <.icon
               name="hero-user-group"
               class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
@@ -380,7 +380,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div :for={{field, new_value} <- item.changes} class="col-span-2">
                     <span class="text-gray-500 dark:text-gray-400">{String.capitalize(field)}:</span>
-                    <span class="text-green-600 dark:text-green-400 font-medium">{new_value}</span>
+                    <span class="text-green-600 dark:text-green-400 font-medium">
+                      <%= format_change_value(new_value) %>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -397,7 +399,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
           </div>
           <%!-- Pagination Controls --%>
           <div
-            :if={@current_tab != "librarians" && @pagination.total_pages > 1}
+            :if={@pagination.total_pages > 1}
             class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"
           >
             <div class="text-sm text-gray-700 dark:text-gray-300">
@@ -494,14 +496,22 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     pagination =
       case tab do
         "librarians" ->
+          total_count = length(session.librarian_assignments)
+          per_page = 3
+          total_pages = ceil(total_count / per_page)
+          page = 1
+          start_index = (page - 1) * per_page
+          _end_index = min(start_index + per_page, total_count)
+          items = Enum.slice(session.librarian_assignments, start_index, per_page)
+
           %{
-            items: [],
-            page: 1,
-            per_page: 50,
-            total_count: 0,
-            total_pages: 0,
-            has_prev: false,
-            has_next: false
+            items: items,
+            page: page,
+            per_page: per_page,
+            total_count: total_count,
+            total_pages: total_pages,
+            has_prev: page > 1,
+            has_next: page < total_pages
           }
 
         "all" ->
@@ -536,16 +546,38 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     session = socket.assigns.session
     page = String.to_integer(page)
 
-    filters =
+    pagination =
       case socket.assigns.current_tab do
-        "checked" -> %{check_status: "checked"}
-        "pending" -> %{check_status: "pending"}
-        "missing" -> %{check_status: "missing"}
-        "with_changes" -> %{has_changes: true}
-        _ -> %{}
-      end
+        "librarians" ->
+          total_count = length(session.librarian_assignments)
+          per_page = 3
+          total_pages = ceil(total_count / per_page)
+          start_index = (page - 1) * per_page
+          _end_index = min(start_index + per_page, total_count)
+          items = Enum.slice(session.librarian_assignments, start_index, per_page)
 
-    pagination = StockOpname.list_session_items_paginated(session, page, 50, filters)
+          %{
+            items: items,
+            page: page,
+            per_page: per_page,
+            total_count: total_count,
+            total_pages: total_pages,
+            has_prev: page > 1,
+            has_next: page < total_pages
+          }
+
+        _ ->
+          filters =
+            case socket.assigns.current_tab do
+              "checked" -> %{check_status: "checked"}
+              "pending" -> %{check_status: "pending"}
+              "missing" -> %{check_status: "missing"}
+              "with_changes" -> %{has_changes: true}
+              _ -> %{}
+            end
+
+          StockOpname.list_session_items_paginated(session, page, 50, filters)
+      end
 
     socket =
       socket
@@ -649,9 +681,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     case tab do
       "all" -> session.total_items
       "checked" -> session.checked_items
-      "pending" -> session.total_items - session.checked_items
+      "pending" -> session.total_items - session.checked_items - session.missing_items
       "missing" -> session.missing_items
       "with_changes" -> session.items_with_changes
+      "librarians" -> length(session.librarian_assignments)
       _ -> 0
     end
   end
@@ -742,4 +775,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
   end
 
   defp calculate_init_progress(_items_added, _total_items), do: 0.0
+
+  defp format_change_value(%{"updated" => updates}) when is_list(updates) do
+    pairs = for %{"id" => id, "value" => value} <- updates, do: "#{id}: #{value}"
+    "Updated fields - #{Enum.join(pairs, ", ")}"
+  end
+
+  defp format_change_value(other) do
+    inspect(other)
+  end
 end
