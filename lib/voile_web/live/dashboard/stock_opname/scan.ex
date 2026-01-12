@@ -1215,6 +1215,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
 
     if field_name && Map.has_key?(params, field_name) && field_id do
       value = params[field_name]
+
       collection_field_edits =
         Map.put(socket.assigns.collection_field_edits, field_id, value)
 
@@ -1249,6 +1250,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
 
     if field_name && Map.has_key?(params, field_name) && field_key do
       value = params[field_name]
+
       collection_field_edits =
         update_in(
           socket.assigns.collection_field_edits,

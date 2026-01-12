@@ -381,7 +381,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   <div :for={{field, new_value} <- item.changes} class="col-span-2">
                     <span class="text-gray-500 dark:text-gray-400">{String.capitalize(field)}:</span>
                     <span class="text-green-600 dark:text-green-400 font-medium">
-                      <%= format_change_value(new_value) %>
+                      {format_change_value(new_value)}
                     </span>
                   </div>
                 </div>
