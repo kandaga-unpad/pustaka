@@ -25,7 +25,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Index do
         socket
         |> assign(:page_title, "Listing Locations")
         |> assign(:live_action, :index)
-        |> assign(:locations, locations)
+        |> stream(:locations, locations)
         |> assign(:page, page)
         |> assign(:total_pages, total_pages)
 
@@ -80,7 +80,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Index do
 
     socket =
       socket
-      |> assign(:locations, locations)
+      |> stream(:locations, locations, reset: true)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
 

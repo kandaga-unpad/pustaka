@@ -19,17 +19,17 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         <div class="flex justify-between items-start">
           <div>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{@session.title}</h1>
-
+            
             <p class="text-gray-600 dark:text-gray-400 mt-1">Code: {@session.session_code}</p>
-
+            
             <p :if={@session.description} class="text-gray-600 dark:text-gray-400 text-sm mt-2">
               {@session.description}
             </p>
           </div>
-          <.session_status_badge status={@session.status} />
+           <.session_status_badge status={@session.status} />
         </div>
       </div>
-      <%!-- Initialization Progress Banner --%>
+       <%!-- Initialization Progress Banner --%>
       <div
         :if={@session.status == "initializing"}
         class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-6"
@@ -39,19 +39,19 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             <div class="animate-spin">
               <.icon name="hero-arrow-path" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
-
+            
             <div>
               <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-300">
                 Initializing Session Items...
               </h3>
-
+              
               <p class="text-sm text-purple-700 dark:text-purple-400">
                 Adding items to stock opname session. This may take a moment for large collections.
               </p>
             </div>
           </div>
         </div>
-
+        
         <div class="mt-4">
           <div class="flex justify-between text-sm mb-2">
             <span class="text-purple-700 dark:text-purple-400">
@@ -62,7 +62,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
               {calculate_init_progress(@items_added, @session.total_items)}%
             </span>
           </div>
-
+          
           <div class="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-3">
             <div
               class="bg-purple-600 dark:bg-purple-500 h-3 rounded-full transition-all duration-300"
@@ -72,63 +72,63 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
           </div>
         </div>
       </div>
-      <%!-- Session Info Card --%>
+       <%!-- Session Info Card --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Session Information
         </h2>
-
+        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Created By</p>
-
+            
             <p class="text-sm mt-1 dark:text-gray-300">
               {@session.created_by.fullname || @session.created_by.email}
             </p>
           </div>
-
+          
           <div>
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Created Date</p>
-
+            
             <p class="text-sm mt-1 dark:text-gray-300">{format_date(@session.inserted_at)}</p>
           </div>
-
+          
           <div :if={@session.started_at}>
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Started</p>
-
+            
             <p class="text-sm mt-1 dark:text-gray-300">{format_datetime(@session.started_at)}</p>
           </div>
-
+          
           <div :if={@session.completed_at}>
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Completed</p>
-
+            
             <p class="text-sm mt-1 dark:text-gray-300">{format_datetime(@session.completed_at)}</p>
           </div>
         </div>
       </div>
-      <%!-- Statistics Cards --%>
+       <%!-- Statistics Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
               {if @session.status == "initializing", do: "Expected Items", else: "Total Items"}
             </p>
-            <.icon name="hero-inbox-stack" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
+             <.icon name="hero-inbox-stack" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
-
+          
           <p class="text-3xl font-bold text-gray-900 dark:text-gray-100">{@session.total_items}</p>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Checked</p>
-            <.icon name="hero-check-circle" class="w-6 h-6 text-green-400" />
+             <.icon name="hero-check-circle" class="w-6 h-6 text-green-400" />
           </div>
-
+          
           <p class="text-3xl font-bold text-green-600 dark:text-green-500">
             {@session.checked_items}
           </p>
-
+          
           <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               class="bg-green-600 dark:bg-green-500 h-2 rounded-full"
@@ -137,60 +137,95 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             </div>
           </div>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Missing</p>
-            <.icon name="hero-exclamation-triangle" class="w-6 h-6 text-red-400" />
+             <.icon name="hero-exclamation-triangle" class="w-6 h-6 text-red-400" />
           </div>
-
+          
           <p class="text-3xl font-bold text-red-600 dark:text-red-500">{@session.missing_items}</p>
         </div>
-
+        
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-2">
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">With Changes</p>
-            <.icon name="hero-pencil" class="w-6 h-6 text-yellow-400" />
+             <.icon name="hero-pencil" class="w-6 h-6 text-yellow-400" />
           </div>
-
+          
           <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-500">
             {@session.items_with_changes}
           </p>
         </div>
       </div>
-      <%!-- Librarian Progress (Admin Only) --%>
+       <%!-- Librarian Progress (Admin Only) --%>
       <div :if={@can_create} class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Librarian Progress
         </h2>
-
+        
         <div class="space-y-3">
           <div
-            :for={assignment <- @session.librarian_assignments}
+            :for={assignment <- @librarian_pagination.items}
             class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
           >
             <div class="flex-1">
               <p class="font-medium text-gray-900 dark:text-gray-100">
                 {assignment.user.fullname || assignment.user.email}
               </p>
-
+              
               <p class="text-sm text-gray-600 dark:text-gray-400">{assignment.user.email}</p>
             </div>
-
+            
             <div class="flex items-center gap-4">
               <div class="text-right">
                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {assignment.items_checked} items
                 </p>
-
+                
                 <p class="text-xs text-gray-500 dark:text-gray-400">checked</p>
               </div>
-              <.work_status_badge status={assignment.work_status} />
+               <.work_status_badge status={assignment.work_status} />
             </div>
           </div>
         </div>
+         <%!-- Librarian Pagination Controls --%>
+        <div
+          :if={@librarian_pagination.total_pages > 1}
+          class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
+          <div class="text-sm text-gray-700 dark:text-gray-300">
+            Showing {@librarian_pagination.page * @librarian_pagination.per_page -
+              @librarian_pagination.per_page + 1} to {min(
+              @librarian_pagination.page * @librarian_pagination.per_page,
+              @librarian_pagination.total_count
+            )} of {@librarian_pagination.total_count} librarians
+          </div>
+          
+          <div class="flex gap-2">
+            <button
+              :if={@librarian_pagination.has_prev}
+              phx-click="paginate_librarians"
+              phx-value-page={@librarian_pagination.page - 1}
+              class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+            >
+              Previous
+            </button>
+            <span class="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+              Page {@librarian_pagination.page} of {@librarian_pagination.total_pages}
+            </span>
+            <button
+              :if={@librarian_pagination.has_next}
+              phx-click="paginate_librarians"
+              phx-value-page={@librarian_pagination.page + 1}
+              class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
-      <%!-- Actions --%>
+       <%!-- Actions --%>
       <div class="flex gap-3 mb-6 flex-wrap">
         <.link
           :if={@can_scan and @session.status == "in_progress"}
@@ -222,7 +257,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
           <.icon name="hero-trash" class="w-5 h-5 inline mr-2" /> Delete Session
         </button>
       </div>
-      <%!-- Tabs --%>
+       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         <div class="border-b border-gray-200 dark:border-gray-700">
           <nav class="flex -mb-px">
@@ -245,7 +280,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             </button>
           </nav>
         </div>
-        <%!-- Librarians Tab Content --%>
+         <%!-- Librarians Tab Content --%>
         <div :if={@current_tab == "librarians"} class="p-6">
           <div class="space-y-4">
             <div
@@ -257,9 +292,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   <p class="font-medium text-gray-900 dark:text-gray-100">
                     {assignment.user.fullname || assignment.user.email}
                   </p>
-
+                  
                   <p class="text-sm text-gray-600 dark:text-gray-400">{assignment.user.email}</p>
-
+                  
                   <p
                     :if={assignment.user.department}
                     class="text-xs text-gray-500 dark:text-gray-500 mt-1"
@@ -267,51 +302,51 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                     {assignment.user.department}
                   </p>
                 </div>
-                <.work_status_badge status={assignment.work_status} />
+                 <.work_status_badge status={assignment.work_status} />
               </div>
-
+              
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Items Checked</p>
-
+                  
                   <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     {assignment.items_checked}
                   </p>
                 </div>
-
+                
                 <div :if={assignment.started_at}>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Started At</p>
-
+                  
                   <p class="text-sm text-gray-700 dark:text-gray-300">
                     {format_datetime(assignment.started_at)}
                   </p>
                 </div>
-
+                
                 <div :if={assignment.completed_at}>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Completed At</p>
-
+                  
                   <p class="text-sm text-gray-700 dark:text-gray-300">
                     {format_datetime(assignment.completed_at)}
                   </p>
                 </div>
-
+                
                 <div :if={!is_nil(assignment.completed_at) && !is_nil(assignment.started_at)}>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Duration</p>
-
+                  
                   <p class="text-sm text-gray-700 dark:text-gray-300">
                     {calculate_duration(assignment.started_at, assignment.completed_at)}
                   </p>
                 </div>
               </div>
-
+              
               <div :if={assignment.notes} class="mt-3 text-sm text-gray-600 dark:text-gray-400">
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Notes:</p>
-
+                
                 <p>{assignment.notes}</p>
               </div>
             </div>
           </div>
-
+          
           <div :if={@displayed_items == []} class="text-center py-12">
             <.icon
               name="hero-user-group"
@@ -320,7 +355,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
             <p class="text-gray-500 dark:text-gray-400">No librarians assigned to this session</p>
           </div>
         </div>
-        <%!-- Items List --%>
+         <%!-- Items List --%>
         <div :if={@current_tab != "librarians"} class="p-6">
           <div class="space-y-2">
             <div
@@ -332,35 +367,35 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   <p class="font-medium text-gray-900 dark:text-gray-100">
                     {if item.item, do: item.item.item_code, else: "N/A"}
                   </p>
-
+                  
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     {if item.collection, do: item.collection.title, else: "N/A"}
                   </p>
                 </div>
-                <.item_check_badge status={item.check_status} />
+                 <.item_check_badge status={item.check_status} />
               </div>
-
+              
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600 dark:text-gray-400">
                 <div>
                   <span class="font-medium">Inventory:</span> {if item.item,
                     do: item.item.inventory_code,
                     else: "N/A"}
                 </div>
-
+                
                 <div :if={item.item && item.item.barcode}>
                   <span class="font-medium">Barcode:</span> {item.item.barcode}
                 </div>
-
+                
                 <div :if={item.scanned_barcode}>
                   <span class="font-medium">Scanned:</span> {item.scanned_barcode}
                 </div>
-
+                
                 <div :if={item.checked_by}>
                   <div>
                     <span class="font-medium">Checked by:</span> {item.checked_by.fullname ||
                       item.checked_by.email}
                   </div>
-
+                  
                   <div>
                     <span class="font-medium">Checked at:</span> {FormatIndonesiaTime.format_utc_to_jakarta(
                       item.scanned_at
@@ -368,7 +403,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   </div>
                 </div>
               </div>
-              <%!-- Show changes from JSONB if any --%>
+               <%!-- Show changes from JSONB if any --%>
               <div
                 :if={item.has_changes && item.changes}
                 class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"
@@ -376,7 +411,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                 <p class="text-xs font-medium text-yellow-700 dark:text-yellow-500 mb-2">
                   Changes Found:
                 </p>
-
+                
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div :for={{field, new_value} <- item.changes} class="col-span-2">
                     <span class="text-gray-500 dark:text-gray-400">{String.capitalize(field)}:</span>
@@ -386,18 +421,18 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                   </div>
                 </div>
               </div>
-
+              
               <div :if={item.notes} class="mt-2 text-xs text-gray-600 dark:text-gray-400">
                 <span class="font-medium">Notes:</span> {item.notes}
               </div>
             </div>
           </div>
-
+          
           <div :if={@displayed_items == []} class="text-center py-12">
             <.icon name="hero-inbox" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
             <p class="text-gray-500 dark:text-gray-400">No items in this category</p>
           </div>
-          <%!-- Pagination Controls --%>
+           <%!-- Pagination Controls --%>
           <div
             :if={@pagination.total_pages > 1}
             class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"
@@ -408,7 +443,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                 @pagination.total_count
               )} of {@pagination.total_count} items
             </div>
-
+            
             <div class="flex gap-2">
               <button
                 :if={@pagination.has_prev}
@@ -468,6 +503,21 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         StockOpname.list_session_items_paginated(session, 1, 50)
       end
 
+    # Initialize librarian pagination
+    librarian_assignments = session.librarian_assignments
+    total_librarians = length(librarian_assignments)
+
+    librarian_pagination = %{
+      items: Enum.take(librarian_assignments, 3),
+      page: 1,
+      per_page: 3,
+      total_count: total_librarians,
+      total_pages:
+        if(total_librarians > 0, do: Float.ceil(total_librarians / 3) |> trunc(), else: 0),
+      has_prev: false,
+      has_next: total_librarians > 3
+    }
+
     # Schedule refresh if still initializing (only on connected mount to avoid duplicate timers)
     if connected?(socket) and session.status == "initializing" do
       Process.send_after(self(), :refresh_session, 1000)
@@ -486,6 +536,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       |> assign(:current_tab, "all")
       |> assign(:items_added, items_added)
       |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
+      |> assign(:librarian_pagination, librarian_pagination)
 
     {:ok, socket}
   end
@@ -587,6 +638,33 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     {:noreply, socket}
   end
 
+  def handle_event("paginate_librarians", %{"page" => page}, socket) do
+    session = socket.assigns.session
+    page = String.to_integer(page)
+    librarian_assignments = session.librarian_assignments
+    total_count = length(librarian_assignments)
+    per_page = 3
+    total_pages = if(total_count > 0, do: Float.ceil(total_count / 3) |> trunc(), else: 0)
+    start_index = (page - 1) * per_page
+    items = Enum.slice(librarian_assignments, start_index, per_page)
+
+    librarian_pagination = %{
+      items: items,
+      page: page,
+      per_page: per_page,
+      total_count: total_count,
+      total_pages: total_pages,
+      has_prev: page > 1,
+      has_next: page < total_pages
+    }
+
+    socket =
+      socket
+      |> assign(:librarian_pagination, librarian_pagination)
+
+    {:noreply, socket}
+  end
+
   def handle_event("complete_session", _params, socket) do
     case StockOpname.complete_session(
            socket.assigns.session,
@@ -647,11 +725,28 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         # Initialization complete - load first page of items and stop refreshing
         pagination = StockOpname.list_session_items_paginated(session, 1, 50)
 
+        # Update librarian pagination
+        librarian_assignments = session.librarian_assignments
+        total_librarians = length(librarian_assignments)
+
+        librarian_pagination = %{
+          items: Enum.take(librarian_assignments, 3),
+          page: 1,
+          per_page: 3,
+          total_count: total_librarians,
+          total_pages:
+            if(total_librarians > 0, do: Float.ceil(total_librarians / 3) |> trunc(), else: 0),
+          has_prev: false,
+          has_next: total_librarians > 3
+        }
+
         socket
         |> assign(:session, session)
         |> assign(:items_added, 0)
         |> assign(:pagination, pagination)
         |> assign(:displayed_items, pagination.items)
+        |> assign(:librarian_pagination, librarian_pagination)
+        |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
       end
 
     {:noreply, socket}
