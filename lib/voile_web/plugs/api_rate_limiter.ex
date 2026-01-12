@@ -27,8 +27,8 @@ defmodule VoileWeb.Plugs.APIRateLimiter do
     limit = get_limit(conn, opts)
     scale_ms = opts.scale_ms
 
-    # Hammer 7.0+ uses check_rate/4 (id, scale_ms, limit, increment)
-    case Hammer.check_rate(identifier, scale_ms, limit, 1) do
+    # Hammer 7.x uses hit/3 (key, scale_ms, limit)
+    case Voile.RateLimiter.hit(identifier, scale_ms, limit) do
       {:allow, count} ->
         conn
         |> put_rate_limit_headers(limit, limit - count, scale_ms)

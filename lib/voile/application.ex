@@ -13,12 +13,12 @@ defmodule Voile.Application do
       Voile.Repo,
       {DNSCluster, query: Application.get_env(:voile, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Voile.PubSub},
+      # Hammer 7.x rate limiter with ETS backend
+      {Voile.RateLimiter, clean_period: :timer.minutes(10)},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Voile.Finch},
       # Supervisor for short-lived tasks (used by LiveViews for async work)
-      {Task.Supervisor, name: Voile.TaskSupervisor},
-      # Start Hammer backend for API rate limiting
-      {Hammer.Backend.ETS, [name: :my_hammer_backend, cleanup_interval_ms: 60_000 * 10]}
+      {Task.Supervisor, name: Voile.TaskSupervisor}
     ]
 
     # Conditionally add email queue (disabled in dev if configured)

@@ -1,75 +1,78 @@
 <section class="flex flex-col gap-4">
   <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">{gettext("Back")}</.back>
-    
-    <div class="flex items-start md:items-center justify-between gap-4 mb-4">
-      <div class="flex items-center gap-3">
-        <.header>{gettext("Listing Collections")}</.header>
-        
-        <%= if @search && @search != "" do %>
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
-            <span class="text-sm text-gray-600">{gettext("Results")}</span>
-            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
-              {@collections_count || 0}
-            </span>
-          </div>
-        <% end %>
-        
-        <%= if @active_filters_count > 0 do %>
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
-            <.icon name="hero-funnel" class="w-4 h-4 text-indigo-600" />
-            <span class="text-sm text-indigo-700 dark:text-indigo-300">
-              {@active_filters_count} {if @active_filters_count == 1,
-                do: gettext("filter"),
-                else: gettext("filters")}
-            </span>
-          </div>
-        <% end %>
-      </div>
-      
-      <div class="flex items-center gap-2">
-        <.button
-          phx-click="toggle_view_mode"
-          class={
-            if @view_mode == "tree",
-              do: "btn bg-voile-primary text-voile-surface",
-              else: "btn bg-voile-neutral dark:bg-voile-neutral-dark"
-          }
-        >
-          <%= if @view_mode == "tree" do %>
-            <.icon name="hero-list-bullet" class="w-4 h-4 mr-1" /> {gettext("List View")}
-          <% else %>
-            <.icon name="hero-squares-2x2" class="w-4 h-4 mr-1" /> {gettext("Tree View")}
+
+    <div class="flex flex-col gap-3 sm:gap-4 mb-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <.header>{gettext("Listing Collections")}</.header>
+
+          <%= if @search && @search != "" do %>
+            <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
+              <span class="text-xs sm:text-sm text-gray-600">{gettext("Results")}</span>
+              <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
+                {@collections_count || 0}
+              </span>
+            </div>
           <% end %>
-        </.button>
-        <%= if can_review_collections?(@current_scope.user) do %>
-          <.link navigate={~p"/manage/catalog/collections/review"}>
-            <.button class="btn bg-yellow-600 hover:bg-yellow-700 text-white relative">
-              <.icon name="hero-clipboard-document-check" class="w-4 h-4 mr-1" /> {gettext(
-                "Review"
-              )}
-              <%= if assigns[:pending_count] && @pending_count > 0 do %>
-                <span class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                  {@pending_count}
-                </span>
-              <% end %>
-            </.button>
-          </.link>
-        <% end %>
-        
-        <%= if can?(@current_scope.user, "collections.create") do %>
-          <%!-- <.link navigate={~p"/manage/catalog/collections/import"}>
-            <.button class="btn btn-outline">
-              <.icon name="hero-arrow-up-tray" class="w-4 h-4 mr-1" /> {gettext("Import CSV")}
-            </.button>
-          </.link> --%>
-          <.link patch={~p"/manage/catalog/collections/new"}>
-            <.button>{gettext("New Collection")}</.button>
-          </.link>
-        <% end %>
+
+          <%= if @active_filters_count > 0 do %>
+            <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
+              <.icon name="hero-funnel" class="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
+              <span class="text-xs sm:text-sm text-indigo-700 dark:text-indigo-300">
+                {@active_filters_count} {if @active_filters_count == 1,
+                  do: gettext("filter"),
+                  else: gettext("filters")}
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex w-full flex-wrap items-center gap-2">
+          <.button
+            phx-click="toggle_view_mode"
+            class={
+              if @view_mode == "tree",
+                do:
+                  "btn bg-voile-primary text-voile-surface text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4",
+                else:
+                  "btn bg-voile-neutral dark:bg-voile-neutral-dark text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
+            }
+          >
+            <%= if @view_mode == "tree" do %>
+              <.icon name="hero-list-bullet" class="w-4 h-4 sm:mr-1" />
+              <span class="hidden sm:inline">{gettext("List View")}</span>
+            <% else %>
+              <.icon name="hero-squares-2x2" class="w-4 h-4 sm:mr-1" />
+              <span class="hidden sm:inline">{gettext("Tree View")}</span>
+            <% end %>
+          </.button>
+          <%= if can_review_collections?(@current_scope.user) do %>
+            <.link navigate={~p"/manage/catalog/collections/review"}>
+              <.button class="btn bg-yellow-600 hover:bg-yellow-700 text-white relative text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
+                <.icon name="hero-clipboard-document-check" class="w-4 h-4 sm:mr-1" />
+                <span class="hidden sm:inline">{gettext("Review")}</span>
+                <%= if assigns[:pending_count] && @pending_count > 0 do %>
+                  <span class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                    {@pending_count}
+                  </span>
+                <% end %>
+              </.button>
+            </.link>
+          <% end %>
+
+          <%= if can?(@current_scope.user, "collections.create") do %>
+            <.link patch={~p"/manage/catalog/collections/new"} class="w-full sm:w-auto">
+              <.button class="w-full success-btn text-white sm:w-auto text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
+                <.icon name="hero-plus" class="w-4 h-4 sm:mr-1" />
+                <span class="hidden sm:inline">{gettext("New Collection")}</span><span class="sm:hidden">{gettext("New")}</span>
+              </.button>
+            </.link>
+          <% end %>
+        </div>
       </div>
     </div>
-     <%!-- Full Width Search Bar --%>
+    <%!-- Full Width Search Bar --%>
     <div class="mb-4">
       <.form
         for={%{}}
@@ -95,7 +98,7 @@
           <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <.icon name="hero-magnifying-glass" class="w-5 h-5" />
           </div>
-          
+
           <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <%= if @search && @search != "" do %>
               <button
@@ -115,19 +118,19 @@
         </div>
       </.form>
     </div>
-     <%!-- Comprehensive Filter Panel --%>
-    <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <%!-- Comprehensive Filter Panel --%>
+    <div class="mb-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
       <%!-- Role-based filter notice for staff --%>
       <%= if @is_staff and not Voile.Schema.Catalog.is_user_admin?(@current_user) do %>
-        <div class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md">
+        <div class="mb-3 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md">
           <div class="flex items-start gap-2">
             <.icon
               name="hero-information-circle"
-              class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
             />
-            <div class="text-sm text-blue-800 dark:text-blue-300">
+            <div class="text-xs sm:text-sm text-blue-800 dark:text-blue-300">
               <p class="font-medium mb-1">{gettext("Viewing collections based on your role")}</p>
-              
+
               <p class="text-xs">
                 {gettext(
                   "You are currently viewing collections filtered by your assigned location and collection type. This ensures you see only the collections relevant to your responsibilities."
@@ -137,39 +140,44 @@
           </div>
         </div>
       <% end %>
-      
-      <div class="flex items-center justify-between mb-3">
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
         <div class="flex items-center gap-2">
-          <.icon name="hero-funnel" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <.icon
+            name="hero-funnel"
+            class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400"
+          />
+          <h3 class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
             Filter Collections
           </h3>
         </div>
-        
-        <div class="flex items-center gap-2">
+
+        <div class="flex flex-wrap items-center gap-2">
           <%= if not is_nil(@user_node_id) and Voile.Schema.Catalog.is_user_admin?(@current_user) do %>
             <button
               type="button"
               phx-click="filter_by_my_node"
-              class="text-xs px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+              class="text-xs px-2 sm:px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors touch-manipulation"
               title="Show collections from my location"
             >
-              <.icon name="hero-map-pin" class="w-3 h-3 inline mr-1" /> My Location
+              <.icon name="hero-map-pin" class="w-3 h-3 inline mr-1" />
+              <span class="hidden sm:inline">My Location</span><span class="sm:hidden">My</span>
             </button>
           <% end %>
-          
+
           <%= if @active_filters_count > 0 do %>
             <button
               type="button"
               phx-click="clear_filters"
-              class="text-xs px-3 py-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              class="text-xs px-2 sm:px-3 py-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 transition-colors touch-manipulation"
             >
-              <.icon name="hero-x-mark" class="w-3 h-3 inline mr-1" /> Clear All Filters
+              <.icon name="hero-x-mark" class="w-3 h-3 inline mr-1" />
+              <span class="hidden sm:inline">Clear All Filters</span><span class="sm:hidden">Clear</span>
             </button>
           <% end %>
         </div>
       </div>
-      
+
       <.form
         for={%{}}
         as={:filter}
@@ -187,17 +195,17 @@
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All Statuses</option>
-            
+
             <option value="draft">Draft</option>
-            
+
             <option value="pending">Pending</option>
-            
+
             <option value="published">Published</option>
-            
+
             <option value="archived">Archived</option>
           </select>
         </div>
-         <%!-- Access Level Filter --%>
+        <%!-- Access Level Filter --%>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Access Level
@@ -208,15 +216,15 @@
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All Access Levels</option>
-            
+
             <option value="public">Public</option>
-            
+
             <option value="private">Private</option>
-            
+
             <option value="restricted">Restricted</option>
           </select>
         </div>
-         <%!-- GLAM Type Filter --%>
+        <%!-- GLAM Type Filter --%>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             GLAM Type
@@ -227,17 +235,17 @@
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All Types</option>
-            
+
             <option value="Gallery">Gallery</option>
-            
+
             <option value="Library">Library</option>
-            
+
             <option value="Archive">Archive</option>
-            
+
             <option value="Museum">Museum</option>
           </select>
         </div>
-        
+
         <%!-- Node/Location Filter - Admin users can select any location, staff see their assigned location --%>
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -251,7 +259,7 @@
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All Locations</option>
-              
+
               <%= for node <- @node_location do %>
                 <option value={node.id}>{node.name}</option>
               <% end %>
@@ -271,7 +279,7 @@
           <% end %>
         </div>
       </.form>
-       <%!-- Active Filters Display --%>
+      <%!-- Active Filters Display --%>
       <%= if @active_filters_count > 0 do %>
         <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap gap-2">
@@ -281,20 +289,20 @@
                 <span class="capitalize">{@filter_status}</span>
               </span>
             <% end %>
-            
+
             <%= if @filter_access_level != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs rounded-full">
                 <span class="font-medium">Access:</span>
                 <span class="capitalize">{@filter_access_level}</span>
               </span>
             <% end %>
-            
+
             <%= if @filter_glam_type != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-voile-primary/10 dark:bg-voile-primary/30 text-voile-primary dark:text-voile-primary text-xs rounded-full">
                 <span class="font-medium">GLAM Type:</span> <span>{@filter_glam_type}</span>
               </span>
             <% end %>
-            
+
             <%= if @filter_node_id != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs rounded-full">
                 <span class="font-medium">Location:</span>
@@ -308,7 +316,7 @@
         </div>
       <% end %>
     </div>
-    
+
     <%= if @view_mode == "tree" do %>
       <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div class="flex items-center">
@@ -319,12 +327,12 @@
           </p>
         </div>
       </div>
-      
+
       <div class="space-y-4">
         <%= for collection <- @tree_collections do %>
           <.collection_tree_item collection={collection} level={0} />
         <% end %>
-        
+
         <%= if Enum.empty?(@tree_collections) do %>
           <div class="text-center py-8 text-gray-500">No collections found.</div>
         <% end %>
@@ -332,7 +340,7 @@
     <% else %>
       <div
         id="collections-results"
-        class="overflow-x-auto relative"
+        class="overflow-x-auto relative -mx-4 sm:mx-0 sm:rounded-lg"
         phx-hook="SearchResultsLoading"
       >
         <!-- overlay spinner for the results area, hidden by default -->
@@ -352,35 +360,49 @@
               stroke-width="4"
             >
             </circle>
-            
+
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
             </path>
           </svg>
         </div>
-        
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 rounded-lg">
-          <thead class="bg-gray-50 dark:bg-gray-800 rounded-lg">
+
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Hierarchy</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Thumbnail</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Title</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Author</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Location</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-              
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
-                Collection Type
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Hierarchy
               </th>
-              
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Actions</th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Thumbnail
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Title
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                Author
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                Location
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                Status
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                Type
+              </th>
+
+              <th class="px-2 sm:px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-          
+
           <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800 rounded-lg">
             <tr
               :if={@collections_empty?}
@@ -390,7 +412,7 @@
                 No collections found.
               </td>
             </tr>
-            
+
             <%= for {id, collection} <- @streams.collections do %>
               <tr
                 id={id}
@@ -399,75 +421,97 @@
                     ~p"/manage/catalog/collections/#{collection}?#{@current_query_params}"
                   )
                 }
-                class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer active:bg-gray-100 dark:active:bg-gray-700 touch-manipulation"
               >
-                <td class="px-4 py-3 text-sm text-gray-700">
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">
                   <%= if collection.parent_id do %>
-                    <div class="flex items-center text-sm text-gray-500">
-                      <.icon name="hero-arrow-turn-down-right" class="w-4 h-4 mr-1" /> Child
+                    <div class="flex items-center text-xs sm:text-sm text-gray-500">
+                      <.icon
+                        name="hero-arrow-turn-down-right"
+                        class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1"
+                      /> <span class="hidden sm:inline">Child</span>
                     </div>
                   <% else %>
-                    <div class="flex items-center text-sm text-blue-600">
-                      <.icon name="hero-folder" class="w-4 h-4 mr-1" /> Root
+                    <div class="flex items-center text-xs sm:text-sm text-blue-600">
+                      <.icon name="hero-folder" class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                      <span class="hidden sm:inline">Root</span>
                     </div>
                   <% end %>
                 </td>
-                
-                <td class="px-4 py-3 text-sm text-gray-700">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">
                   <%= if collection.thumbnail do %>
                     <img
                       src={collection.thumbnail}
-                      class="w-16 h-16 object-cover"
+                      class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded"
                       alt="Thumbnail"
                     />
                   <% else %>
-                    <img src="/images/v.png" class="w-16 h-16 object-cover" alt="No Thumbnail" />
+                    <img
+                      src="/images/v.png"
+                      class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded"
+                      alt="No Thumbnail"
+                    />
                   <% end %>
                 </td>
-                
-                <td class="px-4 py-3 text-sm">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                   <div class="font-medium" title={collection.title || "-"}>
-                    {trim_text(collection.title || "-", 40)}
+                    {trim_text(collection.title || "-", 30)}
                   </div>
-                  
+
                   <%= if collection.collection_type do %>
                     <div class="text-xs text-gray-500 capitalize">
                       {collection.collection_type}
                     </div>
                   <% end %>
-                  
+
                   <%= if collection.sort_order do %>
                     <div class="text-xs text-gray-400">Order: {collection.sort_order}</div>
                   <% end %>
+
+                  <%!-- Show author on mobile below title --%>
+                  <div class="md:hidden text-xs text-gray-500 mt-1">
+                    <%= if is_map(collection.mst_creator) and Map.get(collection.mst_creator, :creator_name) do %>
+                      <.icon name="hero-user" class="w-3 h-3 inline" /> {trim_text(
+                        Map.get(collection.mst_creator, :creator_name),
+                        20
+                      )}
+                    <% end %>
+                  </div>
                 </td>
-                
-                <td class="px-4 py-3 text-sm">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell">
                   <%= if is_map(collection.mst_creator) and Map.get(collection.mst_creator, :creator_name) do %>
-                    {Map.get(collection.mst_creator, :creator_name)}
+                    {trim_text(Map.get(collection.mst_creator, :creator_name), 25)}
                   <% else %>
                     -
                   <% end %>
                 </td>
-                
-                <td class="px-4 py-3 text-sm">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">
                   <%= if is_map(collection.node) and Map.get(collection.node, :name) do %>
                     {Map.get(collection.node, :name)}
                   <% else %>
                     -
                   <% end %>
                 </td>
-                
-                <td class="px-4 py-3 text-sm">{collection.status || "-"}</td>
-                
-                <td class="px-4 py-3 text-sm">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">
+                  <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 capitalize">
+                    {collection.status || "-"}
+                  </span>
+                </td>
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden xl:table-cell">
                   <%= if is_map(collection.resource_class) and Map.get(collection.resource_class, :glam_type) do %>
                     {Map.get(collection.resource_class, :glam_type)}
                   <% else %>
                     -
                   <% end %>
                 </td>
-                
-                <td class="px-4 py-3 text-sm text-right">
+
+                <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-right">
                   <div class="inline-flex items-center gap-2">
                     <%= if can?(@current_scope.user, "collections.update") do %>
                       <.link
@@ -478,7 +522,7 @@
                         <.icon name="hero-pencil" class="w-4 h-4" />
                       </.link>
                     <% end %>
-                    
+
                     <%= if can?(@current_scope.user, "collections.delete") do %>
                       <.link
                         phx-click={
@@ -498,9 +542,9 @@
           </tbody>
         </table>
       </div>
-       <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+      <.pagination page={@page} total_pages={@total_pages} event="paginate" />
     <% end %>
-    
+
     <.collection_modal
       :if={@live_action in [:new, :edit]}
       id="collection-modal"
@@ -524,7 +568,7 @@
         patch={@patch}
       />
     </.collection_modal>
-    
+
     <%!-- confirm-close removed: it caused modal reopen issues; closing now performs a direct patch --%>
   </div>
 </section>

@@ -7,14 +7,60 @@ export const BarcodeScanner = {
   mounted() {
     this.scanner = null;
     this.isScanning = false;
+
+    // Html5QrcodeSupportedFormats enum values (from html5-qrcode library loaded via CDN)
+    const formats = {
+      QR_CODE: 0,
+      AZTEC: 1,
+      CODABAR: 2,
+      CODE_39: 3,
+      CODE_93: 4,
+      CODE_128: 5,
+      DATA_MATRIX: 6,
+      MAXICODE: 7,
+      ITF: 8,
+      EAN_13: 9,
+      EAN_8: 10,
+      PDF_417: 11,
+      RSS_14: 12,
+      RSS_EXPANDED: 13,
+      UPC_A: 14,
+      UPC_E: 15,
+      UPC_EAN_EXTENSION: 16,
+    };
+
     this.config = {
       fps: 10, // Frames per second
-      qrbox: 250, // Scanning area size
+      // Use 80% of camera area for better barcode/QR code scanning
+      qrbox: function (viewfinderWidth, viewfinderHeight) {
+        const minEdgePercentage = 0.8; // 80% of the smallest edge
+        const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+        const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+        return {
+          width: qrboxSize,
+          height: qrboxSize,
+        };
+      },
       aspectRatio: 1.0,
       disableFlip: false,
       videoConstraints: {
         facingMode: "environment",
       },
+      // Explicitly support all common barcode and QR code formats
+      formatsToSupport: [
+        formats.QR_CODE,
+        formats.CODE_128,
+        formats.CODE_39,
+        formats.CODE_93,
+        formats.EAN_13,
+        formats.EAN_8,
+        formats.UPC_A,
+        formats.UPC_E,
+        formats.ITF,
+        formats.CODABAR,
+        formats.DATA_MATRIX,
+        formats.PDF_417,
+      ],
     };
 
     // Get DOM elements
