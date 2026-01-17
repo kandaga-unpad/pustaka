@@ -87,22 +87,31 @@ defmodule Voile.Migration.LeftoverItemImporter do
         # Found the row, now try to import it
         case prepare_item_data_for_leftover(row, cache, unit_id) do
           {:ok, item_data} ->
-            # Insert the item
-            try do
-              {count, _} =
-                Repo.insert_all(Item, [item_data], on_conflict: :nothing, returning: false)
+            # Check if item already exists by legacy_item_code
+            legacy_code = item_data[:legacy_item_code]
+            existing_item = Repo.get_by(Item, legacy_item_code: legacy_code)
 
-              if count > 0 do
-                IO.puts("✅ Inserted item: #{item_code}")
-                :inserted
-              else
-                IO.puts("⚠️ Skipped (already exists): #{item_code}")
-                :skipped
+            if existing_item do
+              IO.puts("⚠️ Skipped (already exists): #{item_code}")
+              :skipped
+            else
+              # Insert the item
+              try do
+                {count, _} =
+                  Repo.insert_all(Item, [item_data], on_conflict: :nothing, returning: false)
+
+                if count > 0 do
+                  IO.puts("✅ Inserted item: #{item_code}")
+                  :inserted
+                else
+                  IO.puts("⚠️ Skipped (already exists): #{item_code}")
+                  :skipped
+                end
+              rescue
+                e ->
+                  IO.puts("❌ Insert error for #{item_code}: #{inspect(e)}")
+                  :skipped
               end
-            rescue
-              e ->
-                IO.puts("❌ Insert error for #{item_code}: #{inspect(e)}")
-                :skipped
             end
 
           {:error, reason} ->

@@ -442,6 +442,7 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
 
   @impl true
   def handle_event("save_attachments", _params, socket) do
+    num_entries = length(socket.assigns.uploads.attachments.entries)
     current_folder_id = socket.assigns.current_folder_id
 
     results =
@@ -452,42 +453,49 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
     successful_uploads = Enum.filter(results, &match?({:ok, _}, &1))
     failed_uploads = Enum.filter(results, &match?({:error, _}, &1))
 
+    # Refresh the attachments list - reset to page 1 to show new uploads
+    page = 1
+    per_page = 24
+    search = socket.assigns.search
+
+    filters = %{
+      access_level: socket.assigns.filter_access_level,
+      file_type: socket.assigns.filter_file_type,
+      attachable_type: socket.assigns.filter_attachable_type
+    }
+
+    {attachments, total_pages} =
+      list_attachments_paginated(
+        page,
+        per_page,
+        search,
+        filters,
+        socket.assigns.current_folder_id
+      )
+
+    attachments =
+      attachments
+      |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
+
     socket =
-      if Enum.empty?(failed_uploads) do
-        # Refresh the attachments list
-        page = socket.assigns.page
-        per_page = 24
-        search = socket.assigns.search
+      socket
+      |> assign(:page, page)
+      |> stream(:attachments, attachments, reset: true)
+      |> assign(:attachments_list, attachments)
+      |> assign(:attachments_count, length(attachments))
+      |> assign(:total_pages, total_pages)
+      |> assign(:attachments_empty?, attachments == [])
+      |> put_flash(
+        :info,
+        "Uploaded #{length(successful_uploads)} out of #{num_entries} file(s) successfully"
+      )
 
-        filters = %{
-          access_level: socket.assigns.filter_access_level,
-          file_type: socket.assigns.filter_file_type,
-          attachable_type: socket.assigns.filter_attachable_type
-        }
-
-        {attachments, total_pages} =
-          list_attachments_paginated(
-            page,
-            per_page,
-            search,
-            filters,
-            socket.assigns.current_folder_id
-          )
-
-        attachments =
-          attachments
-          |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
-
-        socket
-        |> stream(:attachments, attachments, reset: true)
-        |> assign(:attachments_list, attachments)
-        |> assign(:attachments_count, length(attachments))
-        |> assign(:total_pages, total_pages)
-        |> assign(:attachments_empty?, attachments == [])
-        |> put_flash(:info, "Successfully uploaded #{length(successful_uploads)} file(s)")
-      else
+    socket =
+      if not Enum.empty?(failed_uploads) do
         error_messages = Enum.map(failed_uploads, fn {:error, msg} -> msg end)
         put_flash(socket, :error, "Upload failed: #{Enum.join(error_messages, "; ")}")
+      else
+        socket
       end
 
     {:noreply, socket}

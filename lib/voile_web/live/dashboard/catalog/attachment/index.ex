@@ -2,6 +2,7 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Repo
+  alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Attachment
   alias VoileWeb.Auth.Authorization
   import Ecto.Query
@@ -25,12 +26,17 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
         |> assign(:total_pages, 0)
         |> assign(:search, "")
         |> assign(:attachments_count, 0)
+        |> assign(:public_count, 0)
+        |> assign(:limited_count, 0)
+        |> assign(:restricted_count, 0)
         |> assign(:attachments_empty?, true)
         |> assign(:current_user, current_user)
         |> assign(:filter_access_level, "")
         |> assign(:filter_file_type, "")
         |> assign(:filter_attachable_type, "")
         |> assign(:active_filters_count, 0)
+        |> assign(:show_delete_modal, false)
+        |> assign(:attachment_to_delete, nil)
 
       {:ok, socket}
     end
@@ -57,10 +63,18 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
       attachments
       |> Repo.preload([:allowed_roles, :allowed_users, :access_settings_updated_by])
 
+    # Calculate total counts for stats
+    public_count = count_attachments_by_access_level("public")
+    limited_count = count_attachments_by_access_level("limited")
+    restricted_count = count_attachments_by_access_level("restricted")
+
     socket
     |> stream(:attachments, attachments, reset: true)
     |> assign(:attachments_empty?, attachments == [])
     |> assign(:attachments_count, length(attachments))
+    |> assign(:public_count, public_count)
+    |> assign(:limited_count, limited_count)
+    |> assign(:restricted_count, restricted_count)
     |> assign(:total_pages, total_pages)
     |> assign(:page_title, "Manage Attachments")
     |> assign(:search, search)
@@ -81,10 +95,18 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
     # Get all available roles
     roles = Repo.all(from r in Voile.Schema.Accounts.Role, order_by: r.name)
 
+    # Calculate total counts for stats (needed for the background page)
+    public_count = count_attachments_by_access_level("public")
+    limited_count = count_attachments_by_access_level("limited")
+    restricted_count = count_attachments_by_access_level("restricted")
+
     socket
     |> assign(:page_title, "Manage Access - #{attachment.original_name}")
     |> assign(:attachment, attachment)
     |> assign(:all_roles, roles)
+    |> assign(:public_count, public_count)
+    |> assign(:limited_count, limited_count)
+    |> assign(:restricted_count, restricted_count)
   end
 
   @impl true
@@ -92,13 +114,51 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
     authorize!(socket, "attachments.delete")
 
     attachment = Repo.get!(Attachment, id)
-    {:ok, _} = Repo.delete(attachment)
+    {:ok, _} = Catalog.delete_attachment(attachment)
+
+    # Update counts based on deleted attachment's access level
+    socket =
+      case attachment.access_level do
+        "public" ->
+          assign(socket, :public_count, socket.assigns.public_count - 1)
+
+        "limited" ->
+          assign(socket, :limited_count, socket.assigns.limited_count - 1)
+
+        "restricted" ->
+          assign(socket, :restricted_count, socket.assigns.restricted_count - 1)
+
+        _ ->
+          socket
+      end
 
     socket =
       socket
       |> put_flash(:info, "Attachment deleted successfully")
       |> stream_delete(:attachments, attachment)
       |> assign(:attachments_count, max((socket.assigns[:attachments_count] || 1) - 1, 0))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("show_delete_modal", %{"id" => id}, socket) do
+    authorize!(socket, "attachments.delete")
+
+    socket =
+      socket
+      |> assign(:show_delete_modal, true)
+      |> assign(:attachment_to_delete, id)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("hide_delete_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:show_delete_modal, false)
+      |> assign(:attachment_to_delete, nil)
 
     {:noreply, socket}
   end
@@ -300,4 +360,8 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
   defp access_level_badge_class("limited"), do: "badge-warning"
   defp access_level_badge_class("restricted"), do: "badge-error"
   defp access_level_badge_class(_), do: "badge-ghost"
+
+  defp count_attachments_by_access_level(access_level) do
+    Repo.aggregate(from(a in Attachment, where: a.access_level == ^access_level), :count, :id)
+  end
 end

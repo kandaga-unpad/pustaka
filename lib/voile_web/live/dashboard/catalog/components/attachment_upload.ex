@@ -9,130 +9,239 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
     ~H"""
     <div class="attachment-upload" id={"attachment-upload-#{@entity.id}"}>
       <div class="space-y-6">
-        <!-- Upload Section -->
-        <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Upload Files</h3>
-            
-            <%= if @collection_type do %>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
-                {@collection_type} Collection
-              </span>
-            <% end %>
+        <!-- Tabs -->
+        <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
+          <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+              <button
+                phx-click="switch_tab"
+                phx-value-tab="upload"
+                phx-target={@myself}
+                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "upload", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
+              >
+                Upload Files
+              </button>
+              <button
+                phx-click="switch_tab"
+                phx-value-tab="asset_vault"
+                phx-target={@myself}
+                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "asset_vault", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
+              >
+                Choose from Asset Vault ({length(@asset_vault_files)})
+              </button>
+            </nav>
           </div>
-          <!-- Collection Type Specific Hints -->
-          <%= if @upload_hints do %>
-            <div class="mb-4 p-3 bg-voile-info border border-voile-primary rounded-md">
-              <p class="text-sm text-white">
-                <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clip-rule="evenodd"
-                  />
-                </svg> {@upload_hints}
-              </p>
+          
+    <!-- Upload Tab Content -->
+          <%= if @tab == "upload" do %>
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Upload Files</h3>
+
+                <%= if @collection_type do %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
+                    {@collection_type} Collection
+                  </span>
+                <% end %>
+              </div>
+              <!-- Collection Type Specific Hints -->
+              <%= if @upload_hints do %>
+                <div class="mb-4 p-3 bg-voile-info border border-voile-primary rounded-md">
+                  <p class="text-sm text-white">
+                    <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                     {@upload_hints}
+                  </p>
+                </div>
+              <% end %>
+
+              <form phx-submit="save_attachments" phx-change="validate" phx-target={@myself}>
+                <!-- File Upload Area -->
+                <div
+                  phx-drop-target={@uploads.attachments.ref}
+                  id="upload-area"
+                  class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-voile-muted border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
+                  phx-hook="DragUpload"
+                >
+                  <div class="space-y-1 text-center flex flex-col items-center">
+                    {collection_type_icon(@collection_type)}
+                    <div class="flex text-sm">
+                      <label
+                        for={@uploads.attachments.ref}
+                        class="relative cursor-pointer rounded-md font-medium text-voile-secondary"
+                      >
+                        <span>Upload files</span>
+                        <.live_file_input upload={@uploads.attachments} class="sr-only" />
+                      </label>
+                      <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <!-- Dynamic file type hints -->
+                    <p class="text-xs text-gray-500 dark:text-gray-300">
+                      {format_allowed_types(@allowed_types)} up to 100MB each
+                    </p>
+                  </div>
+                </div>
+                <!-- Upload Progress -->
+                <div class="mt-4 space-y-2">
+                  <%= for entry <- @uploads.attachments.entries do %>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-voile-light">
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <div class="flex items-center">
+                            {file_type_icon(determine_file_type_from_name(entry.client_name))}
+                            <div class="ml-3">
+                              <p class="text-sm font-medium text-voile">{entry.client_name}</p>
+
+                              <p class="text-xs">
+                                {format_bytes(entry.client_size)} • {entry.client_type}
+                                <%= if @collection_type && !is_file_type_allowed?(entry.client_type, @collection_type) do %>
+                                  <span class="ml-2 text-voile-error font-medium">
+                                    ⚠ May not be suitable for this collection type
+                                  </span>
+                                <% end %>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          phx-click="cancel_upload"
+                          phx-value-ref={entry.ref}
+                          phx-target={@myself}
+                          class="ml-4 text-sm text-voile-error hover:text-voile-error"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <!-- Progress Bar -->
+                      <div class="mt-3">
+                        <div class="bg-voile-neutral rounded-full h-2">
+                          <div
+                            class="bg-voile-primary h-2 rounded-full transition-all duration-300"
+                            style={"width: #{entry.progress}%"}
+                          >
+                          </div>
+                        </div>
+
+                        <div class="flex justify-between text-xs  mt-1">
+                          <span>{entry.progress}% uploaded</span>
+                          <span>{if entry.done?, do: "Complete", else: "Uploading..."}</span>
+                        </div>
+                      </div>
+                      <!-- Upload Errors -->
+                      <%= for err <- upload_errors(@uploads.attachments, entry) do %>
+                        <div class="mt-2 p-2 bg-voile-error/20 border border-voile-error rounded">
+                          <p class="text-sm text-voile-error flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                             {humanize_upload_error(err)}
+                          </p>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </form>
             </div>
           <% end %>
           
-          <form phx-submit="save_attachments" phx-change="validate" phx-target={@myself}>
-            <!-- File Upload Area -->
-            <div
-              phx-drop-target={@uploads.attachments.ref}
-              id="upload-area"
-              class="upload-area flex justify-center px-6 pt-5 pb-6 border-2 border-voile-muted border-dashed rounded-md hover:border-indigo-400 transition-colors duration-200"
-              phx-hook="DragUpload"
-            >
-              <div class="space-y-1 text-center flex flex-col items-center">
-                {collection_type_icon(@collection_type)}
-                <div class="flex text-sm">
-                  <label
-                    for={@uploads.attachments.ref}
-                    class="relative cursor-pointer rounded-md font-medium text-voile-secondary"
-                  >
-                    <span>Upload files</span>
-                    <.live_file_input upload={@uploads.attachments} class="sr-only" />
-                  </label>
-                  <p class="pl-1">or drag and drop</p>
-                </div>
-                <!-- Dynamic file type hints -->
-                <p class="text-xs text-gray-500 dark:text-gray-300">
-                  {format_allowed_types(@allowed_types)} up to 100MB each
-                </p>
+    <!-- Asset Vault Tab Content -->
+          <%= if @tab == "asset_vault" do %>
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                  Choose from Asset Vault
+                </h3>
+                <span class="text-sm text-gray-500 dark:text-gray-400">
+                  Select existing files to attach to this {@entity.__struct__
+                  |> Module.split()
+                  |> List.last()
+                  |> String.downcase()}
+                </span>
               </div>
-            </div>
-            <!-- Upload Progress -->
-            <div class="mt-4 space-y-2">
-              <%= for entry <- @uploads.attachments.entries do %>
-                <div class="bg-gray-50 rounded-lg p-4 border border-voile-light">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <div class="flex items-center">
-                        {file_type_icon(determine_file_type_from_name(entry.client_name))}
-                        <div class="ml-3">
-                          <p class="text-sm font-medium text-voile">{entry.client_name}</p>
-                          
-                          <p class="text-xs">
-                            {format_bytes(entry.client_size)} • {entry.client_type}
-                            <%= if @collection_type && !is_file_type_allowed?(entry.client_type, @collection_type) do %>
-                              <span class="ml-2 text-voile-error font-medium">
-                                ⚠ May not be suitable for this collection type
-                              </span>
+
+              <%= if @asset_vault_files == [] do %>
+                <div class="text-center py-12">
+                  <svg
+                    class="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                  <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                    No files in asset vault
+                  </h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Upload files first to build your asset vault.
+                  </p>
+                </div>
+              <% else %>
+                <div class="space-y-3 max-h-96 overflow-y-auto">
+                  <%= for attachment <- @asset_vault_files do %>
+                    <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                      <div class="flex items-center space-x-4">
+                        <!-- File Type Icon -->
+                        <div class="flex-shrink-0">{file_type_icon(attachment.file_type)}</div>
+
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {attachment.original_name || attachment.file_name}
+                          </p>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {format_bytes(attachment.file_size)} •
+                            <span class="capitalize">{attachment.file_type}</span>
+                            <%= if attachment.inserted_at do %>
+                              • Uploaded {format_date(attachment.inserted_at)}
                             <% end %>
                           </p>
+                          <%= if attachment.attachable do %>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">
+                              From {attachment.attachable_type}: {get_attachable_name(
+                                attachment.attachable
+                              )}
+                            </p>
+                          <% end %>
                         </div>
                       </div>
-                    </div>
-                    
-                    <button
-                      type="button"
-                      phx-click="cancel_upload"
-                      phx-value-ref={entry.ref}
-                      phx-target={@myself}
-                      class="ml-4 text-sm text-voile-error hover:text-voile-error"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <!-- Progress Bar -->
-                  <div class="mt-3">
-                    <div class="bg-voile-neutral rounded-full h-2">
-                      <div
-                        class="bg-voile-primary h-2 rounded-full transition-all duration-300"
-                        style={"width: #{entry.progress}%"}
+
+                      <button
+                        phx-click="select_from_vault"
+                        phx-value-attachment_id={attachment.id}
+                        phx-target={@myself}
+                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       >
-                      </div>
-                    </div>
-                    
-                    <div class="flex justify-between text-xs  mt-1">
-                      <span>{entry.progress}% uploaded</span>
-                      <span>{if entry.done?, do: "Complete", else: "Uploading..."}</span>
-                    </div>
-                  </div>
-                  <!-- Upload Errors -->
-                  <%= for err <- upload_errors(@uploads.attachments, entry) do %>
-                    <div class="mt-2 p-2 bg-voile-error/20 border border-voile-error rounded">
-                      <p class="text-sm text-voile-error flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fill-rule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                            clip-rule="evenodd"
-                          />
-                        </svg> {humanize_upload_error(err)}
-                      </p>
+                        Select
+                      </button>
                     </div>
                   <% end %>
                 </div>
               <% end %>
             </div>
-          </form>
+          <% end %>
         </div>
         <!-- Existing Attachments -->
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Attachments</h3>
-            
+
             <div class="flex items-center space-x-4">
               <!-- File type filter -->
               <%= if length(@attachments) > 0 do %>
@@ -142,7 +251,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   class="text-sm border-voile-muted rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="">All files ({length(@attachments)})</option>
-                  
+
                   <%= for {type, count} <- get_file_type_counts(@attachments) do %>
                     <option value={type} class="capitalize">{type} ({count})</option>
                   <% end %>
@@ -152,14 +261,14 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
               <% end %>
             </div>
           </div>
-          
+
           <%= if @attachments == [] do %>
             <div class="text-center py-12">
               {collection_type_icon(@collection_type, "h-12 w-12 mx-auto ")}
               <h3 class="mt-2 text-sm font-medium text-voile dark:text-voile-surface">
                 No attachments
               </h3>
-              
+
               <p class="mt-1 text-xs italic">
                 Start by uploading your first {if @collection_type, do: @collection_type, else: "file"}.
               </p>
@@ -172,13 +281,13 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   <div class="flex items-center space-x-4">
                     <!-- File Type Icon -->
                     <div class="flex-shrink-0">{file_type_icon(attachment.file_type)}</div>
-                    
+
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center">
                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {attachment.original_name}
                         </p>
-                        
+
                         <%= if attachment.is_primary do %>
                           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-2">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -192,7 +301,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           </span>
                         <% end %>
                       </div>
-                      
+
                       <p class="text-sm  dark:text-voile-surface mt-1">
                         {format_bytes(attachment.file_size)} •
                         <span class="capitalize">{attachment.file_type}</span>
@@ -200,7 +309,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           • Uploaded {format_date(attachment.inserted_at)}
                         <% end %>
                       </p>
-                      
+
                       <%= if attachment.description && attachment.description != "" do %>
                         <p class="text-xs text-gray-400 dark:text-white mt-1">
                           <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -209,12 +318,13 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                               clip-rule="evenodd"
                             />
-                          </svg> {attachment.description}
+                          </svg>
+                           {attachment.description}
                         </p>
                       <% end %>
                     </div>
                   </div>
-                  
+
                   <div class="flex items-center space-x-2">
                     <!-- Set as Primary -->
                     <%= unless attachment.is_primary do %>
@@ -287,33 +397,33 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {length(@attachments)}
                   </p>
-                  
+
                   <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Total Files</p>
                 </div>
-                
+
                 <div class="text-center">
                   <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {format_bytes(Enum.sum(Enum.map(@attachments, & &1.file_size)))}
                   </p>
-                  
+
                   <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Total Size</p>
                 </div>
-                
+
                 <div class="text-center">
                   <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {@attachments |> Enum.count(&is_recent_upload?(&1.inserted_at))}
                   </p>
-                  
+
                   <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">
                     Recent Uploads
                   </p>
                 </div>
-                
+
                 <div class="text-center">
                   <p class="text-2xl font-semibold text-voile-primary dark:text-voile-primary">
                     {@attachments |> Enum.count(& &1.is_primary)}
                   </p>
-                  
+
                   <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Primary Set</p>
                 </div>
               </div>
@@ -365,6 +475,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
       |> assign(:collection_type, collection_type)
       |> assign(:allowed_types, get_allowed_file_types(collection_type))
       |> assign(:upload_hints, get_upload_hints(collection_type))
+      |> assign(:tab, "upload")
+      # Add this for asset vault
+      |> assign(:asset_vault_files, Catalog.list_all_attachments())
 
     {:ok, socket}
   end
@@ -382,6 +495,47 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
   @impl true
   def handle_event("filter_by_type", %{"value" => filter_type}, socket) do
     {:noreply, assign(socket, :filter_type, filter_type)}
+  end
+
+  @impl true
+  def handle_event("switch_tab", %{"tab" => tab}, socket) do
+    {:noreply, assign(socket, :tab, tab)}
+  end
+
+  @impl true
+  def handle_event("select_from_vault", %{"attachment_id" => attachment_id}, socket) do
+    attachment_id = String.to_integer(attachment_id)
+    vault_attachment = Enum.find(socket.assigns.asset_vault_files, &(&1.id == attachment_id))
+
+    if vault_attachment do
+      # Create attachment using the new format (file already uploaded)
+      attachment_params = %{
+        file_url: vault_attachment.file_path,
+        filename: vault_attachment.original_name,
+        content_type: vault_attachment.mime_type,
+        description: "Copied from asset vault: #{vault_attachment.description || ""}",
+        file_size: vault_attachment.file_size
+      }
+
+      case Catalog.create_attachment(socket.assigns.entity, attachment_params) do
+        {:ok, _new_attachment} ->
+          # Refresh the attachments list
+          updated_attachments = Catalog.list_attachments(socket.assigns.entity)
+          send(self(), {:attachment_updated, :vault_selected})
+
+          socket =
+            socket
+            |> assign(:attachments, updated_attachments)
+            |> put_flash(:info, "File selected from asset vault successfully")
+
+          {:noreply, socket}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Failed to select file from asset vault")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Attachment not found in asset vault")}
+    end
   end
 
   @impl true
@@ -801,4 +955,8 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
   defp humanize_upload_error(:too_many_files), do: "Too many files selected"
   defp humanize_upload_error(:not_accepted), do: "File type not accepted"
   defp humanize_upload_error(_), do: "Something went wrong"
+
+  defp get_attachable_name(%Voile.Schema.Catalog.Collection{title: title}), do: title
+  defp get_attachable_name(%Voile.Schema.Catalog.Item{item_code: code}), do: code
+  defp get_attachable_name(_), do: "Unknown"
 end

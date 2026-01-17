@@ -33,6 +33,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     node_options = Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", n.id} end)
     all_locations = Voile.Schema.Master.list_mst_locations()
 
+    # Load filter options from Item schema
+    status_options = Item.status_options()
+    condition_options = Item.condition_options()
+    availability_options = Item.availability_options()
+
     socket =
       socket
       |> stream(:items, items, reset: false)
@@ -47,6 +52,14 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       |> assign(:current_user, current_user)
       |> assign(:nodes, node_options)
       |> assign(:all_locations, all_locations)
+      |> assign(:status_options, status_options)
+      |> assign(:condition_options, condition_options)
+      |> assign(:availability_options, availability_options)
+      |> assign(:filter_status, "")
+      |> assign(:filter_availability, "")
+      |> assign(:filter_condition, "")
+      |> assign(:filter_node_id, "")
+      |> assign(:active_filters_count, 0)
 
     {:ok, socket}
   end
@@ -221,5 +234,86 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       |> assign(:items_count, length(items))
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filter_change", params, socket) do
+    filters = build_filters_from_params(params)
+
+    current_user = socket.assigns.current_user
+    filters = Catalog.apply_role_based_filters(current_user, filters)
+
+    active_count = count_active_filters(filters)
+
+    search = socket.assigns.search
+    page = 1
+    per_page = 10
+
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
+
+    socket =
+      socket
+      |> stream(:items, items, reset: true)
+      |> assign(:filters, filters)
+      |> assign(:filter_status, filters[:status] || "")
+      |> assign(:filter_availability, filters[:availability] || "")
+      |> assign(:filter_condition, filters[:condition] || "")
+      |> assign(:filter_node_id, filters[:node_id] || "")
+      |> assign(:active_filters_count, active_count)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+      |> assign(:items_empty?, items == [])
+      |> assign(:items_count, length(items))
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_filters", _params, socket) do
+    filters = %{}
+
+    current_user = socket.assigns.current_user
+    filters = Catalog.apply_role_based_filters(current_user, filters)
+
+    search = socket.assigns.search
+    page = 1
+    per_page = 10
+
+    {items, total_pages, _} = Catalog.list_items_paginated(page, per_page, search, filters)
+
+    socket =
+      socket
+      |> stream(:items, items, reset: true)
+      |> assign(:filters, filters)
+      |> assign(:filter_status, "")
+      |> assign(:filter_availability, "")
+      |> assign(:filter_condition, "")
+      |> assign(:filter_node_id, "")
+      |> assign(:active_filters_count, 0)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+      |> assign(:items_empty?, items == [])
+      |> assign(:items_count, length(items))
+
+    {:noreply, socket}
+  end
+
+  defp build_filters_from_params(params) do
+    %{}
+    |> maybe_add_filter(:status, params["status"])
+    |> maybe_add_filter(:availability, params["availability"])
+    |> maybe_add_filter(:condition, params["condition"])
+    |> maybe_add_filter(:node_id, params["node_id"])
+  end
+
+  defp maybe_add_filter(filters, _key, nil), do: filters
+  defp maybe_add_filter(filters, _key, ""), do: filters
+  defp maybe_add_filter(filters, key, value), do: Map.put(filters, key, value)
+
+  defp count_active_filters(filters) do
+    filters
+    |> Map.values()
+    |> Enum.reject(&(&1 == nil || &1 == ""))
+    |> length()
   end
 end

@@ -1431,6 +1431,16 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
+  Get all attachments in the system (for asset vault)
+  """
+  def list_all_attachments do
+    Attachment
+    |> order_by([a], desc: a.inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:attachable])
+  end
+
+  @doc """
   Get one attachments based on the id
   """
   def get_attachment!(id) do

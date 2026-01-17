@@ -13,10 +13,14 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     transfer_request = Catalog.get_transfer_request!(id)
 
-    # Check if current user can review (is from target node)
+    # Check if current user can review (is super_admin or from target node)
+    is_super_admin =
+      Enum.any?(socket.assigns.current_scope.user.roles, &(&1.name == "super_admin"))
+
     can_review =
       transfer_request.status == "pending" &&
-        socket.assigns.current_scope.user.unit_id == transfer_request.to_node_id
+        (is_super_admin ||
+           socket.assigns.current_scope.user.node_id == transfer_request.to_node_id)
 
     socket =
       socket

@@ -275,7 +275,7 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
               cache.unit_author_data[unit_id] || %{},
               cache.author_mappings[unit_id] || %{},
               cache.creators
-            )
+            ) || cache.default_creator_id
 
           # Get publisher name
           publisher_name =
@@ -629,7 +629,7 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
 
     @property_map
     |> Enum.with_index()
-    |> Enum.reduce([], fn {{field_name, property}, _index}, acc ->
+    |> Enum.reduce([], fn {{field_name, property}, index}, acc ->
       case Map.get(field_values, field_name) do
         value when not is_nil(value) ->
           trimmed_value = safe_string_trim(value)
@@ -639,7 +639,12 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
               id: Ecto.UUID.generate(),
               collection_id: collection_id,
               property_id: property.id,
+              name: property.local_name,
+              label: property.label,
               value: trimmed_value,
+              value_lang: "id",
+              type_value: property.type_value,
+              sort_order: index,
               inserted_at: now,
               updated_at: now
             }
