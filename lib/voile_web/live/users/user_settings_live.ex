@@ -353,8 +353,12 @@ defmodule VoileWeb.UserSettingsLive do
 
         if old_image && is_binary(old_image) && old_image != new_image &&
              String.starts_with?(old_image, "/uploads") do
-          case Storage.delete(old_image) do
-            {:ok, _} -> :ok
+          try do
+            case Storage.delete(old_image) do
+              {:ok, _} -> :ok
+              _ -> :ok
+            end
+          rescue
             _ -> :ok
           end
         end
@@ -391,8 +395,12 @@ defmodule VoileWeb.UserSettingsLive do
        |> assign(:current_scope, current_scope)
        |> put_flash(:info, "Image removed")}
     else
-      case Storage.delete(image) do
-        {:ok, _} -> :ok
+      try do
+        case Storage.delete(image) do
+          {:ok, _} -> :ok
+          _ -> :ok
+        end
+      rescue
         _ -> :ok
       end
 
@@ -467,13 +475,18 @@ defmodule VoileWeb.UserSettingsLive do
             content_type: entry.client_type
           }
 
-          case Storage.upload(upload, folder: "user_image") do
-            {:ok, url} ->
-              {:ok, url}
+          try do
+            case Storage.upload(upload, folder: "user_image") do
+              {:ok, url} ->
+                {:ok, url}
 
-            url when is_binary(url) ->
-              {:ok, url}
+              url when is_binary(url) ->
+                {:ok, url}
 
+              _ ->
+                {:ok, nil}
+            end
+          rescue
             _ ->
               {:ok, nil}
           end
@@ -511,8 +524,12 @@ defmodule VoileWeb.UserSettingsLive do
             # If the old image looks like an upload path, attempt to delete it.
             if old_image && is_binary(old_image) && old_image != updated_user.user_image &&
                  String.starts_with?(old_image, "/uploads") do
-              case Storage.delete(old_image) do
-                {:ok, _} -> :ok
+              try do
+                case Storage.delete(old_image) do
+                  {:ok, _} -> :ok
+                  _ -> :ok
+                end
+              rescue
                 _ -> :ok
               end
             end

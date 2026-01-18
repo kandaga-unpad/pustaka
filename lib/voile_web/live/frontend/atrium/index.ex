@@ -516,15 +516,20 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
     if image && image != "" do
       # Attempt to delete from storage and clear the user's image
-      Storage.delete(image)
+      try do
+        Storage.delete(image)
+      rescue
+        _ -> :ok
+      end
 
       case Accounts.update_profile_user(user, %{"user_image" => nil}) do
-        {:ok, user} ->
-          changeset = Accounts.change_user(user, %{})
+        {:ok, updated_user} ->
+          changeset = Accounts.change_user(updated_user, %{})
 
           {:noreply,
            socket
            |> assign(:profile_form, to_form(changeset))
+           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, updated_user))
            |> put_flash(:info, gettext("User image deleted successfully"))}
 
         {:error, _changeset} ->
@@ -555,22 +560,17 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   def handle_event("save_profile", %{"user" => user_params}, socket) do
     user = socket.assigns.current_scope.user
 
-    # If an uploaded image URL exists in the profile_form params (set by handle_progress),
-    # ensure it's included in the submitted user params so the User record gets updated.
-    uploaded_image =
-      socket.assigns.profile_form.params && socket.assigns.profile_form.params["user_image"]
-
-    user_params =
-      if uploaded_image, do: Map.put(user_params, "user_image", uploaded_image), else: user_params
-
     case Accounts.update_profile_user(user, user_params) do
-      {:ok, user} ->
+      {:ok, updated_user} ->
         # Update assigns so the UI (header/profile) reflects the saved user immediately
         socket =
           socket
           |> put_flash(:info, gettext("Profile updated"))
-          |> assign(profile_form: to_form(Accounts.change_user(user)), current_email: user.email)
-          |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, user))
+          |> assign(
+            profile_form: to_form(Accounts.change_user(updated_user)),
+            current_email: updated_user.email
+          )
+          |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, updated_user))
 
         {:noreply, socket}
 
@@ -746,7 +746,11 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     if entry.done? do
       # If there is an existing image in form params, attempt to delete it
       if socket.assigns.profile_form.params && socket.assigns.profile_form.params["user_image"] do
-        Storage.delete(socket.assigns.profile_form.params["user_image"])
+        try do
+          Storage.delete(socket.assigns.profile_form.params["user_image"])
+        rescue
+          _ -> :ok
+        end
       end
 
       result =
@@ -759,34 +763,79 @@ defmodule VoileWeb.Frontend.Atrium.Index do
 
           user_id = socket.assigns.current_scope.user && socket.assigns.current_scope.user.id
 
-          Storage.upload(upload, folder: "user_image", generate_filename: true, unit_id: user_id)
+          try do
+            Storage.upload(upload,
+              folder: "user_image",
+              generate_filename: true,
+              unit_id: user_id
+            )
+          rescue
+            _ -> {:error, "Failed to upload image"}
+          end
         end)
 
       case result do
         [{:ok, url}] ->
-          form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
-          changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
+          user = socket.assigns.current_scope.user
+          old_image = user.user_image
 
-          # Update the preview form and also update current_scope user so header reflects new image
-          new_user =
-            Map.put(socket.assigns.current_scope.user, :user_image, AtriumHelper.cache_bust(url))
+          case Accounts.update_profile_user(user, %{"user_image" => url}) do
+            {:ok, updated_user} ->
+              # If the old image looks like an upload path, attempt to delete it
+              if old_image && is_binary(old_image) && old_image != updated_user.user_image &&
+                   String.starts_with?(old_image, "/uploads") do
+                try do
+                  Storage.delete(old_image)
+                rescue
+                  _ -> :ok
+                end
+              end
 
-          {:noreply,
-           socket
-           |> assign(:profile_form, to_form(changeset))
-           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, new_user))}
+              form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
+              changeset = Accounts.change_user(updated_user, form_params)
+
+              {:noreply,
+               socket
+               |> assign(:profile_form, to_form(changeset))
+               |> assign(
+                 current_scope: Map.put(socket.assigns.current_scope, :user, updated_user)
+               )
+               |> put_flash(:info, gettext("Profile image uploaded"))}
+
+            {:error, _changeset} ->
+              {:noreply, put_flash(socket, :error, "Failed to save profile image")}
+          end
 
         [url] when is_binary(url) ->
-          form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
-          changeset = Accounts.change_user(socket.assigns.current_scope.user, form_params)
+          user = socket.assigns.current_scope.user
+          old_image = user.user_image
 
-          new_user =
-            Map.put(socket.assigns.current_scope.user, :user_image, AtriumHelper.cache_bust(url))
+          case Accounts.update_profile_user(user, %{"user_image" => url}) do
+            {:ok, updated_user} ->
+              # If the old image looks like an upload path, attempt to delete it
+              if old_image && is_binary(old_image) && old_image != updated_user.user_image &&
+                   String.starts_with?(old_image, "/uploads") do
+                try do
+                  Storage.delete(old_image)
+                rescue
+                  _ -> :ok
+                end
+              end
 
-          {:noreply,
-           socket
-           |> assign(:profile_form, to_form(changeset))
-           |> assign(current_scope: Map.put(socket.assigns.current_scope, :user, new_user))}
+              form_params = Map.put(socket.assigns.profile_form.params || %{}, "user_image", url)
+              changeset = Accounts.change_user(updated_user, form_params)
+
+              {:noreply,
+               socket
+               |> assign(:profile_form, to_form(changeset))
+               |> assign(
+                 current_scope: Map.put(socket.assigns.current_scope, :user, updated_user)
+               )
+               |> put_flash(:info, gettext("Profile image uploaded"))}
+
+            {:error, _changeset} ->
+              {:noreply, put_flash(socket, :error, "Failed to save profile image")}
+          end
 
         [{:error, err}] ->
           {:noreply, put_flash(socket, :error, err)}
@@ -1033,19 +1082,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                             {gettext("Profile image")}
                           </label>
                           <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
-                            <%= if @profile_form.params["user_image"] && @profile_form.params["user_image"] != "" do %>
+                            <%= if @current_scope.user.user_image do %>
                               <div class="flex items-center gap-4">
                                 <img
-                                  src={@profile_form.params["user_image"]}
+                                  src={AtriumHelper.cache_bust(@current_scope.user.user_image)}
                                   class="w-20 h-20 rounded-full object-cover"
                                 />
                                 <div class="flex-1">
-                                  <p class="text-sm text-voile-muted">Uploaded</p>
+                                  <p class="text-sm text-voile-muted">Current profile image</p>
 
                                   <.button
                                     type="button"
                                     phx-click="delete_user_image"
-                                    phx-value-image={@profile_form.params["user_image"]}
+                                    phx-value-image={@current_scope.user.user_image}
                                     phx-disable-with="Removing..."
                                   >
                                     Remove

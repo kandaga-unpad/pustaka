@@ -309,9 +309,13 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
       %Voile.Schema.System.Setting{setting_value: url} = setting ->
         # Attempt to delete from storage
-        case Storage.delete(url) do
-          {:ok, _} -> :ok
-          error -> Logger.warning("Storage delete error: #{inspect(error)}")
+        try do
+          case Storage.delete(url) do
+            {:ok, _} -> :ok
+            error -> Logger.warning("Storage delete error: #{inspect(error)}")
+          end
+        rescue
+          _ -> Logger.warning("Storage delete exception")
         end
 
         # Delete the setting
@@ -352,45 +356,81 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
         Logger.debug("Using storage adapter: #{inspect(adapter)}")
 
-        case Storage.upload(upload, folder: "app_logo", adapter: adapter) do
-          {:ok, url} when is_binary(url) ->
-            Logger.info("Upload successful: #{url}")
-            # Save to database immediately
-            case System.upsert_setting("app_logo_url", url) do
-              {:ok, _} ->
-                Logger.info("Saved app_logo_url setting: #{url}")
-                {:ok, url}
+        try do
+          case Storage.upload(upload, folder: "app_logo", adapter: adapter) do
+            {:ok, url} when is_binary(url) ->
+              Logger.info("Upload successful: #{url}")
+              # Save to database immediately
+              case System.upsert_setting("app_logo_url", url) do
+                {:ok, _} ->
+                  Logger.info("Saved app_logo_url setting: #{url}")
+                  {:ok, {:success, url}}
 
-              {:error, error} ->
-                Logger.error("Failed to save app_logo_url: #{inspect(error)}")
-                {:error, :database_error}
-            end
+                {:error, error} ->
+                  Logger.error("Failed to save app_logo_url: #{inspect(error)}")
+                  {:ok, {:database_error, error}}
+              end
 
-          url when is_binary(url) ->
-            Logger.info("Upload returned URL: #{url}")
+            url when is_binary(url) ->
+              Logger.info("Upload returned URL: #{url}")
 
-            case System.upsert_setting("app_logo_url", url) do
-              {:ok, _} ->
-                Logger.info("Saved app_logo_url setting: #{url}")
-                {:ok, url}
+              case System.upsert_setting("app_logo_url", url) do
+                {:ok, _} ->
+                  Logger.info("Saved app_logo_url setting: #{url}")
+                  {:ok, {:success, url}}
 
-              {:error, error} ->
-                Logger.error("Failed to save app_logo_url: #{inspect(error)}")
-                {:error, :database_error}
-            end
+                {:error, error} ->
+                  Logger.error("Failed to save app_logo_url: #{inspect(error)}")
+                  {:ok, {:database_error, error}}
+              end
 
-          error ->
-            Logger.error("Upload failed: #{inspect(error)}")
-            {:error, :upload_failed}
+            error ->
+              Logger.error("Upload failed: #{inspect(error)}")
+              {:ok, {:upload_error, error}}
+          end
+        rescue
+          exception ->
+            Logger.error("Upload exception: #{inspect(exception)}")
+            {:ok, {:upload_error, exception}}
         end
       end)
 
     Logger.debug("All uploaded files result: #{inspect(uploaded_files)}")
 
+    # Check if upload was successful
+    success? =
+      Enum.any?(uploaded_files, fn
+        {:ok, {:success, _url}} -> true
+        _ -> false
+      end)
+
     socket =
-      socket
-      |> assign(:app_logo_preview, System.get_setting_value("app_logo_url", nil))
-      |> put_flash(:info, "Logo uploaded successfully!")
+      if success? do
+        socket
+        |> assign(:app_logo_preview, System.get_setting_value("app_logo_url", nil))
+        |> put_flash(:info, "Logo uploaded successfully!")
+      else
+        # Check for specific error types
+        error_message =
+          cond do
+            Enum.any?(uploaded_files, fn
+              {:ok, {:upload_error, _}} -> true
+              _ -> false
+            end) ->
+              "Failed to upload logo to storage. Please try again."
+
+            Enum.any?(uploaded_files, fn
+              {:ok, {:database_error, _}} -> true
+              _ -> false
+            end) ->
+              "Logo uploaded but failed to save settings. Please try again."
+
+            true ->
+              "Upload failed. Please try again."
+          end
+
+        put_flash(socket, :error, error_message)
+      end
 
     {:noreply, socket}
   end
