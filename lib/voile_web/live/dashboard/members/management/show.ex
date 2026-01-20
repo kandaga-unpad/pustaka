@@ -31,12 +31,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   def handle_event("suspend_member", _params, socket) do
     member = socket.assigns.member
 
-    changeset = User.changeset(member, %{
-      manually_suspended: true,
-      suspension_reason: "Suspended by admin",
-      suspended_at: DateTime.utc_now(),
-      suspended_by_id: socket.assigns.current_scope.user.id
-    })
+    changeset =
+      User.changeset(member, %{
+        manually_suspended: true,
+        suspension_reason: "Suspended by admin",
+        suspended_at: DateTime.utc_now(),
+        suspended_by_id: socket.assigns.current_scope.user.id
+      })
 
     case Repo.update(changeset) do
       {:ok, updated_member} ->
@@ -56,12 +57,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   def handle_event("unsuspend_member", _params, socket) do
     member = socket.assigns.member
 
-    changeset = User.changeset(member, %{
-      manually_suspended: false,
-      suspension_reason: nil,
-      suspended_at: nil,
-      suspended_by_id: nil
-    })
+    changeset =
+      User.changeset(member, %{
+        manually_suspended: false,
+        suspension_reason: nil,
+        suspended_at: nil,
+        suspended_by_id: nil
+      })
 
     case Repo.update(changeset) do
       {:ok, updated_member} ->
@@ -114,22 +116,25 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
             <%= if can?(@current_scope.user, "users.update") do %>
               <%= if @member.manually_suspended do %>
-                <.button phx-click="unsuspend_member" class="bg-green-600 hover:bg-green-700 text-white">
-                  <.icon name="hero-play" class="w-4 h-4 mr-2" />
-                  Unsuspend
+                <.button
+                  phx-click="unsuspend_member"
+                  class="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <.icon name="hero-play" class="w-4 h-4 mr-2" /> Unsuspend
                 </.button>
               <% else %>
                 <.button phx-click="suspend_member" class="bg-red-600 hover:bg-red-700 text-white">
-                  <.icon name="hero-pause" class="w-4 h-4 mr-2" />
-                  Suspend
+                  <.icon name="hero-pause" class="w-4 h-4 mr-2" /> Suspend
                 </.button>
               <% end %>
             <% end %>
 
             <%= if can?(@current_scope.user, "users.update") do %>
-              <.link patch={~p"/manage/members/management/#{@member.id}/edit"} class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                <.icon name="hero-pencil" class="w-4 h-4 mr-2" />
-                Edit
+              <.link
+                patch={~p"/manage/members/management/#{@member.id}/edit"}
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              >
+                <.icon name="hero-pencil" class="w-4 h-4 mr-2" /> Edit
               </.link>
             <% end %>
           </div>
@@ -140,10 +145,18 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
         <div class="border-b border-gray-200 dark:border-gray-600">
           <nav class="flex">
-            <.tab_button active={@active_tab == "overview"} phx-click="change_tab" phx-value-tab="overview">
+            <.tab_button
+              active={@active_tab == "overview"}
+              phx-click="change_tab"
+              phx-value-tab="overview"
+            >
               Overview
             </.tab_button>
-            <.tab_button active={@active_tab == "activity"} phx-click="change_tab" phx-value-tab="activity">
+            <.tab_button
+              active={@active_tab == "activity"}
+              phx-click="change_tab"
+              phx-value-tab="activity"
+            >
               Activity History
             </.tab_button>
             <.tab_button active={@active_tab == "loans"} phx-click="change_tab" phx-value-tab="loans">
@@ -185,7 +198,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Full Name
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.fullname || "-"}</p>
           </div>
           <div>
@@ -197,9 +212,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.phone_number || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Birth Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Birth Date
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.birth_date, do: Calendar.strftime(@member.birth_date, "%B %d, %Y"), else: "-"}
+              {if @member.birth_date,
+                do: Calendar.strftime(@member.birth_date, "%B %d, %Y"),
+                else: "-"}
             </p>
           </div>
           <div>
@@ -207,7 +226,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.address || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Organization</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Organization
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.organization || "-"}</p>
           </div>
         </div>
@@ -218,24 +239,38 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Membership Information</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Member Type</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.user_type && @member.user_type.name || "-"}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Member Type
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.registration_date, do: Calendar.strftime(@member.registration_date, "%B %d, %Y"), else: "-"}
+              {(@member.user_type && @member.user_type.name) || "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Registration Date
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.expiry_date, do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"), else: "-"}
+              {if @member.registration_date,
+                do: Calendar.strftime(@member.registration_date, "%B %d, %Y"),
+                else: "-"}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Expiry Date
+            </label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+              {if @member.expiry_date,
+                do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
+                else: "-"}
             </p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Node</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.node && @member.node.name || "-"}</p>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+              {(@member.node && @member.node.name) || "-"}
+            </p>
           </div>
         </div>
       </div>
@@ -302,7 +337,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     ~H"""
     <div class="space-y-4">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">Fines & Payments</h3>
-      <p class="text-gray-600 dark:text-gray-300">Fines and payment history will be displayed here.</p>
+      <p class="text-gray-600 dark:text-gray-300">
+        Fines and payment history will be displayed here.
+      </p>
     </div>
     """
   end
@@ -313,27 +350,31 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     member = socket.assigns.member
 
     # Calculate stats
-    total_loans = Repo.aggregate(from(t in Transaction, where: t.member_id == ^member.id), :count, :id)
+    total_loans =
+      Repo.aggregate(from(t in Transaction, where: t.member_id == ^member.id), :count, :id)
 
-    active_loans = Repo.aggregate(
-      from(t in Transaction,
-        where: t.member_id == ^member.id and is_nil(t.return_date)
-      ),
-      :count,
-      :id
-    )
+    active_loans =
+      Repo.aggregate(
+        from(t in Transaction,
+          where: t.member_id == ^member.id and is_nil(t.return_date)
+        ),
+        :count,
+        :id
+      )
 
     total_fines = Repo.aggregate(from(f in Fine, where: f.member_id == ^member.id), :count, :id)
 
-    overdue_items = Repo.aggregate(
-      from(t in Transaction,
-        where: t.member_id == ^member.id and
-               is_nil(t.return_date) and
-               t.due_date < ^Date.utc_today()
-      ),
-      :count,
-      :id
-    )
+    overdue_items =
+      Repo.aggregate(
+        from(t in Transaction,
+          where:
+            t.member_id == ^member.id and
+              is_nil(t.return_date) and
+              fragment("DATE(?) < ?", t.due_date, ^Date.utc_today())
+        ),
+        :count,
+        :id
+      )
 
     stats = %{
       total_loans: total_loans,

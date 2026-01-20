@@ -365,7 +365,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     members = Repo.all(members_query)
 
     # Get total count
-    count_query = from(u in subquery(query), select: count(u.id))
+    count_query = build_count_query(socket)
     total_count = Repo.one(count_query)
     total_pages = div(total_count + per_page - 1, per_page)
 
@@ -467,6 +467,62 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) -> "Expired"
       true -> "Active"
     end
+  end
+
+  defp build_count_query(socket) do
+    base_query = from(u in User)
+
+    query = base_query
+
+    # Apply search filter
+    query =
+      if socket.assigns.search_query != "" do
+        search_term = "%#{socket.assigns.search_query}%"
+
+        from(u in query,
+          where:
+            ilike(u.fullname, ^search_term) or
+              ilike(u.email, ^search_term) or
+              ilike(u.username, ^search_term)
+        )
+      else
+        query
+      end
+
+    # Apply node filter
+    query =
+      if socket.assigns.selected_node_id && socket.assigns.selected_node_id != "" do
+        from(u in query, where: u.node_id == ^String.to_integer(socket.assigns.selected_node_id))
+      else
+        query
+      end
+
+    # Apply member type filter
+    query =
+      if socket.assigns.selected_member_type_id && socket.assigns.selected_member_type_id != "" do
+        from(u in query, where: u.user_type_id == ^socket.assigns.selected_member_type_id)
+      else
+        query
+      end
+
+    # Apply status filter
+    query =
+      case socket.assigns.selected_status do
+        "active" ->
+          from(u in query, where: u.manually_suspended == false or is_nil(u.manually_suspended))
+
+        "suspended" ->
+          from(u in query, where: u.manually_suspended == true)
+
+        "expired" ->
+          today = Date.utc_today()
+          from(u in query, where: not is_nil(u.expiry_date) and u.expiry_date < ^today)
+
+        _ ->
+          query
+      end
+
+    from(u in query, select: count(u.id))
   end
 
   defp status_badge_class(member) do
