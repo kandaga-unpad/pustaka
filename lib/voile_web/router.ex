@@ -283,6 +283,26 @@ defmodule VoileWeb.Router do
           end
         end
 
+        scope "/members" do
+          live "/", Dashboard.Members.Index, :index
+
+          scope "/management" do
+            live "/", Dashboard.Members.Management.Index, :index
+            live "/new", Dashboard.Members.Management.Index, :new
+            live "/:id/edit", Dashboard.Members.Management.Index, :edit
+            live "/:id", Dashboard.Members.Management.Show, :show
+            live "/:id/show/edit", Dashboard.Members.Management.Show, :edit
+            live "/:id/extend", Dashboard.Members.Management.Show, :extend_membership
+            live "/:id/change_password", Dashboard.Members.Management.Show, :change_password
+          end
+
+          scope "/reports" do
+            live "/", Dashboard.Members.Reports.Index, :index
+            live "/expiring", Dashboard.Members.Reports.Expiring, :index
+            live "/overdue", Dashboard.Members.Reports.Overdue, :index
+          end
+        end
+
         scope "/master" do
           live "/", Dashboard.Master.MasterLive
 

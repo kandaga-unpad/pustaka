@@ -36,13 +36,14 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
 
   @impl true
   def handle_event("search", %{"search" => %{"q" => query}}, socket) do
+    current_user = socket.assigns.current_scope.user
     group_by_collection = socket.assigns.group_by_collection
 
     if group_by_collection do
       # Search for collections with item counts
       collections =
         if query != "" do
-          Catalog.search_collections(query)
+          Catalog.search_collections(query, current_user)
           |> Enum.map(fn collection ->
             item_count = Catalog.count_items_by_collection(collection.id)
             Map.put(collection, :item_count, item_count)
@@ -60,7 +61,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
       # Search for items
       items =
         if query != "" do
-          Catalog.search_items(query)
+          Catalog.search_items(query, current_user)
         else
           []
         end
@@ -89,8 +90,9 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
 
   @impl true
   def handle_event("select_collection", %{"collection-id" => collection_id}, socket) do
+    current_user = socket.assigns.current_scope.user
     # Fetch all items for this collection
-    items = Catalog.get_items_by_collection(collection_id)
+    items = Catalog.get_items_by_collection(collection_id, current_user)
 
     # Add all items to selection
     selected = socket.assigns.selected_items

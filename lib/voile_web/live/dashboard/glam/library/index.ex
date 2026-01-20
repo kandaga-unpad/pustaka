@@ -54,16 +54,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">Library Management</h1>
-            
+
             <p class="text-white text-lg">Manage library collections, circulation, and items</p>
           </div>
-          
+
           <div class="hidden md:block">
             <.icon name="hero-book-open" class="w-24 h-24 opacity-20" />
           </div>
         </div>
       </div>
-       <%!-- Quick Actions --%>
+      <%!-- Quick Actions --%>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <.link
           navigate="/manage/catalog/collections?glam_type=Library"
@@ -76,10 +76,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                 class="w-6 h-6 text-voile-info dark:text-voile-info/60"
               />
             </div>
-            
+
             <div>
               <h4 class="font-semibold text-gray-900 dark:text-white">View Collections</h4>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all library collections</p>
             </div>
           </div>
@@ -95,10 +95,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                 class="w-6 h-6 text-voile-success dark:text-voile-success/60"
               />
             </div>
-            
+
             <div>
               <h4 class="font-semibold text-gray-900 dark:text-white">New Collection</h4>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Create a new library collection</p>
             </div>
           </div>
@@ -111,49 +111,49 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
             <div class="p-3 rounded-lg bg-voile-info/10 dark:bg-voile-info/30">
               <.icon name="hero-cube" class="w-6 h-6 text-voile-info dark:text-voile-info/60" />
             </div>
-            
+
             <div>
               <h4 class="font-semibold text-gray-900 dark:text-white">View Items</h4>
-              
+
               <p class="text-sm text-gray-600 dark:text-gray-400">Browse all library items</p>
             </div>
           </div>
         </.link>
       </div>
-       <%!-- Statistics --%>
+      <%!-- Statistics --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Library Statistics</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
             <div class="text-2xl font-bold text-voile-info dark:text-voile-info/60">
               {@total_collections}
             </div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
           </div>
-          
+
           <div class="text-center">
             <div class="text-2xl font-bold text-voile-info dark:text-voile-info/60">
               {@total_items}
             </div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
           </div>
-          
+
           <div class="text-center">
             <div class="text-2xl font-bold text-voile-primary dark:text-voile-primary/60">
               {@published_collections}
             </div>
-            
+
             <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
           </div>
         </div>
       </div>
-       <%!-- Library Operationals --%>
+      <%!-- Library Operationals --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Library Operations</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <%= if Authorization.is_super_admin?(@user) do %>
             <.link
@@ -167,10 +167,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                     class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
                   />
                 </div>
-                
+
                 <div>
                   <h5 class="font-semibold text-gray-900 dark:text-white">Manage Circulations</h5>
-                  
+
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     View and manage book circulations
                   </p>
@@ -178,7 +178,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
             </.link>
           <% end %>
-          
+
           <.link
             navigate="/manage/glam/library/circulation/report"
             class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
@@ -190,10 +190,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                   class="w-6 h-6 text-purple-600 dark:text-purple-400"
                 />
               </div>
-              
+
               <div>
                 <h5 class="font-semibold text-gray-900 dark:text-white">Circulation Report</h5>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   View circulation statistics and activity
                 </p>
@@ -211,10 +211,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                   class="w-6 h-6 text-green-600 dark:text-green-400"
                 />
               </div>
-              
+
               <div>
                 <h5 class="font-semibold text-gray-900 dark:text-white">Start Transaction</h5>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   Start a new transaction or return a book
                 </p>
@@ -241,7 +241,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </button>
             </div>
           </div>
-          
+
           <.link
             navigate="/manage/glam/library/circulation/loan_reminders"
             class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
@@ -253,10 +253,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                   class="w-6 h-6 text-green-600 dark:text-green-400"
                 />
               </div>
-              
+
               <div>
                 <h5 class="font-semibold text-gray-900 dark:text-white">Loan Reminders</h5>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   View and manage loan reminders for library items
                 </p>
@@ -396,9 +396,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
             {:noreply, put_flash(socket, :error, "Member not found")}
 
           member ->
-            case Voile.Schema.Catalog.get_item_by_code(item_id) do
+            case Voile.Schema.Catalog.get_item_by_code_or_barcode(item_id) do
               nil ->
-                {:noreply, put_flash(socket, :error, "Item not found")}
+                socket =
+                  socket
+                  |> assign(:quick_checkout_visible, false)
+                  |> assign(:checkout_form, to_form(%{}))
+                  |> put_flash(:error, "Item not found")
+
+                {:noreply, socket}
 
               item ->
                 # Preload node for rule resolution
@@ -426,7 +432,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                         |> assign(:checkout_form, to_form(%{}))
                         |> put_flash(
                           :info,
-                          "✓ Checked out to #{member.full_name} - Due: #{Calendar.strftime(transaction.due_date, "%b %d, %Y")}"
+                          "✓ Checked out to #{member.fullname} - Due: #{Calendar.strftime(transaction.due_date, "%b %d, %Y")}"
                         )
 
                       {:noreply, socket}
@@ -478,9 +484,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
 
   @impl true
   def handle_event("quick_return_search", %{"item_code" => item_code}, socket) do
-    case Voile.Schema.Catalog.get_item_by_code(item_code) do
+    case Voile.Schema.Catalog.get_item_by_code_or_barcode(item_code) do
       nil ->
-        {:noreply, put_flash(socket, :error, "Item not found")}
+        socket =
+          socket
+          |> assign(:quick_return_visible, false)
+          |> assign(:return_form, to_form(%{}))
+          |> assign(:quick_return_transaction, nil)
+          |> assign(:quick_return_predicted_fine, Decimal.new("0"))
+          |> put_flash(:error, "Item not found")
+
+        {:noreply, socket}
 
       item ->
         case Circulation.get_active_transaction_by_item(item.id) do

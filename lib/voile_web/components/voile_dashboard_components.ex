@@ -29,6 +29,10 @@ defmodule VoileWeb.VoileDashboardComponents do
         url: "/manage/glam"
       },
       %{
+        name: "Members",
+        url: "/manage/members"
+      },
+      %{
         name: "Settings",
         url: "/manage/settings"
       }
@@ -50,7 +54,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
         </.link>
       </div>
-       <%!-- Desktop Menu --%>
+      <%!-- Desktop Menu --%>
       <div class="hidden lg:flex w-full text-voile-primary gap-4">
         <.link
           patch="/manage"
@@ -67,7 +71,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         <% end %>
       </div>
-       <%!-- Desktop Actions --%>
+      <%!-- Desktop Actions --%>
       <div class="hidden lg:flex w-full justify-end gap-3">
         <Layouts.theme_toggle />
         <.link
@@ -109,10 +113,10 @@ defmodule VoileWeb.VoileDashboardComponents do
         <div class="w-full flex items-center justify-between">
           <div>
             <h5 class="text-lg md:text-xl">{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
-            
+
             <p class="text-sm md:text-base">{gettext("You can check your collection data here")}</p>
           </div>
-           <%!-- Mobile/Tablet Menu Toggle --%>
+          <%!-- Mobile/Tablet Menu Toggle --%>
           <button
             type="button"
             phx-click={
@@ -125,7 +129,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
           </button>
         </div>
-         <%!-- Navigation Menu (Always visible, responsive) --%>
+        <%!-- Navigation Menu (Always visible, responsive) --%>
         <div class="flex gap-2 flex-wrap w-full">
           <.link
             patch="/manage/catalog/collections"
@@ -169,7 +173,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               {gettext("Asset Vault")}
             </.link>
           <% end %>
-          
+
           <.link
             patch="/manage/transfers"
             class={[
@@ -192,12 +196,12 @@ defmodule VoileWeb.VoileDashboardComponents do
           </.link>
         </div>
       </div>
-      
+
       <div class="hidden lg:block flex-shrink-0">
         <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
       </div>
     </div>
-     <%!-- Fixed Bottom Navigation for Mobile/Tablet --%>
+    <%!-- Fixed Bottom Navigation for Mobile/Tablet --%>
     <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-lg">
       <div class="grid grid-cols-5 gap-1 px-2 py-2">
         <%!-- Dashboard --%>
@@ -207,28 +211,32 @@ defmodule VoileWeb.VoileDashboardComponents do
         >
           <.icon name="hero-home" class="h-6 w-6 text-voile-primary" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Dashboard")}</span>
-        </.link> <%!-- Catalogs --%>
+        </.link>
+         <%!-- Catalogs --%>
         <.link
           patch="/manage/catalog"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
           <.icon name="hero-folder" class="h-6 w-6 text-voile-info" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Catalogs")}</span>
-        </.link> <%!-- GLAM --%>
+        </.link>
+         <%!-- GLAM --%>
         <.link
           patch="/manage/glam"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
           <.icon name="hero-building-library" class="h-6 w-6 text-voile-warning" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("GLAM")}</span>
-        </.link> <%!-- Settings --%>
+        </.link>
+         <%!-- Settings --%>
         <.link
           patch="/manage/settings"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
         >
           <.icon name="hero-cog-6-tooth" class="h-6 w-6 text-voile-success" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Settings")}</span>
-        </.link> <%!-- Quick Menu --%>
+        </.link>
+         <%!-- Quick Menu --%>
         <button
           type="button"
           phx-click={
@@ -277,7 +285,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             {gettext("Quick Navigation")}
           </h3>
-          
+
           <button
             phx-click={
               JS.hide(to: "#dashboard-mobile-menu-backdrop")
@@ -289,7 +297,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             <.icon name="hero-x-mark" class="h-6 w-6" />
           </button>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-3">
           <.link
             patch="/manage/catalog/collections"
@@ -369,7 +377,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               </span>
             </.link>
           <% end %>
-          
+
           <.link
             patch="/manage/transfers"
             phx-click={
@@ -409,7 +417,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             </span>
           </.link>
         </div>
-         <%!-- Action Buttons --%>
+        <%!-- Action Buttons --%>
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div class="grid grid-cols-3 gap-3">
             <.link
@@ -428,7 +436,7 @@ defmodule VoileWeb.VoileDashboardComponents do
             <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700">
               <Layouts.theme_toggle />
             </div>
-            
+
             <.link
               href="/users/log_out"
               method="delete"
@@ -465,7 +473,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       <div class="text-xs text-gray-500 mb-2">
         Query: {@search_query} | Searching: {inspect(@searching)} | Results: {length(@search_results)}
       </div>
-      
+
       <form phx-change="search" phx-submit="search" class="mb-4">
         <div class="relative">
           <input
@@ -494,11 +502,11 @@ defmodule VoileWeb.VoileDashboardComponents do
           </div>
         </div>
       </form>
-      
+
       <%= if @searching do %>
         <div class="flex items-center justify-center py-8">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-voile-info"></div>
-          
+
           <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{gettext("Searching...")}</span>
         </div>
       <% else %>
@@ -518,12 +526,12 @@ defmodule VoileWeb.VoileDashboardComponents do
                       ]}>
                         <.icon name={get_result_icon(result)} class="w-5 h-5 text-white" />
                       </div>
-                      
+
                       <div class="flex-1 min-w-0">
                         <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                           {get_result_title(result)}
                         </h4>
-                        
+
                         <div class="flex items-center gap-2 mt-1">
                           <span class={[
                             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -537,7 +545,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                             </span>
                           <% end %>
                         </div>
-                        
+
                         <%= if desc = get_result_description(result) do %>
                           <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                             {desc}
@@ -552,7 +560,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               <div class="text-center py-8">
                 <.icon name="hero-magnifying-glass" class="w-12 h-12 mx-auto text-gray-400 mb-2" />
                 <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No results found")}</p>
-                
+
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   {gettext("Try a different search term")}
                 </p>
@@ -561,7 +569,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           </div>
         <% end %>
       <% end %>
-      
+
       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex gap-2">
         <.link
           href="/search/advanced"
@@ -682,7 +690,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.icon name="hero-chart-bar" class="w-6 h-6 text-voile-success dark:text-voile-success" />
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Statistics</h3>
       </div>
-      
+
       <div class="space-y-4">
         <!-- Total searches today -->
         <div class="flex justify-between items-center">
@@ -694,7 +702,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <!-- Popular queries -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Popular Queries</h4>
-          
+
           <div class="space-y-1">
             <%= for {query, count} <- Enum.take(@stats.popular_queries, 3) do %>
               <div class="flex justify-between text-xs">
@@ -707,7 +715,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <!-- Recent activity -->
         <div>
           <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Activity</h4>
-          
+
           <div class="space-y-1">
             <%= for activity <- Enum.take(@stats.recent_activity, 3) do %>
               <div class="text-xs text-gray-600 dark:text-gray-400">{activity}</div>
@@ -786,7 +794,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               <%= if Map.get(item, :icon) do %>
                 <.icon name={item.icon} class="w-5 h-5" />
               <% end %>
-               {item.label}
+              {item.label}
             </.link>
           </li>
         <% end %>
@@ -878,7 +886,7 @@ defmodule VoileWeb.VoileDashboardComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -895,10 +903,10 @@ defmodule VoileWeb.VoileDashboardComponents do
     <.modal id={@id}>
       <div class="flex flex-col gap-2">
         <h3 class="text-lg font-semibold">Delete Confirmation</h3>
-        
+
         <p>Are you sure you want to delete this item?</p>
       </div>
-      
+
       <div class="flex justify-end gap-2 mt-4">
         <.button phx-click={JS.exec("data-cancel", to: "#delete-modal")}>Cancel</.button>
         <.button phx-click={JS.exec("data-confirm", to: "#delete-modal")}>Delete</.button>
@@ -927,7 +935,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       <% else %>
         <.button class="disabled-btn" disabled>Prev</.button>
       <% end %>
-      
+
       <%= for p <- pagination_range(@page, @total_pages) do %>
         <%= if is_integer(p) do %>
           <%= if p == @page do %>
@@ -947,7 +955,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <button class="disabled-btn" disabled>{p}</button>
         <% end %>
       <% end %>
-      
+
       <%= if @page < @total_pages do %>
         <%= if @path do %>
           <.link patch={"#{@path}?#{build_query_string(assigns, @page + 1)}"} class="primary-btn">
@@ -1125,30 +1133,30 @@ defmodule VoileWeb.VoileDashboardComponents do
           <div class={["p-3 rounded-lg", get_glam_icon_bg(@color)]}>
             <.icon name={@icon} class="w-8 h-8 text-white" />
           </div>
-          
+
           <div class="text-right">
             <div class="text-3xl font-bold text-white">{@count}</div>
-            
+
             <div class="text-xs text-white/80">collections</div>
           </div>
         </div>
-        
+
         <h3 class="text-xl font-bold text-white mb-1">{@title}</h3>
-        
+
         <p class="text-white/90 text-sm mb-3">{@description}</p>
-        
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="text-xs text-white/80">{@percentage}% of total</div>
           </div>
-          
+
           <.icon
             name="hero-arrow-right"
             class="w-5 h-5 text-white transform group-hover:translate-x-1 transition-transform"
           />
         </div>
       </div>
-       <%!-- Decorative background pattern --%>
+      <%!-- Decorative background pattern --%>
       <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
         <.icon name={@icon} class="w-full h-full text-white" />
       </div>
@@ -1174,14 +1182,14 @@ defmodule VoileWeb.VoileDashboardComponents do
         <div class={["p-3 rounded-lg", get_stat_icon_bg(@color)]}>
           <.icon name={@icon} class={"w-6 h-6 #{@icon_color_class}"} />
         </div>
-        
+
         <%= if @trend do %>
           <span class="text-xs font-semibold text-green-600 dark:text-green-400">{@trend}</span>
         <% end %>
       </div>
-      
+
       <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{@title}</h3>
-      
+
       <p class="text-3xl font-bold text-gray-900 dark:text-white">{@value}</p>
     </div>
     """
@@ -1207,12 +1215,12 @@ defmodule VoileWeb.VoileDashboardComponents do
           class="w-6 h-6 text-white"
         />
       </div>
-      
+
       <div class="flex-1 min-w-0">
         <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
           {@collection.title}
         </h4>
-        
+
         <div class="flex items-center gap-2 mt-1">
           <span class={[
             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
@@ -1227,7 +1235,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
         </div>
       </div>
-       <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
+      <.icon name="hero-chevron-right" class="w-5 h-5 text-gray-400" />
     </.link>
     """
   end

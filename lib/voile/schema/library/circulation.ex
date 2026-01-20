@@ -1460,6 +1460,8 @@ defmodule Voile.Schema.Library.Circulation do
       from t in Transaction,
         where: t.status == "active",
         join: m in assoc(t, :member),
+        join: i in assoc(t, :item),
+        join: c in assoc(i, :collection),
         group_by: [m.id, m.fullname, m.email, m.identifier],
         select: %{
           member_id: m.id,
@@ -1470,6 +1472,16 @@ defmodule Voile.Schema.Library.Circulation do
           earliest_due_date: min(t.due_date),
           latest_due_date: max(t.due_date)
         }
+
+    # Apply node filter
+    query =
+      case Map.get(filters, :node_id) do
+        nil ->
+          query
+
+        node_id ->
+          where(query, [t, m, i, c], c.unit_id == ^node_id)
+      end
 
     # Apply search filter
     query =
@@ -1508,8 +1520,20 @@ defmodule Voile.Schema.Library.Circulation do
       from t in Transaction,
         where: t.status == "active",
         join: m in assoc(t, :member),
+        join: i in assoc(t, :item),
+        join: c in assoc(i, :collection),
         group_by: m.id,
         select: m.id
+
+    # Apply node filter to count query
+    count_query =
+      case Map.get(filters, :node_id) do
+        nil ->
+          count_query
+
+        node_id ->
+          where(count_query, [t, m, i, c], c.unit_id == ^node_id)
+      end
 
     count_query =
       case Map.get(filters, :query, "") do

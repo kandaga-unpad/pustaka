@@ -44,6 +44,7 @@ defmodule Voile.Schema.StockOpname do
     * `:created_by_id` - Filter by creator
     * `:from_date` - Filter sessions created after this date
     * `:to_date` - Filter sessions created before this date
+    * `:user` - Filter sessions the user can access (based on node membership)
   """
   def list_sessions(page \\ 1, per_page \\ 10, filters \\ %{}) do
     base_query =
@@ -56,6 +57,7 @@ defmodule Voile.Schema.StockOpname do
       |> maybe_filter_by_status(filters[:status])
       |> maybe_filter_by_date_range(filters[:from_date], filters[:to_date])
       |> maybe_filter_by_creator(filters[:created_by_id])
+      |> maybe_filter_by_user_access(filters[:user])
 
     total_count = Repo.aggregate(query, :count, :id)
     total_pages = ceil(total_count / per_page)
@@ -93,6 +95,18 @@ defmodule Voile.Schema.StockOpname do
 
   defp maybe_filter_by_creator(query, creator_id),
     do: from(s in query, where: s.created_by_id == ^creator_id)
+
+  defp maybe_filter_by_user_access(query, nil), do: query
+
+  defp maybe_filter_by_user_access(query, user) do
+    # Super admins can see all sessions
+    if VoileWeb.Auth.Authorization.is_super_admin?(user) do
+      query
+    else
+      # Regular users can only see sessions for their own node
+      from s in query, where: ^user.node_id in s.node_ids
+    end
+  end
 
   @doc """
   Get a single stock opname session with all associations preloaded.

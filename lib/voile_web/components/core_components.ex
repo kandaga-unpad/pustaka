@@ -444,7 +444,7 @@ defmodule VoileWeb.CoreComponents do
         <span :if={@label} class="label mb-1">
           {@label}<span :if={@required_value} class="text-voile-error">*</span>
         </span>
-         <textarea
+        <textarea
           id={@id}
           name={@name}
           class={[
@@ -849,7 +849,7 @@ defmodule VoileWeb.CoreComponents do
             VoileWeb.Utils.Locale.get_locale()
           )}
         </span>
-         <.icon name="hero-chevron-down" class="h-4 w-4" />
+        <.icon name="hero-chevron-down" class="h-4 w-4" />
       </button>
       <div
         id="locale-dropdown"
@@ -878,5 +878,158 @@ defmodule VoileWeb.CoreComponents do
       </div>
     </div>
     """
+  end
+
+  @doc """
+  Renders a single GLAM card.
+  """
+  attr :title, :string, required: true
+  attr :description, :string, required: true
+  attr :icon, :string, required: true
+  attr :count, :integer, required: true
+  attr :percentage, :float, required: true
+  attr :path, :string, required: true
+  attr :color, :string, required: true
+
+  def glam_card(assigns) do
+    color_classes = %{
+      "purple" => "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
+      "blue" => "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+      "green" => "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+      "orange" => "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+    }
+
+    assigns =
+      assign(
+        assigns,
+        :gradient_class,
+        Map.get(color_classes, assigns.color, color_classes["blue"])
+      )
+
+    ~H"""
+    <.link navigate={@path} class="block">
+      <div class={"bg-gradient-to-r #{@gradient_class} rounded-xl p-6 text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"}>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <.icon name={"hero-#{@icon}"} class="w-8 h-8" />
+            <h3 class="text-xl font-semibold">{@title}</h3>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-bold">{@count}</div>
+            <div class="text-sm opacity-90">{@percentage}%</div>
+          </div>
+        </div>
+        <p class="text-sm opacity-90">{@description}</p>
+      </div>
+    </.link>
+    """
+  end
+
+  @doc """
+  Renders members navigation cards.
+  """
+  attr :members_stats, :map, required: true
+
+  def members_navigation_cards(assigns) do
+    ~H"""
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+      <.member_nav_card
+        title="Member Management"
+        description="Add, edit, and manage member accounts"
+        icon="hero-users"
+        path="/manage/members/management"
+        color="green"
+      />
+      <.member_nav_card
+        title="Membership Reports"
+        description="View reports on member activity and status"
+        icon="hero-chart-bar"
+        path="/manage/members/reports"
+        color="blue"
+      />
+      <.member_nav_card
+        title="Bulk Operations"
+        description="Import, export, and bulk update members"
+        icon="hero-cog-6-tooth"
+        path="/manage/members/bulk"
+        color="purple"
+      />
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a single member navigation card.
+  """
+  attr :title, :string, required: true
+  attr :description, :string, required: true
+  attr :icon, :string, required: true
+  attr :path, :string, required: true
+  attr :color, :string, required: true
+
+  def member_nav_card(assigns) do
+    color_classes = %{
+      "green" => "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+      "blue" => "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+      "purple" => "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
+    }
+
+    assigns =
+      assign(
+        assigns,
+        :gradient_class,
+        Map.get(color_classes, assigns.color, color_classes["blue"])
+      )
+
+    ~H"""
+    <.link navigate={@path} class="block">
+      <div class={"bg-gradient-to-r #{@gradient_class} rounded-xl p-6 text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"}>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <.icon name={"hero-#{@icon}"} class="w-8 h-8" />
+            <h3 class="text-xl font-semibold">{@title}</h3>
+          </div>
+        </div>
+        <p class="text-sm opacity-90">{@description}</p>
+      </div>
+    </.link>
+    """
+  end
+
+  @doc """
+  Renders a recent member item.
+  """
+  attr :member, :map, required: true
+
+  def recent_member_item(assigns) do
+    ~H"""
+    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-600 rounded-lg">
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 h-10 w-10">
+          <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
+            <span class="text-sm font-medium text-gray-700">
+              {String.first(@member.fullname || "?")}
+            </span>
+          </div>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-900 dark:text-white">{@member.fullname}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {@member.username} • {format_date(@member.inserted_at)}
+          </p>
+        </div>
+      </div>
+      <div class="text-right">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{if @member.manually_suspended, do: "bg-red-100 text-red-800", else: "bg-green-100 text-green-800"}"}>
+          {if @member.manually_suspended, do: "Suspended", else: "Active"}
+        </span>
+      </div>
+    </div>
+    """
+  end
+
+  # Helper function
+  defp format_date(datetime) do
+    Calendar.strftime(datetime, "%b %d, %Y")
   end
 end

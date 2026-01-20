@@ -438,13 +438,15 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
   end
 
   defp load_sessions(socket) do
-    %{page: page, per_page: per_page, filters: filters} = socket.assigns
+    %{page: page, per_page: per_page, filters: filters, current_user: current_user} =
+      socket.assigns
 
     filter_map =
       %{}
       |> maybe_put(:status, filters.status)
       |> maybe_put(:from_date, parse_date(filters.from_date))
       |> maybe_put(:to_date, parse_date(filters.to_date))
+      |> Map.put(:user, current_user)
 
     {sessions, total_pages, total_count} =
       StockOpname.list_sessions(page, per_page, filter_map)

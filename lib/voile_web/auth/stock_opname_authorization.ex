@@ -10,7 +10,8 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   alias VoileWeb.Auth.Authorization
 
   @doc """
-  Check if user can create stock opname sessions (Super Admin only).
+  Check if user can create stock opname sessions.
+  Super admins can create anywhere, regular users can only create for their own node.
   """
   def can_create_session?(%User{} = user) do
     Authorization.is_super_admin?(user)
@@ -25,11 +26,37 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
 
   def can_create_session?(_), do: false
 
+  def can_create_session?(%User{} = user, node_ids) when is_list(node_ids) do
+    if Authorization.is_super_admin?(user) do
+      true
+    else
+      # User can create if they belong to at least one of the selected nodes
+      user.node_id && user.node_id in node_ids
+    end
+  end
+
+  def can_create_session?(%Phoenix.LiveView.Socket{} = socket, node_ids) do
+    case socket.assigns[:current_scope] do
+      %{user: user} when not is_nil(user) ->
+        if node_ids, do: can_create_session?(user, node_ids), else: can_create_session?(user)
+
+      _ ->
+        false
+    end
+  end
+
+  def can_create_session?(_, _), do: false
+
   @doc """
-  Check if user can start a stock opname session (Super Admin only).
+  Check if user can start a stock opname session.
+  Super admins can start anywhere, users can start sessions for their own node.
   """
-  def can_start_session?(%User{} = user, %Session{}) do
-    Authorization.is_super_admin?(user)
+  def can_start_session?(%User{} = user, %Session{} = session) do
+    cond do
+      Authorization.is_super_admin?(user) -> true
+      user.node_id && user.node_id in session.node_ids -> true
+      true -> false
+    end
   end
 
   def can_start_session?(%Phoenix.LiveView.Socket{} = socket, session) do
@@ -42,10 +69,15 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_start_session?(_, _), do: false
 
   @doc """
-  Check if user can complete a stock opname session (Super Admin only).
+  Check if user can complete a stock opname session.
+  Super admins can complete anywhere, users can complete sessions for their own node.
   """
-  def can_complete_session?(%User{} = user, %Session{}) do
-    Authorization.is_super_admin?(user)
+  def can_complete_session?(%User{} = user, %Session{} = session) do
+    cond do
+      Authorization.is_super_admin?(user) -> true
+      user.node_id && user.node_id in session.node_ids -> true
+      true -> false
+    end
   end
 
   def can_complete_session?(%Phoenix.LiveView.Socket{} = socket, session) do
@@ -58,12 +90,17 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_complete_session?(_, _), do: false
 
   @doc """
-  Check if user can delete a stock opname session (Super Admin only).
+  Check if user can delete a stock opname session.
+  Super admins can delete anywhere, users can delete sessions for their own node.
   Only approved or cancelled sessions can be deleted.
   """
-  def can_delete_session?(%User{} = user, %Session{status: status})
+  def can_delete_session?(%User{} = user, %Session{status: status} = session)
       when status in ["approved", "cancelled"] do
-    Authorization.is_super_admin?(user)
+    cond do
+      Authorization.is_super_admin?(user) -> true
+      user.node_id && user.node_id in session.node_ids -> true
+      true -> false
+    end
   end
 
   def can_delete_session?(%Phoenix.LiveView.Socket{} = socket, session) do
@@ -76,10 +113,15 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_delete_session?(_, _), do: false
 
   @doc """
-  Check if user can approve/reject stock opname sessions (Super Admin only).
+  Check if user can approve/reject stock opname sessions.
+  Super admins can approve anywhere, users can approve sessions for their own node.
   """
-  def can_approve_session?(%User{} = user, %Session{}) do
-    Authorization.is_super_admin?(user)
+  def can_approve_session?(%User{} = user, %Session{} = session) do
+    cond do
+      Authorization.is_super_admin?(user) -> true
+      user.node_id && user.node_id in session.node_ids -> true
+      true -> false
+    end
   end
 
   def can_approve_session?(%Phoenix.LiveView.Socket{} = socket, session) do
@@ -99,8 +141,8 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
     if Authorization.is_super_admin?(user) do
       true
     else
-      # Check if user is assigned to this session
-      is_assigned_librarian?(user.id, session.id)
+      # Check if user is assigned to this session AND belongs to the session's node
+      is_assigned_librarian?(user.id, session.id) and user.node_id in session.node_ids
     end
   end
 
@@ -136,10 +178,15 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_complete_work?(_, _), do: false
 
   @doc """
-  Check if user can view a stock opname session (assigned librarian or admin).
+  Check if user can view a stock opname session.
+  Super admins can view all, users can view sessions for their own node.
   """
   def can_view_session?(%User{} = user, %Session{} = session) do
-    Authorization.is_super_admin?(user) or is_assigned_librarian?(user.id, session.id)
+    cond do
+      Authorization.is_super_admin?(user) -> true
+      user.node_id && user.node_id in session.node_ids -> true
+      true -> false
+    end
   end
 
   def can_view_session?(%Phoenix.LiveView.Socket{} = socket, session) do

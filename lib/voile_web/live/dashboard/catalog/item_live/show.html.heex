@@ -114,6 +114,13 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Barcode</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
+            {@item.barcode || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Collection Code</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.collection.collection_code || "-"}

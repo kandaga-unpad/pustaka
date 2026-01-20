@@ -9,7 +9,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   @impl true
   def mount(_params, _session, socket) do
     # Check if user has permission to review collections
-    # Only super_admin, admin, and editor roles can review
+    # Only super_admin and admin roles can review
     unless can_review?(socket.assigns.current_scope.user) do
       socket =
         socket
@@ -21,9 +21,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       # Initialize page state
       page = 1
       per_page = 10
+      current_user = socket.assigns.current_scope.user
 
       {collections, total_pages, total_count} =
-        Catalog.list_pending_collections_paginated(page, per_page)
+        Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
       socket =
         socket
@@ -72,9 +73,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
+    current_user = socket.assigns.current_scope.user
 
     {collections, total_pages, total_count} =
-      Catalog.list_pending_collections_paginated(page, per_page)
+      Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
     socket =
       socket
@@ -140,9 +142,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         # Refresh the list
         page = socket.assigns.page
         per_page = 10
+        current_user = socket.assigns.current_scope.user
 
         {collections, total_pages, total_count} =
-          Catalog.list_pending_collections_paginated(page, per_page)
+          Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
         socket =
           socket
@@ -187,9 +190,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
           # Refresh the list
           page = socket.assigns.page
           per_page = 10
+          current_user = socket.assigns.current_scope.user
 
           {collections, total_pages, total_count} =
-            Catalog.list_pending_collections_paginated(page, per_page)
+            Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
           socket =
             socket
@@ -226,7 +230,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     user = Repo.preload(user, :roles)
 
     Enum.any?(user.roles, fn role ->
-      role.name in ["super_admin", "admin", "editor"]
+      role.name in ["super_admin", "admin"]
     end)
   end
 

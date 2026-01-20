@@ -317,8 +317,17 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
     # Verify permission
     case StockOpnameAuthorization.can_create_session?(current_user) do
       true ->
-        nodes = System.list_nodes()
-        librarians = list_librarians()
+        all_nodes = System.list_nodes()
+        # Filter nodes based on user permissions
+        nodes =
+          if VoileWeb.Auth.Authorization.is_super_admin?(current_user) do
+            all_nodes
+          else
+            # Only show nodes the user belongs to
+            Enum.filter(all_nodes, fn node -> node.id == current_user.node_id end)
+          end
+
+        librarians = list_librarians(current_user)
         locations = Voile.Schema.Master.list_mst_locations()
 
         changeset = Session.changeset(%Session{}, %{})
@@ -589,7 +598,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
     end
   end
 
-  defp list_librarians do
+  defp list_librarians(current_user) do
     # Get users with eligible roles for stock opname
     eligible_roles = [
       "super_admin",
@@ -602,11 +611,20 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
     ]
 
     # Fetch users for each role and merge, removing duplicates
-    eligible_roles
-    |> Enum.flat_map(fn role ->
-      VoileWeb.Auth.PermissionManager.list_users_with_role_by_name(role)
-    end)
-    |> Enum.uniq_by(& &1.id)
+    librarians =
+      eligible_roles
+      |> Enum.flat_map(fn role ->
+        VoileWeb.Auth.PermissionManager.list_users_with_role_by_name(role)
+      end)
+      |> Enum.uniq_by(& &1.id)
+
+    # Filter by node if not super admin
+    if VoileWeb.Auth.Authorization.is_super_admin?(current_user) do
+      librarians
+    else
+      # Only show librarians from the same node
+      Enum.filter(librarians, fn librarian -> librarian.node_id == current_user.node_id end)
+    end
     |> Enum.sort_by(&(&1.fullname || &1.email))
   end
 

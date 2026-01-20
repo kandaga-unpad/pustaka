@@ -379,11 +379,45 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("clear_search", _params, socket) do
-    # Build query params without search query
-    query_params = build_query_params(socket.assigns.filters, "")
+    # Clear search but maintain filters
+    page = 1
+    per_page = 10
+    filters = socket.assigns.filters
+    search = ""
 
-    # Push patch to update URL without search query
-    {:noreply, push_patch(socket, to: ~p"/manage/catalog/collections?#{query_params}")}
+    {collections, total_pages, _} =
+      Catalog.list_collections_paginated(page, per_page, search, filters)
+
+    # Also refresh tree collections
+    tree_collections = Catalog.list_collections_tree(50)
+
+    # Build current query params for navigation links
+    current_query_params = build_query_params(filters, search)
+
+    # Count active filters
+    active_count = count_active_filters(filters)
+
+    socket =
+      socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:tree_collections, tree_collections)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:collections_count, length(collections))
+      |> assign(:total_pages, total_pages)
+      |> assign(:page, page)
+      |> assign(:search, search)
+      |> assign(:filters, filters)
+      |> assign(:filter_status, filters[:status] || "")
+      |> assign(:filter_access_level, filters[:access_level] || "")
+      |> assign(:filter_glam_type, filters[:glam_type] || "")
+      |> assign(
+        :filter_node_id,
+        if(filters[:node_id], do: to_string(filters[:node_id]), else: "")
+      )
+      |> assign(:active_filters_count, active_count)
+      |> assign(:current_query_params, current_query_params)
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -407,17 +441,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("clear_filters", _params, socket) do
-    # Clear user-selected filters but maintain role-based filters and search
+    # Clear user-selected filters but maintain role-based filters, and clear search
     filters = %{}
 
     # Re-apply role-based filters
     current_user = socket.assigns.current_user
     filters = Catalog.apply_role_based_filters(current_user, filters)
 
-    # Keep current search query
-    search = socket.assigns.search
+    # Clear search
+    search = ""
 
-    # Build query params with cleared filters but keep search
+    # Build query params with cleared filters and search
     query_params = build_query_params(filters, search)
 
     # Push patch to update URL
@@ -509,7 +543,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     user = Repo.preload(user, :roles)
 
     Enum.any?(user.roles, fn role ->
-      role.name in ["super_admin", "admin", "editor"]
+      role.name in ["super_admin", "admin"]
     end)
   end
 end

@@ -473,7 +473,7 @@ defmodule Voile.Schema.Catalog do
       {[%Collection{}], total_pages, total_count}
 
   """
-  def list_pending_collections_paginated(page \\ 1, per_page \\ 10) do
+  def list_pending_collections_paginated(page \\ 1, per_page \\ 10, user \\ nil) do
     offset = (page - 1) * per_page
 
     query =
@@ -492,12 +492,30 @@ defmodule Voile.Schema.Catalog do
           :updated_by
         ]
 
+    # Filter by user's node if user is admin (not super_admin)
+    query =
+      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+        query |> where([c], c.unit_id == ^user.node_id)
+      else
+        query
+      end
+
     collections = Repo.all(query)
 
-    total_count =
-      from(c in Collection, where: c.status == "pending", select: count(c.id))
-      |> Repo.one()
+    # Count query with same filters
+    count_query =
+      from c in Collection,
+        where: c.status in ["pending", "draft"],
+        select: count(c.id)
 
+    count_query =
+      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+        count_query |> where([c], c.unit_id == ^user.node_id)
+      else
+        count_query
+      end
+
+    total_count = Repo.one(count_query)
     total_pages = div(total_count + per_page - 1, per_page)
 
     {collections, total_pages, total_count}
@@ -849,6 +867,33 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
+  Get an item by item_code, barcode, or legacy_item_code.
+
+  This function searches across multiple identifier fields to support
+  legacy items and barcode scanning.
+
+  ## Examples
+
+      iex> get_item_by_code_or_barcode("ABC123")
+      %Item{}
+
+      iex> get_item_by_code_or_barcode("invalid")
+      nil
+  """
+  def get_item_by_code_or_barcode(identifier) when is_binary(identifier) do
+    Item
+    |> where(
+      [i],
+      i.item_code == ^identifier or i.barcode == ^identifier or i.legacy_item_code == ^identifier
+    )
+    |> Repo.one()
+    |> case do
+      nil -> nil
+      item -> Repo.preload(item, [:node, collection: [:mst_creator]])
+    end
+  end
+
+  @doc """
   List items with pagination, search, and filters.
 
   ## Examples
@@ -1088,49 +1133,91 @@ defmodule Voile.Schema.Catalog do
   end
 
   def search_items(query_string) when is_binary(query_string) do
+    search_items(query_string, nil)
+  end
+
+  def search_items(query_string, user) when is_binary(query_string) do
     search_term = "%#{query_string}%"
 
-    Item
-    |> join(:inner, [i], c in Collection, on: i.collection_id == c.id)
-    |> where(
-      [i, c],
-      ilike(c.title, ^search_term) or
-        ilike(c.description, ^search_term) or
-        ilike(i.item_code, ^search_term) or
-        ilike(i.inventory_code, ^search_term) or
-        ilike(i.location, ^search_term)
-    )
-    |> where([i], i.status == "active")
-    |> order_by([i], asc: i.item_code, desc: i.inserted_at)
-    |> limit(50)
-    |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
-    |> Repo.all()
+    query =
+      Item
+      |> join(:inner, [i], c in Collection, on: i.collection_id == c.id)
+      |> where(
+        [i, c],
+        ilike(c.title, ^search_term) or
+          ilike(c.description, ^search_term) or
+          ilike(i.item_code, ^search_term) or
+          ilike(i.inventory_code, ^search_term) or
+          ilike(i.location, ^search_term)
+      )
+      |> where([i], i.status == "active")
+      |> order_by([i], asc: i.item_code, desc: i.inserted_at)
+      |> limit(50)
+      |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
+
+    # Filter by user's node if not super admin
+    query =
+      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+        query |> where([i], i.unit_id == ^user.node_id)
+      else
+        query
+      end
+
+    Repo.all(query)
   end
 
   def search_collections(query_string) when is_binary(query_string) do
+    search_collections(query_string, nil)
+  end
+
+  def search_collections(query_string, user) when is_binary(query_string) do
     search_term = "%#{query_string}%"
 
-    Collection
-    |> where(
-      [c],
-      ilike(c.title, ^search_term) or
-        ilike(c.description, ^search_term) or
-        ilike(c.collection_code, ^search_term)
-    )
-    |> where([c], c.status == "published")
-    |> order_by([c], asc: c.title)
-    |> limit(50)
-    |> preload([:mst_creator])
-    |> Repo.all()
+    query =
+      Collection
+      |> where(
+        [c],
+        ilike(c.title, ^search_term) or
+          ilike(c.description, ^search_term) or
+          ilike(c.collection_code, ^search_term)
+      )
+      |> where([c], c.status == "published")
+      |> order_by([c], asc: c.title)
+      |> limit(50)
+      |> preload([:mst_creator])
+
+    # Filter by user's node if not super admin
+    query =
+      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+        query |> where([c], c.unit_id == ^user.node_id)
+      else
+        query
+      end
+
+    Repo.all(query)
   end
 
   def get_items_by_collection(collection_id) do
-    Item
-    |> where([i], i.collection_id == ^collection_id)
-    |> where([i], i.status == "active")
-    |> order_by([i], asc: i.item_code)
-    |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
-    |> Repo.all()
+    get_items_by_collection(collection_id, nil)
+  end
+
+  def get_items_by_collection(collection_id, user) do
+    query =
+      Item
+      |> where([i], i.collection_id == ^collection_id)
+      |> where([i], i.status == "active")
+      |> order_by([i], asc: i.item_code)
+      |> preload([:item_location, :node, collection: [:collection_fields, :mst_creator]])
+
+    # Filter by user's node if not super admin
+    query =
+      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+        query |> where([i], i.unit_id == ^user.node_id)
+      else
+        query
+      end
+
+    Repo.all(query)
   end
 
   def search_items_paginated(query_string, page \\ 1, per_page \\ 10)
