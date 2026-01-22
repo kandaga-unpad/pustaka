@@ -36,14 +36,33 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
   @impl true
   def handle_params(params, _url, socket) do
+    user = socket.assigns.current_scope.user
+    is_super_admin = Authorization.is_super_admin?(user)
+
     socket =
-      socket
-      |> assign(:search_query, params["query"] || "")
-      |> assign(:selected_node_id, params["node_id"])
-      |> assign(:selected_member_type_id, params["member_type_id"])
-      |> assign(:selected_status, params["status"] || "all")
-      |> assign(:current_page, String.to_integer(params["page"] || "1"))
-      |> load_members()
+      case socket.assigns.live_action do
+        :edit ->
+          member = Repo.get!(User, params["id"]) |> Repo.preload([:user_type, :node])
+
+          socket
+          |> assign(:member, member)
+          |> assign(:form, to_form(User.changeset(member, %{})))
+          |> assign(:is_super_admin, is_super_admin)
+
+        :new ->
+          socket
+          |> assign(:form, to_form(User.changeset(%User{}, %{})))
+          |> assign(:is_super_admin, is_super_admin)
+
+        _ ->
+          socket
+          |> assign(:search_query, params["query"] || "")
+          |> assign(:selected_node_id, params["node_id"])
+          |> assign(:selected_member_type_id, params["member_type_id"])
+          |> assign(:selected_status, params["status"] || "all")
+          |> assign(:current_page, String.to_integer(params["page"] || "1"))
+          |> load_members()
+      end
 
     {:noreply, socket}
   end
@@ -103,6 +122,16 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   end
 
   @impl true
+  def handle_event("validate", %{"user" => user_params}, socket) do
+    changeset = User.changeset(socket.assigns.member, user_params)
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("save", %{"user" => user_params}, socket) do
+    save_member(socket, socket.assigns.live_action, user_params)
+  end
+
+  @impl true
   def handle_event("delete_member", %{"id" => id}, socket) do
     member = Repo.get!(User, id)
 
@@ -124,235 +153,337 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   def render(assigns) do
     ~H"""
     <div class="space-y-6">
+      <%= if @live_action in [:new, :edit] do %>
+        <.member_form
+          form={@form}
+          member={@member}
+          action={@live_action}
+          nodes={@nodes}
+          member_types={@member_types}
+          is_super_admin={@is_super_admin}
+        />
+      <% else %>
+        <%!-- Breadcrumb --%>
+        <.breadcrumb items={[
+          %{label: "Manage", path: ~p"/manage"},
+          %{label: "Members", path: ~p"/manage/members"},
+          %{label: "Management", path: nil}
+        ]} />
+
+        <%!-- Page Header --%>
+        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Member Management</h1>
+              <p class="text-gray-600 dark:text-gray-300 mt-1">
+                Manage and oversee all library members
+              </p>
+            </div>
+
+            <%= if can?(@current_scope.user, "users.create") do %>
+              <.link patch={~p"/manage/members/management/new"}>
+                <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> Add New Member
+                </.button>
+              </.link>
+            <% end %>
+          </div>
+        </div>
+
+        <%!-- Filters and Search --%>
+        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+          <div class="flex flex-col lg:flex-row gap-4 mb-6">
+            <%!-- Search --%>
+            <div class="flex-1">
+              <.form for={%{}} phx-change="search" class="flex gap-2">
+                <div class="relative flex-1">
+                  <.input
+                    name="query"
+                    value={@search_query}
+                    placeholder="Search by name, email, or username..."
+                    class="pl-10"
+                    phx-debounce="300"
+                  />
+                  <.icon
+                    name="hero-magnifying-glass"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                  />
+                </div>
+              </.form>
+            </div>
+
+            <%!-- Filters --%>
+            <div class="flex gap-2">
+              <%= if @is_super_admin do %>
+                <.form for={%{}} phx-change="filter_node" class="w-48">
+                  <.input
+                    name="node_id"
+                    type="select"
+                    options={[{"All Nodes", ""}] ++ Enum.map(@nodes, &{&1.name, to_string(&1.id)})}
+                    value={@selected_node_id}
+                    label="Node"
+                  />
+                </.form>
+              <% end %>
+
+              <.form for={%{}} phx-change="filter_member_type" class="w-48">
+                <.input
+                  name="member_type_id"
+                  type="select"
+                  options={[{"All Types", ""}] ++ Enum.map(@member_types, &{&1.name, &1.id})}
+                  value={@selected_member_type_id}
+                  label="Member Type"
+                />
+              </.form>
+
+              <.form for={%{}} phx-change="filter_status" class="w-48">
+                <.input
+                  name="status"
+                  type="select"
+                  options={[
+                    "All Status": "all",
+                    Active: "active",
+                    Suspended: "suspended",
+                    Expired: "expired"
+                  ]}
+                  value={@selected_status}
+                  label="Status"
+                />
+              </.form>
+            </div>
+          </div>
+
+          <%!-- Results Summary --%>
+          <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Showing {@members.offset + 1} to {min(@members.offset + @per_page, @members.total_entries)} of {@members.total_entries} members
+          </div>
+
+          <%!-- Members Table --%>
+          <div class="overflow-x-auto">
+            <.table
+              id="members"
+              rows={@members.entries}
+              row_click={fn member -> JS.navigate(~p"/manage/members/management/#{member}") end}
+            >
+              <:col :let={member} label="Member">
+                <div class="flex items-center gap-3">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
+                      <span class="text-sm font-medium text-gray-700">
+                        {String.first(member.fullname || "?")}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900 dark:text-white">{member.fullname}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{member.email}</div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">{member.username}</div>
+                  </div>
+                </div>
+              </:col>
+
+              <:col :let={member} label="Member Type">
+                {member.user_type && member.user_type.name}
+              </:col>
+
+              <:col :let={member} label="Status">
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(member)}"}>
+                  {member_status(member)}
+                </span>
+              </:col>
+
+              <:col :let={member} label="Registration Date">
+                {if member.registration_date,
+                  do: Calendar.strftime(member.registration_date, "%b %d, %Y"),
+                  else: "-"}
+              </:col>
+
+              <:col :let={member} label="Expiry Date">
+                {if member.expiry_date,
+                  do: Calendar.strftime(member.expiry_date, "%b %d, %Y"),
+                  else: "-"}
+              </:col>
+
+              <:action :let={member}>
+                <.link
+                  navigate={~p"/manage/members/management/#{member.id}"}
+                  class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-voile-primary bg-voile-primary/10 hover:bg-voile-primary/20 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
+                >
+                  <.icon name="hero-eye" class="w-4 h-4" />
+                  <span class="hidden md:inline">View</span>
+                </.link>
+              </:action>
+            </.table>
+          </div>
+
+          <%!-- Pagination --%>
+          <%= if @members.total_pages > 1 do %>
+            <div class="flex items-center justify-between mt-6">
+              <div class="text-sm text-gray-700 dark:text-gray-300">
+                Page {@members.page_number} of {@members.total_pages}
+              </div>
+
+              <div class="flex items-center gap-2">
+                <%= if @members.page_number > 1 do %>
+                  <.link
+                    patch={
+                      ~p"/manage/members/management?#{%{page: @members.page_number - 1, query: @search_query, node_id: @selected_node_id, member_type_id: @selected_member_type_id, status: @selected_status}}"
+                    }
+                    class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
+                  >
+                    <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
+                  </.link>
+                <% end %>
+
+                <%= if @members.page_number < @members.total_pages do %>
+                  <.link
+                    patch={
+                      ~p"/manage/members/management?#{%{page: @members.page_number + 1, query: @search_query, node_id: @selected_node_id, member_type_id: @selected_member_type_id, status: @selected_status}}"
+                    }
+                    class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
+                  >
+                    Next <.icon name="hero-chevron-right" class="w-4 h-4" />
+                  </.link>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  # Form Component
+  attr :form, :map, required: true
+  attr :member, :map, default: nil
+  attr :action, :atom, required: true
+  attr :nodes, :list, default: []
+  attr :member_types, :list, default: []
+  attr :is_super_admin, :boolean, default: false
+
+  def member_form(assigns) do
+    ~H"""
+    <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: "Manage", path: ~p"/manage"},
         %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Management", path: nil}
+        %{label: "Management", path: ~p"/manage/members/management"},
+        %{label: if(@action == :new, do: "New Member", else: "Edit Member"), path: nil}
       ]} />
 
-      <%!-- Page Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3 mb-6">
+          <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Member Management</h1>
-            <p class="text-gray-600 dark:text-gray-300 mt-1">
-              Manage and oversee all library members
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {if @action == :new, do: "Add New Member", else: "Edit Member"}
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300">
+              {if @action == :new,
+                do: "Create a new library member account",
+                else: "Update member information"}
             </p>
           </div>
-
-          <%= if can?(@current_scope.user, "users.create") do %>
-            <.link patch={~p"/manage/members/management/new"}>
-              <.button class="bg-voile-primary hover:bg-voile-primary/90 text-white">
-                <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Member
-              </.button>
-            </.link>
-          <% end %>
         </div>
-      </div>
 
-      <%!-- Filters and Search --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex flex-col lg:flex-row gap-4 mb-6">
-          <%!-- Search --%>
-          <div class="flex-1">
-            <.form for={%{}} phx-change="search" class="flex gap-2">
-              <div class="relative flex-1">
-                <.input
-                  name="query"
-                  value={@search_query}
-                  placeholder="Search by name, email, or username..."
-                  class="pl-10"
-                  phx-debounce="300"
-                />
-                <.icon
-                  name="hero-magnifying-glass"
-                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                />
-              </div>
-            </.form>
-          </div>
+        <.form for={@form} phx-submit="save" phx-change="validate" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <.input field={@form[:fullname]} type="text" label="Full Name" required />
+            <.input field={@form[:email]} type="email" label="Email" required />
+            <.input field={@form[:username]} type="text" label="Username" required />
 
-          <%!-- Filters --%>
-          <div class="flex gap-2">
-            <%= if @is_super_admin do %>
-              <.form for={%{}} phx-change="filter_node" class="w-48">
-                <.input
-                  name="node_id"
-                  type="select"
-                  options={[{"All Nodes", ""}] ++ Enum.map(@nodes, &{&1.name, to_string(&1.id)})}
-                  value={@selected_node_id}
-                  label="Node"
-                />
-              </.form>
+            <%= if @action == :new do %>
+              <.input field={@form[:password]} type="password" label="Password" required />
             <% end %>
 
-            <.form for={%{}} phx-change="filter_member_type" class="w-48">
+            <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
+            <.input field={@form[:birth_date]} type="date" label="Birth Date" />
+            <.input field={@form[:address]} type="textarea" label="Address" />
+            <.input field={@form[:organization]} type="text" label="Organization" />
+
+            <%= if @is_super_admin do %>
               <.input
-                name="member_type_id"
+                field={@form[:node_id]}
                 type="select"
-                options={[{"All Types", ""}] ++ Enum.map(@member_types, &{&1.name, &1.id})}
-                value={@selected_member_type_id}
-                label="Member Type"
+                label="Node"
+                options={Enum.map(@nodes, &{&1.name, &1.id})}
               />
-            </.form>
+            <% end %>
 
-            <.form for={%{}} phx-change="filter_status" class="w-48">
-              <.input
-                name="status"
-                type="select"
-                options={[
-                  "All Status": "all",
-                  Active: "active",
-                  Suspended: "suspended",
-                  Expired: "expired"
-                ]}
-                value={@selected_status}
-                label="Status"
+            <.input
+              field={@form[:user_type_id]}
+              type="select"
+              label="Member Type"
+              options={Enum.map(@member_types, &{&1.name, &1.id})}
+              required
+            />
+
+            <.input field={@form[:registration_date]} type="date" label="Registration Date" />
+            <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
+          </div>
+
+          <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+            <.button type="submit" class="bg-voile-primary hover:bg-voile-primary/90 text-white">
+              <.icon
+                name={if @action == :new, do: "hero-plus", else: "hero-check"}
+                class="w-4 h-4 mr-2"
               />
-            </.form>
+              {if @action == :new, do: "Create Member", else: "Update Member"}
+            </.button>
+
+            <.link
+              patch={~p"/manage/members/management"}
+              class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Cancel
+            </.link>
           </div>
-        </div>
-
-        <%!-- Results Summary --%>
-        <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-          Showing {@members.offset + 1} to {min(@members.offset + @per_page, @members.total_entries)} of {@members.total_entries} members
-        </div>
-
-        <%!-- Members Table --%>
-        <div class="overflow-x-auto">
-          <.table
-            id="members"
-            rows={@members.entries}
-            row_click={fn member -> JS.navigate(~p"/manage/members/management/#{member}") end}
-          >
-            <:col :let={member} label="Member">
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 h-10 w-10">
-                  <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
-                    <span class="text-sm font-medium text-gray-700">
-                      {String.first(member.fullname || "?")}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-white">{member.fullname}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{member.email}</div>
-                  <div class="text-xs text-gray-400 dark:text-gray-500">{member.username}</div>
-                </div>
-              </div>
-            </:col>
-
-            <:col :let={member} label="Member Type">{member.user_type && member.user_type.name}</:col>
-
-            <:col :let={member} label="Status">
-              <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(member)}"}>
-                {member_status(member)}
-              </span>
-            </:col>
-
-            <:col :let={member} label="Registration Date">
-              {if member.registration_date,
-                do: Calendar.strftime(member.registration_date, "%b %d, %Y"),
-                else: "-"}
-            </:col>
-
-            <:col :let={member} label="Expiry Date">
-              {if member.expiry_date,
-                do: Calendar.strftime(member.expiry_date, "%b %d, %Y"),
-                else: "-"}
-            </:col>
-
-            <:action :let={member}>
-              <div class="flex items-center gap-2">
-                <.link
-                  navigate={~p"/manage/members/management/#{member.id}"}
-                  class="text-voile-primary hover:text-voile-primary/80"
-                >
-                  <.icon name="hero-eye" class="w-4 h-4" />
-                </.link>
-
-                <%= if can?(@current_scope.user, "users.update") do %>
-                  <.link
-                    patch={~p"/manage/members/management/#{member.id}/edit"}
-                    class="text-blue-600 hover:text-blue-800"
-                  >
-                    <.icon name="hero-pencil" class="w-4 h-4" />
-                  </.link>
-                <% end %>
-
-                <%= if can?(@current_scope.user, "users.update") do %>
-                  <.link
-                    patch={~p"/manage/members/management/#{member.id}/extend"}
-                    class="text-green-600 hover:text-green-800"
-                  >
-                    <.icon name="hero-arrow-path" class="w-4 h-4" />
-                  </.link>
-                <% end %>
-
-                <%= if can?(@current_scope.user, "users.update") do %>
-                  <.link
-                    patch={~p"/manage/members/management/#{member.id}/change_password"}
-                    class="text-orange-600 hover:text-orange-800"
-                  >
-                    <.icon name="hero-key" class="w-4 h-4" />
-                  </.link>
-                <% end %>
-
-                <%= if can?(@current_scope.user, "users.delete") do %>
-                  <.link
-                    href="#"
-                    phx-click="delete_member"
-                    phx-value-id={member.id}
-                    data-confirm="Are you sure you want to delete this member?"
-                    class="text-red-600 hover:text-red-800"
-                  >
-                    <.icon name="hero-trash" class="w-4 h-4" />
-                  </.link>
-                <% end %>
-              </div>
-            </:action>
-          </.table>
-        </div>
-
-        <%!-- Pagination --%>
-        <%= if @members.total_pages > 1 do %>
-          <div class="flex items-center justify-between mt-6">
-            <div class="text-sm text-gray-700 dark:text-gray-300">
-              Page {@members.page_number} of {@members.total_pages}
-            </div>
-
-            <div class="flex items-center gap-2">
-              <%= if @members.page_number > 1 do %>
-                <.link
-                  patch={
-                    ~p"/manage/members/management?#{%{page: @members.page_number - 1, query: @search_query, node_id: @selected_node_id, member_type_id: @selected_member_type_id, status: @selected_status}}"
-                  }
-                  class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Previous
-                </.link>
-              <% end %>
-
-              <%= if @members.page_number < @members.total_pages do %>
-                <.link
-                  patch={
-                    ~p"/manage/members/management?#{%{page: @members.page_number + 1, query: @search_query, node_id: @selected_node_id, member_type_id: @selected_member_type_id, status: @selected_status}}"
-                  }
-                  class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Next
-                </.link>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
+        </.form>
       </div>
     </div>
     """
   end
 
   # Private functions
+
+  defp save_member(socket, :edit, user_params) do
+    case Repo.update(User.changeset(socket.assigns.member, user_params)) do
+      {:ok, member} ->
+        socket =
+          socket
+          |> put_flash(:info, "Member updated successfully")
+          |> push_patch(to: ~p"/manage/members/management/#{member.id}")
+
+        {:noreply, socket}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp save_member(socket, :new, user_params) do
+    user_params =
+      if socket.assigns.is_super_admin do
+        user_params
+      else
+        Map.put(user_params, "node_id", socket.assigns.current_scope.user.node_id)
+      end
+
+    case Repo.insert(User.changeset(%User{}, user_params)) do
+      {:ok, member} ->
+        socket =
+          socket
+          |> put_flash(:info, "Member created successfully")
+          |> push_patch(to: ~p"/manage/members/management/#{member.id}")
+
+        {:noreply, socket}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
 
   defp load_members(socket) do
     query = build_members_query(socket)

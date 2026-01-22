@@ -1524,7 +1524,7 @@ defmodule Voile.Schema.Catalog do
     Attachment
     |> order_by([a], desc: a.inserted_at)
     |> Repo.all()
-    |> Repo.preload([:attachable])
+    |> Enum.map(&load_attachable/1)
   end
 
   @doc """

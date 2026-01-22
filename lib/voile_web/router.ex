@@ -292,8 +292,6 @@ defmodule VoileWeb.Router do
             live "/:id/edit", Dashboard.Members.Management.Index, :edit
             live "/:id", Dashboard.Members.Management.Show, :show
             live "/:id/show/edit", Dashboard.Members.Management.Show, :edit
-            live "/:id/extend", Dashboard.Members.Management.Show, :extend_membership
-            live "/:id/change_password", Dashboard.Members.Management.Show, :change_password
           end
 
           scope "/reports" do

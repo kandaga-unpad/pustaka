@@ -149,7 +149,7 @@ defmodule VoileWeb.Dashboard.Members.Index do
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
-            <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
+            <.icon name="hero-clock" class="w-8 h-8 text-gray-600 dark:text-gray-300" />
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Members</h2>
           </div>
 

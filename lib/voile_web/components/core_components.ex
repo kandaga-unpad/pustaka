@@ -934,15 +934,17 @@ defmodule VoileWeb.CoreComponents do
     ~H"""
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
       <.member_nav_card
-        title="Member Management"
+        title="Manage Members"
         description="Add, edit, and manage member accounts"
+        action_text="Go to Management"
         icon="hero-users"
         path="/manage/members/management"
         color="green"
       />
       <.member_nav_card
-        title="Membership Reports"
+        title="View Reports"
         description="View reports on member activity and status"
+        action_text="View Reports"
         icon="hero-chart-bar"
         path="/manage/members/reports"
         color="blue"
@@ -950,6 +952,7 @@ defmodule VoileWeb.CoreComponents do
       <.member_nav_card
         title="Bulk Operations"
         description="Import, export, and bulk update members"
+        action_text="Perform Actions"
         icon="hero-cog-6-tooth"
         path="/manage/members/bulk"
         color="purple"
@@ -963,36 +966,58 @@ defmodule VoileWeb.CoreComponents do
   """
   attr :title, :string, required: true
   attr :description, :string, required: true
+  attr :action_text, :string, required: true
   attr :icon, :string, required: true
   attr :path, :string, required: true
   attr :color, :string, required: true
 
   def member_nav_card(assigns) do
     color_classes = %{
-      "green" => "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
-      "blue" => "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
-      "purple" => "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
+      "green" =>
+        "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-green-400",
+      "blue" => "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-blue-400",
+      "purple" =>
+        "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 border-purple-400"
+    }
+
+    button_classes = %{
+      "green" => "bg-green-600 hover:bg-green-700 text-white border-green-500",
+      "blue" => "bg-blue-600 hover:bg-blue-700 text-white border-blue-500",
+      "purple" => "bg-purple-600 hover:bg-purple-700 text-white border-purple-500"
     }
 
     assigns =
-      assign(
-        assigns,
-        :gradient_class,
-        Map.get(color_classes, assigns.color, color_classes["blue"])
+      assign(assigns,
+        gradient_class: Map.get(color_classes, assigns.color, color_classes["blue"]),
+        button_class: Map.get(button_classes, assigns.color, button_classes["blue"])
       )
 
     ~H"""
-    <.link navigate={@path} class="block">
-      <div class={"bg-gradient-to-r #{@gradient_class} rounded-xl p-6 text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"}>
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <.icon name={"hero-#{@icon}"} class="w-8 h-8" />
-            <h3 class="text-xl font-semibold">{@title}</h3>
+    <div class={"bg-gradient-to-br #{@gradient_class} rounded-xl p-8 text-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] border-2 border-transparent hover:border-opacity-50"}>
+      <div class="flex flex-col h-full">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="flex-shrink-0">
+            <div class="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+              <.icon name={"hero-#{@icon}"} class="w-16 h-16" />
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-2xl font-bold mb-2">{@title}</h3>
+            <p class="text-base opacity-95 leading-relaxed">{@description}</p>
           </div>
         </div>
-        <p class="text-sm opacity-90">{@description}</p>
+
+        <div class="mt-auto">
+          <.link
+            navigate={@path}
+            class={"inline-flex items-center justify-center gap-3 px-6 py-4 rounded-lg font-semibold text-lg transition-all duration-200 hover:scale-105 shadow-lg #{@button_class}"}
+          >
+            <.icon name="hero-arrow-right" class="w-6 h-6" />
+            {@action_text}
+          </.link>
+        </div>
       </div>
-    </.link>
+    </div>
     """
   end
 

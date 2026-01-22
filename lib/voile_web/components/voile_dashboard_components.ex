@@ -212,7 +212,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <.icon name="hero-home" class="h-6 w-6 text-voile-primary" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Dashboard")}</span>
         </.link>
-         <%!-- Catalogs --%>
+        <%!-- Catalogs --%>
         <.link
           patch="/manage/catalog"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
@@ -220,7 +220,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <.icon name="hero-folder" class="h-6 w-6 text-voile-info" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Catalogs")}</span>
         </.link>
-         <%!-- GLAM --%>
+        <%!-- GLAM --%>
         <.link
           patch="/manage/glam"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
@@ -228,7 +228,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <.icon name="hero-building-library" class="h-6 w-6 text-voile-warning" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("GLAM")}</span>
         </.link>
-         <%!-- Settings --%>
+        <%!-- Settings --%>
         <.link
           patch="/manage/settings"
           class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
@@ -236,7 +236,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <.icon name="hero-cog-6-tooth" class="h-6 w-6 text-voile-success" />
           <span class="text-xs mt-1 text-gray-700 dark:text-gray-300">{gettext("Settings")}</span>
         </.link>
-         <%!-- Quick Menu --%>
+        <%!-- Quick Menu --%>
         <button
           type="button"
           phx-click={
@@ -1179,8 +1179,8 @@ defmodule VoileWeb.VoileDashboardComponents do
     ~H"""
     <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow hover:shadow-lg transition-shadow">
       <div class="flex items-center justify-between mb-4">
-        <div class={["p-3 rounded-lg", get_stat_icon_bg(@color)]}>
-          <.icon name={@icon} class={"w-6 h-6 #{@icon_color_class}"} />
+        <div class={["p-4 rounded-lg", get_stat_icon_bg(@color)]}>
+          <.icon name={@icon} class={"w-10 h-10 #{@icon_color_class}"} />
         </div>
 
         <%= if @trend do %>

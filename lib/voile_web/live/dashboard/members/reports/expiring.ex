@@ -110,7 +110,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
 
                   <%= if can?(@current_scope.user, "users.update") do %>
                     <.link
-                      patch={~p"/manage/members/management/#{member.id}/extend"}
+                      patch={~p"/manage/members/management/#{member.id}?tab=extend"}
                       class="text-green-600 hover:text-green-800"
                     >
                       <.icon name="hero-arrow-path" class="w-4 h-4" />

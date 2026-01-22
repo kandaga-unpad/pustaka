@@ -503,7 +503,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
           # Upload with thumbnail-specific options including unit_id for organization
           collection = socket.assigns.collection
-          unit_id = collection.unit_id || socket.assigns.form.params["unit_id"]
+
+          unit_id =
+            case collection.unit_id || socket.assigns.form.params["unit_id"] do
+              "" -> nil
+              id -> id
+            end
 
           # Get file size
           {:ok, stat} = File.stat(path)
@@ -527,23 +532,22 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         end)
 
       case result do
-        [{:ok, [url, attachment_id]}] ->
+        [[url, attachment_id]] ->
           form_params =
-            socket.assigns.form.params ||
-              %{}
-              |> Map.put("thumbnail", url)
-              |> Map.put("thumbnail_source", "local")
-              |> Map.put("thumbnail_attachment_id", attachment_id)
+            (socket.assigns.form.params || %{})
+            |> Map.put("thumbnail", url)
+            |> Map.put("thumbnail_source", "local")
+            |> Map.put("thumbnail_attachment_id", attachment_id)
 
-          changeset = Catalog.change_collection(socket.assigns.collection, form_params)
+          socket =
+            socket
+            |> assign(:form, %{socket.assigns.form | params: form_params})
+            |> assign(:collection, %{socket.assigns.collection | thumbnail: url})
+            |> assign(:thumbnail_source, "local")
+            |> assign(:thumbnail_attachment_id, attachment_id)
+            |> assign(:asset_vault_files, Catalog.list_all_attachments())
 
-          {:noreply,
-           socket
-           |> assign(:form, to_form(changeset))
-           |> assign(:collection, Ecto.Changeset.apply_changes(changeset))
-           |> assign(:thumbnail_source, "local")
-           |> assign(:thumbnail_attachment_id, attachment_id)
-           |> assign(:asset_vault_files, Catalog.list_all_attachments())}
+          {:noreply, socket}
 
         [{:error, error_message}] ->
           {:noreply, put_flash(socket, :error, error_message)}
@@ -557,7 +561,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   # Create attachment record for collection thumbnail
-  defp create_thumbnail_attachment(collection, file_url, entry, file_size, unit_id) do
+  defp create_thumbnail_attachment(_collection, file_url, entry, file_size, _unit_id) do
     # Extract file_key from file_url
     file_key =
       cond do
@@ -573,35 +577,30 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    # If collection already exists (edit mode), create attachment
-    # For new collections, attachment will be created on save via separate mechanism if needed
-    if collection.id do
-      attrs = %{
-        id: Ecto.UUID.generate(),
-        attachable_type: "collection",
-        attachable_id: collection.id,
-        file_name: Path.basename(file_url),
-        original_name: entry.client_name,
-        file_path: file_url,
-        file_key: file_key,
-        file_size: file_size,
-        mime_type: entry.client_type,
-        file_type: Voile.Schema.Catalog.Attachment.determine_file_type(entry.client_type),
-        description: "Collection thumbnail",
-        unit_id: unit_id,
-        parent_id: nil,
-        is_primary: true,
-        sort_order: 0,
-        inserted_at: now,
-        updated_at: now
-      }
+    # Create attachment in asset vault so it appears there
+    attrs = %{
+      id: Ecto.UUID.generate(),
+      attachable_type: "asset_vault",
+      attachable_id: nil,
+      file_name: Path.basename(file_url),
+      original_name: entry.client_name,
+      file_path: file_url,
+      file_key: file_key,
+      file_size: file_size,
+      mime_type: entry.client_type,
+      file_type: Voile.Schema.Catalog.Attachment.determine_file_type(entry.client_type),
+      description: "Thumbnail uploaded for collection",
+      unit_id: nil,
+      parent_id: nil,
+      is_primary: false,
+      sort_order: 0,
+      inserted_at: now,
+      updated_at: now
+    }
 
-      case Voile.Repo.insert(struct(Voile.Schema.Catalog.Attachment, attrs)) do
-        {:ok, attachment} -> {:ok, attachment}
-        {:error, _} -> :ok
-      end
-    else
-      :ok
+    case Voile.Repo.insert(struct(Voile.Schema.Catalog.Attachment, attrs)) do
+      {:ok, attachment} -> {:ok, attachment}
+      {:error, _} -> :ok
     end
   end
 
@@ -744,11 +743,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     end
   end
 
-  defp handle_delete_thumbnail_new(thumbnail_path, socket) do
+  defp handle_delete_thumbnail_new(_thumbnail_path, socket) do
     collection_attrs = Map.put(socket.assigns.form.params, "thumbnail", nil)
     changeset = Catalog.change_collection(%Catalog.Collection{}, collection_attrs)
-
-    delete_thumbnail_file(thumbnail_path)
 
     socket =
       socket
@@ -759,13 +756,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     {:noreply, socket}
   end
 
-  defp handle_delete_thumbnail_edit(thumbnail_path, socket) do
+  defp handle_delete_thumbnail_edit(_thumbnail_path, socket) do
     collection = socket.assigns.collection
 
     case Catalog.update_collection(collection, %{thumbnail: nil}) do
       {:ok, updated_collection} ->
-        delete_thumbnail_file(thumbnail_path)
-
         socket =
           socket
           |> assign(:collection, updated_collection)
@@ -782,13 +777,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
         {:noreply, socket}
     end
-  end
-
-  defp delete_thumbnail_file(nil), do: :ok
-  defp delete_thumbnail_file(""), do: :ok
-
-  defp delete_thumbnail_file(thumbnail_path) do
-    Storage.delete(thumbnail_path)
   end
 
   defp filter_properties(properties, query) when is_binary(query) and query != "" do
@@ -848,10 +836,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       {:noreply, put_flash(socket, :error, "Please provide a valid URL")}
     else
       # Fetch the image from URL
-      case Req.get(url, follow_redirects: true) do
+      case Req.get(url, redirect: true) do
         {:ok, %{status: 200, body: body, headers: headers}} ->
           # Check if it's an image
-          content_type = headers["content-type"] || headers["Content-Type"] || ""
+          content_type =
+            case headers["content-type"] || headers["Content-Type"] do
+              [ct | _] when is_binary(ct) -> ct
+              ct when is_binary(ct) -> ct
+              _ -> ""
+            end
 
           if String.starts_with?(content_type, "image/") do
             # Determine filename

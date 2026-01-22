@@ -515,7 +515,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       </div>
 
                       <div class="pt-4">
-                        <.live_file_input upload={@uploads.thumbnail} class="hidden" />
+                        <.live_file_input upload={@uploads.thumbnail} />
                         <label
                           for={@uploads.thumbnail.ref}
                           class="inline-flex items-center px-6 py-3 bg-voile-primary hover:bg-voile-primary/90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
@@ -1651,8 +1651,37 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     {:noreply, assign(socket, :thumbnail_url_input, url)}
   end
 
-  def handle_event("progress", %{"upload_config" => "thumbnail"}, socket) do
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :thumbnail, ref)}
+  end
+
+  def handle_event("select_thumbnail_from_vault", %{"attachment_id" => attachment_id}, socket) do
+    attachment = Catalog.get_attachment!(attachment_id)
+
+    form_params =
+      (socket.assigns.form.params || %{})
+      |> Map.put("thumbnail", attachment.file_path)
+      |> Map.put("thumbnail_source", "vault")
+      |> Map.put("thumbnail_attachment_id", attachment.id)
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:collection, %{socket.assigns.collection | thumbnail: attachment.file_path})
+      |> assign(:thumbnail_source, "vault")
+      |> assign(:thumbnail_attachment_id, attachment.id)
+
     {:noreply, socket}
+  end
+
+  def handle_event("progress", %{"upload_config" => "thumbnail"}, socket) do
+    case socket.assigns.uploads.thumbnail.entries do
+      [entry] when entry.done? ->
+        handle_thumbnail_progress(:thumbnail, entry, socket)
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   # Parent collection search events
