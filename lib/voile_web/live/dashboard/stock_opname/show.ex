@@ -3,6 +3,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
 
   alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
+  alias VoileWeb.Auth.Authorization
   alias VoileWeb.Utils.FormatIndonesiaTime
 
   def render(assigns) do
@@ -164,6 +165,90 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
           Librarian Progress
         </h2>
 
+        <%!-- Assign New Librarian Form --%>
+        <div
+          :if={
+            @session.status in ["draft", "initializing", "in_progress"] and
+              @available_librarians != []
+          }
+          class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+        >
+          <h3 class="text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+            Assign New Librarian
+          </h3>
+          <.form for={%{}} phx-submit="assign_librarian" class="relative">
+            <div class="flex gap-3 items-end">
+              <div class="flex-1 relative">
+                <label class="block text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+                  Search Librarian
+                </label>
+                <input
+                  type="text"
+                  name="search_term"
+                  value={@search_term}
+                  phx-change="search_librarians"
+                  phx-debounce="300"
+                  placeholder="Type to search librarians..."
+                  autocomplete="off"
+                  class="w-full rounded-md border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                />
+                <input type="hidden" name="librarian_id" value={@selected_librarian_id} />
+
+                <%!-- Dropdown Results --%>
+                <div
+                  :if={@filtered_librarians != [] and @search_term != ""}
+                  class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                >
+                  <div
+                    :for={librarian <- @filtered_librarians}
+                    phx-click="select_librarian"
+                    phx-value-id={librarian.id}
+                    class="px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                  >
+                    <div class="font-medium text-gray-900 dark:text-gray-100">
+                      {librarian.fullname}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                      {librarian.email}
+                    </div>
+                  </div>
+                </div>
+
+                <%!-- Selected Librarian Display --%>
+                <div
+                  :if={@selected_librarian}
+                  class="mt-2 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-md border border-blue-300 dark:border-blue-600"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="font-medium text-blue-900 dark:text-blue-100">
+                        {@selected_librarian.fullname}
+                      </div>
+                      <div class="text-sm text-blue-700 dark:text-blue-300">
+                        {@selected_librarian.email}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      phx-click="clear_selection"
+                      class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      <.icon name="hero-x-mark" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={@selected_librarian_id == nil}
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-md shadow-sm transition-colors"
+              >
+                <.icon name="hero-user-plus" class="w-4 h-4 mr-2" /> Assign
+              </button>
+            </div>
+          </.form>
+        </div>
+
         <div class="space-y-3">
           <div
             :for={assignment <- @librarian_pagination.items}
@@ -186,6 +271,19 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                 <p class="text-xs text-gray-500 dark:text-gray-400">checked</p>
               </div>
               <.work_status_badge status={assignment.work_status} />
+              <button
+                :if={
+                  @session.status in ["draft", "initializing", "in_progress"] and
+                    @can_assign_librarians
+                }
+                phx-click="remove_librarian"
+                phx-value-assignment-id={assignment.id}
+                data-confirm="Are you sure you want to remove this librarian from the session?"
+                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded"
+                title="Remove librarian"
+              >
+                <.icon name="hero-user-minus" class="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -481,6 +579,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       can_create = StockOpnameAuthorization.can_create_session?(current_user)
       can_scan = StockOpnameAuthorization.can_scan_items?(current_user, session)
       can_delete = StockOpnameAuthorization.can_delete_session?(current_user, session)
+      can_assign_librarians = Authorization.is_super_admin?(current_user)
 
       # Get current item count for initialization progress
       items_added =
@@ -521,6 +620,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         has_next: total_librarians > 3
       }
 
+      # Get available librarians for assignment
+      available_librarians = StockOpname.list_available_librarians(session, current_user)
+
       # Schedule refresh if still initializing (only on connected mount to avoid duplicate timers)
       if connected?(socket) and session.status == "initializing" do
         Process.send_after(self(), :refresh_session, 1000)
@@ -534,12 +636,18 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         |> assign(:can_create, can_create)
         |> assign(:can_scan, can_scan)
         |> assign(:can_delete, can_delete)
+        |> assign(:can_assign_librarians, can_assign_librarians)
         |> assign(:pagination, pagination)
         |> assign(:displayed_items, pagination.items)
         |> assign(:current_tab, "all")
         |> assign(:items_added, items_added)
         |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
         |> assign(:librarian_pagination, librarian_pagination)
+        |> assign(:available_librarians, available_librarians)
+        |> assign(:search_term, "")
+        |> assign(:filtered_librarians, [])
+        |> assign(:selected_librarian_id, nil)
+        |> assign(:selected_librarian, nil)
 
       {:ok, socket}
     else
@@ -720,6 +828,170 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     end
   end
 
+  def handle_event("assign_librarian", _params, socket) do
+    librarian_id = socket.assigns.selected_librarian_id
+
+    if librarian_id do
+      case StockOpname.assign_librarian(
+             socket.assigns.session,
+             librarian_id,
+             socket.assigns.current_user
+           ) do
+        {:ok, _assignment} ->
+          # Reload session and available librarians
+          session = StockOpname.get_session_without_items!(socket.assigns.session.id)
+
+          available_librarians =
+            StockOpname.list_available_librarians(session, socket.assigns.current_user)
+
+          # Update librarian pagination
+          librarian_assignments = session.librarian_assignments
+          total_librarians = length(librarian_assignments)
+
+          librarian_pagination = %{
+            items: Enum.take(librarian_assignments, 3),
+            page: 1,
+            per_page: 3,
+            total_count: total_librarians,
+            total_pages:
+              if(total_librarians > 0, do: Float.ceil(total_librarians / 3) |> trunc(), else: 0),
+            has_prev: false,
+            has_next: total_librarians > 3
+          }
+
+          socket =
+            socket
+            |> assign(:session, session)
+            |> assign(:available_librarians, available_librarians)
+            |> assign(:librarian_pagination, librarian_pagination)
+            |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
+            |> assign(:search_term, "")
+            |> assign(:filtered_librarians, [])
+            |> assign(:selected_librarian_id, nil)
+            |> assign(:selected_librarian, nil)
+            |> put_flash(:info, "Librarian assigned successfully!")
+
+          {:noreply, socket}
+
+        {:error, :librarian_already_assigned} ->
+          {:noreply,
+           put_flash(socket, :error, "This librarian is already assigned to the session")}
+
+        {:error, :invalid_session_status} ->
+          {:noreply,
+           put_flash(socket, :error, "Cannot assign librarians to sessions in this status")}
+
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, "Failed to assign librarian")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Please select a librarian first")}
+    end
+  end
+
+  def handle_event("remove_librarian", %{"assignment-id" => assignment_id}, socket) do
+    case StockOpname.remove_librarian(assignment_id, socket.assigns.current_user) do
+      {:ok, _assignment} ->
+        # Reload session and available librarians
+        session = StockOpname.get_session_without_items!(socket.assigns.session.id)
+
+        available_librarians =
+          StockOpname.list_available_librarians(session, socket.assigns.current_user)
+
+        # Update librarian pagination
+        librarian_assignments = session.librarian_assignments
+        total_librarians = length(librarian_assignments)
+
+        librarian_pagination = %{
+          items: Enum.take(librarian_assignments, 3),
+          page: 1,
+          per_page: 3,
+          total_count: total_librarians,
+          total_pages:
+            if(total_librarians > 0, do: Float.ceil(total_librarians / 3) |> trunc(), else: 0),
+          has_prev: false,
+          has_next: total_librarians > 3
+        }
+
+        socket =
+          socket
+          |> assign(:session, session)
+          |> assign(:available_librarians, available_librarians)
+          |> assign(:librarian_pagination, librarian_pagination)
+          |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
+          |> put_flash(:info, "Librarian removed successfully!")
+
+        {:noreply, socket}
+
+      {:error, :assignment_not_found} ->
+        {:noreply, put_flash(socket, :error, "Librarian assignment not found")}
+
+      {:error, :cannot_remove_completed_assignment} ->
+        {:noreply,
+         put_flash(socket, :error, "Cannot remove librarians who have completed their work")}
+
+      {:error, :invalid_session_status} ->
+        {:noreply,
+         put_flash(socket, :error, "Cannot remove librarians from sessions in this status")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to remove librarian")}
+    end
+  end
+
+  def handle_event("search_librarians", %{"search_term" => search_term}, socket) do
+    filtered_librarians =
+      if String.trim(search_term) == "" do
+        []
+      else
+        socket.assigns.available_librarians
+        |> Enum.filter(fn librarian ->
+          fullname_match =
+            librarian.fullname &&
+              String.contains?(String.downcase(librarian.fullname), String.downcase(search_term))
+
+          email_match =
+            librarian.email &&
+              String.contains?(String.downcase(librarian.email), String.downcase(search_term))
+
+          !!fullname_match or !!email_match
+        end)
+        # Limit results for performance
+        |> Enum.take(10)
+      end
+
+    socket =
+      socket
+      |> assign(:search_term, search_term)
+      |> assign(:filtered_librarians, filtered_librarians)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("select_librarian", %{"id" => librarian_id}, socket) do
+    selected_librarian = Enum.find(socket.assigns.available_librarians, &(&1.id == librarian_id))
+
+    socket =
+      socket
+      |> assign(:selected_librarian_id, librarian_id)
+      |> assign(:selected_librarian, selected_librarian)
+      |> assign(:search_term, "")
+      |> assign(:filtered_librarians, [])
+
+    {:noreply, socket}
+  end
+
+  def handle_event("clear_selection", _params, socket) do
+    socket =
+      socket
+      |> assign(:selected_librarian_id, nil)
+      |> assign(:selected_librarian, nil)
+      |> assign(:search_term, "")
+      |> assign(:filtered_librarians, [])
+
+    {:noreply, socket}
+  end
+
   def handle_info(:refresh_session, socket) do
     session = StockOpname.get_session_without_items!(socket.assigns.session.id)
     items_added = StockOpname.count_session_items(session)
@@ -758,6 +1030,14 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         |> assign(:displayed_items, pagination.items)
         |> assign(:librarian_pagination, librarian_pagination)
         |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
+        |> assign(
+          :available_librarians,
+          StockOpname.list_available_librarians(session, socket.assigns.current_user)
+        )
+        |> assign(:search_term, "")
+        |> assign(:filtered_librarians, [])
+        |> assign(:selected_librarian_id, nil)
+        |> assign(:selected_librarian, nil)
       end
 
     {:noreply, socket}

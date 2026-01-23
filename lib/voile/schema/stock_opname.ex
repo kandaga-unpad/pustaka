@@ -103,8 +103,10 @@ defmodule Voile.Schema.StockOpname do
     if VoileWeb.Auth.Authorization.is_super_admin?(user) do
       query
     else
-      # Regular users can only see sessions for their own node
-      from s in query, where: ^user.node_id in s.node_ids
+      # Regular users can only see sessions where they are assigned as librarians or are the creator
+      from s in query,
+        left_join: la in assoc(s, :librarian_assignments),
+        where: la.user_id == ^user.id or s.created_by_id == ^user.id
     end
   end
 
@@ -284,6 +286,119 @@ defmodule Voile.Schema.StockOpname do
         {:error, _failed_operation, failed_value, _changes_so_far} ->
           {:error, failed_value}
       end
+    end
+  end
+
+  @doc """
+  Assign a single librarian to an existing session.
+  Only allowed for sessions in 'draft', 'initializing', or 'in_progress' status.
+  """
+  def assign_librarian(%Session{status: status} = session, librarian_id, _assigned_by_user)
+      when status in ["draft", "initializing", "in_progress"] do
+    # Check if librarian is already assigned
+    existing_assignment =
+      Repo.get_by(LibrarianAssignment, session_id: session.id, user_id: librarian_id)
+
+    if existing_assignment do
+      {:error, :librarian_already_assigned}
+    else
+      # Check if the user exists and is a librarian (has librarian role)
+      user = Repo.get(Voile.Schema.Accounts.User, librarian_id)
+
+      if user do
+        # Create assignment
+        %LibrarianAssignment{}
+        |> LibrarianAssignment.changeset(%{
+          session_id: session.id,
+          user_id: librarian_id,
+          work_status: "pending"
+        })
+        |> Repo.insert()
+      else
+        {:error, :librarian_not_found}
+      end
+    end
+  end
+
+  def assign_librarian(%Session{}, _librarian_id, _assigned_by_user) do
+    {:error, :invalid_session_status}
+  end
+
+  @doc """
+  Remove a librarian from an existing session.
+  Only allowed for sessions in 'draft', 'initializing', or 'in_progress' status.
+  Cannot remove librarians who have completed their work.
+  """
+  def remove_librarian(assignment_id, _removed_by_user) do
+    case Repo.get(LibrarianAssignment, assignment_id) do
+      nil ->
+        {:error, :assignment_not_found}
+
+      assignment ->
+        # Check session status
+        session = Repo.get!(Session, assignment.session_id)
+
+        if session.status not in ["draft", "initializing", "in_progress"] do
+          {:error, :invalid_session_status}
+        else
+          # Check if librarian has completed work
+          if assignment.work_status == "completed" do
+            {:error, :cannot_remove_completed_assignment}
+          else
+            # Delete the assignment
+            Repo.delete(assignment)
+          end
+        end
+    end
+  end
+
+  @doc """
+  List librarians available for assignment to a session.
+  Returns users with eligible staff roles who are not suspended,
+  not already assigned to the session, and (if not super_admin) from the same node.
+  """
+  def list_available_librarians(%Session{} = session, current_user) do
+    # Get all assigned librarian IDs for this session
+    assigned_ids =
+      from(a in LibrarianAssignment,
+        where: a.session_id == ^session.id,
+        select: a.user_id
+      )
+      |> Repo.all()
+
+    # Eligible roles for librarians (matching new.ex)
+    eligible_roles = [
+      "super_admin",
+      "admin",
+      "editor",
+      "librarian",
+      "archivist",
+      "gallery_curator",
+      "museum_curator"
+    ]
+
+    # Get users with eligible roles, not suspended, not already assigned
+    librarians =
+      from(u in Voile.Schema.Accounts.User,
+        join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+        on: ura.user_id == u.id,
+        join: r in Voile.Schema.Accounts.Role,
+        on: ura.role_id == r.id,
+        where:
+          u.id not in ^assigned_ids and u.manually_suspended == false and
+            r.name in ^eligible_roles,
+        distinct: true,
+        order_by: u.fullname,
+        select: u,
+        preload: [:user_type]
+      )
+      |> Repo.all()
+
+    # Filter by node if not super_admin
+    if VoileWeb.Auth.Authorization.is_super_admin?(current_user) do
+      librarians
+    else
+      Enum.filter(librarians, fn librarian -> librarian.node_id == current_user.node_id end)
     end
   end
 

@@ -179,12 +179,12 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
 
   @doc """
   Check if user can view a stock opname session.
-  Super admins can view all, users can view sessions for their own node.
+  Super admins can view all, users can view sessions where they are assigned as librarians.
   """
   def can_view_session?(%User{} = user, %Session{} = session) do
     cond do
       Authorization.is_super_admin?(user) -> true
-      user.node_id && user.node_id in session.node_ids -> true
+      is_assigned_librarian?(user.id, session.id) -> true
       true -> false
     end
   end

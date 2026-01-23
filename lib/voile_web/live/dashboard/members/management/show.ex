@@ -33,6 +33,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   @impl true
   def handle_params(%{"id" => id} = params, _uri, socket) do
     tab = params["tab"] || action_to_tab(socket.assigns.live_action)
+    allowed = allowed_tabs(socket)
+    tab = if tab in allowed, do: tab, else: "overview"
     member = Repo.get!(User, id) |> Repo.preload([:user_type, :node, :transactions, :fines])
 
     socket =
@@ -49,29 +51,35 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
   @impl true
   def handle_event("change_tab", %{"tab" => tab}, socket) do
-    socket = assign(socket, :active_tab, tab)
+    allowed = allowed_tabs(socket)
 
-    # Initialize forms when switching to specific tabs
-    socket =
-      case tab do
-        "edit" ->
-          assign(socket, :edit_form, to_form(User.changeset(socket.assigns.member, %{})))
+    if tab in allowed do
+      socket = assign(socket, :active_tab, tab)
 
-        "extend" ->
-          assign(socket, :extend_form, to_form(%{"extend_days" => "30"}))
+      # Initialize forms when switching to specific tabs
+      socket =
+        case tab do
+          "edit" ->
+            assign(socket, :edit_form, to_form(User.changeset(socket.assigns.member, %{})))
 
-        "change_password" ->
-          assign(
-            socket,
-            :password_form,
-            to_form(%{"new_password" => "", "confirm_password" => ""})
-          )
+          "extend" ->
+            assign(socket, :extend_form, to_form(%{"extend_days" => "30"}))
 
-        _ ->
-          socket
-      end
+          "change_password" ->
+            assign(
+              socket,
+              :password_form,
+              to_form(%{"new_password" => "", "confirm_password" => ""})
+            )
 
-    {:noreply, socket}
+          _ ->
+            socket
+        end
+
+      {:noreply, socket}
+    else
+      {:noreply, put_flash(socket, :error, "Access denied")}
+    end
   end
 
   @impl true
@@ -287,34 +295,42 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             >
               Overview
             </.tab_button>
-            <.tab_button
-              active={@active_tab == "edit"}
-              phx-click="change_tab"
-              phx-value-tab="edit"
-            >
-              Edit Member
-            </.tab_button>
-            <.tab_button
-              active={@active_tab == "extend"}
-              phx-click="change_tab"
-              phx-value-tab="extend"
-            >
-              Extend Membership
-            </.tab_button>
-            <.tab_button
-              active={@active_tab == "change_password"}
-              phx-click="change_tab"
-              phx-value-tab="change_password"
-            >
-              Change Password
-            </.tab_button>
-            <.tab_button
-              active={@active_tab == "delete"}
-              phx-click="change_tab"
-              phx-value-tab="delete"
-            >
-              Delete Member
-            </.tab_button>
+            <%= if can?(@current_scope.user, "users.update") do %>
+              <.tab_button
+                active={@active_tab == "edit"}
+                phx-click="change_tab"
+                phx-value-tab="edit"
+              >
+                Edit Member
+              </.tab_button>
+            <% end %>
+            <%= if can?(@current_scope.user, "users.update") do %>
+              <.tab_button
+                active={@active_tab == "extend"}
+                phx-click="change_tab"
+                phx-value-tab="extend"
+              >
+                Extend Membership
+              </.tab_button>
+            <% end %>
+            <%= if can?(@current_scope.user, "users.update") do %>
+              <.tab_button
+                active={@active_tab == "change_password"}
+                phx-click="change_tab"
+                phx-value-tab="change_password"
+              >
+                Change Password
+              </.tab_button>
+            <% end %>
+            <%= if @is_super_admin do %>
+              <.tab_button
+                active={@active_tab == "delete"}
+                phx-click="change_tab"
+                phx-value-tab="delete"
+              >
+                Delete Member
+              </.tab_button>
+            <% end %>
             <.tab_button
               active={@active_tab == "activity"}
               phx-click="change_tab"
@@ -873,5 +889,21 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       </div>
     </div>
     """
+  end
+
+  # Private functions
+
+  defp allowed_tabs(socket) do
+    user = socket.assigns.current_scope.user
+    is_super_admin = socket.assigns.is_super_admin
+
+    base_tabs = ["overview", "activity", "loans", "fines"]
+
+    update_tabs =
+      if can?(user, "users.update"), do: ["edit", "extend", "change_password"], else: []
+
+    delete_tabs = if is_super_admin, do: ["delete"], else: []
+
+    base_tabs ++ update_tabs ++ delete_tabs
   end
 end
