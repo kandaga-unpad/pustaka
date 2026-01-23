@@ -1,7 +1,0 @@
-flowchart LR
-  subgraph LiveView
-    V[LiveView socket]
-    V --> |stream(:attachments)| L[Attachments stream]
-    L --> UI[UI list with phx-update="stream"]
-  end
-  UI --> User

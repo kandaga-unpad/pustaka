@@ -114,8 +114,29 @@ Fields Inserted: C
 
 After collections are imported, import the items.
 
+#### Basic Import (without adding to stock opname session)
+
 ```bash
 mix run -e "Voile.Migration.LeftoverItemImporter.import_from_csv(\"path/to/your/missing_item_codes.csv\")"
+```
+
+#### Import and Add to Existing Stock Opname Session
+
+If you have an ongoing stock opname session and want to include the newly imported items:
+
+```bash
+# Get your session ID first
+mix run -e "Voile.Schema.StockOpname.list_sessions() |> Enum.each(&IO.inspect(&1.id))"
+
+# Then import and add to session
+mix run -e "
+session_id = \"your-session-uuid-here\"
+stats = Voile.Migration.LeftoverItemImporter.import_from_csv(
+  \"path/to/your/missing_item_codes.csv\",
+  add_to_session: session_id
+)
+IO.inspect(stats)
+"
 ```
 
 **Expected Output**:
@@ -127,7 +148,17 @@ mix run -e "Voile.Migration.LeftoverItemImporter.import_from_csv(\"path/to/your/
 🔗 Built biblio_id → collection_id map (X entries)
 📋 Found Y item_codes to process
 ✅ Inserted item: ITEM_CODE
+🔄 Adding X inserted items to stock opname session your-session-uuid-here...
+✅ Added Z leftover items to stock opname session your-session-uuid-here
 ==================================================
+LEFTOVER ITEM IMPORT SUMMARY
+==================================================
+Items Inserted: A
+Items Skipped: B
+Items Not Found in CSVs: C
+Added to Session: Z
+==================================================
+```
 LEFTOVER ITEM IMPORT SUMMARY
 ==================================================
 Items Inserted: A
@@ -167,7 +198,46 @@ After running both scripts:
    iex> from(i in Voile.Schema.Catalog.Item, where: is_nil(i.collection_id), select: count(i.id)) |> Voile.Repo.one()
    ```
 
-## 🔧 Recent Fixes
+## � Stock Opname Integration
+
+### Adding Leftover Items to Existing Sessions
+
+When you have an ongoing stock opname session and want newly imported leftover items to be included in the inventory check:
+
+1. **Find your session ID**:
+   ```elixir
+   # In iex console
+   iex> Voile.Schema.StockOpname.list_sessions() |> Enum.map(&{&1.title, &1.id})
+   ```
+
+2. **Import with session integration**:
+   ```elixir
+   iex> Voile.Migration.LeftoverItemImporter.import_from_csv(
+   ...>   "missing_item_codes.csv",
+   ...>   add_to_session: "your-session-uuid"
+   ...> )
+   ```
+
+### How It Works
+
+- **Scope Validation**: Only items matching the session's scope (node_ids, collection_types, scope_type/id) are added
+- **Duplicate Prevention**: Items already in the session are skipped
+- **Count Updates**: Session's `total_items` counter is automatically updated
+- **Safe Operation**: Uses transaction-safe operations to prevent race conditions
+
+### When to Use
+
+- ✅ **During active stock opname**: Add missing items discovered during inventory
+- ✅ **After initial import gaps**: Include items that were missed in the original migration
+- ✅ **Partial imports**: When importing items in batches and want them included in ongoing sessions
+
+### When NOT to Use
+
+- ❌ **After session completion**: Don't add items to completed sessions
+- ❌ **Scope mismatch**: Items outside the session's defined scope won't be added
+- ❌ **Before session initialization**: Wait for session to be in "draft", "in_progress", or "initializing" status
+
+## �🔧 Recent Fixes
 
 **Version Notes**: The scripts have been updated to prevent duplicate imports:
 

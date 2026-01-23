@@ -25,7 +25,7 @@ defmodule Voile.Migration.LeftoverItemImporter do
           collection_map: map()
         }
 
-  def import_from_csv(csv_path, _batch_size \\ 100) do
+  def import_from_csv(csv_path, opts \\ []) do
     IO.puts("📦 Starting leftover item import from #{csv_path}...")
 
     # Check if CSV exists
@@ -50,13 +50,13 @@ defmodule Voile.Migration.LeftoverItemImporter do
       item_files = get_csv_files("items")
 
       # Process each item_code
-      stats =
+      {stats, inserted_item_ids} =
         item_codes
-        |> Enum.reduce(%{inserted: 0, skipped: 0, not_found: 0}, fn item_code, acc ->
+        |> Enum.reduce({%{inserted: 0, skipped: 0, not_found: 0}, []}, fn item_code, {acc, ids} ->
           case find_and_import_item(item_code, item_files, cache) do
-            :inserted -> %{acc | inserted: acc.inserted + 1}
-            :skipped -> %{acc | skipped: acc.skipped + 1}
-            :not_found -> %{acc | not_found: acc.not_found + 1}
+            {:inserted, item_id} -> {%{acc | inserted: acc.inserted + 1}, [item_id | ids]}
+            :skipped -> {%{acc | skipped: acc.skipped + 1}, ids}
+            :not_found -> {%{acc | not_found: acc.not_found + 1}, ids}
           end
         end)
 
@@ -66,7 +66,26 @@ defmodule Voile.Migration.LeftoverItemImporter do
         "Items Not Found in CSVs" => stats.not_found
       })
 
-      stats
+      # Optionally add to stock opname session
+      if session_id = opts[:add_to_session] do
+        user = opts[:user] || get_default_user()
+
+        IO.puts(
+          "🔄 Adding #{length(inserted_item_ids)} inserted items to stock opname session #{session_id}..."
+        )
+
+        {:ok, added_count} =
+          Voile.Schema.StockOpname.add_leftover_items_to_session(
+            session_id,
+            inserted_item_ids,
+            user
+          )
+
+        IO.puts("✅ Added #{added_count} leftover items to stock opname session #{session_id}")
+        Map.put(stats, :added_to_session, added_count)
+      else
+        stats
+      end
     end
   end
 
@@ -97,12 +116,12 @@ defmodule Voile.Migration.LeftoverItemImporter do
             else
               # Insert the item
               try do
-                {count, _} =
-                  Repo.insert_all(Item, [item_data], on_conflict: :nothing, returning: false)
+                {count, [inserted_item]} =
+                  Repo.insert_all(Item, [item_data], on_conflict: :nothing, returning: [:id])
 
                 if count > 0 do
                   IO.puts("✅ Inserted item: #{item_code}")
-                  :inserted
+                  {:inserted, inserted_item.id}
                 else
                   IO.puts("⚠️ Skipped (already exists): #{item_code}")
                   :skipped
@@ -317,5 +336,36 @@ defmodule Voile.Migration.LeftoverItemImporter do
     from(c in Collection, select: {c.id, %{title: c.title, type_id: c.type_id}})
     |> Repo.all()
     |> Enum.into(%{})
+  end
+
+  defp get_default_user do
+    # Try to find a system admin user for the operation
+    case Repo.one(
+           from(u in Voile.Schema.Accounts.User,
+             join: ura in Voile.Schema.Accounts.UserRoleAssignment,
+             on: ura.user_id == u.id,
+             join: r in Voile.Schema.Accounts.Role,
+             on: ura.role_id == r.id,
+             where: r.name == "super_admin" and u.manually_suspended == false,
+             select: u,
+             limit: 1
+           )
+         ) do
+      nil ->
+        # Fallback to first active user
+        case Repo.one(
+               from(u in Voile.Schema.Accounts.User,
+                 where: u.manually_suspended == false,
+                 select: u,
+                 limit: 1
+               )
+             ) do
+          nil -> raise "No active users found in system"
+          user -> user
+        end
+
+      user ->
+        user
+    end
   end
 end

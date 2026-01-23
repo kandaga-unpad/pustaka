@@ -937,7 +937,7 @@ defmodule VoileWeb.CoreComponents do
         title="Manage Members"
         description="Add, edit, and manage member accounts"
         action_text="Go to Management"
-        icon="hero-users"
+        icon="users"
         path="/manage/members/management"
         color="green"
       />
@@ -945,7 +945,7 @@ defmodule VoileWeb.CoreComponents do
         title="View Reports"
         description="View reports on member activity and status"
         action_text="View Reports"
-        icon="hero-chart-bar"
+        icon="chart-bar"
         path="/manage/members/reports"
         color="blue"
       />
@@ -953,7 +953,7 @@ defmodule VoileWeb.CoreComponents do
         title="Bulk Operations"
         description="Import, export, and bulk update members"
         action_text="Perform Actions"
-        icon="hero-cog-6-tooth"
+        icon="cog-6-tooth"
         path="/manage/members/bulk"
         color="purple"
       />

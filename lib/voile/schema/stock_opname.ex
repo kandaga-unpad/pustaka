@@ -644,6 +644,76 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  Add multiple leftover items to an existing stock opname session.
+  Only adds items that match the session's scope criteria.
+
+  ## Parameters
+  - session_id: The UUID of the stock opname session
+  - item_ids: List of item UUIDs to potentially add
+  - user: The user performing the operation
+
+  ## Returns
+  - {:ok, added_count} on success
+  - {:error, reason} on failure
+  """
+  def add_leftover_items_to_session(session_id, item_ids, user) when is_list(item_ids) do
+    session = Repo.get!(Session, session_id)
+
+    # Get items with their collection and resource class info
+    items_query =
+      from i in Voile.Schema.Catalog.Item,
+        where: i.id in ^item_ids,
+        join: c in Voile.Schema.Catalog.Collection,
+        on: c.id == i.collection_id,
+        join: rc in Voile.Schema.Metadata.ResourceClass,
+        on: rc.id == c.type_id,
+        select: %{
+          id: i.id,
+          unit_id: i.unit_id,
+          collection_id: i.collection_id,
+          glam_type: rc.glam_type
+        }
+
+    matching_items =
+      Repo.all(items_query)
+      |> Enum.filter(fn item ->
+        # Check if item matches session scope
+        item.unit_id in session.node_ids and
+          item.glam_type in session.collection_types and
+          case session.scope_type do
+            "collection" -> item.collection_id == session.scope_id
+            "location" -> item.unit_id == session.scope_id
+            _ -> true
+          end
+      end)
+
+    # Add matching items to session
+    added_count =
+      Enum.reduce(matching_items, 0, fn item, count ->
+        case add_item_to_session(session, item.id, user) do
+          {:ok, _} ->
+            count + 1
+
+          {:error, changeset} ->
+            Logger.warning(
+              "Failed to add item #{item.id} to session #{session_id}: #{inspect(changeset)}"
+            )
+
+            count
+        end
+      end)
+
+    # Update session total_items count
+    if added_count > 0 do
+      session
+      |> Ecto.Changeset.change(total_items: session.total_items + added_count)
+      |> Repo.update!()
+    end
+
+    {:ok, added_count}
+  end
+
+  @doc """
   Check an item with collection updates during a stock opname session.
 
   This function marks the item as checked and can update both item fields

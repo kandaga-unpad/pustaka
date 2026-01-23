@@ -192,7 +192,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
         <%!-- Filters and Search --%>
         <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <div class="flex flex-col lg:flex-row gap-4 mb-6">
+          <div class="flex flex-col items-center justify-center lg:flex-row gap-4 mb-6">
             <%!-- Search --%>
             <div class="flex-1">
               <.form for={%{}} phx-change="search" class="flex gap-2">
@@ -201,19 +201,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                     name="query"
                     value={@search_query}
                     placeholder="Search by name, email, or username..."
-                    class="pl-10"
                     phx-debounce="300"
-                  />
-                  <.icon
-                    name="hero-magnifying-glass"
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                   />
                 </div>
               </.form>
             </div>
 
             <%!-- Filters --%>
-            <div class="flex gap-2">
+            <div class="flex gap-2 mb-5">
               <%= if @is_super_admin do %>
                 <.form for={%{}} phx-change="filter_node" class="w-48">
                   <.input
