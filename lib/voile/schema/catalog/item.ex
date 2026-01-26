@@ -107,6 +107,7 @@ defmodule Voile.Schema.Catalog.Item do
     |> validate_required([
       :item_code,
       :inventory_code,
+      :barcode,
       :location,
       :status,
       :condition,

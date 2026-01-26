@@ -1086,6 +1086,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       label="Inventory Code"
                       required_value={true}
                     />
+                    <input
+                      type="hidden"
+                      name={item_field[:barcode].name}
+                      value={item_field[:barcode].value}
+                    />
                     <.input
                       field={item_field[:barcode]}
                       type="text"
