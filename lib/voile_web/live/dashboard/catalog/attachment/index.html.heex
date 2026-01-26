@@ -1,12 +1,14 @@
 <div class="container mx-auto px-4 py-6">
   <%!-- Header --%>
   <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Attachment Management</h1>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Attachment Management</h1>
 
-    <p class="text-gray-600 mt-2">Manage file attachments and access control</p>
+    <p class="text-gray-600 dark:text-gray-300 mt-2">
+      Manage file attachments and access control
+    </p>
   </div>
   <%!-- Search and Filter Bar --%>
-  <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-4 mb-6">
     <div class="flex flex-col lg:flex-row gap-4">
       <%!-- Search --%>
       <div class="flex-1">
@@ -96,13 +98,13 @@
   </div>
   <%!-- Stats Cards --%>
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="stat bg-white rounded-lg shadow-sm">
+    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
       <div class="stat-title">Total Attachments</div>
 
       <div class="stat-value text-primary">{@attachments_count}</div>
     </div>
 
-    <div class="stat bg-white rounded-lg shadow-sm">
+    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
       <div class="stat-title">Public</div>
 
       <div class="stat-value text-success">
@@ -110,7 +112,7 @@
       </div>
     </div>
 
-    <div class="stat bg-white rounded-lg shadow-sm">
+    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
       <div class="stat-title">Limited</div>
 
       <div class="stat-value text-warning">
@@ -118,7 +120,7 @@
       </div>
     </div>
 
-    <div class="stat bg-white rounded-lg shadow-sm">
+    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
       <div class="stat-title">Restricted</div>
 
       <div class="stat-value text-error">
@@ -128,11 +130,13 @@
   </div>
   <%!-- Attachments List --%>
   <%= if @attachments_empty? do %>
-    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
-      <.icon name="hero-document" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">No attachments found</h3>
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-12 text-center">
+      <.icon name="hero-document" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        No attachments found
+      </h3>
 
-      <p class="text-gray-500">
+      <p class="text-gray-500 dark:text-gray-400">
         <%= if @search != "" or @active_filters_count > 0 do %>
           Try adjusting your search or filters
         <% else %>
@@ -141,7 +145,7 @@
       </p>
     </div>
   <% else %>
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="table table-zebra">
           <thead>
@@ -172,18 +176,18 @@
             >
               <td>
                 <div class="flex items-center gap-3">
-                  <div class="avatar placeholder">
-                    <div class="bg-neutral rounded w-12">
-                      <span class="text-xs uppercase">
-                        {String.slice(attachment.file_type, 0, 3)}
-                      </span>
-                    </div>
+                  <div>
+                    <img
+                      src={attachment.file_path}
+                      alt="Thumbnail"
+                      class="w-10 h-10 object-cover rounded-md border border-gray-200 dark:border-gray-600"
+                    />
                   </div>
 
                   <div>
                     <div class="font-semibold text-sm">{attachment.original_name}</div>
 
-                    <div class="text-xs text-gray-500 truncate max-w-xs">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
                       {attachment.file_name}
                     </div>
                   </div>
@@ -192,7 +196,7 @@
 
               <td><span class="badge badge-outline badge-sm">{attachment.file_type}</span></td>
 
-              <td class="text-sm text-gray-500 dark:text-gray-200">
+              <td class="text-sm text-gray-500 dark:text-gray-300">
                 {format_file_size(attachment.file_size)}
               </td>
 
@@ -201,7 +205,7 @@
                   {String.capitalize(attachment.access_level)}
                 </span>
                 <%= if attachment.access_level == "limited" do %>
-                  <div class="text-xs text-gray-500 mt-1">
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {length(attachment.allowed_roles)} roles, {length(attachment.allowed_users)} users
                   </div>
                 <% end %>
@@ -213,7 +217,7 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">Window</div>
 
-                      <div class="text-gray-500">
+                      <div class="text-gray-500 dark:text-gray-400">
                         {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")} - {Calendar.strftime(
                           attachment.embargo_end_date,
                           "%m/%d/%y"
@@ -224,7 +228,7 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">After</div>
 
-                      <div class="text-gray-500">
+                      <div class="text-gray-500 dark:text-gray-400">
                         {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")}
                       </div>
                     </div>
@@ -232,12 +236,12 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">Until</div>
 
-                      <div class="text-gray-500">
+                      <div class="text-gray-500 dark:text-gray-400">
                         {Calendar.strftime(attachment.embargo_end_date, "%m/%d/%y")}
                       </div>
                     </div>
                   <% true -> %>
-                    <span class="text-xs text-gray-400">No embargo</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">No embargo</span>
                 <% end %>
               </td>
 
@@ -257,12 +261,12 @@
                         attachment.access_settings_updated_by.email}
                     </div>
 
-                    <div class="text-gray-500">
+                    <div class="text-gray-500 dark:text-gray-400">
                       {format_datetime(attachment.access_settings_updated_at)}
                     </div>
                   </div>
                 <% else %>
-                  <span class="text-xs text-gray-400">Never</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Never</span>
                 <% end %>
               </td>
 
@@ -299,7 +303,7 @@
       </div>
       <%!-- Pagination --%>
       <%= if @total_pages > 1 do %>
-        <div class="flex justify-center items-center gap-2 p-4 border-t">
+        <div class="flex justify-center items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-600">
           <button
             phx-click="paginate"
             phx-value-page={max(@page - 1, 1)}
@@ -308,7 +312,9 @@
           >
             Previous
           </button>
-          <span class="text-sm text-gray-600">Page {@page} of {@total_pages}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-300">
+            Page {@page} of {@total_pages}
+          </span>
           <button
             phx-click="paginate"
             phx-value-page={min(@page + 1, @total_pages)}

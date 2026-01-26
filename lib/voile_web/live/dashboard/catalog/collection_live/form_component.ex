@@ -299,40 +299,46 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               </div>
             <% end %>
 
-            <%= if @creator_input not in [nil, ""] and @creator_suggestions != [] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
+            <%= if @creator_input not in [nil, ""] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
               <div class="absolute z-10 w-full mt-1 bg-voile-surface border border-voile-muted rounded-md shadow-lg max-h-60 overflow-auto">
                 <ul role="listbox" aria-label="Creator suggestions">
                   <%= for creator <- @creator_suggestions do %>
                     <li
                       role="option"
-                      class="px-4 py-2 hover:bg-gray-400 cursor-pointer border-b border-voile-light last:border-b-0"
+                      class="px-4 py-2 hover:bg-voile-primary/10 cursor-pointer border-b border-voile-light last:border-b-0 transition-colors"
                       phx-click="select_creator"
                       phx-target={@myself}
                       phx-value-id={creator.id}
                     >
-                      <div class="font-medium">{creator.creator_name}</div>
+                      <div class="font-medium text-voile-dark">{creator.creator_name}</div>
 
-                      <div class="text-xs">{Map.get(creator, :affiliation, "")}</div>
+                      <div class="text-xs text-voile-muted">{Map.get(creator, :affiliation, "")}</div>
                     </li>
                   <% end %>
                 </ul>
-              </div>
-            <% end %>
-
-            <%= if @creator_input not in [nil, ""] and @creator_suggestions == [] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
-              <div class="mt-2 flex items-center gap-3">
-                <.button
-                  type="button"
-                  phx-click="create_new_creator"
-                  phx-value-creator={@creator_input}
-                  phx-target={@myself}
-                  class="primary-btn"
-                >
-                  Create "{@creator_input}"
-                </.button>
-                <%= for {_msg, _opts} <- Keyword.get_values(@form.errors, :creator_id) do %>
-                  <p class="text-red-500 text-sm mt-2">Please choose Creator or click Create!</p>
+                <%= if @creator_suggestions != [] and not @creator_suggestions_done do %>
+                  <div class="px-4 py-2 border-t border-voile-light">
+                    <.button
+                      type="button"
+                      phx-click="load_more_creator"
+                      phx-target={@myself}
+                      class="w-full text-sm text-voile-primary hover:text-voile-primary/80 font-medium"
+                    >
+                      Load More
+                    </.button>
+                  </div>
                 <% end %>
+                <div class="px-4 py-2 border-t border-voile-light">
+                  <.button
+                    type="button"
+                    phx-click="create_new_creator"
+                    phx-value-creator={@creator_input}
+                    phx-target={@myself}
+                    class="w-full text-sm text-voile-warning hover:text-voile-warning/80 font-medium"
+                  >
+                    Create "{@creator_input}" Author
+                  </.button>
+                </div>
               </div>
             <% end %>
           </div>
@@ -555,49 +561,60 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   </div>
 
                   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <%= for attachment <- @asset_vault_files do %>
-                      <%= if attachment.file_type in ["image"] do %>
-                        <div
-                          class="relative group cursor-pointer rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1"
-                          phx-click="select_thumbnail_from_vault"
-                          phx-value-attachment_id={attachment.id}
-                          phx-target={@myself}
-                        >
-                          <div class="aspect-square bg-gray-200 dark:bg-gray-700">
-                            <img
-                              src={Catalog.get_file_url(attachment)}
-                              alt={attachment.original_name}
-                              class="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div class="absolute inset-0 bg-voile-primary/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                            <div class="text-center text-white">
-                              <svg
-                                class="w-8 h-8 mx-auto mb-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                    <%= for attachment <- Enum.take(@asset_vault_files, @shown_images_count) do %>
+                      <div
+                        class="relative group cursor-pointer rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1"
+                        phx-click="select_thumbnail_from_vault"
+                        phx-value-attachment_id={attachment.id}
+                        phx-target={@myself}
+                      >
+                        <div class="aspect-square bg-gray-200 dark:bg-gray-700">
+                          <img
+                            src={Catalog.get_file_url(attachment)}
+                            alt={attachment.original_name}
+                            class="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div class="absolute inset-0 bg-voile-primary/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                          <div class="text-center text-white">
+                            <svg
+                              class="w-8 h-8 mx-auto mb-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7"
                               >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M5 13l4 4L19 7"
-                                >
-                                </path>
-                              </svg>
-                              <span class="text-sm font-medium">Select Image</span>
-                            </div>
-                          </div>
-                          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                            <p class="text-white text-xs truncate">{attachment.original_name}</p>
+                              </path>
+                            </svg>
+                            <span class="text-sm font-medium">Select Image</span>
                           </div>
                         </div>
-                      <% end %>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                          <p class="text-white text-xs truncate">{attachment.original_name}</p>
+                        </div>
+                      </div>
                     <% end %>
                   </div>
 
-                  <%= if Enum.empty?(Enum.filter(@asset_vault_files, &(&1.file_type == "image"))) do %>
+                  <%= if length(@asset_vault_files) > @shown_images_count do %>
+                    <div class="text-center mt-4">
+                      <.button
+                        type="button"
+                        phx-click="load_more_images"
+                        phx-target={@myself}
+                        class="px-4 py-2 bg-voile-primary hover:bg-voile-primary/90 text-white font-medium rounded-lg"
+                      >
+                        Load More Images
+                      </.button>
+                    </div>
+                  <% end %>
+
+                  <%= if Enum.empty?(@asset_vault_files) do %>
                     <div class="text-center py-12">
                       <svg
                         class="w-16 h-16 mx-auto text-gray-400 mb-4"
@@ -1300,6 +1317,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:creator_input, initial_creator_input)
      |> assign(:creator_list, assigns.creator_list)
      |> assign(:creator_suggestions, [])
+     |> assign(:creator_suggestions_offset, 0)
+     |> assign(:creator_suggestions_done, false)
      |> assign(:creator_searching, false)
      |> assign(:step2_params, nil)
      |> assign(:step3_params, nil)
@@ -1315,7 +1334,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:thumbnail_source, nil)
      |> assign(:thumbnail_attachment_id, nil)
      |> assign(:thumbnail_url_input, "")
-     |> assign(:asset_vault_files, Catalog.list_all_attachments())
+     |> assign(:asset_vault_files, Catalog.list_all_attachments("image"))
+     |> assign(:shown_images_count, 12)
      |> allow_upload(:thumbnail,
        accept: ~w(.jpg .jpeg .png .webp),
        max_entries: 1,
@@ -1476,7 +1496,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
       suggestions =
         try do
-          Voile.Schema.Master.search_mst_creator_names(query, 10)
+          Voile.Schema.Master.search_mst_creator_names(query, 10, 0)
         rescue
           _ ->
             # Fallback to in-memory filtering
@@ -1485,11 +1505,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             end)
         end
 
+      done = length(suggestions) < 10
+
       socket =
         socket
         |> assign(:creator_searching, false)
         |> assign(:creator_input, query)
         |> assign(:creator_suggestions, suggestions)
+        |> assign(:creator_suggestions_offset, 10)
+        |> assign(:creator_suggestions_done, done)
 
       {:noreply, socket}
     end
@@ -1498,6 +1522,30 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   # Accept `creator` param name (from phx-change on input) and forward to the same logic
   def handle_event("search_creator", %{"creator" => query}, socket) do
     handle_event("search_creator", %{"value" => query}, socket)
+  end
+
+  def handle_event("load_more_creator", _params, socket) do
+    query = socket.assigns.creator_input
+    offset = socket.assigns.creator_suggestions_offset
+
+    more =
+      try do
+        Voile.Schema.Master.search_mst_creator_names(query, 10, offset)
+      rescue
+        _ ->
+          # Fallback: since in-memory, just return empty (no more)
+          []
+      end
+
+    done = length(more) < 10
+
+    socket =
+      socket
+      |> assign(:creator_suggestions, socket.assigns.creator_suggestions ++ more)
+      |> assign(:creator_suggestions_offset, offset + 10)
+      |> assign(:creator_suggestions_done, done)
+
+    {:noreply, socket}
   end
 
   def handle_event("select_creator", %{"id" => id}, socket) do
@@ -1693,6 +1741,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       _ ->
         {:noreply, socket}
     end
+  end
+
+  def handle_event("load_more_images", _params, socket) do
+    {:noreply, assign(socket, :shown_images_count, socket.assigns.shown_images_count + 12)}
   end
 
   # Parent collection search events

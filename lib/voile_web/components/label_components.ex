@@ -28,42 +28,42 @@ defmodule VoileWeb.Components.LabelComponents do
           <div class="w-full flex justify-center mb-2">
             {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
           </div>
-          
+
           <div class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1">
             {@item.barcode || "000000"}
           </div>
         </div>
       <% end %>
-       <%!-- Right Side: Metadata --%>
+      <%!-- Right Side: Metadata --%>
       <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
         <%!-- App Branding --%>
         <div class="bg-gray-50 border-b border-gray-200 px-2 py-1 flex items-center justify-center gap-1">
           <%= if @app_logo do %>
             <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
           <% end %>
-           <span class="text-sm font-bold text-gray-700">{@app_name}</span>
+          <span class="text-sm font-bold text-gray-700">{@app_name}</span>
         </div>
-         <%!-- Color Bars (Flag on top) --%>
+        <%!-- Color Bars (Flag on top) --%>
         <div class="flex flex-col h-3 flex-shrink-0">
           <div class={["flex-1", book_type_color(@item)]} title={get_book_type(@item)}></div>
-          
+
           <div class={["flex-1", ddc_color(@item)]} title={"DDC: #{get_ddc_class(@item)}"}></div>
         </div>
-        
+
         <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
           <%!-- Collection Title (line-clamped for long titles) --%>
           <div class="font-bold text-gray-900 line-clamp-2 leading-tight text-xs">
             {@item.collection.title}
           </div>
-           <%!-- Author --%>
+          <%!-- Author --%>
           <%= if get_author(@item) != "N/A" do %>
             <div class="text-gray-600 text-[0.65rem] italic line-clamp-1">{get_author(@item)}</div>
           <% end %>
-           <%!-- Call Number --%>
+          <%!-- Call Number --%>
           <%= if @include_call_number do %>
             <div class="font-mono text-gray-800 font-semibold text-xs">{get_call_number(@item)}</div>
           <% end %>
-           <%!-- Node Name --%>
+          <%!-- Node Name --%>
           <%= if @include_location do %>
             <div class="text-gray-600 text-[0.5rem] mt-1">
               <.icon name="hero-map-pin" class="w-2.5 h-2.5 inline" /> {get_node_name(@item)}
@@ -103,7 +103,7 @@ defmodule VoileWeb.Components.LabelComponents do
           >
             {Phoenix.HTML.raw(generate_barcode(@item.barcode || "000000"))}
           </div>
-          
+
           <div
             class="text-center text-[0.5rem] font-mono text-gray-700 break-all px-1"
             style="text-align: center !important; font-size: 0.5rem !important; font-family: ui-monospace, monospace !important; color: #374151 !important; word-break: break-all !important; padding-left: 0.25rem !important; padding-right: 0.25rem !important;"
@@ -112,7 +112,7 @@ defmodule VoileWeb.Components.LabelComponents do
           </div>
         </div>
       <% end %>
-       <%!-- Right Side: Metadata --%>
+      <%!-- Right Side: Metadata --%>
       <div class={["flex-1 flex flex-col", (@include_barcode && "pl-2") || ""]}>
         <%!-- App Branding --%>
         <div
@@ -122,7 +122,7 @@ defmodule VoileWeb.Components.LabelComponents do
           <%= if @app_logo do %>
             <img src={@app_logo} alt={@app_name} class="h-6 w-auto" />
           <% end %>
-          
+
           <span
             class="text-sm font-bold text-gray-700"
             style="color: #374151 !important; font-size: 0.875rem !important; font-weight: 700 !important;"
@@ -130,27 +130,27 @@ defmodule VoileWeb.Components.LabelComponents do
             {@app_name}
           </span>
         </div>
-         <%!-- Color Bars (Flag on top) with inline styles for print --%>
+        <%!-- Color Bars (Flag on top) with inline styles for print --%>
         <div class="flex flex-col h-6 flex-shrink-0">
           <div class={["flex-1", book_type_color(@item)]} style={book_type_color_style(@item)}></div>
-          
+
           <div class={["flex-1", ddc_color(@item)]} style={ddc_color_style(@item)}></div>
         </div>
-        
+
         <div class={["space-y-0.5 p-2 flex-1 text-center", font_class(@font_size)]}>
           <%!-- Collection Title (line-clamped for long titles) --%>
           <div class="font-bold text-gray-900 leading-tight text-xs line-clamp-2">
             {@item.collection.title}
           </div>
-           <%!-- Author --%>
+          <%!-- Author --%>
           <%= if get_author(@item) != "N/A" do %>
             <div class="text-gray-700 text-[0.65rem] italic line-clamp-1">{get_author(@item)}</div>
           <% end %>
-           <%!-- Call Number --%>
+          <%!-- Call Number --%>
           <%= if @include_call_number do %>
             <div class="font-mono text-gray-800 font-bold text-xs">{get_call_number(@item)}</div>
           <% end %>
-           <%!-- Node Name --%>
+          <%!-- Node Name --%>
           <%= if @include_location do %>
             <div class="text-gray-600 text-[0.5rem] mt-1">📍 {get_node_name(@item)}</div>
           <% end %>
@@ -315,8 +315,11 @@ defmodule VoileWeb.Components.LabelComponents do
     # Get call number from collection_fields only
     call_number_field =
       Enum.find(item.collection.collection_fields || [], fn field ->
-        field.name == "callNumber"
+        field.name == "callNumber" || field.name == "CallNumber" || field.name == "noPanggil" ||
+          field.name == "no_panggil"
       end)
+
+    dbg(call_number_field)
 
     if call_number_field && call_number_field.value != "" do
       call_number_field.value

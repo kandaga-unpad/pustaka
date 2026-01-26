@@ -235,22 +235,23 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
   def render(assigns) do
     ~H"""
     <div>
+      <%!-- Breadcrumb --%>
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "Members", path: ~p"/manage/members"},
+        %{label: "Management", path: ~p"/manage/members/management"},
+        %{label: "Role Management", path: ~p"/manage/members/management/roles"},
+        %{label: String.capitalize(@role.name), path: ~p"/manage/settings/roles"}
+      ]} />
       <.header>
         Edit Role
         <:subtitle>Update role information and manage permissions</:subtitle>
       </.header>
 
       <div class="flex gap-4">
-        <div class="w-full max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
-            current_path={@current_path}
-          />
-        </div>
-
         <div class="w-full">
           <div class="mb-4">
-            <.back navigate={~p"/manage/settings/roles/#{@role.id}"}>Back to Role</.back>
+            <.back navigate={~p"/manage/members/management/roles/#{@role.id}"}>Back to Role</.back>
           </div>
 
           <div class="space-y-8">

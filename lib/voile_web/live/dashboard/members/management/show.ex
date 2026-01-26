@@ -2,6 +2,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Repo
+  alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Library.Transaction
   alias Voile.Schema.Library.Fine
@@ -10,6 +11,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
+  import VoileWeb.Dashboard.Members.Management.Component
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -24,6 +26,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       |> assign(:member, member)
       |> assign(:active_tab, "overview")
       |> assign(:is_super_admin, is_super_admin)
+      |> assign(:suspend_modal_visible, false)
+      |> assign(:suspend_form, to_form(%{"suspension_reason" => "", "suspension_ends_at" => ""}))
       |> load_member_stats()
       |> load_filters()
 
@@ -116,9 +120,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     if new_password != confirm_password do
       {:noreply, put_flash(socket, :error, "Passwords do not match")}
     else
-      changeset = User.changeset(member, %{password: new_password})
-
-      case Repo.update(changeset) do
+      case Accounts.admin_update_user_password(member, %{
+             "password" => new_password,
+             "password_confirmation" => confirm_password
+           }) do
         {:ok, _updated_member} ->
           socket =
             socket
@@ -126,8 +131,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
           {:noreply, push_patch(socket, to: ~p"/manage/members/management/#{member.id}")}
 
-        {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to change password")}
+        {:error, %Ecto.Changeset{} = changeset} ->
+          error_message =
+            changeset.errors
+            |> Enum.map(fn {field, {msg, _}} -> "#{field}: #{msg}" end)
+            |> Enum.join(", ")
+
+          {:noreply, put_flash(socket, :error, "Failed to change password: #{error_message}")}
       end
     end
   end
@@ -139,7 +149,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   end
 
   def handle_event("update_member", %{"user" => user_params}, socket) do
-    case Repo.update(User.changeset(socket.assigns.member, user_params)) do
+    case Accounts.admin_update_user(socket.assigns.member, user_params) do
       {:ok, updated_member} ->
         socket =
           socket
@@ -172,53 +182,74 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
   @impl true
   def handle_event("suspend_member", _params, socket) do
-    member = socket.assigns.member
+    {:noreply, assign(socket, :suspend_modal_visible, true)}
+  end
 
-    changeset =
-      User.changeset(member, %{
-        manually_suspended: true,
-        suspension_reason: "Suspended by admin",
-        suspended_at: DateTime.utc_now(),
-        suspended_by_id: socket.assigns.current_scope.user.id
-      })
+  @impl true
+  def handle_event("cancel_suspend", _params, socket) do
+    {:noreply, assign(socket, :suspend_modal_visible, false)}
+  end
 
-    case Repo.update(changeset) do
-      {:ok, updated_member} ->
-        socket =
-          socket
-          |> assign(:member, updated_member)
-          |> put_flash(:info, "Member suspended successfully")
+  @impl true
+  def handle_event("confirm_suspend", params, socket) do
+    reason = params["suspension_reason"]
+    ends_at_str = params["suspension_ends_at"]
 
-        {:noreply, socket}
+    ends_at =
+      if ends_at_str && ends_at_str != "" do
+        case NaiveDateTime.from_iso8601(ends_at_str) do
+          {:ok, naive} -> DateTime.from_naive!(naive, "Etc/UTC")
+          _ -> nil
+        end
+      else
+        nil
+      end
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to suspend member")}
+    attrs = %{
+      suspension_reason: reason,
+      suspended_by_id: socket.assigns.current_scope.user.id,
+      suspension_ends_at: ends_at
+    }
+
+    case Accounts.suspend_user(socket.assigns.member, attrs) do
+      {:ok, member} ->
+        member = Voile.Repo.preload(member, [:user_type, :node, :suspended_by], force: true)
+
+        {:noreply,
+         socket
+         |> assign(:member, member)
+         |> assign(:suspend_modal_visible, false)
+         |> put_flash(:info, "Member account has been suspended")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        require Logger
+        Logger.error("Failed to suspend member: #{inspect(changeset.errors)}")
+
+        error_message =
+          changeset.errors
+          |> Enum.map(fn {field, {msg, _}} -> "#{field}: #{msg}" end)
+          |> Enum.join(", ")
+
+        {:noreply,
+         socket
+         |> assign(:suspend_form, to_form(changeset))
+         |> put_flash(:error, "Failed to suspend member account: #{error_message}")}
     end
   end
 
   @impl true
   def handle_event("unsuspend_member", _params, socket) do
-    member = socket.assigns.member
+    case Accounts.unsuspend_user(socket.assigns.member) do
+      {:ok, member} ->
+        member = Voile.Repo.preload(member, [:user_type, :node, :suspended_by], force: true)
 
-    changeset =
-      User.changeset(member, %{
-        manually_suspended: false,
-        suspension_reason: nil,
-        suspended_at: nil,
-        suspended_by_id: nil
-      })
+        {:noreply,
+         socket
+         |> assign(:member, member)
+         |> put_flash(:info, "Member account suspension has been lifted")}
 
-    case Repo.update(changeset) do
-      {:ok, updated_member} ->
-        socket =
-          socket
-          |> assign(:member, updated_member)
-          |> put_flash(:info, "Member unsuspended successfully")
-
-        {:noreply, socket}
-
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to unsuspend member")}
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to unsuspend member account")}
     end
   end
 
@@ -261,12 +292,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               <%= if @member.manually_suspended do %>
                 <.button
                   phx-click="unsuspend_member"
-                  class="bg-green-600 hover:bg-green-700 text-white"
+                  class="warning-btn"
                 >
                   <.icon name="hero-play" class="w-4 h-4 mr-2" /> Unsuspend
                 </.button>
               <% else %>
-                <.button phx-click="suspend_member" class="final-btn">
+                <.button phx-click="suspend_member" class="cancel-btn">
                   <.icon name="hero-pause" class="w-4 h-4 mr-2" /> Suspend
                 </.button>
               <% end %>
@@ -283,6 +314,58 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
           </div>
         </div>
       </div>
+
+      <%!-- Suspension Modal --%>
+      <.modal
+        :if={@suspend_modal_visible}
+        id="suspend-modal"
+        show
+        on_cancel={JS.push("cancel_suspend")}
+      >
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            Suspend Member Account
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-6">
+            Suspending {@member.fullname}'s account will prevent them from accessing the system.
+          </p>
+
+          <.form for={@suspend_form} phx-submit="confirm_suspend" class="space-y-6">
+            <div>
+              <.input
+                field={@suspend_form[:suspension_reason]}
+                type="textarea"
+                label="Suspension Reason"
+                placeholder="Reason for suspension..."
+                required
+              />
+            </div>
+
+            <div>
+              <.input
+                field={@suspend_form[:suspension_ends_at]}
+                type="datetime-local"
+                label="Suspension Ends At (Optional)"
+                placeholder="Leave empty for indefinite suspension"
+              />
+            </div>
+
+            <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <.button type="submit" class="bg-red-600 hover:bg-red-700 text-white">
+                <.icon name="hero-exclamation-triangle" class="w-4 h-4 mr-2" /> Suspend Account
+              </.button>
+
+              <.button
+                type="button"
+                phx-click="cancel_suspend"
+                class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                Cancel
+              </.button>
+            </div>
+          </.form>
+        </div>
+      </.modal>
 
       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
@@ -382,267 +465,6 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
           <% end %>
         </div>
       </div>
-    </div>
-    """
-  end
-
-  # Tab Components
-
-  attr :member, :map, required: true
-  attr :stats, :map, required: true
-
-  def overview_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <%!-- Personal Information --%>
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Full Name
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.fullname || "-"}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.email || "-"}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.phone_number || "-"}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Birth Date
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.birth_date,
-                do: Calendar.strftime(@member.birth_date, "%B %d, %Y"),
-                else: "-"}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.address || "-"}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Organization
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.organization || "-"}</p>
-          </div>
-        </div>
-      </div>
-
-      <%!-- Membership Information --%>
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Membership Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Member Type
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {(@member.user_type && @member.user_type.name) || "-"}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Registration Date
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.registration_date,
-                do: Calendar.strftime(@member.registration_date, "%B %d, %Y"),
-                else: "-"}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Expiry Date
-            </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {if @member.expiry_date,
-                do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
-                else: "-"}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Node</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-              {(@member.node && @member.node.name) || "-"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <%!-- Statistics Cards --%>
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <.stat_card
-            title="Total Loans"
-            value={@stats.total_loans}
-            icon="hero-book-open"
-            color="blue"
-          />
-          <.stat_card
-            title="Active Loans"
-            value={@stats.active_loans}
-            icon="hero-clock"
-            color="orange"
-          />
-          <.stat_card
-            title="Total Fines"
-            value={@stats.total_fines}
-            icon="hero-currency-dollar"
-            color="red"
-          />
-          <.stat_card
-            title="Overdue Items"
-            value={@stats.overdue_items}
-            icon="hero-exclamation-triangle"
-            color="red"
-          />
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-
-  def activity_tab(assigns) do
-    ~H"""
-    <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recent Activity</h3>
-      <p class="text-gray-600 dark:text-gray-300">Activity history will be displayed here.</p>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-
-  def loans_tab(assigns) do
-    ~H"""
-    <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Current Loans</h3>
-      <p class="text-gray-600 dark:text-gray-300">Current loans will be displayed here.</p>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-
-  def fines_tab(assigns) do
-    ~H"""
-    <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Fines & Payments</h3>
-      <p class="text-gray-600 dark:text-gray-300">
-        Fines and payment history will be displayed here.
-      </p>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-  attr :form, :map, required: true
-
-  def extend_membership_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Extend Membership</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Extend the membership expiry date for {@member.fullname}.
-        </p>
-      </div>
-
-      <.form for={@form} phx-submit="extend_membership" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Current Expiry Date
-          </label>
-          <p class="text-sm text-gray-900 dark:text-white">
-            {if @member.expiry_date,
-              do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
-              else: "No expiry date set"}
-          </p>
-        </div>
-
-        <div>
-          <.input
-            field={@form[:extend_days]}
-            type="number"
-            label="Extend by (days)"
-            placeholder="30"
-            min="1"
-            required
-          />
-        </div>
-
-        <div class="flex items-center gap-4">
-          <.button type="submit" class="bg-green-600 hover:bg-green-700 text-white">
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Extend Membership
-          </.button>
-
-          <.link
-            patch={~p"/manage/members/management/#{@member.id}"}
-            class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Cancel
-          </.link>
-        </div>
-      </.form>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-  attr :form, :map, required: true
-
-  def change_password_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Change the password for {@member.fullname}.
-        </p>
-      </div>
-
-      <.form for={@form} phx-submit="change_password" class="space-y-6">
-        <div>
-          <.input
-            field={@form[:new_password]}
-            type="password"
-            label="New Password"
-            required
-          />
-        </div>
-
-        <div>
-          <.input
-            field={@form[:confirm_password]}
-            type="password"
-            label="Confirm New Password"
-            required
-          />
-        </div>
-
-        <div class="flex items-center gap-4">
-          <.button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white">
-            <.icon name="hero-key" class="w-4 h-4 mr-2" /> Change Password
-          </.button>
-
-          <.link
-            patch={~p"/manage/members/management/#{@member.id}"}
-            class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Cancel
-          </.link>
-        </div>
-      </.form>
     </div>
     """
   end
@@ -748,147 +570,6 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       "Expired" -> "bg-orange-100 text-orange-800"
       _ -> "bg-gray-100 text-gray-800"
     end
-  end
-
-  attr :active, :boolean, required: true
-  attr :rest, :global
-  slot :inner_block, required: true
-
-  def tab_button(assigns) do
-    ~H"""
-    <button
-      class={"px-6 py-3 text-sm font-medium border-b-2 #{if @active, do: "border-voile-primary text-voile-primary", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}"}
-      {@rest}
-    >
-      {render_slot(@inner_block)}
-    </button>
-    """
-  end
-
-  attr :member, :map, required: true
-  attr :form, :map, required: true
-  attr :nodes, :list, default: []
-  attr :member_types, :list, default: []
-  attr :is_super_admin, :boolean, default: false
-
-  def edit_member_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Edit Member Information
-        </h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Update {@member.fullname}'s account information.
-        </p>
-      </div>
-
-      <.form for={@form} phx-submit="update_member" phx-change="validate" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <.input field={@form[:fullname]} type="text" label="Full Name" required />
-          <.input field={@form[:email]} type="email" label="Email" required />
-          <.input field={@form[:username]} type="text" label="Username" required />
-
-          <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
-          <.input field={@form[:birth_date]} type="date" label="Birth Date" />
-          <.input field={@form[:address]} type="textarea" label="Address" />
-          <.input field={@form[:organization]} type="text" label="Organization" />
-
-          <%= if @is_super_admin do %>
-            <.input
-              field={@form[:node_id]}
-              type="select"
-              label="Node"
-              options={Enum.map(@nodes, &{&1.name, &1.id})}
-            />
-          <% end %>
-
-          <.input
-            field={@form[:user_type_id]}
-            type="select"
-            label="Member Type"
-            options={Enum.map(@member_types, &{&1.name, &1.id})}
-            required
-          />
-
-          <.input field={@form[:registration_date]} type="date" label="Registration Date" />
-          <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
-        </div>
-
-        <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-          <.button type="submit" class="bg-voile-primary hover:bg-voile-primary/90 text-white">
-            <.icon name="hero-check" class="w-4 h-4 mr-2" /> Update Member
-          </.button>
-
-          <.link
-            patch={~p"/manage/members/management/#{@member.id}"}
-            class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Cancel
-          </.link>
-        </div>
-      </.form>
-    </div>
-    """
-  end
-
-  attr :member, :map, required: true
-
-  def delete_member_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <div>
-        <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Delete Member</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Permanently delete {@member.fullname}'s account. This action cannot be undone.
-        </p>
-      </div>
-
-      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-        <div class="flex items-start gap-3">
-          <.icon
-            name="hero-exclamation-triangle"
-            class="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
-          />
-          <div>
-            <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              Warning: This action is irreversible
-            </h4>
-            <p class="text-sm text-red-700 dark:text-red-300 mb-4">
-              Deleting this member will permanently remove all their data including:
-            </p>
-            <ul class="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1 mb-4">
-              <li>Account information and login credentials</li>
-              <li>Transaction history and current loans</li>
-              <li>Fine records and payment history</li>
-              <li>Membership and expiry information</li>
-            </ul>
-            <p class="text-sm font-medium text-red-800 dark:text-red-200">
-              Are you sure you want to proceed?
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-        <.button
-          type="button"
-          phx-click="delete_member_confirm"
-          class="bg-red-600 hover:bg-red-700 text-white"
-          data-confirm="Are you absolutely sure you want to delete this member? This action cannot be undone."
-        >
-          <.icon name="hero-trash" class="w-4 h-4 mr-2" /> Delete Member Permanently
-        </.button>
-
-        <.link
-          patch={~p"/manage/members/management/#{@member.id}"}
-          class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          Cancel
-        </.link>
-      </div>
-    </div>
-    """
   end
 
   # Private functions

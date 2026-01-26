@@ -1518,10 +1518,25 @@ defmodule Voile.Schema.Catalog do
 
   @doc """
   Get all attachments in the system (for asset vault)
+
+  ## Options
+  - `file_type`: Filter by file type. For "image", filters to common image formats (jpeg, png, webp)
   """
-  def list_all_attachments do
-    Attachment
-    |> order_by([a], desc: a.inserted_at)
+  def list_all_attachments(file_type \\ nil) do
+    query = Attachment |> order_by([a], desc: a.inserted_at)
+
+    query =
+      case file_type do
+        "image" ->
+          from a in query,
+            where:
+              a.file_type == "image" and a.mime_type in ["image/jpeg", "image/png", "image/webp"]
+
+        _ ->
+          query
+      end
+
+    query
     |> Repo.all()
     |> Enum.map(&load_attachable/1)
   end

@@ -71,7 +71,7 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
-  Search creators but return only minimal fields (id and creator_name) to reduce data transfer.
+  Search creators but return only minimal fields (id, creator_name, affiliation) to reduce data transfer.
   """
   def search_mst_creator_names(query, limit \\ 10, offset \\ 0) when is_binary(query) do
     q = "%" <> String.replace(query, "%", "\\%") <> "%"
@@ -81,7 +81,7 @@ defmodule Voile.Schema.Master do
     |> order_by([c], asc: c.creator_name)
     |> limit(^limit)
     |> offset(^offset)
-    |> select([c], %{id: c.id, creator_name: c.creator_name})
+    |> select([c], %{id: c.id, creator_name: c.creator_name, affiliation: c.affiliation})
     |> Repo.all()
   end
 

@@ -14,7 +14,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
       socket
       |> assign(role: role)
       |> assign(:page_title, "Role Details")
-      |> assign(current_path: "/manage/settings/roles/#{id}")
+      |> assign(current_path: "/manage/members/management/roles/#{id}")
       |> load_role_users()
 
     {:ok, socket}
@@ -24,25 +24,29 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
   def render(assigns) do
     ~H"""
     <div>
+      <%!-- Breadcrumb --%>
+      <.breadcrumb items={[
+        %{label: "Manage", path: ~p"/manage"},
+        %{label: "Members", path: ~p"/manage/members"},
+        %{label: "Management", path: ~p"/manage/members/management"},
+        %{label: "Role Management", path: ~p"/manage/members/management/roles"},
+        %{label: String.capitalize(@role.name), path: nil}
+      ]} />
       <.header>
         Role Details
         <:subtitle>View role information</:subtitle>
       </.header>
 
       <div class="flex gap-4">
-        <div class="w-full max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
-            current_path={@current_path}
-          />
-        </div>
-
         <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
-            <.back navigate={~p"/manage/settings/roles"}>Back to Roles</.back>
+            <.back navigate={~p"/manage/members/management/roles"}>Back to Roles</.back>
 
             <%= if can?(@current_scope.user, "roles.update") and not @role.is_system_role do %>
-              <.link navigate={~p"/manage/settings/roles/#{@role.id}/edit"} class="primary-btn">
+              <.link
+                navigate={~p"/manage/members/management/roles/#{@role.id}/edit"}
+                class="primary-btn"
+              >
                 Edit Role
               </.link>
             <% end %>

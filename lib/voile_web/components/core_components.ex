@@ -950,11 +950,11 @@ defmodule VoileWeb.CoreComponents do
         color="blue"
       />
       <.member_nav_card
-        title="Bulk Operations"
-        description="Import, export, and bulk update members"
-        action_text="Perform Actions"
-        icon="cog-6-tooth"
-        path="/manage/members/bulk"
+        title="Role Management"
+        description="Manage system roles and permissions"
+        action_text="Manage Roles"
+        icon="hero-shield-check"
+        path="/manage/members/management/roles"
         color="purple"
       />
     </div>

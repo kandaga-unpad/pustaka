@@ -2,12 +2,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Repo
+  alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.MemberType
   alias Voile.Schema.System.Node
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
+  import VoileWeb.Dashboard.Members.Management.Component
 
   @per_page 20
 
@@ -51,6 +53,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
         :new ->
           socket
+          |> assign(:member, %User{})
           |> assign(:form, to_form(User.changeset(%User{}, %{})))
           |> assign(:is_super_admin, is_super_admin)
 
@@ -349,102 +352,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     """
   end
 
-  # Form Component
-  attr :form, :map, required: true
-  attr :member, :map, default: nil
-  attr :action, :atom, required: true
-  attr :nodes, :list, default: []
-  attr :member_types, :list, default: []
-  attr :is_super_admin, :boolean, default: false
-
-  def member_form(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <%!-- Breadcrumb --%>
-      <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Management", path: ~p"/manage/members/management"},
-        %{label: if(@action == :new, do: "New Member", else: "Edit Member"), path: nil}
-      ]} />
-
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex items-center gap-3 mb-6">
-          <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {if @action == :new, do: "Add New Member", else: "Edit Member"}
-            </h1>
-            <p class="text-gray-600 dark:text-gray-300">
-              {if @action == :new,
-                do: "Create a new library member account",
-                else: "Update member information"}
-            </p>
-          </div>
-        </div>
-
-        <.form for={@form} phx-submit="save" phx-change="validate" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <.input field={@form[:fullname]} type="text" label="Full Name" required />
-            <.input field={@form[:email]} type="email" label="Email" required />
-            <.input field={@form[:username]} type="text" label="Username" required />
-
-            <%= if @action == :new do %>
-              <.input field={@form[:password]} type="password" label="Password" required />
-            <% end %>
-
-            <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
-            <.input field={@form[:birth_date]} type="date" label="Birth Date" />
-            <.input field={@form[:address]} type="textarea" label="Address" />
-            <.input field={@form[:organization]} type="text" label="Organization" />
-
-            <%= if @is_super_admin do %>
-              <.input
-                field={@form[:node_id]}
-                type="select"
-                label="Node"
-                options={Enum.map(@nodes, &{&1.name, &1.id})}
-              />
-            <% end %>
-
-            <.input
-              field={@form[:user_type_id]}
-              type="select"
-              label="Member Type"
-              options={Enum.map(@member_types, &{&1.name, &1.id})}
-              required
-            />
-
-            <.input field={@form[:registration_date]} type="date" label="Registration Date" />
-            <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
-          </div>
-
-          <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-            <.button type="submit" class="bg-voile-primary hover:bg-voile-primary/90 text-white">
-              <.icon
-                name={if @action == :new, do: "hero-plus", else: "hero-check"}
-                class="w-4 h-4 mr-2"
-              />
-              {if @action == :new, do: "Create Member", else: "Update Member"}
-            </.button>
-
-            <.link
-              patch={~p"/manage/members/management"}
-              class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              Cancel
-            </.link>
-          </div>
-        </.form>
-      </div>
-    </div>
-    """
-  end
-
   # Private functions
 
   defp save_member(socket, :edit, user_params) do
-    case Repo.update(User.changeset(socket.assigns.member, user_params)) do
+    case Accounts.admin_update_user(socket.assigns.member, user_params) do
       {:ok, member} ->
         socket =
           socket
@@ -466,7 +377,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
         Map.put(user_params, "node_id", socket.assigns.current_scope.user.node_id)
       end
 
-    case Repo.insert(User.changeset(%User{}, user_params)) do
+    case Accounts.register_user(user_params) do
       {:ok, member} ->
         socket =
           socket

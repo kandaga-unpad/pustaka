@@ -289,6 +289,16 @@ defmodule VoileWeb.Router do
           scope "/management" do
             live "/", Dashboard.Members.Management.Index, :index
             live "/new", Dashboard.Members.Management.Index, :new
+
+            scope "/roles" do
+              live "/", Users.Role.ManageLive, :index
+              live "/new", Users.Role.ManageLive, :new
+              live "/:id", Users.Role.ManageLive.Show, :show
+              live "/:id/show/edit", Users.Role.ManageLive.Show, :edit
+              live "/:id/show/permissions", Users.Role.ManageLive.Show, :manage_permissions
+              live "/:id/edit", Users.Role.ManageLive.Edit, :edit
+            end
+
             live "/:id/edit", Dashboard.Members.Management.Index, :edit
             live "/:id", Dashboard.Members.Management.Show, :show
             live "/:id/show/edit", Dashboard.Members.Management.Show, :edit

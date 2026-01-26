@@ -19,8 +19,8 @@
           phx-click={JS.push_focus()}
           class="w-full sm:w-auto"
         >
-          <.button class="w-full sm:w-auto text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
-            Edit collection
+          <.button class="primary-btn">
+            <.icon name="hero-pencil" class="w-4 h-4" /> Edit collection
           </.button>
         </.link>
       </:actions>
@@ -31,7 +31,7 @@
         <%= if @collection.thumbnail do %>
           <img
             src={@collection.thumbnail}
-            class="object-cover w-full h-64 sm:h-80 lg:w-96 lg:h-96 rounded-lg border border-gray-200 dark:border-gray-600"
+            class="object-cover w-full h-full rounded-lg border border-gray-200 dark:border-gray-600"
             alt={@collection.title}
           />
         <% else %>
@@ -160,17 +160,17 @@
                   <% end %>
                 </div>
 
-                <div class="mt-4 sm:mt-6 text-center pt-3 sm:pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-2 w-full">
+                <div class="mt-4 sm:mt-6 text-xs sm:text-sm text-center pt-3 sm:pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-2 w-full">
                   <.link
                     navigate={"/manage/catalog/items/#{item.id}"}
-                    class="primary-btn text-xs sm:text-sm font-medium w-full py-2.5 sm:py-2 touch-manipulation"
+                    class="primary-btn font-medium w-full py-2.5 sm:py-2 touch-manipulation"
                   >
                     Item Detail
                   </.link>
                   <button
                     phx-click="request_transfer"
                     phx-value-item-id={item.id}
-                    class="warning-btn text-xs sm:text-sm rounded-lg w-full py-2.5 sm:py-2 touch-manipulation"
+                    class="warning-btn rounded-lg w-full py-2.5 sm:py-2 touch-manipulation"
                   >
                     Transfer Location
                   </button>
