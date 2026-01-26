@@ -1094,6 +1094,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       disabled
                     />
                     <.input
+                      field={item_field[:legacy_item_code]}
+                      type="text"
+                      label="Legacy Item Code"
+                    />
+                    <.input
                       field={item_field[:location]}
                       type="text"
                       label="Location"
@@ -1275,7 +1280,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
            "unit_id" => item.unit_id,
            "status" => item.status,
            "condition" => item.condition,
-           "availability" => item.availability
+           "availability" => item.availability,
+           "legacy_item_code" => item.legacy_item_code
          }}
       end)
 

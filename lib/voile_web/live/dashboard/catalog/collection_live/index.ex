@@ -42,8 +42,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
       # Get dropdown options (limit for performance)
       collection_type = Metadata.list_resource_class()
-      # Limit to 100 most recent creators for dropdown
-      creator = Master.list_mst_creator() |> Enum.take(100)
+      # Limit to 100 most recent creators for dropdown (at database level for performance)
+      {creator, _, _} = Master.list_mst_creator_paginated(1, 100)
       # All nodes (usually not many)
       node_location = System.list_nodes()
 
@@ -245,19 +245,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_info(
-        {VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent, {:saved, collection}},
+        {VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent, {:saved, _collection}},
         socket
       ) do
-    # Refresh tree collections when a new collection is saved (limited)
+    # Refresh tree collections when a collection is saved (limited)
     tree_collections = Catalog.list_collections_tree(50)
+
+    # Refresh the main collections list to show current state
+    page = socket.assigns.page || 1
+    per_page = 10
+    search = socket.assigns.search || ""
+    filters = socket.assigns.filters || %{}
+
+    {collections, total_pages, _} =
+      Catalog.list_collections_paginated(page, per_page, search, filters)
 
     socket =
       socket
-      |> stream_insert(:collections, collection, at: 0)
+      |> stream(:collections, collections, reset: true)
       |> assign(:tree_collections, tree_collections)
-
-    # update count
-    socket = assign(socket, :collections_count, (socket.assigns[:collections_count] || 0) + 1)
+      |> assign(:total_pages, total_pages)
+      |> assign(:collections_count, length(collections))
+      |> assign(:collections_empty?, collections == [])
 
     {:noreply, socket}
   end

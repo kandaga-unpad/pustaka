@@ -70,7 +70,6 @@ defmodule Voile.Schema.Catalog do
     collections =
       Repo.all(query)
       |> Repo.preload([
-        :collection_fields,
         :resource_class,
         :mst_creator,
         :node

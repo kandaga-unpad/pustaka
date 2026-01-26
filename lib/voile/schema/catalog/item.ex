@@ -95,6 +95,7 @@ defmodule Voile.Schema.Catalog.Item do
       :last_circulated,
       :rfid_tag,
       :barcode,
+      :legacy_item_code,
       :location,
       :collection_id,
       :unit_id,

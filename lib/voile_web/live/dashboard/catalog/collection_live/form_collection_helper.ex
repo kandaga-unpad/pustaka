@@ -114,7 +114,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       # is not in the allowed list and caused validation failures.
       "condition" => "good",
       "availability" => "available",
-      "unit_id" => unit_id
+      "unit_id" => unit_id,
+      "legacy_item_code" => nil
     }
 
     # Add new item
