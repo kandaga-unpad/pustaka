@@ -36,6 +36,11 @@ defmodule Client.Storage do
     * `:unit_id` - Unit ID for organizing files by unit
     * `:generate_filename` - Whether to generate a unique filename (default: true)
     * `:preserve_extension` - Whether to preserve original file extension (default: true)
+    * `:create_attachment` - Whether to create an attachment record in the database (default: false)
+    * `:attachable_id` - ID of the entity the attachment belongs to (required if create_attachment: true)
+    * `:attachable_type` - Type of entity the attachment belongs to (required if create_attachment: true)
+    * `:access_level` - Access level for the attachment (default: "restricted")
+    * `:file_type` - Type of file (default: inferred from mime_type)
 
   ## Examples
 
@@ -45,15 +50,29 @@ defmodule Client.Storage do
       # Upload to specific folder
       {:ok, url} = Client.Storage.upload(upload, folder: "thumbnails")
 
-      # Upload with unit organization
-      {:ok, url} = Client.Storage.upload(upload, folder: "files", unit_id: 123)
-
-      # Override adapter temporarily
-      {:ok, url} = Client.Storage.upload(upload, adapter: Client.Storage.Local)
+      # Upload with attachment creation
+      {:ok, url} = Client.Storage.upload(upload,
+        create_attachment: true,
+        attachable_id: user_id,
+        attachable_type: "User",
+        access_level: "restricted"
+      )
   """
   def upload(file_params, opts \\ []) do
     adapter = get_adapter(opts)
-    adapter.upload(file_params, opts)
+
+    case adapter.upload(file_params, opts) do
+      {:ok, url} ->
+        # Create attachment record if requested
+        if Keyword.get(opts, :create_attachment, false) do
+          create_attachment_record(url, file_params, opts)
+        end
+
+        {:ok, url}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -128,6 +147,70 @@ defmodule Client.Storage do
   end
 
   if Code.ensure_loaded?(Voile.Repo) and Code.ensure_loaded?(Voile.Schema.Catalog.Attachment) do
+    defp create_attachment_record(url, file_params, opts) do
+      # Extract file information
+      filename = file_params[:filename] || "unknown"
+      content_type = file_params[:content_type] || "application/octet-stream"
+      size = file_params[:size] || 0
+
+      # Determine file type from mime type
+      file_type =
+        cond do
+          String.starts_with?(content_type, "image/") -> "image"
+          String.starts_with?(content_type, "video/") -> "video"
+          String.starts_with?(content_type, "audio/") -> "audio"
+          String.starts_with?(content_type, "text/") -> "document"
+          String.starts_with?(content_type, "application/pdf") -> "document"
+          true -> "file"
+        end
+
+      # Get attachment options
+      attachable_id = Keyword.get(opts, :attachable_id)
+      attachable_type = Keyword.get(opts, :attachable_type)
+      access_level = Keyword.get(opts, :access_level, "restricted")
+      custom_file_type = Keyword.get(opts, :file_type)
+
+      # Use custom file_type if provided, otherwise use inferred
+      final_file_type = custom_file_type || file_type
+
+      # Validate required fields
+      if is_nil(attachable_id) or is_nil(attachable_type) do
+        # Log warning but don't fail the upload
+        require Logger
+        Logger.warning("Attachment creation skipped: missing attachable_id or attachable_type")
+        :ok
+      else
+        attachment_params = %{
+          file_name: filename,
+          original_name: filename,
+          file_path: url,
+          file_key: url,
+          file_size: size,
+          mime_type: content_type,
+          file_type: final_file_type,
+          attachable_id: attachable_id,
+          attachable_type: attachable_type,
+          access_level: access_level
+        }
+
+        case Voile.Repo.insert(
+               Voile.Schema.Catalog.Attachment.changeset(
+                 %Voile.Schema.Catalog.Attachment{},
+                 attachment_params
+               )
+             ) do
+          {:ok, _attachment} ->
+            :ok
+
+          {:error, changeset} ->
+            # Log error but don't fail the upload
+            require Logger
+            Logger.error("Failed to create attachment record: #{inspect(changeset.errors)}")
+            :ok
+        end
+      end
+    end
+
     defp delete_attachment_record(file_url) do
       case Voile.Repo.get_by(Voile.Schema.Catalog.Attachment, file_path: file_url) do
         nil -> :ok
@@ -135,6 +218,7 @@ defmodule Client.Storage do
       end
     end
   else
+    defp create_attachment_record(_url, _file_params, _opts), do: :ok
     defp delete_attachment_record(_file_url), do: :ok
   end
 end

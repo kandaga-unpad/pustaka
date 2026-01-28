@@ -428,39 +428,22 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
           file_params = %{
             path: meta.path,
             filename: entry.client_name,
-            content_type: entry.client_type
+            content_type: entry.client_type,
+            size: entry.client_size
           }
 
           {:ok, url} =
-            Client.Storage.upload(file_params, folder: "user_image", generate_filename: true)
+            Client.Storage.upload(file_params,
+              folder: "user_image",
+              generate_filename: true,
+              create_attachment: true,
+              attachable_id: socket.assigns.member.id,
+              attachable_type: "asset_vault",
+              access_level: "restricted",
+              file_type: "image"
+            )
 
-          # Create attachment record
-          attachment_params = %{
-            file_name: entry.client_name,
-            original_name: entry.client_name,
-            file_path: url,
-            file_key: url,
-            file_size: entry.client_size,
-            mime_type: entry.client_type,
-            file_type: "image",
-            attachable_id: socket.assigns.member.id,
-            attachable_type: "asset_vault",
-            access_level: "restricted"
-          }
-
-          case Voile.Repo.insert(
-                 Voile.Schema.Catalog.Attachment.changeset(
-                   %Voile.Schema.Catalog.Attachment{},
-                   attachment_params
-                 )
-               ) do
-            {:ok, _} ->
-              {:ok, url}
-
-            # Still return the URL even if attachment creation fails
-            {:error, _} ->
-              {:ok, url}
-          end
+          {:ok, url}
         end)
 
       form_params =
