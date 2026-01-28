@@ -6,6 +6,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   alias Ecto.Changeset
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper
+  import VoileWeb.Components.ImageUpload
 
   @impl true
   def render(assigns) do
@@ -278,7 +279,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 role="status"
               >
                 <svg
-                  class="animate-spin h-5 w-5 text-voile-dark"
+                  class="animate-spin h-5 w-5 text-voile-primary"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -310,7 +311,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       phx-target={@myself}
                       phx-value-id={creator.id}
                     >
-                      <div class="font-medium text-voile-dark">{creator.creator_name}</div>
+                      <div class="font-medium">{creator.creator_name}</div>
 
                       <div class="text-xs text-voile-muted">{Map.get(creator, :affiliation, "")}</div>
                     </li>
@@ -404,778 +405,345 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             disabled
           />
           <div class="p-6">
-            <%= if @form[:thumbnail].value == nil or @form[:thumbnail].value == "" do %>
-              <!-- Enhanced Tabs for thumbnail upload options -->
-              <div class="mb-6">
-                <nav
-                  class="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg"
-                  aria-label="Thumbnail upload options"
-                >
-                  <button
-                    type="button"
-                    phx-click="switch_thumbnail_tab"
-                    phx-value-tab="upload"
-                    phx-target={@myself}
-                    class={"flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-200 #{if @tab == "upload", do: "bg-white dark:bg-gray-700 text-voile-primary shadow-sm", else: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-5000 hover:bg-gray-50 dark:hover:bg-gray-750"}"}
-                  >
-                    <svg
-                      class="w-4 h-4 inline mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      >
-                      </path>
-                    </svg>
-                    Upload Local
-                  </button>
-                  <button
-                    type="button"
-                    phx-click="switch_thumbnail_tab"
-                    phx-value-tab="asset_vault"
-                    phx-target={@myself}
-                    class={"flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-200 #{if @tab == "asset_vault", do: "bg-white dark:bg-gray-700 text-voile-primary shadow-sm", else: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-750"}"}
-                  >
-                    <svg
-                      class="w-4 h-4 inline mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      >
-                      </path>
-                    </svg>
-                    Asset Vault
-                  </button>
-                  <button
-                    type="button"
-                    phx-click="switch_thumbnail_tab"
-                    phx-value-tab="url"
-                    phx-target={@myself}
-                    class={"flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-200 #{if @tab == "url", do: "bg-white dark:bg-gray-700 text-voile-primary shadow-sm", else: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-5000 hover:bg-gray-50 dark:hover:bg-gray-750"}"}
-                  >
-                    <svg
-                      class="w-4 h-4 inline mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                      >
-                      </path>
-                    </svg>
-                    From URL
-                  </button>
-                </nav>
-              </div>
-
-              <%= if @tab == "upload" do %>
-                <!-- Enhanced Upload Area -->
-                <div class="relative">
-                  <div
-                    class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center hover:border-voile-primary hover:bg-voile-primary/5 dark:hover:bg-voile-primary/10 transition-all duration-300 cursor-pointer group"
-                    phx-drop-target={@uploads.thumbnail.ref}
-                  >
-                    <div class="space-y-6">
-                      <div class="mx-auto w-20 h-20 bg-gradient-to-br from-voile-primary/10 to-voile-info/10 rounded-full flex items-center justify-center group-hover:from-voile-primary/20 group-hover:to-voile-info/20 transition-all duration-300">
-                        <svg
-                          class="w-10 h-10 text-voile-primary group-hover:text-voile-primary/80 transition-colors"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                          >
-                          </path>
-                        </svg>
-                      </div>
-
-                      <div class="space-y-2">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                          Upload Thumbnail
-                        </h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                          Drag and drop your image here, or click to browse
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-500">
-                          PNG, JPG, GIF up to 10MB
-                        </p>
-                      </div>
-
-                      <div class="pt-4">
-                        <.live_file_input upload={@uploads.thumbnail} />
-                        <label
-                          for={@uploads.thumbnail.ref}
-                          class="inline-flex items-center px-6 py-3 bg-voile-primary hover:bg-voile-primary/90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
-                        >
-                          <svg
-                            class="w-5 h-5 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            >
-                            </path>
-                          </svg>
-                          Choose File
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-
-              <%= if @tab == "asset_vault" do %>
-                <!-- Enhanced Asset Vault Selection -->
-                <div class="space-y-6">
-                  <div class="text-center">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      Select from Asset Vault
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Choose an existing image from your collection
-                    </p>
-                  </div>
-
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <%= for attachment <- Enum.take(@asset_vault_files, @shown_images_count) do %>
-                      <div
-                        class="relative group cursor-pointer rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1"
-                        phx-click="select_thumbnail_from_vault"
-                        phx-value-attachment_id={attachment.id}
-                        phx-target={@myself}
-                      >
-                        <div class="aspect-square bg-gray-200 dark:bg-gray-700">
-                          <img
-                            src={Catalog.get_file_url(attachment)}
-                            alt={attachment.original_name}
-                            class="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div class="absolute inset-0 bg-voile-primary/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                          <div class="text-center text-white">
-                            <svg
-                              class="w-8 h-8 mx-auto mb-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 13l4 4L19 7"
-                              >
-                              </path>
-                            </svg>
-                            <span class="text-sm font-medium">Select Image</span>
-                          </div>
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                          <p class="text-white text-xs truncate">{attachment.original_name}</p>
-                        </div>
-                      </div>
-                    <% end %>
-                  </div>
-
-                  <%= if length(@asset_vault_files) > @shown_images_count do %>
-                    <div class="text-center mt-4">
-                      <.button
-                        type="button"
-                        phx-click="load_more_images"
-                        phx-target={@myself}
-                        class="px-4 py-2 bg-voile-primary hover:bg-voile-primary/90 text-white font-medium rounded-lg"
-                      >
-                        Load More Images
-                      </.button>
-                    </div>
-                  <% end %>
-
-                  <%= if Enum.empty?(@asset_vault_files) do %>
-                    <div class="text-center py-12">
-                      <svg
-                        class="w-16 h-16 mx-auto text-gray-400 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        >
-                        </path>
-                      </svg>
-                      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        No Images Found
-                      </h3>
-                      <p class="text-gray-500 dark:text-gray-400">
-                        Upload some images to your asset vault first
-                      </p>
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
-
-              <%= if @tab == "url" do %>
-                <!-- Enhanced URL Input -->
-                <div class="space-y-6">
-                  <div class="text-center">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      Add from URL
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Paste an image URL to fetch and save it
-                    </p>
-                  </div>
-
-                  <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
-                    <div class="flex gap-3">
-                      <div class="flex-1">
-                        <.input
-                          type="url"
-                          name="thumbnail_url"
-                          value={@thumbnail_url_input}
-                          placeholder="https://example.com/image.jpg"
-                          phx-change="update_thumbnail_url"
-                          phx-target={@myself}
-                        />
-                      </div>
-                      <.button
-                        type="button"
-                        phx-click="add_thumbnail_from_url"
-                        phx-value-url={@thumbnail_url_input}
-                        phx-target={@myself}
-                        class="px-6 py-3 bg-voile-primary hover:bg-voile-primary/90 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
-                        phx-disable-with="Adding..."
-                      >
-                        <svg
-                          class="w-5 h-5 mr-2 inline"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          >
-                          </path>
-                        </svg>
-                        Add Image
-                      </.button>
-                    </div>
-
-                    <div class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                      <p>Supported formats: PNG, JPG, GIF, WebP</p>
-                    </div>
-                  </div>
-                </div>
-              <% end %>
-            <% end %>
-
-            <%= for entry <- @uploads.thumbnail.entries do %>
-              <div class="bg-voile-info/5 dark:bg-voile-info/10 border border-voile-info/20 rounded-lg p-4">
-                <div class="flex items-center space-x-4">
-                  <div class="w-12 h-12 bg-voile-primary/10 rounded-lg flex items-center justify-center">
-                    <svg
-                      class="w-6 h-6 text-voile-primary animate-pulse"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      >
-                      </path>
-                    </svg>
-                  </div>
-
-                  <div class="flex-1 min-w-0">
-                    <p class="text-gray-900 dark:text-white font-medium text-sm truncate">
-                      {entry.client_name}
-                    </p>
-                    <p class="text-gray-600 dark:text-gray-400 text-xs">Uploading image...</p>
-
-                    <div class="mt-3">
-                      <div class="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-                        <span>Progress</span>
-                        <span>{entry.progress}%</span>
-                      </div>
-                      <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                        <div
-                          class="bg-gradient-to-r from-voile-primary to-voile-info h-full rounded-full transition-all duration-300 ease-out"
-                          style={"width: #{entry.progress}%"}
-                        >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="flex-shrink-0">
-                    <button
-                      type="button"
-                      phx-click="cancel-upload"
-                      phx-value-ref={entry.ref}
-                      phx-target={@myself}
-                      class="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        >
-                        </path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-
-            <%= if @form[:thumbnail].value != nil and @form[:thumbnail].value != "" do %>
-              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
-                <div class="flex items-start space-x-6">
-                  <div class="relative group flex-shrink-0">
-                    <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                      <img
-                        src={@form[:thumbnail].value}
-                        alt="Collection thumbnail"
-                        class="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-lg transition-opacity duration-200 flex items-center justify-center">
-                      <svg
-                        class="w-6 h-6 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        >
-                        </path>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center space-x-2 mb-2">
-                      <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        >
-                        </path>
-                      </svg>
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
-                        Thumbnail Ready
-                      </span>
-                    </div>
-
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      Your collection thumbnail has been successfully uploaded and is ready to use.
-                    </p>
-
-                    <div class="flex items-center space-x-3">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-voile-primary/10 text-voile-primary">
-                        <%= case @thumbnail_source do %>
-                          <% "local" -> %>
-                            Uploaded
-                          <% "vault" -> %>
-                            From Vault
-                          <% "url" -> %>
-                            From URL
-                          <% _ -> %>
-                            Ready
-                        <% end %>
-                      </span>
-
-                      <.button
-                        type="button"
-                        phx-click="delete_thumbnail"
-                        phx-value-thumbnail={@form[:thumbnail].value}
-                        phx-target={@myself}
-                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        phx-disable-with="Removing..."
-                      >
-                        <svg
-                          class="w-4 h-4 mr-1.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          >
-                          </path>
-                        </svg>
-                        Remove
-                      </.button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            <% end %>
+            <.image_upload
+              form={@form}
+              field={:thumbnail}
+              label="Thumbnail"
+              upload_name={:thumbnail}
+              tab={@tab}
+              thumbnail_source={@thumbnail_source}
+              thumbnail_url_input={@thumbnail_url_input}
+              asset_vault_files={@asset_vault_files}
+              shown_images_count={@shown_images_count}
+              target={@myself}
+              uploads={@uploads}
+            />
           </div>
         <% end %>
 
         <%= if @step == 2 do %>
-          <div class="flex items-start gap-5">
-            <div class="sticky top-0 w-full h-full max-w-72">
-              <h5>Collection Properties</h5>
+          <div>
+            <div class="flex items-start gap-5">
+              <div class="sticky top-0 w-full h-full max-w-72">
+                <h5>Collection Properties</h5>
 
-              <div class="w-full h-full max-h-screen border border-1 border-voile-muted overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
-                <p class="text-xs italic mb-4 max-w-48">
-                  You can click each category below and pick any necessary property for your collection.
-                </p>
+                <div class="w-full h-full max-h-screen border border-1 border-voile-muted overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
+                  <p class="text-xs italic mb-4 max-w-48">
+                    You can click each category below and pick any necessary property for your collection.
+                  </p>
 
-                <div>
-                  <.input
-                    type="text"
-                    name="property_search"
-                    label="Search Property"
-                    value={@property_search}
-                    placeholder="Search property..."
-                    phx-keyup="search_properties"
-                    phx-target={@myself}
-                    phx-debounce="300"
-                  />
+                  <div>
+                    <.input
+                      type="text"
+                      name="property_search"
+                      label="Search Property"
+                      value={@property_search}
+                      placeholder="Search property..."
+                      phx-keyup="search_properties"
+                      phx-target={@myself}
+                      phx-debounce="300"
+                    />
+                  </div>
+
+                  <%= if Enum.empty?(@filtered_properties) do %>
+                    <p class="text-red-500 text-sm mt-2">No property found.</p>
+                  <% else %>
+                    <%= for {id, props} <- @filtered_properties do %>
+                      <div class="my-5">
+                        <h6
+                          class="mb-4 border border-1 border-voile-muted rounded-xl p-2 hover:text-voile-primary cursor-pointer transition-all duration-1000"
+                          phx-click={
+                            JS.toggle(
+                              to: "##{id |> String.downcase() |> String.replace(" ", "-")}",
+                              in: "block scale-y-100 transition transform duration-300 ease-out",
+                              out: "hidden scale-y-0 transition transform duration-300 ease-in",
+                              display: "block"
+                            )
+                          }
+                        >
+                          {id}
+                          <%= if length(props) > 0 do %>
+                            (<span class="text-brand">{length(props)}</span>)
+                          <% end %>
+                        </h6>
+
+                        <div
+                          id={id |> String.downcase() |> String.replace(" ", "-")}
+                          class={
+                            if @property_search != "",
+                              do:
+                                "block scale-y-100 origin-top overflow-hidden transition-transform duration-300",
+                              else:
+                                "hidden scale-y-0 origin-top overflow-hidden transition-transform duration-300"
+                          }
+                        >
+                          <div class="flex flex-col gap-3">
+                            <%= for prop <- props do %>
+                              <button
+                                type="button"
+                                phx-click="select_props"
+                                phx-value-id={prop.id}
+                                phx-target={@myself}
+                                class="btn hover-btn py-5 ml-3"
+                              >
+                                {prop.label}
+                              </button>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  <% end %>
                 </div>
+              </div>
 
-                <%= if Enum.empty?(@filtered_properties) do %>
-                  <p class="text-red-500 text-sm mt-2">No property found.</p>
+              <div class="w-full">
+                <%= if @form[:collection_fields] == nil or Enum.empty?(@form[:collection_fields].value || []) do %>
+                  <p class="text-red-500 text-sm mt-2">No collection fields added yet.</p>
                 <% else %>
-                  <%= for {id, props} <- @filtered_properties do %>
-                    <div class="my-5">
-                      <h6
-                        class="mb-4 border border-1 border-voile-muted rounded-xl p-2 hover:text-voile-primary cursor-pointer transition-all duration-1000"
-                        phx-click={
-                          JS.toggle(
-                            to: "##{id |> String.downcase() |> String.replace(" ", "-")}",
-                            in: "block scale-y-100 transition transform duration-300 ease-out",
-                            out: "hidden scale-y-0 transition transform duration-300 ease-in",
-                            display: "block"
-                          )
-                        }
-                      >
-                        {id}
-                        <%= if length(props) > 0 do %>
-                          (<span class="text-brand">{length(props)}</span>)
-                        <% end %>
+                  <div>
+                    <.inputs_for :let={col_field} field={@form[:collection_fields]}>
+                      <h6 class="bg-voile-primary px-4 py-1 rounded-t-xl text-white">
+                        {col_field[:label].value}
                       </h6>
 
-                      <div
-                        id={id |> String.downcase() |> String.replace(" ", "-")}
-                        class={
-                          if @property_search != "",
-                            do:
-                              "block scale-y-100 origin-top overflow-hidden transition-transform duration-300",
-                            else:
-                              "hidden scale-y-0 origin-top overflow-hidden transition-transform duration-300"
-                        }
-                      >
-                        <div class="flex flex-col gap-3">
-                          <%= for prop <- props do %>
-                            <button
+                      <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
+                        <p class="text-gray-500 dark:text-white italic pb-4">
+                          <% mp = Map.get(col_field.data, :metadata_properties) %> {cond do
+                            col_field[:information].value not in [nil, ""] ->
+                              col_field[:information].value
+
+                            mp && not match?(%Ecto.Association.NotLoaded{}, mp) ->
+                              mp.information
+
+                            true ->
+                              ""
+                          end}
+                        </p>
+
+                        <input
+                          type="hidden"
+                          name={col_field[:label].name}
+                          value={col_field[:label].value}
+                        />
+                        <input
+                          type="hidden"
+                          name={col_field[:property_id].name}
+                          value={col_field[:property_id].value}
+                        />
+                        <input
+                          type="hidden"
+                          name={col_field[:name].name}
+                          value={col_field[:name].value}
+                        />
+                        <input
+                          type="hidden"
+                          name={col_field[:information].name}
+                          value={col_field[:information].value}
+                        />
+                        <input
+                          type="hidden"
+                          name={col_field[:sort_order].name}
+                          value={col_field[:sort_order].value || col_field.index + 1}
+                        />
+                        <input
+                          type="hidden"
+                          name={col_field[:type_value].name}
+                          value={col_field[:type_value].value}
+                        />
+                        <div class="grid grid-cols-5 items-start gap-2">
+                          <.input
+                            field={col_field[:value_lang]}
+                            type="select"
+                            label="Language"
+                            options={[
+                              {"Indonesia", "id"},
+                              {"English", "en"}
+                            ]}
+                          />
+                          <div class="col-span-4">
+                            <.input
+                              field={col_field[:value]}
+                              type={col_field[:type_value].value}
+                              label="Value"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="w-full flex items-center gap-3 mt-2">
+                          <%= if col_field[:id].value != nil do %>
+                            <.button
                               type="button"
-                              phx-click="select_props"
-                              phx-value-id={prop.id}
+                              phx-click={
+                                JS.push("delete_field_confirmation")
+                                |> show_modal("col_field_delete_confirmation")
+                              }
                               phx-target={@myself}
-                              class="btn hover-btn py-5 ml-3"
+                              phx-value-id={col_field[:id].value}
+                              class="cancel-btn w-full"
                             >
-                              {prop.label}
-                            </button>
+                              <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Property
+                            </.button>
+                          <% else %>
+                            <.button
+                              type="button"
+                              phx-click="delete_unsaved_field"
+                              phx-target={@myself}
+                              phx-value-index={col_field.index}
+                              class="warning-btn w-full"
+                            >
+                              <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Field
+                            </.button>
                           <% end %>
                         </div>
                       </div>
-                    </div>
-                  <% end %>
+                    </.inputs_for>
+                  </div>
                 <% end %>
               </div>
-            </div>
-
-            <div class="w-full">
-              <%= if @form[:collection_fields] == nil or Enum.empty?(@form[:collection_fields].value || []) do %>
-                <p class="text-red-500 text-sm mt-2">No collection fields added yet.</p>
-              <% else %>
-                <div>
-                  <.inputs_for :let={col_field} field={@form[:collection_fields]}>
-                    <h6 class="bg-voile-primary px-4 py-1 rounded-t-xl text-white">
-                      {col_field[:label].value}
-                    </h6>
-
-                    <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
-                      <p class="text-gray-500 dark:text-white italic pb-4">
-                        <% mp = Map.get(col_field.data, :metadata_properties) %> {cond do
-                          col_field[:information].value not in [nil, ""] ->
-                            col_field[:information].value
-
-                          mp && not match?(%Ecto.Association.NotLoaded{}, mp) ->
-                            mp.information
-
-                          true ->
-                            ""
-                        end}
-                      </p>
-
-                      <input
-                        type="hidden"
-                        name={col_field[:label].name}
-                        value={col_field[:label].value}
-                      />
-                      <input
-                        type="hidden"
-                        name={col_field[:property_id].name}
-                        value={col_field[:property_id].value}
-                      />
-                      <input
-                        type="hidden"
-                        name={col_field[:name].name}
-                        value={col_field[:name].value}
-                      />
-                      <input
-                        type="hidden"
-                        name={col_field[:information].name}
-                        value={col_field[:information].value}
-                      />
-                      <input
-                        type="hidden"
-                        name={col_field[:sort_order].name}
-                        value={col_field[:sort_order].value || col_field.index + 1}
-                      />
-                      <input
-                        type="hidden"
-                        name={col_field[:type_value].name}
-                        value={col_field[:type_value].value}
-                      />
-                      <div class="grid grid-cols-5 items-start gap-2">
-                        <.input
-                          field={col_field[:value_lang]}
-                          type="select"
-                          label="Language"
-                          options={[
-                            {"Indonesia", "id"},
-                            {"English", "en"}
-                          ]}
-                        />
-                        <div class="col-span-4">
-                          <.input
-                            field={col_field[:value]}
-                            type={col_field[:type_value].value}
-                            label="Value"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="w-full flex items-center gap-3 mt-2">
-                        <%= if col_field[:id].value != nil do %>
-                          <.button
-                            type="button"
-                            phx-click={
-                              JS.push("delete_field_confirmation")
-                              |> show_modal("col_field_delete_confirmation")
-                            }
-                            phx-target={@myself}
-                            phx-value-id={col_field[:id].value}
-                            class="cancel-btn w-full"
-                          >
-                            <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Property
-                          </.button>
-                        <% else %>
-                          <.button
-                            type="button"
-                            phx-click="delete_unsaved_field"
-                            phx-target={@myself}
-                            phx-value-index={col_field.index}
-                            class="warning-btn w-full"
-                          >
-                            <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Field
-                          </.button>
-                        <% end %>
-                      </div>
-                    </div>
-                  </.inputs_for>
-                </div>
-              <% end %>
             </div>
           </div>
         <% end %>
 
         <%= if @step == 3 do %>
-          <div class="flex items-center justify-between mb-5">
-            <h5>The Items Data</h5>
+          <div>
+            <div class="flex items-center justify-between mb-5">
+              <h5>The Items Data</h5>
 
-            <div class="flex items-center gap-5">
-              <.button
-                type="button"
-                phx-click="add_item_data"
-                phx-target={@myself}
-                class="primary-btn"
-              >
-                <.icon name="hero-plus-circle-solid" class="w-4 h-4" /> Add Item Data
-              </.button>
-            </div>
-          </div>
-
-          <div class="">
-            <%= if @form[:items] == nil or Enum.empty?(@form[:items].value || []) do %>
-              <p class="text-red-500 text-sm mt-2">
-                No items is added yet. Create at least 1 item for each collection.
-              </p>
-            <% else %>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
-                <.inputs_for :let={item_field} field={@form[:items]}>
-                  <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-5">
-                    <div class="w-full flex items-center gap-3 mt-2">
-                      <%= if item_field[:id].value != nil do %>
-                        <.button
-                          type="button"
-                          phx-click={
-                            JS.push("delete_item_confirmation")
-                            |> show_modal("item_delete_confirmation")
-                          }
-                          phx-target={@myself}
-                          phx-value-id={item_field[:id].value}
-                          class="cancel-btn w-full"
-                        >
-                          <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Item
-                        </.button>
-                      <% else %>
-                        <.button
-                          type="button"
-                          phx-click="delete_unsaved_item"
-                          phx-target={@myself}
-                          phx-value-index={item_field.index}
-                          class="warning-btn w-full"
-                        >
-                          <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Item
-                        </.button>
-                      <% end %>
-                    </div>
-
-                    <.input
-                      field={item_field[:item_code]}
-                      type="text"
-                      label="Item Code"
-                      required_value={true}
-                    />
-                    <.input
-                      field={item_field[:inventory_code]}
-                      type="text"
-                      label="Inventory Code"
-                      required_value={true}
-                    />
-                    <input
-                      type="hidden"
-                      name={item_field[:barcode].name}
-                      value={item_field[:barcode].value}
-                    />
-                    <.input
-                      field={item_field[:barcode]}
-                      type="text"
-                      label="Barcode"
-                      required_value={true}
-                      disabled
-                    />
-                    <.input
-                      field={item_field[:legacy_item_code]}
-                      type="text"
-                      label="Legacy Item Code"
-                    />
-                    <.input
-                      field={item_field[:location]}
-                      type="text"
-                      label="Location"
-                      required_value={true}
-                    />
-                    <input
-                      type="hidden"
-                      name={item_field[:unit_id].name}
-                      value={item_field[:unit_id].value}
-                    />
-                    <.input
-                      field={item_field[:unit_id]}
-                      type="select"
-                      label="Unit Location"
-                      required_value={true}
-                      options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
-                      disabled={true}
-                    />
-                    <.input
-                      field={item_field[:status]}
-                      type="select"
-                      label="Status"
-                      required_value={true}
-                      options={[
-                        {"Active", "active"},
-                        {"Inactive", "inactive"},
-                        {"Lost", "lost"},
-                        {"Damaged", "damaged"},
-                        {"Discarded", "discarded"}
-                      ]}
-                    />
-                    <.input
-                      field={item_field[:condition]}
-                      type="select"
-                      label="Condition"
-                      required_value={true}
-                      options={[
-                        {"Excellent", "excellent"},
-                        {"Good", "good"},
-                        {"Fair", "fair"},
-                        {"Poor", "poor"},
-                        {"Damaged", "damaged"}
-                      ]}
-                    />
-                    <.input
-                      field={item_field[:availability]}
-                      type="select"
-                      label="Availability"
-                      required_value={true}
-                      options={Item.availability_options()}
-                    />
-                  </div>
-                </.inputs_for>
+              <div class="flex items-center gap-5">
+                <.button
+                  type="button"
+                  phx-click="add_item_data"
+                  phx-target={@myself}
+                  class="primary-btn"
+                >
+                  <.icon name="hero-plus-circle-solid" class="w-4 h-4" /> Add Item Data
+                </.button>
               </div>
-            <% end %>
+            </div>
+
+            <div class="">
+              <%= if @form[:items] == nil or Enum.empty?(@form[:items].value || []) do %>
+                <p class="text-red-500 text-sm mt-2">
+                  No items is added yet. Create at least 1 item for each collection.
+                </p>
+              <% else %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
+                  <.inputs_for :let={item_field} field={@form[:items]}>
+                    <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-5">
+                      <div class="w-full flex items-center gap-3 mt-2">
+                        <%= if item_field[:id].value != nil do %>
+                          <.button
+                            type="button"
+                            phx-click={
+                              JS.push("delete_item_confirmation")
+                              |> show_modal("item_delete_confirmation")
+                            }
+                            phx-target={@myself}
+                            phx-value-id={item_field[:id].value}
+                            class="cancel-btn w-full"
+                          >
+                            <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Item
+                          </.button>
+                        <% else %>
+                          <.button
+                            type="button"
+                            phx-click="delete_unsaved_item"
+                            phx-target={@myself}
+                            phx-value-index={item_field.index}
+                            class="warning-btn w-full"
+                          >
+                            <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Item
+                          </.button>
+                        <% end %>
+                      </div>
+
+                      <.input
+                        field={item_field[:item_code]}
+                        type="text"
+                        label="Item Code"
+                        required_value={true}
+                      />
+                      <.input
+                        field={item_field[:inventory_code]}
+                        type="text"
+                        label="Inventory Code"
+                        required_value={true}
+                      />
+                      <input
+                        type="hidden"
+                        name={item_field[:barcode].name}
+                        value={item_field[:barcode].value}
+                      />
+                      <.input
+                        field={item_field[:barcode]}
+                        type="text"
+                        label="Barcode"
+                        required_value={true}
+                        disabled
+                      />
+                      <.input
+                        field={item_field[:legacy_item_code]}
+                        type="text"
+                        label="Legacy Item Code"
+                      />
+                      <.input
+                        field={item_field[:location]}
+                        type="text"
+                        label="Location"
+                        required_value={true}
+                      />
+                      <input
+                        type="hidden"
+                        name={item_field[:unit_id].name}
+                        value={item_field[:unit_id].value}
+                      />
+                      <.input
+                        field={item_field[:unit_id]}
+                        type="select"
+                        label="Unit Location"
+                        required_value={true}
+                        options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
+                        disabled={true}
+                      />
+                      <.input
+                        field={item_field[:status]}
+                        type="select"
+                        label="Status"
+                        required_value={true}
+                        options={[
+                          {"Active", "active"},
+                          {"Inactive", "inactive"},
+                          {"Lost", "lost"},
+                          {"Damaged", "damaged"},
+                          {"Discarded", "discarded"}
+                        ]}
+                      />
+                      <.input
+                        field={item_field[:condition]}
+                        type="select"
+                        label="Condition"
+                        required_value={true}
+                        options={[
+                          {"Excellent", "excellent"},
+                          {"Good", "good"},
+                          {"Fair", "fair"},
+                          {"Poor", "poor"},
+                          {"Damaged", "damaged"}
+                        ]}
+                      />
+                      <.input
+                        field={item_field[:availability]}
+                        type="select"
+                        label="Availability"
+                        required_value={true}
+                        options={Item.availability_options()}
+                      />
+                    </div>
+                  </.inputs_for>
+                </div>
+              <% end %>
+            </div>
           </div>
         <% end %>
 
@@ -1694,55 +1262,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     save_collection_as_draft(socket, socket.assigns.action, collection_params)
   end
 
-  def handle_event("delete_thumbnail", %{"thumbnail" => thumbnail_path}, socket) do
-    handle_delete_thumbnail(%{"thumbnail" => thumbnail_path}, socket)
-  end
-
-  def handle_event("switch_thumbnail_tab", %{"tab" => tab}, socket) do
-    {:noreply, assign(socket, :tab, tab)}
-  end
-
-  def handle_event("add_thumbnail_from_url", %{"url" => url}, socket) do
-    handle_add_thumbnail_from_url(url, socket)
-  end
-
-  def handle_event("update_thumbnail_url", %{"thumbnail_url" => url}, socket) do
-    {:noreply, assign(socket, :thumbnail_url_input, url)}
-  end
-
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :thumbnail, ref)}
-  end
-
-  def handle_event("select_thumbnail_from_vault", %{"attachment_id" => attachment_id}, socket) do
-    attachment = Catalog.get_attachment!(attachment_id)
-
-    form_params =
-      (socket.assigns.form.params || %{})
-      |> Map.put("thumbnail", attachment.file_path)
-      |> Map.put("thumbnail_source", "vault")
-      |> Map.put("thumbnail_attachment_id", attachment.id)
-
-    socket =
-      socket
-      |> assign(:form, %{socket.assigns.form | params: form_params})
-      |> assign(:collection, %{socket.assigns.collection | thumbnail: attachment.file_path})
-      |> assign(:thumbnail_source, "vault")
-      |> assign(:thumbnail_attachment_id, attachment.id)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("progress", %{"upload_config" => "thumbnail"}, socket) do
-    case socket.assigns.uploads.thumbnail.entries do
-      [entry] when entry.done? ->
-        handle_thumbnail_progress(:thumbnail, entry, socket)
-
-      _ ->
-        {:noreply, socket}
-    end
-  end
-
   def handle_event("load_more_images", _params, socket) do
     {:noreply, assign(socket, :shown_images_count, socket.assigns.shown_images_count + 12)}
   end
@@ -1787,8 +1306,56 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:selected_parent_title, nil)}
   end
 
-  defp handle_progress(:thumbnail, entry, socket) do
-    handle_thumbnail_progress(:thumbnail, entry, socket)
+  # Image upload event handlers
+  def handle_event("switch_image_tab", %{"tab" => tab}, socket) do
+    {:noreply, assign(socket, :tab, tab)}
+  end
+
+  def handle_event("update_image_url", %{"image_url" => url}, socket) do
+    {:noreply, assign(socket, :thumbnail_url_input, url)}
+  end
+
+  def handle_event("add_image_from_url", %{"url" => url}, socket) do
+    # TODO: Implement URL image fetching
+    # For now, just set the URL directly
+    form_params = (socket.assigns.form.params || %{}) |> Map.put("thumbnail", url)
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, "url")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("select_image_from_vault", %{"attachment_id" => attachment_id}, socket) do
+    attachment = Catalog.get_attachment!(attachment_id)
+
+    form_params =
+      (socket.assigns.form.params || %{})
+      |> Map.put("thumbnail", attachment.file_path)
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, "vault")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_image_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :thumbnail, ref)}
+  end
+
+  def handle_event("delete_image", %{"image" => _image_path}, socket) do
+    form_params = (socket.assigns.form.params || %{}) |> Map.put("thumbnail", "")
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, nil)
+
+    {:noreply, socket}
   end
 
   defp get_selected_parent_title(collection) do
@@ -1831,6 +1398,63 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       # Other users must use their own unit_id (from node_id field)
       true ->
         current_scope.user.node_id
+    end
+  end
+
+  def handle_progress(:thumbnail, entry, socket) do
+    if entry.done? do
+      # Consume the upload and save using Client.Storage for preview
+      [uploaded_path] =
+        consume_uploaded_entries(socket, :thumbnail, fn meta, entry ->
+          # Use Client.Storage to upload the file to temp folder
+          file_params = %{
+            path: meta.path,
+            filename: entry.client_name,
+            content_type: entry.client_type
+          }
+
+          {:ok, url} =
+            Client.Storage.upload(file_params, folder: "asset_vault", generate_filename: true)
+
+          # Create attachment record
+          attachment_params = %{
+            file_name: entry.client_name,
+            original_name: entry.client_name,
+            file_path: url,
+            file_key: url,
+            file_size: entry.client_size,
+            mime_type: entry.client_type,
+            file_type: "image",
+            attachable_id: socket.assigns.form.params["id"],
+            attachable_type: "asset_vault",
+            access_level: "restricted"
+          }
+
+          case Voile.Repo.insert(
+                 Voile.Schema.Catalog.Attachment.changeset(
+                   %Voile.Schema.Catalog.Attachment{},
+                   attachment_params
+                 )
+               ) do
+            {:ok, _} ->
+              {:ok, url}
+
+            # Still return the URL even if attachment creation fails
+            {:error, _} ->
+              {:ok, url}
+          end
+        end)
+
+      form_params = (socket.assigns.form.params || %{}) |> Map.put("thumbnail", uploaded_path)
+
+      socket =
+        socket
+        |> assign(:form, %{socket.assigns.form | params: form_params})
+        |> assign(:thumbnail_source, "local")
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
     end
   end
 end

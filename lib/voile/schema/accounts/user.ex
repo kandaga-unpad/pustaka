@@ -116,7 +116,7 @@ defmodule Voile.Schema.Accounts.User do
       :department,
       :position
     ])
-    |> put_social_media
+    |> load_social_media_into_virtual
     |> validate_username(opts)
     |> validate_email(opts)
     |> validate_password(opts)
@@ -215,6 +215,7 @@ defmodule Voile.Schema.Accounts.User do
       :department,
       :position
     ])
+    |> load_social_media_into_virtual
     |> validate_email(opts)
   end
 
@@ -445,22 +446,15 @@ defmodule Voile.Schema.Accounts.User do
     end
   end
 
-  defp put_social_media(changeset) do
-    twitter = get_field(changeset, :twitter)
-    facebook = get_field(changeset, :facebook)
-    linkedin = get_field(changeset, :linkedin)
-    instagram = get_field(changeset, :instagram)
-    website = get_field(changeset, :website)
+  defp load_social_media_into_virtual(changeset) do
+    social_media = get_field(changeset, :social_media) || %{}
 
-    social_media = %{
-      "twitter" => twitter,
-      "facebook" => facebook,
-      "linkedin" => linkedin,
-      "instagram" => instagram,
-      "website" => website
-    }
-
-    put_change(changeset, :social_media, social_media)
+    changeset
+    |> put_change(:twitter, social_media["twitter"])
+    |> put_change(:facebook, social_media["facebook"])
+    |> put_change(:linkedin, social_media["linkedin"])
+    |> put_change(:instagram, social_media["instagram"])
+    |> put_change(:website, social_media["website"])
   end
 
   defp generate_username_based_on_email_if_username_is_empty(changeset) do

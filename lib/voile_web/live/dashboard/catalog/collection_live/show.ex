@@ -35,20 +35,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
-    collection = Catalog.get_collection!(id)
+    case Ecto.UUID.cast(id) do
+      {:ok, uuid} ->
+        collection = Catalog.get_collection!(uuid)
 
-    # Preserve query parameters from the index page (search, filters)
-    query_params = Map.drop(params, ["id"])
+        # Preserve query parameters from the index page (search, filters)
+        query_params = Map.drop(params, ["id"])
 
-    socket =
-      socket
-      |> assign(:page_title, page_title(socket.assigns.live_action))
-      |> assign(:collection, collection)
-      |> assign(:patch, ~p"/manage/catalog/collections/#{collection}")
-      |> assign(:back_query_params, query_params)
-      |> assign(:transfer_item, nil)
+        socket =
+          socket
+          |> assign(:page_title, page_title(socket.assigns.live_action))
+          |> assign(:collection, collection)
+          |> assign(:patch, ~p"/manage/catalog/collections/#{collection}")
+          |> assign(:back_query_params, query_params)
+          |> assign(:transfer_item, nil)
 
-    {:noreply, socket}
+        {:noreply, socket}
+
+      :error ->
+        socket =
+          socket
+          |> put_flash(:error, "Invalid collection ID")
+          |> push_navigate(to: ~p"/manage/catalog/collections")
+
+        {:noreply, socket}
+    end
   end
 
   @impl true

@@ -22,6 +22,11 @@ defmodule Client.Storage do
   - `Client.Storage.S3` - Store files on S3-compatible storage (AWS S3, MinIO, Backblaze B2, etc.)
   """
 
+  # Only import if modules exist (for attachment deletion)
+  if Code.ensure_loaded?(Voile.Repo) and Code.ensure_loaded?(Voile.Schema.Catalog.Attachment) do
+    # No aliases needed, using full module names
+  end
+
   @doc """
   Upload a file using the configured storage adapter.
 
@@ -54,12 +59,22 @@ defmodule Client.Storage do
   @doc """
   Delete a file using the configured storage adapter.
 
+  ## Options
+    * `:adapter` - Override the default storage adapter
+    * `:delete_attachment` - If true, also delete the attachment record from database (default: false)
+
   ## Examples
 
       {:ok, url} = Client.Storage.delete(url)
       {:ok, url} = Client.Storage.delete(url, adapter: Client.Storage.S3)
+      {:ok, url} = Client.Storage.delete(url, delete_attachment: true)
   """
   def delete(file_url, opts \\ []) do
+    # Delete attachment record if requested
+    if Keyword.get(opts, :delete_attachment, false) do
+      delete_attachment_record(file_url)
+    end
+
     adapter = get_adapter(opts)
     adapter.delete(file_url, opts)
   end
@@ -110,5 +125,16 @@ defmodule Client.Storage do
           ArgumentError -> Application.get_env(:voile, :storage_adapter, Client.Storage.Local)
         end
     end
+  end
+
+  if Code.ensure_loaded?(Voile.Repo) and Code.ensure_loaded?(Voile.Schema.Catalog.Attachment) do
+    defp delete_attachment_record(file_url) do
+      case Voile.Repo.get_by(Voile.Schema.Catalog.Attachment, file_path: file_url) do
+        nil -> :ok
+        attachment -> Voile.Repo.delete(attachment)
+      end
+    end
+  else
+    defp delete_attachment_record(_file_url), do: :ok
   end
 end

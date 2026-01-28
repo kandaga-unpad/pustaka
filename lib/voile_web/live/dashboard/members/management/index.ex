@@ -30,6 +30,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       |> assign(:selected_status, params["status"] || "all")
       |> assign(:current_page, String.to_integer(params["page"] || "1"))
       |> assign(:per_page, @per_page)
+      |> allow_upload(:user_image,
+        accept: ~w(.jpg .jpeg .png .webp),
+        max_entries: 1,
+        auto_upload: true,
+        progress: &handle_progress/3
+      )
       |> load_members()
       |> load_filters()
 
@@ -44,18 +50,37 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     socket =
       case socket.assigns.live_action do
         :edit ->
-          member = Repo.get!(User, params["id"]) |> Repo.preload([:user_type, :node])
+          member = Repo.get!(User, params["id"]) |> Repo.preload([:user_type, :node, :roles])
+
+          selected_role_ids =
+            member
+            |> Map.get(:roles, [])
+            |> Enum.map(& &1.id)
 
           socket
           |> assign(:member, member)
+          |> assign(:selected_role_ids, selected_role_ids)
           |> assign(:form, to_form(User.changeset(member, %{})))
           |> assign(:is_super_admin, is_super_admin)
+          |> assign(:tab, "upload")
+          |> assign(:thumbnail_source, nil)
+          |> assign(:thumbnail_url_input, "")
+          |> assign(:asset_vault_files, Voile.Schema.Catalog.list_all_attachments("image"))
+          |> assign(:shown_images_count, 12)
+          |> load_filters()
 
         :new ->
           socket
           |> assign(:member, %User{})
+          |> assign(:selected_role_ids, [])
           |> assign(:form, to_form(User.changeset(%User{}, %{})))
           |> assign(:is_super_admin, is_super_admin)
+          |> assign(:tab, "upload")
+          |> assign(:thumbnail_source, nil)
+          |> assign(:thumbnail_url_input, "")
+          |> assign(:asset_vault_files, Voile.Schema.Catalog.list_all_attachments("image"))
+          |> assign(:shown_images_count, 12)
+          |> load_filters()
 
         _ ->
           socket
@@ -126,8 +151,24 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
   @impl true
   def handle_event("validate", %{"user" => user_params}, socket) do
+    user_params = prepare_user_params(user_params)
+
+    # Extract and store role_ids for form state
+    role_ids =
+      user_params
+      |> Map.get("role_ids", [])
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.map(fn
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+      end)
+
     changeset = User.changeset(socket.assigns.member, user_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+
+    {:noreply,
+     socket
+     |> assign(:selected_role_ids, role_ids)
+     |> assign(form: to_form(changeset, action: :validate))}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
@@ -152,10 +193,86 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     end
   end
 
+  # Image upload event handlers
+  def handle_event("switch_image_tab", %{"tab" => tab}, socket) do
+    {:noreply, assign(socket, :tab, tab)}
+  end
+
+  def handle_event("update_image_url", %{"image_url" => url}, socket) do
+    {:noreply, assign(socket, :thumbnail_url_input, url)}
+  end
+
+  def handle_event("add_image_from_url", %{"url" => url}, socket) do
+    # TODO: Implement URL image fetching
+    # For now, just set the URL directly
+    form_params = (socket.assigns.form.params || %{}) |> Map.put("user_image", url)
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, "url")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("select_image_from_vault", %{"attachment_id" => attachment_id}, socket) do
+    attachment = Voile.Schema.Catalog.get_attachment!(attachment_id)
+
+    form_params =
+      (socket.assigns.form.params || %{})
+      |> Map.put("user_image", attachment.file_path)
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, "vault")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_image_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :user_image, ref)}
+  end
+
+  def handle_event("delete_image", %{"image" => _image_path}, socket) do
+    form_params = (socket.assigns.form.params || %{}) |> Map.put("user_image", "")
+
+    socket =
+      socket
+      |> assign(:form, %{socket.assigns.form | params: form_params})
+      |> assign(:thumbnail_source, nil)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("load_more_images", _params, socket) do
+    {:noreply, assign(socket, :shown_images_count, socket.assigns.shown_images_count + 12)}
+  end
+
+  def handle_progress(:user_image, entry, socket) do
+    if entry.done? do
+      # Handle completed upload
+      uploaded_file = List.first(socket.assigns.uploads.user_image.entries)
+      # This should be replaced with actual file path logic
+      file_path = uploaded_file.client_name
+
+      form_params = (socket.assigns.form.params || %{}) |> Map.put("user_image", file_path)
+
+      socket =
+        socket
+        |> assign(:form, %{socket.assigns.form | params: form_params})
+        |> assign(:thumbnail_source, "local")
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6">
+    <div class="space-y-6 bg-gray-100 dark:bg-gray-800 min-h-screen p-6 rounded-lg">
       <%= if @live_action in [:new, :edit] do %>
         <.member_form
           form={@form}
@@ -163,7 +280,15 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           action={@live_action}
           nodes={@nodes}
           member_types={@member_types}
+          available_roles={@available_roles}
+          selected_role_ids={@selected_role_ids}
           is_super_admin={@is_super_admin}
+          tab={@tab}
+          thumbnail_source={@thumbnail_source}
+          thumbnail_url_input={@thumbnail_url_input}
+          asset_vault_files={@asset_vault_files}
+          shown_images_count={@shown_images_count}
+          uploads={@uploads}
         />
       <% else %>
         <%!-- Breadcrumb --%>
@@ -355,12 +480,20 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   # Private functions
 
   defp save_member(socket, :edit, user_params) do
+    user_params = prepare_user_params(user_params)
+
+    # Extract role_ids from params
+    role_ids = Map.get(user_params, "role_ids", [])
+
     case Accounts.admin_update_user(socket.assigns.member, user_params) do
-      {:ok, member} ->
+      {:ok, user} ->
+        # Update role assignments
+        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+
         socket =
           socket
           |> put_flash(:info, "Member updated successfully")
-          |> push_patch(to: ~p"/manage/members/management/#{member.id}")
+          |> push_patch(to: ~p"/manage/members/management")
 
         {:noreply, socket}
 
@@ -370,6 +503,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   end
 
   defp save_member(socket, :new, user_params) do
+    user_params = prepare_user_params(user_params)
+
+    # Extract role_ids from params
+    role_ids = Map.get(user_params, "role_ids", [])
+
     user_params =
       if socket.assigns.is_super_admin do
         user_params
@@ -378,11 +516,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       end
 
     case Accounts.register_user(user_params) do
-      {:ok, member} ->
+      {:ok, user} ->
+        # Assign roles to new user
+        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+
         socket =
           socket
           |> put_flash(:info, "Member created successfully")
-          |> push_patch(to: ~p"/manage/members/management/#{member.id}")
+          |> push_patch(to: ~p"/manage/members/management")
 
         {:noreply, socket}
 
@@ -493,9 +634,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     nodes =
       if socket.assigns.is_super_admin, do: Repo.all(from(n in Node, order_by: n.name)), else: []
 
+    available_roles = VoileWeb.Auth.PermissionManager.list_roles()
+
     socket
     |> assign(:member_types, member_types)
     |> assign(:nodes, nodes)
+    |> assign(:available_roles, available_roles)
   end
 
   defp member_status(member) do
@@ -569,5 +713,85 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       "Expired" -> "bg-orange-100 text-orange-800"
       _ -> "bg-gray-100 text-gray-800"
     end
+  end
+
+  defp prepare_user_params(params) do
+    # Convert groups string to array
+    groups =
+      case params["groups"] do
+        nil ->
+          []
+
+        "" ->
+          []
+
+        groups_string ->
+          groups_string
+          |> String.split(",")
+          |> Enum.map(&String.trim/1)
+          |> Enum.reject(&(&1 == ""))
+      end
+
+    Map.put(params, "groups", groups)
+  end
+
+  # Helper to update user roles
+  defp update_user_roles(user, role_ids, assigned_by_id) do
+    alias VoileWeb.Auth.Authorization
+
+    # Get current role IDs
+    current_role_ids =
+      user
+      |> Repo.preload(:roles)
+      |> Map.get(:roles, [])
+      |> Enum.map(& &1.id)
+      |> MapSet.new()
+
+    # Convert role_ids to integers and create set
+    new_role_ids =
+      role_ids
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.map(fn
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+      end)
+      |> MapSet.new()
+
+    # Determine roles to add and remove
+    roles_to_add = MapSet.difference(new_role_ids, current_role_ids)
+    roles_to_remove = MapSet.difference(current_role_ids, new_role_ids)
+
+    # Add new roles
+    add_results =
+      Enum.map(roles_to_add, fn role_id ->
+        Authorization.assign_role(user.id, role_id, assigned_by_id: assigned_by_id)
+      end)
+
+    # Remove old roles
+    remove_results =
+      Enum.map(roles_to_remove, fn role_id ->
+        Authorization.revoke_role(user.id, role_id)
+      end)
+
+    # Check for errors
+    add_errors = Enum.filter(add_results, fn result -> match?({:error, _}, result) end)
+
+    remove_errors =
+      Enum.filter(remove_results, fn result ->
+        case result do
+          {:error, _} -> true
+          _ -> false
+        end
+      end)
+
+    if add_errors != [] or remove_errors != [] do
+      require Logger
+
+      Logger.error(
+        "Failed to update user roles for user #{user.id}: add_errors=#{inspect(add_errors)}, remove_errors=#{inspect(remove_errors)}"
+      )
+    end
+
+    :ok
   end
 end

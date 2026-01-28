@@ -3,6 +3,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
   import VoileWeb.CoreComponents
   import VoileWeb.VoileDashboardComponents
+  import VoileWeb.Components.ImageUpload
 
   # Form Component
   attr :form, :map, required: true
@@ -10,88 +11,224 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   attr :action, :atom, required: true
   attr :nodes, :list, default: []
   attr :member_types, :list, default: []
+  attr :available_roles, :list, default: []
+  attr :selected_role_ids, :list, default: []
   attr :is_super_admin, :boolean, default: false
+  attr :tab, :string, default: "upload"
+  attr :thumbnail_source, :string, default: nil
+  attr :thumbnail_url_input, :string, default: ""
+  attr :asset_vault_files, :list, default: []
+  attr :shown_images_count, :integer, default: 12
+  attr :uploads, :map, default: %{}
+  attr :show_header, :boolean, default: true
+  attr :show_breadcrumb, :boolean, default: true
+  attr :submit_event, :string, default: "save"
+  attr :button_text, :string, default: "Save"
 
   def member_form(assigns) do
     ~H"""
     <div class="space-y-6">
-      <%!-- Breadcrumb --%>
-      <.breadcrumb items={[
-        %{label: "Manage", path: "/manage"},
-        %{label: "Members", path: "/manage/members"},
-        %{label: "Management", path: "/manage/members/management"},
-        %{label: @member.fullname, path: nil}
-      ]} />
+      <%= if @show_breadcrumb do %>
+        <%!-- Breadcrumb --%>
+        <.breadcrumb items={[
+          %{label: "Manage", path: "/manage"},
+          %{label: "Members", path: "/manage/members"},
+          %{label: "Management", path: "/manage/members/management"},
+          %{label: @member.fullname || "New Member", path: nil}
+        ]} />
+      <% end %>
 
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex items-center gap-3 mb-6">
-          <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
+      <%= if @show_header do %>
+        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                {if @action == :new, do: "Add New Member", else: "Edit Member"}
+              </h1>
+              <p class="text-gray-600 dark:text-gray-300">
+                {if @action == :new,
+                  do: "Create a new library member account",
+                  else: "Update member information"}
+              </p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <.form for={@form} phx-submit={@submit_event} phx-change="validate" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <.input field={@form[:fullname]} type="text" label="Full Name" required />
+          <.input field={@form[:email]} type="email" label="Email" required />
+          <.input field={@form[:username]} type="text" label="Username" required />
+          <.input
+            field={@form[:identifier]}
+            type="text"
+            label="Member Identifier"
+            placeholder="Member ID or Student Number"
+          />
+
+          <%= if @action == :new do %>
+            <.input field={@form[:password]} type="password" label="Password" required />
+          <% end %>
+
+          <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
+          <.input field={@form[:birth_date]} type="date" label="Birth Date" />
+          <.input field={@form[:address]} type="textarea" label="Address" />
+          <.input field={@form[:organization]} type="text" label="Organization" />
+
+          <%= if @is_super_admin do %>
+            <.input
+              field={@form[:node_id]}
+              type="select"
+              label="Node"
+              options={Enum.map(@nodes, &{&1.name, &1.id})}
+            />
+          <% end %>
+
+          <.input
+            field={@form[:user_type_id]}
+            type="select"
+            label="Member Type"
+            options={Enum.map(@member_types, &{&1.name, &1.id})}
+            required
+          />
+
+          <.input field={@form[:registration_date]} type="date" label="Registration Date" />
+          <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {if @action == :new, do: "Add New Member", else: "Edit Member"}
-            </h1>
-            <p class="text-gray-600 dark:text-gray-300">
-              {if @action == :new,
-                do: "Create a new library member account",
-                else: "Update member information"}
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Assign Roles
+            </label>
+            <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <%= for role <- @available_roles do %>
+                <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="user[role_ids][]"
+                    value={role.id}
+                    checked={role.id in (@selected_role_ids || [])}
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                      {role.name}
+                    </div>
+
+                    <%= if role.description do %>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                    <% end %>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Users can have multiple roles. Role-specific permissions can be managed in the
+              <.link navigate="/manage/settings/roles" class="text-blue-600 hover:underline">
+                Role Management
+              </.link>
+              page.
             </p>
           </div>
         </div>
 
-        <.form for={@form} phx-submit="save" phx-change="validate" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <.input field={@form[:fullname]} type="text" label="Full Name" required />
-            <.input field={@form[:email]} type="email" label="Email" required />
-            <.input field={@form[:username]} type="text" label="Username" required />
-
-            <%= if @action == :new do %>
-              <.input field={@form[:password]} type="password" label="Password" required />
-            <% end %>
-
-            <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
-            <.input field={@form[:birth_date]} type="date" label="Birth Date" />
-            <.input field={@form[:address]} type="textarea" label="Address" />
-            <.input field={@form[:organization]} type="text" label="Organization" />
-
-            <%= if @is_super_admin do %>
-              <.input
-                field={@form[:node_id]}
-                type="select"
-                label="Node"
-                options={Enum.map(@nodes, &{&1.name, &1.id})}
-              />
-            <% end %>
-
-            <.input
-              field={@form[:user_type_id]}
-              type="select"
-              label="Member Type"
-              options={Enum.map(@member_types, &{&1.name, &1.id})}
-              required
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">User Image</label>
+          <%= if @member.user_image && @member.user_image != "" do %>
+            <div class="space-y-4">
+              <div>
+                <img
+                  src={@member.user_image}
+                  class="w-32 h-32 rounded-full object-cover border border-gray-300"
+                />
+              </div>
+              <button
+                type="button"
+                phx-click="remove_user_image"
+                class="text-red-600 hover:text-red-800 text-sm font-medium"
+              >
+                <.icon name="hero-trash" class="w-4 h-4 inline mr-1" /> Remove Picture
+              </button>
+            </div>
+          <% else %>
+            <.image_upload
+              form={@form}
+              field={:user_image}
+              label="Profile Picture"
+              upload_name={:user_image}
+              tab={@tab || "upload"}
+              thumbnail_source={@thumbnail_source}
+              thumbnail_url_input={@thumbnail_url_input}
+              asset_vault_files={@asset_vault_files || []}
+              shown_images_count={@shown_images_count || 12}
+              uploads={@uploads}
             />
+          <% end %>
+        </div>
 
-            <.input field={@form[:registration_date]} type="date" label="Registration Date" />
-            <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
+        <.input field={@form[:user_image]} type="hidden" />
+
+        <fieldset class="border border-gray-300 rounded-lg p-4">
+          <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
+            Social Media
+          </legend>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
+            <.input field={@form[:twitter]} type="text" label="Twitter" placeholder="@username" />
+            <.input field={@form[:facebook]} type="text" label="Facebook" placeholder="profile-url" />
+            <.input field={@form[:linkedin]} type="text" label="LinkedIn" placeholder="profile-url" />
+            <.input field={@form[:instagram]} type="text" label="Instagram" placeholder="@username" />
           </div>
 
-          <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-            <.button type="submit" class="bg-voile-primary hover:bg-voile-primary/90 text-white">
-              <.icon
-                name={if @action == :new, do: "hero-plus", else: "hero-check"}
-                class="w-4 h-4 mr-2"
-              />
-              {if @action == :new, do: "Create Member", else: "Update Member"}
-            </.button>
+          <div class="mt-4">
+            <.input
+              field={@form[:website]}
+              type="url"
+              label="Website"
+              placeholder="https://example.com"
+            />
+          </div>
+        </fieldset>
 
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <.input
+            field={@form[:groups]}
+            type="text"
+            label="Groups (comma-separated)"
+            placeholder="group1, group2, group3"
+          />
+        </div>
+
+        <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+          <.button type="submit" class="primary-btn">
+            <.icon
+              name={if @action == :new, do: "hero-plus", else: "hero-check"}
+              class="w-4 h-4 mr-2"
+            />
+            {@button_text}
+          </.button>
+
+          <%= if @show_header do %>
             <.link
               patch="/manage/members/management"
               class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             >
               Cancel
             </.link>
-          </div>
-        </.form>
-      </div>
+          <% else %>
+            <.link
+              patch="/manage/members/management/#{@member.id}"
+              class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Cancel
+            </.link>
+          <% end %>
+        </div>
+      </.form>
     </div>
     """
   end
@@ -115,8 +252,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.fullname || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.email || "-"}</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.username || "-"}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Member Identifier
+            </label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.identifier || "-"}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
@@ -184,6 +327,80 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             </p>
           </div>
         </div>
+      </div>
+
+      <%!-- Roles --%>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Roles</h3>
+        <div class="space-y-2">
+          <%= if @member.roles && @member.roles != [] do %>
+            <%= for role <- @member.roles do %>
+              <div class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                    {role.name}
+                  </div>
+                  <%= if role.description do %>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No roles assigned</p>
+          <% end %>
+        </div>
+      </div>
+
+      <%!-- User Image --%>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">User Image</h3>
+        <%= if @member.user_image do %>
+          <img src={@member.user_image} class="w-32 h-32 rounded-full object-cover" />
+        <% else %>
+          <p class="text-sm text-gray-500 dark:text-gray-400">No image uploaded</p>
+        <% end %>
+      </div>
+
+      <%!-- Social Media --%>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Social Media</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Twitter</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+              {if @member.twitter, do: "@#{@member.twitter}", else: "-"}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Facebook</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.facebook || "-"}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">LinkedIn</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.linkedin || "-"}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Instagram
+            </label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+              {if @member.instagram, do: "@#{@member.instagram}", else: "-"}
+            </p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.website || "-"}</p>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Groups --%>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Groups</h3>
+        <p class="text-sm text-gray-900 dark:text-white">
+          {if @member.groups && @member.groups != [], do: Enum.join(@member.groups, ", "), else: "-"}
+        </p>
       </div>
 
       <%!-- Statistics Cards --%>
@@ -369,73 +586,6 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     >
       {render_slot(@inner_block)}
     </button>
-    """
-  end
-
-  attr :member, :map, required: true
-  attr :form, :map, required: true
-  attr :nodes, :list, default: []
-  attr :member_types, :list, default: []
-  attr :is_super_admin, :boolean, default: false
-
-  def edit_member_tab(assigns) do
-    ~H"""
-    <div class="space-y-6">
-      <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Edit Member Information
-        </h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Update {@member.fullname}'s account information.
-        </p>
-      </div>
-
-      <.form for={@form} phx-submit="update_member" phx-change="validate" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <.input field={@form[:fullname]} type="text" label="Full Name" required />
-          <.input field={@form[:email]} type="email" label="Email" required />
-          <.input field={@form[:username]} type="text" label="Username" required />
-
-          <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
-          <.input field={@form[:birth_date]} type="date" label="Birth Date" />
-          <.input field={@form[:address]} type="textarea" label="Address" />
-          <.input field={@form[:organization]} type="text" label="Organization" />
-
-          <%= if @is_super_admin do %>
-            <.input
-              field={@form[:node_id]}
-              type="select"
-              label="Node"
-              options={Enum.map(@nodes, &{&1.name, &1.id})}
-            />
-          <% end %>
-
-          <.input
-            field={@form[:user_type_id]}
-            type="select"
-            label="Member Type"
-            options={Enum.map(@member_types, &{&1.name, &1.id})}
-            required
-          />
-
-          <.input field={@form[:registration_date]} type="date" label="Registration Date" />
-          <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
-        </div>
-
-        <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-          <.button type="submit" class="success-btn">
-            <.icon name="hero-check" class="w-4 h-4 mr-2" /> Update Member
-          </.button>
-
-          <.link
-            patch="/manage/members/management/#{@member.id}"
-            class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Cancel
-          </.link>
-        </div>
-      </.form>
-    </div>
     """
   end
 
