@@ -6,6 +6,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   alias Voile.Schema.Metadata
   alias Voile.Schema.System
 
+  import Voile.Utils.DateHelper, only: [to_local_time: 1]
+
   @impl true
   def mount(_params, _session, socket) do
     # Check read permission for viewing collection details

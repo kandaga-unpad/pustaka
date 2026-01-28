@@ -72,7 +72,8 @@ defmodule Voile.Schema.Catalog do
       |> Repo.preload([
         :resource_class,
         :mst_creator,
-        :node
+        :node,
+        :created_by
       ])
 
     # Count query without preloads for better performance
@@ -347,6 +348,8 @@ defmodule Voile.Schema.Catalog do
       :mst_creator,
       :node,
       :attachments,
+      :created_by,
+      :updated_by,
       items: [:node],
       collection_fields: [:metadata_properties]
     ])

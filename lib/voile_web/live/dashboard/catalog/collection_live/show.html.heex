@@ -67,6 +67,27 @@
         </:item>
 
         <:item title="Access Level">{@collection.access_level || "-"}</:item>
+
+        <:item title="Custodian">
+          <div class="text-xs text-gray-400 italic">
+            <div>
+              Created by:
+              <%= if @collection.created_by != nil do %>
+                {@collection.created_by.fullname} on ({to_local_time(@collection.inserted_at)})
+              <% else %>
+                -
+              <% end %>
+            </div>
+            <div>
+              Updated by:
+              <%= if @collection.updated_by != nil do %>
+                {@collection.updated_by.fullname} on ({to_local_time(@collection.updated_at)})
+              <% else %>
+                -
+              <% end %>
+            </div>
+          </div>
+        </:item>
       </.list>
     </div>
 
