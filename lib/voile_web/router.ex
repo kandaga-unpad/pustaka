@@ -175,6 +175,7 @@ defmodule VoileWeb.Router do
             live "/import", Dashboard.Catalog.CollectionLive.Import, :import
             live "/review", Dashboard.Catalog.CollectionLive.Review, :index
             live "/review/:id", Dashboard.Catalog.CollectionLive.Review, :review
+            live "/submitted", Dashboard.Catalog.CollectionLive.Submitted, :index
             live "/:id/edit", Dashboard.Catalog.CollectionLive.Index, :edit
 
             live "/:id", Dashboard.Catalog.CollectionLive.Show, :show

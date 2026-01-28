@@ -5,6 +5,7 @@ defmodule Voile.Schema.Catalog do
 
   import Ecto.Query, warn: false
   alias Voile.Repo
+  alias Voile.Utils.CollectionLogger
 
   alias Voile.Schema.Catalog.{
     Collection,
@@ -539,26 +540,33 @@ defmodule Voile.Schema.Catalog do
       when status in ["pending", "draft"] do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    # Build attrs map dynamically based on available fields
+    # Build attrs map
     attrs = %{
       status: "published",
       updated_by_id: reviewer_user.id,
       updated_at: now
     }
 
-    # Add review fields if they exist in the schema
-    attrs =
-      if Map.has_key?(collection, :reviewed_at) do
-        attrs
-        |> Map.put(:reviewed_at, now)
-        |> Map.put(:reviewed_by_id, reviewer_user.id)
-        |> Map.put(:review_notes, notes)
-      else
-        attrs
-      end
-
     changeset = Ecto.Changeset.change(collection, attrs)
-    Repo.update(changeset)
+
+    case Repo.update(changeset) do
+      {:ok, updated_collection} ->
+        # Log the approval action with review notes
+        metadata = if notes && notes != "", do: %{review_notes: notes}, else: %{}
+
+        CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "publish",
+          title: "Collection Approved",
+          message: "Collection '#{collection.title}' was approved and published",
+          old_values: %{status: collection.status},
+          new_values: %{status: "published"},
+          metadata: metadata
+        )
+
+        {:ok, updated_collection}
+
+      error ->
+        error
+    end
   end
 
   def approve_collection(%Collection{}, _reviewer_user, _notes) do
@@ -579,26 +587,33 @@ defmodule Voile.Schema.Catalog do
       when status in ["pending", "draft"] do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    # Build attrs map dynamically based on available fields
+    # Build attrs map
     attrs = %{
       status: "draft",
       updated_by_id: reviewer_user.id,
       updated_at: now
     }
 
-    # Add review fields if they exist in the schema
-    attrs =
-      if Map.has_key?(collection, :reviewed_at) do
-        attrs
-        |> Map.put(:reviewed_at, now)
-        |> Map.put(:reviewed_by_id, reviewer_user.id)
-        |> Map.put(:review_notes, reason)
-      else
-        attrs
-      end
-
     changeset = Ecto.Changeset.change(collection, attrs)
-    Repo.update(changeset)
+
+    case Repo.update(changeset) do
+      {:ok, updated_collection} ->
+        # Log the rejection action with review notes
+        metadata = if reason && reason != "", do: %{review_notes: reason}, else: %{}
+
+        CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "update",
+          title: "Collection Rejected",
+          message: "Collection '#{collection.title}' was rejected and sent back to draft",
+          old_values: %{status: collection.status},
+          new_values: %{status: "draft"},
+          metadata: metadata
+        )
+
+        {:ok, updated_collection}
+
+      error ->
+        error
+    end
   end
 
   def reject_collection(%Collection{}, _reviewer_user, _reason) do
@@ -617,6 +632,112 @@ defmodule Voile.Schema.Catalog do
   def count_pending_collections do
     from(c in Collection, where: c.status in ["pending", "draft"])
     |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Get paginated list of collections submitted by a specific user.
+
+  ## Examples
+
+      iex> list_submitted_collections_paginated(user, 1, 10, "search term")
+      {[%Collection{}], total_pages, total_count}
+
+  """
+  def list_submitted_collections_paginated(user, page \\ 1, per_page \\ 10, search \\ "") do
+    offset = (page - 1) * per_page
+
+    query =
+      from c in Collection,
+        where: c.created_by_id == ^user.id,
+        order_by: [desc: c.inserted_at],
+        limit: ^per_page,
+        offset: ^offset,
+        preload: [
+          :resource_class,
+          :mst_creator,
+          :node,
+          :collection_fields,
+          :items,
+          :created_by,
+          :updated_by
+        ]
+
+    # Apply search filter if provided
+    query =
+      if search && search != "" do
+        search_term = "%#{search}%"
+
+        from c in query,
+          where:
+            ilike(c.title, ^search_term) or
+              ilike(c.description, ^search_term) or
+              (not is_nil(c.mst_creator_id) and
+                 ilike(fragment("(?->>'creator_name')", c.mst_creator), ^search_term)) or
+              (not is_nil(c.resource_class_id) and
+                 ilike(fragment("(?->>'label')", c.resource_class), ^search_term))
+      else
+        query
+      end
+
+    collections = Repo.all(query)
+
+    # Count query with same filters
+    count_query =
+      from c in Collection,
+        where: c.created_by_id == ^user.id,
+        select: count(c.id)
+
+    count_query =
+      if search && search != "" do
+        search_term = "%#{search}%"
+
+        from c in count_query,
+          where:
+            ilike(c.title, ^search_term) or
+              ilike(c.description, ^search_term) or
+              (not is_nil(c.mst_creator_id) and
+                 ilike(fragment("(?->>'creator_name')", c.mst_creator), ^search_term)) or
+              (not is_nil(c.resource_class_id) and
+                 ilike(fragment("(?->>'label')", c.resource_class), ^search_term))
+      else
+        count_query
+      end
+
+    total_count = Repo.one(count_query)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    {collections, total_pages, total_count}
+  end
+
+  @doc """
+  Get review notes for a collection from collection logs.
+  Returns the most recent review notes if available.
+
+  ## Examples
+
+      iex> get_collection_review_notes(collection_id)
+      "Looks good, approved for publication"
+
+      iex> get_collection_review_notes(collection_id)
+      nil
+
+  """
+  def get_collection_review_notes(collection_id) do
+    # Query collection logs for review actions (publish or update with review metadata)
+    from(log in Voile.Schema.System.CollectionLog,
+      join: user in assoc(log, :user),
+      where: log.collection_id == ^collection_id,
+      where: log.action in ["publish", "update"],
+      where: fragment("metadata->>'review_notes' IS NOT NULL"),
+      order_by: [desc: log.inserted_at],
+      limit: 1,
+      select: %{
+        notes: fragment("metadata->>'review_notes'"),
+        reviewer_name: user.fullname,
+        reviewed_at: log.inserted_at
+      }
+    )
+    |> Repo.one()
   end
 
   @doc """

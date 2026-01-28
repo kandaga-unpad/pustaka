@@ -4,7 +4,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   alias Voile.Repo
   alias Voile.Schema.Catalog
 
-  import VoileWeb.Utils.StringHelper, only: [trim_text: 2]
+  import Voile.Utils.DateHelper, only: [to_local_time: 1]
 
   @impl true
   def mount(_params, _session, socket) do

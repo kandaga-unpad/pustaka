@@ -67,6 +67,12 @@
               </.button>
             </.link>
           <% end %>
+          <.link navigate={~p"/manage/catalog/collections/submitted"}>
+            <.button class="btn bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
+              <.icon name="hero-document-text" class="w-4 h-4 sm:mr-1" />
+              <span class="hidden sm:inline">{gettext("My Submissions")}</span>
+            </.button>
+          </.link>
 
           <%= if can?(@current_scope.user, "collections.create") do %>
             <.link patch={~p"/manage/catalog/collections/new"} class="w-full sm:w-auto">
