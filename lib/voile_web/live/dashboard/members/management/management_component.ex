@@ -581,7 +581,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def tab_button(assigns) do
     ~H"""
     <button
-      class={"px-6 py-3 text-sm font-medium border-b-2 #{if @active, do: "border-voile-primary text-voile-primary", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}"}
+      class={"px-6 py-3 text-sm font-medium border-b-2 #{if @active, do: "border-voile-primary text-voile-primary", else: "border-transparent text-gray-400 hover:text-gray-500 hover:border-gray-300"}"}
       {@rest}
     >
       {render_slot(@inner_block)}

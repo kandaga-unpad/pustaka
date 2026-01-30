@@ -137,7 +137,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
   defp load_overdue_items(socket) do
     user = socket.assigns.user
 
-    today = Date.utc_today()
+    now = DateTime.utc_now()
 
     base_query =
       from(t in Transaction,
@@ -146,13 +146,13 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
         join: i in Item,
         on: t.item_id == i.id,
         join: c in assoc(i, :collection),
-        where: is_nil(t.return_date) and t.due_date < ^today,
+        where: is_nil(t.return_date) and t.due_date < ^now,
         order_by: t.due_date,
         preload: [member: [], item: [collection: []]]
       )
 
     query =
-      if is_nil(user.node_id) do
+      if is_nil(user.node_id) or not is_binary(user.node_id) do
         base_query
       else
         # Filter by node
@@ -167,7 +167,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
   end
 
   defp days_overdue(due_date) do
-    Date.diff(Date.utc_today(), due_date)
+    Date.diff(Date.utc_today(), DateTime.to_date(due_date))
   end
 
   defp calculate_fine(days_overdue) do

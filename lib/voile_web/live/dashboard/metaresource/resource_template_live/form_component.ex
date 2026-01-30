@@ -42,15 +42,25 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
           <.input
             field={f[:resource_class_id]}
             type="select"
-            label="Resource Class"
-            options={Enum.map(@resource_class, fn res -> {res.label, res.id} end)}
-            prompt="Select a resource class"
+            label="Resource Type"
+            options={
+              @resource_class
+              |> Enum.group_by(& &1.glam_type)
+              |> Enum.sort_by(fn {group, _} -> group end)
+              |> Enum.map(fn {group, items} ->
+                sorted_items =
+                  items |> Enum.sort_by(& &1.label) |> Enum.map(fn res -> {res.label, res.id} end)
+
+                {group, sorted_items}
+              end)
+            }
+            prompt="Select Resource Type"
             required_value={true}
           />
         </div>
         <!-- Property Search -->
         <div class="space-y-2">
-          <.label>Add Properties</.label>
+          <p>Add Properties</p>
 
           <div class="relative">
             <input
@@ -64,14 +74,17 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
               class="default-input"
             />
             <div :if={@loading} class="absolute right-3 top-2.5">
-              <.icon name="hero-arrow-path" class="w-5 h-5 animate-spin" />
+              <.icon
+                name="hero-arrow-path"
+                class="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500"
+              />
             </div>
           </div>
           <!-- Search Results -->
-          <div class="border rounded max-h-60 overflow-y-auto bg-gray-50">
+          <div class="border rounded max-h-60 overflow-y-auto bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <div
               :if={Enum.empty?(@properties) && @search_term != ""}
-              class="p-4 text-center text-gray-500"
+              class="p-4 text-center text-gray-500 dark:text-gray-400"
             >
               <%= case {@loading, @search_term, @properties} do %>
                 <% {true, _, _} -> %>
@@ -85,14 +98,17 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
             <%= for property <- @properties do %>
               <div
-                class="p-3 hover:bg-gray-100 cursor-pointer border-b"
+                class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600"
                 phx-click="add_property"
                 phx-value-id={property.id}
                 phx-target={@myself}
               >
-                <div class="font-medium">{property.label}</div>
+                <div class="font-medium text-gray-900 dark:text-gray-100">{property.label}</div>
 
-                <div class="text-sm text-gray-600">{property.local_name}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">{property.local_name}</div>
+                <div class="text-[9px] text-green-600">
+                  {property.vocabulary.label}
+                </div>
               </div>
             <% end %>
           </div>
@@ -111,14 +127,17 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
             <div
               :for={{dom_id, prop} <- @streams.selected_props}
               id={dom_id}
-              class="p-3 border rounded bg-white flex justify-between items-start gap-4"
+              class="p-3 border rounded bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex justify-between items-start gap-4"
             >
               <div class="cursor-move pt-1">
-                <.icon name="hero-arrows-pointing-in" class="w-5 h-5 text-gray-400" />
+                <.icon
+                  name="hero-arrows-pointing-in"
+                  class="w-5 h-5 text-gray-400 dark:text-gray-500"
+                />
               </div>
 
               <div class="flex-1">
-                <div class="font-medium text-gray-900">
+                <div class="font-medium text-gray-900 dark:text-gray-100">
                   <%= if is_map(prop) && Map.has_key?(prop, :override_label) do %>
                     {prop.override_label || prop.label}
                   <% else %>
@@ -126,7 +145,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                   <% end %>
                 </div>
 
-                <div class="text-sm text-gray-300">{prop.local_name}</div>
+                <div class="text-sm text-gray-300 dark:text-gray-400">{prop.local_name}</div>
 
                 <div class="mt-6">
                   <.label>Custom Label :</.label>
@@ -145,7 +164,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
               <button
                 type="button"
-                class="text-red-500 hover:text-red-700 mt-1"
+                class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 mt-1"
                 phx-click="remove_property"
                 phx-value-id={dom_id}
                 phx-target={@myself}
@@ -163,7 +182,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
           >
             {if @resource_template.id, do: "Update Template", else: "Create Template"}
           </.button>
-           <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
+          <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
         </div>
       </.form>
     </div>

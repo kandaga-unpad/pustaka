@@ -44,7 +44,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.Edit do
     <.live_component
       module={FormComponent}
       id={:edit}
-      current_user={@current_user}
+      current_user={@current_scope.user}
       resource_template={@resource_template}
       patch={~p"/manage/metaresource/resource_template/#{@resource_template.id}"}
       return_to={~p"/manage/metaresource/resource_template/#{@resource_template.id}"}

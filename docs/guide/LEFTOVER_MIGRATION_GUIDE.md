@@ -19,6 +19,7 @@ These scripts are designed to handle data that couldn't be imported initially du
 - **Check logs carefully** - Monitor for "skipped" or "not found" messages indicating data issues
 - **Run in off-peak hours** - These operations can be resource-intensive
 - **Scripts are idempotent** - They won't create duplicates if run multiple times
+- **Use unit_id parameter for efficiency** - Specify a unit_id (e.g., 1, 2) to process only that unit's files, significantly faster for large datasets
 
 ## 📋 Prerequisites
 
@@ -83,7 +84,11 @@ These scripts are designed to handle data that couldn't be imported initially du
 This imports collections for items that couldn't be imported initially.
 
 ```bash
+# Process all units (default)
 mix run -e "Voile.Migration.LeftoverBiblioImporter.import_from_item_codes_csv(\"path/to/your/missing_item_codes.csv\")"
+
+# Process specific unit only (faster for large datasets)
+mix run -e "Voile.Migration.LeftoverBiblioImporter.import_from_item_codes_csv(\"path/to/your/missing_item_codes.csv\", 1)"
 ```
 
 **Expected Output**:
@@ -117,7 +122,11 @@ After collections are imported, import the items.
 #### Basic Import (without adding to stock opname session)
 
 ```bash
+# Process all units (default)
 mix run -e "Voile.Migration.LeftoverItemImporter.import_from_csv(\"path/to/your/missing_item_codes.csv\")"
+
+# Process specific unit only (faster for large datasets)
+mix run -e "Voile.Migration.LeftoverItemImporter.import_from_csv(\"path/to/your/missing_item_codes.csv\", 1)"
 ```
 
 #### Import and Add to Existing Stock Opname Session
@@ -128,11 +137,22 @@ If you have an ongoing stock opname session and want to include the newly import
 # Get your session ID first
 mix run -e "Voile.Schema.StockOpname.list_sessions() |> Enum.each(&IO.inspect(&1.id))"
 
-# Then import and add to session
+# Then import and add to session (all units)
 mix run -e "
 session_id = \"your-session-uuid-here\"
 stats = Voile.Migration.LeftoverItemImporter.import_from_csv(
   \"path/to/your/missing_item_codes.csv\",
+  add_to_session: session_id
+)
+IO.inspect(stats)
+"
+
+# Or import specific unit and add to session
+mix run -e "
+session_id = \"your-session-uuid-here\"
+stats = Voile.Migration.LeftoverItemImporter.import_from_csv(
+  \"path/to/your/missing_item_codes.csv\",
+  1,
   add_to_session: session_id
 )
 IO.inspect(stats)

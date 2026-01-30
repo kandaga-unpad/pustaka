@@ -23,11 +23,10 @@ defmodule VoileWeb.ResourceTemplateController do
   end
 
   def show(conn, %{"id" => id}) do
-    resource_class = Metadata.list_resource_class()
-    resource_template = Metadata.get_resource_template!(id)
+    resource_template =
+      Metadata.get_resource_template!(id) |> Voile.Repo.preload([:owner, :resource_class])
 
     conn
-    |> assign(:resource_class, resource_class)
     |> assign(:resource_template, resource_template)
     |> render(:show)
   end

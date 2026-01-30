@@ -283,6 +283,7 @@ defmodule Voile.Schema.Metadata do
     |> where([p], ilike(p.label, ^term_pattern) or ilike(p.local_name, ^term_pattern))
     |> order_by([p], asc: p.label)
     |> limit(10)
+    |> preload([:vocabulary])
     |> Repo.all()
   end
 
@@ -470,7 +471,7 @@ defmodule Voile.Schema.Metadata do
     resource_template_collection =
       query
       |> Repo.all()
-      |> Repo.preload([:resource_class])
+      |> Repo.preload([:resource_class, :owner])
 
     total_count = Repo.aggregate(ResourceTemplate, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)

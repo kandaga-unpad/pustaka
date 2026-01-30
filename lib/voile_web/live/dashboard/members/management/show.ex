@@ -587,7 +587,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
         <div class="border-b border-gray-200 dark:border-gray-600">
-          <nav class="flex">
+          <nav class="flex text-[8px]">
             <.tab_button
               active={@active_tab == "overview"}
               phx-click="change_tab"

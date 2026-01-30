@@ -360,7 +360,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         <div class="border-b border-gray-200 dark:border-gray-700">
           <nav class="flex -mb-px">
             <button
-              :for={tab <- ["all", "checked", "pending", "missing", "with_changes", "librarians"]}
+              :for={tab <- ["all", "checked", "pending", "missing", "with_changes"]}
               phx-click="change_tab"
               phx-value-tab={tab}
               class={[
@@ -377,81 +377,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
                 else: ""}
             </button>
           </nav>
-        </div>
-        <%!-- Librarians Tab Content --%>
-        <div :if={@current_tab == "librarians"} class="p-6">
-          <div class="space-y-4">
-            <div
-              :for={assignment <- @displayed_items}
-              class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-            >
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <p class="font-medium text-gray-900 dark:text-gray-100">
-                    {assignment.user.fullname || assignment.user.email}
-                  </p>
-
-                  <p class="text-sm text-gray-600 dark:text-gray-400">{assignment.user.email}</p>
-
-                  <p
-                    :if={assignment.user.department}
-                    class="text-xs text-gray-500 dark:text-gray-500 mt-1"
-                  >
-                    {assignment.user.department}
-                  </p>
-                </div>
-                <.work_status_badge status={assignment.work_status} />
-              </div>
-
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Items Checked</p>
-
-                  <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {assignment.items_checked}
-                  </p>
-                </div>
-
-                <div :if={assignment.started_at}>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Started At</p>
-
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
-                    {format_datetime(assignment.started_at)}
-                  </p>
-                </div>
-
-                <div :if={assignment.completed_at}>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Completed At</p>
-
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
-                    {format_datetime(assignment.completed_at)}
-                  </p>
-                </div>
-
-                <div :if={!is_nil(assignment.completed_at) && !is_nil(assignment.started_at)}>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Duration</p>
-
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
-                    {calculate_duration(assignment.started_at, assignment.completed_at)}
-                  </p>
-                </div>
-              </div>
-
-              <div :if={assignment.notes} class="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Notes:</p>
-
-                <p>{assignment.notes}</p>
-              </div>
-            </div>
-          </div>
-
-          <div :if={@displayed_items == []} class="text-center py-12">
-            <.icon
-              name="hero-user-group"
-              class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-            />
-            <p class="text-gray-500 dark:text-gray-400">No librarians assigned to this session</p>
-          </div>
         </div>
         <%!-- Items List --%>
         <div :if={@current_tab != "librarians"} class="p-6">
@@ -1058,7 +983,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       "pending" -> "Pending"
       "missing" -> "Missing"
       "with_changes" -> "With Changes"
-      "librarians" -> "Librarians"
       _ -> tab
     end
   end
@@ -1070,7 +994,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       "pending" -> session.total_items - session.checked_items - session.missing_items
       "missing" -> session.missing_items
       "with_changes" -> session.items_with_changes
-      "librarians" -> length(session.librarian_assignments)
       _ -> 0
     end
   end
@@ -1143,18 +1066,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
 
   defp format_date(datetime), do: Calendar.strftime(datetime, "%B %d, %Y")
   defp format_datetime(datetime), do: Calendar.strftime(datetime, "%B %d, %Y %I:%M %p")
-
-  defp calculate_duration(started_at, completed_at) do
-    diff_seconds = DateTime.diff(completed_at, started_at, :second)
-    hours = div(diff_seconds, 3600)
-    minutes = div(rem(diff_seconds, 3600), 60)
-
-    cond do
-      hours > 0 -> "#{hours}h #{minutes}m"
-      minutes > 0 -> "#{minutes}m"
-      true -> "< 1m"
-    end
-  end
 
   defp calculate_init_progress(items_added, total_items) when total_items > 0 do
     Float.round(items_added / total_items * 100, 1)

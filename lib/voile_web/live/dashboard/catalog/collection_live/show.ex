@@ -1,6 +1,7 @@
 defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   use VoileWeb, :live_view_dashboard
 
+  alias Voile.Repo
   alias Voile.Schema.Catalog
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
@@ -18,6 +19,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
     creator = Master.list_mst_creator()
     node_location = System.list_nodes()
 
+    resource_templates =
+      Metadata.list_resource_template() |> Repo.preload([:resource_class, :owner])
+
     time_identifier = DateTime.utc_now() |> DateTime.to_unix()
 
     socket =
@@ -27,6 +31,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
       |> assign(:creator, creator)
       |> assign(:creator_searching, false)
       |> assign(:node_location, node_location)
+      |> assign(:resource_templates, resource_templates)
       |> assign(:step, 1)
       |> assign(:show_add_collection_field, true)
       |> assign(:show_close_confirm, false)

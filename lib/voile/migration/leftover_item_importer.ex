@@ -25,8 +25,10 @@ defmodule Voile.Migration.LeftoverItemImporter do
           collection_map: map()
         }
 
-  def import_from_csv(csv_path, opts \\ []) do
-    IO.puts("📦 Starting leftover item import from #{csv_path}...")
+  def import_from_csv(csv_path, unit_id \\ nil, opts \\ []) do
+    IO.puts(
+      "📦 Starting leftover item import from #{csv_path}#{if unit_id, do: " (unit: #{unit_id})", else: ""}..."
+    )
 
     # Check if CSV exists
     unless File.exists?(csv_path) do
@@ -34,8 +36,8 @@ defmodule Voile.Migration.LeftoverItemImporter do
       exit(1)
     end
 
-    # Initialize cache
-    cache = initialize_cache()
+    # Initialize cache (filtered by unit_id if provided)
+    cache = initialize_cache(unit_id)
     IO.puts("🔗 Built biblio_id → collection_id map (#{map_size(cache.biblio_map)} entries)")
 
     # Read item_codes from CSV
@@ -46,8 +48,8 @@ defmodule Voile.Migration.LeftoverItemImporter do
       IO.puts("⚠️ No item_codes found in CSV")
       %{inserted: 0, skipped: 0, not_found: 0}
     else
-      # Get all item CSV files
-      item_files = get_csv_files("items")
+      # Get item CSV files (filtered by unit_id if provided)
+      item_files = get_item_files_for_unit(unit_id)
 
       # Process each item_code
       {stats, inserted_item_ids} =
@@ -108,9 +110,8 @@ defmodule Voile.Migration.LeftoverItemImporter do
           {:ok, item_data} ->
             # Check if item already exists by legacy_item_code
             legacy_code = item_data[:legacy_item_code]
-            existing_item = Repo.get_by(Item, legacy_item_code: legacy_code)
 
-            if existing_item do
+            if Repo.exists?(from i in Item, where: i.legacy_item_code == ^legacy_code) do
               IO.puts("⚠️ Skipped (already exists): #{item_code}")
               :skipped
             else
@@ -276,10 +277,10 @@ defmodule Voile.Migration.LeftoverItemImporter do
   end
 
   # Reuse the cache building functions from ItemImporter
-  defp initialize_cache do
-    IO.puts("🔄 Initializing leftover cache...")
+  defp initialize_cache(unit_id) do
+    IO.puts("🔄 Initializing leftover cache#{if unit_id, do: " for unit #{unit_id}", else: ""}...")
 
-    biblio_map = build_biblio_map()
+    biblio_map = build_biblio_map(unit_id)
     unit_map = build_unit_map()
     resource_class_map = build_resource_class_map()
     collection_map = build_collection_map()
@@ -298,8 +299,17 @@ defmodule Voile.Migration.LeftoverItemImporter do
     }
   end
 
-  defp build_biblio_map do
-    from(c in Collection, select: {c.unit_id, c.old_biblio_id, c.id})
+  defp build_biblio_map(unit_id) do
+    query = from(c in Collection, select: {c.unit_id, c.old_biblio_id, c.id})
+
+    query =
+      if unit_id do
+        from(c in query, where: c.unit_id == ^unit_id)
+      else
+        query
+      end
+
+    query
     |> Repo.all()
     |> Enum.reduce(%{}, fn {unit_id, old_biblio_id, id}, acc ->
       case old_biblio_id do
@@ -366,6 +376,16 @@ defmodule Voile.Migration.LeftoverItemImporter do
 
       user ->
         user
+    end
+  end
+
+  # Helper to get item files filtered by unit_id
+  defp get_item_files_for_unit(unit_id) do
+    if unit_id do
+      item_file = Path.join([csv_base_path(), "items", "item_#{unit_id}.csv"])
+      if File.exists?(item_file), do: [item_file], else: []
+    else
+      get_csv_files("items")
     end
   end
 end

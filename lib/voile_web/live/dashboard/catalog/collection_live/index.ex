@@ -129,6 +129,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
           socket.assigns.collection_properties
         end
 
+      # Load resource templates for selection
+      resource_templates =
+        Metadata.list_resource_template() |> Repo.preload([:resource_class, :owner])
+
       # Ensure the current list view remains populated when opening the modal
       page = socket.assigns.page || 1
       per_page = 10
@@ -144,6 +148,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:page_title, "Edit Collection")
       |> assign(:collection, collection)
       |> assign(:collection_properties, collection_properties)
+      |> assign(:resource_templates, resource_templates)
       |> assign(:patch, ~p"/manage/catalog/collections")
     else
       socket
@@ -177,6 +182,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         socket.assigns.collection_properties
       end
 
+    # Load resource templates for selection
+    resource_templates =
+      Metadata.list_resource_template() |> Repo.preload([:resource_class, :owner])
+
     # Keep the current collection list visible while opening the new collection modal
     page = socket.assigns.page || 1
     per_page = 10
@@ -192,6 +201,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:page_title, "New Collection")
     |> assign(:collection, collection)
     |> assign(:collection_properties, collection_properties)
+    |> assign(:resource_templates, resource_templates)
     |> assign(:patch, ~p"/manage/catalog/collections")
   end
 

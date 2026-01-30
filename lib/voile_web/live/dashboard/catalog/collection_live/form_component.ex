@@ -3,6 +3,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
   alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Item
+  alias Voile.Schema.Metadata
   alias Ecto.Changeset
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper
@@ -143,6 +144,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <%= if @step == 1 do %>
           <.input field={@form[:id]} type="hidden" />
           <.input
+            field={@form[:template_id]}
+            label="Resource Template (Optional)"
+            type="select"
+            options={Enum.map(@resource_templates, fn rt -> {rt.label, rt.id} end)}
+            prompt="Select Resource Template"
+            phx-change="select_template"
+            phx-target={@myself}
+          />
+          <.input
             field={@form[:type_id]}
             label="Resource Type"
             type="select"
@@ -160,7 +170,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt="Select Collection Type"
             required_value={true}
           />
-          <!-- Hierarchical Fields - Searchable Parent Collection -->
+          
+    <!-- Hierarchical Fields - Searchable Parent Collection -->
           <div class="mb-4">
             <label class="block text-sm font-medium mb-2 label">Parent Collection (Optional)</label>
             <div class="relative">
@@ -803,6 +814,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       assigns.collection_type
       |> Enum.map(fn type -> {type.label, type.id} end)
 
+    # Load resource templates for selection
+    resource_templates =
+      Metadata.list_resource_template() |> Voile.Repo.preload([:resource_class, :owner])
+
     # Don't load all potential parents on mount to avoid performance issues
     # Instead, we'll load them on search
 
@@ -812,7 +827,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           # Fetch fresh collection with preloads
           coll =
             Catalog.get_collection!(collection.id)
-            |> Voile.Repo.preload([:mst_creator, collection_fields: [:metadata_properties]])
+            |> Voile.Repo.preload([
+              :mst_creator,
+              :resource_template,
+              collection_fields: [:metadata_properties]
+            ])
 
           {coll, Catalog.change_collection(coll)}
 
@@ -879,6 +898,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:original_collection, original_collection)
+     |> assign(:resource_templates, resource_templates)
      |> assign(:parent_search, "")
      |> assign(:parent_search_results, [])
      |> assign(:selected_parent_title, get_selected_parent_title(collection))
@@ -948,6 +968,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
              "status" => default_status,
              "access_level" => default_access_level,
              "type_id" => collection.type_id || nil,
+             "template_id" => collection.template_id || nil,
              "unit_id" => unit_id,
              "creator_id" => collection.creator_id || nil,
              "thumbnail" => collection.thumbnail || "",
@@ -1139,6 +1160,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       |> Catalog.change_collection(current_params)
       |> Map.put(:action, :validate)
 
+    dbg(changeset)
+
     if changeset.valid? do
       collection = Changeset.apply_changes(changeset)
 
@@ -1304,6 +1327,71 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      socket
      |> assign(:form, to_form(changeset, action: :validate))
      |> assign(:selected_parent_title, nil)}
+  end
+
+  def handle_event("select_template", %{"collection" => %{"template_id" => template_id}}, socket) do
+    if template_id && template_id != "" do
+      # Fetch the selected template with properties
+      template =
+        Metadata.get_resource_template!(template_id)
+        |> Voile.Repo.preload([:resource_class, template_properties: [:property]])
+
+      # Build collection fields from template properties
+      template_fields =
+        template.template_properties
+        |> Enum.sort_by(& &1.position)
+        |> Enum.with_index()
+        |> Enum.into(%{}, fn {tp, idx} ->
+          {to_string(idx),
+           %{
+             "id" => nil,
+             "label" => tp.override_label || tp.property.label,
+             "information" => tp.property.information,
+             "type_value" => tp.property.type_value,
+             "value_lang" => "en",
+             "value" => tp.property.label,
+             "sort_order" => tp.position,
+             "property_id" => tp.property.id,
+             "name" => tp.property.local_name || tp.property.label
+           }}
+        end)
+
+      # Update form params with template fields and resource type
+      current_params = socket.assigns.form.params || %{}
+
+      updated_params =
+        current_params
+        |> Map.put("collection_fields", template_fields)
+        |> Map.put("type_id", template.resource_class_id)
+
+      changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
+
+      socket =
+        socket
+        |> assign(:form, to_form(changeset, action: :validate))
+        |> put_flash(
+          :info,
+          "Template '#{template.label}' applied. Resource type and collection fields have been populated."
+        )
+
+      {:noreply, socket}
+    else
+      # Clear template fields and resource type if no template selected
+      current_params = socket.assigns.form.params || %{}
+
+      updated_params =
+        current_params
+        |> Map.put("collection_fields", %{})
+        |> Map.put("type_id", nil)
+
+      changeset = Catalog.change_collection(socket.assigns.collection, updated_params)
+
+      socket =
+        socket
+        |> assign(:form, to_form(changeset, action: :validate))
+
+      {:noreply, socket}
+    end
   end
 
   # Image upload event handlers

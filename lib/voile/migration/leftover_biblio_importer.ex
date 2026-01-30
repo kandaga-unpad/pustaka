@@ -17,6 +17,9 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
   alias Voile.Schema.System.Node
   alias Voile.Schema.Metadata.ResourceClass
 
+  # Path is used for basename operations
+  require Path
+
   # Property map from BiblioImporter
   @property_map %{
     "title" => %{id: 182, local_name: "title", label: "Title", type_value: "text"},
@@ -57,8 +60,10 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
     "notes" => %{id: 197, local_name: "notes", label: "Notes", type_value: "textarea"}
   }
 
-  def import_from_item_codes_csv(csv_path, skip_images \\ false) do
-    IO.puts("📚 Starting leftover biblio import from item_codes CSV: #{csv_path}...")
+  def import_from_item_codes_csv(csv_path, unit_id \\ nil, skip_images \\ false) do
+    IO.puts(
+      "📚 Starting leftover biblio import from item_codes CSV: #{csv_path}#{if unit_id, do: " (unit: #{unit_id})", else: ""}..."
+    )
 
     # Check if CSV exists
     unless File.exists?(csv_path) do
@@ -74,9 +79,8 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
       IO.puts("⚠️ No item_codes found in CSV")
       %{collections_inserted: 0, fields_inserted: 0, skipped: 0}
     else
-      # Get all item and biblio CSV files
-      item_files = get_csv_files("items")
-      biblio_files = get_specific_files("biblio", "biblio_[0-9]*.csv")
+      # Get item and biblio CSV files (filtered by unit_id if provided)
+      {item_files, biblio_files} = get_csv_files_for_unit(unit_id)
 
       # Find unique biblio_ids from item_codes
       biblio_ids = find_biblio_ids_from_item_codes(item_codes, item_files)
@@ -86,8 +90,8 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
         IO.puts("⚠️ No biblio_ids found")
         %{collections_inserted: 0, fields_inserted: 0, skipped: 0}
       else
-        # Initialize cache
-        cache = initialize_cache()
+        # Initialize cache (filtered by unit_id if provided)
+        cache = initialize_cache(unit_id)
 
         # Import collections for these biblio_ids
         import_collections_for_biblio_ids(biblio_ids, biblio_files, cache, skip_images)
@@ -106,44 +110,55 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
   end
 
   defp find_biblio_ids_from_item_codes(item_codes, item_files) do
-    item_codes
-    |> Enum.reduce(MapSet.new(), fn item_code, acc ->
-      case find_biblio_id_for_item_code(item_code, item_files) do
-        {:ok, biblio_id} -> MapSet.put(acc, biblio_id)
-        :not_found -> acc
-      end
-    end)
-    |> MapSet.to_list()
+    IO.puts("🔍 Building item_code to biblio_id lookup map from #{length(item_files)} files...")
+
+    # Build a map of item_code -> biblio_id from all item files
+    item_code_map = build_item_code_map(item_files)
+
+    IO.puts("✅ Built lookup map with #{map_size(item_code_map)} item_codes")
+
+    # Look up each item_code in the map
+    {biblio_ids, not_found_count} =
+      item_codes
+      |> Enum.reduce({MapSet.new(), 0}, fn item_code, {acc, count} ->
+        case Map.get(item_code_map, item_code) do
+          nil ->
+            {acc, count + 1}
+
+          biblio_id ->
+            {MapSet.put(acc, biblio_id), count}
+        end
+      end)
+
+    IO.puts("❓ #{not_found_count} item_codes not found in CSVs")
+
+    MapSet.to_list(biblio_ids)
   end
 
-  defp find_biblio_id_for_item_code(item_code, item_files) do
-    Enum.find_value(item_files, :not_found, fn file_path ->
-      result =
+  defp build_item_code_map(item_files) do
+    item_files
+    |> Enum.reduce(%{}, fn file_path, acc ->
+      try do
         File.stream!(file_path)
         |> CSVParser.parse_stream()
-        # Skip header
         |> Stream.drop(1)
-        |> Enum.find(fn row ->
-          # Assuming item_code is the 5th column (0-indexed: 4)
-          length(row) >= 5 && Enum.at(row, 4) == item_code
-        end)
+        |> Enum.reduce(acc, fn row, file_acc ->
+          if length(row) >= 5 do
+            item_code = Enum.at(row, 4)
+            biblio_id_str = Enum.at(row, 1)
 
-      case result do
-        nil ->
-          nil
-
-        row ->
-          # biblio_id is the 2nd column (0-indexed: 1)
-          if length(row) >= 2 do
-            biblio_id = Enum.at(row, 1)
-
-            case parse_int(biblio_id) do
-              nil -> nil
-              id -> {:ok, id}
+            case parse_int(biblio_id_str) do
+              nil -> file_acc
+              biblio_id -> Map.put(file_acc, item_code, biblio_id)
             end
           else
-            nil
+            file_acc
           end
+        end)
+      rescue
+        e ->
+          IO.puts("❌ Error processing #{file_path}: #{inspect(e)}")
+          acc
       end
     end)
   end
@@ -208,7 +223,6 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
       result =
         File.stream!(file_path)
         |> CSVParser.parse_stream(skip_headers: false)
-        # Skip header
         |> Stream.drop(1)
         |> Enum.find(fn row ->
           # biblio_id is the 1st column (0-indexed: 0)
@@ -347,11 +361,13 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
   end
 
   # Helper functions from BiblioImporter
-  defp initialize_cache do
-    IO.puts("🔄 Initializing leftover biblio cache...")
+  defp initialize_cache(unit_id) do
+    IO.puts(
+      "🔄 Initializing leftover biblio cache#{if unit_id, do: " for unit #{unit_id}", else: ""}..."
+    )
 
-    author_mappings = load_all_author_mappings()
-    publisher_mappings = load_all_publisher_mappings()
+    author_mappings = load_all_author_mappings(unit_id)
+    publisher_mappings = load_all_publisher_mappings(unit_id)
 
     default_creator_id = ensure_default_creator()
     creators = Repo.all(Creator) |> Enum.into(%{}, fn c -> {c.creator_name, c.id} end)
@@ -368,8 +384,8 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
     resource_class_map = build_resource_class_map()
     bibliographic_resource_type_id = get_bibliographic_resource_type_id()
 
-    # Load unit author data for all units
-    unit_author_data = load_all_unit_author_data()
+    # Load unit author data (filtered by unit_id if provided)
+    unit_author_data = load_all_unit_author_data(unit_id)
 
     %{
       author_mappings: author_mappings,
@@ -385,60 +401,90 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
   end
 
   # Include necessary helper functions from BiblioImporter
-  defp load_all_author_mappings do
-    unit_files = get_specific_files("mst", "mst_author_*.csv")
+  defp load_all_author_mappings(unit_id) do
+    if unit_id do
+      # Load only the specific unit's author mappings
+      file_path = Path.join([csv_base_path(), "mst", "mst_author_#{unit_id}.csv"])
 
-    if Enum.empty?(unit_files) do
-      main_file = Path.join([csv_base_path(), "mst", "mst_author.csv"])
-
-      if File.exists?(main_file) do
-        authors = load_authors_from_file(main_file)
-        %{0 => authors}
+      if File.exists?(file_path) do
+        authors = load_authors_from_file(file_path)
+        %{unit_id => authors}
       else
         %{}
       end
     else
-      unit_files
-      |> Enum.reduce(%{}, fn file, acc ->
-        unit_id = extract_unit_id_from_filename(file)
-        authors = load_authors_from_file(file)
-        Map.put(acc, unit_id, authors)
-      end)
+      unit_files = get_specific_files("mst", "mst_author_*.csv")
+
+      if Enum.empty?(unit_files) do
+        main_file = Path.join([csv_base_path(), "mst", "mst_author.csv"])
+
+        if File.exists?(main_file) do
+          authors = load_authors_from_file(main_file)
+          %{0 => authors}
+        else
+          %{}
+        end
+      else
+        unit_files
+        |> Enum.reduce(%{}, fn file, acc ->
+          unit_id = extract_unit_id_from_filename(file)
+          authors = load_authors_from_file(file)
+          Map.put(acc, unit_id, authors)
+        end)
+      end
     end
   end
 
-  defp load_all_publisher_mappings do
-    unit_files = get_specific_files("mst", "mst_publisher_*.csv")
+  defp load_all_publisher_mappings(unit_id) do
+    if unit_id do
+      # Load only the specific unit's publisher mappings
+      file_path = Path.join([csv_base_path(), "mst", "mst_publisher_#{unit_id}.csv"])
 
-    if Enum.empty?(unit_files) do
-      main_file = Path.join([csv_base_path(), "mst", "mst_publisher.csv"])
-
-      if File.exists?(main_file) do
-        publishers = load_publishers_from_file(main_file)
-        %{0 => publishers}
+      if File.exists?(file_path) do
+        publishers = load_publishers_from_file(file_path)
+        %{unit_id => publishers}
       else
         %{}
       end
     else
-      unit_files
-      |> Enum.reduce(%{}, fn file, acc ->
-        unit_id = extract_unit_id_from_filename(file)
-        publishers = load_publishers_from_file(file)
-        Map.put(acc, unit_id, publishers)
-      end)
+      unit_files = get_specific_files("mst", "mst_publisher_*.csv")
+
+      if Enum.empty?(unit_files) do
+        main_file = Path.join([csv_base_path(), "mst", "mst_publisher.csv"])
+
+        if File.exists?(main_file) do
+          publishers = load_publishers_from_file(main_file)
+          %{0 => publishers}
+        else
+          %{}
+        end
+      else
+        unit_files
+        |> Enum.reduce(%{}, fn file, acc ->
+          unit_id = extract_unit_id_from_filename(file)
+          publishers = load_publishers_from_file(file)
+          Map.put(acc, unit_id, publishers)
+        end)
+      end
     end
   end
 
-  defp load_all_unit_author_data do
-    # Get all unit IDs from biblio files
-    biblio_files = get_specific_files("biblio", "biblio_[0-9]*.csv")
-    unit_ids = Enum.map(biblio_files, &extract_unit_id_from_filename/1) |> Enum.uniq()
-
-    unit_ids
-    |> Enum.reduce(%{}, fn unit_id, acc ->
+  defp load_all_unit_author_data(unit_id) do
+    if unit_id do
+      # Load only the specific unit's author data
       author_data = load_unit_author_data(unit_id)
-      Map.put(acc, unit_id, author_data)
-    end)
+      %{unit_id => author_data}
+    else
+      # Get all unit IDs from biblio files
+      biblio_files = get_specific_files("biblio", "biblio_[0-9]*.csv")
+      unit_ids = Enum.map(biblio_files, &extract_unit_id_from_filename/1) |> Enum.uniq()
+
+      unit_ids
+      |> Enum.reduce(%{}, fn unit_id, acc ->
+        author_data = load_unit_author_data(unit_id)
+        Map.put(acc, unit_id, author_data)
+      end)
+    end
   end
 
   # Copy other necessary functions
@@ -670,4 +716,21 @@ defmodule Voile.Migration.LeftoverBiblioImporter do
   end
 
   defp is_null_value?(_), do: false
+
+  # Helper to get CSV files filtered by unit_id
+  defp get_csv_files_for_unit(unit_id) do
+    if unit_id do
+      item_file = Path.join([csv_base_path(), "items", "item_#{unit_id}.csv"])
+      biblio_file = Path.join([csv_base_path(), "biblio", "biblio_#{unit_id}.csv"])
+
+      item_files = if File.exists?(item_file), do: [item_file], else: []
+      biblio_files = if File.exists?(biblio_file), do: [biblio_file], else: []
+
+      {item_files, biblio_files}
+    else
+      item_files = get_csv_files("items")
+      biblio_files = get_specific_files("biblio", "biblio_[0-9]*.csv")
+      {item_files, biblio_files}
+    end
+  end
 end

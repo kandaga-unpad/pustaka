@@ -1,16 +1,81 @@
 <.header>
-  Resource template {@resource_template.id}
-  <:subtitle>This is a resource_template record from your database.</:subtitle>
+  Resource Template Details
+  <:subtitle>View and manage this resource template</:subtitle>
 
   <:actions>
     <.link navigate={~p"/manage/metaresource/resource_template/#{@resource_template}/edit"}>
-      <.button>Edit resource_template</.button>
+      <.button>Edit Template</.button>
     </.link>
   </:actions>
 </.header>
 
-<.list>
-  <:item title="Label">{@resource_template.label}</:item>
-</.list>
+<div class="max-w-4xl mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
+      <h2 class="text-2xl font-bold text-white flex items-center">
+        <.icon name="hero-document-text" class="w-8 h-8 mr-3" />
+        {@resource_template.label}
+      </h2>
+      <p class="text-blue-100 mt-1">Resource Template ID: {@resource_template.id}</p>
+    </div>
 
-<.back navigate={~p"/manage/metaresource/resource_template"}>Back to resource_template</.back>
+    <div class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div class="flex items-center mb-2">
+            <.icon name="hero-tag" class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Label</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300">{@resource_template.label}</p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div class="flex items-center mb-2">
+            <.icon
+              name="hero-information-circle"
+              class="w-5 h-5 text-green-600 dark:text-green-400 mr-2"
+            />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Description</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300">
+            {@resource_template.description || "No description provided"}
+          </p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div class="flex items-center mb-2">
+            <.icon
+              name="hero-squares-2x2"
+              class="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2"
+            />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resource Class</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300">
+            {@resource_template.resource_class.label}
+          </p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div class="flex items-center mb-2">
+            <.icon name="hero-user" class="w-5 h-5 text-orange-600 dark:text-orange-400 mr-2" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Owner</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300">{@resource_template.owner.username}</p>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Created: {@resource_template.inserted_at}
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Last Updated: {@resource_template.updated_at}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<.back navigate={~p"/manage/metaresource/resource_template"}>Back to Resource Templates</.back>

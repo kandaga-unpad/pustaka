@@ -33,6 +33,7 @@ defmodule Voile.Analytics.Dashboard do
       join: rc in ResourceClass,
       on: c.type_id == rc.id,
       where: rc.glam_type == "Library",
+      where: i.availability == "available",
       order_by: [desc: i.inserted_at],
       limit: ^limit,
       preload: [collection: [:resource_class]]
@@ -50,6 +51,7 @@ defmodule Voile.Analytics.Dashboard do
       join: rc in ResourceClass,
       on: c.type_id == rc.id,
       where: i.inserted_at >= ago(7, "day"),
+      where: i.availability == "available",
       order_by: [desc: i.inserted_at],
       limit: ^limit,
       preload: [collection: [:resource_class]]
