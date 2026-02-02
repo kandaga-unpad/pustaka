@@ -961,6 +961,7 @@ defmodule Voile.Schema.Catalog do
     |> Repo.get!(id)
     |> Repo.preload([
       :node,
+      :item_location,
       collection: [:mst_creator, :node]
     ])
   end

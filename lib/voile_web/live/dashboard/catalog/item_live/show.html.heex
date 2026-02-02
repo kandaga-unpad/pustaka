@@ -160,6 +160,13 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Location Details</span>
+          <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {@item.item_location.location_name || "-"}
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
           <span class="text-sm text-gray-500 dark:text-gray-400">Item Status</span>
           <span class={[
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",

@@ -4,6 +4,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
   alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.Metadata
+  alias Voile.Schema.Master
   alias Ecto.Changeset
 
   import VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper
@@ -699,10 +700,37 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         label="Legacy Item Code"
                       />
                       <.input
+                        field={item_field[:item_location_id]}
+                        type="select"
+                        label="Location"
+                        options={
+                          unit_id_int =
+                            case item_field[:unit_id].value do
+                              nil ->
+                                nil
+
+                              "" ->
+                                nil
+
+                              val when is_binary(val) ->
+                                case Integer.parse(val) do
+                                  {int, _} -> int
+                                  :error -> nil
+                                end
+
+                              val ->
+                                val
+                            end
+
+                          Enum.filter(@all_locations, &(&1.node_id == unit_id_int))
+                          |> Enum.map(&{&1.location_name, &1.id})
+                        }
+                        prompt="Select Location"
+                      />
+                      <.input
                         field={item_field[:location]}
                         type="text"
-                        label="Location"
-                        required_value={true}
+                        label="Location Details"
                       />
                       <input
                         type="hidden"
@@ -818,6 +846,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     resource_templates =
       Metadata.list_resource_template() |> Voile.Repo.preload([:resource_class, :owner])
 
+    # Load all locations for item location selection
+    all_locations = Master.list_mst_locations()
+
     # Don't load all potential parents on mount to avoid performance issues
     # Instead, we'll load them on search
 
@@ -886,6 +917,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
            "item_code" => item.item_code,
            "inventory_code" => item.inventory_code,
            "location" => item.location,
+           "item_location_id" => item.item_location_id,
            "unit_id" => item.unit_id,
            "status" => item.status,
            "condition" => item.condition,
@@ -917,6 +949,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:chosen_collection_field, nil)
      |> assign(:chosen_item_field, nil)
      |> assign(:property_search, "")
+     |> assign(:all_locations, all_locations)
      |> assign(:filtered_properties, assigns.collection_properties)
      |> assign(:tab, "upload")
      |> assign(:thumbnail_source, nil)
