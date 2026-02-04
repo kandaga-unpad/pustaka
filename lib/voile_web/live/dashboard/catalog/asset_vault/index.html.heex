@@ -113,7 +113,7 @@
                   {count_folder_items(folder.id)}
                 </span>
               </button>
-               <%!-- Show subfolders if this folder is in the current path --%>
+              <%!-- Show subfolders if this folder is in the current path --%>
               <%= if is_in_path do %>
                 <%= for subfolder <- subfolders do %>
                   <% is_sub_active = @current_folder_id == subfolder.id %> <% is_sub_in_path =
@@ -532,7 +532,7 @@
                       >
                         <.icon name="hero-folder-open" class="w-4 h-4" />
                       </button>
-                       <%!-- Rename Folder --%>
+                      <%!-- Rename Folder --%>
                       <%= if VoileWeb.Auth.Authorization.can?(@current_user, "attachments.update") do %>
                         <button
                           phx-click="open_rename_modal"
@@ -552,7 +552,7 @@
                       >
                         <.icon name="hero-arrow-down-tray" class="w-4 h-4" />
                       </.link>
-                       <%!-- Manage Access --%>
+                      <%!-- Manage Access --%>
                       <%= if VoileWeb.Auth.Authorization.can?(@current_user, "attachments.update") do %>
                         <.link
                           navigate={~p"/manage/catalog/attachments/#{attachment.id}/access"}

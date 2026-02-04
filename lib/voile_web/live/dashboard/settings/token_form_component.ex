@@ -16,7 +16,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             {if @token, do: "Edit Token", else: "Create Token"}
           <% end %>
         </h3>
-        
+
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
           <%= if @action == :create_master do %>
             Create a non-expiring master token with full admin privileges. Only super admins can create these.
@@ -27,7 +27,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
           <% end %>
         </p>
       </div>
-      
+
       <.form for={@form} phx-submit="save" phx-target={@myself} class="space-y-6">
         <div>
           <.input
@@ -38,7 +38,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             required
           />
         </div>
-        
+
         <div>
           <.input
             field={@form[:description]}
@@ -48,11 +48,11 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             rows="3"
           />
         </div>
-        
+
         <%= if @is_admin and @action != :create_master do %>
           <div>
             <.label>Scopes</.label>
-            
+
             <div class="mt-2 space-y-2">
               <%= for scope <- UserApiToken.available_scopes() do %>
                 <label class="inline-flex items-center px-3">
@@ -68,7 +68,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             </div>
           </div>
         <% end %>
-        
+
         <%= if @action != :create_master do %>
           <div>
             <.input
@@ -79,7 +79,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             />
           </div>
         <% end %>
-        
+
         <%= if @is_admin do %>
           <div>
             <.input
@@ -91,7 +91,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             <p class="text-sm text-gray-500 mt-1">Comma-separated list of allowed IP addresses</p>
           </div>
         <% end %>
-        
+
         <div class="flex justify-end gap-3">
           <button
             type="button"

@@ -178,7 +178,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                   >
                     <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> Back to Items
                   </.link>
-                   <span class="text-gray-300 dark:text-gray-600">|</span>
+                  <span class="text-gray-300 dark:text-gray-600">|</span>
                   <.link
                     navigate={~p"/collections/#{@item.collection.id}"}
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -586,7 +586,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                       >
                         Notes (optional)
                       </label>
-                       <textarea
+                      <textarea
                         id="reservation_notes"
                         name="notes"
                         rows="3"

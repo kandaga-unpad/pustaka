@@ -21,12 +21,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
           Library Circulation Dashboard
         </h1>
-        
+
         <p class="mt-2 text-gray-600 dark:text-gray-400">
           Manage all library circulation activities from this central dashboard.
         </p>
       </div>
-      
+
       <%= if @is_super_admin do %>
         <div class="mb-6">
           <.form :let={f} for={%{}} phx-change="select_node">
@@ -44,7 +44,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
           </.form>
         </div>
       <% end %>
-       <%!-- Quick Action Modals --%>
+      <%!-- Quick Action Modals --%>
       <.quick_checkout_modal
         quick_checkout_visible={@quick_checkout_visible}
         checkout_form={@checkout_form}
@@ -68,12 +68,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             <div class="flex-shrink-0">
               <.icon name="hero-book-open" class="w-8 h-8 text-blue-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Active Transactions
               </h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.active_transactions do %>
                   {@stats.active_transactions}
@@ -93,7 +93,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -106,16 +106,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-yellow-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-clock" class="w-8 h-8 text-yellow-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overdue Items</h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.overdue_count do %>
                   {@stats.overdue_count}
@@ -135,7 +135,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -148,18 +148,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-green-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-bookmark" class="w-8 h-8 text-green-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Active Reservations
               </h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.active_reservations do %>
                   {@stats.active_reservations}
@@ -179,7 +179,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -193,16 +193,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
           </div>
         </div>
       </div>
-      
+
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-red-500 mb-8">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
           </div>
-          
+
           <div class="ml-4">
             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Outstanding Fines</h3>
-            
+
             <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               <%= if @stats.outstanding_fines do %>
                 {format_idr(@stats.outstanding_fines)}
@@ -222,7 +222,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                     stroke-width="4"
                   >
                   </circle>
-                  
+
                   <path
                     class="opacity-75"
                     fill="currentColor"
@@ -243,16 +243,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               <div class="flex-shrink-0">
                 <.icon name="hero-arrow-path" class="w-8 h-8 text-blue-600 group-hover:text-blue-700" />
               </div>
-              
+
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-300">
                 Transactions
               </h3>
             </div>
-            
+
             <p class="text-gray-600 dark:text-gray-300 text-sm">
               Manage book checkouts, returns, renewals, and track all circulation activities.
             </p>
-            
+
             <div class="mt-4 flex items-center text-sm text-blue-600 group-hover:text-blue-700 dark:text-blue-400  dark:group-hover:text-blue-300">
               <span>Manage Transactions</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
@@ -267,16 +267,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                   class="w-8 h-8 text-green-600 group-hover:text-green-700"
                 />
               </div>
-              
+
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-green-700 dark:text-gray-100 dark:group-hover:text-green-300">
                 Reservations
               </h3>
             </div>
-            
+
             <p class="text-gray-600 dark:text-gray-300 text-sm">
               Handle item reservations, queue management, and availability notifications.
             </p>
-            
+
             <div class="mt-4 flex items-center text-sm text-green-600 group-hover:text-green-700 dark:text-green-400 dark:group-hover:text-green-300">
               <span>Manage Reservations</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
@@ -291,16 +291,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                   class="w-8 h-8 text-purple-600 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300"
                 />
               </div>
-              
+
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-purple-700  dark:text-gray-100 dark:group-hover:text-purple-300">
                 Requisitions
               </h3>
             </div>
-            
+
             <p class="text-gray-600 dark:text-gray-300 text-sm">
               Process member requests for new items, interlibrary loans, and special services.
             </p>
-            
+
             <div class="mt-4 flex items-center text-sm text-purple-600 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300">
               <span>Manage Requisitions</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
@@ -312,16 +312,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               <div class="flex-shrink-0">
                 <.icon name="hero-banknotes" class="w-8 h-8 text-red-600 group-hover:text-red-700" />
               </div>
-              
+
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-red-700  dark:text-gray-100 dark:group-hover:text-red-300">
                 Fines Management
               </h3>
             </div>
-            
+
             <p class="text-gray-600 dark:text-gray-300 text-sm">
               Manage overdue fines, payments, waivers, and financial transactions.
             </p>
-            
+
             <div class="mt-4 flex items-center text-sm text-red-600 group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300">
               <span>Manage Fines</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
@@ -336,28 +336,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                   class="w-8 h-8 text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300"
                 />
               </div>
-              
+
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-indigo-700 dark:text-gray-100 dark:group-hover:text-indigo-300">
                 Circulation History
               </h3>
             </div>
-            
+
             <p class="text-gray-600 dark:text-gray-300 text-sm">
               View detailed logs and audit trails of all circulation activities.
             </p>
-            
+
             <div class="mt-4 flex items-center text-sm text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
               <span>View History</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
-        </.link> <.quick_actions current_user={@current_scope.user} />
+        </.link>
+         <.quick_actions current_user={@current_scope.user} />
       </div>
       <!-- Recent Activity -->
       <div class="mt-8 bg-white dark:bg-gray-700 rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h3>
         </div>
-        
+
         <div class="divide-y divide-gray-200">
           <%= for activity <- @recent_activities do %>
             <div class="px-6 py-4 flex items-center justify-between">
@@ -365,16 +366,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                 <div class="flex-shrink-0">
                   <div class={"w-2 h-2 rounded-full #{activity_color(activity.event_type)}"}></div>
                 </div>
-                
+
                 <div class="ml-4">
                   <p class="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
-                  
+
                   <p class="text-xs text-gray-500 dark:text-gray-400">
                     {format_datetime(activity.event_date)}
                   </p>
                 </div>
               </div>
-              
+
               <div class="text-xs text-gray-400 dark:text-gray-300">{activity.event_type}</div>
             </div>
           <% end %>

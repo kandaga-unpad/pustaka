@@ -116,7 +116,7 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
             </.link>
             <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">E-Book Reader</h1>
           </div>
-          
+
           <%= if @file_url && @file_type in ["pdf", "epub"] do %>
             <div class="flex gap-2">
               <a
@@ -139,7 +139,7 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
             </div>
           <% end %>
         </div>
-        
+
         <%= if @file_url && @file_type in ["pdf", "epub"] do %>
           <div class="flex-1 overflow-hidden">
             <div
@@ -155,11 +155,11 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
           <div class="flex-1 flex items-center justify-center p-6">
             <div class="max-w-md text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow">
               <div class="text-5xl mb-4">📚</div>
-              
+
               <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">
                 {if @file_url, do: "Unsupported File Type", else: "No File Selected"}
               </h2>
-              
+
               <p class="text-gray-600 dark:text-gray-400">
                 <%= if @file_url do %>
                   Only PDF and EPUB files are supported.

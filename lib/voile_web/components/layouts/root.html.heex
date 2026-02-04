@@ -9,7 +9,7 @@
     <.live_title default={app_name} suffix=" · GLAM Management System">
       {assigns[:page_title]}
     </.live_title>
-    
+
     <%!-- Inject brand color CSS variables early so Tailwind/daisyUI and other CSS
         can pick them up on first paint (before `app.css` is loaded). --%> <% app_main_color =
       Voile.Schema.System.get_setting_value("app_main_color", nil) %> <% app_secondary_color =
@@ -30,7 +30,7 @@
         }
       </style>
     <% end %>
-     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <link rel="icon" href={app_logo_url} type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,21 +43,21 @@
       onerror="console.error('Failed to load ePub.js from unpkg')"
     >
     </script>
-     <%!-- PDF.js library from cdnjs (most reliable CDN) --%>
+    <%!-- PDF.js library from cdnjs (most reliable CDN) --%>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
       onload="console.log('PDF.js script loaded'); if(window.pdfjsLib) { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; console.log('PDF.js configured:', window.pdfjsLib); }"
       onerror="console.error('Failed to load PDF.js from cdnjs')"
     >
     </script>
-    
+
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css"
       rel="stylesheet"
     />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-    
+
     <script>
       (() => {
         const setTheme = (theme) => {
@@ -77,11 +77,11 @@
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js">
     </script>
-     <Turnstile.script />
+    <Turnstile.script />
   </head>
-  
+
   <body class="anti-aliased w-full">{@inner_content}</body>
 </html>

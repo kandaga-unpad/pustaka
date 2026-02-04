@@ -219,7 +219,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Import do
                       <label for={@uploads.csv_file.ref} class="btn btn-primary">
                         <.icon name="hero-folder-open" class="w-5 h-5 mr-2" /> Choose File
                       </label>
-                       <.live_file_input upload={@uploads.csv_file} class="hidden" />
+                      <.live_file_input upload={@uploads.csv_file} class="hidden" />
                     </div>
 
                     <p class="mt-2 text-sm text-gray-500">or drag and drop CSV file here</p>

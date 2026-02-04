@@ -13,20 +13,20 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
           current_path={@current_path}
         />
       </div>
-      
+
       <div class="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-6xl">
         <.back navigate={~p"/manage/settings/nodes"}>Back to Nodes</.back>
-         <%!-- Header --%>
+        <%!-- Header --%>
         <div class="mb-6">
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
             Node Loan Rules Configuration
           </h1>
-          
+
           <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
             Configure branch-specific lending policies and operational rules
           </p>
         </div>
-         <%!-- Node Selector --%>
+        <%!-- Node Selector --%>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Select Branch/Node
@@ -37,7 +37,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200"
             >
               <option value="">-- Select a branch --</option>
-              
+
               <option
                 :for={node <- @nodes}
                 value={node.id}
@@ -48,7 +48,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
             </select>
           </form>
         </div>
-         <%!-- Configuration Form --%>
+        <%!-- Configuration Form --%>
         <div :if={@selected_node} class="space-y-6">
           <%!-- Override Toggle --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
@@ -73,10 +73,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               </div>
             </div>
           </div>
-           <%!-- Loan Limits --%>
+          <%!-- Loan Limits --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Loan Limits</h3>
-            
+
             <.form for={@form} phx-change="update_field" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -92,7 +92,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Loan Days
@@ -106,7 +106,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Renewals
@@ -120,7 +120,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Reserves
@@ -134,7 +134,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Concurrent Loans
@@ -151,12 +151,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               </div>
             </.form>
           </div>
-           <%!-- Fine Configuration --%>
+          <%!-- Fine Configuration --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Fine & Currency Settings
             </h3>
-            
+
             <.form for={@form} phx-change="update_field" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -173,7 +173,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Fine (optional)
@@ -189,7 +189,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
                 </div>
-                
+
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Currency
@@ -200,27 +200,27 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
                     <option value="IDR" selected={@form_data.currency == "IDR"}>IDR (Rupiah)</option>
-                    
+
                     <option value="USD" selected={@form_data.currency == "USD"}>USD (Dollar)</option>
-                    
+
                     <option value="EUR" selected={@form_data.currency == "EUR"}>EUR (Euro)</option>
-                    
+
                     <option value="SGD" selected={@form_data.currency == "SGD"}>
                       SGD (Singapore Dollar)
                     </option>
-                    
+
                     <option value="MYR" selected={@form_data.currency == "MYR"}>MYR (Ringgit)</option>
                   </select>
                 </div>
               </div>
             </.form>
           </div>
-           <%!-- Feature Toggles --%>
+          <%!-- Feature Toggles --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Features & Permissions
             </h3>
-            
+
             <div class="space-y-3">
               <div class="flex items-center gap-3">
                 <input
@@ -236,7 +236,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   Allow Reservations
                 </label>
               </div>
-              
+
               <div class="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -251,7 +251,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   Allow Renewals
                 </label>
               </div>
-              
+
               <div class="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -270,12 +270,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               </div>
             </div>
           </div>
-           <%!-- Operational Policies --%>
+          <%!-- Operational Policies --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Operational Policies
             </h3>
-            
+
             <div class="space-y-4">
               <div class="flex items-center gap-3">
                 <input
@@ -298,7 +298,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   </p>
                 </div>
               </div>
-              
+
               <div class="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -320,7 +320,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   </p>
                 </div>
               </div>
-              
+
               <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                 <div class="flex items-start gap-3">
                   <input
@@ -341,7 +341,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
                       Require members to pay a refundable deposit
                     </p>
-                    
+
                     <.form for={@form} phx-change="update_field">
                       <input
                         type="number"
@@ -359,7 +359,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               </div>
             </div>
           </div>
-           <%!-- Save Button --%>
+          <%!-- Save Button --%>
           <div class="flex gap-3">
             <button
               type="button"
@@ -376,12 +376,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               Reset to Defaults
             </button>
           </div>
-           <%!-- Rule Preview --%>
+          <%!-- Rule Preview --%>
           <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h4 class="font-semibold text-blue-900 dark:text-blue-300 mb-2">
               Active Rule Source: {rule_source_badge(assigns)}
             </h4>
-            
+
             <p class="text-sm text-blue-700 dark:text-blue-400">
               {explain_rule_source(@form_data.override_loan_rules)}
             </p>

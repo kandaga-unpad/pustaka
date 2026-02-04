@@ -55,7 +55,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         clip-rule="evenodd"
                       />
                     </svg>
-                     {@upload_hints}
+                    {@upload_hints}
                   </p>
                 </div>
               <% end %>
@@ -145,7 +145,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                                 clip-rule="evenodd"
                               />
                             </svg>
-                             {humanize_upload_error(err)}
+                            {humanize_upload_error(err)}
                           </p>
                         </div>
                       <% end %>
@@ -319,7 +319,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                               clip-rule="evenodd"
                             />
                           </svg>
-                           {attachment.description}
+                          {attachment.description}
                         </p>
                       <% end %>
                     </div>

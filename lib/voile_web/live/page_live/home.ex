@@ -215,7 +215,7 @@ defmodule VoileWeb.PageLive.Home do
     ~H"""
     <.modal id="advanced-search">
       <h5>{gettext("Advanced Search")}</h5>
-      
+
       <div><.input type="text" name="keyword" value="" label={gettext("Keyword")} /></div>
     </.modal>
 
@@ -228,16 +228,16 @@ defmodule VoileWeb.PageLive.Home do
             alt={gettext("Cover Background")}
           />
         </div>
-        
+
         <div class="relative bg-white/50 dark:bg-gray-800/50 h-[600px] w-full">
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col items-center justify-center gap-3 pb-16 pt-4 relative z-5 bg-white/80 dark:bg-gray-800/80 rounded-b-xl">
               <img src={@app_logo_url} alt="" class="h-full w-32" />
               <h5 class="text-center">{@app_home_title}</h5>
-              
+
               <p class="max-w-3xl mx-auto text-center text-sm px-4">{@app_home_description}</p>
             </div>
-            
+
             <div class="max-w-5xl mx-auto flex flex-col w-full gap-4">
               <div class="w-full flex flex-col gap-2">
                 <VoileComponents.main_search
@@ -268,11 +268,11 @@ defmodule VoileWeb.PageLive.Home do
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <.icon name="hero-photo" class="w-8 h-8 text-white" />
               </div>
-              
+
               <h3 class="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-3 text-center">
                 {gettext("Gallery")}
               </h3>
-              
+
               <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li class="flex items-start gap-2">
                   <.icon
@@ -280,21 +280,21 @@ defmodule VoileWeb.PageLive.Home do
                     class="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5"
                   /> <span>{gettext("Art collection management")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon
                     name="hero-check-circle"
                     class="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5"
                   /> <span>{gettext("Exhibition planning")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon
                     name="hero-check-circle"
                     class="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5"
                   /> <span>{gettext("Visual materials cataloging")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon
                     name="hero-check-circle"
@@ -303,96 +303,96 @@ defmodule VoileWeb.PageLive.Home do
                 </li>
               </ul>
             </div>
-            
+
             <div class="group h-full p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <.icon name="hero-book-open" class="w-8 h-8 text-white" />
               </div>
-              
+
               <h3 class="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-3 text-center">
                 {gettext("Library")}
               </h3>
-              
+
               <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Book & media cataloging")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Circulation & borrowing")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Member management")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Fine & reservation system")}</span>
                 </li>
               </ul>
             </div>
-            
+
             <div class="group h-full p-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <.icon name="hero-archive-box" class="w-8 h-8 text-white" />
               </div>
-              
+
               <h3 class="text-2xl font-bold text-amber-700 dark:text-amber-300 mb-3 text-center">
                 {gettext("Archive")}
               </h3>
-              
+
               <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Document preservation")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Historical records")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Manuscript management")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Digital archiving")}</span>
                 </li>
               </ul>
             </div>
-            
+
             <div class="group h-full p-6 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 border-2 border-rose-200 dark:border-rose-800 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <.icon name="hero-building-library" class="w-8 h-8 text-white" />
               </div>
-              
+
               <h3 class="text-2xl font-bold text-rose-700 dark:text-rose-300 mb-3 text-center">
                 {gettext("Museum")}
               </h3>
-              
+
               <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Artifact cataloging")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Exhibition curation")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Cultural heritage tracking")}</span>
                 </li>
-                
+
                 <li class="flex items-start gap-2">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
                   <span>{gettext("Collection provenance")}</span>
@@ -407,12 +407,12 @@ defmodule VoileWeb.PageLive.Home do
             <h2 class="mb-4 text-3xl md:text-4xl font-bold" style={"color: #{@app_main_color};"}>
               {gettext("Explore Features")}
             </h2>
-            
+
             <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               {gettext("Everything you need to discover and manage cultural resources")}
             </p>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             <!-- Browse Collections -->
             <.link navigate="/collections" class="block">
@@ -420,11 +420,11 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <.icon name="hero-book-open" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Browse Collections")}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {gettext(
                     "Explore comprehensive catalog across all GLAM categories with advanced filtering"
@@ -438,11 +438,11 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <.icon name="hero-squares-2x2" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Browse Items")}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {gettext("View individual items with detailed metadata and full information")}
                 </p>
@@ -454,11 +454,11 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <.icon name="hero-device-tablet" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Read E-Books")}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {gettext("Access digital library with built-in reader for seamless reading")}
                 </p>
@@ -471,11 +471,11 @@ defmodule VoileWeb.PageLive.Home do
                   <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                     <.icon name="hero-home" class="w-8 h-8 text-white" />
                   </div>
-                  
+
                   <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                     {gettext("My Atrium")}
                   </h4>
-                  
+
                   <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                     {gettext("Manage your borrowings, reservations, fines, and reading history")}
                   </p>
@@ -487,11 +487,11 @@ defmodule VoileWeb.PageLive.Home do
                   <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                     <.icon name="hero-user-plus" class="w-8 h-8 text-white" />
                   </div>
-                  
+
                   <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                     {gettext("Become a Member")}
                   </h4>
-                  
+
                   <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                     {gettext("Register to borrow items, make reservations, and track history")}
                   </p>
@@ -504,11 +504,11 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <.icon name="hero-magnifying-glass" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Advanced Search")}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {gettext("Powerful search tools with filters and metadata queries")}
                 </p>
@@ -520,11 +520,11 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <.icon name="hero-information-circle" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("About Voile")}
                 </h4>
-                
+
                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {gettext("Learn about our mission, technology, and the team")}
                 </p>
@@ -538,7 +538,7 @@ defmodule VoileWeb.PageLive.Home do
             <h2 class="mb-4 text-3xl md:text-4xl font-bold" style={"color: #{@app_main_color};"}>
               {gettext("Collection Highlights")}
             </h2>
-            
+
             <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
               {gettext(
                 "Discover the collections within our digital sanctuary, from rare collections to active communities, you can search about anything. Here is the location and statistics of our collections."
@@ -553,12 +553,12 @@ defmodule VoileWeb.PageLive.Home do
                       <div class="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                         <div class={"absolute inset-0 bg-gradient-to-br opacity-90 #{node.color}"}>
                         </div>
-                        
+
                         <div class="relative p-6 text-center text-white">
                           <div class="text-2xl font-bold mb-1">{node.collection_count}</div>
-                          
+
                           <div class="text-sm opacity-90 truncate">{node.name}</div>
-                          
+
                           <div class="text-lg opacity-75 mt-1">{node.abbr}</div>
                         </div>
                       </div>
@@ -574,7 +574,7 @@ defmodule VoileWeb.PageLive.Home do
             <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
               <div class="absolute inset-0 bg-voile-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              
+
               <div class="relative p-6 text-center">
                 <div
                   class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg"
@@ -582,19 +582,19 @@ defmodule VoileWeb.PageLive.Home do
                 >
                   <.icon name="hero-building-library" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <div class="text-3xl font-black mb-2" style={"color: #{@app_main_color};"}>
                   {@dashboard_stats.node_collection_count}
                 </div>
-                
+
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-300">
                   {gettext("Total Collections")}
                 </p>
-                
+
                 <div class="text-3xl font-black mb-2 mt-4" style={"color: #{@app_main_color};"}>
                   {@dashboard_stats.total_item_count}
                 </div>
-                
+
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-300">
                   {gettext("Total Items")}
                 </p>
@@ -604,16 +604,16 @@ defmodule VoileWeb.PageLive.Home do
             <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
               <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              
+
               <div class="relative p-6">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
                   <.icon name="hero-squares-2x2" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Collection Categories")}
                 </h4>
-                
+
                 <div class="space-y-2">
                   <%= for category <- @dashboard_stats.collection_categories do %>
                     <div class="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2">
@@ -632,16 +632,16 @@ defmodule VoileWeb.PageLive.Home do
             <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
               <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              
+
               <div class="relative p-6">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
                   <.icon name="hero-book-open" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("New Additions")}
                 </h4>
-                
+
                 <div class="space-y-2">
                   <%= for item <- Enum.take(@dashboard_stats.new_books, 3) do %>
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
@@ -650,13 +650,13 @@ defmodule VoileWeb.PageLive.Home do
                           do: item.collection.title,
                           else: gettext("Untitled")}
                       </p>
-                      
+
                       <p class="text-xs text-gray-500 dark:text-gray-400">
                         {Calendar.strftime(item.inserted_at, "%b %d")}
                       </p>
                     </div>
                   <% end %>
-                  
+
                   <%= if length(@dashboard_stats.new_books) == 0 do %>
                     <p class="text-sm text-gray-500 italic text-center py-2">
                       {gettext("No new additions this week")}
@@ -669,16 +669,16 @@ defmodule VoileWeb.PageLive.Home do
             <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
               <div class="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              
+
               <div class="relative p-6">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
                   <.icon name="hero-users" class="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
                   {gettext("Active Users")}
                 </h4>
-                
+
                 <div class="space-y-2">
                   <%= for user <- Enum.take(@dashboard_stats.most_active_users, 3) do %>
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
@@ -695,7 +695,7 @@ defmodule VoileWeb.PageLive.Home do
                             <.icon name="hero-user" class="w-5 h-5 text-gray-400 dark:text-gray-500" />
                           </div>
                         <% end %>
-                        
+
                         <div>
                           <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                             <%= if user.fullname do %>
@@ -706,7 +706,7 @@ defmodule VoileWeb.PageLive.Home do
                               {user.username || user.email}
                             <% end %>
                           </p>
-                          
+
                           <p class="text-xs text-gray-500 dark:text-gray-400">
                             {gettext("Joined")} {Calendar.strftime(user.inserted_at, "%b %d")}
                           </p>
@@ -714,7 +714,7 @@ defmodule VoileWeb.PageLive.Home do
                       </div>
                     </div>
                   <% end %>
-                  
+
                   <%= if length(@dashboard_stats.most_active_users) == 0 do %>
                     <p class="text-sm text-gray-500 italic text-center py-2">
                       {gettext("No active users")}
@@ -729,24 +729,24 @@ defmodule VoileWeb.PageLive.Home do
             <!-- Favorite Books Section -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl">
               <div class="absolute inset-0 bg-voile-primary/5"></div>
-              
+
               <div class="relative p-8">
                 <div class="flex items-center gap-4 mb-6">
                   <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
                     <.icon name="hero-heart" class="w-7 h-7 text-white" />
                   </div>
-                  
+
                   <div>
                     <h4 class="text-gray-800 dark:text-gray-100 mb-1">
                       {gettext("Featured Collections")}
                     </h4>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       {gettext("Recently added to our library")}
                     </p>
                   </div>
                 </div>
-                
+
                 <div class="space-y-4">
                   <%= if length(@dashboard_stats.favorite_books) > 0 do %>
                     <%= for item <- Enum.take(@dashboard_stats.favorite_books, 4) do %>
@@ -771,7 +771,7 @@ defmodule VoileWeb.PageLive.Home do
                             </div>
                           <% end %>
                         </div>
-                        
+
                         <div class="flex-1 min-w-0">
                           <h5
                             class="text-gray-800 dark:text-gray-200 truncate mb-1"
@@ -785,13 +785,13 @@ defmodule VoileWeb.PageLive.Home do
                               do: item.collection.title,
                               else: "Untitled Collection"}
                           </h5>
-                          
+
                           <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
                             {if item.collection && item.collection.description,
                               do: item.collection.description,
                               else: "No description available"}
                           </p>
-                          
+
                           <div class="flex items-center gap-3">
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-voile-surface text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
                               {if item.collection && item.collection.resource_class,
@@ -813,18 +813,18 @@ defmodule VoileWeb.PageLive.Home do
                           class="w-10 h-10 text-gray-400 dark:text-gray-500"
                         />
                       </div>
-                      
+
                       <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">
                         {gettext("No collections available yet")}
                       </p>
-                      
+
                       <p class="text-sm text-gray-400 dark:text-gray-500">
                         {gettext("Start building your digital library")}
                       </p>
                     </div>
                   <% end %>
                 </div>
-                
+
                 <div class="mt-8">
                   <.link
                     navigate="/collections"
@@ -839,40 +839,40 @@ defmodule VoileWeb.PageLive.Home do
             <!-- Quick Stats & Actions -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl">
               <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5"></div>
-              
+
               <div class="relative p-8">
                 <div class="flex items-center gap-4 mb-6">
                   <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
                     <.icon name="hero-chart-bar" class="w-7 h-7 text-white" />
                   </div>
-                  
+
                   <div>
                     <h4 class="text-gray-800 dark:text-gray-100 mb-1">{gettext("Quick Access")}</h4>
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       {gettext("Navigate the digital sanctuary")}
                     </p>
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4 mb-8">
                   <%= for {category, index} <- Enum.with_index(@dashboard_stats.collection_categories) do %>
                     <div class="group text-center p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800 transition-all duration-300">
                       <div class={"w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md #{get_category_gradient_class(category.category)}"}>
                         <.icon name={get_category_icon(category.category)} class="w-6 h-6 text-white" />
                       </div>
-                      
+
                       <p class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-1">
                         {category.count}
                       </p>
-                      
+
                       <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">
                         {category.category} {gettext("collections")}
                       </p>
                     </div>
                   <% end %>
                 </div>
-                
+
                 <div class="space-y-3">
                   <.link
                     navigate="/collections"
@@ -893,11 +893,11 @@ defmodule VoileWeb.PageLive.Home do
           <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <%= if assigns[:current_scope] && assigns[:current_scope].user do %>
               <h2 class="text-3xl md:text-4xl font-bold mb-6">{gettext("Welcome Back!")}</h2>
-              
+
               <p class="text-xl text-white/80 mb-8">
                 {gettext("Continue your journey through our collections")}
               </p>
-              
+
               <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <.link
                   navigate="/collections"
@@ -917,13 +917,13 @@ defmodule VoileWeb.PageLive.Home do
               <h2 class="text-3xl md:text-4xl font-bold mb-6">
                 {gettext("Ready to Start Your Journey?")}
               </h2>
-              
+
               <p class="text-xl text-white/80 mb-8">
                 {gettext(
                   "Join our community and unlock access to thousands of books, artworks, and cultural treasures"
                 )}
               </p>
-              
+
               <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <.link
                   navigate="/register"

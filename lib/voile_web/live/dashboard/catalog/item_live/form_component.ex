@@ -15,7 +15,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage item records in your database.</:subtitle>
       </.header>
-      
+
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
@@ -45,10 +45,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:item_code].value || ""}
                 </div>
-                 <.input field={@form[:item_code]} type="hidden" />
+                <.input field={@form[:item_code]} type="hidden" />
               <% end %>
             </div>
-            
+
             <div class="col-span-full">
               <%= if @editable_identifiers do %>
                 <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
@@ -59,10 +59,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:inventory_code].value || ""}
                 </div>
-                 <.input field={@form[:inventory_code]} type="hidden" />
+                <.input field={@form[:inventory_code]} type="hidden" />
               <% end %>
             </div>
-            
+
             <div class="col-span-full">
               <%= if @editable_identifiers do %>
                 <.input field={@form[:barcode]} type="text" label="Barcode" />
@@ -71,7 +71,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:barcode].value || ""}
                 </div>
-                 <.input field={@form[:barcode]} type="hidden" />
+                <.input field={@form[:barcode]} type="hidden" />
               <% end %>
             </div>
             <!-- Relations and small selects (grouped on one row when space allows) -->
@@ -83,7 +83,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 label="Unit / Node"
               />
             </div>
-            
+
             <div>
               <.input
                 field={@form[:item_location_id]}
@@ -97,7 +97,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 </p>
               <% end %>
             </div>
-            
+
             <div>
               <.input
                 field={@form[:price]}
@@ -114,7 +114,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 label="Status"
               />
             </div>
-            
+
             <div>
               <.input
                 field={@form[:condition]}
@@ -123,7 +123,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 label="Condition"
               />
             </div>
-            
+
             <div>
               <.input
                 field={@form[:availability]}
@@ -140,23 +140,23 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <div>
               <.input field={@form[:acquisition_date]} type="date" label="Acquisition date" />
             </div>
-            
+
             <div>
               <.input field={@form[:last_inventory_date]} type="date" label="Last inventory date" />
             </div>
-            
+
             <div class="col-span-full">
               <!-- Hidden: last_circulated should not be editable in the form but keep value submitted -->
               <.input field={@form[:last_circulated]} type="hidden" />
             </div>
-            
+
             <div><.input field={@form[:rfid_tag]} type="text" label="RFID tag" /></div>
-            
+
             <div class="col-span-full">
               <.input field={@form[:legacy_item_code]} type="text" label="Legacy item code" />
             </div>
           </div>
-          
+
           <div class="flex items-center gap-3 pt-2">
             <.button phx-disable-with="Saving..." class="success-btn">
               <.icon name="hero-check" class="w-4 h-4" /> Save

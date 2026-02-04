@@ -852,10 +852,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       <div class="flex items-center justify-between">
         <div>
           <.back navigate="/manage/glam/library/ledger">Back to Search</.back>
-          
+
           <h1 class="text-3xl font-bold mt-4">Collection Circulation / Books Ledger</h1>
         </div>
-        
+
         <.button
           phx-click="show_finish_modal"
           class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg"
@@ -863,83 +863,83 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <.icon name="hero-check-circle" class="w-5 h-5 mr-2" /> Finish Transaction
         </.button>
       </div>
-       <%!-- Member Biodata --%>
+      <%!-- Member Biodata --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Member Information</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">{@member.fullname || "N/A"}</p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Identifier</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {if @member.identifier, do: Decimal.to_string(@member.identifier), else: "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">{@member.email || "N/A"}</p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Member Type</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {if @member.user_type, do: @member.user_type.name, else: "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {@member.phone_number || "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unit Location</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {if @member.node, do: @member.node.name, else: "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Registration Date</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {if @member.registration_date,
                 do: Calendar.strftime(@member.registration_date, "%B %d, %Y"),
                 else: "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expiry Date</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">
               {if @member.expiry_date,
                 do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
                 else: "N/A"}
             </p>
           </div>
-          
+
           <div>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
-            
+
             <p class="mt-1 text-base text-gray-900 dark:text-white">{@member.address || "N/A"}</p>
           </div>
         </div>
       </div>
-       <%!-- Tabs --%>
+      <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <%!-- Tab Headers --%>
         <div class="border-b border-gray-200 dark:border-gray-700">
@@ -1024,35 +1024,35 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             </button>
           </nav>
         </div>
-         <%!-- Tab Content --%>
+        <%!-- Tab Content --%>
         <div class="p-6">
           <%= if @active_tab == "loan" do %>
             {render_loan_tab(assigns)}
           <% end %>
-          
+
           <%= if @active_tab == "current_loans" do %>
             {render_current_loans_tab(assigns)}
           <% end %>
-          
+
           <%= if @active_tab == "reserve" do %>
             {render_reserve_tab(assigns)}
           <% end %>
-          
+
           <%= if @active_tab == "fines" do %>
             {render_fines_tab(assigns)}
           <% end %>
-          
+
           <%= if @active_tab == "history" do %>
             {render_history_tab(assigns)}
           <% end %>
-          
+
           <%= if @active_tab == "fine_history" do %>
             {render_fine_history_tab(assigns)}
           <% end %>
         </div>
       </div>
     </div>
-     <%!-- Modals --%>
+    <%!-- Modals --%>
     <%= if @show_modal do %>
       {render_modal(assigns)}
     <% end %>
@@ -1096,7 +1096,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               Loan
             </.button>
           </div>
-          
+
           <div class="flex items-center gap-2">
             <input
               type="checkbox"
@@ -1114,12 +1114,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </div>
         </form>
       </div>
-      
+
       <div>
         <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           Items to Loan ({length(@temp_loans)})
         </h3>
-        
+
         <%= if @temp_loans == [] do %>
           <div class="text-center py-12 text-gray-500 dark:text-gray-400">
             <.icon name="hero-book-open" class="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -1135,35 +1135,35 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <col class="w-20" /> <col class="w-1/5" /> <col class="w-1/5" /> <col class="w-1/5" />
                 <col class="w-1/5" /> <col class="w-1/5" />
               </colgroup>
-              
+
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Remove
                   </th>
-                  
+
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Item Code
                   </th>
-                  
+
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Title
                   </th>
-                  
+
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Unit Location
                   </th>
-                  
+
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider border-r border-gray-300 dark:border-gray-600">
                     Loan Date
                   </th>
-                  
+
                   <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
                     Due Date
                   </th>
                 </tr>
               </thead>
-              
+
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr
                   :for={loan <- @temp_loans}
@@ -1178,32 +1178,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       <.icon name="hero-trash" class="w-5 h-5" />
                     </button>
                   </td>
-                  
+
                   <td
                     class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-mono"
                     title={loan.item.item_code}
                   >
                     {loan.item.item_code}
                   </td>
-                  
+
                   <td
                     class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-medium"
                     title={loan.item.collection.title}
                   >
                     {loan.item.collection.title}
                   </td>
-                  
+
                   <td
                     class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700"
                     title={loan.item.node.name}
                   >
                     {loan.item.node.name || "N/A"}
                   </td>
-                  
+
                   <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">
                     {Calendar.strftime(loan.loan_date, "%B %d, %Y")}
                   </td>
-                  
+
                   <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words whitespace-nowrap">
                     {Calendar.strftime(loan.due_date, "%B %d, %Y")}
                   </td>
@@ -1233,25 +1233,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Actions
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Item Code
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Title
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Loan Date
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Due Date
                 </th>
               </tr>
             </thead>
-            
+
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={transaction <- @current_loans}>
                 <td class="px-6 py-4 flex gap-2">
@@ -1270,19 +1270,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     Extend
                   </button>
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {transaction.item.item_code}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {transaction.item.collection.title}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {Calendar.strftime(transaction.transaction_date, "%B %d, %Y")}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {Calendar.strftime(transaction.due_date, "%B %d, %Y")}
                 </td>
@@ -1315,12 +1315,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </.button>
         </form>
       </div>
-      
+
       <div>
         <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           Temporary Reservations ({length(@temp_reservations)})
         </h3>
-        
+
         <%= if @temp_reservations == [] do %>
           <div class="text-center py-12 text-gray-500 dark:text-gray-400">
             <.icon name="hero-bookmark" class="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -1334,21 +1334,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Remove
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Title
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Item Code
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Reserve Date
                   </th>
                 </tr>
               </thead>
-              
+
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={reservation <- @temp_reservations}>
                   <td class="px-6 py-4">
@@ -1360,15 +1360,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       <.icon name="hero-trash" class="w-5 h-5" />
                     </button>
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {reservation.collection.title}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {reservation.item_code || "Any available"}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {Calendar.strftime(reservation.reserve_date, "%B %d, %Y")}
                   </td>
@@ -1388,14 +1388,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       <div class="flex gap-2">
         <.button phx-click="show_add_fine_modal" class="primary-btn">Add New Fine</.button>
       </div>
-      
+
       <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
         <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
           Total Unpaid Fines:
           <span class="text-lg font-bold">{format_currency(@total_unpaid_fines)}</span>
         </p>
       </div>
-      
+
       <div>
         <%= if @unpaid_fines == [] do %>
           <div class="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -1410,33 +1410,33 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Actions
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Description
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Fine Date
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Amount
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Paid
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Balance
                   </th>
-                  
+
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                     Status
                   </th>
                 </tr>
               </thead>
-              
+
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={fine <- @unpaid_fines}>
                   <td class="px-6 py-4 flex gap-2">
@@ -1457,27 +1457,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       <.icon name="hero-currency-dollar" class="w-5 h-5" />
                     </button>
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {fine.description || fine.fine_type}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {Calendar.strftime(fine.fine_date, "%B %d, %Y")}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {format_currency(fine.amount)}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {format_currency(fine.paid_amount)}
                   </td>
-                  
+
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {format_currency(fine.balance)}
                   </td>
-                  
+
                   <td class="px-6 py-4">
                     <span class={[
                       "px-2 py-1 text-xs rounded-full",
@@ -1517,31 +1517,31 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Item Code
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Title
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Event
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Date
                 </th>
               </tr>
             </thead>
-            
+
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={history <- @loan_history}>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {(history.item && history.item.item_code) || "N/A"}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {(history.item && history.item.collection && history.item.collection.title) || "N/A"}
                 </td>
-                
+
                 <td class="px-6 py-4">
                   <span class={[
                     "px-2 py-1 text-xs rounded-full",
@@ -1554,7 +1554,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     {history.event_type}
                   </span>
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {Calendar.strftime(history.event_date, "%B %d, %Y %H:%M")}
                 </td>
@@ -1583,63 +1583,63 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Fine Type
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Description
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Fine Date
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Amount
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Paid
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Balance
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Status
                 </th>
-                
+
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                   Processed By
                 </th>
               </tr>
             </thead>
-            
+
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={fine <- @fine_history}>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   <span class="capitalize">{String.replace(fine.fine_type, "_", " ")}</span>
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {fine.description || "-"}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {Calendar.strftime(fine.fine_date, "%B %d, %Y")}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {format_currency(fine.amount)}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {format_currency(fine.paid_amount)}
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {format_currency(fine.balance)}
                 </td>
-                
+
                 <td class="px-6 py-4">
                   <span class={[
                     "px-2 py-1 text-xs rounded-full",
@@ -1654,7 +1654,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     {fine.fine_status}
                   </span>
                 </td>
-                
+
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {if fine.waived && fine.waived_by do
                     fine.waived_by.fullname || fine.waived_by.email
@@ -1682,7 +1682,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         <% @show_modal == "add_fine" -> %>
           <div>
             <h3 class="text-lg font-semibold mb-4">Add New Fine</h3>
-            
+
             <form phx-submit="create_fine" class="space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">Fine Type</label>
@@ -1692,15 +1692,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   required
                 >
                   <option value="processing">Processing Fee</option>
-                  
+
                   <option value="damaged_item">Damaged Item</option>
-                  
+
                   <option value="lost_item">Lost Item</option>
-                  
+
                   <option value="overdue">Overdue</option>
                 </select>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium mb-1">Description</label>
                 <input
@@ -1710,7 +1710,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   required
                 />
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium mb-1">Amount (Rp)</label>
                 <input
@@ -1720,7 +1720,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   required
                 />
               </div>
-              
+
               <div class="flex gap-2 justify-end">
                 <.button
                   type="button"
@@ -1728,31 +1728,33 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   class="cancel-btn"
                 >
                   Cancel
-                </.button> <.button type="submit" class="primary-btn">Create Fine</.button>
+                </.button>
+                <.button type="submit" class="primary-btn">Create Fine</.button>
               </div>
             </form>
           </div>
         <% @show_modal == "waive_fine" -> %>
           <div>
             <h3 class="text-lg font-semibold mb-4">Waive Fine</h3>
-            
+
             <p class="mb-4">
               Are you sure you want to waive this fine of <strong>{format_currency(@modal_data.fine.amount)}</strong>?
             </p>
-            
+
             <form phx-submit="confirm_waive_fine" class="space-y-4">
               <input type="hidden" name="fine_id" value={@modal_data.fine.id} />
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Reason for waiving (optional)
-                </label> <textarea
+                </label>
+                <textarea
                   name="reason"
                   rows="3"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Enter reason for waiving this fine..."
                 ></textarea>
               </div>
-              
+
               <div class="flex gap-2 justify-end">
                 <.button
                   type="button"
@@ -1760,24 +1762,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   class="warning-btn"
                 >
                   Cancel
-                </.button> <.button type="submit" class="cancel-btn">Confirm Waive</.button>
+                </.button>
+                <.button type="submit" class="cancel-btn">Confirm Waive</.button>
               </div>
             </form>
           </div>
         <% @show_modal == "pay_fine" -> %>
           <div>
             <h3 class="text-lg font-semibold mb-4">Pay Fine</h3>
-            
+
             <%= if @modal_data.pending_payment do %>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                   <.icon name="hero-link" class="w-5 h-5 inline" /> Payment Link Generated
                 </h4>
-                
+
                 <p class="text-sm text-blue-700 dark:text-blue-200 mb-3">
                   A payment link has been created. Share this link with the member or use it to process online payment.
                 </p>
-                
+
                 <div class="bg-white dark:bg-gray-800 rounded p-3 mb-3">
                   <div class="flex items-center gap-2">
                     <input
@@ -1801,7 +1804,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     </.button>
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span class="text-gray-600 dark:text-gray-400">Status:</span>
@@ -1809,7 +1812,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       {String.upcase(@modal_data.pending_payment.status)}
                     </span>
                   </div>
-                  
+
                   <div>
                     <span class="text-gray-600 dark:text-gray-400">Amount:</span>
                     <span class="ml-2 font-medium">
@@ -1817,7 +1820,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     </span>
                   </div>
                 </div>
-                
+
                 <a
                   href={@modal_data.pending_payment.payment_url}
                   target="_blank"
@@ -1828,7 +1831,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </a>
               </div>
             <% end %>
-            
+
             <form phx-submit="confirm_pay_fine" class="space-y-4">
               <input type="hidden" name="fine_id" value={@modal_data.fine.id} />
               <%= if !@modal_data.pending_payment do %>
@@ -1837,7 +1840,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     <.icon name="hero-information-circle" class="w-5 h-5 inline mr-1" />
                     No payment link exists. Generate one for online payment or process cash payment below.
                   </p>
-                  
+
                   <.button
                     type="button"
                     phx-click="generate_payment_link"
@@ -1848,7 +1851,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   </.button>
                 </div>
               <% end %>
-              
+
               <div>
                 <label class="block text-sm font-medium mb-1">Amount to Pay</label>
                 <input
@@ -1859,7 +1862,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   required
                 />
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium mb-1">Payment Method</label>
                 <select
@@ -1868,17 +1871,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   required
                 >
                   <option value="cash">Cash</option>
-                  
+
                   <option value="credit_card">Credit Card</option>
-                  
+
                   <option value="debit_card">Debit Card</option>
-                  
+
                   <option value="bank_transfer">Bank Transfer</option>
-                  
+
                   <option value="online">Online Payment</option>
                 </select>
               </div>
-              
+
               <div class="flex gap-2 justify-end">
                 <.button
                   type="button"
@@ -1886,7 +1889,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   class="warning-btn"
                 >
                   Cancel
-                </.button> <.button type="submit" class="success-btn">Process Payment</.button>
+                </.button>
+                <.button type="submit" class="success-btn">Process Payment</.button>
               </div>
             </form>
           </div>
@@ -1899,18 +1903,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
                 />
               </div>
-              
+
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                 Different Unit Location Warning
               </h3>
             </div>
-            
+
             <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
                 <strong>Warning:</strong>
                 You are trying to add an item from a different unit location.
               </p>
-              
+
               <div class="space-y-2 text-sm">
                 <div>
                   <span class="font-medium text-yellow-900 dark:text-yellow-100">
@@ -1920,7 +1924,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     {@modal_data.existing_units}
                   </span>
                 </div>
-                
+
                 <div>
                   <span class="font-medium text-yellow-900 dark:text-yellow-100">New item unit:</span>
                   <span class="ml-2 text-yellow-800 dark:text-yellow-200">
@@ -1929,27 +1933,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </div>
               </div>
             </div>
-            
+
             <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item details:</p>
-              
+
               <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                 <div>
                   <span class="font-medium">Item Code:</span>
                   <span class="ml-2">{@modal_data.item.item_code}</span>
                 </div>
-                
+
                 <div>
                   <span class="font-medium">Title:</span>
                   <span class="ml-2">{@modal_data.item.collection.title}</span>
                 </div>
               </div>
             </div>
-            
+
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Loaning items from different unit locations at the same time may complicate the collection process. Do you want to proceed anyway?
             </p>
-            
+
             <div class="flex gap-2 justify-end">
               <.button
                 phx-click="cancel_add_different_unit"
@@ -1968,15 +1972,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         <% @show_modal == "finish_transaction" -> %>
           <div>
             <h3 class="text-lg font-semibold mb-4">Finish Transaction</h3>
-            
+
             <p class="mb-4">Are you sure you want to complete this transaction? This will process:</p>
-            
+
             <ul class="list-disc list-inside mb-4 space-y-1">
               <li>{length(@temp_loans)} loan(s)</li>
-              
+
               <li>{length(@temp_reservations)} reservation(s)</li>
             </ul>
-            
+
             <div class="flex gap-2 justify-end">
               <.button phx-click="close_modal" class="cancel-btn">Cancel</.button>
               <.button

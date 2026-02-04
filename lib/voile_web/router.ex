@@ -210,6 +210,7 @@ defmodule VoileWeb.Router do
         scope "/stock_opname" do
           live "/", Dashboard.StockOpnameLive.Index, :index
           live "/new", Dashboard.StockOpnameLive.New, :new
+          live "/report", Dashboard.StockOpnameLive.Report, :report
           live "/:id", Dashboard.StockOpnameLive.Show, :show
           live "/:id/scan", Dashboard.StockOpnameLive.Scan, :scan
           live "/:id/review", Dashboard.StockOpnameLive.Review, :review

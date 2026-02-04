@@ -565,6 +565,74 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  Cancel a librarian's work completion and reopen their session.
+  """
+  def cancel_librarian_completion(%Session{} = session, user) do
+    assignment =
+      Repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
+
+    if assignment do
+      assignment
+      |> Ecto.Changeset.change(%{
+        work_status: "in_progress",
+        completed_at: nil
+      })
+      |> Repo.update()
+    else
+      {:error, :not_assigned}
+    end
+  end
+
+  @doc """
+  Manually complete a librarian's work by admin.
+  """
+  def admin_complete_librarian_work(%Session{} = session, user, notes \\ nil) do
+    assignment =
+      Repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
+
+    if assignment do
+      assignment
+      |> Ecto.Changeset.change(%{
+        work_status: "completed",
+        completed_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        notes: notes
+      })
+      |> Repo.update()
+    else
+      {:error, :not_assigned}
+    end
+  end
+
+  @doc """
+  Get detailed report of all librarians' work in a session.
+  """
+  def get_session_librarian_report(%Session{} = session) do
+    assignments =
+      from(a in LibrarianAssignment,
+        where: a.session_id == ^session.id,
+        preload: [:user],
+        order_by: [desc: a.items_checked]
+      )
+      |> Repo.all()
+
+    # Calculate items checked for each librarian
+    Enum.map(assignments, fn assignment ->
+      items_checked =
+        from(i in Item,
+          where: i.session_id == ^session.id and i.checked_by_id == ^assignment.user_id,
+          select: count(i.id)
+        )
+        |> Repo.one()
+
+      %{
+        assignment: assignment,
+        items_checked: items_checked || 0,
+        user: assignment.user
+      }
+    end)
+  end
+
+  @doc """
   Get librarian's progress in a session.
   Returns virtual assignment for super admins who aren't explicitly assigned.
   """

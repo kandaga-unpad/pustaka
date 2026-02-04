@@ -18,13 +18,23 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             </p>
           </div>
 
-          <.link
-            :if={@can_create}
-            navigate={~p"/manage/stock_opname/new"}
-            class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-105"
-          >
-            <.icon name="hero-plus" class="w-5 h-5 mr-2" /> New Session
-          </.link>
+          <div class="flex items-center gap-3">
+            <.link
+              :if={@can_create}
+              navigate={~p"/manage/stock_opname/report"}
+              class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-200 transform hover:scale-105"
+            >
+              <.icon name="hero-chart-bar" class="w-5 h-5 mr-2" /> Librarian Reports
+            </.link>
+
+            <.link
+              :if={@can_create}
+              navigate={~p"/manage/stock_opname/new"}
+              class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 transform hover:scale-105"
+            >
+              <.icon name="hero-plus" class="w-5 h-5 mr-2" /> New Session
+            </.link>
+          </div>
         </div>
         <%!-- Filters --%>
         <div class="bg-white/80 dark:bg-gray-800 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-6 mb-8">

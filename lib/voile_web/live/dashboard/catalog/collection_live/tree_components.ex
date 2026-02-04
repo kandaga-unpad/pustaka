@@ -40,7 +40,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents do
                 <span>
                   by {(@collection.mst_creator && @collection.mst_creator.creator_name) || "Unknown"}
                 </span>
-                 <span class="mx-2">•</span>
+                <span class="mx-2">•</span>
                 <span class="capitalize">{@collection.status}</span> <span class="mx-2">•</span>
                 <span class="capitalize">{@collection.access_level}</span>
               </div>

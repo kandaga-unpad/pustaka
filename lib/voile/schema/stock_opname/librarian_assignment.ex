@@ -66,4 +66,3 @@ defmodule Voile.Schema.StockOpname.LibrarianAssignment do
     end
   end
 end
-

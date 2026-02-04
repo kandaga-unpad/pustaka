@@ -20,12 +20,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       ]} />
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Circulation Report</h1>
-        
+
         <p class="mt-2 text-gray-600 dark:text-gray-400">
           View circulation statistics and activity (read-only)
         </p>
       </div>
-       <%!-- Tabs Navigation --%>
+      <%!-- Tabs Navigation --%>
       <div class="mb-6">
         <div class="border-b border-gray-200 dark:border-gray-600">
           <nav class="-mb-px flex space-x-8">
@@ -92,7 +92,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </nav>
         </div>
       </div>
-       <%!-- Tab Content --%>
+      <%!-- Tab Content --%>
       <%= case @active_tab do %>
         <% "overview" -> %>
           <.overview_tab
@@ -149,19 +149,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </.form>
         </div>
       <% end %>
-       <%!-- Statistics Section --%>
+      <%!-- Statistics Section --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-blue-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-book-open" class="w-8 h-8 text-blue-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Active Transactions
               </h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.active_transactions do %>
                   {@stats.active_transactions}
@@ -181,7 +181,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -194,16 +194,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-yellow-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-clock" class="w-8 h-8 text-yellow-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overdue Items</h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.overdue_count do %>
                   {@stats.overdue_count}
@@ -223,7 +223,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -236,18 +236,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-green-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-bookmark" class="w-8 h-8 text-green-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Active Reservations
               </h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.active_reservations do %>
                   {@stats.active_reservations}
@@ -267,7 +267,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -280,16 +280,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-red-500">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
             </div>
-            
+
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Outstanding Fines</h3>
-              
+
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.outstanding_fines do %>
                   {format_idr(@stats.outstanding_fines)}
@@ -309,7 +309,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -323,10 +323,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </div>
         </div>
       </div>
-       <%!-- Recent Activities Section --%>
+      <%!-- Recent Activities Section --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 mb-8">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-        
+
         <div class="space-y-4">
           <%= if Enum.empty?(@recent_activities) do %>
             <p class="text-gray-500 dark:text-gray-400 text-center py-8">
@@ -339,29 +339,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                   <div class="flex items-center justify-center w-10 h-10">
                     <div class={"w-2 h-2 rounded-full #{activity_color(activity.event_type)}"}></div>
                   </div>
-                  
+
                   <div class="ml-4">
                     <p class="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
-                    
+
                     <p class="text-xs text-gray-500 dark:text-gray-400">
                       {format_datetime(activity.event_date)}
                     </p>
                   </div>
                 </div>
-                
+
                 <div class="text-xs text-gray-400 dark:text-gray-300">{activity.event_type}</div>
               </div>
             <% end %>
           <% end %>
         </div>
       </div>
-       <%!-- Quick Links Section (Super Admin Only) --%>
+      <%!-- Quick Links Section (Super Admin Only) --%>
       <%= if @is_super_admin do %>
         <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Quick Links (Admin)
           </h2>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <.link
               navigate="/manage/glam/library/circulation/transactions"
@@ -417,7 +417,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           />
         </.form>
       </div>
-       <%!-- Transactions Table --%>
+      <%!-- Transactions Table --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
@@ -425,25 +425,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Member
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Item
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Checkout Date
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Due Date
               </th>
             </tr>
           </thead>
-          
+
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@transactions) do %>
               <tr>
@@ -458,32 +458,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {transaction.member.fullname}
                     </div>
-                    
+
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                       {transaction.member.identifier}
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900 dark:text-gray-100">
                       {transaction.item.collection.title}
                     </div>
-                    
+
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                       {transaction.item.item_code}
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(transaction.status)}"}>
                       {String.upcase(transaction.status)}
                     </span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(transaction.transaction_date)}
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(transaction.due_date)}
                   </td>
@@ -493,7 +493,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </tbody>
         </table>
       </div>
-       <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
+      <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
     </div>
     """
   end
@@ -515,7 +515,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           />
         </.form>
       </div>
-       <%!-- Reservations Table --%>
+      <%!-- Reservations Table --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
@@ -523,25 +523,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Member
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Item
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Reserved On
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Expiry
               </th>
             </tr>
           </thead>
-          
+
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@reservations) do %>
               <tr>
@@ -556,32 +556,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {reservation.member.full_name}
                     </div>
-                    
+
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                       {reservation.member.identifier}
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900 dark:text-gray-100">
                       {reservation.item.title}
                     </div>
-                    
+
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                       {reservation.item.item_code}
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{reservation_status_badge_class(reservation.status)}"}>
                       {String.upcase(reservation.status)}
                     </span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(reservation.reserved_at)}
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(reservation.expires_at)}
                   </td>
@@ -591,7 +591,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </tbody>
         </table>
       </div>
-       <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
+      <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
     </div>
     """
   end
@@ -613,7 +613,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           />
         </.form>
       </div>
-       <%!-- Fines Table --%>
+      <%!-- Fines Table --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
@@ -621,29 +621,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Member
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Type
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Amount
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Balance
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              
+
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Date
               </th>
             </tr>
           </thead>
-          
+
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@fines) do %>
               <tr>
@@ -658,32 +658,32 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {fine.member.full_name}
                     </div>
-                    
+
                     <div class="text-sm text-gray-500 dark:text-gray-400">
                       {fine.member.identifier}
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_type_badge_class(fine.fine_type)}"}>
                       {String.upcase(fine.fine_type)}
                     </span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                     {format_idr(fine.amount)}
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                     {format_idr(fine.balance)}
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{fine_status_badge_class(fine.fine_status)}"}>
                       {String.upcase(fine.fine_status)}
                     </span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(fine.inserted_at)}
                   </td>
@@ -693,7 +693,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           </tbody>
         </table>
       </div>
-       <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
+      <%!-- Pagination --%> <.pagination_controls page={@page} total_pages={@total_pages} />
     </div>
     """
   end
@@ -718,7 +718,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           Next
         </button>
       </div>
-      
+
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
           <p class="text-sm text-gray-700 dark:text-gray-300">
@@ -726,7 +726,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             of <span class="font-medium">{@total_pages}</span>
           </p>
         </div>
-        
+
         <div>
           <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
             <button
