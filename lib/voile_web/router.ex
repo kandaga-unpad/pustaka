@@ -63,6 +63,10 @@ defmodule VoileWeb.Router do
       live "/items/:id", Frontend.Items.Show, :show
       # E-Book reader - accepts query param `url` (local path or public S3 URL)
       live "/ebooks/view", Frontend.EbookReader.Show, :view
+
+      # Public visitor routes
+      live "/visitor", Visitor.CheckIn, :index
+      live "/visitor/survey", Visitor.Survey, :index
     end
   end
 
@@ -164,6 +168,11 @@ defmodule VoileWeb.Router do
       ] do
       scope "/manage" do
         live "/", DashboardLive, :index
+
+        # Visitor statistics (staff/admin)
+        scope "/visitor" do
+          live "/statistics", Dashboard.Visitor.Statistics, :index
+        end
 
         scope "/catalog" do
           live "/", Dashboard.Catalog.Index, :index

@@ -10,6 +10,9 @@ defmodule Voile.Schema.System do
   alias Voile.Schema.System.Setting
   alias Voile.Schema.System.SystemLog
   alias Voile.Schema.System.CollectionLog
+  alias Voile.Schema.System.VisitorLog
+  alias Voile.Schema.System.VisitorSurvey
+  alias Voile.Schema.Master.Location
 
   @doc """
   Returns the list of nodes.
@@ -654,5 +657,329 @@ defmodule Voile.Schema.System do
         where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now()
 
     Repo.exists?(query)
+  end
+
+  ## Visitor Management Functions
+
+  @doc """
+  Returns the list of visitor_logs with filtering and pagination.
+  """
+  def list_visitor_logs(opts \\ []) do
+    query = from l in VisitorLog, order_by: [desc: l.check_in_time]
+
+    query =
+      if opts[:node_id] do
+        where(query, [l], l.node_id == ^opts[:node_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:location_id] do
+        where(query, [l], l.location_id == ^opts[:location_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:from_date] do
+        where(query, [l], l.check_in_time >= ^opts[:from_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:to_date] do
+        where(query, [l], l.check_in_time <= ^opts[:to_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:search] do
+        search_term = "%#{opts[:search]}%"
+
+        where(
+          query,
+          [l],
+          ilike(l.visitor_identifier, ^search_term) or
+            ilike(l.visitor_name, ^search_term) or
+            ilike(l.visitor_origin, ^search_term)
+        )
+      else
+        query
+      end
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    query =
+      if opts[:limit] do
+        limit(query, ^opts[:limit])
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Gets a single visitor_log.
+  """
+  def get_visitor_log!(id, opts \\ []) do
+    query = from l in VisitorLog, where: l.id == ^id
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    Repo.one!(query)
+  end
+
+  @doc """
+  Creates a visitor_log (check-in).
+  """
+  def create_visitor_log(attrs \\ %{}) do
+    attrs = Map.put_new(attrs, "check_in_time", DateTime.utc_now())
+
+    %VisitorLog{}
+    |> VisitorLog.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a visitor_log (e.g., for check-out).
+  """
+  def update_visitor_log(%VisitorLog{} = visitor_log, attrs) do
+    visitor_log
+    |> VisitorLog.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a visitor_log.
+  """
+  def delete_visitor_log(%VisitorLog{} = visitor_log) do
+    Repo.delete(visitor_log)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking visitor_log changes.
+  """
+  def change_visitor_log(%VisitorLog{} = visitor_log, attrs \\ %{}) do
+    VisitorLog.changeset(visitor_log, attrs)
+  end
+
+  @doc """
+  Returns the list of visitor_surveys with filtering.
+  """
+  def list_visitor_surveys(opts \\ []) do
+    query = from s in VisitorSurvey, order_by: [desc: s.inserted_at]
+
+    query =
+      if opts[:node_id] do
+        where(query, [s], s.node_id == ^opts[:node_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:location_id] do
+        where(query, [s], s.location_id == ^opts[:location_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:from_date] do
+        where(query, [s], s.inserted_at >= ^opts[:from_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:to_date] do
+        where(query, [s], s.inserted_at <= ^opts[:to_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:rating] do
+        where(query, [s], s.rating == ^opts[:rating])
+      else
+        query
+      end
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    query =
+      if opts[:limit] do
+        limit(query, ^opts[:limit])
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Gets a single visitor_survey.
+  """
+  def get_visitor_survey!(id, opts \\ []) do
+    query = from s in VisitorSurvey, where: s.id == ^id
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    Repo.one!(query)
+  end
+
+  @doc """
+  Creates a visitor_survey.
+  """
+  def create_visitor_survey(attrs \\ %{}) do
+    %VisitorSurvey{}
+    |> VisitorSurvey.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a visitor_survey.
+  """
+  def update_visitor_survey(%VisitorSurvey{} = visitor_survey, attrs) do
+    visitor_survey
+    |> VisitorSurvey.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a visitor_survey.
+  """
+  def delete_visitor_survey(%VisitorSurvey{} = visitor_survey) do
+    Repo.delete(visitor_survey)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking visitor_survey changes.
+  """
+  def change_visitor_survey(%VisitorSurvey{} = visitor_survey, attrs \\ %{}) do
+    VisitorSurvey.changeset(visitor_survey, attrs)
+  end
+
+  @doc """
+  Returns visitor statistics for a given period and optional filters.
+  """
+  def get_visitor_statistics(opts \\ []) do
+    from_date = opts[:from_date] || DateTime.utc_now() |> DateTime.add(-30, :day)
+    to_date = opts[:to_date] || DateTime.utc_now()
+    node_id = opts[:node_id]
+    location_id = opts[:location_id]
+
+    # Total visitors
+    visitors_query =
+      from l in VisitorLog, where: l.check_in_time >= ^from_date and l.check_in_time <= ^to_date
+
+    visitors_query =
+      if node_id, do: where(visitors_query, [l], l.node_id == ^node_id), else: visitors_query
+
+    visitors_query =
+      if location_id,
+        do: where(visitors_query, [l], l.location_id == ^location_id),
+        else: visitors_query
+
+    total_visitors = Repo.aggregate(visitors_query, :count, :id)
+
+    # Unique visitors
+    unique_visitors =
+      visitors_query
+      |> select([l], l.visitor_identifier)
+      |> distinct(true)
+      |> Repo.aggregate(:count, :id)
+
+    # By location/room
+    by_room =
+      visitors_query
+      |> join(:inner, [l], loc in Location, on: l.location_id == loc.id)
+      |> group_by([l, loc], [loc.id, loc.location_name])
+      |> select([l, loc], %{room_id: loc.id, room_name: loc.location_name, count: count(l.id)})
+      |> Repo.all()
+
+    # By origin
+    by_origin =
+      visitors_query
+      |> where([l], not is_nil(l.visitor_origin))
+      |> group_by([l], l.visitor_origin)
+      |> select([l], %{origin: l.visitor_origin, count: count(l.id)})
+      |> order_by([l], desc: count(l.id))
+      |> limit(10)
+      |> Repo.all()
+
+    # Daily trend
+    daily_trend =
+      visitors_query
+      |> select([l], %{
+        date: fragment("DATE(?)", l.check_in_time),
+        count: count(l.id)
+      })
+      |> group_by([l], fragment("DATE(?)", l.check_in_time))
+      |> order_by([l], fragment("DATE(?)", l.check_in_time))
+      |> Repo.all()
+
+    # Survey statistics
+    surveys_query =
+      from s in VisitorSurvey, where: s.inserted_at >= ^from_date and s.inserted_at <= ^to_date
+
+    surveys_query =
+      if node_id, do: where(surveys_query, [s], s.node_id == ^node_id), else: surveys_query
+
+    surveys_query =
+      if location_id,
+        do: where(surveys_query, [s], s.location_id == ^location_id),
+        else: surveys_query
+
+    total_surveys = Repo.aggregate(surveys_query, :count, :id)
+
+    avg_rating =
+      case Repo.aggregate(surveys_query, :avg, :rating) do
+        nil -> 0
+        avg -> Decimal.to_float(avg) |> Float.round(2)
+      end
+
+    rating_distribution =
+      surveys_query
+      |> group_by([s], s.rating)
+      |> select([s], %{rating: s.rating, count: count(s.id)})
+      |> order_by([s], s.rating)
+      |> Repo.all()
+
+    %{
+      total_visitors: total_visitors,
+      unique_visitors: unique_visitors,
+      by_room: by_room,
+      by_origin: by_origin,
+      daily_trend: daily_trend,
+      surveys: %{
+        total: total_surveys,
+        average_rating: avg_rating,
+        distribution: rating_distribution
+      }
+    }
   end
 end

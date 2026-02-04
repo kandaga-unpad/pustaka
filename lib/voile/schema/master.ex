@@ -437,6 +437,51 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Returns the list of locations with filtering options.
+
+  ## Options
+
+    * `:node_id` - Filter by node_id
+    * `:is_active` - Filter by active status
+    * `:preload` - List of associations to preload
+
+  ## Examples
+
+      iex> list_locations(node_id: 1)
+      [%Location{}, ...]
+
+      iex> list_locations(node_id: 1, is_active: true)
+      [%Location{}, ...]
+
+  """
+  def list_locations(opts \\ []) do
+    query = from l in Location, order_by: [asc: l.location_name]
+
+    query =
+      if opts[:node_id] do
+        where(query, [l], l.node_id == ^opts[:node_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:is_active] != nil do
+        where(query, [l], l.is_active == ^opts[:is_active])
+      else
+        query
+      end
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    Repo.all(query)
+  end
+
+  @doc """
   Returns the list of mst_locations with pagination.
   """
   def list_mst_locations_paginated(page \\ 1, per_page \\ 10) do
