@@ -10,13 +10,13 @@ defmodule Voile.Repo.Migrations.CreateVisitorSurveys do
       add :user_agent, :text
       add :additional_data, :map, default: %{}
       add :visitor_log_id, references(:visitor_logs, on_delete: :nilify_all)
-      add :visitor_room_id, references(:visitor_rooms, on_delete: :restrict), null: false
+      add :location_id, references(:mst_locations, on_delete: :restrict), null: false
       add :node_id, references(:nodes, on_delete: :restrict), null: false
 
       timestamps(type: :utc_datetime)
     end
 
-    create index(:visitor_surveys, [:visitor_room_id])
+    create index(:visitor_surveys, [:location_id])
     create index(:visitor_surveys, [:node_id])
     create index(:visitor_surveys, [:visitor_log_id])
     create index(:visitor_surveys, [:rating])

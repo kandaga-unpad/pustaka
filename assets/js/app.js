@@ -50,6 +50,81 @@ const NotificationSound = {
   },
 };
 
+// Check-in Storage Hook for persisting node and location selection
+const CheckInStorage = {
+  mounted() {
+    // Try to restore from localStorage on mount
+    const nodeId = localStorage.getItem("visitor_check_in_node_id");
+    const locationId = localStorage.getItem("visitor_check_in_location_id");
+
+    if (nodeId && locationId) {
+      this.pushEvent("restore_from_storage", {
+        node_id: nodeId,
+        location_id: locationId,
+      });
+    }
+
+    // Handle clear storage events
+    this.handleEvent("clear_location_storage", () => {
+      localStorage.removeItem("visitor_check_in_location_id");
+    });
+
+    this.handleEvent("clear_check_in_storage", () => {
+      localStorage.removeItem("visitor_check_in_node_id");
+      localStorage.removeItem("visitor_check_in_location_id");
+    });
+  },
+  updated() {
+    // Save to localStorage when node or location changes
+    const nodeId = this.el.dataset.nodeId;
+    const locationId = this.el.dataset.locationId;
+
+    if (nodeId && nodeId !== "undefined" && nodeId !== "null") {
+      localStorage.setItem("visitor_check_in_node_id", nodeId);
+    }
+
+    if (locationId && locationId !== "undefined" && locationId !== "null") {
+      localStorage.setItem("visitor_check_in_location_id", locationId);
+    }
+  },
+};
+
+// Identifier Input Hook for auto-focus and barcode scanning
+const IdentifierInput = {
+  mounted() {
+    // Auto-focus on mount for barcode scanning
+    this.el.focus();
+
+    // Listen for focus event from server
+    this.handleEvent("focus_identifier", () => {
+      this.el.focus();
+    });
+
+    // Clear input on Enter key (for barcode scanners)
+    this.el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const form = this.el.closest("form");
+        if (form) {
+          // Submit the form
+          form.dispatchEvent(
+            new Event("submit", { bubbles: true, cancelable: true }),
+          );
+          // Clear the input immediately
+          setTimeout(() => {
+            this.el.value = "";
+            this.el.focus();
+          }, 100);
+        }
+      }
+    });
+  },
+  updated() {
+    // Ensure focus after updates
+    this.el.focus();
+  },
+};
+
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
@@ -68,6 +143,8 @@ const liveSocket = new LiveSocket("/live", Socket, {
     SearchResultsLoading,
     NotificationSound,
     BarcodeScanner,
+    CheckInStorage,
+    IdentifierInput,
     Turnstile: TurnstileHook,
     EbookReader,
     ...colocatedHooks,
@@ -257,11 +334,11 @@ if (process.env.NODE_ENV === "development") {
             reloader.openEditorAtDef(e.target);
           }
         },
-        true
+        true,
       );
 
       window.liveReloader = reloader;
-    }
+    },
   );
 }
 
@@ -293,7 +370,7 @@ function applySystemTheme() {
   const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   document.documentElement.setAttribute(
     "data-theme",
-    isDark ? "dark" : "light"
+    isDark ? "dark" : "light",
   );
   document.documentElement.classList.toggle("dark", isDark);
 }

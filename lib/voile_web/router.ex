@@ -66,7 +66,6 @@ defmodule VoileWeb.Router do
 
       # Public visitor routes
       live "/visitor", Visitor.CheckIn, :index
-      live "/visitor/survey", Visitor.Survey, :index
     end
   end
 

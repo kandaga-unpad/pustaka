@@ -14,7 +14,9 @@
    curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
    Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
 @plugin "../vendor/daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes:
+    light --default,
+    dark --prefersdark;
 }
 
 /* daisyUI theme plugin. You can update this file by fetching the latest version with:
@@ -160,9 +162,19 @@
 
 @layer base {
   * {
-    font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-      "Helvetica Neue", sans-serif;
+    font-family:
+      "Noto Sans",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      "Open Sans",
+      "Helvetica Neue",
+      sans-serif;
     @apply transition-all;
   }
 
@@ -176,9 +188,19 @@
   h4,
   h5,
   h6 {
-    font-family: "Kanit", system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-      "Helvetica Neue", sans-serif;
+    font-family:
+      "Kanit",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      "Open Sans",
+      "Helvetica Neue",
+      sans-serif;
     @apply text-base font-semibold;
   }
 
@@ -752,14 +774,18 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     /* Enhanced shadow for page separation */
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3),
-      0 4px 6px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 10px 30px -5px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(0, 0, 0, 0.1);
     border-radius: 2px;
   }
 
   :where([data-theme="dark"], [data-theme="dark"] *) .pdf-canvas {
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6),
-      0 4px 6px -2px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 10px 30px -5px rgba(0, 0, 0, 0.6),
+      0 4px 6px -2px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 
   .pdf-canvas.zoomed {
@@ -791,5 +817,17 @@
   /* Smooth scrolling for reader content */
   .reader-content {
     scroll-behavior: smooth;
+  }
+
+  /* Success Modal Animation */
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 }

@@ -761,6 +761,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         path: "/manage/settings/reservation_notifications",
         icon: "hero-bell"
       },
+      %{label: "Visitor Statistics", path: "/manage/visitor/statistics", icon: "hero-chart-bar"},
       %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"}
     ],
     doc: """
