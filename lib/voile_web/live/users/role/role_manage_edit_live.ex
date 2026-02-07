@@ -31,6 +31,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
         |> assign(searching_users: false)
         |> assign(search_results: [])
         |> assign(showing_add_user: false)
+        |> assign(users_page: 1, users_per_page: 10, users_total_pages: 1)
         |> load_role_users()
 
       {:ok, socket}
@@ -167,6 +168,18 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
       _ ->
         {:noreply, put_flash(socket, :error, "Failed to remove user from role")}
     end
+  end
+
+  @impl true
+  def handle_event("paginate_users", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+
+    socket =
+      socket
+      |> assign(users_page: page)
+      |> load_role_users()
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -473,6 +486,16 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                       </div>
                     <% end %>
                   </div>
+
+                  <%= if @users_total_pages > 1 do %>
+                    <div class="mt-4">
+                      <.pagination
+                        page={@users_page}
+                        total_pages={@users_total_pages}
+                        event="paginate_users"
+                      />
+                    </div>
+                  <% end %>
                 <% else %>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
                     No users assigned to this role.
@@ -488,11 +511,19 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
   end
 
   defp load_role_users(socket) do
-    users =
-      PermissionManager.list_users_with_role(socket.assigns.role.id)
-      |> Enum.map(& &1.user)
+    page = socket.assigns[:users_page] || 1
+    per_page = socket.assigns[:users_per_page] || 10
 
-    assign(socket, role_users: users)
+    {users, total_pages} =
+      PermissionManager.list_users_with_role_paginated(
+        socket.assigns.role.id,
+        page,
+        per_page
+      )
+
+    socket
+    |> assign(role_users: users)
+    |> assign(users_total_pages: total_pages)
   end
 
   defp search_users(query, role_id) do

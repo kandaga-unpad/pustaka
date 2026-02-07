@@ -751,8 +751,6 @@ defmodule VoileWeb.VoileDashboardComponents do
     default: [
       %{label: "Application Settings", path: "/manage/settings/apps", icon: "hero-cog-solid"},
       %{label: "User Profile", path: "/manage/settings/user_profile", icon: "hero-user"},
-      %{label: "User Management", path: "/manage/settings/users", icon: "hero-users"},
-      %{label: "Role Management", path: "/manage/settings/roles", icon: "hero-shield-check"},
       %{label: "Permission Management", path: "/manage/settings/permissions", icon: "hero-key"},
       %{label: "Nodes / Units", path: "/manage/settings/nodes", icon: "hero-building-library"},
       %{label: "Holidays", path: "/manage/settings/holidays", icon: "hero-calendar-days"},

@@ -953,7 +953,7 @@ defmodule VoileWeb.CoreComponents do
         title="Role Management"
         description="Manage system roles and permissions"
         action_text="Manage Roles"
-        icon="hero-shield-check"
+        icon="shield-check"
         path="/manage/members/management/roles"
         color="purple"
       />

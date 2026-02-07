@@ -216,6 +216,51 @@ defmodule VoileWeb.Auth.PermissionManager do
   end
 
   @doc """
+  Get users assigned to a role with pagination.
+  Returns {users, total_pages}.
+  """
+  def list_users_with_role_paginated(role_id, page, per_page, opts \\ []) do
+    scope_type = Keyword.get(opts, :scope_type)
+    scope_id = Keyword.get(opts, :scope_id)
+
+    base_query =
+      from u in Voile.Schema.Accounts.User,
+        join: ura in UserRoleAssignment,
+        on: ura.user_id == u.id,
+        where: ura.role_id == ^role_id,
+        where: is_nil(ura.expires_at) or ura.expires_at > ^DateTime.utc_now(),
+        order_by: [asc: u.fullname, asc: u.email],
+        distinct: u.id
+
+    base_query =
+      if scope_type do
+        from [u, ura] in base_query, where: ura.scope_type == ^scope_type
+      else
+        base_query
+      end
+
+    base_query =
+      if scope_id do
+        from [u, ura] in base_query, where: ura.scope_id == ^scope_id
+      else
+        base_query
+      end
+
+    # Get total count
+    total_count = Repo.aggregate(base_query, :count, :id)
+    total_pages = ceil(total_count / per_page)
+
+    # Get paginated results
+    users =
+      base_query
+      |> limit(^per_page)
+      |> offset(^((page - 1) * per_page))
+      |> Repo.all()
+
+    {users, total_pages}
+  end
+
+  @doc """
   Lists all users assigned to a specific role by role name.
   Returns a list of User structs (not UserRoleAssignments).
 

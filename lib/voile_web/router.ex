@@ -413,14 +413,6 @@ defmodule VoileWeb.Router do
 
           live "/apps", Dashboard.Settings.AppProfileSettingsLive, :index
 
-          scope "/users" do
-            live "/", Users.ManageLive, :index
-            live "/new", Users.ManageLive, :new
-            live "/:id", Users.ManageLive.Show, :show
-            live "/:id/show/edit", Users.ManageLive.Show, :edit
-            live "/:id/edit", Users.ManageLive, :edit
-          end
-
           scope "/roles" do
             live "/", Users.Role.ManageLive, :index
             live "/new", Users.Role.ManageLive, :new

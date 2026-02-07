@@ -89,15 +89,106 @@ const CheckInStorage = {
   },
 };
 
+// Virtual Keyboard Tab Hook for handling tab switching
+const VirtualKeyboardTab = {
+  mounted() {
+    // Initialize active tab state (default to "number")
+    this.activeTab = "number";
+    this.setupTabs();
+  },
+  updated() {
+    // Restore active tab after LiveView updates
+    this.setupTabs();
+  },
+  setupTabs() {
+    const tabs = this.el.querySelectorAll(".keyboard-tab");
+    const contents = this.el.querySelectorAll(".keyboard-content");
+
+    // Set up click listeners (idempotent - won't duplicate)
+    tabs.forEach((tab) => {
+      // Remove old listener if exists
+      const newTab = tab.cloneNode(true);
+      tab.parentNode.replaceChild(newTab, tab);
+
+      newTab.addEventListener("click", (e) => {
+        const targetTab = newTab.dataset.tab;
+        this.activeTab = targetTab;
+        this.activateTab(targetTab);
+      });
+    });
+
+    // Activate the current active tab
+    this.activateTab(this.activeTab);
+  },
+  activateTab(targetTab) {
+    const tabs = this.el.querySelectorAll(".keyboard-tab");
+    const contents = this.el.querySelectorAll(".keyboard-content");
+
+    // Remove active class from all tabs
+    tabs.forEach((t) => {
+      t.classList.remove(
+        "active",
+        "text-blue-600",
+        "dark:text-blue-400",
+        "border-b-2",
+        "border-blue-600",
+        "dark:border-blue-400",
+      );
+      t.classList.add(
+        "text-gray-600",
+        "dark:text-gray-400",
+        "hover:text-blue-600",
+        "dark:hover:text-blue-400",
+      );
+    });
+
+    // Add active class to target tab
+    const targetTabEl = this.el.querySelector(`[data-tab="${targetTab}"]`);
+    if (targetTabEl) {
+      targetTabEl.classList.add(
+        "active",
+        "text-blue-600",
+        "dark:text-blue-400",
+        "border-b-2",
+        "border-blue-600",
+        "dark:border-blue-400",
+      );
+      targetTabEl.classList.remove(
+        "text-gray-600",
+        "dark:text-gray-400",
+        "hover:text-blue-600",
+        "dark:hover:text-blue-400",
+      );
+    }
+
+    // Hide all content panels
+    contents.forEach((content) => {
+      content.classList.add("hidden");
+      content.classList.remove("active");
+    });
+
+    // Show target content panel
+    const targetContent = this.el.querySelector(
+      `[data-content="${targetTab}"]`,
+    );
+    if (targetContent) {
+      targetContent.classList.remove("hidden");
+      targetContent.classList.add("active");
+    }
+  },
+};
+
 // Identifier Input Hook for auto-focus and barcode scanning
 const IdentifierInput = {
   mounted() {
     // Auto-focus on mount for barcode scanning
     this.el.focus();
+    this.moveCursorToEnd();
 
     // Listen for focus event from server
     this.handleEvent("focus_identifier", () => {
       this.el.focus();
+      this.moveCursorToEnd();
     });
 
     // Clear input on Enter key (for barcode scanners)
@@ -120,8 +211,14 @@ const IdentifierInput = {
     });
   },
   updated() {
-    // Ensure focus after updates
+    // Ensure focus after updates and move cursor to end
     this.el.focus();
+    this.moveCursorToEnd();
+  },
+  moveCursorToEnd() {
+    // Move cursor to the end of the input
+    const length = this.el.value.length;
+    this.el.setSelectionRange(length, length);
   },
 };
 
@@ -145,6 +242,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     BarcodeScanner,
     CheckInStorage,
     IdentifierInput,
+    VirtualKeyboardTab,
     Turnstile: TurnstileHook,
     EbookReader,
     ...colocatedHooks,

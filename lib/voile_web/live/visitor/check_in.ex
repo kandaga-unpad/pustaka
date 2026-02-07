@@ -34,6 +34,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:comment, "")
       |> assign(:show_survey_success, false)
       |> assign(:survey_error_message, nil)
+      |> assign(:keyboard_shift_active, false)
 
     {:ok, socket}
   end
@@ -160,6 +161,11 @@ defmodule VoileWeb.Visitor.CheckIn do
   @impl true
   def handle_event("keyboard_clear", %{"target" => "visitor_identifier"}, socket) do
     {:noreply, assign(socket, :visitor_identifier, "")}
+  end
+
+  @impl true
+  def handle_event("keyboard_toggle_shift", _params, socket) do
+    {:noreply, assign(socket, :keyboard_shift_active, !socket.assigns.keyboard_shift_active)}
   end
 
   @impl true
@@ -533,7 +539,10 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </div>
 
                 <div class="mt-4">
-                  <VirtualKeyboard.virtual_keyboard target="visitor_identifier" layout="qwerty" />
+                  <VirtualKeyboard.virtual_keyboard
+                    target="visitor_identifier"
+                    shift_active={@keyboard_shift_active}
+                  />
                 </div>
 
                 <button

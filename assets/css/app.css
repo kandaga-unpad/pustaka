@@ -6,6 +6,40 @@
 @source "../js";
 @source "../../lib/voile_web";
 
+/* Virtual Keyboard Styles */
+.keyboard-tab {
+  @apply text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400;
+  transition: all 0.2s ease-in-out;
+}
+
+.keyboard-tab.active {
+  @apply text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400;
+}
+
+.keyboard-content {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.keyboard-content.hidden {
+  display: none;
+}
+
+.keyboard-content.active {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";

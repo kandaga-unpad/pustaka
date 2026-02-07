@@ -101,7 +101,7 @@ defmodule VoileWeb.Dashboard.Members.Index do
           <div>
             <h1 class="text-3xl font-bold mb-2">Members Management Dashboard</h1>
             <p class="text-white text-lg">
-              Comprehensive Member Management & Administration
+              Member Management & Administration
             </p>
           </div>
           <div class="hidden md:block">
