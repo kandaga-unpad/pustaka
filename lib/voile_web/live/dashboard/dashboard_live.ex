@@ -4,37 +4,477 @@ defmodule VoileWeb.DashboardLive do
 
   alias Voile.Analytics.SearchAnalytics
   alias Voile.Schema.Search
+  alias Voile.Repo
+  alias Voile.Schema.Accounts.User
+  alias Voile.Schema.Catalog.{Collection, Item}
+  alias Voile.Schema.Library.{Transaction, Reservation, Fine, Circulation}
+  alias VoileWeb.Auth.Authorization
+
+  import Ecto.Query
+  import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
   def render(assigns) do
     ~H"""
-    <section>
-      <h6 class="text-center py-5">{gettext("Manage your Collection with Voile")}</h6>
-      <!-- Search Dashboard Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <section class="space-y-6 p-6">
+      <%!-- Quick Action Modals --%>
+      <.quick_checkout_modal
+        quick_checkout_visible={@quick_checkout_visible}
+        checkout_form={@checkout_form}
+      />
+      <.quick_return_modal
+        quick_return_visible={@quick_return_visible}
+        return_form={@return_form}
+        quick_return_transaction={@quick_return_transaction}
+        quick_return_predicted_fine={@quick_return_predicted_fine}
+      />
+      <div class="flex items-center justify-between">
+        <div class="w-full">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            {gettext("Dashboard")}
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">
+            {gettext("Overview of your GLAM system")}
+          </p>
+        </div>
+        <%= if @is_super_admin do %>
+          <div class="w-full flex justify-end">
+            <.form :let={f} for={%{}} phx-change="select_node">
+              <.input
+                field={f[:node_id]}
+                type="select"
+                options={
+                  [{"All Nodes", "all"}] ++
+                    Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+                class="text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
+                label="Filter by Node"
+              />
+            </.form>
+          </div>
+        <% end %>
+      </div>
+      <%!-- Quick Actions --%>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <%= if can?(@current_scope.user, "circulation.checkout") do %>
+          <button
+            phx-click="show_quick_checkout"
+            class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800"
+          >
+            <.icon name="hero-arrow-right-circle" class="w-6 h-6 mr-3" /> Quick Checkout
+          </button>
+        <% end %>
+        <%= if can?(@current_scope.user, "circulation.return") do %>
+          <button
+            phx-click="show_quick_return"
+            class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-green-700 hover:to-green-800"
+          >
+            <.icon name="hero-arrow-left-circle" class="w-6 h-6 mr-3" /> Quick Return
+          </button>
+        <% end %>
+      </div>
+      <%!-- Quick Stats Cards --%>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <.stat_card
+          title="Total Members"
+          value={@member_stats.total_members}
+          icon="hero-users"
+          color="blue"
+        />
+        <.stat_card
+          title="Active Loans"
+          value={@circulation_stats.active_transactions}
+          icon="hero-book-open"
+          color="green"
+        />
+        <.stat_card
+          title="Overdue Items"
+          value={@circulation_stats.overdue_count}
+          icon="hero-exclamation-triangle"
+          color="red"
+        />
+        <.stat_card
+          title="Collections"
+          value={@catalog_stats.total_collections}
+          icon="hero-rectangle-stack"
+          color="purple"
+        />
+      </div>
+      <%!-- Member Statistics --%>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <.icon name="hero-users" class="w-5 h-5 inline mr-2" /> Member Overview
+          </h3>
+          <div class="space-y-4">
+            <.stat_row
+              label="Active Members"
+              value={@member_stats.active_members}
+              color="green"
+            />
+            <.stat_row
+              label="Suspended Members"
+              value={@member_stats.suspended_members}
+              color="red"
+            />
+            <.stat_row
+              label="Expiring Soon (30 days)"
+              value={@member_stats.expiring_soon}
+              color="orange"
+            />
+            <.stat_row
+              label="Expired Memberships"
+              value={@member_stats.expired_members}
+              color="gray"
+            />
+          </div>
+          <%= if @is_super_admin do %>
+            <div class="mt-6 text-center">
+              <.link navigate={~p"/manage/settings/user_dashboard"}>
+                <.button>View Detailed Member Statistics &rarr;</.button>
+              </.link>
+            </div>
+          <% end %>
+        </div>
+        <%!-- Circulation Statistics --%>
+        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <.icon name="hero-arrow-path" class="w-5 h-5 inline mr-2" /> Circulation Overview
+          </h3>
+          <div class="space-y-4">
+            <.stat_row
+              label="Active Transactions"
+              value={@circulation_stats.active_transactions}
+              color="blue"
+            />
+            <.stat_row
+              label="Overdue Transactions"
+              value={@circulation_stats.overdue_count}
+              color="red"
+            />
+            <.stat_row
+              label="Active Reservations"
+              value={@circulation_stats.active_reservations}
+              color="purple"
+            />
+            <.stat_row
+              label="Outstanding Fines"
+              value={"Rp #{format_currency(@circulation_stats.outstanding_fines)}"}
+              color="orange"
+            />
+          </div>
+        </div>
+      </div>
+      <%!-- Catalog & Search Statistics --%>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <.icon name="hero-rectangle-stack" class="w-5 h-5 inline mr-2" /> Catalog Overview
+          </h3>
+          <div class="space-y-4">
+            <.stat_row
+              label="Total Collections"
+              value={@catalog_stats.total_collections}
+              color="blue"
+            />
+            <.stat_row
+              label="Published Collections"
+              value={@catalog_stats.published_collections}
+              color="green"
+            />
+            <.stat_row label="Total Items" value={@catalog_stats.total_items} color="purple" />
+            <.stat_row
+              label="Available Items"
+              value={@catalog_stats.available_items}
+              color="green"
+            />
+          </div>
+        </div>
+        <%!-- Search Widget --%>
         <.dashboard_search_widget
           search_query={@search_query}
           search_results={@search_results}
           searching={@searching}
-        /> <.search_stats_widget stats={@search_stats} />
+        />
+      </div>
+      <%!-- Search Statistics Widget --%>
+      <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
+        <.search_stats_widget stats={@search_stats} />
       </div>
     </section>
     """
   end
 
   def mount(_params, _session, socket) do
+    user = socket.assigns.current_scope.user
+    is_super_admin = Authorization.is_super_admin?(user)
+
     socket =
       socket
       |> assign(:page_title, gettext("Dashboard"))
+      |> assign(:user, user)
+      |> assign(:is_super_admin, is_super_admin)
       |> assign(:search_stats, SearchAnalytics.get_search_stats())
       |> assign(:search_query, "")
       |> assign(:search_results, [])
       |> assign(:searching, false)
+
+    socket =
+      if is_super_admin do
+        nodes = Voile.Schema.System.list_nodes()
+        socket |> assign(:nodes, nodes) |> assign(:selected_node_id, nil)
+      else
+        socket |> assign(:nodes, []) |> assign(:selected_node_id, user.node_id)
+      end
+
+    # Load statistics
+    socket =
+      socket
+      |> load_member_stats(user)
+      |> load_circulation_stats(user)
+      |> load_catalog_stats(user)
+      |> assign(:quick_checkout_visible, false)
+      |> assign(:checkout_form, to_form(%{}))
+      |> assign(:quick_return_visible, false)
+      |> assign(:return_form, to_form(%{}))
+      |> assign(:quick_return_transaction, nil)
+      |> assign(:quick_return_predicted_fine, Decimal.new("0"))
 
     {:ok, socket}
   end
 
   def handle_params(_params, _uri, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
+    node_id =
+      case node_id_str do
+        nil -> nil
+        "all" -> nil
+        "" -> nil
+        id -> String.to_integer(id)
+      end
+
+    socket = assign(socket, :selected_node_id, node_id)
+
+    # Determine user context for stats
+    user = socket.assigns.user
+
+    user_for_stats =
+      if Authorization.is_super_admin?(user) and not is_nil(node_id) do
+        Map.put(user, :node_id, node_id)
+      else
+        user
+      end
+
+    socket =
+      socket
+      |> load_member_stats(user_for_stats)
+      |> load_circulation_stats(user_for_stats)
+      |> load_catalog_stats(user_for_stats)
+
+    {:noreply, socket}
+  end
+
+  # Quick Checkout handlers
+  def handle_event("show_quick_checkout", _params, socket) do
+    if can?(socket, "circulation.checkout") do
+      {:noreply, assign(socket, :quick_checkout_visible, true)}
+    else
+      {:noreply, put_flash(socket, :error, "You don't have permission to checkout items")}
+    end
+  end
+
+  def handle_event("cancel_quick_checkout", _params, socket) do
+    socket =
+      socket
+      |> assign(:quick_checkout_visible, false)
+      |> assign(:checkout_form, to_form(%{}))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("quick_checkout_submit", params, socket) do
+    unless can?(socket, "circulation.checkout") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to checkout items")}
+    else
+      member_id = Map.get(params, "member_id", "")
+      item_id = Map.get(params, "item_id", "")
+
+      cond do
+        member_id == "" ->
+          {:noreply, put_flash(socket, :error, "Member identifier is required")}
+
+        item_id == "" ->
+          {:noreply, put_flash(socket, :error, "Item code is required")}
+
+        true ->
+          alias Voile.Schema.Accounts
+          alias Voile.Schema.Catalog
+
+          case Accounts.get_user_by_identifier(member_id) do
+            nil ->
+              {:noreply, put_flash(socket, :error, "Member not found")}
+
+            member ->
+              case Catalog.get_item_by_code(item_id) do
+                nil ->
+                  {:noreply, put_flash(socket, :error, "Item not found")}
+
+                item ->
+                  librarian = socket.assigns.current_scope.user.id
+
+                  case Circulation.checkout_item(member.id, item.id, librarian) do
+                    {:ok, _transaction} ->
+                      socket =
+                        socket
+                        |> assign(:quick_checkout_visible, false)
+                        |> assign(:checkout_form, to_form(%{}))
+                        |> put_flash(:info, "Item checked out successfully")
+                        |> load_circulation_stats(socket.assigns.user)
+
+                      {:noreply, socket}
+
+                    {:error, changeset} ->
+                      errors =
+                        changeset
+                        |> Map.get(:errors, [])
+                        |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
+                        |> Enum.join(", ")
+
+                      {:noreply, put_flash(socket, :error, "Failed to checkout: #{errors}")}
+                  end
+              end
+          end
+      end
+    end
+  end
+
+  # Quick Return handlers
+  def handle_event("show_quick_return", _params, socket) do
+    if can?(socket, "circulation.return") do
+      {:noreply, assign(socket, :quick_return_visible, true)}
+    else
+      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
+    end
+  end
+
+  def handle_event("cancel_quick_return", _params, socket) do
+    socket =
+      socket
+      |> assign(:quick_return_visible, false)
+      |> assign(:return_form, to_form(%{}))
+      |> assign(:quick_return_transaction, nil)
+      |> assign(:quick_return_predicted_fine, Decimal.new("0"))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("quick_return_search", %{"item_code" => item_code}, socket) do
+    unless can?(socket, "circulation.return") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
+    else
+      alias Voile.Schema.Catalog
+      alias Voile.Schema.Accounts
+
+      case Catalog.get_item_by_code(item_code) do
+        nil ->
+          {:noreply, put_flash(socket, :error, "Item not found")}
+
+        item ->
+          # Find active transaction for this item
+          case Circulation.get_active_transaction_by_item(item.id) do
+            nil ->
+              {:noreply, put_flash(socket, :error, "No active transaction found for this item")}
+
+            transaction ->
+              # Load member with user_type for fine calculation
+              member = Accounts.get_user!(transaction.member_id)
+
+              predicted_fine =
+                if Voile.Schema.Library.Transaction.overdue?(transaction) do
+                  days = Voile.Schema.Library.Transaction.days_overdue(transaction)
+                  daily = member.user_type.fine_per_day || Decimal.new("1.00")
+                  Decimal.mult(Decimal.new(days), daily)
+                else
+                  Decimal.new("0")
+                end
+
+              socket =
+                socket
+                |> assign(:quick_return_transaction, transaction)
+                |> assign(:quick_return_predicted_fine, predicted_fine)
+
+              {:noreply, socket}
+          end
+      end
+    end
+  end
+
+  def handle_event("quick_return_confirm", params, socket) do
+    unless can?(socket, "circulation.return") do
+      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
+    else
+      transaction_id = Map.get(params, "transaction_id")
+      payment_amount = Map.get(params, "payment_amount", "0")
+      payment_method = Map.get(params, "payment_method", "cash")
+      current_user_id = socket.assigns.current_scope.user.id
+
+      payment_amount_decimal =
+        case Decimal.parse(payment_amount) do
+          {dec, _rest} when is_struct(dec) -> dec
+          :error -> Decimal.new("0")
+        end
+
+      case Circulation.return_item(transaction_id, current_user_id) do
+        {:ok, _transaction} ->
+          socket =
+            socket
+            |> assign(:quick_return_visible, false)
+            |> assign(:return_form, to_form(%{}))
+            |> assign(:quick_return_transaction, nil)
+            |> assign(:quick_return_predicted_fine, Decimal.new("0"))
+
+          # Try to pay fine if payment amount > 0
+          socket =
+            if Decimal.compare(payment_amount_decimal, Decimal.new("0")) == :gt do
+              case Circulation.get_fine_by_transaction(transaction_id) do
+                {:ok, fine} ->
+                  case Circulation.pay_fine(
+                         fine.id,
+                         payment_amount_decimal,
+                         payment_method,
+                         current_user_id
+                       ) do
+                    {:ok, _} ->
+                      put_flash(socket, :info, "Item returned and fine paid successfully")
+
+                    {:error, _} ->
+                      put_flash(socket, :info, "Item returned (fine payment failed)")
+                  end
+
+                _ ->
+                  put_flash(socket, :info, "Item returned successfully")
+              end
+            else
+              put_flash(socket, :info, "Item returned successfully")
+            end
+
+          # Reload circulation stats
+          socket = load_circulation_stats(socket, socket.assigns.user)
+          {:noreply, socket}
+
+        {:error, changeset} ->
+          errors =
+            changeset
+            |> Map.get(:errors, [])
+            |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
+            |> Enum.join(", ")
+
+          {:noreply, put_flash(socket, :error, "Failed to return: #{errors}")}
+      end
+    end
   end
 
   def handle_event("search", %{"query" => query}, socket) do
@@ -83,4 +523,224 @@ defmodule VoileWeb.DashboardLive do
 
     {:noreply, socket}
   end
+
+  # Private helper functions for loading statistics
+
+  defp load_member_stats(socket, user) do
+    base_query = from(u in User)
+
+    scoped_query =
+      if is_nil(user.node_id) do
+        base_query
+      else
+        from(u in base_query, where: u.node_id == ^user.node_id)
+      end
+
+    total_members = Repo.aggregate(scoped_query, :count, :id)
+
+    active_members =
+      Repo.aggregate(
+        from(u in scoped_query,
+          where: u.manually_suspended == false or is_nil(u.manually_suspended)
+        ),
+        :count,
+        :id
+      )
+
+    suspended_members =
+      Repo.aggregate(
+        from(u in scoped_query, where: u.manually_suspended == true),
+        :count,
+        :id
+      )
+
+    # Members expiring in next 30 days
+    thirty_days_from_now = Date.add(Date.utc_today(), 30)
+
+    expiring_soon =
+      Repo.aggregate(
+        from(u in scoped_query,
+          where:
+            not is_nil(u.expiry_date) and u.expiry_date <= ^thirty_days_from_now and
+              u.expiry_date >= ^Date.utc_today()
+        ),
+        :count,
+        :id
+      )
+
+    expired_members =
+      Repo.aggregate(
+        from(u in scoped_query,
+          where: not is_nil(u.expiry_date) and u.expiry_date < ^Date.utc_today()
+        ),
+        :count,
+        :id
+      )
+
+    member_stats = %{
+      total_members: total_members,
+      active_members: active_members,
+      suspended_members: suspended_members,
+      expiring_soon: expiring_soon,
+      expired_members: expired_members
+    }
+
+    assign(socket, :member_stats, member_stats)
+  end
+
+  defp load_circulation_stats(socket, user) do
+    # Active transactions
+    active_transactions =
+      if is_nil(user.node_id) do
+        Transaction
+        |> where([t], t.status == "active")
+        |> Repo.aggregate(:count, :id)
+      else
+        Transaction
+        |> join(:inner, [t], c in assoc(t, :collection))
+        |> where([t, c], t.status == "active" and c.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Overdue transactions
+    overdue_count =
+      if is_nil(user.node_id) do
+        Transaction
+        |> where([t], t.status == "overdue")
+        |> Repo.aggregate(:count, :id)
+      else
+        Transaction
+        |> join(:inner, [t], c in assoc(t, :collection))
+        |> where([t, c], t.status == "overdue" and c.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Active reservations
+    active_reservations =
+      if is_nil(user.node_id) do
+        Reservation
+        |> where([r], r.status in ["pending", "available"])
+        |> Repo.aggregate(:count, :id)
+      else
+        Reservation
+        |> join(:inner, [r], c in assoc(r, :collection))
+        |> where([r, c], r.status in ["pending", "available"] and c.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Outstanding fines
+    base_fine_query =
+      from(f in Fine,
+        where: f.fine_status in ["pending", "partial_paid"]
+      )
+
+    fine_query =
+      if is_nil(user.node_id) do
+        base_fine_query
+      else
+        from(f in base_fine_query,
+          join: m in assoc(f, :member),
+          where: m.node_id == ^user.node_id
+        )
+      end
+
+    outstanding_fines =
+      (Repo.one(from(f in fine_query, select: sum(f.balance))) || Decimal.new(0))
+      |> Decimal.to_float()
+      |> trunc()
+
+    circulation_stats = %{
+      active_transactions: active_transactions,
+      overdue_count: overdue_count,
+      active_reservations: active_reservations,
+      outstanding_fines: outstanding_fines
+    }
+
+    assign(socket, :circulation_stats, circulation_stats)
+  end
+
+  defp load_catalog_stats(socket, user) do
+    # Total collections
+    total_collections =
+      if is_nil(user.node_id) do
+        Repo.aggregate(Collection, :count, :id)
+      else
+        Collection
+        |> where([c], c.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Published collections
+    published_collections =
+      if is_nil(user.node_id) do
+        Collection
+        |> where([c], c.status == "published")
+        |> Repo.aggregate(:count, :id)
+      else
+        Collection
+        |> where([c], c.status == "published" and c.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Total items
+    total_items =
+      if is_nil(user.node_id) do
+        Repo.aggregate(Item, :count, :id)
+      else
+        Item
+        |> where([i], i.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    # Available items
+    available_items =
+      if is_nil(user.node_id) do
+        Item
+        |> where([i], i.availability == "available")
+        |> Repo.aggregate(:count, :id)
+      else
+        Item
+        |> where([i], i.availability == "available" and i.unit_id == ^user.node_id)
+        |> Repo.aggregate(:count, :id)
+      end
+
+    catalog_stats = %{
+      total_collections: total_collections,
+      published_collections: published_collections,
+      total_items: total_items,
+      available_items: available_items
+    }
+
+    assign(socket, :catalog_stats, catalog_stats)
+  end
+
+  defp format_currency(amount) when is_integer(amount) do
+    amount
+    |> Integer.to_string()
+    |> String.graphemes()
+    |> Enum.reverse()
+    |> Enum.chunk_every(3)
+    |> Enum.join(".")
+    |> String.reverse()
+  end
+
+  defp format_currency(_amount), do: "0"
+
+  # Stat row component for overview cards
+  defp stat_row(assigns) do
+    ~H"""
+    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{@label}</span>
+      <span class={"text-sm font-semibold #{get_text_color_class(@color)}"}>{@value}</span>
+    </div>
+    """
+  end
+
+  defp get_text_color_class("blue"), do: "text-blue-600 dark:text-blue-400"
+  defp get_text_color_class("green"), do: "text-green-600 dark:text-green-400"
+  defp get_text_color_class("red"), do: "text-red-600 dark:text-red-400"
+  defp get_text_color_class("purple"), do: "text-purple-600 dark:text-purple-400"
+  defp get_text_color_class("orange"), do: "text-orange-600 dark:text-orange-400"
+  defp get_text_color_class("gray"), do: "text-gray-600 dark:text-gray-400"
+  defp get_text_color_class(_), do: "text-gray-600 dark:text-gray-400"
 end

@@ -66,6 +66,7 @@ defmodule VoileWeb.Router do
 
       # Public visitor routes
       live "/visitor", Visitor.CheckIn, :index
+      live "/visitor/checkout", Visitor.CheckOut, :index
     end
   end
 
@@ -171,6 +172,8 @@ defmodule VoileWeb.Router do
         # Visitor statistics (staff/admin)
         scope "/visitor" do
           live "/statistics", Dashboard.Visitor.Statistics, :index
+          live "/logs", Dashboard.Visitor.Logs, :index
+          live "/surveys", Dashboard.Visitor.Surveys, :index
         end
 
         scope "/catalog" do

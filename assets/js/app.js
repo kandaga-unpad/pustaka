@@ -222,6 +222,62 @@ const IdentifierInput = {
   },
 };
 
+// Realtime Clock Hook for client-side time display
+const RealtimeClock = {
+  mounted() {
+    this.updateClock();
+    this.interval = setInterval(() => this.updateClock(), 1000);
+  },
+  destroyed() {
+    if (this.interval) clearInterval(this.interval);
+  },
+  updateClock() {
+    const now = new Date();
+
+    // Format time (HH:MM:SS)
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const timeString = `${hours}:${minutes}:${seconds}`;
+
+    // Format date (Sunday, 08 Feb 2026)
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const dayName = days[now.getDay()];
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = months[now.getMonth()];
+    const year = now.getFullYear();
+    const dateString = `${dayName}, ${day} ${month} ${year}`;
+
+    // Update DOM
+    const timeEl = this.el.querySelector("[data-clock-time]");
+    const dateEl = this.el.querySelector("[data-clock-date]");
+    if (timeEl) timeEl.textContent = timeString;
+    if (dateEl) dateEl.textContent = dateString;
+  },
+};
+
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
@@ -243,6 +299,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     CheckInStorage,
     IdentifierInput,
     VirtualKeyboardTab,
+    RealtimeClock,
     Turnstile: TurnstileHook,
     EbookReader,
     ...colocatedHooks,

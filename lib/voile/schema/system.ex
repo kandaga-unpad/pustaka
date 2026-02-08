@@ -778,6 +778,80 @@ defmodule Voile.Schema.System do
   end
 
   @doc """
+  Returns the list of visitor_logs with filtering and pagination.
+  Returns {[logs], total_pages, total_count}
+  """
+  def list_visitor_logs_paginated(page \\ 1, per_page \\ 50, opts \\ []) do
+    offset = (page - 1) * per_page
+
+    query = from l in VisitorLog, order_by: [desc: l.check_in_time]
+
+    query =
+      if opts[:node_id] do
+        where(query, [l], l.node_id == ^opts[:node_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:location_id] do
+        where(query, [l], l.location_id == ^opts[:location_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:from_date] do
+        where(query, [l], l.check_in_time >= ^opts[:from_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:to_date] do
+        where(query, [l], l.check_in_time <= ^opts[:to_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:search] do
+        search_term = "%#{opts[:search]}%"
+
+        where(
+          query,
+          [l],
+          ilike(l.visitor_identifier, ^search_term) or
+            ilike(l.visitor_name, ^search_term) or
+            ilike(l.visitor_origin, ^search_term)
+        )
+      else
+        query
+      end
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    # Get total count
+    count_query = exclude(query, :order_by) |> exclude(:preload)
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    # Get paginated results
+    logs =
+      query
+      |> limit(^per_page)
+      |> offset(^offset)
+      |> Repo.all()
+
+    {logs, total_pages, total_count}
+  end
+
+  @doc """
   Returns the list of visitor_surveys with filtering.
   """
   def list_visitor_surveys(opts \\ []) do
@@ -881,6 +955,72 @@ defmodule Voile.Schema.System do
   """
   def change_visitor_survey(%VisitorSurvey{} = visitor_survey, attrs \\ %{}) do
     VisitorSurvey.changeset(visitor_survey, attrs)
+  end
+
+  @doc """
+  Returns the list of visitor_surveys with filtering and pagination.
+  Returns {[surveys], total_pages, total_count}
+  """
+  def list_visitor_surveys_paginated(page \\ 1, per_page \\ 50, opts \\ []) do
+    offset = (page - 1) * per_page
+
+    query = from s in VisitorSurvey, order_by: [desc: s.inserted_at]
+
+    query =
+      if opts[:node_id] do
+        where(query, [s], s.node_id == ^opts[:node_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:location_id] do
+        where(query, [s], s.location_id == ^opts[:location_id])
+      else
+        query
+      end
+
+    query =
+      if opts[:from_date] do
+        where(query, [s], s.inserted_at >= ^opts[:from_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:to_date] do
+        where(query, [s], s.inserted_at <= ^opts[:to_date])
+      else
+        query
+      end
+
+    query =
+      if opts[:rating] do
+        where(query, [s], s.rating == ^opts[:rating])
+      else
+        query
+      end
+
+    query =
+      if opts[:preload] do
+        preload(query, ^opts[:preload])
+      else
+        query
+      end
+
+    # Get total count
+    count_query = exclude(query, :order_by) |> exclude(:preload)
+    total_count = Repo.aggregate(count_query, :count, :id)
+    total_pages = div(total_count + per_page - 1, per_page)
+
+    # Get paginated results
+    surveys =
+      query
+      |> limit(^per_page)
+      |> offset(^offset)
+      |> Repo.all()
+
+    {surveys, total_pages, total_count}
   end
 
   @doc """

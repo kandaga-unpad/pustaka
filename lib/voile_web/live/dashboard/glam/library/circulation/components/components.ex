@@ -297,7 +297,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <button
               type="button"
               phx-click="cancel_quick_checkout"
-              class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-400"
+              class="secondary-btn"
             >
               Cancel
             </button>
@@ -383,7 +383,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               <button
                 type="button"
                 phx-click="cancel_quick_return"
-                class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-400"
+                class="secondary-btn"
               >
                 Cancel
               </button>
@@ -416,7 +416,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               <button
                 type="button"
                 phx-click="cancel_quick_return"
-                class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+                class="secondary-btn"
               >
                 Cancel
               </button>

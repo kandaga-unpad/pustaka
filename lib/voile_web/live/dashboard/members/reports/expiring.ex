@@ -14,7 +14,9 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
       socket
       |> assign(:page_title, "Expiring Memberships")
       |> assign(:user, user)
-      |> load_expiring_members()
+      |> assign(:page, 1)
+      |> assign(:per_page, 10)
+      |> load_expiring_members(1, 10)
 
     {:ok, socket}
   end
@@ -41,14 +43,14 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
             </p>
           </div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Total: {@expiring_members |> length()}
+            Total: {@total_count}
           </div>
         </div>
       </div>
 
       <%!-- Members List --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg overflow-hidden">
-        <%= if Enum.empty?(@expiring_members) do %>
+        <%= if @total_count == 0 do %>
           <div class="p-8 text-center">
             <div class="flex justify-center mb-4">
               <.icon name="hero-check-circle" class="w-12 h-12 text-green-500" />
@@ -120,6 +122,13 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
               </:action>
             </.table>
           </div>
+
+          <%!-- Pagination --%>
+          <%= if @total_pages > 1 do %>
+            <div class="border-t border-gray-200 dark:border-gray-600 p-4">
+              <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+            </div>
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -128,7 +137,17 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
 
   # Private functions
 
-  defp load_expiring_members(socket) do
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    per_page = socket.assigns.per_page
+
+    socket = load_expiring_members(socket, page, per_page)
+
+    {:noreply, socket}
+  end
+
+  defp load_expiring_members(socket, page, per_page) do
     user = socket.assigns.user
 
     # Get members expiring in the next 30 days
@@ -152,9 +171,22 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
         from(u in base_query, where: u.node_id == ^user.node_id)
       end
 
-    expiring_members = Repo.all(query)
+    # Get total count
+    total_count = Repo.aggregate(query, :count)
+    total_pages = ceil(total_count / per_page)
 
-    assign(socket, :expiring_members, expiring_members)
+    # Get paginated results
+    expiring_members =
+      query
+      |> limit(^per_page)
+      |> offset(^((page - 1) * per_page))
+      |> Repo.all()
+
+    socket
+    |> assign(:expiring_members, expiring_members)
+    |> assign(:page, page)
+    |> assign(:total_pages, total_pages)
+    |> assign(:total_count, total_count)
   end
 
   defp days_until_expiry(expiry_date) do

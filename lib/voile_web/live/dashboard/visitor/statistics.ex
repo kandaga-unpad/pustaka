@@ -234,7 +234,47 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           Visitor data recap to the library
         </p>
       </div>
-      
+
+      <div class="mb-4">
+        <.back navigate="/manage/settings">Back to Settings</.back>
+      </div>
+
+    <!-- Quick Links -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <.link
+            navigate="/manage/visitor/logs"
+            class="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+          >
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-4">
+              <.icon name="hero-clipboard-document-list" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">Visitor Check-In Logs</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                View detailed visitor check-in records
+              </p>
+            </div>
+          </.link>
+
+          <.link
+            navigate="/manage/visitor/surveys"
+            class="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+          >
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg mr-4">
+              <.icon name="hero-chat-bubble-left-right" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">Survey Feedback Logs</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                View detailed survey feedback records
+              </p>
+            </div>
+          </.link>
+        </div>
+      </div>
+
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
@@ -328,7 +368,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             </div>
           </form>
         </div>
-        
+
     <!-- Selected Filter Display -->
         <%= if @selected_node_id do %>
           <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -342,7 +382,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         <% end %>
       </div>
-      
+
     <!-- Today's Visitors -->
       <%= if @today_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -393,7 +433,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
+
     <!-- This Month's Visitors -->
       <%= if @month_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -444,7 +484,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Yearly Statistics -->
       <%= if @year_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

@@ -1,4 +1,4 @@
-defmodule VoileWeb.Visitor.CheckIn do
+defmodule VoileWeb.Visitor.CheckOut do
   use VoileWeb, :live_view
 
   alias Voile.Schema.System
@@ -20,7 +20,7 @@ defmodule VoileWeb.Visitor.CheckIn do
 
     socket =
       socket
-      |> assign(:page_title, "Visitor Check-In & Survey")
+      |> assign(:page_title, "Visitor Check-Out")
       |> assign(:step, :select_location)
       |> assign(:nodes, nodes)
       |> assign(:selected_node, nil)
@@ -28,22 +28,19 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:selected_location, nil)
       |> assign(:visitor_identifier, "")
       |> assign(:visitor_name, nil)
-      |> assign(:visitor_origin_options, get_origin_options())
-      |> assign(:selected_origin, "")
-      |> assign(:form, to_form(%{}, as: :visitor))
       |> assign(:show_success_modal, false)
       |> assign(:error_message, nil)
       |> assign(:ip_address, ip_address)
       |> assign(:user_agent, user_agent)
+      |> assign(:keyboard_shift_active, false)
+      |> assign(:app_logo, app_logo)
+      |> assign(:app_name, app_name)
+      |> assign(:app_website, app_website)
       |> assign(:rating, 0)
       |> assign(:comment, "")
       |> assign(:staff_rating, 0)
       |> assign(:show_survey_success, false)
       |> assign(:survey_error_message, nil)
-      |> assign(:keyboard_shift_active, false)
-      |> assign(:app_logo, app_logo)
-      |> assign(:app_name, app_name)
-      |> assign(:app_website, app_website)
 
     {:ok, socket}
   end
@@ -68,7 +65,7 @@ defmodule VoileWeb.Visitor.CheckIn do
         |> assign(:selected_node, node_id)
         |> assign(:locations, locations)
         |> assign(:selected_location, location)
-        |> assign(:step, :show_forms)
+        |> assign(:step, :show_form)
 
       {:noreply, socket}
     else
@@ -85,16 +82,11 @@ defmodule VoileWeb.Visitor.CheckIn do
     node_id = String.to_integer(node_id)
     locations = Master.list_locations(node_id: node_id, is_active: true)
 
-    # Get node name to auto-fill visitor_origin
-    node = Enum.find(socket.assigns.nodes, &(&1.id == node_id))
-    visitor_origin = if node, do: node.name, else: ""
-
     socket =
       socket
       |> assign(:selected_node, node_id)
       |> assign(:locations, locations)
       |> assign(:selected_location, nil)
-      |> assign(:selected_origin, visitor_origin)
       |> assign(:step, :select_room)
 
     {:noreply, socket}
@@ -108,7 +100,7 @@ defmodule VoileWeb.Visitor.CheckIn do
     socket =
       socket
       |> assign(:selected_location, location)
-      |> assign(:step, :show_forms)
+      |> assign(:step, :show_form)
 
     {:noreply, socket}
   end
@@ -122,7 +114,6 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:locations, [])
       |> assign(:selected_location, nil)
       |> assign(:visitor_identifier, "")
-      |> assign(:selected_origin, "")
       |> assign(:error_message, nil)
 
     {:noreply, socket}
@@ -135,7 +126,6 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:step, :select_room)
       |> assign(:selected_location, nil)
       |> assign(:visitor_identifier, "")
-      |> assign(:selected_origin, "")
       |> assign(:error_message, nil)
 
     {:noreply, push_event(socket, "clear_location_storage", %{})}
@@ -150,10 +140,9 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:locations, [])
       |> assign(:selected_location, nil)
       |> assign(:visitor_identifier, "")
-      |> assign(:selected_origin, "")
       |> assign(:error_message, nil)
 
-    {:noreply, push_event(socket, "clear_check_in_storage", %{})}
+    {:noreply, push_event(socket, "clear_check_out_storage", %{})}
   end
 
   @impl true
@@ -183,14 +172,8 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   @impl true
-  def handle_event("select_origin", %{"origin" => origin}, socket) do
-    {:noreply, assign(socket, :selected_origin, origin)}
-  end
-
-  @impl true
-  def handle_event("submit_check_in", %{"identifier" => identifier} = _params, socket) do
+  def handle_event("submit_check_out", %{"identifier" => identifier} = _params, socket) do
     %{
-      selected_origin: origin,
       selected_location: location,
       selected_node: node_id,
       ip_address: ip_address,
@@ -202,37 +185,44 @@ defmodule VoileWeb.Visitor.CheckIn do
     if identifier == "" do
       {:noreply, assign(socket, :error_message, "Please enter your identifier")}
     else
-      # Try to find user by identifier to get their full name
-      visitor_name = lookup_visitor_name(identifier)
-
-      attrs = %{
-        "visitor_identifier" => identifier,
-        "visitor_name" => visitor_name,
-        "visitor_origin" => origin,
-        "location_id" => location.id,
-        "node_id" => node_id,
-        "ip_address" => ip_address,
-        "user_agent" => user_agent
-      }
-
-      case System.create_visitor_log(attrs) do
-        {:ok, visitor_log} ->
+      case process_check_out(identifier, location.id, node_id, ip_address, user_agent) do
+        {:ok, visitor_name} ->
           socket =
             socket
             |> assign(:show_success_modal, true)
-            |> assign(:visitor_name, visitor_log.visitor_name || identifier)
+            |> assign(:visitor_name, visitor_name)
             |> assign(:visitor_identifier, "")
             |> assign(:error_message, nil)
 
-          # Auto-close modal after 4 seconds
-          Process.send_after(self(), :close_modal, 1000)
+          # Auto-close modal after 2 seconds
+          Process.send_after(self(), :close_modal, 2000)
 
           {:noreply, socket}
 
+        {:error, :not_found} ->
+          {:noreply,
+           assign(socket, :error_message, "No check-in record found for this identifier today.")}
+
+        {:error, message} when is_binary(message) ->
+          {:noreply, assign(socket, :error_message, message)}
+
         {:error, _changeset} ->
-          {:noreply, assign(socket, :error_message, "Failed to check in. Please try again.")}
+          {:noreply, assign(socket, :error_message, "Failed to check out. Please try again.")}
       end
     end
+  end
+
+  @impl true
+  def handle_event("close_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:show_success_modal, false)
+      |> assign(:visitor_identifier, "")
+      |> assign(:visitor_name, nil)
+      |> assign(:error_message, nil)
+      |> push_event("focus_identifier", %{})
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -280,7 +270,7 @@ defmodule VoileWeb.Visitor.CheckIn do
         "node_id" => node_id,
         "ip_address" => ip_address,
         "user_agent" => user_agent,
-        "survey_type" => "general",
+        "survey_type" => "checkout",
         "additional_data" => additional_data
       }
 
@@ -291,7 +281,7 @@ defmodule VoileWeb.Visitor.CheckIn do
             |> assign(:show_survey_success, true)
             |> assign(:survey_error_message, nil)
 
-          # Auto-reset after 3 seconds
+          # Auto-reset after 2 seconds
           Process.send_after(self(), :reset_survey, 2000)
 
           {:noreply, socket}
@@ -317,26 +307,11 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   @impl true
-  def handle_event("close_modal", _params, socket) do
-    socket =
-      socket
-      |> assign(:show_success_modal, false)
-      |> assign(:visitor_identifier, "")
-      |> assign(:selected_origin, "")
-      |> assign(:visitor_name, nil)
-      |> assign(:error_message, nil)
-      |> push_event("focus_identifier", %{})
-
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_info(:close_modal, socket) do
     socket =
       socket
       |> assign(:show_success_modal, false)
       |> assign(:visitor_identifier, "")
-      |> assign(:selected_origin, "")
       |> assign(:visitor_name, nil)
       |> assign(:error_message, nil)
       |> push_event("focus_identifier", %{})
@@ -357,18 +332,6 @@ defmodule VoileWeb.Visitor.CheckIn do
     {:noreply, socket}
   end
 
-  defp get_origin_options do
-    [
-      "Student",
-      "Faculty/Staff",
-      "Alumni",
-      "Public/Guest",
-      "Researcher",
-      "Other University",
-      "Other"
-    ]
-  end
-
   defp get_ip_address(nil), do: nil
 
   defp get_ip_address(%{address: address}) when is_tuple(address) do
@@ -379,75 +342,93 @@ defmodule VoileWeb.Visitor.CheckIn do
 
   defp get_ip_address(_), do: nil
 
-  # Lookup visitor name from local database or external API
-  defp lookup_visitor_name(identifier) do
-    case Decimal.parse(identifier) do
-      {_decimal, ""} ->
-        # Identifier is numeric, try local database first
-        alias Voile.Schema.Accounts
+  # Process check-out logic
+  defp process_check_out(identifier, location_id, node_id, ip_address, user_agent) do
+    today = Date.utc_today()
+    start_of_today = DateTime.new!(today, ~T[00:00:00], "Etc/UTC")
+    end_of_today = DateTime.new!(today, ~T[23:59:59], "Etc/UTC")
 
-        case Accounts.get_user_by_identifier(identifier) do
-          nil ->
-            # Not found locally, try external API if configured
-            lookup_from_external_api(identifier)
+    # Search for today's check-in log without check-out
+    opts = [
+      from_date: start_of_today,
+      to_date: end_of_today,
+      location_id: location_id,
+      node_id: node_id,
+      search: identifier,
+      limit: 1
+    ]
 
-          user ->
-            user.fullname || identifier
+    logs = System.list_visitor_logs(opts)
+
+    case logs do
+      [log | _] when is_nil(log.check_out_time) ->
+        # Found today's log without check-out, update it
+        case System.update_visitor_log(log, %{"check_out_time" => DateTime.utc_now()}) do
+          {:ok, updated_log} ->
+            {:ok, updated_log.visitor_name || identifier}
+
+          error ->
+            error
         end
 
-      _ ->
-        # Identifier is not numeric, use it as-is (guest/unregistered visitor)
-        identifier
+      [log | _] ->
+        # Found today's log but already checked out
+        {:error,
+         "You have already checked out today. #{log.check_out_time |> DateTime.to_string()}"}
+
+      [] ->
+        # No log found for today, check if there's any previous check-in
+        previous_opts = [
+          to_date: start_of_today,
+          location_id: location_id,
+          node_id: node_id,
+          search: identifier,
+          limit: 1
+        ]
+
+        previous_logs = System.list_visitor_logs(previous_opts)
+
+        case previous_logs do
+          [previous_log | _] ->
+            # Found previous check-in, create new entry copying the previous check-in time
+            # Get visitor info from the node
+            node = System.get_node!(node_id)
+
+            attrs = %{
+              "visitor_identifier" => identifier,
+              "visitor_name" => previous_log.visitor_name,
+              "visitor_origin" => node.name,
+              "check_in_time" => previous_log.check_in_time,
+              "check_out_time" => DateTime.utc_now(),
+              "location_id" => location_id,
+              "node_id" => node_id,
+              "ip_address" => ip_address,
+              "user_agent" => user_agent
+            }
+
+            case System.create_visitor_log(attrs) do
+              {:ok, _log} ->
+                {:ok, previous_log.visitor_name || identifier}
+
+              error ->
+                error
+            end
+
+          [] ->
+            # No previous check-in found at all
+            {:error, :not_found}
+        end
     end
   end
-
-  # Fetch user data from external API
-  defp lookup_from_external_api(identifier) do
-    api_url = get_external_api_url()
-
-    # Return identifier as-is if no API URL configured
-    if api_url == "" or is_nil(api_url) do
-      identifier
-    else
-      url = "#{api_url}/#{identifier}"
-
-      case Req.get(url, receive_timeout: 5000) do
-        {:ok, %{status: 200, body: body}} ->
-          # Try to extract fullname from response
-          # Adjust the key based on your API response structure
-          extract_fullname_from_response(body, identifier)
-
-        _ ->
-          # API request failed, use identifier as-is
-          identifier
-      end
-    end
-  end
-
-  # Get external API URL from config or environment variable
-  # Priority: 1. Environment variable, 2. Application config, 3. Default
-  defp get_external_api_url do
-    Elixir.System.get_env("VOILE_EXTERNAL_USER_API") ||
-      Application.get_env(:voile, :external_user_api_url) ||
-      "https://voile.id/user"
-  end
-
-  # Extract fullname from API response
-  defp extract_fullname_from_response(body, fallback) when is_map(body) do
-    # Try common field names for fullname
-    body["fullname"] || body["full_name"] || body["name"] || fallback
-  end
-
-  defp extract_fullname_from_response(_body, fallback), do: fallback
 
   @impl true
   @spec render(any()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <div
-      class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900 py-8 px-4 pb-32"
+      class="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 dark:from-gray-900 dark:to-red-900 py-8 px-4 pb-32"
       phx-hook="CheckInStorage"
-      id="check-in-container"
+      id="check-out-container"
       data-node-id={@selected_node}
       data-location-id={if @selected_location, do: @selected_location.id, else: nil}
     >
@@ -466,9 +447,9 @@ defmodule VoileWeb.Visitor.CheckIn do
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-1">
                 {@app_name}
               </h1>
-              <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300">Visitor Services</p>
+              <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300">Visitor Check-Out</p>
               <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Check in or share your feedback
+                Thank you for visiting us
               </p>
             </div>
           </div>
@@ -486,13 +467,13 @@ defmodule VoileWeb.Visitor.CheckIn do
                 type="button"
                 phx-click="select_node"
                 phx-value-node_id={node.id}
-                class="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-200 text-left"
+                class="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-500 dark:hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-all duration-200 text-left"
               >
                 <div class="flex items-center space-x-4">
                   <%= if node.image do %>
                     <img src={node.image} alt={node.name} class="w-16 h-16 rounded-lg object-cover" />
                   <% else %>
-                    <div class="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <div class="w-16 h-16 bg-orange-500 rounded-lg flex items-center justify-center">
                       <span class="text-white text-2xl font-bold">{String.first(node.name)}</span>
                     </div>
                   <% end %>
@@ -515,7 +496,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <button
                 type="button"
                 phx-click="back_to_nodes"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
+                class="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 flex items-center"
               >
                 <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> Back to Locations
               </button>
@@ -544,7 +525,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   type="button"
                   phx-click="select_room"
                   phx-value-location_id={location.id}
-                  class="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-200"
+                  class="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-orange-500 dark:hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-all duration-200"
                 >
                   <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
                     {location.location_name}
@@ -558,20 +539,20 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         <% end %>
 
-        <%= if @step == :show_forms do %>
+        <%= if @step == :show_form do %>
           <!-- Navigation Header -->
           <div class="mb-6 flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <button
               type="button"
               phx-click="back_to_rooms"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
+              class="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 flex items-center"
             >
               <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> Back to Rooms
             </button>
 
             <div class="text-center">
               <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-                {if @selected_location, do: @selected_location.location_name, else: "Services"}
+                {if @selected_location, do: @selected_location.location_name, else: "Check Out"}
               </h2>
             </div>
 
@@ -586,14 +567,15 @@ defmodule VoileWeb.Visitor.CheckIn do
           
     <!-- Two Column Layout -->
           <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Check-in Form -->
+            <!-- Check-out Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
-                <h3 class="text-2xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                  <.icon name="hero-clipboard-document-check" class="w-6 h-6 inline-block" /> Check In
+                <h3 class="text-2xl font-semibold text-orange-600 dark:text-orange-400 mb-2">
+                  <.icon name="hero-arrow-right-on-rectangle" class="w-6 h-6 inline-block" />
+                  Check Out
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                  Register your visit
+                  Complete your visit
                 </p>
               </div>
 
@@ -603,7 +585,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </div>
               <% end %>
 
-              <form phx-submit="submit_check_in" class="space-y-4">
+              <form phx-submit="submit_check_out" class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     ID / Student Number <span class="text-red-500">*</span>
@@ -615,28 +597,9 @@ defmodule VoileWeb.Visitor.CheckIn do
                     value={@visitor_identifier}
                     phx-hook="IdentifierInput"
                     autocomplete="off"
-                    class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    placeholder="Scan or enter ID"
+                    class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
+                    placeholder="Scan or enter your ID"
                   />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Visitor Type
-                  </label>
-                  <select
-                    phx-change="select_origin"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select type</option>
-                    <option
-                      :for={origin <- @visitor_origin_options}
-                      value={origin}
-                      selected={@selected_origin == origin}
-                    >
-                      {origin}
-                    </option>
-                  </select>
                 </div>
 
                 <div class="mt-4">
@@ -648,11 +611,26 @@ defmodule VoileWeb.Visitor.CheckIn do
 
                 <button
                   type="submit"
-                  class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold rounded-lg transition-colors shadow-lg"
+                  class="w-full py-3 px-6 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white font-bold rounded-lg transition-colors shadow-lg"
                 >
-                  Check In Now
+                  Check Out Now
                 </button>
               </form>
+
+              <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <.icon
+                    name="hero-information-circle"
+                    class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+                  />
+                  <div class="text-sm text-blue-800 dark:text-blue-300">
+                    <p class="font-medium mb-1">Important:</p>
+                    <p>
+                      Please check out when leaving to help us maintain accurate visitor records.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
             
     <!-- Survey Form -->
@@ -687,19 +665,19 @@ defmodule VoileWeb.Visitor.CheckIn do
                       >
                         <%= if star <= @rating do %>
                           <svg
-                            class="w-12 h-12 text-yellow-400 dark:text-yellow-500 fill-current"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
+                            class="w-10 h-10 text-yellow-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
                           >
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         <% else %>
                           <svg
-                            class="w-12 h-12 text-gray-300 dark:text-gray-600 fill-current"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
+                            class="w-10 h-10 text-gray-300 dark:text-gray-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
                           >
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         <% end %>
                       </button>
@@ -769,46 +747,34 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </button>
               </form>
               
-    <!-- Registration Info -->
-              <%= if @app_website do %>
-                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <div class="flex items-start gap-3">
-                    <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <.icon name="hero-user-plus" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div class="flex-1">
-                      <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                        New to our system?
-                      </h5>
-                      <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                        Register for a member account to access more features.
-                      </p>
-                      <a
-                        href={"#{@app_website}/register"}
-                        target="_blank"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors"
-                      >
-                        Register Now <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
-                      </a>
-                    </div>
+    <!-- Thank You Note -->
+              <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-start gap-3">
+                  <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                    <.icon name="hero-heart" class="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div class="flex-1">
+                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                      Thank you for visiting!
+                    </h5>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                      Your feedback helps us improve our services.
+                    </p>
                   </div>
                 </div>
-              <% end %>
+              </div>
             </div>
           </div>
         <% end %>
       </div>
       
-    <!-- Check-In Success Modal -->
+    <!-- Check-Out Success Modal -->
       <%= if @show_success_modal do %>
         <div
           class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           phx-click="close_modal"
         >
-          <div
-            class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-8 transform transition-all animate-[scale-in_0.3s_ease-out]"
-            phx-click={JS.exec("phx-remove", to: "#success-modal")}
-          >
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-xl w-full p-8 transform transition-all animate-[scale-in_0.3s_ease-out]">
             <!-- Success Icon -->
             <div class="flex justify-center mb-6">
               <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
@@ -816,23 +782,23 @@ defmodule VoileWeb.Visitor.CheckIn do
               </div>
             </div>
             
-    <!-- Welcome Message -->
+    <!-- Goodbye Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                Welcome, {@visitor_name}!
+                Thank You, {@visitor_name}!
               </h3>
 
               <p class="text-lg text-gray-700 dark:text-gray-300">
-                Enjoy your stay at
+                You have successfully checked out from
               </p>
 
-              <p class="text-xl font-semibold text-blue-600 dark:text-blue-400">
+              <p class="text-xl font-semibold text-orange-600 dark:text-orange-400">
                 {if @selected_location, do: @selected_location.location_name, else: "our facility"}
               </p>
 
               <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Have a productive visit! 📚
+                  We hope to see you again soon! 👋
                 </p>
               </div>
             </div>
@@ -841,9 +807,9 @@ defmodule VoileWeb.Visitor.CheckIn do
             <button
               type="button"
               phx-click="close_modal"
-              class="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+              class="mt-6 w-full py-3 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
             >
-              Continue
+              Done
             </button>
           </div>
         </div>
@@ -898,7 +864,10 @@ defmodule VoileWeb.Visitor.CheckIn do
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- Clock and Date -->
             <div class="flex items-center gap-3" phx-hook="RealtimeClock" id="realtime-clock">
-              <.icon name="hero-clock" class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <.icon
+                name="hero-clock"
+                class="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0"
+              />
               <div class="flex flex-col">
                 <span
                   class="font-mono text-3xl font-bold text-gray-900 dark:text-white leading-tight"

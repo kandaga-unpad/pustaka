@@ -57,10 +57,13 @@ defmodule VoileWeb.Users.Manage.Dashboard do
           </.button>
         </:actions>
       </.header>
+      <div>
+        <.back navigate="/manage">Back to Dashboard</.back>
+      </div>
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Total Users Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-600 overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -81,16 +84,16 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dt class="text-sm font-medium truncate">Total Users</dt>
 
-                  <dd class="text-lg font-medium text-gray-900">{@stats.total_users}</dd>
+                  <dd class="text-lg font-medium">{@stats.total_users}</dd>
                 </dl>
               </div>
             </div>
           </div>
         </div>
         <!-- Active Users Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-600 overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -111,16 +114,16 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Active Users</dt>
+                  <dt class="text-sm font-medium truncate">Active Users</dt>
 
-                  <dd class="text-lg font-medium text-gray-900">{@stats.confirmed_users}</dd>
+                  <dd class="text-lg font-medium">{@stats.confirmed_users}</dd>
                 </dl>
               </div>
             </div>
           </div>
         </div>
         <!-- Pending Users Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="bg-white dark:bg-gray-600 overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -141,9 +144,9 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium text-gray-500 truncate">Pending Users</dt>
+                  <dt class="text-sm font-medium truncate">Pending Users</dt>
 
-                  <dd class="text-lg font-medium text-gray-900">{@stats.unconfirmed_users}</dd>
+                  <dd class="text-lg font-medium">{@stats.unconfirmed_users}</dd>
                 </dl>
               </div>
             </div>
@@ -151,7 +154,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
         </div>
       </div>
       <!-- Users by Role Chart -->
-      <div class="bg-white shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Users by Role</h3>
 
@@ -172,7 +175,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                     >
                     </div>
                   </div>
-                  <span class="text-sm font-medium text-gray-900">{count}</span>
+                  <span class="text-sm font-medium">{count}</span>
                 </div>
               </div>
             <% end %>
@@ -180,9 +183,9 @@ defmodule VoileWeb.Users.Manage.Dashboard do
         </div>
       </div>
       <!-- Recent Users -->
-      <div class="bg-white shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Users</h3>
+          <h3 class="text-lg leading-6 font-medium mb-4">Recent Users</h3>
 
           <div class="flow-root">
             <ul role="list" class="-my-5 divide-y divide-gray-200">
@@ -202,9 +205,9 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                     </div>
 
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                      <p class="text-sm font-medium truncate">{user.email}</p>
 
-                      <p class="text-sm text-gray-500 truncate">
+                      <p class="text-sm truncate">
                         Joined {Calendar.strftime(user.inserted_at, "%B %d, %Y")}
                       </p>
                     </div>
@@ -235,7 +238,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
           <%= if @current_user do %>
             <div class="mt-6">
               <.link
-                navigate={~p"/manage/settings/users"}
+                navigate={~p"/manage/members/management"}
                 class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-voile-info focus:border-voile-info"
               >
                 View all users
@@ -245,19 +248,19 @@ defmodule VoileWeb.Users.Manage.Dashboard do
         </div>
       </div>
       <!-- System Information -->
-      <div class="bg-white shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">System Information</h3>
+          <h3 class="text-lg leading-6 font-medium mb-4">System Information</h3>
 
           <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Current User</dt>
+              <dt class="text-sm font-medium">Current User</dt>
 
-              <dd class="mt-1 text-sm text-gray-900">{@current_user.email}</dd>
+              <dd class="mt-1 text-sm">{@current_user.email}</dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Your Role</dt>
+              <dt class="text-sm font-medium">Your Role</dt>
 
               <dd class="mt-1">
                 <%= for role <- @current_user.roles do %>
@@ -269,9 +272,9 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Last Login</dt>
+              <dt class="text-sm font-medium">Last Login</dt>
 
-              <dd class="mt-1 text-sm text-gray-900">
+              <dd class="mt-1 text-sm">
                 <%= if @current_user.last_login do %>
                   {Calendar.strftime(@current_user.last_login, "%B %d, %Y at %I:%M %p")}
                 <% else %>
@@ -281,7 +284,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Account Status</dt>
+              <dt class="text-sm font-medium">Account Status</dt>
 
               <dd class="mt-1">
                 <%= if @current_user.confirmed_at do %>

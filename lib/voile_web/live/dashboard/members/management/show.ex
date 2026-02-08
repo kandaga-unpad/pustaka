@@ -568,14 +568,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             </div>
 
             <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-              <.button type="submit" class="bg-red-600 hover:bg-red-700 text-white">
+              <.button type="submit" class="cancel-btn text-white">
                 <.icon name="hero-exclamation-triangle" class="w-4 h-4 mr-2" /> Suspend Account
               </.button>
 
               <.button
                 type="button"
                 phx-click="cancel_suspend"
-                class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                class="primary-btn"
               >
                 Cancel
               </.button>
