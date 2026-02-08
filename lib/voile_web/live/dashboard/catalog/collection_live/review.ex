@@ -36,6 +36,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:selected_collection, nil)
         |> assign(:action_type, nil)
         |> assign(:review_notes, "")
+        |> assign(:show_view_modal, false)
 
       {:ok, socket}
     end
@@ -70,6 +71,32 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   end
 
   @impl true
+  def handle_event("view_collection", %{"id" => id}, socket) do
+    collection = Catalog.get_collection!(id)
+
+    socket =
+      socket
+      |> assign(:selected_collection, collection)
+      |> assign(:show_view_modal, true)
+      |> assign(:action_type, nil)
+      |> assign(:review_notes, "")
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("close_view_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:selected_collection, nil)
+      |> assign(:show_view_modal, false)
+      |> assign(:action_type, nil)
+      |> assign(:review_notes, "")
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
@@ -90,28 +117,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   end
 
   @impl true
-  def handle_event("confirm_approve", %{"id" => id}, socket) do
-    collection = Catalog.get_collection!(id)
-
-    socket =
-      socket
-      |> assign(:selected_collection, collection)
-      |> assign(:action_type, :approve)
-      |> assign(:review_notes, "")
-
+  def handle_event("confirm_approve", _params, socket) do
+    socket = assign(socket, :action_type, :approve)
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("confirm_reject", %{"id" => id}, socket) do
-    collection = Catalog.get_collection!(id)
-
-    socket =
-      socket
-      |> assign(:selected_collection, collection)
-      |> assign(:action_type, :reject)
-      |> assign(:review_notes, "")
-
+  def handle_event("confirm_reject", _params, socket) do
+    socket = assign(socket, :action_type, :reject)
     {:noreply, socket}
   end
 
@@ -119,7 +132,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   def handle_event("cancel_action", _params, socket) do
     socket =
       socket
-      |> assign(:selected_collection, nil)
       |> assign(:action_type, nil)
       |> assign(:review_notes, "")
 
@@ -157,6 +169,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
           |> assign(:selected_collection, nil)
           |> assign(:action_type, nil)
           |> assign(:review_notes, "")
+          |> assign(:show_view_modal, false)
 
         {:noreply, socket}
 
@@ -165,14 +178,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
          socket
          |> put_flash(:error, "Collection is not in pending status")
          |> assign(:selected_collection, nil)
-         |> assign(:action_type, nil)}
+         |> assign(:action_type, nil)
+         |> assign(:show_view_modal, false)}
 
       {:error, changeset} ->
         {:noreply,
          socket
          |> put_flash(:error, "Failed to approve collection: #{inspect(changeset.errors)}")
          |> assign(:selected_collection, nil)
-         |> assign(:action_type, nil)}
+         |> assign(:action_type, nil)
+         |> assign(:show_view_modal, false)}
     end
   end
 
@@ -205,6 +220,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
             |> assign(:selected_collection, nil)
             |> assign(:action_type, nil)
             |> assign(:review_notes, "")
+            |> assign(:show_view_modal, false)
 
           {:noreply, socket}
 
@@ -213,14 +229,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
            socket
            |> put_flash(:error, "Collection is not in pending status")
            |> assign(:selected_collection, nil)
-           |> assign(:action_type, nil)}
+           |> assign(:action_type, nil)
+           |> assign(:show_view_modal, false)}
 
         {:error, changeset} ->
           {:noreply,
            socket
            |> put_flash(:error, "Failed to reject collection: #{inspect(changeset.errors)}")
            |> assign(:selected_collection, nil)
-           |> assign(:action_type, nil)}
+           |> assign(:action_type, nil)
+           |> assign(:show_view_modal, false)}
       end
     end
   end

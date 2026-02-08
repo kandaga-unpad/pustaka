@@ -20,11 +20,196 @@
 
       <div class="flex items-center gap-3">
         <span class="text-sm text-gray-600 dark:text-gray-400">
-          {@total_count} {if @total_count == 1, do: "collection", else: "collections"} submitted
+          <%= cond do %>
+            <% @status_filter == "pending" -> %>
+              {@status_counts.pending} {if @status_counts.pending == 1,
+                do: "collection",
+                else: "collections"} pending
+            <% @status_filter == "draft" -> %>
+              {@status_counts.draft} {if @status_counts.draft == 1,
+                do: "collection",
+                else: "collections"} in draft
+            <% @status_filter == "published" -> %>
+              {@status_counts.published} {if @status_counts.published == 1,
+                do: "collection",
+                else: "collections"} published
+            <% true -> %>
+              {@status_counts.all} {if @status_counts.all == 1,
+                do: "collection",
+                else: "collections"} submitted
+          <% end %>
         </span>
       </div>
     </div>
   </div>
+
+  <%!-- Status Filter Tabs --%>
+  <div class="mb-6">
+    <div class="border-b border-gray-200 dark:border-gray-700">
+      <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+        <button
+          phx-click="filter_status"
+          phx-value-status="all"
+          class={[
+            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+            if(@status_filter == "all",
+              do: "border-blue-500 text-blue-600 dark:text-blue-400",
+              else:
+                "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+            )
+          ]}
+        >
+          All Collections
+          <span class={[
+            "ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium",
+            if(@status_filter == "all",
+              do: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300",
+              else: "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300"
+            )
+          ]}>
+            {@status_counts.all}
+          </span>
+        </button>
+
+        <button
+          phx-click="filter_status"
+          phx-value-status="pending"
+          class={[
+            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+            if(@status_filter == "pending",
+              do: "border-yellow-500 text-yellow-600 dark:text-yellow-400",
+              else:
+                "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+            )
+          ]}
+        >
+          <.icon name="hero-clock" class="w-4 h-4 inline mr-1" /> Pending Review
+          <span class={[
+            "ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium",
+            if(@status_filter == "pending",
+              do: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300",
+              else: "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300"
+            )
+          ]}>
+            {@status_counts.pending}
+          </span>
+        </button>
+
+        <button
+          phx-click="filter_status"
+          phx-value-status="draft"
+          class={[
+            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+            if(@status_filter == "draft",
+              do: "border-orange-500 text-orange-600 dark:text-orange-400",
+              else:
+                "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+            )
+          ]}
+        >
+          <.icon name="hero-document-text" class="w-4 h-4 inline mr-1" /> Draft / Rejected
+          <span class={[
+            "ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium",
+            if(@status_filter == "draft",
+              do: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-300",
+              else: "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300"
+            )
+          ]}>
+            {@status_counts.draft}
+          </span>
+        </button>
+
+        <button
+          phx-click="filter_status"
+          phx-value-status="published"
+          class={[
+            "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors",
+            if(@status_filter == "published",
+              do: "border-green-500 text-green-600 dark:text-green-400",
+              else:
+                "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+            )
+          ]}
+        >
+          <.icon name="hero-check-circle" class="w-4 h-4 inline mr-1" /> Published
+          <span class={[
+            "ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium",
+            if(@status_filter == "published",
+              do: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300",
+              else: "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-300"
+            )
+          ]}>
+            {@status_counts.published}
+          </span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <%!-- Status Filter Info Banner --%>
+  <%= if @status_filter == "draft" do %>
+    <div class="mb-6 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <.icon name="hero-information-circle" class="h-5 w-5 text-orange-400" />
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-orange-800 dark:text-orange-200">
+            Draft and Rejected Collections
+          </h3>
+          <div class="mt-2 text-sm text-orange-700 dark:text-orange-300">
+            <p>
+              This view shows collections in draft status, including those that were rejected by reviewers.
+              Collections with review notes below were rejected and sent back for revisions.
+              You can edit these collections and resubmit them for review.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= if @status_filter == "pending" do %>
+    <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <.icon name="hero-clock" class="h-5 w-5 text-yellow-400" />
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+            Pending Review
+          </h3>
+          <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+            <p>
+              These collections are currently waiting for review by administrators.
+              You'll be notified once they are approved or if any changes are requested.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= if @status_filter == "published" do %>
+    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <.icon name="hero-check-circle" class="h-5 w-5 text-green-400" />
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+            Published Collections
+          </h3>
+          <div class="mt-2 text-sm text-green-700 dark:text-green-300">
+            <p>
+              These collections have been approved and are now publicly visible.
+              They are available for users to browse and access.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 
   <%!-- Search Bar --%>
   <div class="mb-6">
@@ -51,22 +236,60 @@
   <%!-- Collections List --%>
   <%= if @collections_empty? do %>
     <div class="text-center py-12">
-      <.icon name="hero-document-plus" class="mx-auto h-12 w-12 text-gray-400" />
-      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-        No submitted collections
-      </h3>
+      <%= cond do %>
+        <% @status_filter == "pending" -> %>
+          <.icon name="hero-clock" class="mx-auto h-12 w-12 text-yellow-400" />
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            No pending collections
+          </h3>
 
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        You haven't submitted any collections yet.
-      </p>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            You don't have any collections waiting for review.
+          </p>
+        <% @status_filter == "draft" -> %>
+          <.icon name="hero-document-text" class="mx-auto h-12 w-12 text-orange-400" />
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            No draft or rejected collections
+          </h3>
 
-      <div class="mt-6">
-        <.link navigate={~p"/manage/catalog/collections/new"}>
-          <.button class="btn btn-primary">
-            <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Create Your First Collection
-          </.button>
-        </.link>
-      </div>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            You don't have any collections in draft status or that were rejected.
+          </p>
+
+          <div class="mt-6">
+            <.link navigate={~p"/manage/catalog/collections/new"}>
+              <.button class="btn btn-primary">
+                <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Create New Collection
+              </.button>
+            </.link>
+          </div>
+        <% @status_filter == "published" -> %>
+          <.icon name="hero-check-circle" class="mx-auto h-12 w-12 text-green-400" />
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            No published collections
+          </h3>
+
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            You don't have any published collections yet.
+          </p>
+        <% true -> %>
+          <.icon name="hero-document-plus" class="mx-auto h-12 w-12 text-gray-400" />
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            No submitted collections
+          </h3>
+
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            You haven't submitted any collections yet.
+          </p>
+
+          <div class="mt-6">
+            <.link navigate={~p"/manage/catalog/collections/new"}>
+              <.button class="btn btn-primary">
+                <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Create Your First Collection
+              </.button>
+            </.link>
+          </div>
+      <% end %>
     </div>
   <% else %>
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
@@ -204,7 +427,7 @@
                         </.link>
                         <%= if collection.status == "draft" do %>
                           <.link
-                            navigate={~p"/manage/catalog/collections/#{collection.id}/edit"}
+                            patch={~p"/manage/catalog/collections/submitted/#{collection.id}"}
                             class="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 bg-gray-50 dark:bg-gray-900/20 rounded-md hover:bg-gray-100 dark:hover:bg-gray-900/40"
                           >
                             <.icon name="hero-pencil" class="h-4 w-4 mr-1" /> Edit
@@ -333,4 +556,29 @@
       <% end %>
     </div>
   <% end %>
+
+  <.collection_modal
+    :if={@live_action in [:edit]}
+    id="collection-modal"
+    show
+    on_cancel={JS.patch(~p"/manage/catalog/collections/submitted")}
+  >
+    <.live_component
+      module={VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent}
+      id={@collection.id || :new}
+      title={@page_title}
+      action={@live_action}
+      collection={@collection}
+      show_add_collection_field={@show_add_collection_field}
+      step={@step}
+      creator_list={@creator}
+      collection_type={@collection_type}
+      collection_properties={@collection_properties}
+      resource_templates={@resource_templates}
+      node_list={@node_location}
+      current_scope={@current_scope}
+      time_identifier={@time_identifier}
+      patch={~p"/manage/catalog/collections/submitted"}
+    />
+  </.collection_modal>
 </div>

@@ -351,6 +351,8 @@ defmodule Voile.Schema.Catalog do
       :attachments,
       :created_by,
       :updated_by,
+      :parent,
+      :children,
       items: [:node],
       collection_fields: [:metadata_properties]
     ])
@@ -643,7 +645,13 @@ defmodule Voile.Schema.Catalog do
       {[%Collection{}], total_pages, total_count}
 
   """
-  def list_submitted_collections_paginated(user, page \\ 1, per_page \\ 10, search \\ "") do
+  def list_submitted_collections_paginated(
+        user,
+        page \\ 1,
+        per_page \\ 10,
+        search \\ "",
+        status \\ "all"
+      ) do
     offset = (page - 1) * per_page
 
     query =
@@ -661,6 +669,15 @@ defmodule Voile.Schema.Catalog do
           :created_by,
           :updated_by
         ]
+
+    # Apply status filter if provided
+    query =
+      case status do
+        "draft" -> from c in query, where: c.status == "draft"
+        "pending" -> from c in query, where: c.status == "pending"
+        "published" -> from c in query, where: c.status == "published"
+        _ -> query
+      end
 
     # Apply search filter if provided
     query =
@@ -687,6 +704,15 @@ defmodule Voile.Schema.Catalog do
         where: c.created_by_id == ^user.id,
         select: count(c.id)
 
+    # Apply status filter to count query
+    count_query =
+      case status do
+        "draft" -> from c in count_query, where: c.status == "draft"
+        "pending" -> from c in count_query, where: c.status == "pending"
+        "published" -> from c in count_query, where: c.status == "published"
+        _ -> count_query
+      end
+
     count_query =
       if search && search != "" do
         search_term = "%#{search}%"
@@ -707,6 +733,54 @@ defmodule Voile.Schema.Catalog do
     total_pages = div(total_count + per_page - 1, per_page)
 
     {collections, total_pages, total_count}
+  end
+
+  @doc """
+  Get status counts for a user's submitted collections.
+
+  Returns a map with counts for each status.
+
+  ## Examples
+
+      iex> get_submitted_collections_status_counts(user)
+      %{all: 12, pending: 3, draft: 2, published: 7}
+
+  """
+  def get_submitted_collections_status_counts(user) do
+    all_count =
+      from(c in Collection,
+        where: c.created_by_id == ^user.id,
+        select: count(c.id)
+      )
+      |> Repo.one()
+
+    pending_count =
+      from(c in Collection,
+        where: c.created_by_id == ^user.id and c.status == "pending",
+        select: count(c.id)
+      )
+      |> Repo.one()
+
+    draft_count =
+      from(c in Collection,
+        where: c.created_by_id == ^user.id and c.status == "draft",
+        select: count(c.id)
+      )
+      |> Repo.one()
+
+    published_count =
+      from(c in Collection,
+        where: c.created_by_id == ^user.id and c.status == "published",
+        select: count(c.id)
+      )
+      |> Repo.one()
+
+    %{
+      all: all_count,
+      pending: pending_count,
+      draft: draft_count,
+      published: published_count
+    }
   end
 
   @doc """

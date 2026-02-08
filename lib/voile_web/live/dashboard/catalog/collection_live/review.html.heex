@@ -23,113 +23,347 @@
       </div>
     </div>
   </div>
-  <%!-- Confirmation Modals --%>
-  <%= if @action_type == :approve && @selected_collection do %>
-    <.modal id="approve-confirmation" show on_cancel={JS.push("cancel_action")}>
-      <div class="text-center">
-        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-          <.icon name="hero-check" class="h-6 w-6 text-green-600" />
+  <%!-- View Modal --%>
+  <%= if @show_view_modal && @selected_collection do %>
+    <.modal id="view-collection-modal" show on_cancel={JS.push("close_view_modal")}>
+      <div class="max-h-[80vh] overflow-y-auto">
+        <%!-- Modal Header --%>
+        <div class="mb-6">
+          <div class="flex items-start gap-4 mb-4">
+            <%= if @selected_collection.thumbnail && @selected_collection.thumbnail != "" do %>
+              <img
+                src={@selected_collection.thumbnail}
+                alt={@selected_collection.title}
+                class="h-24 w-24 rounded-lg object-cover flex-shrink-0"
+              />
+            <% else %>
+              <div class="h-24 w-24 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <.icon name="hero-photo" class="h-12 w-12 text-gray-400" />
+              </div>
+            <% end %>
+
+            <div class="flex-1 min-w-0">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 break-words">
+                {@selected_collection.title}
+              </h2>
+
+              <div class="flex items-center gap-2 mt-2">
+                <span class={"px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@selected_collection.status)}"}>
+                  {String.capitalize(@selected_collection.status)}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
+        <%!-- Collection Details --%>
+        <div class="space-y-6">
+          <%!-- Basic Information --%>
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Basic Information
+            </h3>
 
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Approve Collection
-        </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Custodian</p>
 
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Are you sure you want to approve "{@selected_collection.title}"? This will change its status to "published" and make it visible to the public.
-        </p>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.mst_creator do %>
+                    {@selected_collection.mst_creator.fullname}
+                  <% else %>
+                    -
+                  <% end %>
+                </p>
+              </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">
-            Approval Notes (Optional)
-          </label>
-          <textarea
-            phx-change="update_notes"
-            name="notes"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            placeholder="Add any notes about this approval..."
-          >{@review_notes}</textarea>
-        </div>
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Node</p>
 
-        <div class="flex gap-3 justify-center mt-6">
-          <button
-            type="button"
-            phx-click="cancel_action"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            phx-click="approve_collection"
-            phx-value-id={@selected_collection.id}
-            class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500"
-          >
-            Approve & Publish
-          </button>
-        </div>
-      </div>
-    </.modal>
-  <% end %>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.node do %>
+                    {@selected_collection.node.name}
+                  <% else %>
+                    -
+                  <% end %>
+                </p>
+              </div>
 
-  <%= if @action_type == :reject && @selected_collection do %>
-    <.modal id="reject-confirmation" show on_cancel={JS.push("cancel_action")}>
-      <div class="text-center">
-        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-          <.icon name="hero-x-mark" class="h-6 w-6 text-red-600" />
-        </div>
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Created At</p>
 
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Reject Collection
-        </h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  {to_local_time(@selected_collection.inserted_at)}
+                </p>
+              </div>
 
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Are you sure you want to reject "{@selected_collection.title}"? This will send it back to draft status.
-        </p>
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Last Updated</p>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">
-            Rejection Reason (Required) <span class="text-red-600">*</span>
-          </label>
-          <form phx-change="update_notes">
-            <textarea
-              name="notes"
-              rows="4"
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder="Please explain why this collection is being rejected..."
-            >{@review_notes}</textarea>
-          </form>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  {to_local_time(@selected_collection.updated_at)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <%!-- Metadata --%>
+          <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Metadata</h3>
 
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            The librarian will see this reason and can make corrections.
-          </p>
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Creator</p>
 
-        <div class="flex gap-3 justify-center mt-6">
-          <button
-            type="button"
-            phx-click="cancel_action"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            phx-click="reject_collection"
-            phx-value-id={@selected_collection.id}
-            disabled={String.trim(@review_notes) == ""}
-            class={[
-              "px-4 py-2 text-sm font-medium text-white rounded-md focus:ring-2 focus:ring-red-500",
-              if(String.trim(@review_notes) == "",
-                do: "bg-red-300 cursor-not-allowed",
-                else: "bg-red-600 hover:bg-red-700"
-              )
-            ]}
-          >
-            Reject Collection
-          </button>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.mst_creator do %>
+                    {@selected_collection.mst_creator.creator_name}
+                  <% else %>
+                    -
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Resource Type</p>
+
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.resource_class do %>
+                    {@selected_collection.resource_class.label}
+                  <% else %>
+                    -
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Collection Type</p>
+
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.collection_type && @selected_collection.collection_type != "" do %>
+                    {String.capitalize(@selected_collection.collection_type)}
+                  <% else %>
+                    -
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Total Items</p>
+
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.items && length(@selected_collection.items) > 0 do %>
+                    {length(@selected_collection.items)} {if length(@selected_collection.items) ==
+                                                               1,
+                                                             do: "item",
+                                                             else: "items"}
+                  <% else %>
+                    0 items
+                  <% end %>
+                </p>
+              </div>
+
+              <div>
+                <p class="font-medium text-gray-700 dark:text-gray-300">Access Level</p>
+
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  {String.capitalize(@selected_collection.access_level)}
+                </p>
+              </div>
+
+              <div class="md:col-span-2">
+                <p class="font-medium text-gray-700 dark:text-gray-300">Description</p>
+
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                  <%= if @selected_collection.description && @selected_collection.description != "" do %>
+                    {@selected_collection.description}
+                  <% else %>
+                    No description provided
+                  <% end %>
+                </p>
+              </div>
+            </div>
+          </div>
+          <%!-- Parent/Child Relationship --%>
+          <%= if @selected_collection.parent_id || (@selected_collection.children && length(@selected_collection.children) > 0) do %>
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                Relationships
+              </h3>
+
+              <div class="grid grid-cols-1 gap-4 text-sm">
+                <%= if @selected_collection.parent_id do %>
+                  <div>
+                    <p class="font-medium text-gray-700 dark:text-gray-300">Parent Collection</p>
+
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                      Has parent collection
+                    </p>
+                  </div>
+                <% end %>
+
+                <%= if @selected_collection.children && length(@selected_collection.children) > 0 do %>
+                  <div>
+                    <p class="font-medium text-gray-700 dark:text-gray-300">Child Collections</p>
+
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">
+                      {length(@selected_collection.children)} child {if length(
+                                                                          @selected_collection.children
+                                                                        ) ==
+                                                                          1,
+                                                                        do: "collection",
+                                                                        else: "collections"}
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          <%!-- Review Actions --%>
+          <%= if @action_type == nil do %>
+            <div class="pt-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Review Actions
+              </h3>
+
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button
+                  type="button"
+                  phx-click="confirm_approve"
+                  class="flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500"
+                >
+                  <.icon name="hero-check-circle" class="h-5 w-5 mr-2" /> Approve & Publish
+                </button>
+                <button
+                  type="button"
+                  phx-click="confirm_reject"
+                  class="flex-1 inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500"
+                >
+                  <.icon name="hero-x-circle" class="h-5 w-5 mr-2" /> Reject
+                </button>
+              </div>
+            </div>
+          <% end %>
+          <%!-- Approve Confirmation --%>
+          <%= if @action_type == :approve do %>
+            <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-4">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <.icon
+                      name="hero-check-circle"
+                      class="h-6 w-6 text-green-600 dark:text-green-400"
+                    />
+                  </div>
+
+                  <div class="flex-1">
+                    <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+                      Approve Collection
+                    </h3>
+
+                    <p class="text-sm text-green-700 dark:text-green-300 mt-1">
+                      This will change the collection status to "published" and make it visible to the public.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Approval Notes (Optional)
+                </label>
+                <textarea
+                  phx-change="update_notes"
+                  name="notes"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="Add any notes about this approval..."
+                >{@review_notes}</textarea>
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="button"
+                  phx-click="cancel_action"
+                  class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  phx-click="approve_collection"
+                  phx-value-id={@selected_collection.id}
+                  class="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500"
+                >
+                  Confirm Approval
+                </button>
+              </div>
+            </div>
+          <% end %>
+          <%!-- Reject Confirmation --%>
+          <%= if @action_type == :reject do %>
+            <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 mb-4">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <.icon name="hero-x-circle" class="h-6 w-6 text-red-600 dark:text-red-400" />
+                  </div>
+
+                  <div class="flex-1">
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                      Reject Collection
+                    </h3>
+
+                    <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                      This will send the collection back to draft status. The custodian will be able to see your feedback and make corrections.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Rejection Reason (Required) <span class="text-red-600">*</span>
+                </label>
+                <form phx-change="update_notes">
+                  <textarea
+                    name="notes"
+                    rows="4"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="Please explain why this collection is being rejected..."
+                  >{@review_notes}</textarea>
+                </form>
+
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  The custodian will see this reason and can make corrections before resubmitting.
+                </p>
+              </div>
+
+              <div class="flex gap-3">
+                <button
+                  type="button"
+                  phx-click="cancel_action"
+                  class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  phx-click="reject_collection"
+                  phx-value-id={@selected_collection.id}
+                  disabled={String.trim(@review_notes) == ""}
+                  class={[
+                    "flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg focus:ring-2 focus:ring-red-500",
+                    if(String.trim(@review_notes) == "",
+                      do: "bg-red-300 cursor-not-allowed",
+                      else: "bg-red-600 hover:bg-red-700"
+                    )
+                  ]}
+                >
+                  Confirm Rejection
+                </button>
+              </div>
+            </div>
+          <% end %>
         </div>
       </div>
     </.modal>
@@ -214,12 +448,9 @@
                   <% end %>
 
                   <div class="min-w-0 flex-1">
-                    <.link
-                      navigate={~p"/manage/catalog/collections/#{collection.id}"}
-                      class="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1"
-                    >
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
                       {collection.title}
-                    </.link>
+                    </p>
 
                     <%= if collection.items && length(collection.items) > 0 do %>
                       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -273,30 +504,14 @@
               </td>
 
               <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end gap-2">
-                  <.link
-                    navigate={~p"/manage/catalog/collections/#{collection.id}"}
-                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40"
-                  >
-                    <.icon name="hero-eye" class="h-4 w-4 mr-1" /> View
-                  </.link>
-                  <button
-                    type="button"
-                    phx-click="confirm_approve"
-                    phx-value-id={collection.id}
-                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 rounded-md hover:bg-green-100 dark:hover:bg-green-900/40"
-                  >
-                    <.icon name="hero-check-circle" class="h-4 w-4 mr-1" /> Approve
-                  </button>
-                  <button
-                    type="button"
-                    phx-click="confirm_reject"
-                    phx-value-id={collection.id}
-                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
-                  >
-                    <.icon name="hero-x-circle" class="h-4 w-4 mr-1" /> Reject
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  phx-click="view_collection"
+                  phx-value-id={collection.id}
+                  class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                >
+                  <.icon name="hero-eye" class="h-4 w-4 mr-1" /> Review
+                </button>
               </td>
             </tr>
           </tbody>

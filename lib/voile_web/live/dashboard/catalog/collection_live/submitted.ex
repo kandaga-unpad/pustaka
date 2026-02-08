@@ -1,7 +1,11 @@
 defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
   use VoileWeb, :live_view_dashboard
 
+  alias Voile.Repo
   alias Voile.Schema.Catalog
+  alias Voile.Schema.Metadata
+  alias Voile.Schema.Master
+  alias Voile.Schema.System
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,9 +15,25 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
     page = 1
     per_page = 10
     search = ""
+    status_filter = "all"
 
     {collections, total_pages, total_count} =
-      Catalog.list_submitted_collections_paginated(current_user, page, per_page, search)
+      Catalog.list_submitted_collections_paginated(
+        current_user,
+        page,
+        per_page,
+        search,
+        status_filter
+      )
+
+    # Get status counts for filter tabs
+    status_counts = Catalog.get_submitted_collections_status_counts(current_user)
+
+    # Load additional data for form component
+    creator = Master.list_mst_creator()
+    collection_type = Metadata.list_resource_class()
+    node_location = System.list_nodes()
+    time_identifier = NaiveDateTime.utc_now()
 
     # Add review notes to each collection
     collections_with_notes =
@@ -38,6 +58,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
       |> assign(:collections_empty?, collections == [])
       |> assign(:search, search)
       |> assign(:per_page, per_page)
+      |> assign(:status_filter, status_filter)
+      |> assign(:status_counts, status_counts)
+      |> assign(:collection, nil)
+      |> assign(:collection_properties, [])
+      |> assign(:resource_templates, [])
+      |> assign(:patch, ~p"/manage/catalog/collections/submitted")
+      |> assign(:creator, creator)
+      |> assign(:collection_type, collection_type)
+      |> assign(:node_location, node_location)
+      |> assign(:step, 1)
+      |> assign(:show_add_collection_field, true)
+      |> assign(:time_identifier, time_identifier)
+      |> assign(:creator_searching, false)
 
     {:ok, socket}
   end
@@ -50,12 +83,22 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
   defp apply_action(socket, :index, params) do
     page = String.to_integer(params["page"] || "1")
     search = params["search"] || ""
+    status_filter = params["status"] || "all"
 
     current_user = socket.assigns.current_scope.user
     per_page = socket.assigns.per_page
 
     {collections, total_pages, total_count} =
-      Catalog.list_submitted_collections_paginated(current_user, page, per_page, search)
+      Catalog.list_submitted_collections_paginated(
+        current_user,
+        page,
+        per_page,
+        search,
+        status_filter
+      )
+
+    # Get status counts for filter tabs
+    status_counts = Catalog.get_submitted_collections_status_counts(current_user)
 
     # Add review notes to each collection
     collections_with_notes =
@@ -79,6 +122,40 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
     |> assign(:total_count, total_count)
     |> assign(:collections_empty?, collections == [])
     |> assign(:search, search)
+    |> assign(:status_filter, status_filter)
+    |> assign(:status_counts, status_counts)
+    |> assign(:collection, nil)
+  end
+
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    collection = Catalog.get_collection!(id)
+    current_user = socket.assigns.current_scope.user
+
+    # Only allow editing collections in draft status that belong to the user
+    if collection.status == "draft" and collection.created_by_id == current_user.id do
+      # Load collection_properties only when form opens
+      collection_properties =
+        if socket.assigns.collection_properties == [] do
+          Metadata.list_metadata_properties_by_vocabulary()
+        else
+          socket.assigns.collection_properties
+        end
+
+      # Load resource templates for selection
+      resource_templates =
+        Metadata.list_resource_template() |> Repo.preload([:resource_class, :owner])
+
+      socket
+      |> assign(:page_title, "Edit Collection")
+      |> assign(:collection, collection)
+      |> assign(:collection_properties, collection_properties)
+      |> assign(:resource_templates, resource_templates)
+      |> assign(:patch, ~p"/manage/catalog/collections/submitted")
+    else
+      socket
+      |> put_flash(:error, "You can only edit collections in draft status")
+      |> push_navigate(to: ~p"/manage/catalog/collections/submitted")
+    end
   end
 
   @impl true
@@ -87,9 +164,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
     current_user = socket.assigns.current_scope.user
     per_page = socket.assigns.per_page
     search = socket.assigns.search
+    status_filter = socket.assigns.status_filter
 
     {collections, total_pages, total_count} =
-      Catalog.list_submitted_collections_paginated(current_user, page, per_page, search)
+      Catalog.list_submitted_collections_paginated(
+        current_user,
+        page,
+        per_page,
+        search,
+        status_filter
+      )
 
     # Add review notes to each collection
     collections_with_notes =
@@ -120,9 +204,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
   def handle_event("search", %{"search" => search}, socket) do
     current_user = socket.assigns.current_scope.user
     per_page = socket.assigns.per_page
+    status_filter = socket.assigns.status_filter
 
     {collections, total_pages, total_count} =
-      Catalog.list_submitted_collections_paginated(current_user, 1, per_page, search)
+      Catalog.list_submitted_collections_paginated(
+        current_user,
+        1,
+        per_page,
+        search,
+        status_filter
+      )
 
     # Add review notes to each collection
     collections_with_notes =
@@ -146,6 +237,99 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
       |> assign(:total_count, total_count)
       |> assign(:collections_empty?, collections == [])
       |> assign(:search, search)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filter_status", %{"status" => status}, socket) do
+    current_user = socket.assigns.current_scope.user
+    per_page = socket.assigns.per_page
+    search = socket.assigns.search
+
+    {collections, total_pages, total_count} =
+      Catalog.list_submitted_collections_paginated(current_user, 1, per_page, search, status)
+
+    # Get status counts for filter tabs
+    status_counts = Catalog.get_submitted_collections_status_counts(current_user)
+
+    # Add review notes to each collection
+    collections_with_notes =
+      Enum.map(collections, fn collection ->
+        review_notes = Catalog.get_collection_review_notes(collection.id)
+        Map.put(collection, :review_notes, review_notes)
+      end)
+
+    # Create a map of collection_id => review_notes for template access
+    review_notes_map =
+      Map.new(collections, fn collection ->
+        {collection.id, Catalog.get_collection_review_notes(collection.id)}
+      end)
+
+    socket =
+      socket
+      |> stream(:collections, collections_with_notes, reset: true)
+      |> assign(:review_notes_map, review_notes_map)
+      |> assign(:page, 1)
+      |> assign(:total_pages, total_pages)
+      |> assign(:total_count, total_count)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:status_filter, status)
+      |> assign(:status_counts, status_counts)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("save_collection", _params, socket) do
+    # Delegate to form component or handle save here
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:collection_updated, _collection}, socket) do
+    # Refresh the list after successful update
+    current_user = socket.assigns.current_scope.user
+    per_page = socket.assigns.per_page
+    search = socket.assigns.search
+    status_filter = socket.assigns.status_filter
+    page = socket.assigns.page
+
+    {collections, total_pages, total_count} =
+      Catalog.list_submitted_collections_paginated(
+        current_user,
+        page,
+        per_page,
+        search,
+        status_filter
+      )
+
+    # Get status counts for filter tabs
+    status_counts = Catalog.get_submitted_collections_status_counts(current_user)
+
+    # Add review notes to each collection
+    collections_with_notes =
+      Enum.map(collections, fn collection ->
+        review_notes = Catalog.get_collection_review_notes(collection.id)
+        Map.put(collection, :review_notes, review_notes)
+      end)
+
+    # Create a map of collection_id => review_notes for template access
+    review_notes_map =
+      Map.new(collections, fn collection ->
+        {collection.id, Catalog.get_collection_review_notes(collection.id)}
+      end)
+
+    socket =
+      socket
+      |> put_flash(:info, "Collection updated successfully")
+      |> stream(:collections, collections_with_notes, reset: true)
+      |> assign(:review_notes_map, review_notes_map)
+      |> assign(:total_pages, total_pages)
+      |> assign(:total_count, total_count)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:status_counts, status_counts)
+      |> push_patch(to: ~p"/manage/catalog/collections/submitted")
 
     {:noreply, socket}
   end
