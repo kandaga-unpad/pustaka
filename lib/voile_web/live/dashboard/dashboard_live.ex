@@ -7,26 +7,14 @@ defmodule VoileWeb.DashboardLive do
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.{Collection, Item}
-  alias Voile.Schema.Library.{Transaction, Reservation, Fine, Circulation}
+  alias Voile.Schema.Library.{Transaction, Reservation, Fine}
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
-  import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
   def render(assigns) do
     ~H"""
     <section class="space-y-6 p-6">
-      <%!-- Quick Action Modals --%>
-      <.quick_checkout_modal
-        quick_checkout_visible={@quick_checkout_visible}
-        checkout_form={@checkout_form}
-      />
-      <.quick_return_modal
-        quick_return_visible={@quick_return_visible}
-        return_form={@return_form}
-        quick_return_transaction={@quick_return_transaction}
-        quick_return_predicted_fine={@quick_return_predicted_fine}
-      />
       <div class="flex items-center justify-between">
         <div class="w-full">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -55,23 +43,14 @@ defmodule VoileWeb.DashboardLive do
         <% end %>
       </div>
       <%!-- Quick Actions --%>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <%= if can?(@current_scope.user, "circulation.checkout") do %>
-          <button
-            phx-click="show_quick_checkout"
-            class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800"
-          >
-            <.icon name="hero-arrow-right-circle" class="w-6 h-6 mr-3" /> Quick Checkout
-          </button>
-        <% end %>
-        <%= if can?(@current_scope.user, "circulation.return") do %>
-          <button
-            phx-click="show_quick_return"
-            class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-green-700 hover:to-green-800"
-          >
-            <.icon name="hero-arrow-left-circle" class="w-6 h-6 mr-3" /> Quick Return
-          </button>
-        <% end %>
+      <div class="w-full">
+        <h5 class="text-center my-3">Library Transaction Circulation</h5>
+        <.link
+          class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-violet-600 to-violet-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-violet-800"
+          navigate={~p"/manage/glam/library/ledger"}
+        >
+          Start Transaction
+        </.link>
       </div>
       <%!-- Quick Stats Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -233,12 +212,6 @@ defmodule VoileWeb.DashboardLive do
       |> load_member_stats(user)
       |> load_circulation_stats(user)
       |> load_catalog_stats(user)
-      |> assign(:quick_checkout_visible, false)
-      |> assign(:checkout_form, to_form(%{}))
-      |> assign(:quick_return_visible, false)
-      |> assign(:return_form, to_form(%{}))
-      |> assign(:quick_return_transaction, nil)
-      |> assign(:quick_return_predicted_fine, Decimal.new("0"))
 
     {:ok, socket}
   end
@@ -275,206 +248,6 @@ defmodule VoileWeb.DashboardLive do
       |> load_catalog_stats(user_for_stats)
 
     {:noreply, socket}
-  end
-
-  # Quick Checkout handlers
-  def handle_event("show_quick_checkout", _params, socket) do
-    if can?(socket, "circulation.checkout") do
-      {:noreply, assign(socket, :quick_checkout_visible, true)}
-    else
-      {:noreply, put_flash(socket, :error, "You don't have permission to checkout items")}
-    end
-  end
-
-  def handle_event("cancel_quick_checkout", _params, socket) do
-    socket =
-      socket
-      |> assign(:quick_checkout_visible, false)
-      |> assign(:checkout_form, to_form(%{}))
-
-    {:noreply, socket}
-  end
-
-  def handle_event("quick_checkout_submit", params, socket) do
-    unless can?(socket, "circulation.checkout") do
-      {:noreply, put_flash(socket, :error, "You don't have permission to checkout items")}
-    else
-      member_id = Map.get(params, "member_id", "")
-      item_id = Map.get(params, "item_id", "")
-
-      cond do
-        member_id == "" ->
-          {:noreply, put_flash(socket, :error, "Member identifier is required")}
-
-        item_id == "" ->
-          {:noreply, put_flash(socket, :error, "Item code is required")}
-
-        true ->
-          alias Voile.Schema.Accounts
-          alias Voile.Schema.Catalog
-
-          case Accounts.get_user_by_identifier(member_id) do
-            nil ->
-              {:noreply, put_flash(socket, :error, "Member not found")}
-
-            member ->
-              case Catalog.get_item_by_code(item_id) do
-                nil ->
-                  {:noreply, put_flash(socket, :error, "Item not found")}
-
-                item ->
-                  librarian = socket.assigns.current_scope.user.id
-
-                  case Circulation.checkout_item(member.id, item.id, librarian) do
-                    {:ok, _transaction} ->
-                      socket =
-                        socket
-                        |> assign(:quick_checkout_visible, false)
-                        |> assign(:checkout_form, to_form(%{}))
-                        |> put_flash(:info, "Item checked out successfully")
-                        |> load_circulation_stats(socket.assigns.user)
-
-                      {:noreply, socket}
-
-                    {:error, changeset} ->
-                      errors =
-                        changeset
-                        |> Map.get(:errors, [])
-                        |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
-                        |> Enum.join(", ")
-
-                      {:noreply, put_flash(socket, :error, "Failed to checkout: #{errors}")}
-                  end
-              end
-          end
-      end
-    end
-  end
-
-  # Quick Return handlers
-  def handle_event("show_quick_return", _params, socket) do
-    if can?(socket, "circulation.return") do
-      {:noreply, assign(socket, :quick_return_visible, true)}
-    else
-      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
-    end
-  end
-
-  def handle_event("cancel_quick_return", _params, socket) do
-    socket =
-      socket
-      |> assign(:quick_return_visible, false)
-      |> assign(:return_form, to_form(%{}))
-      |> assign(:quick_return_transaction, nil)
-      |> assign(:quick_return_predicted_fine, Decimal.new("0"))
-
-    {:noreply, socket}
-  end
-
-  def handle_event("quick_return_search", %{"item_code" => item_code}, socket) do
-    unless can?(socket, "circulation.return") do
-      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
-    else
-      alias Voile.Schema.Catalog
-      alias Voile.Schema.Accounts
-
-      case Catalog.get_item_by_code(item_code) do
-        nil ->
-          {:noreply, put_flash(socket, :error, "Item not found")}
-
-        item ->
-          # Find active transaction for this item
-          case Circulation.get_active_transaction_by_item(item.id) do
-            nil ->
-              {:noreply, put_flash(socket, :error, "No active transaction found for this item")}
-
-            transaction ->
-              # Load member with user_type for fine calculation
-              member = Accounts.get_user!(transaction.member_id)
-
-              predicted_fine =
-                if Voile.Schema.Library.Transaction.overdue?(transaction) do
-                  days = Voile.Schema.Library.Transaction.days_overdue(transaction)
-                  daily = member.user_type.fine_per_day || Decimal.new("1.00")
-                  Decimal.mult(Decimal.new(days), daily)
-                else
-                  Decimal.new("0")
-                end
-
-              socket =
-                socket
-                |> assign(:quick_return_transaction, transaction)
-                |> assign(:quick_return_predicted_fine, predicted_fine)
-
-              {:noreply, socket}
-          end
-      end
-    end
-  end
-
-  def handle_event("quick_return_confirm", params, socket) do
-    unless can?(socket, "circulation.return") do
-      {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
-    else
-      transaction_id = Map.get(params, "transaction_id")
-      payment_amount = Map.get(params, "payment_amount", "0")
-      payment_method = Map.get(params, "payment_method", "cash")
-      current_user_id = socket.assigns.current_scope.user.id
-
-      payment_amount_decimal =
-        case Decimal.parse(payment_amount) do
-          {dec, _rest} when is_struct(dec) -> dec
-          :error -> Decimal.new("0")
-        end
-
-      case Circulation.return_item(transaction_id, current_user_id) do
-        {:ok, _transaction} ->
-          socket =
-            socket
-            |> assign(:quick_return_visible, false)
-            |> assign(:return_form, to_form(%{}))
-            |> assign(:quick_return_transaction, nil)
-            |> assign(:quick_return_predicted_fine, Decimal.new("0"))
-
-          # Try to pay fine if payment amount > 0
-          socket =
-            if Decimal.compare(payment_amount_decimal, Decimal.new("0")) == :gt do
-              case Circulation.get_fine_by_transaction(transaction_id) do
-                {:ok, fine} ->
-                  case Circulation.pay_fine(
-                         fine.id,
-                         payment_amount_decimal,
-                         payment_method,
-                         current_user_id
-                       ) do
-                    {:ok, _} ->
-                      put_flash(socket, :info, "Item returned and fine paid successfully")
-
-                    {:error, _} ->
-                      put_flash(socket, :info, "Item returned (fine payment failed)")
-                  end
-
-                _ ->
-                  put_flash(socket, :info, "Item returned successfully")
-              end
-            else
-              put_flash(socket, :info, "Item returned successfully")
-            end
-
-          # Reload circulation stats
-          socket = load_circulation_stats(socket, socket.assigns.user)
-          {:noreply, socket}
-
-        {:error, changeset} ->
-          errors =
-            changeset
-            |> Map.get(:errors, [])
-            |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
-            |> Enum.join(", ")
-
-          {:noreply, put_flash(socket, :error, "Failed to return: #{errors}")}
-      end
-    end
   end
 
   def handle_event("search", %{"query" => query}, socket) do

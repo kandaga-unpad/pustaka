@@ -599,14 +599,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
 
         {:noreply, socket}
 
-      {:error, changeset} ->
-        errors =
-          changeset
-          |> Map.get(:errors, [])
-          |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
-          |> Enum.join(", ")
+      {:error, error} ->
+        error_message =
+          cond do
+            is_binary(error) ->
+              error
 
-        {:noreply, put_flash(socket, :error, "Failed to return: #{errors}")}
+            is_struct(error, Ecto.Changeset) and error.errors != %{} ->
+              errors =
+                error
+                |> Ecto.Changeset.traverse_errors(fn {msg, _opts} -> msg end)
+                |> Enum.map(fn {field, messages} ->
+                  "#{field}: #{Enum.join(messages, ", ")}"
+                end)
+                |> Enum.join(", ")
+
+              "Failed to return: #{errors}"
+
+            true ->
+              "Failed to return: Unknown error"
+          end
+
+        {:noreply, put_flash(socket, :error, error_message)}
     end
   end
 end

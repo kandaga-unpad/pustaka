@@ -224,10 +224,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Fine.Index do
     |> assign(:total_pages, total_pages)
   end
 
-  defp extract_error_message(changeset) do
-    changeset
-    |> Map.get(:errors, [])
-    |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
-    |> Enum.join(", ")
+  defp extract_error_message(error) do
+    cond do
+      is_binary(error) ->
+        error
+
+      is_struct(error, Ecto.Changeset) and error.errors != %{} ->
+        error
+        |> Ecto.Changeset.traverse_errors(fn {msg, _opts} -> msg end)
+        |> Enum.map(fn {field, messages} ->
+          "#{field}: #{Enum.join(messages, ", ")}"
+        end)
+        |> Enum.join(", ")
+
+      true ->
+        "Unknown error"
+    end
   end
 end

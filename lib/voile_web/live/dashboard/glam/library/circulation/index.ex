@@ -351,7 +351,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             </div>
           </div>
         </.link>
-         <.quick_actions current_user={@current_scope.user} />
+        <.quick_actions current_user={@current_scope.user} />
       </div>
       <!-- Recent Activity -->
       <div class="mt-8 bg-white dark:bg-gray-700 rounded-lg shadow">
@@ -516,7 +516,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               {:noreply, put_flash(socket, :error, "Member not found")}
 
             member ->
-              case Catalog.get_item_by_code(item_id) do
+              case Catalog.get_item_by_code_or_barcode(item_id) do
                 nil ->
                   {:noreply, put_flash(socket, :error, "Item not found")}
 
@@ -576,7 +576,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
       alias Voile.Schema.Catalog
       alias Voile.Schema.Accounts
 
-      case Catalog.get_item_by_code(item_code) do
+      case Catalog.get_item_by_code_or_barcode(item_code) do
         nil ->
           {:noreply, put_flash(socket, :error, "Item not found")}
 
@@ -662,14 +662,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
           send(self(), :load_stats)
           {:noreply, socket}
 
-        {:error, changeset} ->
-          errors =
-            changeset
-            |> Map.get(:errors, [])
-            |> Enum.map(fn {field, {message, _}} -> "#{field}: #{message}" end)
-            |> Enum.join(", ")
+        {:error, error} ->
+          error_message =
+            cond do
+              is_binary(error) ->
+                error
 
-          {:noreply, put_flash(socket, :error, "Failed to return: #{errors}")}
+              is_struct(error, Ecto.Changeset) and error.errors != %{} ->
+                errors =
+                  error
+                  |> Ecto.Changeset.traverse_errors(fn {msg, _opts} -> msg end)
+                  |> Enum.map(fn {field, messages} ->
+                    "#{field}: #{Enum.join(messages, ", ")}"
+                  end)
+                  |> Enum.join(", ")
+
+                "Failed to return: #{errors}"
+
+              true ->
+                "Failed to return: Unknown error"
+            end
+
+          {:noreply, put_flash(socket, :error, error_message)}
       end
     end
   end
