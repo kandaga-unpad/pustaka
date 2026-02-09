@@ -29,6 +29,9 @@ defmodule VoileWeb.ErrorHTML do
       |> Map.put_new(:app_main_color, "#9333ea")
       |> Map.put_new(:app_secondary_color, "#7c3aed")
       |> Map.put_new(:page_title, get_page_title(template))
+      |> Map.put_new(:request_id, assigns[:conn].assigns[:request_id])
+      |> Map.put_new(:status, assigns[:status])
+      |> Map.put_new(:requested_url, Plug.Conn.request_url(assigns[:conn]))
 
     # embed_templates creates template functions, call them via __MODULE__
     template_atom = template |> String.replace(".", "_") |> String.to_atom()

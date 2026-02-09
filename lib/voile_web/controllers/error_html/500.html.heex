@@ -51,12 +51,40 @@
 
             <div class="mt-6">
               <h4 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                {gettext("Error ID")}
+                {gettext("Error Details")}
               </h4>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                {gettext(
-                  "If available, include the request ID from the logs when contacting support."
-                )}
+              <div class="space-y-2">
+                <div>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    {gettext("Status Code")}:
+                  </span>
+                  <span class="text-sm font-mono text-gray-900 dark:text-white">{@status}</span>
+                </div>
+                <div>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    {gettext("Requested URL")}:
+                  </span>
+                  <span class="text-sm font-mono text-gray-900 dark:text-white break-all">
+                    {@requested_url}
+                  </span>
+                </div>
+                <%= if @request_id do %>
+                  <div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      {gettext("Request ID")}:
+                    </span>
+                    <span class="text-sm font-mono text-gray-900 dark:text-white">
+                      {@request_id}
+                    </span>
+                  </div>
+                <% else %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {gettext("Request ID not available")}
+                  </div>
+                <% end %>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {gettext("Include these details when contacting support.")}
               </div>
             </div>
           </div>

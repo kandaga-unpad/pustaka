@@ -1098,7 +1098,7 @@ defmodule Voile.Schema.System do
 
     avg_rating =
       case Repo.aggregate(surveys_query, :avg, :rating) do
-        nil -> 0
+        nil -> 0.0
         avg -> Decimal.to_float(avg) |> Float.round(2)
       end
 

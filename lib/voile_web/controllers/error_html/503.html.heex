@@ -15,9 +15,9 @@
           {gettext("Service Unavailable")}
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          {gettext("Error occurred at:")}
-          <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
-            {assigns[:conn].request_path}
+          {gettext("Requested URL:")}
+          <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs break-all">
+            {@requested_url}
           </code>
         </p>
         <p class="mt-4 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -113,7 +113,42 @@
         </div>
 
         <aside class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg">
-          <h3 class="text-lg font-semibold mb-3">{gettext("Status & updates")}</h3>
+          <h3 class="text-lg font-semibold mb-3">{gettext("Error Details")}</h3>
+          <div class="space-y-2">
+            <div>
+              <span class="text-xs text-gray-500 dark:text-gray-400">
+                {gettext("Status Code")}:
+              </span>
+              <span class="text-sm font-mono text-gray-900 dark:text-white">{@status}</span>
+            </div>
+            <div>
+              <span class="text-xs text-gray-500 dark:text-gray-400">
+                {gettext("Requested URL")}:
+              </span>
+              <span class="text-sm font-mono text-gray-900 dark:text-white break-all">
+                {@requested_url}
+              </span>
+            </div>
+            <%= if @request_id do %>
+              <div>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  {gettext("Request ID")}:
+                </span>
+                <span class="text-sm font-mono text-gray-900 dark:text-white">
+                  {@request_id}
+                </span>
+              </div>
+            <% else %>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {gettext("Request ID not available")}
+              </div>
+            <% end %>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            {gettext("Include these details when contacting support.")}
+          </div>
+
+          <h4 class="text-lg font-semibold mb-3 mt-6">{gettext("Status & updates")}</h4>
           <p class="text-sm text-gray-500 mb-4">
             {gettext("Subscribe or check our status page for real-time updates.")}
           </p>
