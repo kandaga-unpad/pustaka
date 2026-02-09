@@ -58,7 +58,7 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
       process_count: :erlang.system_info(:process_count),
       process_limit: :erlang.system_info(:process_limit),
       uptime: :erlang.statistics(:wall_clock) |> elem(0) |> div(1000),
-      environment: Application.get_env(:voile, :environment, Mix.env())
+      environment: Application.get_env(:voile, :environment)
     }
   end
 

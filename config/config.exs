@@ -24,7 +24,8 @@ config :voile, :scopes,
 
 config :voile,
   ecto_repos: [Voile.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  environment: Mix.env()
 
 # Configure Hammer rate limiter
 config :hammer,
