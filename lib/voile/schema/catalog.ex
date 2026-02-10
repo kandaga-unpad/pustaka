@@ -545,6 +545,7 @@ defmodule Voile.Schema.Catalog do
     # Build attrs map
     attrs = %{
       status: "published",
+      access_level: "public",
       updated_by_id: reviewer_user.id,
       updated_at: now
     }
@@ -559,8 +560,8 @@ defmodule Voile.Schema.Catalog do
         CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "publish",
           title: "Collection Approved",
           message: "Collection '#{collection.title}' was approved and published",
-          old_values: %{status: collection.status},
-          new_values: %{status: "published"},
+          old_values: %{status: collection.status, access_level: collection.access_level},
+          new_values: %{status: "published", access_level: "public"},
           metadata: metadata
         )
 

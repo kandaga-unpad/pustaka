@@ -53,10 +53,12 @@ defmodule Voile.Task.Catalog.Collection do
   """
   def load_collection_with_items(id, items_page \\ 1) do
     try do
-      collection = Catalog.get_collection!(id)
+      collection =
+        Catalog.get_collection!(id)
+        |> Repo.preload([:parent, :children])
 
       # Check if the collection is accessible to public (members)
-      if collection.access_level not in ["public", "restricted"] do
+      if collection.access_level != "public" do
         {:error, :access_denied}
       else
         {items, total_pages} = load_items_for_collection(id, items_page)
@@ -100,7 +102,7 @@ defmodule Voile.Task.Catalog.Collection do
 
   def count_collections do
     from(c in Collection)
-    |> where([c], c.access_level in ["public", "restricted"])
+    |> where([c], c.access_level == "public")
     |> Repo.aggregate(:count, :id)
   end
 
@@ -115,7 +117,7 @@ defmodule Voile.Task.Catalog.Collection do
 
   defp build_base_query(search_query, filter_unit_id, filter_status, glam_type) do
     from(c in Collection)
-    |> where([c], c.access_level in ["public", "restricted"])
+    |> where([c], c.access_level == "public")
     |> filter_by_status(filter_status)
     |> filter_by_unit_id(filter_unit_id)
     |> filter_by_glam_type(glam_type)

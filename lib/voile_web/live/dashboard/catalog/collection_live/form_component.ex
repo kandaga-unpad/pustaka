@@ -255,15 +255,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             />
           <% else %>
             <input type="hidden" name={@form[:unit_id].name} value={@current_scope.user.node_id} />
-            <.input
-              field={@form[:unit_id]}
-              label="Collection Location (Your Unit)"
-              type="select"
-              options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
-              prompt="Select Collection Location"
-              required_value={true}
-              disabled={true}
-            />
+            <div>
+              <label class="block text-sm font-medium mb-2 label">
+                Collection Location (Your Unit)
+              </label>
+              <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                {Enum.find(@node_list, fn n -> n.id == @current_scope.user.node_id end)
+                |> then(fn n -> if n, do: n.name, else: "Unknown" end)}
+              </div>
+            </div>
           <% end %>
           <.input field={@form[:title]} type="text" label="Title" required_value={true} />
           <div class="relative" phx-hook="SearchDropdown" id={"creator-search-#{@form[:id].value}"}>
@@ -366,6 +366,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             field={@form[:description]}
             type="textarea"
             label="Description"
+            rows="15"
+            cols="33"
             required_value={true}
           />
           <%= if is_super_admin?(@current_scope.user) do %>
@@ -732,19 +734,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         type="text"
                         label="Location Details"
                       />
-                      <input
-                        type="hidden"
-                        name={item_field[:unit_id].name}
-                        value={item_field[:unit_id].value}
-                      />
-                      <.input
-                        field={item_field[:unit_id]}
-                        type="select"
-                        label="Unit Location"
-                        required_value={true}
-                        options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
-                        disabled={true}
-                      />
+                      <%= if can_select_unit?(@current_scope) do %>
+                        <.input
+                          field={item_field[:unit_id]}
+                          type="select"
+                          label="Unit Location"
+                          required_value={true}
+                          options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
+                        />
+                      <% else %>
+                        <input
+                          type="hidden"
+                          name={item_field[:unit_id].name}
+                          value={item_field[:unit_id].value}
+                        />
+                        <div>
+                          <label class="block text-sm font-medium mb-2 label">Unit Location</label>
+                          <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            {Enum.find(@node_list, fn n -> n.id == item_field[:unit_id].value end)
+                            |> then(fn n -> if n, do: n.name, else: "Unknown" end)}
+                          </div>
+                        </div>
+                      <% end %>
                       <.input
                         field={item_field[:status]}
                         type="select"
@@ -985,10 +996,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
          end
 
        default_access_level =
-         if is_super_admin?(assigns.current_scope.user) do
-           collection.access_level || "public"
-         else
-           "private"
+         case assigns.action do
+           :edit ->
+             # For edit, use the existing value from database (or default to private if null)
+             collection.access_level || "private"
+
+           :new ->
+             # For new collections, super_admin defaults to public, others to private
+             if is_super_admin?(assigns.current_scope.user) do
+               "public"
+             else
+               "private"
+             end
          end
 
        initial_params =

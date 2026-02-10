@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024–present Chrisna Adhi
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule Voile do
   @moduledoc """
   Voile keeps the contexts that define your domain

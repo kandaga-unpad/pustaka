@@ -91,6 +91,134 @@
       </.list>
     </div>
 
+    <%!-- Parent and Children Collections Section --%>
+    <%= if @collection.parent || length(@collection.children) > 0 do %>
+      <div class="my-10">
+        <h6 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white my-4 sm:my-5">
+          Collection Relationships
+        </h6>
+
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 sm:p-6 space-y-6">
+          <%!-- Parent Collection --%>
+          <%= if @collection.parent do %>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <.icon name="hero-arrow-up-circle" class="w-5 h-5 text-blue-500" />
+                Parent Collection
+              </h3>
+              <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-start gap-4">
+                  <%!-- A4-sized cover (210mm x 297mm ratio = ~1:1.414) --%>
+                  <%= if @collection.parent.thumbnail do %>
+                    <img
+                      src={@collection.parent.thumbnail}
+                      alt={@collection.parent.title}
+                      class="w-full sm:w-48 h-64 sm:h-68 object-cover rounded-lg border border-gray-200 dark:border-gray-600 flex-shrink-0"
+                    />
+                  <% else %>
+                    <div class="w-full sm:w-48 h-64 sm:h-68 flex items-center justify-center border rounded-lg border-gray-300 dark:border-gray-500 bg-gray-100 dark:bg-gray-600 flex-shrink-0">
+                      <.icon name="hero-folder" class="w-16 h-16 text-gray-400" />
+                    </div>
+                  <% end %>
+
+                  <div class="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900 dark:text-white text-base sm:text-lg">
+                        {@collection.parent.title}
+                      </h4>
+                      <%= if @collection.parent.description do %>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-3">
+                          {@collection.parent.description}
+                        </p>
+                      <% end %>
+                      <div class="flex items-center gap-2 mt-3">
+                        <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          {String.capitalize(@collection.parent.status || "draft")}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                          ID: {String.slice(@collection.parent.id, 0..7)}...
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="mt-4">
+                      <.link
+                        navigate={~p"/manage/catalog/collections/#{@collection.parent.id}"}
+                        class="inline-block w-full sm:w-auto"
+                      >
+                        <.button class="primary-btn w-full">
+                          <.icon name="hero-arrow-right-circle" class="w-4 h-4" />
+                          View Parent Collection
+                        </.button>
+                      </.link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <%!-- Children Collections --%>
+          <%= if length(@collection.children) > 0 do %>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <.icon name="hero-arrow-down-circle" class="w-5 h-5 text-green-500" />
+                Child Collections ({length(@collection.children)})
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <%= for child <- @collection.children do %>
+                  <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition flex flex-col">
+                    <%!-- A4-sized cover --%>
+                    <%= if child.thumbnail do %>
+                      <img
+                        src={child.thumbnail}
+                        alt={child.title}
+                        class="w-full h-80 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                      />
+                    <% else %>
+                      <div class="w-full h-80 flex items-center justify-center border rounded-lg border-gray-300 dark:border-gray-500 bg-gray-100 dark:bg-gray-600">
+                        <.icon name="hero-folder" class="w-16 h-16 text-gray-400" />
+                      </div>
+                    <% end %>
+
+                    <div class="flex-1 flex flex-col mt-3">
+                      <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2">
+                          {child.title}
+                        </h4>
+                        <%= if child.description do %>
+                          <p class="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                            {child.description}
+                          </p>
+                        <% end %>
+                        <div class="flex items-center gap-2 mt-2">
+                          <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            {String.capitalize(child.status || "draft")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="mt-4">
+                        <.link
+                          navigate={~p"/manage/catalog/collections/#{child.id}"}
+                          class="block"
+                        >
+                          <.button class="primary-btn w-full text-xs sm:text-sm">
+                            <.icon name="hero-arrow-right-circle" class="w-4 h-4" />
+                            View Collection
+                          </.button>
+                        </.link>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
     <div class="my-10">
       <h6 class="my-5">Metadata</h6>
 

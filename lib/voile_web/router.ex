@@ -31,6 +31,10 @@ defmodule VoileWeb.Router do
     pipe_through :browser
     # Convert home and about pages to LiveView for better UX
 
+    # OAI-PMH Viewer routes (human-friendly interfaces)
+    get "/oai", OaiViewerController, :viewer
+    get "/oai-demo", OaiViewerController, :demo
+
     # Search routes
     get "/search", SearchController, :index
     post "/search", SearchController, :index
@@ -455,6 +459,10 @@ defmodule VoileWeb.Router do
     pipe_through :api
 
     get "/", API.InfoController, :info
+
+    # OAI-PMH endpoint (public, no authentication required)
+    get "/oai", OaiPmhController, :index
+    post "/oai", OaiPmhController, :index
 
     scope "/v1" do
       pipe_through :api_authenticated

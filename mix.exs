@@ -6,6 +6,7 @@ defmodule Voile.MixProject do
       app: :voile,
       version: "0.1.0",
       elixir: "~> 1.18",
+      license: "Apache-2.0",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -80,7 +81,8 @@ defmodule Voile.MixProject do
       {:tailwind, "~> 0.4", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:xml_builder, "~> 2.2"}
     ]
   end
 

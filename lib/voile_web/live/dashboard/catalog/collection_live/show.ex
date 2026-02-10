@@ -44,7 +44,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
   def handle_params(%{"id" => id} = params, _, socket) do
     case Ecto.UUID.cast(id) do
       {:ok, uuid} ->
-        collection = Catalog.get_collection!(uuid)
+        collection =
+          Catalog.get_collection!(uuid)
+          |> Repo.preload([:parent, :children])
 
         # Preserve query parameters from the index page (search, filters)
         query_params = Map.drop(params, ["id"])

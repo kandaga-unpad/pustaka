@@ -283,56 +283,63 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    # Check delete permission before deleting
-    authorize!(socket, "collections.delete")
-
-    collection = Catalog.get_collection!(id)
-    current_user = socket.assigns.current_user
-
-    # Verify user has access to this collection's unit
-    if Catalog.is_user_admin?(current_user) or collection.unit_id == current_user.node_id do
-      {:ok, _} = Catalog.delete_collection(collection)
-
-      # Refresh both views with limited tree collections
-      tree_collections = Catalog.list_collections_tree(50)
-
-      # If a search or filters are active, re-fetch current page with the filters, otherwise just delete from stream
-      search = socket.assigns[:search] || ""
-      filters = socket.assigns.filters
-      has_active_filters = search != "" || map_size(filters) > 0
-
-      socket =
-        socket
-        |> assign(:tree_collections, tree_collections)
-
-      if has_active_filters do
-        page = socket.assigns[:page] || 1
-        per_page = 10
-
-        {collections, total_pages, _} =
-          Catalog.list_collections_paginated(page, per_page, search, filters)
-
-        socket =
-          socket
-          |> stream(:collections, collections, reset: true)
-          |> assign(:page, page)
-          |> assign(:total_pages, total_pages)
-          |> assign(:collections_empty?, collections == [])
-          |> assign(:collections_count, length(collections))
-
-        {:noreply, socket}
-      else
-        socket =
-          socket
-          |> stream_delete(:collections, collection)
-          |> assign(:collections_count, max((socket.assigns[:collections_count] || 1) - 1, 0))
-
-        {:noreply, socket}
-      end
-    else
+    # Check delete permission based on roles
+    if not can_delete_collections?(socket.assigns.current_scope.user) do
       {:noreply,
        socket
-       |> put_flash(:error, "Access Denied: You don't have permission to delete this collection")}
+       |> put_flash(:error, "Access Denied: You don't have permission to delete collections")}
+    else
+      collection = Catalog.get_collection!(id)
+      current_user = socket.assigns.current_user
+
+      # Verify user has access to this collection's unit
+      if Catalog.is_user_admin?(current_user) or collection.unit_id == current_user.node_id do
+        {:ok, _} = Catalog.delete_collection(collection)
+
+        # Refresh both views with limited tree collections
+        tree_collections = Catalog.list_collections_tree(50)
+
+        # If a search or filters are active, re-fetch current page with the filters, otherwise just delete from stream
+        search = socket.assigns[:search] || ""
+        filters = socket.assigns.filters
+        has_active_filters = search != "" || map_size(filters) > 0
+
+        socket =
+          socket
+          |> assign(:tree_collections, tree_collections)
+
+        if has_active_filters do
+          page = socket.assigns[:page] || 1
+          per_page = 10
+
+          {collections, total_pages, _} =
+            Catalog.list_collections_paginated(page, per_page, search, filters)
+
+          socket =
+            socket
+            |> stream(:collections, collections, reset: true)
+            |> assign(:page, page)
+            |> assign(:total_pages, total_pages)
+            |> assign(:collections_empty?, collections == [])
+            |> assign(:collections_count, length(collections))
+
+          {:noreply, socket}
+        else
+          socket =
+            socket
+            |> stream_delete(:collections, collection)
+            |> assign(:collections_count, max((socket.assigns[:collections_count] || 1) - 1, 0))
+
+          {:noreply, socket}
+        end
+      else
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           "Access Denied: You don't have permission to delete this collection"
+         )}
+      end
     end
   end
 
@@ -563,6 +570,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
     Enum.any?(user.roles, fn role ->
       role.name in ["super_admin", "admin"]
+    end)
+  end
+
+  # Helper function to check if user can delete collections
+  defp can_delete_collections?(user) do
+    user = Repo.preload(user, :roles)
+
+    Enum.any?(user.roles, fn role ->
+      role.name in ["super_admin", "admin", "editor"]
     end)
   end
 end

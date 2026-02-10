@@ -17,7 +17,9 @@ defmodule VoileWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets images uploads fonts images sfx favicon.ico robots.txt)
+  def static_paths,
+    do:
+      ~w(assets images uploads fonts images sfx xsl css favicon.ico robots.txt oai-demo.html oai-viewer.html)
 
   def router do
     quote do

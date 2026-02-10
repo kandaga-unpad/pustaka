@@ -6,6 +6,7 @@ defmodule VoileWeb.Frontend.Items.Show do
   use VoileWeb, :live_view
   import VoileWeb.VoileComponents
 
+  alias Voile.Repo
   alias Voile.Task.Catalog.Items
   alias Voile.Schema.Library.Circulation
 
@@ -152,8 +153,21 @@ defmodule VoileWeb.Frontend.Items.Show do
     end
   end
 
-  defp validate_reservation_request(_user, _item) do
-    {:ok, :valid}
+  defp validate_reservation_request(user, _item) do
+    # Check if user is staff/admin - they cannot reserve items
+    user = Repo.preload(user, :roles)
+
+    is_staff_or_admin =
+      Enum.any?(user.roles || [], fn role ->
+        role.name in ["super_admin", "admin", "librarian", "staff"]
+      end)
+
+    if is_staff_or_admin do
+      {:error,
+       "Staff and administrators cannot reserve items. Only members can make reservations."}
+    else
+      {:ok, :valid}
+    end
   end
 
   @impl true
@@ -441,24 +455,37 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <div class="space-y-3">
                         <%= if @item.availability == "available" do %>
                           <%= if @current_scope && @current_scope.user do %>
-                            <%= if @current_scope.user.confirmed_at && @current_scope.user.user_type do %>
-                              <button
-                                phx-click="show_reservation_form"
-                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                              >
-                                <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" /> Reserve Item
-                              </button>
-                            <% else %>
+                            <% user = Repo.preload(@current_scope.user, :roles)
+
+                            is_staff_or_admin =
+                              Enum.any?(user.roles || [], fn role ->
+                                role.name in ["super_admin", "admin", "librarian", "staff"]
+                              end) %>
+                            <%= if is_staff_or_admin do %>
                               <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
-                                <%= cond do %>
-                                  <% !@current_scope.user.confirmed_at -> %>
-                                    Please verify your email to reserve items
-                                  <% !@current_scope.user.user_type -> %>
-                                    Member type not assigned - contact library
-                                  <% true -> %>
-                                    Reservation unavailable
-                                <% end %>
+                                Staff cannot reserve items
                               </div>
+                            <% else %>
+                              <%= if @current_scope.user.confirmed_at && @current_scope.user.user_type do %>
+                                <button
+                                  phx-click="show_reservation_form"
+                                  class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                  <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" />
+                                  Reserve Item
+                                </button>
+                              <% else %>
+                                <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
+                                  <%= cond do %>
+                                    <% !@current_scope.user.confirmed_at -> %>
+                                      Please verify your email to reserve items
+                                    <% !@current_scope.user.user_type -> %>
+                                      Member type not assigned - contact library
+                                    <% true -> %>
+                                      Reservation unavailable
+                                  <% end %>
+                                </div>
+                              <% end %>
                             <% end %>
                           <% else %>
                             <.link

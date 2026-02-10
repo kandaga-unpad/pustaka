@@ -101,6 +101,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
     barcode = generate_barcode_from_item_code(item_code)
 
+    dbg(socket.assigns.current_scope.user)
+
     new_item = %{
       "item_code" => item_code,
       # Use collection identifier (uuid) to match seed/db style. Fall back to

@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OAI-PMH Viewer</title>
+        <link rel="stylesheet" href="/css/oai-pmh.css" type="text/css" />
+        <style>
+            a {
+                color: white;
+                text-decoration: underline;
+            }
+            .loading {
+                text-align: center;
+                padding: 3rem;
+                color: #64748b;
+            }
+            .spinner {
+                border: 3px solid #f3f4f6;
+                border-top: 3px solid #2563eb;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 1rem;
+            }
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+            .error-banner {
+                background: #fef2f2;
+                border: 2px solid #ef4444;
+                border-radius: 8px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                color: #991b1b;
+            }
+            .error-banner h3 {
+                margin: 0 0 0.5rem 0;
+                color: #ef4444;
+            }
+            .verb-link.active {
+                background: #1e40af;
+                font-weight: 700;
+            }
+            .next-page-btn {
+                display: inline-block;
+                padding: 0.75rem 1.5rem;
+                background: var(--success-color);
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+                transition: all 0.2s ease;
+                box-shadow: var(--shadow-sm);
+            }
+            .next-page-btn:hover {
+                background: #059669;
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-md);
+            }
+            .pagination {
+                margin-top: 1rem;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <header class="page-header">
+                <h1>OAI-PMH 2.0 Repository</h1>
+                <p class="subtitle">
+                    Open Archives Initiative Protocol for Metadata Harvesting
+                </p>
+                <p class="project-info">
+                    Powered by the
+                    <a
+                        href="https://github.com/curatorian/voile"
+                        target="_blank"<strong>
+                            Voile Project
+                        </strong>
+                    </a>
+                    - A modern digital GLAM (Gallery, Library, Archive, Museum)
+                    management system for institutions and researchers.
+                </p>
+            </header>
+
+            <nav class="verb-nav">
+                <div class="nav-group">
+                    <h3>Repository Operations</h3>
+                    <a href="?verb=Identify" class="verb-link">Identify</a>
+                    <a href="?verb=ListMetadataFormats" class="verb-link"
+                        >List Metadata Formats</a
+                    >
+                    <a href="?verb=ListSets" class="verb-link">List Sets</a>
+                </div>
+                <div class="nav-group">
+                    <h3>Dublin Core Format</h3>
+                    <a
+                        href="?verb=ListIdentifiers&metadataPrefix=oai_dc"
+                        class="verb-link"
+                        >List Identifiers</a
+                    >
+                    <a
+                        href="?verb=ListRecords&metadataPrefix=oai_dc"
+                        class="verb-link"
+                        >List Records</a
+                    >
+                    <a
+                        href="?verb=GetRecord&identifier=oai:example:123&metadataPrefix=oai_dc"
+                        class="verb-link"
+                        >Get Record</a
+                    >
+                </div>
+                <div class="nav-group">
+                    <h3>MARC21 Format</h3>
+                    <a
+                        href="?verb=ListIdentifiers&metadataPrefix=marc21"
+                        class="verb-link"
+                        >List Identifiers</a
+                    >
+                    <a
+                        href="?verb=ListRecords&metadataPrefix=marc21"
+                        class="verb-link"
+                        >List Records</a
+                    >
+                    <a
+                        href="?verb=GetRecord&identifier=oai:example:123&metadataPrefix=marc21"
+                        class="verb-link"
+                        >Get Record</a
+                    >
+                </div>
+            </nav>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading OAI-PMH response...</p>
+            </div>
+
+            <div id="content" class="oai-response" style="display: none"></div>
+
+            <footer class="page-footer">
+                <p>© 2024 Voile Project. Developed by Curatorian.</p>
+            </footer>
+        </div>
+
+        <script>
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const verb = urlParams.get("verb") || "Identify";
+
+            // Build OAI-PMH API URL
+            const apiParams = new URLSearchParams();
+            for (const [key, value] of urlParams.entries()) {
+                apiParams.append(key, value);
+            }
+            if (!apiParams.has("verb")) {
+                apiParams.append("verb", "Identify");
+            }
+
+            const apiUrl = `/api/oai?${apiParams.toString()}`;
+
+            // Fetch and display OAI-PMH response
+            fetch(apiUrl)
+                .then((response) => response.text())
+                .then((xmlText) => {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+                    // Check for parsing errors
+                    const parserError = xmlDoc.querySelector("parsererror");
+                    if (parserError) {
+                        throw new Error("Failed to parse XML response");
+                    }
+
+                    // Transform XML to HTML
+                    const html = transformOaiPmh(xmlDoc);
+
+                    // Display result
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("content").style.display = "block";
+                    document.getElementById("content").innerHTML = html;
+
+                    // Highlight current verb and metadataPrefix in navigation
+                    const currentMetadataPrefix =
+                        urlParams.get("metadataPrefix");
+                    document.querySelectorAll(".verb-link").forEach((link) => {
+                        const linkUrl = new URL(
+                            link.href,
+                            window.location.origin,
+                        );
+                        const linkVerb = linkUrl.searchParams.get("verb");
+                        const linkMetadataPrefix =
+                            linkUrl.searchParams.get("metadataPrefix");
+
+                        // Match both verb and metadataPrefix (or both null)
+                        if (
+                            linkVerb === verb &&
+                            (linkMetadataPrefix === currentMetadataPrefix ||
+                                (!linkMetadataPrefix && !currentMetadataPrefix))
+                        ) {
+                            link.classList.add("active");
+                        }
+                    });
+                })
+                .catch((error) => {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("content").style.display = "block";
+                    document.getElementById("content").innerHTML = `
+                    <div class="error-banner">
+                        <h3>Error Loading OAI-PMH Response</h3>
+                        <p>${error.message}</p>
+                        <p><a href="/oai-viewer.html?verb=Identify">Try loading Identify</a></p>
+                    </div>
+                `;
+                });
+
+            function transformOaiPmh(xmlDoc) {
+                const ns = "http://www.openarchives.org/OAI/2.0/";
+                const dcNs = "http://purl.org/dc/elements/1.1/";
+
+                let html = "";
+
+                // Response Date
+                const responseDate = getElementText(xmlDoc, "responseDate", ns);
+                if (responseDate) {
+                    html += `
+                    <div class="response-info">
+                        <div class="info-row">
+                            <span class="label">Response Date:</span>
+                            <span class="value">${escapeHtml(responseDate)}</span>
+                        </div>
+                    </div>
+                `;
+                }
+
+                // Request
+                const request = xmlDoc.getElementsByTagNameNS(ns, "request")[0];
+                if (request) {
+                    html += buildRequest(request);
+                }
+
+                // Error
+                const error = xmlDoc.getElementsByTagNameNS(ns, "error")[0];
+                if (error) {
+                    html += buildError(error);
+                }
+
+                // Identify
+                const identify = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "Identify",
+                )[0];
+                if (identify) {
+                    html += buildIdentify(identify, ns);
+                }
+
+                // ListMetadataFormats
+                const listMetadataFormats = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "ListMetadataFormats",
+                )[0];
+                if (listMetadataFormats) {
+                    html += buildListMetadataFormats(listMetadataFormats, ns);
+                }
+
+                // ListSets
+                const listSets = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "ListSets",
+                )[0];
+                if (listSets) {
+                    html += buildListSets(listSets, ns);
+                }
+
+                // ListIdentifiers
+                const listIdentifiers = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "ListIdentifiers",
+                )[0];
+                if (listIdentifiers) {
+                    html += buildListIdentifiers(listIdentifiers, ns);
+                }
+
+                // ListRecords
+                const listRecords = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "ListRecords",
+                )[0];
+                if (listRecords) {
+                    html += buildListRecords(listRecords, ns, dcNs);
+                }
+
+                // GetRecord
+                const getRecord = xmlDoc.getElementsByTagNameNS(
+                    ns,
+                    "GetRecord",
+                )[0];
+                if (getRecord) {
+                    html += buildGetRecord(getRecord, ns, dcNs);
+                }
+
+                return html;
+            }
+
+            function buildRequest(request) {
+                let html =
+                    '<div class="request-info"><h2>Request</h2><div class="info-card">';
+
+                html += `
+                <div class="info-row">
+                    <span class="label">Base URL:</span>
+                    <span class="value url">${escapeHtml(request.textContent)}</span>
+                </div>
+            `;
+
+                const attrs = [
+                    "verb",
+                    "metadataPrefix",
+                    "identifier",
+                    "from",
+                    "until",
+                    "set",
+                    "resumptionToken",
+                ];
+                for (const attr of attrs) {
+                    const value = request.getAttribute(attr);
+                    if (value) {
+                        const label =
+                            attr.charAt(0).toUpperCase() +
+                            attr.slice(1).replace(/([A-Z])/g, " $1");
+                        const cssClass =
+                            attr === "verb"
+                                ? "value verb"
+                                : attr === "resumptionToken"
+                                  ? "value token"
+                                  : "value";
+                        html += `
+                        <div class="info-row">
+                            <span class="label">${label}:</span>
+                            <span class="${cssClass}">${escapeHtml(value)}</span>
+                        </div>
+                    `;
+                    }
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildError(error) {
+                const code = error.getAttribute("code") || "Unknown";
+                const message = error.textContent || "";
+
+                return `
+                <div class="error-message">
+                    <h2>Error</h2>
+                    <div class="error-card">
+                        <div class="error-code">${escapeHtml(code)}</div>
+                        <div class="error-text">${escapeHtml(message)}</div>
+                    </div>
+                </div>
+            `;
+            }
+
+            function buildIdentify(identify, ns) {
+                let html =
+                    '<div class="identify"><h2>Repository Information</h2><div class="info-card">';
+
+                const fields = [
+                    { tag: "repositoryName", label: "Repository Name" },
+                    { tag: "baseURL", label: "Base URL", cssClass: "url" },
+                    { tag: "protocolVersion", label: "Protocol Version" },
+                    { tag: "earliestDatestamp", label: "Earliest Datestamp" },
+                    { tag: "deletedRecord", label: "Deleted Record" },
+                    { tag: "granularity", label: "Granularity" },
+                ];
+
+                for (const field of fields) {
+                    const value = getElementText(identify, field.tag, ns);
+                    if (value) {
+                        html += `
+                        <div class="info-row">
+                            <span class="label">${field.label}:</span>
+                            <span class="value ${field.cssClass || ""}">${escapeHtml(value)}</span>
+                        </div>
+                    `;
+                    }
+                }
+
+                // Admin emails
+                const emails = identify.getElementsByTagNameNS(
+                    ns,
+                    "adminEmail",
+                );
+                for (let i = 0; i < emails.length; i++) {
+                    html += `
+                    <div class="info-row">
+                        <span class="label">Admin Email:</span>
+                        <span class="value">${escapeHtml(emails[i].textContent)}</span>
+                    </div>
+                `;
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildListMetadataFormats(listMetadataFormats, ns) {
+                let html =
+                    '<div class="metadata-formats"><h2>Available Metadata Formats</h2><div class="format-list">';
+
+                const formats = listMetadataFormats.getElementsByTagNameNS(
+                    ns,
+                    "metadataFormat",
+                );
+                for (let i = 0; i < formats.length; i++) {
+                    const prefix = getElementText(
+                        formats[i],
+                        "metadataPrefix",
+                        ns,
+                    );
+                    const schema = getElementText(formats[i], "schema", ns);
+                    const namespace = getElementText(
+                        formats[i],
+                        "metadataNamespace",
+                        ns,
+                    );
+
+                    html += `
+                    <div class="format-card">
+                        <h3>${escapeHtml(prefix)}</h3>
+                        <div class="info-row">
+                            <span class="label">Schema:</span>
+                            <span class="value url">${escapeHtml(schema)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Namespace:</span>
+                            <span class="value url">${escapeHtml(namespace)}</span>
+                        </div>
+                    </div>
+                `;
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildListSets(listSets, ns) {
+                let html =
+                    '<div class="sets"><h2>Available Sets</h2><div class="set-list">';
+
+                const sets = listSets.getElementsByTagNameNS(ns, "set");
+                for (let i = 0; i < sets.length; i++) {
+                    const setName = getElementText(sets[i], "setName", ns);
+                    const setSpec = getElementText(sets[i], "setSpec", ns);
+
+                    html += `
+                    <div class="set-card">
+                        <h3>${escapeHtml(setName)}</h3>
+                        <div class="info-row">
+                            <span class="label">Set Spec:</span>
+                            <span class="value">${escapeHtml(setSpec)}</span>
+                        </div>
+                    </div>
+                `;
+                }
+
+                html += "</div>";
+                html += buildResumptionToken(listSets, ns, "ListSets", null);
+                html += "</div>";
+                return html;
+            }
+
+            function buildListIdentifiers(listIdentifiers, ns) {
+                const headers = listIdentifiers.getElementsByTagNameNS(
+                    ns,
+                    "header",
+                );
+
+                let html = `
+                <div class="identifiers">
+                    <h2>Record Identifiers</h2>
+                    <div class="record-count">${headers.length} record(s) in this response</div>
+                    <div class="identifier-list">
+            `;
+
+                for (let i = 0; i < headers.length; i++) {
+                    html += buildHeaderCard(headers[i], ns);
+                }
+
+                html += "</div>";
+                html += buildResumptionToken(
+                    listIdentifiers,
+                    ns,
+                    "ListIdentifiers",
+                    urlParams.get("metadataPrefix"),
+                );
+                html += "</div>";
+                return html;
+            }
+
+            function buildListRecords(listRecords, ns, dcNs) {
+                const records = listRecords.getElementsByTagNameNS(
+                    ns,
+                    "record",
+                );
+
+                let html = `
+                <div class="records">
+                    <h2>Records</h2>
+                    <div class="record-count">${records.length} record(s) in this response</div>
+                    <div class="record-list">
+            `;
+
+                for (let i = 0; i < records.length; i++) {
+                    html += buildRecord(records[i], ns, dcNs);
+                }
+
+                html += "</div>";
+                html += buildResumptionToken(
+                    listRecords,
+                    ns,
+                    "ListRecords",
+                    urlParams.get("metadataPrefix"),
+                );
+                html += "</div>";
+                return html;
+            }
+
+            function buildGetRecord(getRecord, ns, dcNs) {
+                const record = getRecord.getElementsByTagNameNS(
+                    ns,
+                    "record",
+                )[0];
+
+                let html =
+                    '<div class="record"><h2>Record</h2><div class="record-card">';
+                html += buildRecord(record, ns, dcNs);
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildHeaderCard(header, ns) {
+                const status = header.getAttribute("status");
+                const identifier = getElementText(header, "identifier", ns);
+                const datestamp = getElementText(header, "datestamp", ns);
+                const setSpecs = header.getElementsByTagNameNS(ns, "setSpec");
+
+                const deletedClass = status === "deleted" ? " deleted" : "";
+
+                let html = `<div class="identifier-card${deletedClass}">`;
+
+                if (status === "deleted") {
+                    html += '<div class="status-badge deleted">DELETED</div>';
+                }
+
+                html += `
+                <div class="identifier-value">${escapeHtml(identifier)}</div>
+                <div class="metadata-row">
+                    <span class="label">Datestamp:</span>
+                    <span class="value">${escapeHtml(datestamp)}</span>
+                </div>
+            `;
+
+                for (let i = 0; i < setSpecs.length; i++) {
+                    html += `
+                    <div class="metadata-row">
+                        <span class="label">Set:</span>
+                        <span class="value">${escapeHtml(setSpecs[i].textContent)}</span>
+                    </div>
+                `;
+                }
+
+                html += "</div>";
+                return html;
+            }
+
+            function buildRecord(record, ns, dcNs) {
+                const header = record.getElementsByTagNameNS(ns, "header")[0];
+                const metadata = record.getElementsByTagNameNS(
+                    ns,
+                    "metadata",
+                )[0];
+
+                let html = '<div class="record-card">';
+                html += buildRecordHeader(header, ns);
+
+                if (metadata) {
+                    html += buildMetadata(metadata, dcNs);
+                }
+
+                html += "</div>";
+                return html;
+            }
+
+            function buildRecordHeader(header, ns) {
+                const status = header.getAttribute("status");
+                const identifier = getElementText(header, "identifier", ns);
+                const datestamp = getElementText(header, "datestamp", ns);
+                const setSpecs = header.getElementsByTagNameNS(ns, "setSpec");
+
+                let html = '<div class="record-header">';
+
+                if (status === "deleted") {
+                    html += '<div class="status-badge deleted">DELETED</div>';
+                }
+
+                html += `
+                <div class="header-row">
+                    <span class="label">Identifier:</span>
+                    <span class="value identifier">${escapeHtml(identifier)}</span>
+                </div>
+                <div class="header-row">
+                    <span class="label">Datestamp:</span>
+                    <span class="value">${escapeHtml(datestamp)}</span>
+                </div>
+            `;
+
+                for (let i = 0; i < setSpecs.length; i++) {
+                    html += `
+                    <div class="header-row">
+                        <span class="label">Set:</span>
+                        <span class="value">${escapeHtml(setSpecs[i].textContent)}</span>
+                    </div>
+                `;
+                }
+
+                html += "</div>";
+                return html;
+            }
+
+            function buildMetadata(metadata, dcNs) {
+                // Check if this is MARC21 metadata
+                const marcRecord = metadata.querySelector(
+                    "marc\\:record, record",
+                );
+                if (
+                    marcRecord &&
+                    (marcRecord.tagName.includes("marc") ||
+                        marcRecord.querySelector("marc\\:leader, leader"))
+                ) {
+                    return buildMarc21Metadata(metadata);
+                }
+
+                // Default to Dublin Core metadata
+                const dc = metadata.querySelector("*");
+                if (!dc) return "";
+
+                let html =
+                    '<div class="record-metadata"><h3>Metadata (Dublin Core)</h3><div class="dublin-core">';
+
+                const dcFields = [
+                    { tag: "title", label: "Title", cssClass: "title" },
+                    { tag: "creator", label: "Creator" },
+                    { tag: "subject", label: "Subject" },
+                    {
+                        tag: "description",
+                        label: "Description",
+                        cssClass: "description",
+                    },
+                    { tag: "publisher", label: "Publisher" },
+                    { tag: "contributor", label: "Contributor" },
+                    { tag: "date", label: "Date" },
+                    { tag: "type", label: "Type" },
+                    { tag: "format", label: "Format" },
+                    { tag: "identifier", label: "Identifier", cssClass: "url" },
+                    { tag: "source", label: "Source" },
+                    { tag: "language", label: "Language" },
+                    { tag: "relation", label: "Relation" },
+                    { tag: "coverage", label: "Coverage" },
+                    { tag: "rights", label: "Rights" },
+                ];
+
+                for (const field of dcFields) {
+                    const elements = metadata.getElementsByTagNameNS(
+                        dcNs,
+                        field.tag,
+                    );
+                    for (let i = 0; i < elements.length; i++) {
+                        const value = elements[i].textContent;
+                        if (value) {
+                            html += `
+                            <div class="dc-field">
+                                <span class="dc-label">${field.label}:</span>
+                                <span class="dc-value ${field.cssClass || ""}">${escapeHtml(value)}</span>
+                            </div>
+                        `;
+                        }
+                    }
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildMarc21Metadata(metadata) {
+                let html =
+                    '<div class="record-metadata"><h3>Metadata (MARC21)</h3><div class="marc21-record">';
+
+                // Leader
+                const leader = metadata.querySelector("marc\\:leader, leader");
+                if (leader) {
+                    html += `
+                    <div class="marc-field">
+                        <span class="marc-tag">LDR</span>
+                        <span class="marc-value">${escapeHtml(leader.textContent)}</span>
+                    </div>`;
+                }
+
+                // Control fields
+                const controlfields = metadata.querySelectorAll(
+                    "marc\\:controlfield, controlfield",
+                );
+                for (let cf of controlfields) {
+                    const tag = cf.getAttribute("tag");
+                    const value = cf.textContent;
+                    html += `
+                    <div class="marc-field">
+                        <span class="marc-tag">${escapeHtml(tag)}</span>
+                        <span class="marc-value">${escapeHtml(value)}</span>
+                    </div>`;
+                }
+
+                // Data fields
+                const datafields = metadata.querySelectorAll(
+                    "marc\\:datafield, datafield",
+                );
+                for (let df of datafields) {
+                    const tag = df.getAttribute("tag");
+                    const ind1 = df.getAttribute("ind1") || " ";
+                    const ind2 = df.getAttribute("ind2") || " ";
+
+                    let subfieldsHtml = "";
+                    const subfields = df.querySelectorAll(
+                        "marc\\:subfield, subfield",
+                    );
+                    for (let sf of subfields) {
+                        const code = sf.getAttribute("code");
+                        const value = sf.textContent;
+                        subfieldsHtml += `|${escapeHtml(code)} ${escapeHtml(value)} `;
+                    }
+
+                    html += `
+                    <div class="marc-field">
+                        <span class="marc-tag">${escapeHtml(tag)}</span>
+                        <span class="marc-ind">${escapeHtml(ind1)}${escapeHtml(ind2)}</span>
+                        <span class="marc-value">${subfieldsHtml.trim()}</span>
+                    </div>`;
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function buildResumptionToken(parent, ns, verb, metadataPrefix) {
+                const token = parent.getElementsByTagNameNS(
+                    ns,
+                    "resumptionToken",
+                )[0];
+                if (!token) return "";
+
+                const tokenValue = token.textContent;
+                const cursor = token.getAttribute("cursor");
+                const completeListSize = token.getAttribute("completeListSize");
+                const expirationDate = token.getAttribute("expirationDate");
+
+                let html =
+                    '<div class="resumption-token"><h3>Resumption Token</h3><div class="token-card">';
+
+                if (tokenValue) {
+                    html += `
+                    <div class="token-value">
+                        <span class="label">Token:</span>
+                        <span class="value token">${escapeHtml(tokenValue)}</span>
+                    </div>
+                `;
+                }
+
+                if (completeListSize) {
+                    html += `
+                    <div class="token-info">
+                        <span class="label">Total Records:</span>
+                        <span class="value">${escapeHtml(completeListSize)}</span>
+                    </div>
+                `;
+                }
+
+                if (cursor) {
+                    html += `
+                    <div class="token-info">
+                        <span class="label">Current Position:</span>
+                        <span class="value">${escapeHtml(cursor)}</span>
+                    </div>
+                `;
+                }
+
+                if (expirationDate) {
+                    html += `
+                    <div class="token-info">
+                        <span class="label">Expires:</span>
+                        <span class="value">${escapeHtml(expirationDate)}</span>
+                    </div>
+                `;
+                }
+
+                if (tokenValue) {
+                    let nextUrl = `?verb=${verb}&resumptionToken=${encodeURIComponent(tokenValue)}`;
+                    if (metadataPrefix) {
+                        nextUrl += `&metadataPrefix=${encodeURIComponent(metadataPrefix)}`;
+                    }
+                    html += `<div class="pagination"><a href="${nextUrl}" class="next-page-btn">Load Next Page</a></div>`;
+                } else {
+                    html +=
+                        '<div class="token-info"><em>No more records available (end of list)</em></div>';
+                }
+
+                html += "</div></div>";
+                return html;
+            }
+
+            function getElementText(parent, tagName, ns) {
+                const element = parent.getElementsByTagNameNS(ns, tagName)[0];
+                return element ? element.textContent : "";
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        </script>
+    </body>
+</html>

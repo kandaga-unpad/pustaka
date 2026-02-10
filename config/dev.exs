@@ -140,3 +140,7 @@ config :voile,
   xendit_api_key:
     System.get_env("VOILE_XENDIT_API_KEY") || "xnd_development_REPLACE_WITH_YOUR_KEY",
   xendit_webhook_token: System.get_env("VOILE_XENDIT_WEBHOOK_TOKEN") || "REPLACE_WITH_YOUR_TOKEN"
+
+# OAI-PMH Configuration (Development)
+config :voile,
+  oai_pmh_repository_id: "localhost:4000"

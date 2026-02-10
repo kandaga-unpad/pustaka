@@ -6,6 +6,7 @@ defmodule Voile.Schema.Catalog.Item do
   alias Voile.Schema.System.Node
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Catalog.Attachment
+  alias Voile.Schema.Catalog.ItemFieldValue
   alias Voile.Schema.Master.Location
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -32,6 +33,10 @@ defmodule Voile.Schema.Catalog.Item do
     has_many :attachments, Attachment,
       where: [attachable_type: "item"],
       foreign_key: :attachable_id,
+      on_delete: :delete_all
+
+    has_many :item_field_values, ItemFieldValue,
+      foreign_key: :item_id,
       on_delete: :delete_all
 
     timestamps(type: :utc_datetime)

@@ -211,4 +211,11 @@ if config_env() == :prod do
       client_secret: System.get_env("VOILE_GOOGLE_CLIENT_SECRET"),
       redirect_uri: System.get_env("VOILE_GOOGLE_REDIRECT_URI")
     ]
+
+  # OAI-PMH Configuration
+  # Repository identifier - should be your domain name
+  # Used to construct OAI identifiers like: oai:your-domain.com:item:123
+  # Admin email is read from database setting 'app_contact_email'
+  config :voile,
+    oai_pmh_repository_id: System.get_env("OAI_REPOSITORY_ID") || host
 end
