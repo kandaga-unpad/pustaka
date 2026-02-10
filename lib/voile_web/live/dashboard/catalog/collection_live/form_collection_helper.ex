@@ -107,7 +107,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       # collection title if collection_id is missing.
       "inventory_code" => inventory_code,
       "barcode" => barcode,
-      "item_location_id" => nil,
+      "item_location_id" => socket.assigns.current_scope.user.node_id,
       "location" => "",
       "status" => "active",
       # Schema defines allowed conditions as: excellent, good, fair, poor, damaged
