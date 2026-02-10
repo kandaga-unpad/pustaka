@@ -1,6 +1,7 @@
 # Voile, the Magic Library
 
 Virtual Organized of Information & Library Ecosystem (VOILE)
+
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 
 VOILE is a next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology. Built with **Elixir** and **Phoenix**, VOILE leverages high concurrency, fault tolerance, and real-time performance to offer a robust, scalable platform for organizing, preserving, and accessing a vast range of literary, cultural, and artistic content.
