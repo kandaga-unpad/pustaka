@@ -370,4 +370,179 @@ And **never** do this:
   <!-- usage-rules-end -->
 
 #### Docs or Guide in Markdown
-- You should place any documentation or markdown inside the /docs folder
+
+All documentation and markdown files should be placed inside the `/docs` folder following the MKDocs structure.
+
+##### Documentation Structure
+
+The documentation is organized into the following sections:
+
+```
+docs/
+├── index.md                    # Main welcome/landing page
+├── getting-started/            # Setup and installation guides
+├── architecture/               # System design and data flow
+├── features/                   # Feature-specific documentation
+│   ├── catalog/                # Catalog module docs
+│   ├── circulation/            # Circulation module docs
+│   ├── glam/                   # GLAM (Gallery, Library, Archive, Museum)
+│   ├── attachments/            # Attachment system docs
+│   ├── stock-opname/           # Inventory management docs
+│   ├── transfers/              # Transfer location docs
+│   ├── collection-review/      # Collection review workflow
+│   ├── visitor-management/     # Visitor tracking docs
+│   └── oai-pmh/                # OAI-PMH metadata harvesting
+├── authentication/             # Auth, RBAC, permissions
+├── integrations/               # Third-party integrations
+│   ├── email/                  # Email (Gmail API, SMTP)
+│   └── payments/               # Payment gateways (Xendit)
+├── internationalization/       # i18n/l10n guides
+├── configuration/              # System configuration
+├── deployment/                 # CI/CD and deployment
+├── reference/                  # Technical references
+└── roadmap/                    # Future plans
+```
+
+##### File Naming Conventions
+
+- Use **lowercase** with **hyphens** for file names: `quick-reference.md`, `module-guide.md`
+- Use `index.md` for section landing pages
+- Keep names short but descriptive
+- Avoid redundant prefixes (e.g., use `design.md` not `stock-opname-design.md` inside `stock-opname/` folder)
+
+##### Writing Documentation
+
+**Front Matter (Optional)**
+
+For pages that need custom titles or metadata:
+
+```markdown
+---
+title: Page Title
+description: Brief description for SEO
+---
+```
+
+**Headings**
+
+- Use `#` for page title (only one per page)
+- Use `##` for main sections
+- Use `###` for subsections
+- Use `####` for minor subsections
+
+**Code Blocks**
+
+Always specify the language for syntax highlighting:
+
+```markdown
+```elixir
+def hello do
+  IO.puts("Hello, World!")
+end
+```
+```
+
+Supported languages: `elixir`, `bash`, `sql`, `html`, `javascript`, `yaml`, `json`
+
+**Admonitions**
+
+Use admonitions for important notes:
+
+```markdown
+!!! note
+    This is a note.
+
+!!! warning
+    This is a warning.
+
+!!! tip
+    This is a tip.
+
+!!! danger
+    This is a danger notice.
+```
+
+**Tables**
+
+```markdown
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Value 1  | Value 2  | Value 3  |
+```
+
+**Mermaid Diagrams**
+
+Use Mermaid for flowcharts and diagrams:
+
+```markdown
+```mermaid
+flowchart TD
+    A[Start] --> B[Process]
+    B --> C[End]
+```
+```
+
+##### Building Documentation
+
+**Prerequisites**
+
+Install MKDocs and dependencies:
+
+```bash
+pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+```
+
+**Local Development**
+
+Serve documentation locally with hot-reload:
+
+```bash
+mkdocs serve
+```
+
+Access at: `http://localhost:8000`
+
+**Building Static Site**
+
+Generate static HTML files:
+
+```bash
+mkdocs build
+```
+
+Output will be in the `site/` directory.
+
+**Deploying to GitHub Pages**
+
+Deploy directly to GitHub Pages:
+
+```bash
+mkdocs gh-deploy
+```
+
+##### Adding New Documentation
+
+1. **Create the file** in the appropriate folder
+2. **Follow naming conventions** (lowercase, hyphens)
+3. **Add navigation entry** in `mkdocs.yml` under the `nav` section
+4. **Include cross-references** to related docs where appropriate
+5. **Test locally** with `mkdocs serve` before committing
+
+##### MKDocs Configuration
+
+The main configuration is in `mkdocs.yml` at the project root. Key sections:
+
+- `nav`: Navigation structure (update when adding new pages)
+- `theme`: Material theme settings
+- `plugins`: Search, Mermaid diagrams
+- `markdown_extensions`: Syntax highlighting, admonitions, tabs
+
+##### Best Practices
+
+1. **Keep it updated**: Update docs when changing features
+2. **Include examples**: Show code examples, not just theory
+3. **Cross-reference**: Link to related documentation
+4. **Use quick references**: Create quick-reference pages for common tasks
+5. **Version important changes**: Note when docs apply to specific versions
+6. **Test code snippets**: Ensure code examples actually work
+7. **Add diagrams**: Use Mermaid for complex flows

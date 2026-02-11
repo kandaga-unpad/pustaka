@@ -1,0 +1,187 @@
+# VOILE Documentation
+# MKDocs Configuration File
+# https://www.mkdocs.org/
+
+site_name: VOILE Documentation
+site_description: Virtual Organized Information & Library Ecosystem - Documentation
+site_author: VOILE Development Team
+site_url: https://curatorian.github.io/voile/
+
+# Repository
+repo_name: voile
+repo_url: https://github.com/curatorian/voile
+edit_uri: edit/main/docs/
+
+# Theme
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+# Plugins
+plugins:
+  - search
+  - mermaid2
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - Environment Setup: getting-started/environment-setup.md
+      - Admin User: getting-started/admin-user.md
+      - Seeds Setup: getting-started/seeds-setup.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - System Architecture: architecture/overview.md
+      - Data Flow: architecture/data-flow.md
+  - Features:
+      - Catalog:
+          - Module Guide: features/catalog/module-guide.md
+          - Circulation Module Guide: features/circulation/module-guide.md
+          - Circulation Quick Reference: features/catalog/circulation-quick-ref.md
+      - Circulation:
+          - Module Guide: features/circulation/module-guide.md
+          - Fine Calculation: features/circulation/fine-calculation.md
+          - Ledger Implementation: features/circulation/ledger-implementation.md
+      - GLAM:
+          - Dashboard Guide: features/glam/dashboard-guide.md
+          - Manual: features/glam/manual.md
+          - RBAC Complete Guide: features/glam/rbac-complete-guide.md
+      - Attachments:
+          - Overview: features/attachments/index.md
+          - Access Control: features/attachments/access-control.md
+          - Quick Reference: features/attachments/quick-reference.md
+          - Flow Diagrams: features/attachments/flow-diagrams.md
+          - Manager Quickstart: features/attachments/manager-quickstart.md
+          - LiveView Guide: features/attachments/liveview-guide.md
+          - Presign: features/attachments/presign.md
+      - Stock Opname:
+          - Overview: features/stock-opname/index.md
+          - Design: features/stock-opname/design.md
+          - Quick Reference: features/stock-opname/quick-reference.md
+          - Completion Quickstart: features/stock-opname/completion-quickstart.md
+          - Async Implementation: features/stock-opname/async-implementation.md
+          - Librarian Completion: features/stock-opname/librarian-completion.md
+          - Context Migration: features/stock-opname/context-migration.md
+          - Collection Fields Editing: features/stock-opname/collection-fields-editing.md
+      - Transfers:
+          - Overview: features/transfers/index.md
+          - Location Guide: features/transfers/location-guide.md
+          - Quick Reference: features/transfers/quick-reference.md
+          - Flow Diagrams: features/transfers/flow-diagrams.md
+      - Collection Review:
+          - Process: features/collection-review/process.md
+          - Quick Reference: features/collection-review/quick-reference.md
+          - Implementation Summary: features/collection-review/implementation-summary.md
+      - Visitor Management:
+          - Overview: features/visitor-management/index.md
+          - Quick Start: features/visitor-management/quick-start.md
+      - OAI-PMH:
+          - Overview: features/oai-pmh/index.md
+          - Quickstart: features/oai-pmh/quickstart.md
+          - Implementation: features/oai-pmh/implementation.md
+          - Metadata Mapping: features/oai-pmh/metadata-mapping.md
+          - Architecture: features/oai-pmh/architecture.md
+  - Authentication:
+      - Overview: authentication/index.md
+      - Auth System: authentication/auth-system.md
+      - RBAC Guide: authentication/rbac-complete-guide.md
+      - RBAC Quick Reference: authentication/rbac-quick-reference.md
+      - Role Management:
+          - Guide: authentication/role-management-guide.md
+          - Quick Reference: authentication/role-management-quick-ref.md
+      - Permission Management:
+          - Quick Reference: authentication/permission-management-quick-ref.md
+      - RBAC Implementation:
+          - Summary: authentication/rbac-implementation-summary.md
+      - Custom Redirects: authentication/custom-redirects.md
+  - Integrations:
+      - Email:
+          - Gmail API Quickstart: integrations/email/gmail-api-quickstart.md
+          - Gmail API Setup: integrations/email/gmail-api-setup.md
+          - Gmail API Complete: integrations/email/gmail-api-complete.md
+          - Email Queue: integrations/email/email-queue.md
+          - Production Setup: integrations/email/production-setup.md
+      - Payments:
+          - Xendit Integration: integrations/payments/xendit-integration.md
+          - Xendit Quickstart: integrations/payments/xendit-quickstart.md
+          # Removed Xendit implementation summary (file deleted)
+  - Internationalization:
+      - i18n Guide: internationalization/i18n-guide.md
+      - Dashboard i18n: internationalization/dashboard-i18n.md
+      - Quick Reference: internationalization/quick-reference.md
+  - Configuration:
+      - Node Loan Rules: configuration/node-loan-rules.md
+      - Node Management: configuration/node-management.md
+      - Storage Auto Selection: configuration/storage-auto-selection.md
+  - Deployment:
+      - Overview: deployment/index.md
+      - CI Deploy: deployment/ci-deploy.md
+      - Podman Deployment: deployment/podman-deployment.md
+  - Reference:
+      - Quick Reference: reference/quick-reference.md
+      - Implementation Summary: reference/implementation-summary.md
+      - Migration Guide: reference/migration-guide.md
+      - Migration Analysis: reference/migration-analysis.md
+      - Database Enhancements: reference/database-enhancements.md
+      # Removed several reference pages that were deleted: leftover-migration, simple-csv-import, simplified-csv-import-summary, import-fixes
+      - Onboarding Flow: reference/onboarding-flow.md
+      - Seeds Idempotency: reference/seeds-idempotency.md
+      - Sequence Diagrams: reference/sequence-diagrams.md
+  - Roadmap:
+      - AI Preparedness: roadmap/ai-preparedness.md
+
+# Extra configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/chrisnaadhi/voile
+  generator: false
+
+# Copyright
+copyright: Copyright &copy; 2024-present VOILE Development Team
