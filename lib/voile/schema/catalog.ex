@@ -1396,6 +1396,30 @@ defmodule Voile.Schema.Catalog do
     Repo.all(query)
   end
 
+  @doc """
+  Search collections across all nodes without scoping.
+  This is used by the collection search workflow to help librarians
+  find existing collections regardless of location.
+
+  Returns collections with their node information and creator details.
+  """
+  def search_collections_all_nodes(query_string) when is_binary(query_string) do
+    search_term = "%#{query_string}%"
+
+    Collection
+    |> where(
+      [c],
+      ilike(c.title, ^search_term) or
+        ilike(c.description, ^search_term) or
+        ilike(c.collection_code, ^search_term)
+    )
+    |> where([c], c.status in ["published", "draft"])
+    |> order_by([c], desc: c.status, asc: c.title)
+    |> limit(50)
+    |> preload([:mst_creator, :node, :resource_class])
+    |> Repo.all()
+  end
+
   def get_items_by_collection(collection_id) do
     get_items_by_collection(collection_id, nil)
   end

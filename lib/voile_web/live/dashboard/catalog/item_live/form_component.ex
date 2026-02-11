@@ -76,12 +76,22 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             </div>
             <!-- Relations and small selects (grouped on one row when space allows) -->
             <div>
-              <.input
-                field={@form[:unit_id]}
-                type="select"
-                options={@nodes || []}
-                label="Unit / Node"
-              />
+              <%= if assigns[:lock_unit_id] && @lock_unit_id do %>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  Unit / Node
+                </label>
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white">
+                  {Enum.find(@nodes, fn {_label, id} -> id == @form[:unit_id].value end) |> elem(0)}
+                </div>
+                <.input field={@form[:unit_id]} type="hidden" />
+              <% else %>
+                <.input
+                  field={@form[:unit_id]}
+                  type="select"
+                  options={@nodes || []}
+                  label="Unit / Node"
+                />
+              <% end %>
             </div>
 
             <div>
@@ -229,6 +239,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
      |> assign_new(:collections, fn -> [] end)
      |> assign(:collection_name, collection_name)
      |> assign(:editable_identifiers, is_super_admin)
+     |> assign_new(:lock_unit_id, fn -> false end)
      |> assign_new(:form, fn ->
        to_form(Catalog.change_item(item))
      end)}
@@ -238,23 +249,28 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   def handle_event("validate", %{"item" => item_params}, socket) do
     changeset = Catalog.change_item(socket.assigns.item, item_params)
 
-    # If unit_id changed, update the locations list to show only locations for that node
+    # If unit_id changed AND unit is not locked, update the locations list
+    # If unit_id is locked, keep it locked to the current value
     unit_id =
-      case item_params["unit_id"] do
-        nil ->
-          socket.assigns.item.unit_id
+      if socket.assigns[:lock_unit_id] do
+        socket.assigns.item.unit_id
+      else
+        case item_params["unit_id"] do
+          nil ->
+            socket.assigns.item.unit_id
 
-        "" ->
-          nil
+          "" ->
+            nil
 
-        id when is_binary(id) ->
-          case Integer.parse(id) do
-            {int, _} -> int
-            :error -> id
-          end
+          id when is_binary(id) ->
+            case Integer.parse(id) do
+              {int, _} -> int
+              :error -> id
+            end
 
-        id ->
-          id
+          id ->
+            id
+        end
       end
 
     all_locations = socket.assigns[:all_locations] || []

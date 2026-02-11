@@ -750,60 +750,62 @@ defmodule VoileWeb.PageLive.Home do
                 <div class="space-y-4">
                   <%= if length(@dashboard_stats.favorite_books) > 0 do %>
                     <%= for item <- Enum.take(@dashboard_stats.favorite_books, 4) do %>
-                      <div class="group flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-voile-primary/20 dark:hover:border-voile-primary/30 transition-all duration-300">
-                        <div class="flex-shrink-0">
-                          <%= if item.collection.thumbnail && item.collection.thumbnail != "" do %>
-                            <img
-                              src={item.collection.thumbnail}
-                              alt={
+                      <.link navigate={~p"/collections/#{item.collection.id}"} class="block">
+                        <div class="group flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-voile-primary/20 dark:hover:border-voile-primary/30 transition-all duration-300 cursor-pointer">
+                          <div class="flex-shrink-0">
+                            <%= if item.collection.thumbnail && item.collection.thumbnail != "" do %>
+                              <img
+                                src={item.collection.thumbnail}
+                                alt={
+                                  if item.collection && item.collection.title,
+                                    do: item.collection.title,
+                                    else: "Collection thumbnail"
+                                }
+                                class="w-16 h-16 rounded-xl object-cover shadow-md"
+                              />
+                            <% else %>
+                              <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center shadow-md">
+                                <.icon
+                                  name="hero-book-open"
+                                  class="w-8 h-8 text-gray-500 dark:text-gray-400"
+                                />
+                              </div>
+                            <% end %>
+                          </div>
+
+                          <div class="flex-1 min-w-0">
+                            <h5
+                              class="text-gray-800 dark:text-gray-200 truncate mb-1"
+                              title={
                                 if item.collection && item.collection.title,
                                   do: item.collection.title,
-                                  else: "Collection thumbnail"
+                                  else: "Untitled Collection"
                               }
-                              class="w-16 h-16 rounded-xl object-cover shadow-md"
-                            />
-                          <% else %>
-                            <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center shadow-md">
-                              <.icon
-                                name="hero-book-open"
-                                class="w-8 h-8 text-gray-500 dark:text-gray-400"
-                              />
-                            </div>
-                          <% end %>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                          <h5
-                            class="text-gray-800 dark:text-gray-200 truncate mb-1"
-                            title={
-                              if item.collection && item.collection.title,
+                            >
+                              {if item.collection && item.collection.title,
                                 do: item.collection.title,
-                                else: "Untitled Collection"
-                            }
-                          >
-                            {if item.collection && item.collection.title,
-                              do: item.collection.title,
-                              else: "Untitled Collection"}
-                          </h5>
+                                else: "Untitled Collection"}
+                            </h5>
 
-                          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                            {if item.collection && item.collection.description,
-                              do: item.collection.description,
-                              else: "No description available"}
-                          </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                              {if item.collection && item.collection.description,
+                                do: item.collection.description,
+                                else: "No description available"}
+                            </p>
 
-                          <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-voile-surface text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
-                              {if item.collection && item.collection.resource_class,
-                                do: item.collection.resource_class.glam_type,
-                                else: ""}
-                            </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                              {Calendar.strftime(item.inserted_at, "%B %d, %Y")}
-                            </span>
+                            <div class="flex items-center gap-3">
+                              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-voile-surface text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
+                                {if item.collection && item.collection.resource_class,
+                                  do: item.collection.resource_class.glam_type,
+                                  else: ""}
+                              </span>
+                              <span class="text-xs text-gray-500 dark:text-gray-400">
+                                {Calendar.strftime(item.inserted_at, "%B %d, %Y")}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </.link>
                     <% end %>
                   <% else %>
                     <div class="text-center py-12">

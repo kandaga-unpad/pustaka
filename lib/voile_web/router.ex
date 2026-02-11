@@ -187,6 +187,12 @@ defmodule VoileWeb.Router do
           scope "/collections" do
             live "/", Dashboard.Catalog.CollectionLive.Index, :index
             live "/new", Dashboard.Catalog.CollectionLive.Index, :new
+            live "/search", Dashboard.Catalog.CollectionLive.Index, :search_collection
+
+            live "/add-item/:collection_id",
+                 Dashboard.Catalog.CollectionLive.Index,
+                 :add_item_to_collection
+
             live "/import", Dashboard.Catalog.CollectionLive.Import, :import
             live "/review", Dashboard.Catalog.CollectionLive.Review, :index
             live "/review/:id", Dashboard.Catalog.CollectionLive.Review, :review
@@ -216,20 +222,20 @@ defmodule VoileWeb.Router do
           scope "/asset-vault" do
             live "/", Dashboard.Catalog.AssetVault.Index, :index
           end
-        end
 
-        scope "/transfers" do
-          live "/", Dashboard.Catalog.TransferRequestLive.Index, :index
-          live "/:id", Dashboard.Catalog.TransferRequestLive.Show, :show
-        end
+          scope "/transfers" do
+            live "/", Dashboard.Catalog.TransferRequestLive.Index, :index
+            live "/:id", Dashboard.Catalog.TransferRequestLive.Show, :show
+          end
 
-        scope "/stock_opname" do
-          live "/", Dashboard.StockOpnameLive.Index, :index
-          live "/new", Dashboard.StockOpnameLive.New, :new
-          live "/report", Dashboard.StockOpnameLive.Report, :report
-          live "/:id", Dashboard.StockOpnameLive.Show, :show
-          live "/:id/scan", Dashboard.StockOpnameLive.Scan, :scan
-          live "/:id/review", Dashboard.StockOpnameLive.Review, :review
+          scope "/stock_opname" do
+            live "/", Dashboard.StockOpnameLive.Index, :index
+            live "/new", Dashboard.StockOpnameLive.New, :new
+            live "/report", Dashboard.StockOpnameLive.Report, :report
+            live "/:id", Dashboard.StockOpnameLive.Show, :show
+            live "/:id/scan", Dashboard.StockOpnameLive.Scan, :scan
+            live "/:id/review", Dashboard.StockOpnameLive.Review, :review
+          end
         end
 
         scope "/glam" do

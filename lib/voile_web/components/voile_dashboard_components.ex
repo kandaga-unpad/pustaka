@@ -175,20 +175,20 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
 
           <.link
-            patch="/manage/transfers"
+            patch="/manage/catalog/transfers"
             class={[
               "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/transfers") &&
+              @active_menu |> String.starts_with?("/manage/catalog/transfers") &&
                 "dashboard-menu-btn-active"
             ]}
           >
             {gettext("Transfers")}
           </.link>
           <.link
-            patch="/manage/stock_opname"
+            patch="/manage/catalog/stock_opname"
             class={[
               "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/stock_opname") &&
+              @active_menu |> String.starts_with?("/manage/catalog/stock_opname") &&
                 "dashboard-menu-btn-active"
             ]}
           >

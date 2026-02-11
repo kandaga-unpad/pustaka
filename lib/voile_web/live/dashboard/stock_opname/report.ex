@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-4">
           <.link
-            navigate={~p"/manage/stock_opname"}
+            navigate={~p"/manage/catalog/stock_opname"}
             class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <.icon name="hero-arrow-left" class="w-6 h-6" />
@@ -236,7 +236,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
       socket =
         socket
         |> put_flash(:error, "You don't have permission to access this page.")
-        |> redirect(to: ~p"/manage/stock_opname")
+        |> redirect(to: ~p"/manage/catalog/stock_opname")
 
       {:ok, socket}
     else

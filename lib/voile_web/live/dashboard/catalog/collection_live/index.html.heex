@@ -56,7 +56,7 @@
           </.button>
           <%= if can_review_collections?(@current_scope.user) do %>
             <.link navigate={~p"/manage/catalog/collections/review"}>
-              <.button class="btn bg-yellow-600 hover:bg-yellow-700 text-white relative text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
+              <.button class="neutral-btn bg-blue-600 hover:bg-blue-700 text-white relative text-sm sm:text-base">
                 <.icon name="hero-clipboard-document-check" class="w-4 h-4 sm:mr-1" />
                 <span class="hidden sm:inline">{gettext("Review")}</span>
                 <%= if assigns[:pending_count] && @pending_count > 0 do %>
@@ -68,19 +68,26 @@
             </.link>
           <% end %>
           <.link navigate={~p"/manage/catalog/collections/submitted"}>
-            <.button class="primary-btn">
+            <.button class="neutral-btn bg-cyan-600 hover:bg-cyan-700 text-white text-sm sm:text-base">
               <.icon name="hero-document-text" class="w-4 h-4 sm:mr-1" />
               <span class="hidden sm:inline">{gettext("My Submissions")}</span>
             </.button>
           </.link>
 
           <%= if can?(@current_scope.user, "collections.create") do %>
-            <.link patch={~p"/manage/catalog/collections/new"} class="w-full sm:w-auto">
+            <.link patch={~p"/manage/catalog/collections/search"} class="w-full sm:w-auto">
+              <.button class="w-full success-btn text-white sm:w-auto text-sm sm:text-base font-bold py-2 px-3 sm:py-2 sm:px-4">
+                <.icon name="hero-plus" class="w-4 h-4 sm:mr-1" />
+                <span class="hidden sm:inline">{gettext("Search & Add Item")}</span><span class="sm:hidden">{gettext("Search")}</span>
+              </.button>
+            </.link>
+
+            <%!-- <.link patch={~p"/manage/catalog/collections/new"} class="w-full sm:w-auto">
               <.button class="w-full success-btn text-white sm:w-auto text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4">
                 <.icon name="hero-plus" class="w-4 h-4 sm:mr-1" />
                 <span class="hidden sm:inline">{gettext("New Collection")}</span><span class="sm:hidden">{gettext("New")}</span>
               </.button>
-            </.link>
+            </.link> --%>
           <% end %>
         </div>
       </div>
@@ -94,6 +101,7 @@
         phx-submit="search"
         autocomplete="off"
         phx-hook="SearchFocus"
+        id="collection-search-form"
       >
         <div class="relative">
           <input
@@ -416,7 +424,11 @@
             </tr>
           </thead>
 
-          <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800 rounded-lg">
+          <tbody
+            id="collections"
+            phx-update="stream"
+            class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800 rounded-lg"
+          >
             <tr
               :if={@collections_empty?}
               class="only:table-row hidden"
@@ -586,6 +598,244 @@
         current_scope={@current_scope}
         time_identifier={@time_identifier}
         patch={~p"/manage/catalog/collections"}
+      />
+    </.collection_modal>
+
+    <%!-- Collection Search Modal --%>
+    <.collection_modal
+      :if={@live_action == :search_collection}
+      id="search-collection-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/catalog/collections")}
+    >
+      <div class="flex flex-col h-full max-h-[85vh]">
+        <div class="flex-shrink-0">
+          <.header>
+            {gettext("Search Existing Collection")}
+            <:subtitle>
+              {gettext(
+                "Search for an existing collection to add an item to, or create a new collection if none match."
+              )}
+            </:subtitle>
+          </.header>
+        </div>
+
+        <%!-- Search Input --%>
+        <.form
+          for={%{}}
+          as={:collection_search}
+          phx-submit="search_collections"
+          phx-change="live_search_collections"
+          class="flex-shrink-0"
+          id="modal-collection-search-form"
+        >
+          <div class="relative group">
+            <input
+              type="text"
+              name="query"
+              value={@collection_search_query}
+              placeholder={gettext("Search by title, description, or code...")}
+              class="w-full pl-12 pr-12 py-4 text-lg rounded-xl border-2 border-gray-200 dark:bg-gray-800 dark:border-gray-600 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/50 transition-all duration-200 shadow-sm hover:shadow-md"
+              autofocus
+              phx-debounce="300"
+            />
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors">
+              <.icon name="hero-magnifying-glass" class="w-6 h-6" />
+            </div>
+            <%= if @collection_search_query != "" do %>
+              <button
+                type="button"
+                phx-click="clear_collection_search"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+              >
+                <.icon name="hero-x-mark" class="w-5 h-5" />
+              </button>
+            <% end %>
+          </div>
+        </.form>
+
+        <%!-- Search Results --%>
+        <%= if @collection_search_performed do %>
+          <div class="flex-1 flex flex-col mt-6 min-h-0">
+            <%= if @collection_search_results == [] do %>
+              <div class="flex-1 flex items-center justify-center">
+                <div class="text-center py-16 px-8">
+                  <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-12 max-w-md mx-auto">
+                    <.icon
+                      name="hero-magnifying-glass"
+                      class="w-20 h-20 mx-auto text-indigo-400 mb-6"
+                    />
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                      {gettext("No Results Found")}
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-8 text-base leading-relaxed">
+                      {gettext("We couldn't find any collections matching ")}
+                      <span class="font-semibold text-indigo-600 dark:text-indigo-400">
+                        "{@collection_search_query}"
+                      </span>
+                    </p>
+                    <.link patch={~p"/manage/catalog/collections/new"}>
+                      <.button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                        <.icon name="hero-plus" class="w-5 h-5 mr-2" />
+                        {gettext("Create New Collection")}
+                      </.button>
+                    </.link>
+                  </div>
+                </div>
+              </div>
+            <% else %>
+              <div class="flex items-center justify-between mb-4 flex-shrink-0 pb-3 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {length(@collection_search_results)} {if length(@collection_search_results) ==
+                                                               1,
+                                                             do: gettext("Collection Found"),
+                                                             else: gettext("Collections Found")}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    {gettext("Select one to add an item")}
+                  </p>
+                </div>
+                <.link patch={~p"/manage/catalog/collections/new"}>
+                  <.button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                    <.icon name="hero-plus" class="w-5 h-5 mr-2" />
+                    {gettext("Create New")}
+                  </.button>
+                </.link>
+              </div>
+
+              <div class="flex-1 overflow-y-auto pr-2 -mr-2 scroll-smooth">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 pb-4">
+                  <.link
+                    :for={collection <- @collection_search_results}
+                    patch={~p"/manage/catalog/collections/add-item/#{collection.id}"}
+                    class="group block"
+                  >
+                    <div class="h-full border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                      <%!-- Thumbnail --%>
+                      <div class="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                        <%= if collection.thumbnail do %>
+                          <img
+                            src={collection.thumbnail}
+                            alt={collection.title}
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        <% else %>
+                          <div class="w-full h-full flex items-center justify-center">
+                            <.icon
+                              name="hero-book-open"
+                              class="w-16 h-16 text-gray-300 dark:text-gray-600 group-hover:text-indigo-400 transition-colors"
+                            />
+                          </div>
+                        <% end %>
+                        <%!-- Overlay gradient --%>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                      </div>
+
+                      <%!-- Collection Info --%>
+                      <div class="p-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white text-lg mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {collection.title}
+                        </h4>
+
+                        <%= if collection.description do %>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3 leading-relaxed">
+                            {collection.description}
+                          </p>
+                        <% end %>
+
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                          <%= if collection.mst_creator do %>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-medium">
+                              <.icon name="hero-user" class="w-3 h-3 mr-1" />
+                              {collection.mst_creator.creator_name}
+                            </span>
+                          <% end %>
+
+                          <%= if collection.node do %>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full text-xs font-medium">
+                              <.icon name="hero-building-library" class="w-3 h-3 mr-1" />
+                              {collection.node.name}
+                            </span>
+                          <% end %>
+
+                          <%= if collection.resource_class do %>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+                              {collection.resource_class.label}
+                            </span>
+                          <% end %>
+                        </div>
+
+                        <div class="flex items-center justify-center pt-3 border-t border-gray-100 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">
+                          <div class="inline-flex items-center text-green-700 dark:text-green-400 font-medium text-sm group-hover:scale-105 transition-transform">
+                            <.icon name="hero-plus-circle" class="w-5 h-5 mr-2" />
+                            {gettext("Add Item")}
+                            <.icon
+                              name="hero-arrow-right"
+                              class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </.link>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <%!-- Initial state - before any search --%>
+          <div class="flex-1 flex items-center justify-center mt-6">
+            <div class="text-center py-16 px-8">
+              <div class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-pink-900/20 rounded-3xl p-12 max-w-lg mx-auto shadow-xl">
+                <div class="bg-gradient-to-br from-indigo-400 to-purple-500 w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <.icon name="hero-magnifying-glass-circle" class="w-16 h-16 text-white" />
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  {gettext("Find Your Collection")}
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 text-base leading-relaxed">
+                  {gettext(
+                    "Start typing above to search for an existing collection to add new item to the collection, or create a brand new collection if there is no collection exist."
+                  )}
+                </p>
+                <div class="flex gap-3 justify-center">
+                  <.link patch={~p"/manage/catalog/collections/new"}>
+                    <.button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                      <.icon name="hero-plus" class="w-5 h-5 mr-2" />
+                      {gettext("Create New Collection")}
+                    </.button>
+                  </.link>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </.collection_modal>
+
+    <%!-- Item Form Modal --%>
+    <.collection_modal
+      :if={@live_action == :add_item_to_collection}
+      id="item-form-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/catalog/collections/search")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Catalog.ItemLive.FormComponent}
+        id={:new_item}
+        title={gettext("Add Item to %{title}", title: @collection.title)}
+        action={:new}
+        item={@item}
+        collection_name={@collection.title}
+        nodes={@nodes}
+        all_locations={@all_locations}
+        editable_identifiers={@editable_identifiers}
+        lock_unit_id={@lock_unit_id}
+        current_scope={@current_scope}
+        current_user={@current_user}
+        patch={~p"/manage/catalog/collections/search"}
       />
     </.collection_modal>
 

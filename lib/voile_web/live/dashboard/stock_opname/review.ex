@@ -10,7 +10,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
       <%!-- Header --%>
       <div class="mb-6">
         <.link
-          navigate={~p"/manage/stock_opname/#{@session.id}"}
+          navigate={~p"/manage/catalog/stock_opname/#{@session.id}"}
           class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Session
@@ -210,7 +210,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:    {item.item.barcode}</span>
+                      <span :if={item.item.barcode}> • Barcode:     {item.item.barcode}</span>
                     </p>
                   </div>
 
@@ -341,7 +341,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:    {item.item.barcode}</span>
+                      <span :if={item.item.barcode}> • Barcode:     {item.item.barcode}</span>
                     </p>
                   </div>
 
@@ -469,7 +469,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
       socket =
         socket
         |> put_flash(:error, "You don't have permission to review this session")
-        |> redirect(to: ~p"/manage/stock_opname")
+        |> redirect(to: ~p"/manage/catalog/stock_opname")
 
       {:ok, socket}
     else
@@ -478,7 +478,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
         socket =
           socket
           |> put_flash(:error, "This session is not pending review")
-          |> redirect(to: ~p"/manage/stock_opname/#{session.id}")
+          |> redirect(to: ~p"/manage/catalog/stock_opname/#{session.id}")
 
         {:ok, socket}
       else
@@ -538,7 +538,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
         socket =
           socket
           |> put_flash(:info, "Session approved! All changes have been applied.")
-          |> redirect(to: ~p"/manage/stock_opname")
+          |> redirect(to: ~p"/manage/catalog/stock_opname")
 
         {:noreply, socket}
 
@@ -560,7 +560,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           socket =
             socket
             |> put_flash(:info, "Revision requested. Librarians have been notified.")
-            |> redirect(to: ~p"/manage/stock_opname")
+            |> redirect(to: ~p"/manage/catalog/stock_opname")
 
           {:noreply, socket}
 
@@ -583,7 +583,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           socket =
             socket
             |> put_flash(:info, "Session rejected.")
-            |> redirect(to: ~p"/manage/stock_opname")
+            |> redirect(to: ~p"/manage/catalog/stock_opname")
 
           {:noreply, socket}
 

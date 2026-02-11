@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
     <div class="container mx-auto px-4 py-6 max-w-4xl">
       <div class="mb-6">
         <.link
-          navigate={~p"/manage/stock_opname"}
+          navigate={~p"/manage/catalog/stock_opname"}
           class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Sessions
@@ -299,7 +299,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
               Create Session
             </button>
             <.link
-              navigate={~p"/manage/stock_opname"}
+              navigate={~p"/manage/catalog/stock_opname"}
               class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
             >
               Cancel
@@ -355,7 +355,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
         socket =
           socket
           |> put_flash(:error, "You don't have permission to create stock opname sessions.")
-          |> redirect(to: ~p"/manage/stock_opname")
+          |> redirect(to: ~p"/manage/catalog/stock_opname")
 
         {:ok, socket}
     end
@@ -484,7 +484,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
               {:noreply,
                socket
                |> put_flash(:info, "Stock opname session created successfully!")
-               |> push_navigate(to: ~p"/manage/stock_opname/#{updated_session.id}")}
+               |> push_navigate(to: ~p"/manage/catalog/stock_opname/#{updated_session.id}")}
 
             {:error, :no_librarians_assigned} ->
               Logger.error("No librarians assigned error")

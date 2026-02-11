@@ -24,26 +24,28 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
       <.modal id="col_field_delete_confirmation">
         <div class="text-center">
-          <h5>Are you sure want to delete this field ?</h5>
+          <h5>{gettext("Are you sure want to delete this field ?")}</h5>
 
           <p class="text-sm text-voile-dark">
-            This action cannot be undone. Please confirm your action.
+            {gettext("This action cannot be undone. Please confirm your action.")}
           </p>
 
-          <p class="text-sm italic font-semibold text-voile-error">You will delete this property :</p>
+          <p class="text-sm italic font-semibold text-voile-error">
+            {gettext("You will delete this property :")}
+          </p>
 
           <div class="my-4">
             <h6 class="text-voile-primary">
               {(@chosen_collection_field && @chosen_collection_field.label) || ""}
             </h6>
 
-            <p class="text-xs">with value :</p>
+            <p class="text-xs">{gettext("with value :")}</p>
 
             <h5 class="font-bold text-voile-dark dark:text-voile">
               {(@chosen_collection_field && @chosen_collection_field.value) || ""}
             </h5>
 
-            <p class="text-xs">from this collection :</p>
+            <p class="text-xs">{gettext("from this collection :")}</p>
 
             <h6 class="text-voile-warning">{@collection.title}</h6>
           </div>
@@ -57,14 +59,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               phx-value-id={@delete_field_confirmation_id}
               phx-target={@myself}
             >
-              Delete
+              {gettext("Delete")}
             </.button>
             <.button
               class="w-full warning-btn"
               phx-click={hide_modal("col_field_delete_confirmation")}
               phx-target={@myself}
             >
-              Cancel
+              {gettext("Cancel")}
             </.button>
           </div>
         </div>
@@ -72,21 +74,23 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
       <.modal id="item_delete_confirmation">
         <div class="text-center">
-          <h5>Are you sure want to delete this item data?</h5>
+          <h5>{gettext("Are you sure want to delete this item data?")}</h5>
 
           <p class="text-sm text-voile-dark">
-            This action cannot be undone. Please confirm your action and make sure this item is not in use.
+            {gettext(
+              "This action cannot be undone. Please confirm your action and make sure this item is not in use."
+            )}
           </p>
 
           <div class="my-4">
-            <p class="text-xs">Item Code :</p>
+            <p class="text-xs">{gettext("Item Code :")}</p>
 
             <h6 class="text-voile-primary">
               {(@chosen_item_field && @chosen_item_field.item_code) || ""}
             </h6>
           </div>
 
-          <p class="text-sm">will be deleted forever from this collection :</p>
+          <p class="text-sm">{gettext("will be deleted forever from this collection :")}</p>
 
           <h6 class="text-voile-warning">{@collection.title}</h6>
         </div>
@@ -98,38 +102,41 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             phx-value-id={@delete_item_confirmation_id}
             phx-target={@myself}
           >
-            Delete
+            {gettext("Delete")}
           </.button>
           <.button
             class="w-full warning-btn"
             phx-click={hide_modal("item_delete_confirmation")}
             phx-target={@myself}
           >
-            Cancel
+            {gettext("Cancel")}
           </.button>
         </div>
       </.modal>
 
       <.header>
         {@title}
-        <:subtitle>Use this form to manage collection records in your database.</:subtitle>
+        <:subtitle>
+          {gettext("Use this form to manage collection records in your database.")}
+        </:subtitle>
       </.header>
 
       <div class="text-xs italic">
-        {if @action == :edit, do: "Edit Collection", else: "New Collection"} - Step {@step} of 3
+        {if @action == :edit, do: gettext("Edit Collection"), else: gettext("New Collection")} - {gettext(
+          "Step %{step} of 3", step: @step)}
       </div>
 
       <div class="mb-12">
         <%= case @step do %>
           <% 1 -> %>
-            <p class="font-bold">Step 1: <span class="text-voile-primary">Basic Information</span></p>
+            <p class="font-bold">{gettext("Step 1: Basic Information")}</p>
           <% 2 -> %>
             <p class="font-bold">
-              Step 2: <span class="text-voile-primary">Additional Collection Fields</span>
+              {gettext("Step 2: Additional Collection Fields")}
             </p>
           <% 3 -> %>
             <p class="font-bold">
-              Step 3: <span class="text-voile-primary">Item Data and Attachments</span>
+              {gettext("Step 3: Item Data and Attachments")}
             </p>
         <% end %>
       </div>
@@ -146,16 +153,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <.input field={@form[:id]} type="hidden" />
           <.input
             field={@form[:template_id]}
-            label="Resource Template (Optional)"
+            label={gettext("Resource Template (Optional)")}
             type="select"
             options={Enum.map(@resource_templates, fn rt -> {rt.label, rt.id} end)}
-            prompt="Select Resource Template"
+            prompt={gettext("Select Resource Template")}
             phx-change="select_template"
             phx-target={@myself}
           />
           <.input
             field={@form[:type_id]}
-            label="Resource Type"
+            label={gettext("Resource Type")}
             type="select"
             options={
               @collection_type
@@ -168,19 +175,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                 {group, sorted_items}
               end)
             }
-            prompt="Select Collection Type"
+            prompt={gettext("Select Collection Type")}
             required_value={true}
           />
           
     <!-- Hierarchical Fields - Searchable Parent Collection -->
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-2 label">Parent Collection (Optional)</label>
+            <label class="block text-sm font-medium mb-2 label">
+              {gettext("Parent Collection (Optional)")}
+            </label>
             <div class="relative">
               <.input
                 type="text"
                 name="parent_search"
                 value={@parent_search || ""}
-                placeholder="Search for parent collection..."
+                placeholder={gettext("Search for parent collection...")}
                 class="block w-full px-3 py-2 border border-voile-muted rounded-md shadow-sm focus:outline-none focus:ring-voile-primary focus:border-voile-primary"
                 phx-change="search_parent"
                 phx-target={@myself}
@@ -205,8 +214,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       <div class="font-medium text-voile">{collection.title}</div>
 
                       <div class="text-sm text-voile-muted">
-                        by {(collection.mst_creator && collection.mst_creator.creator_name) ||
-                          "Unknown"}
+                        {gettext("by %{creator}",
+                          creator:
+                            (collection.mst_creator && collection.mst_creator.creator_name) ||
+                              gettext("Unknown")
+                        )}
                       </div>
                     </div>
                   <% end %>
@@ -216,7 +228,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <%= if @form.params["parent_id"] && @form.params["parent_id"] != "" do %>
                 <div class="mt-2 px-3 py-2 bg-voile-info border border-voile-light rounded-md flex items-center justify-between">
                   <span class="text-sm text-voile-primary">
-                    Selected: {@selected_parent_title || "Loading..."}
+                    {gettext("Selected: %{title}",
+                      title: @selected_parent_title || gettext("Loading...")
+                    )}
                   </span>
                   <button
                     type="button"
@@ -233,45 +247,45 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
           <.input
             field={@form[:collection_type]}
-            label="Collection Type"
+            label={gettext("Collection Type")}
             type="select"
             options={Voile.Schema.Catalog.Collection.collection_type_options()}
-            prompt="Select collection type"
+            prompt={gettext("Select collection type")}
           />
           <.input
             field={@form[:sort_order]}
-            label="Sort Order"
+            label={gettext("Sort Order")}
             type="number"
             placeholder="1"
           />
           <%= if can_select_unit?(@current_scope) do %>
             <.input
               field={@form[:unit_id]}
-              label="Collection Location"
+              label={gettext("Collection Location")}
               type="select"
               options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
-              prompt="Select Collection Location"
+              prompt={gettext("Select Collection Location")}
               required_value={true}
             />
           <% else %>
             <input type="hidden" name={@form[:unit_id].name} value={@current_scope.user.node_id} />
             <div>
               <label class="block text-sm font-medium mb-2 label">
-                Collection Location (Your Unit)
+                {gettext("Collection Location (Your Unit)")}
               </label>
               <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 {Enum.find(@node_list, fn n -> n.id == @current_scope.user.node_id end)
-                |> then(fn n -> if n, do: n.name, else: "Unknown" end)}
+                |> then(fn n -> if n, do: n.name, else: gettext("Unknown") end)}
               </div>
             </div>
           <% end %>
-          <.input field={@form[:title]} type="text" label="Title" required_value={true} />
+          <.input field={@form[:title]} type="text" label={gettext("Title")} required_value={true} />
           <div class="relative" phx-hook="SearchDropdown" id={"creator-search-#{@form[:id].value}"}>
             <.input
               type="text"
               name="creator"
               value={@creator_input || ""}
-              label="Creator"
+              label={gettext("Creator")}
               disabled={@creator_input not in [nil, ""] and @form[:creator_id].value not in [nil, ""]}
               required_value={true}
               autocomplete="off"
@@ -287,7 +301,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <%= if @creator_searching do %>
               <div
                 class="absolute right-3 top-10"
-                aria-label="Searching creators"
+                aria-label={gettext("Searching creators")}
                 role="status"
               >
                 <svg
@@ -314,7 +328,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
             <%= if @creator_input not in [nil, ""] and (@form[:creator_id].value == nil or @form[:creator_id].value == "") do %>
               <div class="absolute z-10 w-full mt-1 bg-voile-surface border border-voile-muted rounded-md shadow-lg max-h-60 overflow-auto">
-                <ul role="listbox" aria-label="Creator suggestions">
+                <ul role="listbox" aria-label={gettext("Creator suggestions")}>
                   <%= for creator <- @creator_suggestions do %>
                     <li
                       role="option"
@@ -337,7 +351,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       phx-target={@myself}
                       class="w-full text-sm text-voile-primary hover:text-voile-primary/80 font-medium"
                     >
-                      Load More
+                      {gettext("Load More")}
                     </.button>
                   </div>
                 <% end %>
@@ -349,7 +363,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                     phx-target={@myself}
                     class="w-full text-sm text-voile-warning hover:text-voile-warning/80 font-medium"
                   >
-                    Create "{@creator_input}" Author
+                    {gettext("Create \"%{creator}\" Author", creator: @creator_input)}
                   </.button>
                 </div>
               </div>
@@ -358,14 +372,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
           <%= if @form[:creator_id].value not in [nil, ""] do %>
             <.button type="button" phx-click="delete_creator" phx-target={@myself} class="cancel-btn">
-              Delete Author
+              {gettext("Delete Author")}
             </.button>
           <% end %>
 
           <.input
             field={@form[:description]}
             type="textarea"
-            label="Description"
+            label={gettext("Description")}
             rows="15"
             cols="33"
             required_value={true}
@@ -374,38 +388,40 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <.input
               field={@form[:status]}
               type="select"
-              label="Status"
+              label={gettext("Status")}
               options={get_status_options(@current_scope)}
               required_value={true}
             />
             <.input
               field={@form[:access_level]}
               type="select"
-              label="Access Level"
+              label={gettext("Access Level")}
               options={[
-                {"Public", "public"},
-                {"Private", "private"},
-                {"Restricted", "restricted"}
+                {gettext("Public"), "public"},
+                {gettext("Private"), "private"},
+                {gettext("Restricted"), "restricted"}
               ]}
               required_value={true}
             />
           <% else %>
             <input type="hidden" name={@form[:status].name} value={@form[:status].value || "pending"} />
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              <strong>Note:</strong>
-              Click "Save Collection" to submit for review (pending), or "Save as Draft" to save without submitting.
+              <strong>{gettext("Note:")}</strong>
+              {gettext(
+                "Click \"Save Collection\" to submit for review (pending), or \"Save as Draft\" to save without submitting."
+              )}
             </p>
             <input type="hidden" name={@form[:access_level].name} value="private" />
             <.input
               field={@form[:access_level]}
               type="select"
-              label="Access Level (Auto-set to Private)"
-              options={[{"Private", "private"}]}
+              label={gettext("Access Level (Auto-set to Private)")}
+              options={[{gettext("Private"), "private"}]}
               required_value={true}
               disabled={true}
             />
           <% end %>
-          <.input field={@form[:thumbnail]} type="text" label="Thumbnail" readonly />
+          <.input field={@form[:thumbnail]} type="text" label={gettext("Thumbnail")} readonly />
           <input
             name={@form[:creator_id].name}
             value={@form[:creator_id].value || @current_scope.user.id}
@@ -439,20 +455,22 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
           <div>
             <div class="flex items-start gap-5">
               <div class="sticky top-0 w-full h-full max-w-72">
-                <h5>Collection Properties</h5>
+                <h5>{gettext("Collection Properties")}</h5>
 
                 <div class="w-full h-full max-h-screen border border-1 border-voile-muted overflow-y-auto overflow-x-hidden rounded-xl mt-2 p-4">
                   <p class="text-xs italic mb-4 max-w-48">
-                    You can click each category below and pick any necessary property for your collection.
+                    {gettext(
+                      "You can click each category below and pick any necessary property for your collection."
+                    )}
                   </p>
 
                   <div>
                     <.input
                       type="text"
                       name="property_search"
-                      label="Search Property"
+                      label={gettext("Search Property")}
                       value={@property_search}
-                      placeholder="Search property..."
+                      placeholder={gettext("Search property...")}
                       phx-keyup="search_properties"
                       phx-target={@myself}
                       phx-debounce="300"
@@ -460,7 +478,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   </div>
 
                   <%= if Enum.empty?(@filtered_properties) do %>
-                    <p class="text-red-500 text-sm mt-2">No property found.</p>
+                    <p class="text-red-500 text-sm mt-2">{gettext("No property found.")}</p>
                   <% else %>
                     <%= for {id, props} <- @filtered_properties do %>
                       <div class="my-5">
@@ -513,7 +531,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
               <div class="w-full">
                 <%= if @form[:collection_fields] == nil or Enum.empty?(@form[:collection_fields].value || []) do %>
-                  <p class="text-red-500 text-sm mt-2">No collection fields added yet.</p>
+                  <p class="text-red-500 text-sm mt-2">
+                    {gettext("No collection fields added yet.")}
+                  </p>
                 <% else %>
                   <div>
                     <.inputs_for :let={col_field} field={@form[:collection_fields]}>
@@ -569,17 +589,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           <.input
                             field={col_field[:value_lang]}
                             type="select"
-                            label="Language"
+                            label={gettext("Language")}
                             options={[
-                              {"Indonesia", "id"},
-                              {"English", "en"}
+                              {gettext("Indonesia"), "id"},
+                              {gettext("English"), "en"}
                             ]}
                           />
                           <div class="col-span-4">
                             <.input
                               field={col_field[:value]}
                               type={col_field[:type_value].value}
-                              label="Value"
+                              label={gettext("Value")}
                             />
                           </div>
                         </div>
@@ -596,7 +616,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                               phx-value-id={col_field[:id].value}
                               class="cancel-btn w-full"
                             >
-                              <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Property
+                              <.icon name="hero-trash-solid" class="w-4 h-4" /> {gettext(
+                                "Delete Property"
+                              )}
                             </.button>
                           <% else %>
                             <.button
@@ -606,7 +628,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                               phx-value-index={col_field.index}
                               class="warning-btn w-full"
                             >
-                              <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Field
+                              <.icon name="hero-x-circle-solid" class="w-4 h-4" /> {gettext(
+                                "Remove Field"
+                              )}
                             </.button>
                           <% end %>
                         </div>
@@ -622,7 +646,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         <%= if @step == 3 do %>
           <div>
             <div class="flex items-center justify-between mb-5">
-              <h5>The Items Data</h5>
+              <h5>{gettext("The Items Data")}</h5>
 
               <div class="flex items-center gap-5">
                 <.button
@@ -631,7 +655,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                   phx-target={@myself}
                   class="primary-btn"
                 >
-                  <.icon name="hero-plus-circle-solid" class="w-4 h-4" /> Add Item Data
+                  <.icon name="hero-plus-circle-solid" class="w-4 h-4" /> {gettext("Add Item Data")}
                 </.button>
               </div>
             </div>
@@ -639,7 +663,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             <div class="">
               <%= if @form[:items] == nil or Enum.empty?(@form[:items].value || []) do %>
                 <p class="text-red-500 text-sm mt-2">
-                  No items is added yet. Create at least 1 item for each collection.
+                  {gettext("No items is added yet. Create at least 1 item for each collection.")}
                 </p>
               <% else %>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
@@ -657,7 +681,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                             phx-value-id={item_field[:id].value}
                             class="cancel-btn w-full"
                           >
-                            <.icon name="hero-trash-solid" class="w-4 h-4" /> Delete Item
+                            <.icon name="hero-trash-solid" class="w-4 h-4" /> {gettext("Delete Item")}
                           </.button>
                         <% else %>
                           <.button
@@ -667,7 +691,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                             phx-value-index={item_field.index}
                             class="warning-btn w-full"
                           >
-                            <.icon name="hero-x-circle-solid" class="w-4 h-4" /> Remove Item
+                            <.icon name="hero-x-circle-solid" class="w-4 h-4" /> {gettext(
+                              "Remove Item"
+                            )}
                           </.button>
                         <% end %>
                       </div>
@@ -675,13 +701,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       <.input
                         field={item_field[:item_code]}
                         type="text"
-                        label="Item Code"
+                        label={gettext("Item Code")}
                         required_value={true}
                       />
                       <.input
                         field={item_field[:inventory_code]}
                         type="text"
-                        label="Inventory Code"
+                        label={gettext("Inventory Code")}
                         required_value={true}
                       />
                       <input
@@ -692,14 +718,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                       <.input
                         field={item_field[:barcode]}
                         type="text"
-                        label="Barcode"
+                        label={gettext("Barcode")}
                         required_value={true}
                         disabled
                       />
                       <.input
                         field={item_field[:legacy_item_code]}
                         type="text"
-                        label="Legacy Item Code"
+                        label={gettext("Legacy Item Code")}
                       />
                       <.input
                         field={item_field[:item_location_id]}
@@ -727,18 +753,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           Enum.filter(@all_locations, &(&1.node_id == unit_id_int))
                           |> Enum.map(&{&1.location_name, &1.id})
                         }
-                        prompt="Select Location"
+                        prompt={gettext("Select Location")}
                       />
                       <.input
                         field={item_field[:location]}
                         type="text"
-                        label="Location Details"
+                        label={gettext("Location Details")}
                       />
                       <%= if can_select_unit?(@current_scope) do %>
                         <.input
                           field={item_field[:unit_id]}
                           type="select"
-                          label="Unit Location"
+                          label={gettext("Unit Location")}
                           required_value={true}
                           options={Enum.map(@node_list, fn node -> {node.name, node.id} end)}
                         />
@@ -749,37 +775,39 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           value={item_field[:unit_id].value}
                         />
                         <div>
-                          <label class="block text-sm font-medium mb-2 label">Unit Location</label>
+                          <label class="block text-sm font-medium mb-2 label">
+                            {gettext("Unit Location")}
+                          </label>
                           <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                             {Enum.find(@node_list, fn n -> n.id == item_field[:unit_id].value end)
-                            |> then(fn n -> if n, do: n.name, else: "Unknown" end)}
+                            |> then(fn n -> if n, do: n.name, else: gettext("Unknown") end)}
                           </div>
                         </div>
                       <% end %>
                       <.input
                         field={item_field[:status]}
                         type="select"
-                        label="Status"
+                        label={gettext("Status")}
                         required_value={true}
                         options={[
-                          {"Active", "active"},
-                          {"Inactive", "inactive"},
-                          {"Lost", "lost"},
-                          {"Damaged", "damaged"},
-                          {"Discarded", "discarded"}
+                          {gettext("Active"), "active"},
+                          {gettext("Inactive"), "inactive"},
+                          {gettext("Lost"), "lost"},
+                          {gettext("Damaged"), "damaged"},
+                          {gettext("Discarded"), "discarded"}
                         ]}
                       />
                       <.input
                         field={item_field[:condition]}
                         type="select"
-                        label="Condition"
+                        label={gettext("Condition")}
                         required_value={true}
                         options={[
-                          {"Excellent", "excellent"},
-                          {"Good", "good"},
-                          {"Fair", "fair"},
-                          {"Poor", "poor"},
-                          {"Damaged", "damaged"}
+                          {gettext("Excellent"), "excellent"},
+                          {gettext("Good"), "good"},
+                          {gettext("Fair"), "fair"},
+                          {gettext("Poor"), "poor"},
+                          {gettext("Damaged"), "damaged"}
                         ]}
                       />
                       <.input
@@ -805,7 +833,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               phx-target={@myself}
               class="primary-btn w-full"
             >
-              &leftarrow; Back
+              &leftarrow; {gettext("Back")}
             </.button>
           <% end %>
 
@@ -817,10 +845,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               phx-disable-with="Saving as draft..."
               class="warning-btn w-full"
             >
-              <.icon name="hero-document-text-solid" class="w-4 h-4" /> Save as Draft
+              <.icon name="hero-document-text-solid" class="w-4 h-4" /> {gettext("Save as Draft")}
             </.button>
             <.button type="submit" phx-disable-with="Saving..." class="success-btn w-full">
-              <.icon name="hero-check-circle-solid" class="w-4 h-4" /> Save
+              <.icon name="hero-check-circle-solid" class="w-4 h-4" /> {gettext("Save")}
             </.button>
           <% else %>
             <.button
@@ -830,7 +858,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               phx-disable-with="Saving as draft..."
               class="warning-btn w-full"
             >
-              <.icon name="hero-document-text-solid" class="w-4 h-4" /> Save as Draft
+              <.icon name="hero-document-text-solid" class="w-4 h-4" /> {gettext("Save as Draft")}
             </.button>
             <.button
               type="button"
@@ -838,7 +866,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               phx-target={@myself}
               class="primary-btn w-full"
             >
-              Next &rightarrow;
+              {gettext("Next")} &rightarrow;
             </.button>
           <% end %>
         </div>
@@ -1228,7 +1256,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     else
       socket =
         socket
-        |> put_flash(:error, "Please fill in all required fields.")
+        |> put_flash(:error, gettext("Please fill in all required fields."))
         |> assign(:form, to_form(changeset, action: :validate))
 
       {:noreply, socket}
@@ -1301,7 +1329,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
          socket
          |> clear_flash(:error)
          |> assign(:step, 2)
-         |> put_flash(:error, "Please add at least one collection property.")
+         |> put_flash(:error, gettext("Please add at least one collection property."))
          |> assign(:form, to_form(socket.assigns.form, action: :validate))}
 
       # Check if items are empty
@@ -1312,7 +1340,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
          socket
          |> clear_flash(:error)
          |> assign(:step, 3)
-         |> put_flash(:error, "Please add at least one item to the collection.")
+         |> put_flash(:error, gettext("Please add at least one item to the collection."))
          |> assign(:form, to_form(socket.assigns.form, action: :validate))}
 
       # Proceed with save if all checks pass
@@ -1423,7 +1451,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         |> assign(:form, to_form(changeset, action: :validate))
         |> put_flash(
           :info,
-          "Template '#{template.label}' applied. Resource type and collection fields have been populated."
+          gettext(
+            "Template '%{template}' applied. Resource type and collection fields have been populated.",
+            template: template.label
+          )
         )
 
       {:noreply, socket}

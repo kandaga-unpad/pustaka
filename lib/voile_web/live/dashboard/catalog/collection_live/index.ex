@@ -12,6 +12,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
   import VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents
   import VoileWeb.Utils.StringHelper, only: [trim_text: 2]
 
+  import Voile.Utils.ItemHelper,
+    only: [generate_item_code: 5, generate_inventory_code: 4, generate_barcode_from_item_code: 1]
+
   @impl true
   def mount(_params, _session, socket) do
     # Check read permission for viewing collections
@@ -157,6 +160,130 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     end
   end
 
+  defp apply_action(socket, :search_collection, _params) do
+    # Check create permission for searching/creating collections
+    authorize!(socket, "collections.create")
+
+    # Keep the current collection list visible while opening the search modal
+    page = socket.assigns.page || 1
+    per_page = 10
+    search = socket.assigns.search || ""
+    filters = socket.assigns.filters || %{}
+
+    {collections, total_pages, _} =
+      Catalog.list_collections_paginated(page, per_page, search, filters)
+
+    socket
+    |> stream(:collections, collections, reset: true)
+    |> assign(:total_pages, total_pages)
+    |> assign(:page_title, "Search Collection")
+    |> assign(:collection_search_query, "")
+    |> assign(:collection_search_results, [])
+    |> assign(:collection_search_performed, false)
+    |> assign(:patch, ~p"/manage/catalog/collections")
+  end
+
+  defp apply_action(socket, :add_item_to_collection, %{"collection_id" => collection_id}) do
+    # Check create permission for creating items
+    authorize!(socket, "items.create")
+
+    collection = Catalog.get_collection!(collection_id)
+    current_user = socket.assigns.current_scope.user
+
+    # Get node_id - use user's node_id or fallback to system default
+    node_id =
+      if is_nil(current_user.node_id) do
+        # Get fallback node from system settings
+        fallback_node_id = System.get_setting_value("default_node_id_for_items")
+
+        case fallback_node_id do
+          nil ->
+            # No fallback configured, show error
+            nil
+
+          id when is_binary(id) ->
+            # Try to parse as integer
+            case Integer.parse(id) do
+              {int_id, _} -> int_id
+              :error -> nil
+            end
+
+          id when is_integer(id) ->
+            id
+        end
+      else
+        current_user.node_id
+      end
+
+    if is_nil(node_id) do
+      socket
+      |> put_flash(
+        :error,
+        "Cannot add item: Your user account is not assigned to any location/node and no default location is configured. Please contact an administrator."
+      )
+      |> push_navigate(to: ~p"/manage/catalog/collections/search")
+    else
+      # Get nodes and locations for the form
+      nodes = System.list_nodes()
+      node_options = Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", n.id} end)
+      all_locations = Master.list_mst_locations()
+
+      # Get unit and type data for code generation
+      unit_data = System.get_node!(node_id)
+
+      type_data =
+        if collection.type_id,
+          do: Metadata.get_resource_class!(collection.type_id),
+          else: %{local_name: "UNK"}
+
+      # Generate codes for the new item
+      time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+      item_index = Catalog.count_items_by_collection(collection.id) + 1
+
+      item_code =
+        generate_item_code(
+          unit_data.abbr,
+          type_data.local_name,
+          collection.id,
+          time_identifier,
+          to_string(item_index)
+        )
+
+      inventory_code =
+        generate_inventory_code(
+          unit_data.abbr,
+          type_data.local_name,
+          collection.id,
+          to_string(item_index)
+        )
+
+      barcode = generate_barcode_from_item_code(item_code)
+
+      # Create empty item with pre-filled data
+      item = %Catalog.Item{
+        collection_id: collection.id,
+        unit_id: node_id,
+        item_code: item_code,
+        inventory_code: inventory_code,
+        barcode: barcode,
+        status: "active",
+        condition: "good",
+        availability: "available"
+      }
+
+      socket
+      |> assign(:page_title, "Add Item to Collection")
+      |> assign(:collection, collection)
+      |> assign(:item, item)
+      |> assign(:nodes, node_options)
+      |> assign(:all_locations, all_locations)
+      |> assign(:editable_identifiers, false)
+      |> assign(:lock_unit_id, true)
+      |> assign(:current_user, current_user)
+      |> assign(:patch, ~p"/manage/catalog/collections/search")
+    end
+  end
+
   defp apply_action(socket, :new, _params) do
     # Check create permission for creating new collections
     authorize!(socket, "collections.create")
@@ -279,6 +406,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:collections_empty?, collections == [])
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(
+        {VoileWeb.Dashboard.Catalog.ItemLive.FormComponent, {:saved, item}},
+        socket
+      ) do
+    # After item is saved, redirect to the item show page
+    {:noreply, push_navigate(socket, to: ~p"/manage/catalog/items/#{item.id}")}
   end
 
   @impl true
@@ -499,6 +635,71 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     else
       {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_event("search_collections", %{"query" => query}, socket) do
+    # Trim and check if query is empty
+    trimmed_query = String.trim(query)
+
+    if trimmed_query == "" do
+      # If empty, clear results
+      socket =
+        socket
+        |> assign(:collection_search_query, "")
+        |> assign(:collection_search_results, [])
+        |> assign(:collection_search_performed, false)
+
+      {:noreply, socket}
+    else
+      # Search collections without node scoping
+      results = Catalog.search_collections_all_nodes(trimmed_query)
+
+      socket =
+        socket
+        |> assign(:collection_search_query, trimmed_query)
+        |> assign(:collection_search_results, results)
+        |> assign(:collection_search_performed, true)
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("live_search_collections", %{"query" => query}, socket) do
+    # Live search as user types (with debouncing from template)
+    trimmed_query = String.trim(query)
+
+    if trimmed_query == "" do
+      socket =
+        socket
+        |> assign(:collection_search_query, "")
+        |> assign(:collection_search_results, [])
+        |> assign(:collection_search_performed, false)
+
+      {:noreply, socket}
+    else
+      results = Catalog.search_collections_all_nodes(trimmed_query)
+
+      socket =
+        socket
+        |> assign(:collection_search_query, trimmed_query)
+        |> assign(:collection_search_results, results)
+        |> assign(:collection_search_performed, true)
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("clear_collection_search", _params, socket) do
+    socket =
+      socket
+      |> assign(:collection_search_query, "")
+      |> assign(:collection_search_results, [])
+      |> assign(:collection_search_performed, false)
+
+    {:noreply, socket}
   end
 
   # Helper functions

@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       <%!-- Header --%>
       <div class="mb-6">
         <.link
-          navigate={~p"/manage/stock_opname"}
+          navigate={~p"/manage/catalog/stock_opname"}
           class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Sessions
@@ -327,14 +327,14 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       <div class="flex gap-3 mb-6 flex-wrap">
         <.link
           :if={@can_scan and @session.status == "in_progress"}
-          navigate={~p"/manage/stock_opname/#{@session.id}/scan"}
+          navigate={~p"/manage/catalog/stock_opname/#{@session.id}/scan"}
           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
         >
           <.icon name="hero-qr-code" class="w-5 h-5 inline mr-2" /> Continue Scanning
         </.link>
         <.link
           :if={@can_create and @session.status == "pending_review"}
-          navigate={~p"/manage/stock_opname/#{@session.id}/review"}
+          navigate={~p"/manage/catalog/stock_opname/#{@session.id}/review"}
           class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
         >
           <.icon name="hero-clipboard-document-check" class="w-5 h-5 inline mr-2" /> Review & Approve
@@ -579,7 +579,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
       socket =
         socket
         |> put_flash(:error, "You don't have permission to view this session")
-        |> redirect(to: ~p"/manage/stock_opname")
+        |> redirect(to: ~p"/manage/catalog/stock_opname")
 
       {:ok, socket}
     end
@@ -718,7 +718,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         socket =
           socket
           |> put_flash(:info, "Session completed and ready for review!")
-          |> redirect(to: ~p"/manage/stock_opname")
+          |> redirect(to: ~p"/manage/catalog/stock_opname")
 
         {:noreply, socket}
 
@@ -736,7 +736,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         socket =
           socket
           |> put_flash(:info, "Session deleted successfully!")
-          |> redirect(to: ~p"/manage/stock_opname")
+          |> redirect(to: ~p"/manage/catalog/stock_opname")
 
         {:noreply, socket}
 

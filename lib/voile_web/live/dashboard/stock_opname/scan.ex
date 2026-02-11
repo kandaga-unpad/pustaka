@@ -38,7 +38,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       <%!-- Header --%>
       <div class="mb-4 sm:mb-6">
         <.link
-          navigate={~p"/manage/stock_opname/#{@session.id}"}
+          navigate={~p"/manage/catalog/stock_opname/#{@session.id}"}
           class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Session
@@ -818,7 +818,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   :error,
                   "Your work session is already completed. Contact an admin to reopen it."
                 )
-                |> redirect(to: ~p"/manage/stock_opname/#{session.id}")
+                |> redirect(to: ~p"/manage/catalog/stock_opname/#{session.id}")
 
               {:ok, socket}
             else
@@ -858,7 +858,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             socket =
               socket
               |> put_flash(:error, "You are not assigned to this session.")
-              |> redirect(to: ~p"/manage/stock_opname")
+              |> redirect(to: ~p"/manage/catalog/stock_opname")
 
             {:ok, socket}
         end
@@ -867,7 +867,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         socket =
           socket
           |> put_flash(:error, "You don't have permission to scan items in this session.")
-          |> redirect(to: ~p"/manage/stock_opname")
+          |> redirect(to: ~p"/manage/catalog/stock_opname")
 
         {:ok, socket}
     end
@@ -1396,7 +1396,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
         socket =
           socket
           |> put_flash(:info, "Your work session has been completed!")
-          |> redirect(to: ~p"/manage/stock_opname/#{socket.assigns.session.id}")
+          |> redirect(to: ~p"/manage/catalog/stock_opname/#{socket.assigns.session.id}")
 
         {:noreply, socket}
 

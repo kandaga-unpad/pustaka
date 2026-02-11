@@ -67,13 +67,15 @@
       <%!-- Desktop Nav Bar (hidden on mobile) --%>
       <div class="hidden lg:block"><.nav_bar active_nav={@current_path} /></div>
       <%!-- Mobile: Dashboard Menu Bar shows icon button --%>
-      <div class="">
-        <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
-      </div>
+      <%= if @current_path |> String.starts_with?("/manage/catalog") do %>
+        <div>
+          <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
+        </div>
+      <% end %>
     </div>
 
     <section>
-      <div class="py-10">
+      <div class="py-5">
         <%= if String.contains?(@current_path, "master") or String.contains?(@current_path, "metaresource") do %>
           <div class="flex gap-5">
             <div class="max-w-64 w-full">

@@ -61,7 +61,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
         query_params
       end
 
-    {:noreply, push_patch(socket, to: ~p"/manage/transfers?#{query_params}")}
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/transfers?#{query_params}")}
   end
 
   @impl true
@@ -78,7 +78,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
         query_params
       end
 
-    {:noreply, push_patch(socket, to: ~p"/manage/transfers?#{query_params}")}
+    {:noreply, push_patch(socket, to: ~p"/manage/catalog/transfers?#{query_params}")}
   end
 
   @impl true
@@ -93,7 +93,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
           {:noreply,
            socket
            |> put_flash(:info, "Transfer request deleted successfully")
-           |> push_patch(to: ~p"/manage/transfers")}
+           |> push_patch(to: ~p"/manage/catalog/transfers")}
 
         {:error, _} ->
           {:noreply, put_flash(socket, :error, "Failed to delete transfer request")}

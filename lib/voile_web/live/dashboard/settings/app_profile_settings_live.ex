@@ -28,10 +28,19 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
       current_user = socket.assigns.current_scope.user
 
+      # Load nodes for default node selection
+      nodes = System.list_nodes()
+
+      node_options = [
+        {"None (Show error for users without node)", ""}
+        | Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", to_string(n.id)} end)
+      ]
+
       socket =
         socket
         |> assign(:current_user, current_user)
         |> assign(:app_logo_preview, System.get_setting_value("app_logo_url", nil))
+        |> assign(:node_options, node_options)
         |> assign(:current_path, "/manage/settings/app_profile")
         |> allow_upload(:app_logo,
           accept: ~w(.jpg .jpeg .png .webp .svg),
@@ -227,6 +236,19 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               />
             </div>
 
+            <div>
+              <.input
+                type="select"
+                name="default_node_id_for_items"
+                label="Default Node/Location for Items"
+                options={@node_options}
+                value={System.get_setting_value("default_node_id_for_items", "")}
+              />
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Fallback location for users without assigned node (e.g., super_admin)
+              </p>
+            </div>
+
             <div class="md:col-span-2">
               <.input
                 name="app_address"
@@ -270,7 +292,8 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       "app_website",
       "app_contact_email",
       "app_address",
-      "storage_adapter"
+      "storage_adapter",
+      "default_node_id_for_items"
     ]
 
     results =

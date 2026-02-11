@@ -1,16 +1,16 @@
 <section class="flex flex-col gap-4">
   <div class="bg-white dark:bg-gray-700 py-3 sm:py-4 px-4 sm:px-6 lg:px-8 rounded-xl shadow-md">
     <.back navigate={~p"/manage/catalog/collections?#{@back_query_params}"}>
-      Back to collections
+      {gettext("Back to collections")}
     </.back>
 
     <.header>
       <span class="text-sm sm:text-base">
-        Collection :
+        {gettext("Collection :")}
         <span class="text-orange-600 font-bold break-words">{@collection.title}</span>
       </span>
       <:subtitle>
-        <span class="text-xs sm:text-sm">Collection ID : {@collection.id}</span>
+        <span class="text-xs sm:text-sm">{gettext("Collection ID :")} {@collection.id}</span>
       </:subtitle>
 
       <:actions>
@@ -20,7 +20,7 @@
           class="w-full sm:w-auto"
         >
           <.button class="primary-btn">
-            <.icon name="hero-pencil" class="w-4 h-4" /> Edit collection
+            <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit collection")}
           </.button>
         </.link>
       </:actions>
@@ -36,42 +36,43 @@
           />
         <% else %>
           <div class="w-full h-64 sm:h-80 lg:h-96 flex items-center justify-center border rounded-lg border-voile-primary dark:border-gray-200 bg-gray-50 dark:bg-gray-800">
-            <p class="text-sm text-gray-500">No thumbnail available</p>
+            <p class="text-sm text-gray-500">{gettext("No thumbnail available")}</p>
           </div>
         <% end %>
       </div>
 
       <.list>
-        <:item title="Title">{@collection.title || "-"}</:item>
+        <:item title={gettext("Title")}>{@collection.title || "-"}</:item>
 
-        <:item title="Creator">
-          {(@collection.mst_creator && @collection.mst_creator.creator_name) || "No creator"}
+        <:item title={gettext("Creator")}>
+          {(@collection.mst_creator && @collection.mst_creator.creator_name) ||
+            gettext("No creator")}
         </:item>
 
-        <:item title="Description">{@collection.description || "-"}</:item>
+        <:item title={gettext("Description")}>{@collection.description || "-"}</:item>
 
-        <:item title="Status">{@collection.status || "-"}</:item>
+        <:item title={gettext("Status")}>{@collection.status || "-"}</:item>
 
-        <:item title="Thumbnail">
+        <:item title={gettext("Thumbnail")}>
           <%= if @collection.thumbnail do %>
             <.link
               navigate={@collection.thumbnail}
               target="_blank"
               class="text-voile-primary hover:underline"
             >
-              View
+              {gettext("View")}
             </.link>
           <% else %>
             -
           <% end %>
         </:item>
 
-        <:item title="Access Level">{@collection.access_level || "-"}</:item>
+        <:item title={gettext("Access Level")}>{@collection.access_level || "-"}</:item>
 
-        <:item title="Custodian">
+        <:item title={gettext("Custodian")}>
           <div class="text-xs text-gray-400 italic">
             <div>
-              Created by:
+              {gettext("Created by:")}
               <%= if @collection.created_by != nil do %>
                 {@collection.created_by.fullname} on ({to_local_time(@collection.inserted_at)})
               <% else %>
@@ -79,7 +80,7 @@
               <% end %>
             </div>
             <div>
-              Updated by:
+              {gettext("Updated by:")}
               <%= if @collection.updated_by != nil do %>
                 {@collection.updated_by.fullname} on ({to_local_time(@collection.updated_at)})
               <% else %>
@@ -95,7 +96,7 @@
     <%= if @collection.parent || length(@collection.children) > 0 do %>
       <div class="my-10">
         <h6 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white my-4 sm:my-5">
-          Collection Relationships
+          {gettext("Collection Relationships")}
         </h6>
 
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 sm:p-6 space-y-6">
@@ -104,7 +105,7 @@
             <div>
               <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                 <.icon name="hero-arrow-up-circle" class="w-5 h-5 text-blue-500" />
-                Parent Collection
+                {gettext("Parent Collection")}
               </h3>
               <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
                 <div class="flex flex-col sm:flex-row items-start gap-4">
@@ -136,7 +137,7 @@
                           {String.capitalize(@collection.parent.status || "draft")}
                         </span>
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                          ID: {String.slice(@collection.parent.id, 0..7)}...
+                          {gettext("ID:")} {String.slice(@collection.parent.id, 0..7)}...
                         </span>
                       </div>
                     </div>
@@ -148,7 +149,7 @@
                       >
                         <.button class="primary-btn w-full">
                           <.icon name="hero-arrow-right-circle" class="w-4 h-4" />
-                          View Parent Collection
+                          {gettext("View Parent Collection")}
                         </.button>
                       </.link>
                     </div>
@@ -163,7 +164,7 @@
             <div>
               <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                 <.icon name="hero-arrow-down-circle" class="w-5 h-5 text-green-500" />
-                Child Collections ({length(@collection.children)})
+                {gettext("Child Collections (%{count})", count: length(@collection.children))}
               </h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <%= for child <- @collection.children do %>
@@ -205,7 +206,7 @@
                         >
                           <.button class="primary-btn w-full text-xs sm:text-sm">
                             <.icon name="hero-arrow-right-circle" class="w-4 h-4" />
-                            View Collection
+                            {gettext("View Collection")}
                           </.button>
                         </.link>
                       </div>
@@ -220,7 +221,7 @@
     <% end %>
 
     <div class="my-10">
-      <h6 class="my-5">Metadata</h6>
+      <h6 class="my-5">{gettext("Metadata")}</h6>
 
       <div>
         <div class="overflow-x-auto">
@@ -228,11 +229,11 @@
             <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="p-4 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200">
-                  Field
+                  {gettext("Field")}
                 </th>
 
                 <th class="p-4 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200">
-                  Value
+                  {gettext("Value")}
                 </th>
               </tr>
             </thead>
@@ -255,7 +256,7 @@
 
     <div>
       <h6 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white my-4 sm:my-5">
-        Items ({length(@collection.items)})
+        {gettext("Items (%{count})", count: length(@collection.items))}
       </h6>
 
       <%= if length(@collection.items) > 0 do %>
@@ -270,39 +271,39 @@
               <div class="p-3 sm:p-5">
                 <div class="flex justify-between items-start mt-6 mb-3 sm:mb-4">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-sm sm:text-lg">
-                    Item: <br />
+                    {gettext("Item:")} <br />
                     <span class="font-medium italic break-all">{item.item_code}</span>
                   </h3>
                 </div>
 
                 <div class="flex flex-col gap-2 sm:gap-3 text-xs">
                   <div class="grid grid-cols-3">
-                    <p>Inventory Code</p>
+                    <p>{gettext("Inventory Code")}</p>
 
                     <p class="col-span-2">: {item.inventory_code}</p>
                   </div>
 
                   <div class="grid grid-cols-3">
-                    <p>Location</p>
+                    <p>{gettext("Location")}</p>
 
                     <p class="col-span-2">: {item.location}</p>
                   </div>
 
                   <div class="grid grid-cols-3">
-                    <p>Condition</p>
+                    <p>{gettext("Condition")}</p>
 
                     <p class="col-span-2">: {condition_badge(item.condition)}</p>
                   </div>
 
                   <div class="grid grid-cols-3">
-                    <p>Status</p>
+                    <p>{gettext("Status")}</p>
 
                     <p class="col-span-2">: {status_badge(item.status)}</p>
                   </div>
 
                   <%= if item.node do %>
                     <div class="grid grid-cols-3">
-                      <p>Node</p>
+                      <p>{gettext("Node")}</p>
 
                       <p class="col-span-2">: {item.node.name}</p>
                     </div>
@@ -314,14 +315,14 @@
                     navigate={"/manage/catalog/items/#{item.id}"}
                     class="primary-btn font-medium w-full py-2.5 sm:py-2 touch-manipulation text-[10px]"
                   >
-                    Item Detail
+                    {gettext("Item Detail")}
                   </.link>
                   <button
                     phx-click="request_transfer"
                     phx-value-item-id={item.id}
                     class="warning-btn rounded-lg w-full py-2.5 sm:py-2 touch-manipulation text-[10px]"
                   >
-                    Transfer Location
+                    {gettext("Transfer Location")}
                   </button>
                 </div>
               </div>
@@ -329,13 +330,13 @@
           <% end %>
         </div>
       <% else %>
-        <p class="text-gray-500">No items found.</p>
+        <p class="text-gray-500">{gettext("No items found.")}</p>
       <% end %>
     </div>
 
     <div>
       <h6 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white my-4 sm:my-5">
-        Attachments
+        {gettext("Attachments")}
       </h6>
 
       <%= if length(@collection.attachments) > 0 do %>
@@ -381,7 +382,7 @@
                   download={attachment.original_name}
                   class="w-full inline-block text-center px-3 py-2.5 sm:py-2 bg-indigo-600 text-white text-xs sm:text-sm rounded-lg shadow hover:bg-indigo-700 active:bg-indigo-800 transition touch-manipulation"
                 >
-                  Download
+                  {gettext("Download")}
                 </a>
               </div>
             </div>
@@ -393,18 +394,18 @@
             navigate={~p"/manage/catalog/collections/#{@collection}/attachments"}
             class="w-full inline-block text-center px-4 py-3 sm:py-2 bg-indigo-600 text-white text-sm rounded-lg shadow hover:bg-indigo-700 active:bg-indigo-800 transition touch-manipulation"
           >
-            Manage Attachments
+            {gettext("Manage Attachments")}
           </.link>
         </div>
       <% else %>
-        <p class="text-sm text-gray-500">No attachments found.</p>
+        <p class="text-sm text-gray-500">{gettext("No attachments found.")}</p>
 
         <div class="my-4 sm:my-6">
           <.link
             navigate={~p"/manage/catalog/collections/#{@collection}/attachments"}
             class="w-full inline-block text-center px-4 py-3 sm:py-2 bg-indigo-600 text-white text-sm rounded-lg shadow hover:bg-indigo-700 active:bg-indigo-800 transition touch-manipulation"
           >
-            Add an Attachment
+            {gettext("Add an Attachment")}
           </.link>
         </div>
       <% end %>
@@ -448,7 +449,7 @@
       <.live_component
         module={VoileWeb.Dashboard.Catalog.TransferRequestLive.FormComponent}
         id={:new}
-        title="Request Transfer Location"
+        title={gettext("Request Transfer Location")}
         action={:new}
         item={@transfer_item}
         current_scope={@current_scope}

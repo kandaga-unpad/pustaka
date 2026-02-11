@@ -9,16 +9,20 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
   def render(assigns) do
     ~H"""
     <div>
-      <h3>Attachments Data</h3>
+      <h3>{gettext("Attachments Data")}</h3>
 
       <div class="flex">
         <h6>
-          <span class="text-orange-500 font-bold">{@collection.title}</span>'s Attachments Details
+          <span class="text-orange-500 font-bold">{@collection.title}</span>{gettext(
+            "'s Attachments Details"
+          )}
         </h6>
       </div>
 
       <div>
-        <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>Kembali</.back>
+        <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>
+          {gettext("Back")}
+        </.back>
       </div>
 
       <div class="flex gap-4 w-full my-5">
@@ -30,38 +34,39 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
             />
           <% else %>
             <div class="w-full min-h-96 flex items-center justify-center border-1 border rounded border-voile-primary dark:border-gray-200">
-              <p>No thumbnail available</p>
+              <p>{gettext("No thumbnail available")}</p>
             </div>
           <% end %>
         </div>
 
         <.list>
-          <:item title="Title">{@collection.title || "-"}</:item>
+          <:item title={gettext("Title")}>{@collection.title || "-"}</:item>
 
-          <:item title="Creator">
-            {(@collection.mst_creator && @collection.mst_creator.creator_name) || "No creator"}
+          <:item title={gettext("Creator")}>
+            {(@collection.mst_creator && @collection.mst_creator.creator_name) ||
+              gettext("No creator")}
           </:item>
 
-          <:item title="Description">{@collection.description || "-"}</:item>
+          <:item title={gettext("Description")}>{@collection.description || "-"}</:item>
 
-          <:item title="Status">{@collection.status || "-"}</:item>
+          <:item title={gettext("Status")}>{@collection.status || "-"}</:item>
 
-          <:item title="Thumbnail">
+          <:item title={gettext("Thumbnail")}>
             <.link
               navigate={@collection.thumbnail}
               target="_blank"
               class="text-voile-primary hover:underline"
             >
-              View
+              {gettext("View")}
             </.link>
           </:item>
 
-          <:item title="Access Level">{@collection.access_level || "-"}</:item>
+          <:item title={gettext("Access Level")}>{@collection.access_level || "-"}</:item>
         </.list>
       </div>
 
       <div class="mt-8 border-t pt-8">
-        <h5 class="my-5">Attachments List</h5>
+        <h5 class="my-5">{gettext("Attachments List")}</h5>
 
         <div>
           <.live_component
@@ -74,7 +79,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
       </div>
 
       <div class="flex items-center justify-center">
-        <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>Kembali</.back>
+        <.back navigate={~p"/manage/catalog/collections/#{@collection.id}"}>
+          {gettext("Kembali")}
+        </.back>
       </div>
     </div>
     """
@@ -101,7 +108,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Attachments do
     else
       {:noreply,
        socket
-       |> put_flash(:error, "Access Denied: You don't have permission to view this collection")
+       |> put_flash(
+         :error,
+         gettext("Access Denied: You don't have permission to view this collection")
+       )
        |> push_navigate(to: ~p"/manage/catalog/collections")}
     end
   end

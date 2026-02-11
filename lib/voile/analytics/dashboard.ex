@@ -34,6 +34,7 @@ defmodule Voile.Analytics.Dashboard do
       on: c.type_id == rc.id,
       where: rc.glam_type == "Library",
       where: i.availability == "available",
+      where: c.status == "published",
       order_by: [desc: i.inserted_at],
       limit: ^limit,
       preload: [collection: [:resource_class]]

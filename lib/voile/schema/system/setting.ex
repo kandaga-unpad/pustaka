@@ -14,5 +14,6 @@ defmodule Voile.Schema.System.Setting do
     setting
     |> cast(attrs, [:setting_name, :setting_value])
     |> validate_required([:setting_name, :setting_value])
+    |> unique_constraint(:setting_name)
   end
 end
