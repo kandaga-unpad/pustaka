@@ -29,27 +29,11 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/authentication/permission-management-implementation/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/authentication/permission-management-quick-ref/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/authentication/permission-management-setup/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/authentication/rbac-guide/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/authentication/rbac-implementation-complete/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/authentication/rbac-implementation-plan/</loc>
+         <loc>https://curatorian.github.io/voile/authentication/rbac-complete-guide/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -61,23 +45,11 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/authentication/rbac-summary/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/authentication/role-management-guide/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/authentication/role-management-implementation/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/authentication/role-management-quick-ref/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/authentication/role-management-setup/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -121,15 +93,7 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/features/attachments/liveview-implementation/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/features/attachments/manager-quickstart/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/attachments/migration-guide/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -141,15 +105,7 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/features/attachments/rbac-implementation/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/features/catalog/circulation-quick-ref/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/catalog/circulation-summary/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -162,14 +118,6 @@
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/circulation/ledger-implementation/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/circulation/ledger-test-commands/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/circulation/ledger-testing/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -197,15 +145,7 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/features/glam/module-reorganization/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/features/glam/rbac-complete-guide/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/glam/rbac-final-summary/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -253,27 +193,11 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/features/stock-opname/implementation-summary/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/librarian-completion/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/features/stock-opname/modal-refactor/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/stock-opname/pagination-summary/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/quick-reference/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/stock-opname/testing-guide/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -282,10 +206,6 @@
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/transfers/flow-diagrams/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/transfers/implementation-summary/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -302,10 +222,6 @@
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/visitor-management/quick-start/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/features/visitor-management/refactoring/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -329,10 +245,6 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/integrations/email/email-setup-summary/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/integrations/email/gmail-api-complete/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
@@ -346,10 +258,6 @@
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/production-setup/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/integrations/payments/xendit-implementation-summary/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
@@ -381,14 +289,6 @@
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
-         <loc>https://curatorian.github.io/voile/reference/import-fixes/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/reference/leftover-migration/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
          <loc>https://curatorian.github.io/voile/reference/migration-analysis/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
@@ -410,14 +310,6 @@
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/sequence-diagrams/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/reference/simple-csv-import/</loc>
-         <lastmod>2026-02-11</lastmod>
-    </url>
-    <url>
-         <loc>https://curatorian.github.io/voile/reference/simplified-csv-import-summary/</loc>
          <lastmod>2026-02-11</lastmod>
     </url>
     <url>
