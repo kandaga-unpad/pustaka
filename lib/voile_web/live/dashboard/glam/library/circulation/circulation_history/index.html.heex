@@ -1,19 +1,19 @@
 <div class="px-4 py-6">
   <.breadcrumb items={[
-    %{label: "Manage", path: ~p"/manage"},
-    %{label: "GLAM", path: ~p"/manage/glam"},
-    %{label: "Library", path: ~p"/manage/glam/library"},
-    %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
-    %{label: "History", path: nil}
+    %{label: gettext("Manage"), path: ~p"/manage"},
+    %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+    %{label: gettext("Library"), path: ~p"/manage/glam/library"},
+    %{label: gettext("Circulation"), path: ~p"/manage/glam/library/circulation"},
+    %{label: gettext("History"), path: nil}
   ]} />
   <div class="sm:flex sm:items-center sm:justify-between my-16">
-    <.back navigate="/manage/glam/library/circulation">Back</.back>
+    <.back navigate="/manage/glam/library/circulation">{gettext("Back")}</.back>
 
     <div class="text-center">
-      <h1 class="text-2xl font-bold text-gray-900">Circulation History</h1>
+      <h1 class="text-2xl font-bold text-gray-900">{gettext("Circulation History")}</h1>
 
       <p class="mt-2 text-sm text-gray-700">
-        View detailed logs and audit trails of all circulation activities
+        {gettext("View detailed logs and audit trails of all circulation activities")}
       </p>
     </div>
 
@@ -22,7 +22,7 @@
         phx-click="export"
         class="primary-btn inline-flex items-center px-4 py-2 text-sm font-medium"
       >
-        <.icon name="hero-arrow-down-tray" class="w-4 h-4 mr-2" /> Export History
+        <.icon name="hero-arrow-down-tray" class="w-4 h-4 mr-2" /> {gettext("Export History")}
       </button>
     </div>
   </div>
@@ -31,23 +31,25 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {gettext("Event Type")}
+          </label>
           <.form :let={f} for={%{}} phx-change="filter">
             <.input
               field={f[:event_type]}
               type="select"
               options={[
-                {"All Events", "all"},
-                {"Loan", "loan"},
-                {"Return", "return"},
-                {"Renewal", "renewal"},
-                {"Reserve", "reserve"},
-                {"Cancel Reserve", "cancel_reserve"},
-                {"Fine Paid", "fine_paid"},
-                {"Fine Waived", "fine_waived"},
-                {"Member Created", "member_created"},
-                {"Member Updated", "member_updated"},
-                {"Item Status Change", "item_status_change"}
+                {gettext("All Events"), "all"},
+                {gettext("Loan"), "loan"},
+                {gettext("Return"), "return"},
+                {gettext("Renewal"), "renewal"},
+                {gettext("Reserve"), "reserve"},
+                {gettext("Cancel Reserve"), "cancel_reserve"},
+                {gettext("Fine Paid"), "fine_paid"},
+                {gettext("Fine Waived"), "fine_waived"},
+                {gettext("Member Created"), "member_created"},
+                {gettext("Member Updated"), "member_updated"},
+                {gettext("Item Status Change"), "item_status_change"}
               ]}
               value={@filter_event_type}
               class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
@@ -57,20 +59,22 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Search")}</label>
           <form phx-change="search" phx-submit="search">
             <input
               type="text"
               name="query"
               value={@search_query}
-              placeholder="Search descriptions..."
+              placeholder={gettext("Search descriptions...")}
               class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             />
           </form>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {gettext("Date From")}
+          </label>
           <form phx-change="date_filter">
             <input
               type="date"
@@ -82,7 +86,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Date To")}</label>
           <form phx-change="date_filter">
             <input
               type="date"
@@ -95,14 +99,14 @@
 
         <%= if @is_super_admin do %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Node</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Node")}</label>
             <.form :let={f} for={%{}} phx-change="select_node">
               <.input
                 field={f[:node_id]}
                 type="select"
                 options={
                   [
-                    {"All Nodes", "all"}
+                    {gettext("All Nodes"), "all"}
                   ] ++ Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
                 }
                 value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
@@ -119,38 +123,38 @@
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-info">-</div>
 
-        <div class="text-xs text-gray-500 uppercase">Today's Events</div>
+        <div class="text-xs text-gray-500 uppercase">{gettext("Today's Events")}</div>
       </div>
 
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-success">-</div>
 
-        <div class="text-xs text-gray-500 uppercase">Loans</div>
+        <div class="text-xs text-gray-500 uppercase">{gettext("Loans")}</div>
       </div>
 
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-primary">-</div>
 
-        <div class="text-xs text-gray-500 uppercase">Returns</div>
+        <div class="text-xs text-gray-500 uppercase">{gettext("Returns")}</div>
       </div>
 
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-warning">-</div>
 
-        <div class="text-xs text-gray-500 uppercase">Renewals</div>
+        <div class="text-xs text-gray-500 uppercase">{gettext("Renewals")}</div>
       </div>
 
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-error">-</div>
 
-        <div class="text-xs text-gray-500 uppercase">Fines</div>
+        <div class="text-xs text-gray-500 uppercase">{gettext("Fines")}</div>
       </div>
     </div>
   </div>
   <!-- History Table -->
   <div class="bg-white shadow overflow-hidden sm:rounded-md">
     <.table id="history" rows={@streams.history}>
-      <:col :let={{_id, entry}} label="Event">
+      <:col :let={{_id, entry}} label={gettext("Event")}>
         <div class="flex items-center">
           <div class={"w-3 h-3 rounded-full mr-3 #{event_type_color(entry.event_type)}"}></div>
 
@@ -164,19 +168,19 @@
         </div>
       </:col>
 
-      <:col :let={{_id, entry}} label="Member">
+      <:col :let={{_id, entry}} label={gettext("Member")}>
         <div>
           <%= if entry.member do %>
             <div class="text-sm font-medium text-gray-900">{entry.member.fullname}</div>
 
-            <div class="text-sm text-gray-500">ID: {entry.member_id}</div>
+            <div class="text-sm text-gray-500">{gettext("ID:")} {entry.member_id}</div>
           <% else %>
             <div class="text-sm text-gray-500">-</div>
           <% end %>
         </div>
       </:col>
 
-      <:col :let={{_id, entry}} label="Item">
+      <:col :let={{_id, entry}} label={gettext("Item")}>
         <div>
           <%= if entry.item do %>
             <div class="text-sm font-medium text-gray-900">{entry.item.item_code}</div>
@@ -190,47 +194,47 @@
         </div>
       </:col>
 
-      <:col :let={{_id, entry}} label="Description">
+      <:col :let={{_id, entry}} label={gettext("Description")}>
         <div class="max-w-xs">
           <div class="text-sm text-gray-900 truncate">{entry.description}</div>
         </div>
       </:col>
 
-      <:col :let={{_id, entry}} label="Processed By">
+      <:col :let={{_id, entry}} label={gettext("Processed By")}>
         <div>
           <%= if entry.processed_by do %>
             <div class="text-sm font-medium text-gray-900">{entry.processed_by.fullname}</div>
 
             <div class="text-sm text-gray-500">
-              {if entry.processed_by.role, do: entry.processed_by.role, else: "Staff"}
+              {if entry.processed_by.role, do: entry.processed_by.role, else: gettext("Staff")}
             </div>
           <% else %>
-            <div class="text-sm text-gray-500">System</div>
+            <div class="text-sm text-gray-500">{gettext("System")}</div>
           <% end %>
         </div>
       </:col>
 
-      <:col :let={{_id, entry}} label="IP Address">
+      <:col :let={{_id, entry}} label={gettext("IP Address")}>
         <div class="text-sm text-gray-500 font-mono">{entry.ip_address || "-"}</div>
       </:col>
 
-      <:col :let={{_id, entry}} label="Related">
+      <:col :let={{_id, entry}} label={gettext("Related")}>
         <div class="flex flex-col space-y-1">
           <%= if entry.transaction_id do %>
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-info/10 text-voile-info">
-              Transaction
+              {gettext("Transaction")}
             </span>
           <% end %>
 
           <%= if entry.reservation_id do %>
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-success/10 text-voile-success">
-              Reservation
+              {gettext("Reservation")}
             </span>
           <% end %>
 
           <%= if entry.fine_id do %>
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-voile-error/10 text-voile-error">
-              Fine
+              {gettext("Fine")}
             </span>
           <% end %>
         </div>
@@ -241,7 +245,7 @@
           navigate={~p"/manage/glam/library/circulation/circulation_history/#{entry.id}"}
           class="text-voile-primary hover:text-voile-primary/80 text-sm font-medium"
         >
-          View
+          {gettext("View")}
         </.link>
       </:action>
     </.table>

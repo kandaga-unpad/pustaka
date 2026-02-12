@@ -13,7 +13,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
     socket =
       socket
       |> assign(role: role)
-      |> assign(:page_title, "Role Details")
+      |> assign(:page_title, gettext("Role Details"))
       |> assign(current_path: "/manage/members/management/roles/#{id}")
       |> assign(users_page: 1, users_per_page: 10, users_total_pages: 1)
       |> load_role_users()
@@ -39,28 +39,30 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
     <div>
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Management", path: ~p"/manage/members/management"},
-        %{label: "Role Management", path: ~p"/manage/members/management/roles"},
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: ~p"/manage/members"},
+        %{label: gettext("Management"), path: ~p"/manage/members/management"},
+        %{label: gettext("Role Management"), path: ~p"/manage/members/management/roles"},
         %{label: String.capitalize(@role.name), path: nil}
       ]} />
       <.header>
-        Role Details
-        <:subtitle>View role information</:subtitle>
+        {gettext("Role Details")}
+        <:subtitle>{gettext("View role information")}</:subtitle>
       </.header>
 
       <div class="flex gap-4">
         <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
-            <.back navigate={~p"/manage/members/management/roles"}>Back to Roles</.back>
+            <.back navigate={~p"/manage/members/management/roles"}>
+              {gettext("Back to Roles")}
+            </.back>
 
             <%= if can?(@current_scope.user, "roles.update") and not @role.is_system_role do %>
               <.link
                 navigate={~p"/manage/members/management/roles/#{@role.id}/edit"}
                 class="primary-btn"
               >
-                Edit Role
+                {gettext("Edit Role")}
               </.link>
             <% end %>
           </div>
@@ -72,7 +74,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                   {String.capitalize(@role.name)}
                   <%= if @role.is_system_role do %>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-voile-info/10 text-voile-info">
-                      System Role
+                      {gettext("System Role")}
                     </span>
                   <% end %>
                 </h3>
@@ -84,7 +86,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
 
               <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
-                  Permissions ({length(@role.permissions)})
+                  {gettext("Permissions")} ({length(@role.permissions)})
                 </h4>
 
                 <%= if length(@role.permissions) > 0 do %>
@@ -108,14 +110,14 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                   </div>
                 <% else %>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    No permissions assigned to this role.
+                    {gettext("No permissions assigned to this role.")}
                   </p>
                 <% end %>
               </div>
 
               <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
-                  Assigned Users ({length(@role_users)})
+                  {gettext("Assigned Users")} ({length(@role_users)})
                 </h4>
 
                 <%= if length(@role_users) > 0 do %>
@@ -157,7 +159,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                   <% end %>
                 <% else %>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    No users assigned to this role.
+                    {gettext("No users assigned to this role.")}
                   </p>
                 <% end %>
               </div>

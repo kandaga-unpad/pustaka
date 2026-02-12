@@ -13,7 +13,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
     socket =
       socket
       |> assign(permission: permission)
-      |> assign(page_title: "Edit Permission - #{permission.name}")
+      |> assign(page_title: gettext("Edit Permission") <> " - #{permission.name}")
       |> assign(current_path: "/manage/settings/permissions/#{id}/edit")
       |> load_permission_roles()
 
@@ -28,7 +28,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
     {:noreply,
      socket
      |> assign(permission: permission)
-     |> put_flash(:info, "Permission updated successfully")}
+     |> put_flash(:info, gettext("Permission updated successfully"))}
   end
 
   @impl true
@@ -36,8 +36,8 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
     ~H"""
     <div>
       <.header>
-        Edit Permission
-        <:subtitle>Update permission information</:subtitle>
+        {gettext("Edit Permission")}
+        <:subtitle>{gettext("Update permission information")}</:subtitle>
       </.header>
 
       <div class="flex gap-4">
@@ -51,7 +51,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
         <div class="w-full">
           <div class="mb-4">
             <.back navigate={~p"/manage/settings/permissions/#{@permission.id}"}>
-              Back to Permission
+              {gettext("Back to Permission")}
             </.back>
           </div>
 
@@ -59,13 +59,13 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
             <%!-- Permission Basic Information --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                Basic Information
+                {gettext("Basic Information")}
               </h3>
 
               <.live_component
                 module={VoileWeb.Users.Permission.ManageLive.FormComponent}
                 id={@permission.id}
-                title="Edit Permission"
+                title={gettext("Edit Permission")}
                 action={:edit}
                 permission={@permission}
                 patch={~p"/manage/settings/permissions/#{@permission.id}"}
@@ -75,16 +75,16 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
             <%!-- Roles with this Permission --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                Roles with This Permission
+                {gettext("Roles with This Permission")}
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                  ({length(@roles)} role{if length(@roles) != 1, do: "s"})
+                  ({length(@roles)} {gettext("role")}{if length(@roles) != 1, do: gettext("s")})
                 </span>
               </h3>
 
               <%= if @roles == [] do %>
                 <div class="text-center py-8 text-gray-500 dark:text-gray-400">
                   <.icon name="hero-shield-exclamation" class="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No roles currently have this permission</p>
+                  <p>{gettext("No roles currently have this permission")}</p>
                 </div>
               <% else %>
                 <div class="space-y-2">
@@ -100,7 +100,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
                             {String.capitalize(role.name)}
                             <%= if role.is_system_role do %>
                               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-primary/10 text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
-                                System
+                                {gettext("System")}
                               </span>
                             <% end %>
                           </div>
@@ -117,7 +117,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
                         navigate={~p"/manage/settings/roles/#{role.id}"}
                         class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                       >
-                        View Role →
+                        {gettext("View Role →")}
                       </.link>
                     </div>
                   <% end %>

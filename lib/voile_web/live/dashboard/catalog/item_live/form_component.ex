@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
     <div class="space-y-4">
       <.header>
         {@title}
-        <:subtitle>Use this form to manage item records in your database.</:subtitle>
+        <:subtitle>{gettext("Use this form to manage item records in your database.")}</:subtitle>
       </.header>
 
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
@@ -30,7 +30,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <div class="col-span-full flex items-center gap-3">
               <.input field={@form[:collection_id]} type="hidden" />
               <label class="text-xs font-medium text-gray-700 dark:text-gray-300 w-32">
-                Collection
+                {gettext("Collection")}
               </label>
               <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                 {@collection_name || ""}
@@ -39,9 +39,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <!-- Identifiers (editable only for super_admin) -->
             <div class="col-span-full">
               <%= if @editable_identifiers do %>
-                <.input field={@form[:item_code]} type="text" label="Item code" />
+                <.input field={@form[:item_code]} type="text" label={gettext("Item code")} />
               <% else %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Item code</label>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {gettext("Item code")}
+                </label>
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:item_code].value || ""}
                 </div>
@@ -51,10 +53,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
             <div class="col-span-full">
               <%= if @editable_identifiers do %>
-                <.input field={@form[:inventory_code]} type="text" label="Inventory code" />
+                <.input field={@form[:inventory_code]} type="text" label={gettext("Inventory code")} />
               <% else %>
                 <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  Inventory code
+                  {gettext("Inventory code")}
                 </label>
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:inventory_code].value || ""}
@@ -65,9 +67,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
             <div class="col-span-full">
               <%= if @editable_identifiers do %>
-                <.input field={@form[:barcode]} type="text" label="Barcode" />
+                <.input field={@form[:barcode]} type="text" label={gettext("Barcode")} />
               <% else %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Barcode</label>
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {gettext("Barcode")}
+                </label>
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
                   {@form[:barcode].value || ""}
                 </div>
@@ -78,7 +82,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <div>
               <%= if assigns[:lock_unit_id] && @lock_unit_id do %>
                 <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  Unit / Node
+                  {gettext("Unit / Node")}
                 </label>
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white">
                   {Enum.find(@nodes, fn {_label, id} -> id == @form[:unit_id].value end) |> elem(0)}
@@ -89,7 +93,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                   field={@form[:unit_id]}
                   type="select"
                   options={@nodes || []}
-                  label="Unit / Node"
+                  label={gettext("Unit / Node")}
                 />
               <% end %>
             </div>
@@ -99,11 +103,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 field={@form[:item_location_id]}
                 type="select"
                 options={@locations || []}
-                label="Location (site)"
+                label={gettext("Location (site)")}
               />
               <%= if (@locations || []) == [] do %>
                 <p class="text-xs text-gray-500 mt-1">
-                  Choose a Unit/Node first to enable location options.
+                  {gettext("Choose a Unit/Node first to enable location options.")}
                 </p>
               <% end %>
             </div>
@@ -112,7 +116,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               <.input
                 field={@form[:price]}
                 type="number"
-                label="Price"
+                label={gettext("Price")}
               />
             </div>
             <!-- Status/Condition/Availability (compact row) -->
@@ -121,7 +125,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 field={@form[:status]}
                 type="select"
                 options={Item.status_options()}
-                label="Status"
+                label={gettext("Status")}
               />
             </div>
 
@@ -130,7 +134,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 field={@form[:condition]}
                 type="select"
                 options={Item.condition_options()}
-                label="Condition"
+                label={gettext("Condition")}
               />
             </div>
 
@@ -139,20 +143,28 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                 field={@form[:availability]}
                 type="select"
                 options={Item.availability_options()}
-                label="Availability"
+                label={gettext("Availability")}
               />
             </div>
             <!-- Location text (full width) -->
             <div class="col-span-full">
-              <.input field={@form[:location]} type="text" label="Location (text)" />
+              <.input field={@form[:location]} type="text" label={gettext("Location (text)")} />
             </div>
             <!-- Dates and times (compact) -->
             <div>
-              <.input field={@form[:acquisition_date]} type="date" label="Acquisition date" />
+              <.input
+                field={@form[:acquisition_date]}
+                type="date"
+                label={gettext("Acquisition date")}
+              />
             </div>
 
             <div>
-              <.input field={@form[:last_inventory_date]} type="date" label="Last inventory date" />
+              <.input
+                field={@form[:last_inventory_date]}
+                type="date"
+                label={gettext("Last inventory date")}
+              />
             </div>
 
             <div class="col-span-full">
@@ -160,22 +172,26 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               <.input field={@form[:last_circulated]} type="hidden" />
             </div>
 
-            <div><.input field={@form[:rfid_tag]} type="text" label="RFID tag" /></div>
+            <div><.input field={@form[:rfid_tag]} type="text" label={gettext("RFID tag")} /></div>
 
             <div class="col-span-full">
-              <.input field={@form[:legacy_item_code]} type="text" label="Legacy item code" />
+              <.input
+                field={@form[:legacy_item_code]}
+                type="text"
+                label={gettext("Legacy item code")}
+              />
             </div>
           </div>
 
           <div class="flex items-center gap-3 pt-2">
-            <.button phx-disable-with="Saving..." class="success-btn">
-              <.icon name="hero-check" class="w-4 h-4" /> Save
+            <.button phx-disable-with={gettext("Saving...")} class="success-btn">
+              <.icon name="hero-check" class="w-4 h-4" /> {gettext("Save")}
             </.button>
             <.link patch={@patch} class="inline-block">
-              <.button type="button" class="cancel-btn">Cancel</.button>
+              <.button type="button" class="cancel-btn">{gettext("Cancel")}</.button>
             </.link>
             <div class="ml-auto text-sm text-gray-500">
-              Tip: edit fields and click Save to persist changes.
+              {gettext("Tip: edit fields and click Save to persist changes.")}
             </div>
           </div>
         </.form>
@@ -304,7 +320,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Item updated successfully")
+         |> put_flash(:info, gettext("Item updated successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -319,7 +335,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Item created successfully")
+         |> put_flash(:info, gettext("Item created successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

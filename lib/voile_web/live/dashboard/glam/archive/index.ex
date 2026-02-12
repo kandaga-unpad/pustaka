@@ -21,7 +21,7 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Archive Dashboard")
+      |> assign(:page_title, gettext("Archive Dashboard"))
       |> assign(:archive_collections, archive_collections)
       |> assign(:total_collections, total_collections)
       |> assign(:total_items, total_items)
@@ -37,17 +37,17 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "GLAM", path: ~p"/manage/glam"},
-        %{label: "Archive", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+        %{label: gettext("Archive"), path: nil}
       ]} /> <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2">Archive Management</h1>
+            <h1 class="text-3xl font-bold mb-2">{gettext("Archive Management")}</h1>
 
             <p class="text-amber-100 text-lg">
-              Manage historical documents, records, and institutional materials
+              {gettext("Manage historical documents, records, and institutional materials")}
             </p>
           </div>
 
@@ -71,9 +71,13 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">View Collections</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("View Collections")}
+              </h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all archive collections</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all archive collections")}
+              </p>
             </div>
           </div>
         </.link>
@@ -87,9 +91,11 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">New Collection</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("New Collection")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Create a new archive collection</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Create a new archive collection")}
+              </p>
             </div>
           </div>
         </.link>
@@ -103,16 +109,20 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">View Items</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("View Items")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all archive items</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all archive items")}
+              </p>
             </div>
           </div>
         </.link>
       </div>
       <%!-- Statistics --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Archive Statistics</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {gettext("Archive Statistics")}
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
@@ -120,13 +130,15 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
               {@total_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {gettext("Total Collections")}
+            </div>
           </div>
 
           <div class="text-center">
             <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">{@total_items}</div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Total Items")}</div>
           </div>
 
           <div class="text-center">
@@ -134,7 +146,7 @@ defmodule VoileWeb.Dashboard.Glam.Archive.Index do
               {@published_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Published")}</div>
           </div>
         </div>
       </div>

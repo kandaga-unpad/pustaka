@@ -46,16 +46,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "GLAM", path: ~p"/manage/glam"},
-        %{label: "Library", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+        %{label: gettext("Library"), path: nil}
       ]} /> <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2">Library Management</h1>
+            <h1 class="text-3xl font-bold mb-2">{gettext("Library Management")}</h1>
 
-            <p class="text-white text-lg">Manage library collections, circulation, and items</p>
+            <p class="text-white text-lg">
+              {gettext("Manage library collections, circulation, and items")}
+            </p>
           </div>
 
           <div class="hidden md:block">
@@ -78,9 +80,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">View Collections</h4>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("View Collections")}
+              </h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all library collections</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all library collections")}
+              </p>
             </div>
           </div>
         </.link>
@@ -97,9 +103,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">New Collection</h4>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("New Collection")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Create a new library collection</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Create a new library collection")}
+              </p>
             </div>
           </div>
         </.link>
@@ -113,16 +121,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
             </div>
 
             <div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">View Items</h4>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("View Items")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all library items</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all library items")}
+              </p>
             </div>
           </div>
         </.link>
       </div>
       <%!-- Statistics --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Library Statistics</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {gettext("Library Statistics")}
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
@@ -130,7 +142,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               {@total_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {gettext("Total Collections")}
+            </div>
           </div>
 
           <div class="text-center">
@@ -138,7 +152,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               {@total_items}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Total Items")}</div>
           </div>
 
           <div class="text-center">
@@ -146,13 +160,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               {@published_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Published")}</div>
           </div>
         </div>
       </div>
       <%!-- Library Operationals --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Library Operations</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {gettext("Library Operations")}
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <%= if Authorization.is_super_admin?(@user) do %>
@@ -169,10 +185,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                 </div>
 
                 <div>
-                  <h5 class="font-semibold text-gray-900 dark:text-white">Manage Circulations</h5>
+                  <h5 class="font-semibold text-gray-900 dark:text-white">
+                    {gettext("Manage Circulations")}
+                  </h5>
 
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    View and manage book circulations
+                    {gettext("View and manage book circulations")}
                   </p>
                 </div>
               </div>
@@ -192,10 +210,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
 
               <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">Circulation Report</h5>
+                <h5 class="font-semibold text-gray-900 dark:text-white">
+                  {gettext("Circulation Report")}
+                </h5>
 
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  View circulation statistics and activity
+                  {gettext("View circulation statistics and activity")}
                 </p>
               </div>
             </div>
@@ -213,10 +233,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
 
               <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">Start Transaction</h5>
+                <h5 class="font-semibold text-gray-900 dark:text-white">
+                  {gettext("Start Transaction")}
+                </h5>
 
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Start a new transaction or return a book
+                  {gettext("Start a new transaction or return a book")}
                 </p>
               </div>
             </div>
@@ -228,7 +250,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                   <.icon
                     name="hero-arrow-right-circle"
                     class="w-6 h-6"
-                  /> <span>Quick Checkout</span>
+                  /> <span>{gettext("Quick Checkout")}</span>
                 </span>
               </button>
               <button phx-click="show_quick_return" class="w-full btn btn-warning p-5 rounded-lg">
@@ -236,7 +258,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
                   <.icon
                     name="hero-arrow-left-circle"
                     class="w-6 h-6"
-                  /> <span>Quick Return</span>
+                  /> <span>{gettext("Quick Return")}</span>
                 </span>
               </button>
             </div>
@@ -255,10 +277,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
 
               <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">Loan Reminders</h5>
+                <h5 class="font-semibold text-gray-900 dark:text-white">
+                  {gettext("Loan Reminders")}
+                </h5>
 
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  View and manage loan reminders for library items
+                  {gettext("View and manage loan reminders for library items")}
                 </p>
               </div>
             </div>

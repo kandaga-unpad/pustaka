@@ -17,7 +17,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
 
     socket =
       socket
-      |> assign(:page_title, "GLAM Dashboard")
+      |> assign(:page_title, gettext("GLAM Dashboard"))
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
 
@@ -85,23 +85,23 @@ defmodule VoileWeb.Dashboard.Glam.Index do
               }
               value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
               class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
-              label="Filter node"
+              label={gettext("Filter node")}
             />
           </.form>
         </div>
       <% end %>
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "GLAM", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("GLAM"), path: nil}
       ]} /> <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2">GLAM Management Dashboard</h1>
+            <h1 class="text-3xl font-bold mb-2">{gettext("GLAM Management Dashboard")}</h1>
 
             <p class="text-white text-lg">
-              Gallery, Library, Archive & Museum - Unified Collections Management
+              {gettext("Gallery, Library, Archive & Museum - Unified Collections Management")}
             </p>
           </div>
 
@@ -114,27 +114,27 @@ defmodule VoileWeb.Dashboard.Glam.Index do
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <.stat_card
-          title="Total Collections"
+          title={gettext("Total Collections")}
           value={@glam_stats.total_collections}
           icon="hero-rectangle-stack"
           color="blue"
           trend="+12%"
         />
         <.stat_card
-          title="Total Items"
+          title={gettext("Total Items")}
           value={@glam_stats.total_items}
           icon="hero-cube"
           color="green"
           trend="+8%"
         />
         <.stat_card
-          title="Total Nodes"
+          title={gettext("Total Nodes")}
           value={@glam_stats.total_nodes}
           icon="hero-map-pin"
           color="purple"
         />
         <.stat_card
-          title="Resource Classes"
+          title={gettext("Resource Classes")}
           value={@glam_stats.resource_classes}
           icon="hero-tag"
           color="orange"
@@ -145,14 +145,16 @@ defmodule VoileWeb.Dashboard.Glam.Index do
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Collections</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              {gettext("Recent Collections")}
+            </h2>
           </div>
 
           <.link
             navigate="/manage/catalog/collections"
             class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
           >
-            View All →
+            {gettext("View All")} →
           </.link>
         </div>
 

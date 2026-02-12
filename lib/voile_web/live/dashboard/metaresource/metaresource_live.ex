@@ -4,7 +4,7 @@ defmodule VoileWeb.Dashboard.Metaresource.MetaresourceLive do
   def render(assigns) do
     ~H"""
     <div class="">
-      <h5>Metaresource Dashboard</h5>
+      <h5>{gettext("Metaresource Dashboard")}</h5>
     </div>
     """
   end
@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Metaresource.MetaresourceLive do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page_title, "Metaresource Component")
+      |> assign(:page_title, gettext("Metaresource Component"))
 
     {:ok, socket}
   end

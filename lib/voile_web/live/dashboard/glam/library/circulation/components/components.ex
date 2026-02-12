@@ -262,10 +262,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Checkout</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {gettext("Quick Checkout")}
+            </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              Enter member identifier and item code to quickly checkout an item.
+              {gettext("Enter member identifier and item code to quickly checkout an item.")}
             </p>
           </div>
         </div>
@@ -281,16 +283,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             field={f[:member_id]}
             name="member_id"
             type="text"
-            label="Member ID or Username"
-            placeholder="Enter member ID or username"
+            label={gettext("Member ID or Username")}
+            placeholder={gettext("Enter member ID or username")}
             required
           />
           <.input
             field={f[:item_id]}
             name="item_id"
             type="text"
-            label="Item Code"
-            placeholder="Enter item barcode or code"
+            label={gettext("Item Code")}
+            placeholder={gettext("Enter item barcode or code")}
             required
           />
           <div class="flex justify-end items-center space-x-3">
@@ -299,9 +301,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               phx-click="cancel_quick_checkout"
               class="secondary-btn"
             >
-              Cancel
+              {gettext("Cancel")}
             </button>
-            <button type="submit" class="primary-btn">Checkout</button>
+            <button type="submit" class="primary-btn">{gettext("Checkout")}</button>
           </div>
         </.form>
       </div>
@@ -334,23 +336,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Return</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {gettext("Quick Return")}
+            </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              Enter item code to quickly return an item.
+              {gettext("Enter item code to quickly return an item.")}
             </p>
           </div>
         </div>
 
         <%= if @quick_return_transaction do %>
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">Transaction found</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Transaction found")}</div>
 
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {@quick_return_transaction.item.item_code}
             </div>
 
-            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Predicted fine</div>
+            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              {gettext("Predicted fine")}
+            </div>
 
             <div class="mt-1 text-lg font-semibold text-voile-error dark:text-voile-error">
               Rp {Decimal.to_string(@quick_return_predicted_fine)}
@@ -368,15 +374,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               field={f[:payment_amount]}
               name="payment_amount"
               type="text"
-              label="Payment Amount"
+              label={gettext("Payment Amount")}
               value={Decimal.to_string(@quick_return_predicted_fine)}
             />
             <.input
               field={f[:payment_method]}
               name="payment_method"
               type="select"
-              options={[{"Cash", "cash"}, {"Card", "card"}, {"Other", "other"}]}
-              label="Payment Method"
+              options={[
+                {gettext("Cash"), "cash"},
+                {gettext("Card"), "card"},
+                {gettext("Other"), "other"}
+              ]}
+              label={gettext("Payment Method")}
               value="cash"
             />
             <div class="flex justify-end items-center space-x-3">
@@ -385,13 +395,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 phx-click="cancel_quick_return"
                 class="secondary-btn"
               >
-                Cancel
+                {gettext("Cancel")}
               </button>
               <button
                 type="submit"
                 class="success-btn"
               >
-                Return
+                {gettext("Return")}
               </button>
             </div>
             <input type="hidden" name="transaction_id" value={@quick_return_transaction.id} />
@@ -408,8 +418,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               field={f[:item_code]}
               name="item_code"
               type="text"
-              label="Item Code"
-              placeholder="Enter item barcode or code"
+              label={gettext("Item Code")}
+              placeholder={gettext("Enter item barcode or code")}
               required
             />
             <div class="flex justify-end items-center space-x-3">
@@ -418,9 +428,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 phx-click="cancel_quick_return"
                 class="secondary-btn"
               >
-                Cancel
+                {gettext("Cancel")}
               </button>
-              <button type="submit" class="primary-btn">Find Transaction</button>
+              <button type="submit" class="primary-btn">{gettext("Find Transaction")}</button>
             </div>
           </.form>
         <% end %>
@@ -454,10 +464,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Member Lookup</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {gettext("Member Lookup")}
+            </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              Search for members by name, username, or ID.
+              {gettext("Search for members by name, username, or ID.")}
             </p>
           </div>
         </div>
@@ -474,8 +486,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             field={f[:query]}
             name="query"
             type="text"
-            label="Search"
-            placeholder="Enter name, username, or ID"
+            label={gettext("Search")}
+            placeholder={gettext("Enter name, username, or ID")}
           />
         </.form>
 
@@ -493,11 +505,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
                 <p class="text-sm text-gray-600 dark:text-gray-300">@{@selected_member.username}</p>
 
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {@selected_member.id}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {gettext("ID:")} {@selected_member.id}
+                </p>
 
                 <%= if @selected_member.email do %>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Email: {@selected_member.email}
+                    {gettext("Email:")} {@selected_member.email}
                   </p>
                 <% end %>
 
@@ -544,7 +558,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             phx-click="cancel_member_lookup"
             class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
           >
-            Close
+            {gettext("Close")}
           </button>
         </div>
       </div>
@@ -575,16 +589,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Return Item</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {gettext("Return Item")}
+            </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              Process the return and optionally accept payment for any fine.
+              {gettext("Process the return and optionally accept payment for any fine.")}
             </p>
           </div>
         </div>
 
         <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-          <div class="text-xs text-gray-500 dark:text-gray-400">Predicted fine</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Predicted fine")}</div>
 
           <div class="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
             Rp {Decimal.to_string(@predicted_fine || Decimal.new("0"))}
@@ -597,15 +613,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               field={f[:payment_amount]}
               name="payment_amount"
               type="text"
-              label="Payment Amount"
+              label={gettext("Payment Amount")}
               value="0"
             />
             <.input
               field={f[:payment_method]}
               name="payment_method"
               type="select"
-              options={[{"Cash", "cash"}, {"Card", "card"}, {"Other", "other"}]}
-              label="Payment Method"
+              options={[
+                {gettext("Cash"), "cash"},
+                {gettext("Card"), "card"},
+                {gettext("Other"), "other"}
+              ]}
+              label={gettext("Payment Method")}
               value={@payment_method || "cash"}
             />
           </div>
@@ -616,9 +636,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               phx-click="cancel_return"
               class="cancel-btn"
             >
-              Cancel
+              {gettext("Cancel")}
             </button>
-            <button type="submit" class="success-btn">Return</button>
+            <button type="submit" class="success-btn">{gettext("Return")}</button>
           </div>
 
           <input
@@ -656,27 +676,33 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Renew Item</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {gettext("Renew Item")}
+            </h3>
 
             <p class="text-sm text-gray-600 dark:text-gray-300">
-              Extend the due date for this transaction. You can use the recommended duration or enter a custom number of days.
+              {gettext(
+                "Extend the due date for this transaction. You can use the recommended duration or enter a custom number of days."
+              )}
             </p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">Recommended</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Recommended")}</div>
 
             <div class="mt-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
               {if @recommended_renew_days, do: "#{@recommended_renew_days} days", else: "-"}
             </div>
 
-            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">Based on member type</div>
+            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {gettext("Based on member type")}
+            </div>
           </div>
 
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">Current due date</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Current due date")}</div>
 
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {if @transaction && @transaction.due_date,
@@ -684,7 +710,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 else: "-"}
             </div>
 
-            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">Expected new due date</div>
+            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+              {gettext("Expected new due date")}
+            </div>
 
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {if @preview_due_date, do: format_datetime(@preview_due_date), else: "-"}
@@ -707,7 +735,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 name="renew_days"
                 type="number"
                 min="1"
-                label="Renewal Duration (days)"
+                label={gettext("Renewal Duration (days)")}
                 value={@recommended_renew_days || 1}
               />
             <% else %>
@@ -724,7 +752,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
             <% end %>
 
             <div class="ml-auto flex items-center space-x-3">
-              <div class="text-sm text-gray-600 dark:text-gray-300">Remaining</div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">{gettext("Remaining")}</div>
 
               <div class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-voile-warning/10 text-voile-warning dark:bg-voile-warning/20 dark:text-voile-warning">
                 {@remaining_renewals || 0}
@@ -735,7 +763,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <%= if @current_user && !is_super_admin?(@current_user) do %>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               <.icon name="hero-information-circle" class="w-4 h-4 inline" />
-              Only super admins can change the renewal duration. Non-super admins must use the recommended duration.
+              {gettext(
+                "Only super admins can change the renewal duration. Non-super admins must use the recommended duration."
+              )}
             </p>
           <% end %>
 
@@ -745,7 +775,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               phx-click="cancel_renew"
               class="cancel-btn"
             >
-              Cancel
+              {gettext("Cancel")}
             </button>
             <button
               type="submit"
@@ -756,7 +786,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               ]}
               disabled={@remaining_renewals <= 0}
             >
-              Renew
+              {gettext("Renew")}
             </button>
           </div>
 

@@ -9,14 +9,14 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.FormComponent do
     <div>
       <.header>
         {@title}
-        <:subtitle>Manage place records.</:subtitle>
+        <:subtitle>{gettext("Manage place records.")}</:subtitle>
       </.header>
 
       <.form for={@form} id="place-form" phx-target={@myself} phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <div class="mt-4 flex gap-3">
-          <.button phx-disable-with="Saving...">Save Place</.button>
-          <.link patch={@patch} class="btn">Cancel</.link>
+          <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Place")}</.button>
+          <.link patch={@patch} class="btn">{gettext("Cancel")}</.link>
         </div>
       </.form>
     </div>
@@ -52,7 +52,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Place updated successfully.")
+         |> put_flash(:info, gettext("Place updated successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -67,7 +67,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Place created successfully.")
+         |> put_flash(:info, gettext("Place created successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Member Reports")
+      |> assign(:page_title, gettext("Member Reports"))
       |> assign(:user, user)
       |> load_report_data()
 
@@ -25,16 +25,16 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Reports", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: ~p"/manage/members"},
+        %{label: gettext("Reports"), path: nil}
       ]} />
 
       <%!-- Page Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Member Reports</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{gettext("Member Reports")}</h1>
         <p class="text-gray-600 dark:text-gray-300 mt-1">
-          Comprehensive reports on member activity and status
+          {gettext("Comprehensive reports on member activity and status")}
         </p>
       </div>
 
@@ -50,10 +50,10 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
               </div>
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                  Expiring Memberships
+                  {gettext("Expiring Memberships")}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                  Members with expiring memberships
+                  {gettext("Members with expiring memberships")}
                 </p>
                 <p class="text-2xl font-bold text-orange-600 mt-2">{@expiring_count}</p>
               </div>
@@ -70,8 +70,12 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
                 </div>
               </div>
               <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Overdue Items</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">Members with overdue loans</p>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                  {gettext("Overdue Items")}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                  {gettext("Members with overdue loans")}
+                </p>
                 <p class="text-2xl font-bold text-red-600 mt-2">{@overdue_count}</p>
               </div>
             </div>
@@ -86,8 +90,12 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
               </div>
             </div>
             <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Active Members</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300">Currently active members</p>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                {gettext("Active Members")}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">
+                {gettext("Currently active members")}
+              </p>
               <p class="text-2xl font-bold text-blue-600 mt-2">{@active_members_count}</p>
             </div>
           </div>
@@ -96,28 +104,30 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
 
       <%!-- Quick Stats --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Membership Overview</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Membership Overview")}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <.stat_card
-            title="Total Members"
+            title={gettext("Total Members")}
             value={@total_members}
             icon="hero-users"
             color="blue"
           />
           <.stat_card
-            title="Active Members"
+            title={gettext("Active Members")}
             value={@active_members_count}
             icon="hero-user-group"
             color="green"
           />
           <.stat_card
-            title="Suspended Members"
+            title={gettext("Suspended Members")}
             value={@suspended_members_count}
             icon="hero-exclamation-triangle"
             color="red"
           />
           <.stat_card
-            title="Expired Members"
+            title={gettext("Expired Members")}
             value={@expired_members_count}
             icon="hero-x-mark"
             color="orange"

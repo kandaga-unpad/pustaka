@@ -138,19 +138,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
   def render(assigns) do
     ~H"""
     <.breadcrumb items={[
-      %{label: "Manage", path: ~p"/manage"},
-      %{label: "GLAM", path: ~p"/manage/glam"},
-      %{label: "Library", path: ~p"/manage/glam/library"},
-      %{label: "Ledgers", path: nil}
+      %{label: gettext("Manage"), path: ~p"/manage"},
+      %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+      %{label: gettext("Library"), path: ~p"/manage/glam/library"},
+      %{label: gettext("Ledgers"), path: nil}
     ]} />
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
-      <.back navigate="/manage/glam/library">Back</.back>
+      <.back navigate="/manage/glam/library">{gettext("Back")}</.back>
 
       <div class="text-center flex-1">
-        <h1 class="text-2xl font-bold">Start Library Transactions</h1>
+        <h1 class="text-2xl font-bold">{gettext("Start Library Transactions")}</h1>
 
         <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-          Search for a member to start circulation transactions
+          {gettext("Search for a member to start circulation transactions")}
         </p>
       </div>
 
@@ -166,10 +166,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               name="hero-magnifying-glass"
               class="w-16 h-16 mx-auto text-indigo-600 dark:text-indigo-400 mb-4"
             />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Find Member</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              {gettext("Find Member")}
+            </h2>
 
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Search by identifier, name, or email
+              {gettext("Search by identifier, name, or email")}
             </p>
           </div>
 
@@ -179,7 +181,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 for="member-search"
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                Search Member
+                {gettext("Search Member")}
               </label>
               <input
                 type="text"
@@ -188,7 +190,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 phx-keyup="search_input"
                 phx-debounce="300"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-lg"
-                placeholder="Type identifier, name, or email..."
+                placeholder={gettext("Type identifier, name, or email...")}
                 autocomplete="off"
                 autofocus
               />
@@ -214,7 +216,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                             <span class="flex items-center gap-1">
                               <.icon name="hero-identification" class="w-4 h-4" /> {if member.identifier,
                                 do: Decimal.to_string(member.identifier),
-                                else: "No ID"}
+                                else: gettext("No ID")}
                             </span>
                             <span class="flex items-center gap-1">
                               <.icon name="hero-envelope" class="w-4 h-4" /> {member.email}
@@ -255,7 +257,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
           <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400 mb-24">
             <p>
               <.icon name="hero-information-circle" class="w-4 h-4 inline mr-1" />
-              Start typing to see matching members
+              {gettext("Start typing to see matching members")}
             </p>
           </div>
         </div>
@@ -278,7 +280,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   <p class="text-indigo-100 mt-1">
                     {if @selected_member.user_type,
                       do: @selected_member.user_type.name,
-                      else: "No Member Type"}
+                      else: gettext("No Member Type")}
                   </p>
                 </div>
               </div>
@@ -295,19 +297,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
           <%!-- Member Details --%>
           <div class="px-8 py-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Member Information
+              {gettext("Member Information")}
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="flex items-start gap-3">
                 <.icon name="hero-identification" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Identifier</p>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {gettext("Identifier")}
+                  </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {if @selected_member.identifier,
                       do: Decimal.to_string(@selected_member.identifier),
-                      else: "N/A"}
+                      else: gettext("N/A")}
                   </p>
                 </div>
               </div>
@@ -315,10 +319,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <div class="flex items-start gap-3">
                 <.icon name="hero-envelope" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {gettext("Email")}
+                  </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
-                    {@selected_member.email || "N/A"}
+                    {@selected_member.email || gettext("N/A")}
                   </p>
                 </div>
               </div>
@@ -326,10 +332,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <div class="flex items-start gap-3">
                 <.icon name="hero-phone" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</p>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {gettext("Phone")}
+                  </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
-                    {@selected_member.phone_number || "N/A"}
+                    {@selected_member.phone_number || gettext("N/A")}
                   </p>
                 </div>
               </div>
@@ -337,10 +345,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <div class="flex items-start gap-3">
                 <.icon name="hero-building-office" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</p>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {gettext("Organization")}
+                  </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
-                    {@selected_member.organization || "N/A"}
+                    {@selected_member.organization || gettext("N/A")}
                   </p>
                 </div>
               </div>
@@ -349,13 +359,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 <.icon name="hero-calendar" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Registration Date
+                    {gettext("Registration Date")}
                   </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     {if @selected_member.registration_date,
                       do: Calendar.strftime(@selected_member.registration_date, "%B %d, %Y"),
-                      else: "N/A"}
+                      else: gettext("N/A")}
                   </p>
                 </div>
               </div>
@@ -363,18 +373,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
               <div class="flex items-start gap-3">
                 <.icon name="hero-clock" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Expiry Date</p>
+                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {gettext("Expiry Date")}
+                  </p>
 
                   <p class="mt-1 text-base text-gray-900 dark:text-white">
                     <%= if @selected_member.expiry_date do %>
                       {Calendar.strftime(@selected_member.expiry_date, "%B %d, %Y")}
                       <%= if Date.compare(@selected_member.expiry_date, Date.utc_today()) == :lt do %>
                         <span class="ml-2 text-xs px-2 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                          Expired
+                          {gettext("Expired")}
                         </span>
                       <% end %>
                     <% else %>
-                      N/A
+                      {gettext("N/A")}
                     <% end %>
                   </p>
                 </div>
@@ -384,7 +396,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 <div class="flex items-start gap-3 md:col-span-2">
                   <.icon name="hero-map-pin" class="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Address</p>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      {gettext("Address")}
+                    </p>
 
                     <p class="mt-1 text-base text-gray-900 dark:text-white">
                       {@selected_member.address}
@@ -404,14 +418,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   </div>
 
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Member Expired</h3>
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                      {gettext("Member Expired")}
+                    </h3>
 
                     <p class="mt-1 text-sm text-red-700 dark:text-red-300">
-                      This member's account expired on {Calendar.strftime(
-                        @selected_member.expiry_date,
-                        "%B %d, %Y"
-                      )}.
-                      You cannot continue with transactions for expired members.
+                      {gettext(
+                        "This member's account expired on %{expiry_date}. You cannot continue with transactions for expired members.",
+                        expiry_date: Calendar.strftime(@selected_member.expiry_date, "%B %d, %Y")
+                      )}
                     </p>
                   </div>
                 </div>
@@ -423,7 +438,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                 phx-click="clear_selection"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold"
               >
-                <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> Change Member
+                <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> {gettext("Change Member")}
               </.button>
               <.button
                 phx-click="continue_transaction"
@@ -443,7 +458,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Index do
                   )
                 }
               >
-                <.icon name="hero-arrow-right" class="w-5 h-5 mr-2" /> Continue to Transaction
+                <.icon name="hero-arrow-right" class="w-5 h-5 mr-2" /> {gettext(
+                  "Continue to Transaction"
+                )}
               </.button>
             </div>
           </div>

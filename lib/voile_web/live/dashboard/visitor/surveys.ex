@@ -294,14 +294,16 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
     <div class="space-y-6">
       <!-- Header -->
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Survey Feedback Logs</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {gettext("Survey Feedback Logs")}
+        </h1>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Detailed logs of all visitor survey feedback
+          {gettext("Detailed logs of all visitor survey feedback")}
         </p>
       </div>
 
       <div class="mb-4">
-        <.back navigate="/manage/visitor/statistics">Back to Statistics</.back>
+        <.back navigate="/manage/visitor/statistics">{gettext("Back to Statistics")}</.back>
       </div>
       
     <!-- Statistics Summary -->
@@ -316,7 +318,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
                 />
               </div>
               <div class="ml-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">Total Surveys</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{gettext("Total Surveys")}</p>
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">
                   {format_number(@stats.total)}
                 </p>
@@ -330,7 +332,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
                 <.icon name="hero-star" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div class="ml-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{gettext("Average Rating")}</p>
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">
                   {if @stats.average_rating,
                     do: :erlang.float_to_binary(@stats.average_rating, decimals: 2),
@@ -341,7 +343,9 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           </div>
 
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Rating Distribution</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {gettext("Rating Distribution")}
+            </div>
             <div class="space-y-1">
               <%= for dist <- @stats.distribution do %>
                 <div class="flex items-center justify-between text-xs">
@@ -359,13 +363,13 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Filters")}</h2>
           <button
             type="button"
             phx-click="refresh"
             class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
           >
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> Refresh
+            <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
           </button>
         </div>
 
@@ -375,13 +379,13 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
             <form phx-change="filter_node">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Location/Faculty
+                  {gettext("Location/Faculty")}
                 </label>
                 <select
                   name="node_id"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 >
-                  <option value="">All Locations</option>
+                  <option value="">{gettext("All Locations")}</option>
                   <option
                     :for={node <- @nodes}
                     value={node.id}
@@ -395,11 +399,11 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           <% else %>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Location/Faculty
+                {gettext("Location/Faculty")}
               </label>
               <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600">
                 {Enum.find(@nodes, fn n -> n.id == @selected_node_id end)
-                |> then(fn n -> n && n.name end) || "Your Location"}
+                |> then(fn n -> n && n.name end) || gettext("Your Location")}
               </div>
             </div>
           <% end %>
@@ -408,14 +412,14 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           <form phx-change="filter_location">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Room/Location
+                {gettext("Room/Location")}
               </label>
               <select
                 name="location_id"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 disabled={@locations == []}
               >
-                <option value="">All Rooms</option>
+                <option value="">{gettext("All Rooms")}</option>
                 <option
                   :for={location <- @locations}
                   value={location.id}
@@ -431,18 +435,18 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           <form phx-change="filter_rating">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Rating
+                {gettext("Rating")}
               </label>
               <select
                 name="rating"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               >
-                <option value="">All Ratings</option>
-                <option value="5" selected={@selected_rating == 5}>5 Stars</option>
-                <option value="4" selected={@selected_rating == 4}>4 Stars</option>
-                <option value="3" selected={@selected_rating == 3}>3 Stars</option>
-                <option value="2" selected={@selected_rating == 2}>2 Stars</option>
-                <option value="1" selected={@selected_rating == 1}>1 Star</option>
+                <option value="">{gettext("All Ratings")}</option>
+                <option value="5" selected={@selected_rating == 5}>{gettext("5 Stars")}</option>
+                <option value="4" selected={@selected_rating == 4}>{gettext("4 Stars")}</option>
+                <option value="3" selected={@selected_rating == 3}>{gettext("3 Stars")}</option>
+                <option value="2" selected={@selected_rating == 2}>{gettext("2 Stars")}</option>
+                <option value="1" selected={@selected_rating == 1}>{gettext("1 Star")}</option>
               </select>
             </div>
           </form>
@@ -450,7 +454,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           <form phx-change="update_from_date">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                From Date
+                {gettext("From Date")}
               </label>
               <input
                 type="date"
@@ -464,7 +468,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           <form phx-change="update_to_date">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                To Date
+                {gettext("To Date")}
               </label>
               <input
                 type="date"
@@ -480,12 +484,13 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
     <!-- Results Info -->
       <div class="flex items-center justify-between">
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Showing <span class="font-semibold">{length(@surveys)}</span>
-          of <span class="font-semibold">{format_number(@total_count)}</span>
-          total survey responses
+          {gettext("Showing %{count} of %{total} total survey responses",
+            count: length(@surveys),
+            total: format_number(@total_count)
+          )}
         </p>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Page {@page} of {@total_pages}
+          {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
         </p>
       </div>
       
@@ -497,9 +502,11 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
               name="hero-chat-bubble-left-right"
               class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
             />
-            <p class="text-lg text-gray-600 dark:text-gray-400">No survey responses found</p>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+              {gettext("No survey responses found")}
+            </p>
             <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
-              Try adjusting your filters or date range
+              {gettext("Try adjusting your filters or date range")}
             </p>
           </div>
         <% else %>
@@ -508,22 +515,22 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Date
+                    {gettext("Date")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Rating
+                    {gettext("Rating")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Comment
+                    {gettext("Comment")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Location/Room
+                    {gettext("Location/Room")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Faculty/Node
+                    {gettext("Faculty/Node")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Type
+                    {gettext("Type")}
                   </th>
                 </tr>
               </thead>
@@ -544,7 +551,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
                     <%= if survey.comment do %>
                       <div class="truncate" title={survey.comment}>{survey.comment}</div>
                     <% else %>
-                      <span class="text-gray-400 dark:text-gray-500">No comment</span>
+                      <span class="text-gray-400 dark:text-gray-500">{gettext("No comment")}</span>
                     <% end %>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
@@ -572,7 +579,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
             disabled={@page == 1}
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <.icon name="hero-chevron-left" class="w-4 h-4 inline" /> Previous
+            <.icon name="hero-chevron-left" class="w-4 h-4 inline" /> {gettext("Previous")}
           </button>
 
           <div class="flex items-center gap-2">
@@ -605,7 +612,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
             disabled={@page == @total_pages}
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next <.icon name="hero-chevron-right" class="w-4 h-4 inline" />
+            {gettext("Next")} <.icon name="hero-chevron-right" class="w-4 h-4 inline" />
           </button>
         </div>
       <% end %>

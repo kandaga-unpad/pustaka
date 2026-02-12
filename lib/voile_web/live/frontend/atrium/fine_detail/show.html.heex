@@ -6,7 +6,7 @@
         phx-click="go_back"
         class="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
       >
-        <.icon name="hero-arrow-left" class="w-5 h-5" /> Back to Atrium
+        <.icon name="hero-arrow-left" class="w-5 h-5" /> {gettext("Back to Atrium")}
       </button>
       <%!-- Fine Detail Card --%>
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
@@ -14,15 +14,15 @@
         <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white">
           <div class="flex items-start justify-between">
             <div>
-              <h1 class="text-3xl font-bold mb-2">Fine Details</h1>
+              <h1 class="text-3xl font-bold mb-2">{gettext("Fine Details")}</h1>
 
               <p class="text-indigo-100">
-                Fine ID: <span class="font-mono">#{@fine.id}</span>
+                {gettext("Fine ID:")} <span class="font-mono">#{@fine.id}</span>
               </p>
             </div>
 
             <div class="text-right">
-              <div class="text-sm text-indigo-100 mb-1">Status</div>
+              <div class="text-sm text-indigo-100 mb-1">{gettext("Status")}</div>
 
               <span class={[
                 "inline-flex px-4 py-2 rounded-full text-sm font-semibold",
@@ -34,7 +34,13 @@
                   _ -> "bg-gray-500 text-white"
                 end
               ]}>
-                {String.upcase(@fine.fine_status || "unknown")}
+                {case @fine.fine_status do
+                  "paid" -> gettext("Paid")
+                  "waived" -> gettext("Waived")
+                  "pending" -> gettext("Pending")
+                  "partial_paid" -> gettext("Partial Paid")
+                  _ -> gettext("Unknown")
+                end}
               </span>
             </div>
           </div>
@@ -44,7 +50,9 @@
           <%!-- Amount Section --%>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Original Amount</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                {gettext("Original Amount")}
+              </div>
 
               <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Rp {Decimal.to_string(@fine.amount)}
@@ -52,7 +60,9 @@
             </div>
 
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Paid Amount</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                {gettext("Paid Amount")}
+              </div>
 
               <div class="text-2xl font-bold text-green-600 dark:text-green-400">
                 Rp {Decimal.to_string(@fine.paid_amount || Decimal.new("0"))}
@@ -60,7 +70,9 @@
             </div>
 
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Balance</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                {gettext("Balance")}
+              </div>
 
               <div class="text-2xl font-bold text-red-600 dark:text-red-400">
                 Rp {Decimal.to_string(@fine.balance || @fine.amount)}
@@ -70,19 +82,21 @@
           <%!-- Fine Details --%>
           <div class="space-y-4">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Fine Information
+              {gettext("Fine Information")}
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex gap-3">
                 <.icon name="hero-calendar" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <div class="text-sm text-gray-600 dark:text-gray-400">Fine Date</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {gettext("Fine Date")}
+                  </div>
 
                   <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {if @fine.fine_date,
                       do: Calendar.strftime(@fine.fine_date, "%B %d, %Y"),
-                      else: "N/A"}
+                      else: gettext("N/A")}
                   </div>
                 </div>
               </div>
@@ -90,10 +104,12 @@
               <div class="flex gap-3">
                 <.icon name="hero-tag" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <div class="text-sm text-gray-600 dark:text-gray-400">Fine Type</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {gettext("Fine Type")}
+                  </div>
 
                   <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {String.capitalize(@fine.fine_type || "N/A")}
+                    {String.capitalize(@fine.fine_type || gettext("N/A"))}
                   </div>
                 </div>
               </div>
@@ -102,7 +118,9 @@
                 <div class="flex gap-3">
                   <.icon name="hero-check-circle" class="w-5 h-5 text-green-500 mt-0.5" />
                   <div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">Payment Date</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                      {gettext("Payment Date")}
+                    </div>
 
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {Calendar.strftime(@fine.payment_date, "%B %d, %Y at %I:%M %p")}
@@ -115,7 +133,9 @@
                 <div class="flex gap-3">
                   <.icon name="hero-credit-card" class="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">Payment Method</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                      {gettext("Payment Method")}
+                    </div>
 
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {String.upcase(@fine.payment_method)}
@@ -129,7 +149,9 @@
               <div class="flex gap-3">
                 <.icon name="hero-document-text" class="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <div class="text-sm text-gray-600 dark:text-gray-400">Description</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    {gettext("Description")}
+                  </div>
 
                   <div class="text-sm text-gray-900 dark:text-gray-100">
                     {@fine.description}
@@ -141,7 +163,9 @@
           <%!-- Related Item --%>
           <%= if @fine.item && @fine.item.collection do %>
             <div class="space-y-4">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Related Item</h2>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {gettext("Related Item")}
+              </h2>
 
               <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <%= if @fine.item.collection.thumbnail do %>
@@ -162,10 +186,13 @@
                   </h3>
 
                   <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                    <p>Item Code: <span class="font-mono">{@fine.item.item_code}</span></p>
+                    <p>
+                      {gettext("Item Code:")}
+                      <span class="font-mono">{@fine.item.item_code}</span>
+                    </p>
 
                     <%= if @fine.item.collection.creator_id do %>
-                      <p>Author: {@fine.item.collection.creator_id}</p>
+                      <p>{gettext("Author:")} {@fine.item.collection.creator_id}</p>
                     <% end %>
                   </div>
                 </div>
@@ -176,7 +203,7 @@
           <%= if @fine.payments && @fine.payments != [] do %>
             <div class="space-y-4">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Payment History
+                {gettext("Payment History")}
               </h2>
 
               <div class="space-y-3">
@@ -215,14 +242,14 @@
                       <div class="flex items-start justify-between mb-2">
                         <div>
                           <div class="font-medium text-gray-900 dark:text-gray-100">
-                            Payment #{payment.id}
+                            {gettext("Payment")} #{payment.id}
                           </div>
 
                           <div class="text-xs text-gray-500 dark:text-gray-400">
                             {if payment.payment_date,
                               do:
                                 Calendar.strftime(payment.payment_date, "%B %d, %Y at %I:%M %p"),
-                              else: "Pending"}
+                              else: gettext("Pending")}
                           </div>
                         </div>
 
@@ -247,7 +274,12 @@
                                 "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
                             end
                           ]}>
-                            {String.upcase(payment.status)}
+                            {case payment.status do
+                              "paid" -> gettext("Paid")
+                              "pending" -> gettext("Pending")
+                              "cancelled" -> gettext("Cancelled")
+                              _ -> gettext("Unknown")
+                            end}
                           </span>
                         </div>
                       </div>
@@ -255,7 +287,7 @@
                       <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
                         <%= if payment.payment_method do %>
                           <div>
-                            Method:
+                            {gettext("Method:")}
                             <span class="font-medium">
                               {String.upcase(payment.payment_method)}
                             </span>
@@ -264,7 +296,7 @@
 
                         <%= if payment.payment_channel do %>
                           <div>
-                            Channel:
+                            {gettext("Channel:")}
                             <span class="font-medium">
                               {String.upcase(payment.payment_channel)}
                             </span>
@@ -273,7 +305,7 @@
 
                         <%= if payment.processed_by do %>
                           <div class="col-span-2">
-                            Processed by:
+                            {gettext("Processed by:")}
                             <span class="font-medium">
                               {payment.processed_by.fullname || payment.processed_by.email}
                             </span>

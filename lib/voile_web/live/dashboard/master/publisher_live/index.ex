@@ -12,7 +12,10 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Index do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -23,7 +26,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Index do
 
       socket =
         socket
-        |> assign(:page_title, "Listing Publishers")
+        |> assign(:page_title, gettext("Listing Publishers"))
         |> assign(:live_action, :index)
         |> assign(:publishers, publishers)
         |> assign(:page, page)
@@ -40,19 +43,19 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Publisher")
+    |> assign(:page_title, gettext("Edit Publisher"))
     |> assign(:publisher, Master.get_publishers!(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Publisher")
+    |> assign(:page_title, gettext("New Publisher"))
     |> assign(:publisher, %Publishers{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Publishers")
+    |> assign(:page_title, gettext("Listing Publishers"))
     |> assign(:publisher, nil)
   end
 

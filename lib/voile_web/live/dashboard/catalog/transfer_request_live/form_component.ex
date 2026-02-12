@@ -49,7 +49,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.FormComponent do
       {:ok, _transfer_request} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Transfer request created successfully")
+         |> put_flash(:info, gettext("Transfer request created successfully"))
          |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

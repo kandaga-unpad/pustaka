@@ -9,10 +9,13 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Edit do
   def mount(%{"id" => id}, _session, socket) do
     user = socket.assigns.current_scope.user
 
-    unless Authorization.can?(user, "metadata.manage") do
+    if !Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -22,7 +25,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Edit do
       {:ok,
        socket
        |> assign(:member_type, member_type)
-       |> assign(:page_title, "Edit Member Type")
+       |> assign(:page_title, gettext("Edit Member Type"))
        |> assign(:live_action, :edit)}
     end
   end
@@ -34,7 +37,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Edit do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Member Type")
+    |> assign(:page_title, gettext("Edit Member Type"))
     |> assign(:member_type, Master.get_member_type!(id))
   end
 

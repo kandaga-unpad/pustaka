@@ -36,13 +36,13 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
          socket
          |> assign(:notifications_enabled, enabled == "true")
          |> assign(:save_status, :success)
-         |> put_flash(:info, "Notification settings updated successfully")}
+         |> put_flash(:info, gettext("Notification settings updated successfully"))}
 
       {:error, _changeset} ->
         {:noreply,
          socket
          |> assign(:save_status, :error)
-         |> put_flash(:error, "Failed to update notification settings")}
+         |> put_flash(:error, gettext("Failed to update notification settings"))}
     end
   end
 
@@ -56,13 +56,13 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
          socket
          |> assign(:sound_enabled, enabled == "true")
          |> assign(:save_status, :success)
-         |> put_flash(:info, "Sound notification settings updated successfully")}
+         |> put_flash(:info, gettext("Sound notification settings updated successfully"))}
 
       {:error, _changeset} ->
         {:noreply,
          socket
          |> assign(:save_status, :error)
-         |> put_flash(:error, "Failed to update sound notification settings")}
+         |> put_flash(:error, gettext("Failed to update sound notification settings"))}
     end
   end
 
@@ -76,13 +76,13 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
          socket
          |> assign(:desktop_enabled, enabled == "true")
          |> assign(:save_status, :success)
-         |> put_flash(:info, "Desktop notification settings updated successfully")}
+         |> put_flash(:info, gettext("Desktop notification settings updated successfully"))}
 
       {:error, _changeset} ->
         {:noreply,
          socket
          |> assign(:save_status, :error)
-         |> put_flash(:error, "Failed to update desktop notification settings")}
+         |> put_flash(:error, gettext("Failed to update desktop notification settings"))}
     end
   end
 
@@ -90,9 +90,11 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
   def render(assigns) do
     ~H"""
     <.header>
-      Reservation Notification Settings
+      {gettext("Reservation Notification Settings")}
       <:subtitle>
-        Configure how staff and admins receive notifications when members request reservations
+        {gettext(
+          "Configure how staff and admins receive notifications when members request reservations"
+        )}
       </:subtitle>
     </.header>
 
@@ -107,10 +109,10 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
       <div class="flex-1">
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-            <h3 class="text-lg font-medium">Notification Preferences</h3>
+            <h3 class="text-lg font-medium">{gettext("Notification Preferences")}</h3>
 
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Control how you want to be notified about new reservation requests
+              {gettext("Control how you want to be notified about new reservation requests")}
             </p>
           </div>
 
@@ -118,11 +120,12 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             <!-- Enable/Disable Notifications -->
             <div class="flex items-start">
               <div class="flex-1">
-                <h4 class="text-base font-medium">Enable Reservation Notifications</h4>
+                <h4 class="text-base font-medium">{gettext("Enable Reservation Notifications")}</h4>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Receive real-time notifications when members create reservation requests.
-                  When disabled, no notification popup will appear but reservations will still be recorded.
+                  {gettext(
+                    "Receive real-time notifications when members create reservation requests. When disabled, no notification popup will appear but reservations will still be recorded."
+                  )}
                 </p>
               </div>
 
@@ -149,10 +152,12 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               !@notifications_enabled && "opacity-50 pointer-events-none"
             ]}>
               <div class="flex-1">
-                <h4 class="text-base font-medium">Sound Alerts</h4>
+                <h4 class="text-base font-medium">{gettext("Sound Alerts")}</h4>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Play a sound when a new reservation notification arrives. Requires notifications to be enabled.
+                  {gettext(
+                    "Play a sound when a new reservation notification arrives. Requires notifications to be enabled."
+                  )}
                 </p>
               </div>
 
@@ -180,11 +185,12 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               !@notifications_enabled && "opacity-50 pointer-events-none"
             ]}>
               <div class="flex-1">
-                <h4 class="text-base font-medium">Browser Desktop Notifications</h4>
+                <h4 class="text-base font-medium">{gettext("Browser Desktop Notifications")}</h4>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Show browser notifications even when you're on a different tab.
-                  You'll need to grant permission in your browser. Requires notifications to be enabled.
+                  {gettext(
+                    "Show browser notifications even when you're on a different tab. You'll need to grant permission in your browser. Requires notifications to be enabled."
+                  )}
                 </p>
               </div>
 
@@ -210,7 +216,9 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             <div class="flex items-center gap-2 text-sm">
               <.icon name="hero-information-circle" class="w-5 h-5 text-blue-500" />
               <p class="text-gray-600 dark:text-gray-300">
-                These settings apply to your account only. Each staff member can configure their own notification preferences.
+                {gettext(
+                  "These settings apply to your account only. Each staff member can configure their own notification preferences."
+                )}
               </p>
             </div>
           </div>
@@ -224,18 +232,18 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
 
             <div class="ml-3">
               <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
-                About Reservation Notifications
+                {gettext("About Reservation Notifications")}
               </h3>
 
               <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
                 <ul class="list-disc list-inside space-y-1">
-                  <li>Notifications appear when members request to reserve items</li>
+                  <li>{gettext("Notifications appear when members request to reserve items")}</li>
 
-                  <li>Only staff and admin users receive these notifications</li>
+                  <li>{gettext("Only staff and admin users receive these notifications")}</li>
 
-                  <li>Notifications show member name, item details, and notes</li>
+                  <li>{gettext("Notifications show member name, item details, and notes")}</li>
 
-                  <li>Click on a notification to view the full reservation details</li>
+                  <li>{gettext("Click on a notification to view the full reservation details")}</li>
                 </ul>
               </div>
             </div>

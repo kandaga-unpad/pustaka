@@ -16,7 +16,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
       socket =
         socket
-        |> assign(page_title: "Role Management")
+        |> assign(page_title: gettext("Role Management"))
         |> assign(searching: false)
         |> assign(current_path: "/manage/members/management/roles")
         |> assign(page: 1, per_page: 10, total_pages: total_pages)
@@ -35,13 +35,13 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Role Management")
+    |> assign(:page_title, gettext("Role Management"))
     |> assign(:role, nil)
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Role")
+    |> assign(:page_title, gettext("New Role"))
     |> assign(:role, %Role{})
     |> assign_form(Role.changeset(%Role{}, %{}))
   end
@@ -50,7 +50,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
     role = PermissionManager.get_role(id)
 
     socket
-    |> assign(:page_title, "Edit Role")
+    |> assign(:page_title, gettext("Edit Role"))
     |> assign(:role, role)
     |> assign_form(Role.changeset(role, %{}))
   end
@@ -119,7 +119,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
   def handle_event("delete", %{"id" => id}, socket) do
     # Only super_admins can delete roles
     if not socket.assigns[:is_super_admin] do
-      {:noreply, put_flash(socket, :error, "Only super admins can delete roles")}
+      {:noreply, put_flash(socket, :error, gettext("Only super admins can delete roles"))}
     else
       role = PermissionManager.get_role(id)
 
@@ -129,13 +129,13 @@ defmodule VoileWeb.Users.Role.ManageLive do
             {:ok, _} ->
               {:noreply,
                socket
-               |> put_flash(:info, "Role deleted successfully")
+               |> put_flash(:info, gettext("Role deleted successfully"))
                |> stream_delete(:roles, role)}
 
             {:error, _changeset} ->
               {:noreply,
                socket
-               |> put_flash(:error, "Failed to delete role")}
+               |> put_flash(:error, gettext("Failed to delete role"))}
           end
 
         {:error, reason} ->
@@ -151,7 +151,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
       {:ok, role} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Role updated successfully")
+         |> put_flash(:info, gettext("Role updated successfully"))
          |> push_navigate(to: ~p"/manage/members/management/roles/#{role.id}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -180,7 +180,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Role created successfully")
+         |> put_flash(:info, gettext("Role created successfully"))
          |> push_navigate(to: ~p"/manage/members/management/roles/#{role.id}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -207,26 +207,28 @@ defmodule VoileWeb.Users.Role.ManageLive do
       <% else %>
         <%!-- Breadcrumb --%>
         <.breadcrumb items={[
-          %{label: "Manage", path: ~p"/manage"},
-          %{label: "Members", path: ~p"/manage/members"},
-          %{label: "Management", path: ~p"/manage/members/management"},
-          %{label: "Role Management", path: nil}
+          %{label: gettext("Manage"), path: ~p"/manage"},
+          %{label: gettext("Members"), path: ~p"/manage/members"},
+          %{label: gettext("Management"), path: ~p"/manage/members/management"},
+          %{label: gettext("Role Management"), path: nil}
         ]} />
 
         <%!-- Page Header --%>
         <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Role Management</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                {gettext("Role Management")}
+              </h1>
               <p class="text-gray-600 dark:text-gray-300 mt-1">
-                Manage system roles and their permissions
+                {gettext("Manage system roles and their permissions")}
               </p>
             </div>
 
             <%= if @is_super_admin do %>
               <.link patch={~p"/manage/members/management/roles/new"}>
                 <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> Add New Role
+                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> {gettext("Add New Role")}
                 </.button>
               </.link>
             <% end %>
@@ -242,7 +244,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                   <.input
                     name="query"
                     value=""
-                    placeholder="Search roles by name or description..."
+                    placeholder={gettext("Search roles by name or description...")}
                     phx-debounce="300"
                   />
                 </div>
@@ -272,7 +274,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                       >
                       </path>
                     </svg>
-                    <span class="text-sm text-gray-500">Searching...</span>
+                    <span class="text-sm text-gray-500">{gettext("Searching...")}</span>
                   </div>
                 <% end %>
               </.form>
@@ -281,7 +283,10 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
           <%!-- Results Summary --%>
           <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Showing {@page} of {@total_pages} pages
+            {gettext("Showing %{page} of %{total_pages} pages",
+              page: @page,
+              total_pages: @total_pages
+            )}
           </div>
 
           <%!-- Roles Table --%>
@@ -293,28 +298,28 @@ defmodule VoileWeb.Users.Role.ManageLive do
                 fn {_id, role} -> JS.navigate(~p"/manage/members/management/roles/#{role}") end
               }
             >
-              <:col :let={{_id, role}} label="Name">
+              <:col :let={{_id, role}} label={gettext("Name")}>
                 <div class="flex items-center gap-2">
                   <span class="font-medium text-gray-900 dark:text-white">{role.name}</span>
                   <%= if role.is_system_role do %>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-info/10 text-voile-info">
-                      System
+                      {gettext("System")}
                     </span>
                   <% end %>
                 </div>
               </:col>
 
-              <:col :let={{_id, role}} label="Description">
+              <:col :let={{_id, role}} label={gettext("Description")}>
                 {role.description || "-"}
               </:col>
 
-              <:col :let={{_id, role}} label="Permissions">
+              <:col :let={{_id, role}} label={gettext("Permissions")}>
                 <span class="text-sm text-gray-500">
                   {length(role.permissions || [])} permissions
                 </span>
               </:col>
 
-              <:col :let={{_id, role}} label="Users">
+              <:col :let={{_id, role}} label={gettext("Users")}>
                 <span class="text-sm text-gray-500">{count_users_with_role(role.id)} users</span>
               </:col>
 
@@ -324,7 +329,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                   class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-voile-primary bg-voile-primary/10 hover:bg-voile-primary/20 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
                 >
                   <.icon name="hero-eye" class="w-4 h-4" />
-                  <span class="hidden md:inline">View</span>
+                  <span class="hidden md:inline">{gettext("View")}</span>
                 </.link>
               </:action>
 
@@ -335,7 +340,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                     class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-md transition-colors"
                   >
                     <.icon name="hero-pencil" class="w-4 h-4" />
-                    <span class="hidden md:inline">Edit</span>
+                    <span class="hidden md:inline">{gettext("Edit")}</span>
                   </.link>
                 <% end %>
               </:action>
@@ -344,11 +349,11 @@ defmodule VoileWeb.Users.Role.ManageLive do
                 <%= if @is_super_admin and not role.is_system_role do %>
                   <.link
                     phx-click={JS.push("delete", value: %{id: role.id}) |> hide("##{id}")}
-                    data-confirm="Are you sure you want to delete this role?"
+                    data-confirm={gettext("Are you sure you want to delete this role?")}
                     class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-md transition-colors"
                   >
                     <.icon name="hero-trash" class="w-4 h-4" />
-                    <span class="hidden md:inline">Delete</span>
+                    <span class="hidden md:inline">{gettext("Delete")}</span>
                   </.link>
                 <% end %>
               </:action>
@@ -359,7 +364,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
           <%= if @total_pages > 1 do %>
             <div class="flex items-center justify-between mt-6">
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Page {@page} of {@total_pages}
+                {gettext("Page %{page} of %{total_pages}", page: @page, total_pages: @total_pages)}
               </div>
 
               <div class="flex items-center gap-2">
@@ -368,7 +373,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                     patch={~p"/manage/members/management/roles?page=#{@page - 1}&query="}
                     class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
                   >
-                    <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
+                    <.icon name="hero-chevron-left" class="w-4 h-4" /> {gettext("Previous")}
                   </.link>
                 <% end %>
 
@@ -377,7 +382,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                     patch={~p"/manage/members/management/roles?page=#{@page + 1}&query="}
                     class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
                   >
-                    Next <.icon name="hero-chevron-right" class="w-4 h-4" />
+                    {gettext("Next")} <.icon name="hero-chevron-right" class="w-4 h-4" />
                   </.link>
                 <% end %>
               </div>
@@ -404,7 +409,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
         %{label: "Members", path: ~p"/manage/members"},
         %{label: "Management", path: ~p"/manage/members/management"},
         %{label: "Role Management", path: ~p"/manage/members/management/roles"},
-        %{label: if(@action == :new, do: "New Role", else: "Edit Role"), path: nil}
+        %{label: if(@action == :new, do: gettext("New Role"), else: gettext("Edit Role")), path: nil}
       ]} />
 
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
@@ -412,12 +417,12 @@ defmodule VoileWeb.Users.Role.ManageLive do
           <.icon name="hero-shield-check" class="w-8 h-8 text-voile-primary" />
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {if @action == :new, do: "Add New Role", else: "Edit Role"}
+              {if @action == :new, do: gettext("Add New Role"), else: gettext("Edit Role")}
             </h1>
             <p class="text-gray-600 dark:text-gray-300">
               {if @action == :new,
-                do: "Create a new system role with permissions",
-                else: "Update role information and permissions"}
+                do: gettext("Create a new system role with permissions"),
+                else: gettext("Update role information and permissions")}
             </p>
           </div>
         </div>
@@ -427,16 +432,16 @@ defmodule VoileWeb.Users.Role.ManageLive do
             <.input
               field={@form[:name]}
               type="text"
-              label="Role Name"
-              placeholder="e.g., Content Manager, Moderator"
+              label={gettext("Role Name")}
+              placeholder={gettext("e.g., Content Manager, Moderator")}
               required
               disabled={@role.is_system_role}
             />
             <.input
               field={@form[:description]}
               type="textarea"
-              label="Description"
-              placeholder="Describe what this role can do..."
+              label={gettext("Description")}
+              placeholder={gettext("Describe what this role can do...")}
               rows="3"
             />
           </div>
@@ -444,7 +449,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
           <%= if @action == :new do %>
             <div class="mt-6">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                Permissions
+                {gettext("Permissions")}
               </label>
               <div class="space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
                 <%= for permission <- @all_permissions do %>
@@ -487,14 +492,14 @@ defmodule VoileWeb.Users.Role.ManageLive do
                 name={if @action == :new, do: "hero-plus", else: "hero-check"}
                 class="w-4 h-4 mr-2"
               />
-              {if @action == :new, do: "Create Role", else: "Update Role"}
+              {if @action == :new, do: gettext("Create Role"), else: gettext("Update Role")}
             </.button>
 
             <.link
               navigate={~p"/manage/members/management/roles"}
               class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              Cancel
+              {gettext("Cancel")}
             </.link>
           </div>
         </.form>
@@ -527,10 +532,10 @@ defmodule VoileWeb.Users.Role.ManageLive do
   defp can_delete_role?(role) do
     cond do
       role.is_system_role ->
-        {:error, "Cannot delete system roles"}
+        {:error, gettext("Cannot delete system roles")}
 
       count_users_with_role(role.id) > 0 ->
-        {:error, "Cannot delete role with assigned users"}
+        {:error, gettext("Cannot delete role with assigned users")}
 
       true ->
         {:ok, role}

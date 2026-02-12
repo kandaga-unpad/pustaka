@@ -7,10 +7,10 @@
       </div>
 
       <div>
-        <h2 class="text-xl font-bold text-white">Request Transfer Location</h2>
+        <h2 class="text-xl font-bold text-white">{gettext("Request Transfer Location")}</h2>
 
         <p class="text-indigo-100 text-sm mt-1">
-          Submit a request to move this item to another location
+          {gettext("Submit a request to move this item to another location")}
         </p>
       </div>
     </div>
@@ -31,25 +31,25 @@
           <.icon name="hero-map-pin" class="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </div>
 
-        <h4 class="font-semibold text-gray-900 dark:text-white">Current Location</h4>
+        <h4 class="font-semibold text-gray-900 dark:text-white">{gettext("Current Location")}</h4>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <label class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            <.icon name="hero-building-library" class="w-4 h-4" /> Current Node
+            <.icon name="hero-building-library" class="w-4 h-4" /> {gettext("Current Node")}
           </label>
           <p class="text-base font-semibold text-gray-900 dark:text-gray-100">
-            {(@item.node && @item.node.name) || "Not assigned"}
+            {(@item.node && @item.node.name) || gettext("Not assigned")}
           </p>
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <label class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-            <.icon name="hero-map" class="w-4 h-4" /> Current Location
+            <.icon name="hero-map" class="w-4 h-4" /> {gettext("Current Location")}
           </label>
           <p class="text-base font-semibold text-gray-900 dark:text-gray-100">
-            {@item.location || "Not specified"}
+            {@item.location || gettext("Not specified")}
           </p>
         </div>
       </div>
@@ -61,23 +61,25 @@
           <.icon name="hero-arrow-right" class="w-5 h-5 text-white" />
         </div>
 
-        <h4 class="font-semibold text-gray-900 dark:text-white">Transfer Destination</h4>
+        <h4 class="font-semibold text-gray-900 dark:text-white">
+          {gettext("Transfer Destination")}
+        </h4>
       </div>
 
       <div class="space-y-4">
         <.input
           field={@form[:to_node_id]}
           type="select"
-          label="Target Node"
+          label={gettext("Target Node")}
           options={Enum.map(@nodes, &{&1.name, &1.id})}
-          prompt="Select target node"
+          prompt={gettext("Select target node")}
           required
         />
         <.input
           field={@form[:to_location]}
           type="text"
-          label="Target Location"
-          placeholder="e.g. Shelf A-12, Room 101"
+          label={gettext("Target Location")}
+          placeholder={gettext("e.g. Shelf A-12, Room 101")}
           required
         />
       </div>
@@ -87,8 +89,8 @@
       <.input
         field={@form[:reason]}
         type="textarea"
-        label="Reason for Transfer"
-        placeholder="Explain why this item needs to be transferred..."
+        label={gettext("Reason for Transfer")}
+        placeholder={gettext("Explain why this item needs to be transferred...")}
         required
         rows="4"
       />
@@ -96,10 +98,10 @@
 
     <div class="flex gap-3 pt-4">
       <.button
-        phx-disable-with="Submitting..."
+        phx-disable-with={gettext("Submitting...")}
         class="flex-1 inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
       >
-        <.icon name="hero-paper-airplane" class="w-5 h-5" /> Submit Transfer Request
+        <.icon name="hero-paper-airplane" class="w-5 h-5" /> {gettext("Submit Transfer Request")}
       </.button>
     </div>
   </.form>

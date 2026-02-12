@@ -67,7 +67,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Circulation History")
+    |> assign(:page_title, gettext("Circulation History"))
   end
 
   @impl true

@@ -12,9 +12,9 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
         {@title}
         <:subtitle>
           <%= if @action == :new do %>
-            Create a new role with specific permissions
+            {gettext("Create a new role with specific permissions")}
           <% else %>
-            Update role information
+            {gettext("Update role information")}
           <% end %>
         </:subtitle>
       </.header>
@@ -29,21 +29,21 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
         <.input
           field={@form[:name]}
           type="text"
-          label="Role Name"
-          placeholder="e.g., Content Manager, Moderator"
+          label={gettext("Role Name")}
+          placeholder={gettext("e.g., Content Manager, Moderator")}
           disabled={@role.is_system_role}
         />
         <.input
           field={@form[:description]}
           type="textarea"
-          label="Description"
-          placeholder="Describe what this role can do..."
+          label={gettext("Description")}
+          placeholder={gettext("Describe what this role can do...")}
           rows="3"
         />
         <%= if @action == :new do %>
           <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Permissions
+              {gettext("Permissions")}
             </label>
             <div class="space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <%= for permission <- @all_permissions do %>
@@ -86,9 +86,11 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
             phx-click={JS.navigate(@patch)}
             class="cancel-btn"
           >
-            Cancel
+            {gettext("Cancel")}
           </.button>
-          <.button phx-disable-with="Saving..." disabled={not @form.source.valid?}>Save Role</.button>
+          <.button phx-disable-with={gettext("Saving...")} disabled={not @form.source.valid?}>
+            {gettext("Save Role")}
+          </.button>
         </div>
       </.form>
     </div>
@@ -128,7 +130,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Role updated successfully")
+         |> put_flash(:info, gettext("Role updated successfully"))
          |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -158,7 +160,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Role created successfully")
+         |> put_flash(:info, gettext("Role created successfully"))
          |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

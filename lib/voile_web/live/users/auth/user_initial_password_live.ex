@@ -9,10 +9,12 @@ defmodule VoileWeb.UserInitialPasswordLive do
       <div class="flex items-center justify-center min-h-[60vh]">
         <div class="w-full max-w-md bg-white/80 dark:bg-gray-800/70 backdrop-blur rounded-lg shadow-md p-6">
           <div class="mb-4 text-center">
-            <.header>Set your initial password</.header>
+            <.header>{gettext("Set your initial password")}</.header>
 
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              This account was imported with a default password. Choose a new secure password below to finish setting up your account.
+              {gettext(
+                "This account was imported with a default password. Choose a new secure password below to finish setting up your account."
+              )}
             </p>
           </div>
 
@@ -26,24 +28,26 @@ defmodule VoileWeb.UserInitialPasswordLive do
             <.input
               field={@form[:password]}
               type="password"
-              label="New password"
+              label={gettext("New password")}
               required
             />
             <.input
               field={@form[:password_confirmation]}
               type="password"
-              label="Confirm new password"
+              label={gettext("Confirm new password")}
               required
             />
             <div class="pt-2">
-              <.button phx-disable-with="Setting..." class="w-full primary-btn">Set password</.button>
+              <.button phx-disable-with="Setting..." class="w-full primary-btn">
+                {gettext("Set password")}
+              </.button>
             </div>
           </.form>
 
           <div class="mt-5 text-center text-sm text-gray-600 dark:text-gray-300">
-            <.link href={~p"/register"} class="underline mr-2">Register</.link>
+            <.link href={~p"/register"} class="underline mr-2">{gettext("Register")}</.link>
             <span class="mx-1">·</span>
-            <.link href={~p"/users/log_in"} class="underline ml-2">Log in</.link>
+            <.link href={~p"/users/log_in"} class="underline ml-2">{gettext("Log in")}</.link>
           </div>
         </div>
       </div>
@@ -71,7 +75,7 @@ defmodule VoileWeb.UserInitialPasswordLive do
       {:ok, _user} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Password set successfully. Please log in.")
+         |> put_flash(:info, gettext("Password set successfully. Please log in."))
          |> redirect(to: ~p"/login")}
 
       {:error, changeset} ->
@@ -89,7 +93,7 @@ defmodule VoileWeb.UserInitialPasswordLive do
       assign(socket, user: user, token: token)
     else
       socket
-      |> put_flash(:error, "Set password link is invalid or it has expired.")
+      |> put_flash(:error, gettext("Set password link is invalid or it has expired."))
       |> redirect(to: ~p"/")
     end
   end

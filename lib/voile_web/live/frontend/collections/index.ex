@@ -16,7 +16,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Browse Collections")
+     |> assign(:page_title, gettext("Browse Collections"))
      |> assign(:collections, [])
      |> assign(:total_collections, total_collections)
      |> assign(:loading, false)
@@ -197,7 +197,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     type="text"
                     name="q"
                     value={@search_query}
-                    placeholder="Search collections..."
+                    placeholder={gettext("Search collections...")}
                     class="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     phx-debounce="500"
                   />
@@ -213,7 +213,9 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     name="unit_id"
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="all" selected={@filter_unit_id == "all"}>All Location</option>
+                    <option value="all" selected={@filter_unit_id == "all"}>
+                      {gettext("All Location")}
+                    </option>
 
                     <%= for node <- @nodes do %>
                       <option value={node.id} selected={@filter_unit_id == to_string(node.id)}>
@@ -231,10 +233,12 @@ defmodule VoileWeb.Frontend.Collections.Index do
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="published" selected={@filter_status == "published"}>
-                      Available
+                      {gettext("Available")}
                     </option>
 
-                    <option value="all" selected={@filter_status == "all"}>All Status</option>
+                    <option value="all" selected={@filter_status == "all"}>
+                      {gettext("All Status")}
+                    </option>
                   </select>
                 </form>
               </div>
@@ -261,23 +265,25 @@ defmodule VoileWeb.Frontend.Collections.Index do
           <%= if @loading do %>
             <div class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collections...</span>
+              <span class="ml-2 text-gray-600 dark:text-gray-300">
+                {gettext("Loading collections...")}
+              </span>
             </div>
           <% else %>
             <!-- Results Header -->
             <div class="mb-6">
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing {length(@collections)} collections
+                {gettext("Showing")} {length(@collections)} {gettext("collections")}
                 <%= if @search_query != "" do %>
-                  for "<strong><%= @search_query %></strong>"
+                  {gettext("for")} "<strong><%= @search_query %></strong>"
                 <% end %>
 
                 <span>
-                  from
+                  {gettext("from")}
                   <%= if @search_query && @total_count_filtered do %>
-                    <strong>{@total_count_filtered}</strong> total collections
+                    <strong>{@total_count_filtered}</strong> {gettext("total collections")}
                   <% else %>
-                    <strong>0</strong> filtered collections
+                    <strong>0</strong> {gettext("filtered collections")}
                   <% end %>
                 </span>
               </p>
@@ -307,8 +313,8 @@ defmodule VoileWeb.Frontend.Collections.Index do
             <% else %>
               <.empty_state
                 search_query={@search_query}
-                title="No collections found"
-                message="There are no collections available at this time."
+                title={gettext("No collections found")}
+                message={gettext("There are no collections available at this time.")}
               />
             <% end %>
           <% end %>

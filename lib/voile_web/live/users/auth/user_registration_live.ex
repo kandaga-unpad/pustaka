@@ -35,7 +35,7 @@ defmodule VoileWeb.UserRegistrationLive do
                   >
                     {gettext("Log in")}
                   </.link>
-                   {gettext("to your account now.")}
+                  {gettext("to your account now.")}
                 </span>
               </:subtitle>
             </.header>
@@ -50,8 +50,8 @@ defmodule VoileWeb.UserRegistrationLive do
               method="post"
             >
               <div class="space-y-4">
-                <.input field={@form[:email]} type="email" label="Email" required />
-                <.input field={@form[:password]} type="password" label="Password" required />
+                <.input field={@form[:email]} type="email" label={gettext("Email")} required />
+                <.input field={@form[:password]} type="password" label={gettext("Password")} required />
                 <.button phx-disable-with="Creating account..." class="default-btn w-full">
                   {gettext("Create an account")}
                 </.button>
@@ -126,7 +126,9 @@ defmodule VoileWeb.UserRegistrationLive do
          socket
          |> put_flash(
            :info,
-           "Account created successfully! Please check your email to confirm your account."
+           gettext(
+             "Account created successfully! Please check your email to confirm your account."
+           )
          )
          |> push_navigate(to: ~p"/users/pending_confirmation?email=#{user.email}")}
 
@@ -137,7 +139,9 @@ defmodule VoileWeb.UserRegistrationLive do
             put_flash(
               socket,
               :error,
-              "The username generated from your email is already taken. Please try a different email address."
+              gettext(
+                "The username generated from your email is already taken. Please try a different email address."
+              )
             )
           else
             socket

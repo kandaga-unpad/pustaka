@@ -16,7 +16,10 @@ defmodule VoileWeb.Dashboard.Master.MasterLive do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage")
 
       {:ok, socket}

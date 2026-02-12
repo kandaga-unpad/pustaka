@@ -37,7 +37,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Transfer Requests")
+      |> assign(:page_title, gettext("Transfer Requests"))
       |> assign(:transfer_requests, transfer_requests)
       |> assign(:nodes, nodes)
       |> assign(:status_filter, status_filter)
@@ -92,14 +92,14 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
         {:ok, _} ->
           {:noreply,
            socket
-           |> put_flash(:info, "Transfer request deleted successfully")
+           |> put_flash(:info, gettext("Transfer request deleted successfully"))
            |> push_patch(to: ~p"/manage/catalog/transfers")}
 
         {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to delete transfer request")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to delete transfer request"))}
       end
     else
-      {:noreply, put_flash(socket, :error, "You cannot delete this transfer request")}
+      {:noreply, put_flash(socket, :error, gettext("You cannot delete this transfer request"))}
     end
   end
 
@@ -108,22 +108,24 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Index do
       case status do
         "pending" ->
           {"bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200", "hero-clock",
-           "Pending"}
+           gettext("Pending")}
 
         "approved" ->
           {"bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
-           "hero-check-circle", "Approved"}
+           "hero-check-circle", gettext("Approved")}
 
         "denied" ->
-          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle", "Denied"}
+          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle",
+           gettext("Denied")}
 
         "cancelled" ->
           {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200", "hero-minus-circle",
-           "Cancelled"}
+           gettext("Cancelled")}
 
         _ ->
           {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200",
-           "hero-question-mark-circle", String.capitalize(status)}
+           "hero-question-mark-circle",
+           Gettext.gettext(VoileWeb.Gettext, String.capitalize(status))}
       end
 
     assigns = %{class: color_class, icon: icon, label: label}

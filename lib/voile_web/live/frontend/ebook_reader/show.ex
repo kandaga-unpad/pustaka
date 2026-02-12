@@ -23,7 +23,7 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
       socket
       |> assign(:file_url, nil)
       |> assign(:loading, false)
-      |> assign(:page_title, "E-Book Reader")
+      |> assign(:page_title, gettext("E-Book Reader"))
       |> assign(:collection_id, attachment.attachable.id)
 
     {:ok, socket}
@@ -31,7 +31,7 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    socket = assign(socket, :page_title, "E-Book Reader")
+    socket = assign(socket, :page_title, gettext("E-Book Reader"))
 
     cond do
       id = params["id"] ->
@@ -85,11 +85,11 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
           end
 
         true ->
-          {:error, "Unsupported attachment path"}
+          {:error, gettext("Unsupported attachment path")}
       end
     rescue
-      Ecto.NoResultsError -> {:error, "Attachment not found"}
-      e -> {:error, "Failed to load attachment: #{Exception.message(e)}"}
+      Ecto.NoResultsError -> {:error, gettext("Attachment not found")}
+      e -> {:error, gettext("Failed to load attachment: ") <> Exception.message(e)}
     end
   end
 
@@ -112,9 +112,11 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
               navigate={~p"/collections/#{@collection_id}"}
               class="text-sm text-gray-600 dark:text-gray-400 hover:text-voile-primary"
             >
-              ← Back
+              {gettext("← Back")}
             </.link>
-            <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">E-Book Reader</h1>
+            <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              {gettext("E-Book Reader")}
+            </h1>
           </div>
 
           <%= if @file_url && @file_type in ["pdf", "epub"] do %>
@@ -126,7 +128,8 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
                 class="px-3 py-1.5 text-sm bg-voile-primary text-white rounded hover:bg-voile-primary-dark transition-colors"
                 title="Open in new tab"
               >
-                <span class="hidden sm:inline">Open in Tab</span> <span class="sm:hidden">Open</span>
+                <span class="hidden sm:inline">{gettext("Open in Tab")}</span>
+                <span class="sm:hidden">{gettext("Open")}</span>
               </a>
               <a
                 href={@file_url}
@@ -134,7 +137,8 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
                 class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 title="Download file"
               >
-                <span class="hidden sm:inline">Download</span> <span class="sm:hidden">⬇</span>
+                <span class="hidden sm:inline">{gettext("Download")}</span>
+                <span class="sm:hidden">{gettext("⬇")}</span>
               </a>
             </div>
           <% end %>
@@ -157,17 +161,22 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
               <div class="text-5xl mb-4">📚</div>
 
               <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">
-                {if @file_url, do: "Unsupported File Type", else: "No File Selected"}
+                {if @file_url, do: gettext("Unsupported File Type"), else: gettext("No File Selected")}
               </h2>
 
               <p class="text-gray-600 dark:text-gray-400">
                 <%= if @file_url do %>
-                  Only PDF and EPUB files are supported.
+                  {gettext("Only PDF and EPUB files are supported.")}
                 <% else %>
-                  Provide a file URL via query parameter
-                  <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">?url=</code>
-                  or <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">?id=</code>
-                  to load an e-book.
+                  {gettext("Provide a file URL via query parameter")}
+                  <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                    {gettext("?url=")}
+                  </code>
+                  or
+                  <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                    {gettext("?id=")}
+                  </code>
+                  {gettext("to load an e-book.")}
                 <% end %>
               </p>
             </div>

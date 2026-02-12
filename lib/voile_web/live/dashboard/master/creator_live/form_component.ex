@@ -10,7 +10,7 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
     <div>
       <.header>
         {@title}
-        <:subtitle>Use this form to manage item records in your database.</:subtitle>
+        <:subtitle>{gettext("Use this form to manage item records in your database.")}</:subtitle>
       </.header>
 
       <.form
@@ -20,11 +20,11 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:creator_name]} type="text" label="Name" />
-        <.input field={@form[:creator_contact]} type="text" label="Contact" />
-        <.input field={@form[:type]} type="text" label="Type" />
-        <.input field={@form[:affiliation]} type="text" label="Affiliation" />
-        <.button phx-disable-with="Saving...">Save Item</.button>
+        <.input field={@form[:creator_name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:creator_contact]} type="text" label={gettext("Contact")} />
+        <.input field={@form[:type]} type="text" label={gettext("Type")} />
+        <.input field={@form[:affiliation]} type="text" label={gettext("Affiliation")} />
+        <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Item")}</.button>
       </.form>
     </div>
     """
@@ -57,7 +57,7 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Creator updated successfully")
+         |> put_flash(:info, gettext("Creator updated successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -72,7 +72,7 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Creator created successfully")
+         |> put_flash(:info, gettext("Creator created successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

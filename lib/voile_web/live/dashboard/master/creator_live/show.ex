@@ -11,7 +11,10 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Show do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -28,6 +31,6 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Show do
      |> assign(:creator, Master.get_creator!(id))}
   end
 
-  defp page_title(:show), do: "Show Creator"
-  defp page_title(:edit), do: "Edit Creator"
+  defp page_title(:show), do: gettext("Show Creator")
+  defp page_title(:edit), do: gettext("Edit Creator")
 end

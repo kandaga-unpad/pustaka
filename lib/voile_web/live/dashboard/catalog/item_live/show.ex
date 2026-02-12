@@ -42,13 +42,13 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Show do
     else
       {:noreply,
        socket
-       |> put_flash(:error, "Access Denied: You don't have permission to view this item")
+       |> put_flash(:error, gettext("Access Denied: You don't have permission to view this item"))
        |> push_navigate(to: ~p"/manage/catalog/items")}
     end
   end
 
-  defp page_title(:show), do: "Show Item"
-  defp page_title(:edit), do: "Edit Item"
+  defp page_title(:show), do: gettext("Show Item")
+  defp page_title(:edit), do: gettext("Edit Item")
 
   # Helper function to format price with Indonesian Rupiah format
   defp format_price(nil), do: "-"

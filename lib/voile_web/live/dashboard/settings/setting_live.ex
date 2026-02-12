@@ -109,9 +109,9 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
   def render(assigns) do
     ~H"""
     <.header>
-      <h4>System Settings</h4>
+      <h4>{gettext("System Settings")}</h4>
 
-      <:subtitle>Configure and manage your GLAM system</:subtitle>
+      <:subtitle>{gettext("Configure and manage your GLAM system")}</:subtitle>
     </.header>
 
     <div class="flex gap-4">
@@ -126,13 +126,15 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
             </div>
             <div>
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Welcome to System Settings
+                {gettext("Welcome to System Settings")}
               </h2>
               <p class="text-gray-700 dark:text-gray-300 mb-3">
-                Configure and customize your GLAM system. Use the sidebar to navigate between different configuration areas.
+                {gettext(
+                  "Configure and customize your GLAM system. Use the sidebar to navigate between different configuration areas."
+                )}
               </p>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Currently logged in as
+                {gettext("Currently logged in as")}
                 <span class="font-semibold">{@current_user.fullname} ({@current_user.email})</span>
               </p>
             </div>
@@ -142,55 +144,59 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
             <div class="flex items-center justify-between mb-4">
-              <h5 class="font-semibold text-gray-900 dark:text-white">System Status</h5>
+              <h5 class="font-semibold text-gray-900 dark:text-white">{gettext("System Status")}</h5>
               <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                 <.icon name="hero-check-circle" class="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
             <div class="space-y-3">
               <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Database</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{gettext("Database")}</span>
                 <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                  Connected
+                  {gettext("Connected")}
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Storage Mode</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  {gettext("Storage Mode")}
+                </span>
                 <span class="text-sm font-mono font-medium text-green-600 dark:text-green-400">
                   {@system_info.storage_mode}
                 </span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600 dark:text-gray-400">Cache</span>
-                <span class="text-sm font-medium text-green-600 dark:text-green-400">Active</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">{gettext("Cache")}</span>
+                <span class="text-sm font-medium text-green-600 dark:text-green-400">
+                  {gettext("Active")}
+                </span>
               </div>
             </div>
           </div>
 
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
             <div class="flex items-center justify-between mb-4">
-              <h5 class="font-semibold text-gray-900 dark:text-white">Your Access</h5>
+              <h5 class="font-semibold text-gray-900 dark:text-white">{gettext("Your Access")}</h5>
               <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                 <.icon name="hero-shield-check" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div class="space-y-3">
               <div>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Role</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{gettext("Role")}</span>
                 <p class="font-medium text-gray-900 dark:text-white">
-                  {if @current_user.user_type, do: @current_user.user_type.name, else: "User"}
+                  {if @current_user.user_type, do: @current_user.user_type.name, else: gettext("User")}
                 </p>
               </div>
               <div>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Permissions</span>
-                <p class="font-medium text-gray-900 dark:text-white">Administrator</p>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{gettext("Permissions")}</span>
+                <p class="font-medium text-gray-900 dark:text-white">{gettext("Administrator")}</p>
               </div>
             </div>
           </div>
 
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
             <div class="flex items-center justify-between mb-4">
-              <h5 class="font-semibold text-gray-900 dark:text-white">Quick Actions</h5>
+              <h5 class="font-semibold text-gray-900 dark:text-white">{gettext("Quick Actions")}</h5>
               <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                 <.icon name="hero-bolt" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
@@ -200,19 +206,19 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
                 navigate="/manage/settings/user_profile"
                 class="block text-sm"
               >
-                Edit Profile →
+                {gettext("Edit Profile →")}
               </.link>
               <.link
                 navigate="/manage/settings/apps"
                 class="block text-sm"
               >
-                Update App Settings →
+                {gettext("Update App Settings →")}
               </.link>
               <.link
                 navigate="/manage/settings/permissions"
                 class="block text-sm"
               >
-                Manage Permissions →
+                {gettext("Manage Permissions →")}
               </.link>
             </div>
           </div>
@@ -224,46 +230,56 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
               <.icon name="hero-server-stack" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div class="flex-1">
-              <h5 class="font-semibold text-gray-900 dark:text-white mb-4">System Information</h5>
+              <h5 class="font-semibold text-gray-900 dark:text-white mb-4">
+                {gettext("System Information")}
+              </h5>
 
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Elixir</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{gettext("Elixir")}</div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     v{@system_info.elixir_version}
                   </div>
                 </div>
 
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Erlang/OTP</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {gettext("Erlang/OTP")}
+                  </div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     {@system_info.otp_version}
                   </div>
                 </div>
 
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Phoenix</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {gettext("Phoenix")}
+                  </div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     v{@system_info.phoenix_version}
                   </div>
                 </div>
 
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">LiveView</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {gettext("LiveView")}
+                  </div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     v{@system_info.phoenix_liveview_version}
                   </div>
                 </div>
 
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Ecto</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{gettext("Ecto")}</div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     v{@system_info.ecto_version}
                   </div>
                 </div>
 
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">PostgreSQL</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {gettext("PostgreSQL")}
+                  </div>
                   <div class="font-mono text-sm font-medium text-gray-900 dark:text-white">
                     {@system_info.postgres_version}
                   </div>
@@ -280,28 +296,30 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
                 <.icon name="hero-cpu-chip" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div class="flex-1">
-                <h5 class="font-semibold text-gray-900 dark:text-white mb-3">Runtime Information</h5>
+                <h5 class="font-semibold text-gray-900 dark:text-white mb-3">
+                  {gettext("Runtime Information")}
+                </h5>
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Node Name</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Node Name")}</span>
                     <span class="font-mono text-gray-900 dark:text-white text-xs">
                       {@system_info.node_name}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Environment</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Environment")}</span>
                     <span class="font-mono text-gray-900 dark:text-white uppercase">
                       {@system_info.environment}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Architecture</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Architecture")}</span>
                     <span class="font-mono text-gray-900 dark:text-white text-xs">
                       {@system_info.system_architecture}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Uptime</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Uptime")}</span>
                     <span class="font-mono text-gray-900 dark:text-white">
                       {format_uptime(@system_info.uptime)}
                     </span>
@@ -318,29 +336,31 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
               </div>
               <div class="flex-1">
                 <h5 class="font-semibold text-gray-900 dark:text-white mb-3">
-                  Process & Scheduler Info
+                  {gettext("Process & Scheduler Info")}
                 </h5>
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Schedulers</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Schedulers")}</span>
                     <span class="font-mono text-gray-900 dark:text-white">
                       {@system_info.schedulers_online} / {@system_info.schedulers}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Processes</span>
+                    <span class="text-gray-600 dark:text-gray-400">
+                      {gettext("Active Processes")}
+                    </span>
                     <span class="font-mono text-gray-900 dark:text-white">
                       {format_number(@system_info.process_count)}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Process Limit</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Process Limit")}</span>
                     <span class="font-mono text-gray-900 dark:text-white">
                       {format_number(@system_info.process_limit)}
                     </span>
                   </div>
                   <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Utilization</span>
+                    <span class="text-gray-600 dark:text-gray-400">{gettext("Utilization")}</span>
                     <span class="font-mono text-gray-900 dark:text-white">
                       {Float.round(@system_info.process_count / @system_info.process_limit * 100, 2)}%
                     </span>

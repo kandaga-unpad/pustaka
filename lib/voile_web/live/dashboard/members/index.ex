@@ -15,7 +15,7 @@ defmodule VoileWeb.Dashboard.Members.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Members Dashboard")
+      |> assign(:page_title, gettext("Members Dashboard"))
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
 
@@ -78,12 +78,12 @@ defmodule VoileWeb.Dashboard.Members.Index do
               field={f[:node_id]}
               type="select"
               options={
-                [{"All Nodes", "all"}] ++
+                [{gettext("All Nodes"), "all"}] ++
                   Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
               }
               value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
               class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
-              label="Filter node"
+              label={gettext("Filter node")}
             />
           </.form>
         </div>
@@ -91,17 +91,17 @@ defmodule VoileWeb.Dashboard.Members.Index do
 
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: nil}
       ]} />
 
       <%!-- Page Header --%>
       <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2">Members Management Dashboard</h1>
+            <h1 class="text-3xl font-bold mb-2">{gettext("Members Management Dashboard")}</h1>
             <p class="text-white text-lg">
-              Member Management & Administration
+              {gettext("Member Management & Administration")}
             </p>
           </div>
           <div class="hidden md:block">
@@ -116,28 +116,28 @@ defmodule VoileWeb.Dashboard.Members.Index do
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <.stat_card
-          title="Total Members"
+          title={gettext("Total Members")}
           value={@members_stats.total_members}
           icon="hero-users"
           color="green"
           trend="+5%"
         />
         <.stat_card
-          title="Active Members"
+          title={gettext("Active Members")}
           value={@members_stats.active_members}
           icon="hero-user-group"
           color="blue"
           trend="+3%"
         />
         <.stat_card
-          title="Expiring Soon"
+          title={gettext("Expiring Soon")}
           value={@members_stats.expiring_soon}
           icon="hero-clock"
           color="orange"
           trend="7 days"
         />
         <.stat_card
-          title="Suspended Members"
+          title={gettext("Suspended Members")}
           value={@members_stats.suspended_members}
           icon="hero-exclamation-triangle"
           color="red"
@@ -150,14 +150,16 @@ defmodule VoileWeb.Dashboard.Members.Index do
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-8 h-8 text-gray-600 dark:text-gray-300" />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Members</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              {gettext("Recent Members")}
+            </h2>
           </div>
 
           <.link
             navigate="/manage/members/management"
             class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
           >
-            View All →
+            {gettext("View All →")}
           </.link>
         </div>
 

@@ -12,7 +12,10 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Edit do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -22,7 +25,7 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Edit do
       {:ok,
        socket
        |> assign(:topic, topic)
-       |> assign(:page_title, "Edit Topic")
+       |> assign(:page_title, gettext("Edit Topic"))
        |> assign(:live_action, :edit)}
     end
   end
@@ -34,7 +37,7 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Edit do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Topic")
+    |> assign(:page_title, gettext("Edit Topic"))
     |> assign(:topic, Master.get_topic!(id))
   end
 

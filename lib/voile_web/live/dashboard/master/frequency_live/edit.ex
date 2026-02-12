@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Edit do
     {:ok,
      socket
      |> assign(:frequency, frequency)
-     |> assign(:page_title, "Edit Frequency")
+     |> assign(:page_title, gettext("Edit Frequency"))
      |> assign(:live_action, :edit)}
   end
 
@@ -22,7 +22,7 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Edit do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Frequency")
+    |> assign(:page_title, gettext("Edit Frequency"))
     |> assign(:frequency, Master.get_frequency!(id))
   end
 

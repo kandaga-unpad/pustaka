@@ -1,29 +1,29 @@
 <section class="flex flex-col gap-4">
   <.header>
-    Creator {@creator.id}
-    <:subtitle>This is a creator record from your database.</:subtitle>
+    {gettext("Creator %{id}", id: @creator.id)}
+    <:subtitle>{gettext("This is a creator record from your database.")}</:subtitle>
 
     <:actions>
       <.link
         patch={~p"/manage/master/creators/#{@creator}/show/edit"}
         phx-click={JS.push_focus()}
       >
-        <.button>Edit creator</.button>
+        <.button>{gettext("Edit creator")}</.button>
       </.link>
     </:actions>
   </.header>
 
   <.list>
-    <:item title="Creator name">{@creator.creator_name}</:item>
+    <:item title={gettext("Creator name")}>{@creator.creator_name}</:item>
 
-    <:item title="Creator contact">{@creator.creator_contact}</:item>
+    <:item title={gettext("Creator contact")}>{@creator.creator_contact}</:item>
 
-    <:item title="Type">{@creator.type}</:item>
+    <:item title={gettext("Type")}>{@creator.type}</:item>
 
-    <:item title="Affiliation">{@creator.affiliation}</:item>
+    <:item title={gettext("Affiliation")}>{@creator.affiliation}</:item>
   </.list>
 
-  <.back navigate={~p"/manage/master/creators"}>Back to creators</.back>
+  <.back navigate={~p"/manage/master/creators"}>{gettext("Back to creators")}</.back>
 
   <.modal
     :if={@live_action == :edit}

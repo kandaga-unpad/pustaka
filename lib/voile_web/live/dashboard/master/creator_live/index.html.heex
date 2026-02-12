@@ -1,10 +1,12 @@
 <section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">Kembali</.back>
+  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
 
   <.header>
-    Listing Creators
+    {gettext("Listing Creators")}
     <:actions>
-      <.link patch={~p"/manage/master/creators/new"}><.button>New Creator</.button></.link>
+      <.link patch={~p"/manage/master/creators/new"}>
+        <.button>{gettext("New Creator")}</.button>
+      </.link>
     </:actions>
   </.header>
 
@@ -13,27 +15,27 @@
     rows={@creators}
     row_click={fn creator -> JS.navigate(~p"/manage/master/creators/#{creator.id}") end}
   >
-    <:col :let={creator} label="Creator Name">{creator.creator_name}</:col>
+    <:col :let={creator} label={gettext("Creator Name")}>{creator.creator_name}</:col>
 
-    <:col :let={creator} label="Creator Contact">{creator.creator_contact}</:col>
+    <:col :let={creator} label={gettext("Creator Contact")}>{creator.creator_contact}</:col>
 
-    <:col :let={creator} label="Type">{creator.type}</:col>
+    <:col :let={creator} label={gettext("Type")}>{creator.type}</:col>
 
-    <:col :let={creator} label="Affiliation">{creator.affiliation}</:col>
+    <:col :let={creator} label={gettext("Affiliation")}>{creator.affiliation}</:col>
 
     <:action :let={creator}>
       <div class="sr-only">
-        <.link navigate={~p"/manage/master/creators/#{creator.id}"}>Show</.link>
+        <.link navigate={~p"/manage/master/creators/#{creator.id}"}>{gettext("Show")}</.link>
       </div>
-      <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>{gettext("Edit")}</.link>
     </:action>
 
     <:action :let={creator}>
       <.link
         phx-click={JS.push("delete", value: %{id: creator.id}) |> hide("##{creator.id}")}
-        data-confirm="Are you sure?"
+        data-confirm={gettext("Are you sure?")}
       >
-        Delete
+        {gettext("Delete")}
       </.link>
     </:action>
   </.table>

@@ -41,7 +41,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     socket =
       socket
       |> stream(:items, items, reset: false)
-      |> assign(:page_title, "Listing Items")
+      |> assign(:page_title, gettext("Listing Items"))
       |> assign(:page, page)
       |> assign(:search, search)
       |> assign(:total_pages, total_pages)
@@ -79,11 +79,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     # Verify user has access to this item's unit
     if Catalog.is_user_admin?(current_user) or item.unit_id == current_user.node_id do
       socket
-      |> assign(:page_title, "Edit Item")
+      |> assign(:page_title, gettext("Edit Item"))
       |> assign(:item, item)
     else
       socket
-      |> put_flash(:error, "Access Denied: You don't have permission to edit this item")
+      |> put_flash(:error, gettext("Access Denied: You don't have permission to edit this item"))
       |> push_navigate(to: ~p"/manage/catalog/items")
     end
   end
@@ -93,7 +93,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     authorize!(socket, "items.create")
 
     socket
-    |> assign(:page_title, "New Item")
+    |> assign(:page_title, gettext("New Item"))
     |> assign(:item, %Item{})
   end
 
@@ -111,7 +111,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
 
     socket
     |> stream(:items, items, reset: true)
-    |> assign(:page_title, "Listing Items")
+    |> assign(:page_title, gettext("Listing Items"))
     |> assign(:item, nil)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
@@ -159,7 +159,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
     else
       {:noreply,
        socket
-       |> put_flash(:error, "Access Denied: You don't have permission to delete this item")}
+       |> put_flash(
+         :error,
+         gettext("Access Denied: You don't have permission to delete this item")
+       )}
     end
   end
 

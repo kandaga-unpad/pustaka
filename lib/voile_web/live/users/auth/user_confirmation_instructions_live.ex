@@ -11,21 +11,21 @@ defmodule VoileWeb.UserConfirmationInstructionsLive do
       <div class="mx-auto max-w-sm">
         <div class="text-center">
           <.header>
-            No confirmation instructions received?
-            <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
+            {gettext("No confirmation instructions received?")}
+            <:subtitle>{gettext("We'll send a new confirmation link to your inbox")}</:subtitle>
           </.header>
         </div>
 
         <.form for={@form} id="resend_confirmation_form" phx-submit="send_instructions">
-          <.input field={@form[:email]} type="email" placeholder="Email" required />
+          <.input field={@form[:email]} type="email" placeholder={gettext("Email")} required />
           <.button phx-disable-with="Sending..." class="w-full">
-            Resend confirmation instructions
+            {gettext("Resend confirmation instructions")}
           </.button>
         </.form>
 
         <p class="text-center mt-4">
-          <.link href={~p"/register"}>Register</.link>
-          | <.link href={~p"/users/log_in"}>Log in</.link>
+          <.link href={~p"/register"}>{gettext("Register")}</.link>
+          | <.link href={~p"/users/log_in"}>{gettext("Log in")}</.link>
         </p>
       </div>
     </Layouts.app>
@@ -45,7 +45,9 @@ defmodule VoileWeb.UserConfirmationInstructionsLive do
     end
 
     info =
-      "If your email is in our system and it has not been confirmed yet, you will receive an email with instructions shortly."
+      gettext(
+        "If your email is in our system and it has not been confirmed yet, you will receive an email with instructions shortly."
+      )
 
     {:noreply,
      socket

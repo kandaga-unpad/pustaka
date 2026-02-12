@@ -9,16 +9,16 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.FormComponent do
     <div>
       <.header>
         {@title}
-        <:subtitle>Manage topic records.</:subtitle>
+        <:subtitle>{gettext("Manage topic records.")}</:subtitle>
       </.header>
 
       <.form for={@form} id="topic-form" phx-target={@myself} phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:type]} type="text" label="Type" />
-        <.input field={@form[:description]} type="text" label="Description" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:type]} type="text" label={gettext("Type")} />
+        <.input field={@form[:description]} type="text" label={gettext("Description")} />
         <div class="mt-4 flex gap-3">
-          <.button phx-disable-with="Saving...">Save Topic</.button>
-          <.link patch={@patch} class="btn">Cancel</.link>
+          <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Topic")}</.button>
+          <.link patch={@patch} class="btn">{gettext("Cancel")}</.link>
         </div>
       </.form>
     </div>
@@ -54,7 +54,7 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Topic updated successfully.")
+         |> put_flash(:info, gettext("Topic updated successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -69,7 +69,7 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Topic created successfully.")
+         |> put_flash(:info, gettext("Topic created successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

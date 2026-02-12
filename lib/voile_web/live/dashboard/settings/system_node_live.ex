@@ -9,18 +9,18 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
   def render(assigns) do
     ~H"""
     <.header>
-      System Nodes / Units Management
-      <:subtitle>Manage library branches, units, and organizational nodes</:subtitle>
+      {gettext("System Nodes / Units Management")}
+      <:subtitle>{gettext("Manage library branches, units, and organizational nodes")}</:subtitle>
 
       <:actions>
         <.button phx-click="new_node" class="primary-btn">
-          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Node
+          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Node")}
         </.button>
         <.button
           href={~p"/manage/settings/nodes/rules"}
           class="warning-btn"
         >
-          <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> Configure Rules
+          <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("Configure Rules")}
         </.button>
       </:actions>
     </.header>
@@ -45,7 +45,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{length(@nodes)}</div>
 
-                <div class="text-sm font-medium">Total Nodes</div>
+                <div class="text-sm font-medium">{gettext("Total Nodes")}</div>
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{Enum.count(@nodes, &(&1.image != nil))}</div>
 
-                <div class="text-sm font-medium">With Images</div>
+                <div class="text-sm font-medium">{gettext("With Images")}</div>
               </div>
             </div>
           </div>
@@ -73,7 +73,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{Enum.count(@nodes, &(&1.abbr != nil))}</div>
 
-                <div class="text-sm font-medium">With Abbreviations</div>
+                <div class="text-sm font-medium">{gettext("With Abbreviations")}</div>
               </div>
             </div>
           </div>
@@ -83,11 +83,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           <div class="flex">
             <.icon name="hero-information-circle" class="h-5 w-5 text-voile-info" />
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-voile-info">About System Nodes</h3>
+              <h3 class="text-sm font-medium text-voile-info">{gettext("About System Nodes")}</h3>
 
               <p class="mt-2 text-sm text-voile-info">
-                Nodes represent organizational units such as library branches, departments, or locations.
-                Each node can have its own logo, abbreviation, and description for better organization.
+                {gettext(
+                  "Nodes represent organizational units such as library branches, departments, or locations. Each node can have its own logo, abbreviation, and description for better organization."
+                )}
               </p>
             </div>
           </div>
@@ -95,9 +96,9 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         <!-- Nodes Grid -->
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 dark:border-gray-600 sm:px-6">
-            <h3 class="text-lg leading-6 font-medium">Nodes List</h3>
+            <h3 class="text-lg leading-6 font-medium">{gettext("Nodes List")}</h3>
 
-            <div class="mt-1 text-sm">Manage and organize your system nodes</div>
+            <div class="mt-1 text-sm">{gettext("Manage and organize your system nodes")}</div>
           </div>
 
           <div class="px-4 py-5 sm:p-6">
@@ -132,12 +133,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     <h4 class="text-lg font-semibold mb-2 line-clamp-1">{node.name}</h4>
 
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 min-h-[2.5rem]">
-                      {node.description || "No description provided"}
+                      {node.description || gettext("No description provided")}
                     </p>
                     <!-- Actions -->
                     <%= if @current_scope.user && VoileWeb.Auth.Authorization.is_super_admin?(@current_scope.user) do %>
                       <div class="flex items-center justify-between gap-2">
-                        <div class="text-xs text-gray-500">ID: {node.id}</div>
+                        <div class="text-xs text-gray-500">{gettext("ID: %{id}", id: node.id)}</div>
 
                         <div class="flex gap-2">
                           <.button
@@ -145,15 +146,19 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                             phx-value-id={node.id}
                             class="text-xs !px-3 !py-1.5 info-btn"
                           >
-                            <.icon name="hero-pencil" class="w-3 h-3 mr-1" /> Edit
+                            <.icon name="hero-pencil" class="w-3 h-3 mr-1" /> {gettext("Edit")}
                           </.button>
                           <.button
                             phx-click="delete_node"
                             phx-value-id={node.id}
-                            data-confirm="Are you sure you want to delete this node? This action cannot be undone."
+                            data-confirm={
+                              gettext(
+                                "Are you sure you want to delete this node? This action cannot be undone."
+                              )
+                            }
                             class="text-xs !px-3 !py-1.5 danger-btn"
                           >
-                            <.icon name="hero-trash" class="w-3 h-3 mr-1" /> Delete
+                            <.icon name="hero-trash" class="w-3 h-3 mr-1" /> {gettext("Delete")}
                           </.button>
                         </div>
                       </div>
@@ -168,14 +173,14 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     name="hero-building-library"
                     class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4"
                   />
-                  <h3 class="text-lg font-medium mb-2">No nodes yet</h3>
+                  <h3 class="text-lg font-medium mb-2">{gettext("No nodes yet")}</h3>
 
                   <p class="text-sm text-gray-500 mb-4">
-                    Get started by creating your first system node
+                    {gettext("Get started by creating your first system node")}
                   </p>
 
                   <.button phx-click="new_node" class="primary-btn">
-                    <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add First Node
+                    <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add First Node")}
                   </.button>
                 </div>
               <% end %>
@@ -189,27 +194,33 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
       <.modal id="node-form-modal" show={@show_form} on_cancel={JS.push("cancel_form")}>
         <div class="mt-3">
           <h3 class="text-lg font-medium mb-4">
-            {if @form_node, do: "Edit Node", else: "Add New Node"}
+            {if @form_node, do: gettext("Edit Node"), else: gettext("Add New Node")}
           </h3>
 
           <.form for={@form} id="node-form" phx-submit="save_node" phx-change="validate_node">
-            <.input field={@form[:name]} type="text" label="Node Name" required />
+            <.input field={@form[:name]} type="text" label={gettext("Node Name")} required />
             <.input
               field={@form[:abbr]}
               type="text"
-              label="Abbreviation"
-              placeholder="e.g., MAIN, BR1"
+              label={gettext("Abbreviation")}
+              placeholder={gettext("e.g., MAIN, BR1")}
               required
-            /> <.input field={@form[:description]} type="textarea" label="Description" rows="3" />
+            />
+            <.input
+              field={@form[:description]}
+              type="textarea"
+              label={gettext("Description")}
+              rows="3"
+            />
             <!-- Image Upload Section -->
             <div class="mt-4">
-              <label class="block text-sm font-medium mb-2">Node Image/Logo</label>
+              <label class="block text-sm font-medium mb-2">{gettext("Node Image/Logo")}</label>
               <!-- Current Image Preview -->
               <%= if @image_preview || (@form_node && @form_node.image) do %>
                 <div class="mb-3 relative inline-block">
                   <img
                     src={@image_preview || @form_node.image}
-                    alt="Node preview"
+                    alt={gettext("Node preview")}
                     class="h-32 w-auto rounded-lg border-2 border-gray-300 dark:border-gray-600 object-cover"
                   />
                   <button
@@ -233,8 +244,12 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                     class="cursor-pointer flex flex-col items-center"
                   >
                     <.icon name="hero-photo" class="h-12 w-12 text-gray-400 mb-2" />
-                    <span class="text-sm font-medium">Click to upload or drag and drop</span>
-                    <span class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP up to 5MB</span>
+                    <span class="text-sm font-medium">
+                      {gettext("Click to upload or drag and drop")}
+                    </span>
+                    <span class="text-xs text-gray-500 mt-1">
+                      {gettext("PNG, JPG, WEBP up to 5MB")}
+                    </span>
                   </label>
                 </div>
                 <!-- Upload Progress -->
@@ -283,10 +298,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                 phx-click="cancel_form"
                 class="cancel-btn"
               >
-                Cancel
+                {gettext("Cancel")}
               </.button>
               <.button type="submit" class="success-btn">
-                {if @form_node, do: "Update", else: "Create"} Node
+                {if @form_node, do: gettext("Update"), else: gettext("Create")} Node
               </.button>
             </div>
           </.form>
@@ -372,7 +387,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           {:ok, _node} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Node created successfully")
+             |> put_flash(:info, gettext("Node created successfully"))
              |> assign(:show_form, false)
              |> assign(:image_preview, nil)
              |> assign(:nodes, System.list_nodes())}
@@ -386,7 +401,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           {:ok, _node} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Node updated successfully")
+             |> put_flash(:info, gettext("Node updated successfully"))
              |> assign(:show_form, false)
              |> assign(:image_preview, nil)
              |> assign(:nodes, System.list_nodes())}
@@ -416,11 +431,11 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Node deleted successfully")
+         |> put_flash(:info, gettext("Node deleted successfully"))
          |> assign(:nodes, System.list_nodes())}
 
       {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete node")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to delete node"))}
     end
   end
 
@@ -483,8 +498,11 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
     {:noreply, socket}
   end
 
-  defp error_to_string(:too_large), do: "File is too large (max 5MB)"
-  defp error_to_string(:not_accepted), do: "File type not accepted (use JPG, PNG, or WEBP)"
-  defp error_to_string(:too_many_files), do: "Too many files (max 1)"
-  defp error_to_string(_), do: "Upload error occurred"
+  defp error_to_string(:too_large), do: gettext("File is too large (max 5MB)")
+
+  defp error_to_string(:not_accepted),
+    do: gettext("File type not accepted (use JPG, PNG, or WEBP)")
+
+  defp error_to_string(:too_many_files), do: gettext("Too many files (max 1)")
+  defp error_to_string(_), do: gettext("Upload error occurred")
 end

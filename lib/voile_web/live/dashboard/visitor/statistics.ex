@@ -229,31 +229,40 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
     <div class="space-y-6">
       <!-- Header -->
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Visitor Data</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {gettext("Visitor Data")}
+        </h1>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Visitor data recap to the library
+          {gettext("Visitor data recap to the library")}
         </p>
       </div>
 
       <div class="mb-4">
-        <.back navigate="/manage/settings">Back to Settings</.back>
+        <.back navigate="/manage/settings">{gettext("Back to Settings")}</.back>
       </div>
-
+      
     <!-- Quick Links -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          {gettext("Quick Links")}
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <.link
             navigate="/manage/visitor/logs"
             class="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
           >
             <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-4">
-              <.icon name="hero-clipboard-document-list" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <.icon
+                name="hero-clipboard-document-list"
+                class="w-6 h-6 text-blue-600 dark:text-blue-400"
+              />
             </div>
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">Visitor Check-In Logs</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("Visitor Check-In Logs")}
+              </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                View detailed visitor check-in records
+                {gettext("View detailed visitor check-in records")}
               </p>
             </div>
           </.link>
@@ -263,28 +272,33 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             class="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
           >
             <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg mr-4">
-              <.icon name="hero-chat-bubble-left-right" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <.icon
+                name="hero-chat-bubble-left-right"
+                class="w-6 h-6 text-purple-600 dark:text-purple-400"
+              />
             </div>
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">Survey Feedback Logs</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("Survey Feedback Logs")}
+              </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                View detailed survey feedback records
+                {gettext("View detailed survey feedback records")}
               </p>
             </div>
           </.link>
         </div>
       </div>
-
+      
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Filters")}</h2>
           <button
             type="button"
             phx-click="refresh"
             class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
           >
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> Refresh
+            <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
           </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -293,13 +307,13 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             <form phx-change="filter_node">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Location/Faculty
+                  {gettext("Location/Faculty")}
                 </label>
                 <select
                   name="node_id"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 >
-                  <option value="">All Locations</option>
+                  <option value="">{gettext("All Locations")}</option>
                   <option
                     :for={node <- @nodes}
                     value={node.id}
@@ -313,11 +327,11 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           <% else %>
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Location/Faculty
+                {gettext("Location/Faculty")}
               </label>
               <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600">
                 {Enum.find(@nodes, fn n -> n.id == @selected_node_id end)
-                |> then(fn n -> n && n.name end) || "Your Location"}
+                |> then(fn n -> n && n.name end) || gettext("Your Location")}
               </div>
             </div>
           <% end %>
@@ -325,7 +339,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           <form phx-change="update_date">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Date
+                {gettext("Date")}
               </label>
               <input
                 type="date"
@@ -339,7 +353,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           <form phx-change="update_month">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Month
+                {gettext("Month")}
               </label>
               <input
                 type="month"
@@ -355,7 +369,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           <form phx-change="update_year">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Year
+                {gettext("Year")}
               </label>
               <input
                 type="number"
@@ -368,26 +382,26 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             </div>
           </form>
         </div>
-
+        
     <!-- Selected Filter Display -->
         <%= if @selected_node_id do %>
           <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <p class="text-sm text-blue-800 dark:text-blue-300">
               <span class="font-medium">
-                {if @is_super_admin, do: "Filtering by:", else: "Showing data for:"}
+                {if @is_super_admin, do: gettext("Filtering by:"), else: gettext("Showing data for:")}
               </span>
               {Enum.find(@nodes, fn n -> n.id == @selected_node_id end)
-              |> then(fn n -> n && n.name end) || "Your Location"}
+              |> then(fn n -> n && n.name end) || gettext("Your Location")}
             </p>
           </div>
         <% end %>
       </div>
-
+      
     <!-- Today's Visitors -->
       <%= if @today_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Today's Visitor Data
+            {gettext("Today's Visitor Data")}
           </h2>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {Calendar.strftime(@selected_date, "%B %-d, %Y")}
@@ -404,7 +418,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                   <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {format_number(room.count)}
                   </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">visitors</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("visitors")}</span>
                 </div>
               </div>
             </div>
@@ -414,31 +428,33 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                 name="hero-users"
                 class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2"
               />
-              <p class="text-gray-600 dark:text-gray-400">No visitor data for selected filters</p>
+              <p class="text-gray-600 dark:text-gray-400">
+                {gettext("No visitor data for selected filters")}
+              </p>
             </div>
           <% end %>
 
           <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                Total Visitors Today
+                {gettext("Total Visitors Today")}
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-3xl font-bold text-green-600 dark:text-green-400">
                   {format_number(@today_stats.total_visitors)}
                 </span>
-                <span class="text-sm text-gray-500 dark:text-gray-400">visitors</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("visitors")}</span>
               </div>
             </div>
           </div>
         </div>
       <% end %>
-
+      
     <!-- This Month's Visitors -->
       <%= if @month_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            This Month's Visitor Data
+            {gettext("This Month's Visitor Data")}
           </h2>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {Calendar.strftime(@selected_month, "%B %Y")}
@@ -455,7 +471,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                   <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {format_number(room.count)}
                   </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">visitors</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("visitors")}</span>
                 </div>
               </div>
             </div>
@@ -465,31 +481,33 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                 name="hero-users"
                 class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2"
               />
-              <p class="text-gray-600 dark:text-gray-400">No visitor data for selected filters</p>
+              <p class="text-gray-600 dark:text-gray-400">
+                {gettext("No visitor data for selected filters")}
+              </p>
             </div>
           <% end %>
 
           <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                Total Visitors This Month
+                {gettext("Total Visitors This Month")}
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-3xl font-bold text-green-600 dark:text-green-400">
                   {format_number(@month_stats.total_visitors)}
                 </span>
-                <span class="text-sm text-gray-500 dark:text-gray-400">visitors</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("visitors")}</span>
               </div>
             </div>
           </div>
         </div>
       <% end %>
-
+      
     <!-- Yearly Statistics -->
       <%= if @year_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Monthly Visitor Data for {@selected_year}
+            {gettext("Monthly Visitor Data for %{year}", year: @selected_year)}
           </h2>
 
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

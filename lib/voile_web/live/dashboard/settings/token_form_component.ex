@@ -11,19 +11,21 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
       <div class="mb-6">
         <h3 class="text-lg font-medium">
           <%= if @action == :create_master do %>
-            Create Master Token
+            {gettext("Create Master Token")}
           <% else %>
-            {if @token, do: "Edit Token", else: "Create Token"}
+            {if @token, do: gettext("Edit Token"), else: gettext("Create Token")}
           <% end %>
         </h3>
 
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
           <%= if @action == :create_master do %>
-            Create a non-expiring master token with full admin privileges. Only super admins can create these.
+            {gettext(
+              "Create a non-expiring master token with full admin privileges. Only super admins can create these."
+            )}
           <% else %>
             {if @token,
-              do: "Update token settings",
-              else: "Create a new API token for accessing the system"}
+              do: gettext("Update token settings"),
+              else: gettext("Create a new API token for accessing the system")}
           <% end %>
         </p>
       </div>
@@ -33,8 +35,8 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
           <.input
             field={@form[:name]}
             type="text"
-            label="Token Name"
-            placeholder="My API Token"
+            label={gettext("Token Name")}
+            placeholder={gettext("My API Token")}
             required
           />
         </div>
@@ -43,15 +45,15 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
           <.input
             field={@form[:description]}
             type="textarea"
-            label="Description"
-            placeholder="Optional description for this token"
+            label={gettext("Description")}
+            placeholder={gettext("Optional description for this token")}
             rows="3"
           />
         </div>
 
         <%= if @is_admin and @action != :create_master do %>
           <div>
-            <.label>Scopes</.label>
+            <.label>{gettext("Scopes")}</.label>
 
             <div class="mt-2 space-y-2">
               <%= for scope <- UserApiToken.available_scopes() do %>
@@ -74,8 +76,8 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             <.input
               field={@form[:expires_at]}
               type="datetime-local"
-              label="Expiration Date (optional)"
-              placeholder="Leave empty for no expiration"
+              label={gettext("Expiration Date (optional)")}
+              placeholder={gettext("Leave empty for no expiration")}
             />
           </div>
         <% end %>
@@ -85,10 +87,12 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             <.input
               field={@form[:ip_whitelist]}
               type="text"
-              label="IP Whitelist (optional)"
-              placeholder="192.168.1.1, 10.0.0.1"
+              label={gettext("IP Whitelist (optional)")}
+              placeholder={gettext("192.168.1.1, 10.0.0.1")}
             />
-            <p class="text-sm text-gray-500 mt-1">Comma-separated list of allowed IP addresses</p>
+            <p class="text-sm text-gray-500 mt-1">
+              {gettext("Comma-separated list of allowed IP addresses")}
+            </p>
           </div>
         <% end %>
 
@@ -99,10 +103,10 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
             phx-click="cancel"
             phx-target={@myself}
           >
-            Cancel
+            {gettext("Cancel")}
           </button>
           <button type="submit" class="primary-btn">
-            {if @token, do: "Update Token", else: "Create Token"}
+            {if @token, do: gettext("Update Token"), else: gettext("Create Token")}
           </button>
         </div>
       </.form>
@@ -204,8 +208,8 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
   defp change_token(nil, :create_master) do
     # Master token defaults
     UserApiToken.create_changeset(%UserApiToken{}, %{
-      name: "Master Token",
-      description: "Non-expiring master token with full access",
+      name: gettext("Master Token"),
+      description: gettext("Non-expiring master token with full access"),
       scopes: ["admin"],
       expires_at: nil
     })

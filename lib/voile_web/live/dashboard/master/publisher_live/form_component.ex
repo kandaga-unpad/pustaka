@@ -9,7 +9,9 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
     <div>
       <.header>
         {@title}
-        <:subtitle>Use this form to manage publishers records in your database.</:subtitle>
+        <:subtitle>
+          {gettext("Use this form to manage publishers records in your database.")}
+        </:subtitle>
       </.header>
 
       <.form
@@ -19,11 +21,11 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:address]} type="textarea" label="Address" />
-        <.input field={@form[:city]} type="text" label="City" />
-        <.input field={@form[:contact]} type="text" label="Contact" />
-        <.button phx-disable-with="Saving...">Save Publisher</.button>
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:address]} type="textarea" label={gettext("Address")} />
+        <.input field={@form[:city]} type="text" label={gettext("City")} />
+        <.input field={@form[:contact]} type="text" label={gettext("Contact")} />
+        <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Publisher")}</.button>
       </.form>
     </div>
     """
@@ -58,7 +60,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Publisher updated successfully.")
+         |> put_flash(:info, gettext("Publisher updated successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -73,7 +75,7 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Publisher created successfully.")
+         |> put_flash(:info, gettext("Publisher created successfully."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

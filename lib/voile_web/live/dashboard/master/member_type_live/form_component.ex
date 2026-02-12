@@ -9,7 +9,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
     <div>
       <.header>
         {@title}
-        <:subtitle>Manage membership types and entitlements.</:subtitle>
+        <:subtitle>{gettext("Manage membership types and entitlements.")}</:subtitle>
       </.header>
 
       <.form
@@ -19,49 +19,62 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:slug]} type="text" label="Slug" />
-        <.input field={@form[:description]} type="textarea" label="Description" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:slug]} type="text" label={gettext("Slug")} />
+        <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
         <div class="grid grid-cols-2 gap-4">
-          <.input field={@form[:max_items]} type="number" label="Max Items" />
-          <.input field={@form[:max_days]} type="number" label="Max Days" />
-          <.input field={@form[:max_renewals]} type="number" label="Max Renewals" />
-          <.input field={@form[:max_reserves]} type="number" label="Max Reserves" />
-          <.input field={@form[:max_concurrent_loans]} type="number" label="Max Concurrent Loans" />
+          <.input field={@form[:max_items]} type="number" label={gettext("Max Items")} />
+          <.input field={@form[:max_days]} type="number" label={gettext("Max Days")} />
+          <.input field={@form[:max_renewals]} type="number" label={gettext("Max Renewals")} />
+          <.input field={@form[:max_reserves]} type="number" label={gettext("Max Reserves")} />
+          <.input
+            field={@form[:max_concurrent_loans]}
+            type="number"
+            label={gettext("Max Concurrent Loans")}
+          />
           <.input
             field={@form[:max_event_bookings_per_year]}
             type="number"
-            label="Max Event Bookings / Year"
+            label={gettext("Max Event Bookings / Year")}
           />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <.input field={@form[:fine_per_day]} type="text" label="Fine / Day" />
-          <.input field={@form[:max_fine]} type="text" label="Max Fine" />
-          <.input field={@form[:membership_fee]} type="text" label="Membership Fee" />
-          <.input field={@form[:currency]} type="text" label="Currency" />
+          <.input field={@form[:fine_per_day]} type="text" label={gettext("Fine / Day")} />
+          <.input field={@form[:max_fine]} type="text" label={gettext("Max Fine")} />
+          <.input field={@form[:membership_fee]} type="text" label={gettext("Membership Fee")} />
+          <.input field={@form[:currency]} type="text" label={gettext("Currency")} />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <.input field={@form[:ticket_discount_percent]} type="number" label="Ticket Discount %" />
-          <.input field={@form[:shop_discount_percent]} type="number" label="Shop Discount %" />
+          <.input
+            field={@form[:ticket_discount_percent]}
+            type="number"
+            label={gettext("Ticket Discount %")}
+          />
+          <.input
+            field={@form[:shop_discount_percent]}
+            type="number"
+            label={gettext("Shop Discount %")}
+          />
           <.input
             field={@form[:membership_period_days]}
             type="number"
-            label="Membership Period (days)"
-          /> <.input field={@form[:priority_level]} type="number" label="Priority Level" />
+            label={gettext("Membership Period (days)")}
+          />
+          <.input field={@form[:priority_level]} type="number" label={gettext("Priority Level")} />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <.input field={@form[:auto_renew]} type="checkbox" label="Auto Renew" />
-          <.input field={@form[:can_reserve]} type="checkbox" label="Can Reserve" />
-          <.input field={@form[:can_renew]} type="checkbox" label="Can Renew" />
-          <.input field={@form[:digital_access]} type="checkbox" label="Digital Access" />
+          <.input field={@form[:auto_renew]} type="checkbox" label={gettext("Auto Renew")} />
+          <.input field={@form[:can_reserve]} type="checkbox" label={gettext("Can Reserve")} />
+          <.input field={@form[:can_renew]} type="checkbox" label={gettext("Can Renew")} />
+          <.input field={@form[:digital_access]} type="checkbox" label={gettext("Digital Access")} />
         </div>
 
         <div class="mt-4 flex gap-3">
-          <.button phx-disable-with="Saving...">Save Member Type</.button>
-          <.link patch={@patch} class="btn">Cancel</.link>
+          <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Member Type")}</.button>
+          <.link patch={@patch} class="btn">{gettext("Cancel")}</.link>
         </div>
       </.form>
     </div>
@@ -97,7 +110,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Member type updated successfully.")
+         |> put_flash(:info, gettext("Member type updated successfully."))
          |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -112,7 +125,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Member type created successfully.")
+         |> put_flash(:info, gettext("Member type created successfully."))
          |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

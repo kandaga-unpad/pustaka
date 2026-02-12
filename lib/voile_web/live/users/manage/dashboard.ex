@@ -4,6 +4,8 @@ defmodule VoileWeb.Users.Manage.Dashboard do
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
   alias VoileWeb.Auth.Authorization
+  alias Voile.Analytics.SearchAnalytics
+
   import Ecto.Query
 
   @impl true
@@ -14,16 +16,22 @@ defmodule VoileWeb.Users.Manage.Dashboard do
     if Authorization.can?(current_user, "system.settings") do
       stats = Accounts.get_user_statistics()
       recent_users = get_recent_users()
+      search_stats = SearchAnalytics.get_search_stats()
+      popular_searches = SearchAnalytics.get_popular_searches()
+      search_trends = SearchAnalytics.get_search_trends()
 
       {:ok,
        socket
        |> assign(:stats, stats)
        |> assign(:recent_users, recent_users)
-       |> assign(:current_user, current_user)}
+       |> assign(:current_user, current_user)
+       |> assign(:search_stats, search_stats)
+       |> assign(:popular_searches, popular_searches)
+       |> assign(:search_trends, search_trends)}
     else
       {:ok,
        socket
-       |> put_flash(:error, "You don't have permission to access the admin dashboard.")
+       |> put_flash(:error, gettext("You don't have permission to access the admin dashboard."))
        |> redirect(to: ~p"/manage/settings")}
     end
   end
@@ -32,12 +40,18 @@ defmodule VoileWeb.Users.Manage.Dashboard do
   def handle_event("refresh_stats", _params, socket) do
     stats = Accounts.get_user_statistics()
     recent_users = get_recent_users()
+    search_stats = SearchAnalytics.get_search_stats()
+    popular_searches = SearchAnalytics.get_popular_searches()
+    search_trends = SearchAnalytics.get_search_trends()
 
     {:noreply,
      socket
      |> assign(:stats, stats)
      |> assign(:recent_users, recent_users)
-     |> put_flash(:info, "Statistics refreshed")}
+     |> assign(:search_stats, search_stats)
+     |> assign(:popular_searches, popular_searches)
+     |> assign(:search_trends, search_trends)
+     |> put_flash(:info, gettext("Statistics refreshed"))}
   end
 
   @impl true
@@ -45,21 +59,27 @@ defmodule VoileWeb.Users.Manage.Dashboard do
     ~H"""
     <div class="space-y-6">
       <.header>
-        Admin Dashboard
-        <:subtitle>System overview and management</:subtitle>
+        {gettext("Admin Dashboard")}
+        <:subtitle>{gettext("System overview and management")}</:subtitle>
 
         <:actions>
           <.button
             phx-click="refresh_stats"
             class="btn btn-primary rounded-lg"
           >
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Refresh Stats
+            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Refresh Stats")}
           </.button>
         </:actions>
       </.header>
       <div>
-        <.back navigate="/manage">Back to Dashboard</.back>
+        <.back navigate="/manage">{gettext("Back to Dashboard")}</.back>
       </div>
+      <!-- Search Dashboard -->
+      <VoileWeb.SearchDashboardComponent.search_dashboard
+        search_stats={@search_stats}
+        popular_searches={@popular_searches}
+        search_trends={@search_trends}
+      />
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Total Users Card -->
@@ -84,7 +104,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium truncate">Total Users</dt>
+                  <dt class="text-sm font-medium truncate">{gettext("Total Users")}</dt>
 
                   <dd class="text-lg font-medium">{@stats.total_users}</dd>
                 </dl>
@@ -114,7 +134,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium truncate">Active Users</dt>
+                  <dt class="text-sm font-medium truncate">{gettext("Active Users")}</dt>
 
                   <dd class="text-lg font-medium">{@stats.confirmed_users}</dd>
                 </dl>
@@ -144,7 +164,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
               <div class="ml-5 w-0 flex-1">
                 <dl>
-                  <dt class="text-sm font-medium truncate">Pending Users</dt>
+                  <dt class="text-sm font-medium truncate">{gettext("Pending Users")}</dt>
 
                   <dd class="text-lg font-medium">{@stats.unconfirmed_users}</dd>
                 </dl>
@@ -156,7 +176,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <!-- Users by Role Chart -->
       <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Users by Role</h3>
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{gettext("Users by Role")}</h3>
 
           <div class="space-y-3">
             <%= for {role, count} <- @stats.users_by_role do %>
@@ -185,7 +205,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <!-- Recent Users -->
       <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium mb-4">Recent Users</h3>
+          <h3 class="text-lg leading-6 font-medium mb-4">{gettext("Recent Users")}</h3>
 
           <div class="flow-root">
             <ul role="list" class="-my-5 divide-y divide-gray-200">
@@ -208,7 +228,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                       <p class="text-sm font-medium truncate">{user.email}</p>
 
                       <p class="text-sm truncate">
-                        Joined {Calendar.strftime(user.inserted_at, "%B %d, %Y")}
+                        {gettext("Joined")} {Calendar.strftime(user.inserted_at, "%B %d, %Y")}
                       </p>
                     </div>
 
@@ -221,11 +241,11 @@ defmodule VoileWeb.Users.Manage.Dashboard do
 
                       <%= if user.confirmed_at do %>
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
+                          {gettext("Active")}
                         </span>
                       <% else %>
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Pending
+                          {gettext("Pending")}
                         </span>
                       <% end %>
                     </div>
@@ -241,7 +261,7 @@ defmodule VoileWeb.Users.Manage.Dashboard do
                 navigate={~p"/manage/members/management"}
                 class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-voile-info focus:border-voile-info"
               >
-                View all users
+                {gettext("View all users")}
               </.link>
             </div>
           <% end %>
@@ -250,17 +270,17 @@ defmodule VoileWeb.Users.Manage.Dashboard do
       <!-- System Information -->
       <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-lg leading-6 font-medium mb-4">System Information</h3>
+          <h3 class="text-lg leading-6 font-medium mb-4">{gettext("System Information")}</h3>
 
           <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div>
-              <dt class="text-sm font-medium">Current User</dt>
+              <dt class="text-sm font-medium">{gettext("Current User")}</dt>
 
               <dd class="mt-1 text-sm">{@current_user.email}</dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium">Your Role</dt>
+              <dt class="text-sm font-medium">{gettext("Your Role")}</dt>
 
               <dd class="mt-1">
                 <%= for role <- @current_user.roles do %>
@@ -272,28 +292,28 @@ defmodule VoileWeb.Users.Manage.Dashboard do
             </div>
 
             <div>
-              <dt class="text-sm font-medium">Last Login</dt>
+              <dt class="text-sm font-medium">{gettext("Last Login")}</dt>
 
               <dd class="mt-1 text-sm">
                 <%= if @current_user.last_login do %>
                   {Calendar.strftime(@current_user.last_login, "%B %d, %Y at %I:%M %p")}
                 <% else %>
-                  Never
+                  {gettext("Never")}
                 <% end %>
               </dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium">Account Status</dt>
+              <dt class="text-sm font-medium">{gettext("Account Status")}</dt>
 
               <dd class="mt-1">
                 <%= if @current_user.confirmed_at do %>
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Confirmed
+                    {gettext("Confirmed")}
                   </span>
                 <% else %>
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Unconfirmed
+                    {gettext("Unconfirmed")}
                   </span>
                 <% end %>
               </dd>

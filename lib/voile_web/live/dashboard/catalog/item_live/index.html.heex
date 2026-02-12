@@ -2,11 +2,11 @@
   <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
       <div class="flex items-center gap-3">
-        <.back navigate="/manage/catalog">Kembali</.back>
+        <.back navigate="/manage/catalog">{gettext("Kembali")}</.back>
 
         <%= if @search && @search != "" do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
-            <span class="text-sm text-gray-600">Results</span>
+            <span class="text-sm text-gray-600">{gettext("Results")}</span>
             <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
               {@items_count || 0}
             </span>
@@ -15,7 +15,7 @@
 
         <%= if @search && @search != "" do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/40 rounded-md">
-            <span class="text-sm text-indigo-700">Filter:</span>
+            <span class="text-sm text-indigo-700">{gettext("Filter:")}</span>
             <span class="text-sm font-medium text-indigo-900 dark:text-indigo-200">
               {@search}
             </span>
@@ -27,7 +27,7 @@
 
         <%= if @active_filters_count > 0 do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/40 rounded-md">
-            <span class="text-sm text-indigo-700">Active Filters:</span>
+            <span class="text-sm text-indigo-700">{gettext("Active Filters:")}</span>
             <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
               {@active_filters_count}
             </span>
@@ -40,7 +40,7 @@
           navigate={~p"/manage/catalog/labels"}
           class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
         >
-          <.icon name="hero-printer" class="w-5 h-5" /> Print Labels
+          <.icon name="hero-printer" class="w-5 h-5" /> {gettext("Print Labels")}
         </.link>
         <.form
           for={%{}}
@@ -56,7 +56,7 @@
               type="text"
               name="q"
               value={@search || ""}
-              placeholder="Search items..."
+              placeholder={gettext("Search items...")}
               class="pl-10 pr-9 py-2 rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               phx-debounce="200"
             />
@@ -102,7 +102,7 @@
                 </button>
               <% else %>
                 <span class="text-xs text-gray-400 hidden sm:inline phx-loading:hidden">
-                  Press / to search
+                  {gettext("Press / to search")}
                 </span>
               <% end %>
             </div>
@@ -110,7 +110,9 @@
         </.form>
 
         <%= if can?(@current_scope.user, "items.create") do %>
-          <.link patch={~p"/manage/catalog/items/new"}><.button>New Item</.button></.link>
+          <.link patch={~p"/manage/catalog/items/new"}>
+            <.button>{gettext("New Item")}</.button>
+          </.link>
         <% end %>
       </div>
     </div>
@@ -123,7 +125,7 @@
             class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400"
           />
           <h3 class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Filter Items
+            {gettext("Filter Items")}
           </h3>
         </div>
 
@@ -133,7 +135,7 @@
               phx-click="clear_filters"
               class="text-xs px-2 sm:px-3 py-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 transition-colors touch-manipulation"
             >
-              <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> Clear Filters
+              <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> {gettext("Clear Filters")}
             </button>
           <% end %>
         </div>
@@ -147,14 +149,14 @@
       >
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Status
+            {gettext("Status")}
           </label>
           <select
             name="status"
             value={@filter_status}
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Statuses</option>
+            <option value="">{gettext("All Statuses")}</option>
             <%= for {label, value} <- @status_options do %>
               <option value={value}>{label}</option>
             <% end %>
@@ -163,14 +165,14 @@
 
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Availability
+            {gettext("Availability")}
           </label>
           <select
             name="availability"
             value={@filter_availability}
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Availabilities</option>
+            <option value="">{gettext("All Availabilities")}</option>
             <%= for {label, value} <- @availability_options do %>
               <option value={value}>{label}</option>
             <% end %>
@@ -179,14 +181,14 @@
 
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Condition
+            {gettext("Condition")}
           </label>
           <select
             name="condition"
             value={@filter_condition}
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Conditions</option>
+            <option value="">{gettext("All Conditions")}</option>
             <%= for {label, value} <- @condition_options do %>
               <option value={value}>{label}</option>
             <% end %>
@@ -195,7 +197,7 @@
 
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Location/Node
+            {gettext("Location/Node")}
           </label>
           <%= if Voile.Schema.Catalog.is_user_admin?(@current_user) do %>
             <select
@@ -203,7 +205,7 @@
               value={@filter_node_id}
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">All Locations</option>
+              <option value="">{gettext("All Locations")}</option>
               <%= for {name, id} <- @nodes do %>
                 <option value={id}>{name}</option>
               <% end %>
@@ -212,11 +214,11 @@
             <%= if @user_node_id do %>
               <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 {Enum.find(@nodes, fn {_, nid} -> nid == @user_node_id end) |> elem(0) ||
-                  "Your Location"}
+                  gettext("Your Location")}
               </div>
             <% else %>
               <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500">
-                No Location Assigned
+                {gettext("No Location Assigned")}
               </div>
             <% end %>
           <% end %>
@@ -228,7 +230,7 @@
           <div class="flex flex-wrap gap-2">
             <%= if @filter_status != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                Status: {@filter_status}
+                {gettext("Status:")} {@filter_status}
                 <button
                   phx-click="filter_change"
                   phx-value-status=""
@@ -241,7 +243,7 @@
 
             <%= if @filter_availability != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                Availability: {@filter_availability}
+                {gettext("Availability:")} {@filter_availability}
                 <button
                   phx-click="filter_change"
                   phx-value-availability=""
@@ -254,7 +256,7 @@
 
             <%= if @filter_condition != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                Condition: {@filter_condition}
+                {gettext("Condition:")} {@filter_condition}
                 <button
                   phx-click="filter_change"
                   phx-value-condition=""
@@ -267,7 +269,7 @@
 
             <%= if @filter_node_id != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                Location: {Enum.find(@nodes, fn {_, nid} ->
+                {gettext("Location:")} {Enum.find(@nodes, fn {_, nid} ->
                   nid == String.to_integer(@filter_node_id)
                 end)
                 |> elem(0) || @filter_node_id}
@@ -308,31 +310,47 @@
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Collection</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Collection")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Item code</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Item code")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Inventory code</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Inventory code")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Location</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Location")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Status")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Condition</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Condition")}
+            </th>
 
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Availability</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+              {gettext("Availability")}
+            </th>
 
-            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Actions</th>
+            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">
+              {gettext("Actions")}
+            </th>
           </tr>
         </thead>
 
         <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
           <tr :if={@items_empty?} class="only:table-row hidden">
             <td class="px-4 py-6 text-center text-sm text-gray-500" colspan="8">
-              No items found. Try a different search or <.link
+              {gettext("No items found. Try a different search or")} <.link
                 patch={~p"/manage/catalog/items/new"}
                 class="text-indigo-600 hover:underline"
-              >create a new item</.link>.
+              >{gettext("create a new item")}</.link>.
             </td>
           </tr>
 
@@ -383,7 +401,7 @@
                   <%= if can?(@current_scope.user, "items.delete") do %>
                     <.link
                       phx-click={JS.push("delete", value: %{id: item.id}) |> hide("##{id}")}
-                      data-confirm="Are you sure?"
+                      data-confirm={gettext("Are you sure?")}
                       class="text-red-600 hover:underline"
                       title="Delete"
                     >

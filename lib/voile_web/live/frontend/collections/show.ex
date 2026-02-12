@@ -13,7 +13,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:page_title, "Collection Details")
+      |> assign(:page_title, gettext("Collection Details"))
       |> assign(:collection, nil)
       |> assign(:loading, false)
       |> assign(:items_page, 1)
@@ -82,13 +82,13 @@ defmodule VoileWeb.Frontend.Collections.Show do
       {:error, :not_found} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Collection not found")
+         |> put_flash(:error, gettext("Collection not found"))
          |> push_navigate(to: ~p"/collections")}
 
       {:error, :access_denied} ->
         {:noreply,
          socket
-         |> put_flash(:error, "You don't have permission to view this collection")
+         |> put_flash(:error, gettext("You don't have permission to view this collection"))
          |> push_navigate(to: ~p"/collections")}
     end
   end
@@ -114,7 +114,9 @@ defmodule VoileWeb.Frontend.Collections.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading collection...</span>
+            <span class="ml-2 text-gray-600 dark:text-gray-300">
+              {gettext("Loading collection...")}
+            </span>
           </div>
         <% else %>
           <%= if @collection do %>
@@ -126,7 +128,9 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     navigate={~p"/collections"}
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   >
-                    <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> Back to Collections
+                    <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> {gettext(
+                      "Back to Collections"
+                    )}
                   </.link>
                 </div>
               </div>
@@ -174,7 +178,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               <.icon
                                 name="hero-user-solid"
                                 class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Creator:</span>
+                              />
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Creator:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {@collection.mst_creator.creator_name}
                               </span>
@@ -186,7 +193,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               <.icon
                                 name="hero-tag-solid"
                                 class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Type:</span>
+                              />
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Type:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {String.capitalize(@collection.collection_type)}
                               </span>
@@ -197,7 +207,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             <.icon
                               name="hero-document-duplicate-solid"
                               class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Total Items:</span>
+                            />
+                            <span class="text-gray-500 dark:text-gray-400 mr-2">
+                              {gettext("Total Items:")}
+                            </span>
                             <span class="font-medium text-gray-900 dark:text-white">
                               {length(@collection.items || [])}
                             </span>
@@ -208,7 +221,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               <.icon
                                 name="hero-building-library-solid"
                                 class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                              /> <span class="text-gray-500 dark:text-gray-400 mr-2">Location:</span>
+                              />
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Location:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {@collection.node.name}
                               </span>
@@ -219,7 +235,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             <.icon
                               name="hero-calendar-solid"
                               class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Added:</span>
+                            />
+                            <span class="text-gray-500 dark:text-gray-400 mr-2">
+                              {gettext("Added:")}
+                            </span>
                             <span class="font-medium text-gray-900 dark:text-white">
                               {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
                             </span>
@@ -229,7 +248,10 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             <.icon
                               name="hero-eye-solid"
                               class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                            /> <span class="text-gray-500 dark:text-gray-400 mr-2">Access:</span>
+                            />
+                            <span class="text-gray-500 dark:text-gray-400 mr-2">
+                              {gettext("Access:")}
+                            </span>
                             <span class={"px-2 py-1 text-xs rounded-full #{access_level_badge_class(@collection.access_level)}"}>
                               {String.capitalize(@collection.access_level)}
                             </span>
@@ -244,7 +266,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
                       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                         <.icon name="hero-rectangle-stack-solid" class="w-5 h-5 mr-2" />
-                        Collection Relationships
+                        {gettext("Collection Relationships")}
                       </h2>
 
                       <div class="space-y-6">
@@ -253,7 +275,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                           <div>
                             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                               <.icon name="hero-arrow-up-circle" class="w-5 h-5 text-blue-500" />
-                              Parent Collection
+                              {gettext("Parent Collection")}
                             </h3>
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                               <div class="flex flex-col sm:flex-row items-start gap-4">
@@ -293,7 +315,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                                       class="inline-flex items-center px-4 py-2 border border-blue-600 shadow-sm text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                     >
                                       <.icon name="hero-arrow-right-circle" class="w-4 h-4 mr-2" />
-                                      View Parent Collection
+                                      {gettext("View Parent Collection")}
                                     </.link>
                                   </div>
                                 </div>
@@ -307,7 +329,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                           <div>
                             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                               <.icon name="hero-arrow-down-circle" class="w-5 h-5 text-green-500" />
-                              Child Collections ({length(@collection.children)})
+                              {gettext("Child Collections")} ({length(@collection.children)})
                             </h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                               <%= for child <- @collection.children do %>
@@ -348,7 +370,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                                         class="inline-flex items-center justify-center w-full px-4 py-2 border border-green-600 shadow-sm text-sm font-medium rounded-md text-green-600 dark:text-green-400 bg-white dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                       >
                                         <.icon name="hero-arrow-right-circle" class="w-4 h-4 mr-2" />
-                                        View Collection
+                                        {gettext("View Collection")}
                                       </.link>
                                     </div>
                                   </div>
@@ -366,9 +388,9 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     <div class="px-6 py-4 border-b border-voile-light dark:border-voile-dark">
                       <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <.icon name="hero-document-duplicate-solid" class="w-5 h-5 mr-2" />
-                        Collection Items
+                        {gettext("Collection Items")}
                         <span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                          ({length(@collection.items || [])} total)
+                          ({length(@collection.items || [])} {gettext("total")})
                         </span>
                       </h2>
                     </div>
@@ -389,7 +411,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                           phx-click="load_more_items"
                           class="inline-flex items-center px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm text-sm font-medium text-voile dark:text-voile-surface bg-white dark:bg-voile-neutral-dark hover:bg-voile-surface dark:hover:bg-voile-surface-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
-                          Load More Items
+                          {gettext("Load More Items")}
                         </button>
                       </div>
                     <% end %>
@@ -401,11 +423,11 @@ defmodule VoileWeb.Frontend.Collections.Show do
                           class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
                         />
                         <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
-                          No items available
+                          {gettext("No items available")}
                         </h3>
 
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          This collection currently has no available items.
+                          {gettext("This collection currently has no available items.")}
                         </p>
                       </div>
                     <% end %>
@@ -417,7 +439,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     <!-- Quick Actions -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Quick Actions
+                        {gettext("Quick Actions")}
                       </h3>
 
                       <div class="space-y-3">
@@ -426,11 +448,15 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             navigate={~p"/ebooks/view?id=#{@ebook_id}"}
                             class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                           >
-                            <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> Read E-Book
+                            <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> {gettext(
+                              "Read E-Book"
+                            )}
                           </.link>
                         <% else %>
                           <.button class="disabled-btn w-full" disabled>
-                            <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> Read E-Book
+                            <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> {gettext(
+                              "Read E-Book"
+                            )}
                           </.button>
                         <% end %>
 
@@ -439,37 +465,37 @@ defmodule VoileWeb.Frontend.Collections.Show do
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" />
-                          Search in Collection
+                          {gettext("Search in Collection")}
                         </.link>
                         <.link
                           navigate={~p"/collections"}
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           <.icon name="hero-arrow-left-solid" class="w-4 h-4 mr-2" />
-                          Browse Collections
+                          {gettext("Browse Collections")}
                         </.link>
                       </div>
                     </div>
                     <!-- Collection Stats -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Statistics
+                        {gettext("Statistics")}
                       </h3>
 
                       <div class="space-y-4">
                         <.stat_item
                           icon="document-duplicate"
-                          label="Total Items"
+                          label={gettext("Total Items")}
                           value={length(@collection.items || [])}
                         />
                         <.stat_item
                           icon="check-circle"
-                          label="Available Items"
+                          label={gettext("Available Items")}
                           value={available_items_count(@collection.items || [])}
                         />
                         <.stat_item
                           icon="clock"
-                          label="On Loan"
+                          label={gettext("On Loan")}
                           value={loaned_items_count(@collection.items || [])}
                         />
                       </div>
@@ -478,14 +504,14 @@ defmodule VoileWeb.Frontend.Collections.Show do
                     <%= if @collection.mst_creator do %>
                       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                          More by this Creator
+                          {gettext("More by this Creator")}
                         </h3>
 
                         <.link
                           navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
                           class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
-                          View all collections by {@collection.mst_creator.creator_name} →
+                          {gettext("View all collections by")} {@collection.mst_creator.creator_name} →
                         </.link>
                       </div>
                     <% end %>

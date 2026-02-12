@@ -6,7 +6,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   alias Phoenix.LiveView.JS
   alias VoileWeb.Layouts
 
-  import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1]
+  import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1, locale_switcher: 1]
 
   @doc """
   Navigation Bar Component for GLAM (Gallery, Library, Archive, Museum)
@@ -37,6 +37,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         url: "/manage/settings"
       }
     ]
+
+  attr :current_path, :string, default: "/manage"
 
   def nav_bar(assigns) do
     ~H"""
@@ -73,6 +75,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       </div>
       <%!-- Desktop Actions --%>
       <div class="hidden lg:flex w-full justify-end gap-3">
+        <.locale_switcher current_path={@current_path} />
         <Layouts.theme_toggle />
         <.link
           href="/users/log_out"

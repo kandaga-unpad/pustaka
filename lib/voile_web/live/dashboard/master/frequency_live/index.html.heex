@@ -1,10 +1,12 @@
 <section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">Kembali</.back>
+  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
 
   <.header>
-    Listing Frequencies
+    {gettext("Listing Frequencies")}
     <:actions>
-      <.link patch={~p"/manage/master/frequencies/new"}><.button>New Frequency</.button></.link>
+      <.link patch={~p"/manage/master/frequencies/new"}>
+        <.button>{gettext("New Frequency")}</.button>
+      </.link>
     </:actions>
   </.header>
 
@@ -13,22 +15,22 @@
     rows={@frequencies || []}
     row_click={fn f -> JS.navigate(~p"/manage/master/frequencies/#{f.id}") end}
   >
-    <:col :let={f} label="Frequency">{f.frequency}</:col>
+    <:col :let={f} label={gettext("Frequency")}>{f.frequency}</:col>
 
-    <:col :let={f} label="Increment">{f.time_increment}</:col>
+    <:col :let={f} label={gettext("Increment")}>{f.time_increment}</:col>
 
-    <:col :let={f} label="Unit">{f.time_unit}</:col>
+    <:col :let={f} label={gettext("Unit")}>{f.time_unit}</:col>
 
     <:action :let={f}>
-      <.link patch={~p"/manage/master/frequencies/#{f.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/frequencies/#{f.id}/edit"}>{gettext("Edit")}</.link>
     </:action>
 
     <:action :let={f}>
       <.link
         phx-click={JS.push("delete", value: %{id: f.id}) |> hide("##{f.id}")}
-        data-confirm="Are you sure?"
+        data-confirm={gettext("Are you sure?")}
       >
-        Delete
+        {gettext("Delete")}
       </.link>
     </:action>
   </.table>

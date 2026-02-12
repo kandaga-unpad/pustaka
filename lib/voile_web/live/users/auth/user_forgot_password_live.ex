@@ -13,39 +13,41 @@ defmodule VoileWeb.UserForgotPasswordLive do
             <div class="w-full max-w-sm text-center">
               <!-- Simple SVG illustration placeholder -->
               <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
-              <h3 class="mt-6 text-lg font-semibold">Reset your password</h3>
+              <h3 class="mt-6 text-lg font-semibold">{gettext("Reset your password")}</h3>
 
               <p class="mt-2 text-sm">
-                Enter the email associated with your account and we'll send a secure link to reset your password.
+                {gettext(
+                  "Enter the email associated with your account and we'll send a secure link to reset your password."
+                )}
               </p>
             </div>
           </div>
           <!-- Form card -->
           <div class="bg-voile-light dark:bg-voile-dark shadow rounded-lg border border-gray-100 p-6">
             <.header>
-              Forgot your password?
+              {gettext("Forgot your password?")}
               <:subtitle>
                 <span class="text-sm text-gray-500">
-                  We'll send a password reset link to your inbox
+                  {gettext("We'll send a password reset link to your inbox")}
                 </span>
               </:subtitle>
             </.header>
 
             <.form for={@form} id="reset_password_form" phx-submit="send_email">
               <div class="space-y-4">
-                <.input field={@form[:email]} type="email" placeholder="Email" required />
+                <.input field={@form[:email]} type="email" placeholder={gettext("Email")} required />
                 <.button phx-disable-with="Sending..." class="primary-btn w-full text-sm">
-                  Send password reset instructions
+                  {gettext("Send password reset instructions")}
                 </.button>
               </div>
             </.form>
 
             <div class="mt-6 flex items-center justify-between text-sm text-gray-600">
               <.link href={~p"/register"} class="w-24 text-center primary-btn hover:underline">
-                Register
+                {gettext("Register")}
               </.link>
               <.link href={~p"/login"} class="w-24 text-center success-btn hover:underline">
-                Log in
+                {gettext("Log in")}
               </.link>
             </div>
           </div>
@@ -83,7 +85,9 @@ defmodule VoileWeb.UserForgotPasswordLive do
     end
 
     info =
-      "If your email is in our system, you will receive instructions to reset your password shortly."
+      gettext(
+        "If your email is in our system, you will receive instructions to reset your password shortly."
+      )
 
     {:noreply,
      socket

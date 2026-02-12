@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.Edit do
     {:ok,
      socket
      |> assign(:resource_template, resource_template)
-     |> assign(:page_title, "Edit Resource Template")
+     |> assign(:page_title, gettext("Edit Resource Template"))
      |> assign(:live_action, :edit)}
   end
 
@@ -34,7 +34,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.Edit do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Resource Template")
+    |> assign(:page_title, gettext("Edit Resource Template"))
     |> assign(:resource_template, Metadata.get_resource_template!(id))
   end
 

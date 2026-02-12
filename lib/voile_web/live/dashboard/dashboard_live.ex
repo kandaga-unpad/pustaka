@@ -31,12 +31,12 @@ defmodule VoileWeb.DashboardLive do
                 field={f[:node_id]}
                 type="select"
                 options={
-                  [{"All Nodes", "all"}] ++
+                  [{gettext("All Nodes"), "all"}] ++
                     Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
                 }
                 value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
                 class="text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
-                label="Filter by Node"
+                label={gettext("Filter by Node")}
               />
             </.form>
           </div>
@@ -44,36 +44,36 @@ defmodule VoileWeb.DashboardLive do
       </div>
       <%!-- Quick Actions --%>
       <div class="w-full">
-        <h5 class="text-center my-3">Library Transaction Circulation</h5>
+        <h5 class="text-center my-3">{gettext("Library Transaction Circulation")}</h5>
         <.link
           class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-violet-600 to-violet-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-violet-800"
           navigate={~p"/manage/glam/library/ledger"}
         >
-          Start Transaction
+          {gettext("Start Transaction")}
         </.link>
       </div>
       <%!-- Quick Stats Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <.stat_card
-          title="Total Members"
+          title={gettext("Total Members")}
           value={@member_stats.total_members}
           icon="hero-users"
           color="blue"
         />
         <.stat_card
-          title="Active Loans"
+          title={gettext("Active Loans")}
           value={@circulation_stats.active_transactions}
           icon="hero-book-open"
           color="green"
         />
         <.stat_card
-          title="Overdue Items"
+          title={gettext("Overdue Items")}
           value={@circulation_stats.overdue_count}
           icon="hero-exclamation-triangle"
           color="red"
         />
         <.stat_card
-          title="Collections"
+          title={gettext("Collections")}
           value={@catalog_stats.total_collections}
           icon="hero-rectangle-stack"
           color="purple"
@@ -83,26 +83,26 @@ defmodule VoileWeb.DashboardLive do
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-users" class="w-5 h-5 inline mr-2" /> Member Overview
+            <.icon name="hero-users" class="w-5 h-5 inline mr-2" /> {gettext("Member Overview")}
           </h3>
           <div class="space-y-4">
             <.stat_row
-              label="Active Members"
+              label={gettext("Active Members")}
               value={@member_stats.active_members}
               color="green"
             />
             <.stat_row
-              label="Suspended Members"
+              label={gettext("Suspended Members")}
               value={@member_stats.suspended_members}
               color="red"
             />
             <.stat_row
-              label="Expiring Soon (30 days)"
+              label={gettext("Expiring Soon (30 days)")}
               value={@member_stats.expiring_soon}
               color="orange"
             />
             <.stat_row
-              label="Expired Memberships"
+              label={gettext("Expired Memberships")}
               value={@member_stats.expired_members}
               color="gray"
             />
@@ -110,7 +110,7 @@ defmodule VoileWeb.DashboardLive do
           <%= if @is_super_admin do %>
             <div class="mt-6 text-center">
               <.link navigate={~p"/manage/settings/user_dashboard"}>
-                <.button>View Detailed Member Statistics &rarr;</.button>
+                <.button>{gettext("View Detailed Member Statistics &rarr;")}</.button>
               </.link>
             </div>
           <% end %>
@@ -118,26 +118,28 @@ defmodule VoileWeb.DashboardLive do
         <%!-- Circulation Statistics --%>
         <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-arrow-path" class="w-5 h-5 inline mr-2" /> Circulation Overview
+            <.icon name="hero-arrow-path" class="w-5 h-5 inline mr-2" /> {gettext(
+              "Circulation Overview"
+            )}
           </h3>
           <div class="space-y-4">
             <.stat_row
-              label="Active Transactions"
+              label={gettext("Active Transactions")}
               value={@circulation_stats.active_transactions}
               color="blue"
             />
             <.stat_row
-              label="Overdue Transactions"
+              label={gettext("Overdue Transactions")}
               value={@circulation_stats.overdue_count}
               color="red"
             />
             <.stat_row
-              label="Active Reservations"
+              label={gettext("Active Reservations")}
               value={@circulation_stats.active_reservations}
               color="purple"
             />
             <.stat_row
-              label="Outstanding Fines"
+              label={gettext("Outstanding Fines")}
               value={"Rp #{format_currency(@circulation_stats.outstanding_fines)}"}
               color="orange"
             />
@@ -148,22 +150,28 @@ defmodule VoileWeb.DashboardLive do
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-rectangle-stack" class="w-5 h-5 inline mr-2" /> Catalog Overview
+            <.icon name="hero-rectangle-stack" class="w-5 h-5 inline mr-2" /> {gettext(
+              "Catalog Overview"
+            )}
           </h3>
           <div class="space-y-4">
             <.stat_row
-              label="Total Collections"
+              label={gettext("Total Collections")}
               value={@catalog_stats.total_collections}
               color="blue"
             />
             <.stat_row
-              label="Published Collections"
+              label={gettext("Published Collections")}
               value={@catalog_stats.published_collections}
               color="green"
             />
-            <.stat_row label="Total Items" value={@catalog_stats.total_items} color="purple" />
             <.stat_row
-              label="Available Items"
+              label={gettext("Total Items")}
+              value={@catalog_stats.total_items}
+              color="purple"
+            />
+            <.stat_row
+              label={gettext("Available Items")}
               value={@catalog_stats.available_items}
               color="green"
             />

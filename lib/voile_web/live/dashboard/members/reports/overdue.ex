@@ -14,7 +14,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
 
     socket =
       socket
-      |> assign(:page_title, "Overdue Items")
+      |> assign(:page_title, gettext("Overdue Items"))
       |> assign(:user, user)
       |> load_overdue_items()
 
@@ -27,21 +27,25 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Reports", path: ~p"/manage/members/reports"},
-        %{label: "Overdue", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: ~p"/manage/members"},
+        %{label: gettext("Reports"), path: ~p"/manage/members/reports"},
+        %{label: gettext("Overdue"), path: nil}
       ]} />
 
       <%!-- Page Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Overdue Items</h1>
-            <p class="text-gray-600 dark:text-gray-300 mt-1">Members with overdue library items</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {gettext("Overdue Items")}
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-1">
+              {gettext("Members with overdue library items")}
+            </p>
           </div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Total: {@overdue_items |> length()}
+            {gettext("Total: %{count}", count: @overdue_items |> length())}
           </div>
         </div>
       </div>
@@ -53,8 +57,12 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
             <div class="flex justify-center mb-4">
               <.icon name="hero-check-circle" class="w-12 h-12 text-green-500" />
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Overdue Items</h3>
-            <p class="text-gray-600 dark:text-gray-300">All items have been returned on time.</p>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              {gettext("No Overdue Items")}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              {gettext("All items have been returned on time.")}
+            </p>
           </div>
         <% else %>
           <div class="overflow-x-auto">
@@ -62,7 +70,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
               id="overdue-items"
               rows={@overdue_items}
             >
-              <:col :let={item} label="Member">
+              <:col :let={item} label={gettext("Member")}>
                 <div class="flex items-center gap-3">
                   <div class="flex-shrink-0 h-10 w-10">
                     <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
@@ -80,28 +88,30 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
                 </div>
               </:col>
 
-              <:col :let={item} label="Item">
+              <:col :let={item} label={gettext("Item")}>
                 <div>
                   <div class="font-medium text-gray-900 dark:text-white">{item.item.title}</div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Loan Date: {Calendar.strftime(item.loan_date, "%b %d, %Y")}
+                    {gettext("Loan Date: %{date}",
+                      date: Calendar.strftime(item.loan_date, "%b %d, %Y")
+                    )}
                   </div>
                 </div>
               </:col>
 
-              <:col :let={item} label="Due Date">
+              <:col :let={item} label={gettext("Due Date")}>
                 <span class="font-medium text-red-600">
                   {Calendar.strftime(item.due_date, "%b %d, %Y")}
                 </span>
               </:col>
 
-              <:col :let={item} label="Days Overdue">
+              <:col :let={item} label={gettext("Days Overdue")}>
                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                  {days_overdue(item.due_date)} days
+                  {gettext("%{days} days", days: days_overdue(item.due_date))}
                 </span>
               </:col>
 
-              <:col :let={item} label="Fine Amount">
+              <:col :let={item} label={gettext("Fine Amount")}>
                 <span class="font-medium text-red-600">
                   {calculate_fine(days_overdue(item.due_date))}
                 </span>

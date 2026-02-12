@@ -9,10 +9,10 @@ defmodule VoileWeb.UserResetPasswordLive do
       <div class="flex items-center justify-center min-h-[60vh]">
         <div class="w-full max-w-md bg-white/80 dark:bg-gray-800/70 backdrop-blur rounded-lg shadow-md p-6">
           <div class="mb-4 text-center">
-            <.header>Reset your password</.header>
+            <.header>{gettext("Reset your password")}</.header>
 
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Enter a new password below. Make it long and unique.
+              {gettext("Enter a new password below. Make it long and unique.")}
             </p>
           </div>
 
@@ -26,26 +26,26 @@ defmodule VoileWeb.UserResetPasswordLive do
             <.input
               field={@form[:password]}
               type="password"
-              label="New password"
+              label={gettext("New password")}
               required
             />
             <.input
               field={@form[:password_confirmation]}
               type="password"
-              label="Confirm new password"
+              label={gettext("Confirm new password")}
               required
             />
             <div class="pt-2">
               <.button phx-disable-with="Resetting..." class="w-full primary-btn">
-                Reset Password
+                {gettext("Reset Password")}
               </.button>
             </div>
           </.form>
 
           <div class="mt-5 text-center text-sm text-gray-600 dark:text-gray-300">
-            <.link href={~p"/register"} class="underline mr-2">Register</.link>
+            <.link href={~p"/register"} class="underline mr-2">{gettext("Register")}</.link>
             <span class="mx-1">·</span>
-            <.link href={~p"/users/log_in"} class="underline ml-2">Log in</.link>
+            <.link href={~p"/users/log_in"} class="underline ml-2">{gettext("Log in")}</.link>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ defmodule VoileWeb.UserResetPasswordLive do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Password reset successfully.")
+         |> put_flash(:info, gettext("Password reset successfully."))
          |> redirect(to: ~p"/login")}
 
       {:error, changeset} ->
@@ -93,7 +93,7 @@ defmodule VoileWeb.UserResetPasswordLive do
       assign(socket, user: user, token: token)
     else
       socket
-      |> put_flash(:error, "Reset password link is invalid or it has expired.")
+      |> put_flash(:error, gettext("Reset password link is invalid or it has expired."))
       |> redirect(to: ~p"/")
     end
   end

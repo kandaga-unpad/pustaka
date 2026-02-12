@@ -12,18 +12,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
     ~H"""
     <div class="px-4 py-6">
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "GLAM", path: ~p"/manage/glam"},
-        %{label: "Library", path: ~p"/manage/glam/library"},
-        %{label: "Circulation", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+        %{label: gettext("Library"), path: ~p"/manage/glam/library"},
+        %{label: gettext("Circulation"), path: nil}
       ]} />
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Library Circulation Dashboard
+          {gettext("Library Circulation Dashboard")}
         </h1>
 
         <p class="mt-2 text-gray-600 dark:text-gray-400">
-          Manage all library circulation activities from this central dashboard.
+          {gettext("Manage all library circulation activities from this central dashboard.")}
         </p>
       </div>
 
@@ -34,12 +34,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               field={f[:node_id]}
               type="select"
               options={
-                [{"All Nodes", "all"}] ++
+                [{gettext("All Nodes"), "all"}] ++
                   Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
               }
               value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
               class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
-              label="Filter node"
+              label={gettext("Filter node")}
             />
           </.form>
         </div>
@@ -71,7 +71,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
 
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Active Transactions
+                {gettext("Active Transactions")}
               </h3>
 
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -114,7 +114,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
             </div>
 
             <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overdue Items</h3>
+              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {gettext("Overdue Items")}
+              </h3>
 
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 <%= if @stats.overdue_count do %>
@@ -157,7 +159,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
 
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Active Reservations
+                {gettext("Active Reservations")}
               </h3>
 
               <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -201,7 +203,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
           </div>
 
           <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Outstanding Fines</h3>
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {gettext("Outstanding Fines")}
+            </h3>
 
             <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
               <%= if @stats.outstanding_fines do %>
@@ -245,16 +249,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               </div>
 
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-blue-700 dark:text-gray-100 dark:group-hover:text-blue-300">
-                Transactions
+                {gettext("Transactions")}
               </h3>
             </div>
 
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              Manage book checkouts, returns, renewals, and track all circulation activities.
+              {gettext(
+                "Manage book checkouts, returns, renewals, and track all circulation activities."
+              )}
             </p>
 
             <div class="mt-4 flex items-center text-sm text-blue-600 group-hover:text-blue-700 dark:text-blue-400  dark:group-hover:text-blue-300">
-              <span>Manage Transactions</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
+              <span>{gettext("Manage Transactions")}</span>
+              <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
@@ -269,16 +276,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               </div>
 
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-green-700 dark:text-gray-100 dark:group-hover:text-green-300">
-                Reservations
+                {gettext("Reservations")}
               </h3>
             </div>
 
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              Handle item reservations, queue management, and availability notifications.
+              {gettext("Handle item reservations, queue management, and availability notifications.")}
             </p>
 
             <div class="mt-4 flex items-center text-sm text-green-600 group-hover:text-green-700 dark:text-green-400 dark:group-hover:text-green-300">
-              <span>Manage Reservations</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
+              <span>{gettext("Manage Reservations")}</span>
+              <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
@@ -293,16 +301,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               </div>
 
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-purple-700  dark:text-gray-100 dark:group-hover:text-purple-300">
-                Requisitions
+                {gettext("Requisitions")}
               </h3>
             </div>
 
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              Process member requests for new items, interlibrary loans, and special services.
+              {gettext(
+                "Process member requests for new items, interlibrary loans, and special services."
+              )}
             </p>
 
             <div class="mt-4 flex items-center text-sm text-purple-600 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300">
-              <span>Manage Requisitions</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
+              <span>{gettext("Manage Requisitions")}</span>
+              <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
@@ -314,16 +325,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               </div>
 
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-red-700  dark:text-gray-100 dark:group-hover:text-red-300">
-                Fines Management
+                {gettext("Fines Management")}
               </h3>
             </div>
 
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              Manage overdue fines, payments, waivers, and financial transactions.
+              {gettext("Manage overdue fines, payments, waivers, and financial transactions.")}
             </p>
 
             <div class="mt-4 flex items-center text-sm text-red-600 group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300">
-              <span>Manage Fines</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
+              <span>{gettext("Manage Fines")}</span>
+              <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
@@ -338,16 +350,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               </div>
 
               <h3 class="ml-3 text-lg font-semibold text-gray-900 group-hover:text-indigo-700 dark:text-gray-100 dark:group-hover:text-indigo-300">
-                Circulation History
+                {gettext("Circulation History")}
               </h3>
             </div>
 
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              View detailed logs and audit trails of all circulation activities.
+              {gettext("View detailed logs and audit trails of all circulation activities.")}
             </p>
 
             <div class="mt-4 flex items-center text-sm text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
-              <span>View History</span> <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
+              <span>{gettext("View History")}</span>
+              <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
@@ -356,7 +369,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
       <!-- Recent Activity -->
       <div class="mt-8 bg-white dark:bg-gray-700 rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            {gettext("Recent Activity")}
+          </h3>
         </div>
 
         <div class="divide-y divide-gray-200">
@@ -398,7 +413,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
       # Assign placeholders and load heavy data asynchronously to speed up mount
       socket =
         socket
-        |> assign(:page_title, "Circulation Dashboard")
+        |> assign(:page_title, gettext("Circulation Dashboard"))
         |> assign(:stats, %{
           active_transactions: nil,
           overdue_count: nil,

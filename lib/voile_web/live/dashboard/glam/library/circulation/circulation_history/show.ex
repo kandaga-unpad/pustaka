@@ -27,7 +27,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Show do
     {:noreply,
      socket
      |> assign(:history, history)
-     |> assign(:page_title, "Circulation History Details")}
+     |> assign(:page_title, gettext("Circulation History Details"))}
   end
 
   # Import helper functions

@@ -7,17 +7,17 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
   def render(assigns) do
     ~H"""
     <.header>
-      Library Holidays & Schedule Management
+      {gettext("Library Holidays & Schedule Management")}
       <:subtitle>
-        Manage holidays, weekly schedules, and non-business days for fine calculations
+        {gettext("Manage holidays, weekly schedules, and non-business days for fine calculations")}
       </:subtitle>
 
       <:actions>
         <.button phx-click="new_holiday" class="primary-btn">
-          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> Add Holiday
+          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Holiday")}
         </.button>
         <.button phx-click="setup_default_schedule" class="warning-btn">
-          <.icon name="hero-calendar-days" class="w-4 h-4 mr-2" /> Setup Default Schedule
+          <.icon name="hero-calendar-days" class="w-4 h-4 mr-2" /> {gettext("Setup Default Schedule")}
         </.button>
       </:actions>
     </.header>
@@ -42,7 +42,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.total_holidays}</div>
 
-                <div class="text-sm font-medium">Total Holidays</div>
+                <div class="text-sm font-medium">{gettext("Total Holidays")}</div>
               </div>
             </div>
           </div>
@@ -56,7 +56,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.public_holidays}</div>
 
-                <div class="text-sm font-medium">Public Holidays</div>
+                <div class="text-sm font-medium">{gettext("Public Holidays")}</div>
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.library_holidays}</div>
 
-                <div class="text-sm font-medium">Library Holidays</div>
+                <div class="text-sm font-medium">{gettext("Library Holidays")}</div>
               </div>
             </div>
           </div>
@@ -84,7 +84,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <div class="ml-4">
                 <div class="text-2xl font-bold">{@holiday_stats.custom_holidays}</div>
 
-                <div class="text-sm font-medium">Custom Holidays</div>
+                <div class="text-sm font-medium">{gettext("Custom Holidays")}</div>
               </div>
             </div>
           </div>
@@ -94,11 +94,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           <div class="flex">
             <.icon name="hero-information-circle" class="h-5 w-5 text-voile-info" />
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-voile-info">Holiday Impact on Fines</h3>
+              <h3 class="text-sm font-medium text-voile-info">
+                {gettext("Holiday Impact on Fines")}
+              </h3>
 
               <p class="mt-2 text-sm text-voile-info">
-                Non-business days (weekly schedule) and holidays defined here will be excluded from overdue fine calculations.
-                Only business days will count toward fine amounts. This ensures fair fine calculation during library closures.
+                {gettext(
+                  "Non-business days (weekly schedule) and holidays defined here will be excluded from overdue fine calculations. Only business days will count toward fine amounts. This ensures fair fine calculation during library closures."
+                )}
               </p>
             </div>
           </div>
@@ -107,15 +110,15 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg leading-6 font-medium">Weekly Schedule</h3>
+              <h3 class="text-lg leading-6 font-medium">{gettext("Weekly Schedule")}</h3>
 
-              <div class="text-sm">Configure which days are business days</div>
+              <div class="text-sm">{gettext("Configure which days are business days")}</div>
             </div>
           </div>
 
           <div class="px-4 py-5 sm:p-6">
             <div class="mb-4 flex items-center space-x-3">
-              <label class="text-sm font-medium">Viewing schedule for</label>
+              <label class="text-sm font-medium">{gettext("Viewing schedule for")}</label>
               <form phx-change="select_unit">
                 <select
                   class="border border-gray-300 rounded-md px-2 py-1 bg-white dark:bg-gray-700"
@@ -123,11 +126,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   disabled={not @is_super_admin}
                   title={
                     if @is_super_admin,
-                      do: "Select unit to view/edit schedule",
-                      else: "Only super admins can switch units"
+                      do: gettext("Select unit to view/edit schedule"),
+                      else: gettext("Only super admins can switch units")
                   }
                 >
-                  <option value="">System Wide</option>
+                  <option value="">{gettext("System Wide")}</option>
 
                   <%= for node <- @nodes do %>
                     <option
@@ -161,7 +164,9 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                     "mt-2 text-xs font-semibold",
                     if(day.is_business_day, do: "text-voile-success", else: "text-voile-error")
                   ]}>
-                    {if day.is_business_day, do: "Business Day", else: "Non-Business"}
+                    {if day.is_business_day,
+                      do: gettext("Business Day"),
+                      else: gettext("Non-Business")}
                   </div>
 
                   <div class={[
@@ -172,14 +177,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                       "bg-voile-error/10 text-voile-error"
                     end
                   ]}>
-                    {if day.is_business_day, do: "Open", else: "Closed"}
+                    {if day.is_business_day, do: gettext("Open"), else: gettext("Closed")}
                   </div>
                 </div>
               <% end %>
             </div>
 
             <div class="mt-6 flex items-center justify-between">
-              <div class="text-sm">Click on any day to toggle its business status</div>
+              <div class="text-sm">{gettext("Click on any day to toggle its business status")}</div>
 
               <div class="space-x-2">
                 <.button
@@ -187,21 +192,21 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                   phx-value-unit_id={@selected_unit_id}
                   class="success-btn"
                 >
-                  All Business Days
+                  {gettext("All Business Days")}
                 </.button>
                 <.button
                   phx-click="set_weekdays_only"
                   phx-value-unit_id={@selected_unit_id}
                   class="primary-btn"
                 >
-                  Weekdays Only
+                  {gettext("Weekdays Only")}
                 </.button>
                 <.button
                   phx-click="set_all_closed"
                   phx-value-unit_id={@selected_unit_id}
                   class="cancel-btn"
                 >
-                  All Closed
+                  {gettext("All Closed")}
                 </.button>
               </div>
             </div>
@@ -211,9 +216,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg leading-6 font-medium">Holidays List</h3>
+              <h3 class="text-lg leading-6 font-medium">{gettext("Holidays List")}</h3>
 
-              <div class="text-sm">Current Year: {@holiday_stats.current_year}</div>
+              <div class="text-sm">
+                {gettext("Current Year: %{year}", year: @holiday_stats.current_year)}
+              </div>
             </div>
           </div>
 
@@ -223,16 +230,18 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 <table class="min-w-full divide-y divide-gray-300">
                   <thead>
                     <tr>
-                      <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">Holiday Name</th>
+                      <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold">
+                        {gettext("Holiday Name")}
+                      </th>
 
-                      <th class="px-3 py-3.5 text-left text-sm font-semibold">Date</th>
+                      <th class="px-3 py-3.5 text-left text-sm font-semibold">{gettext("Date")}</th>
 
-                      <th class="px-3 py-3.5 text-left text-sm font-semibold">Type</th>
+                      <th class="px-3 py-3.5 text-left text-sm font-semibold">{gettext("Type")}</th>
 
-                      <th class="px-3 py-3.5 text-left text-sm font-semibold">Status</th>
+                      <th class="px-3 py-3.5 text-left text-sm font-semibold">{gettext("Status")}</th>
 
                       <th class="relative py-3.5 pl-3 pr-4 text-right text-sm font-semibold">
-                        Actions
+                        {gettext("Actions")}
                       </th>
                     </tr>
                   </thead>
@@ -275,7 +284,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                               "bg-voile-error/10 text-voile-error"
                             end
                           ]}>
-                            {if holiday.is_active, do: "Active", else: "Inactive"}
+                            {if holiday.is_active, do: gettext("Active"), else: gettext("Inactive")}
                           </span>
                         </td>
 
@@ -285,7 +294,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                             phx-value-id={holiday.id}
                             class="primary-btn"
                           >
-                            Edit
+                            {gettext("Edit")}
                           </.button>
                           <.button
                             phx-click="toggle_holiday"
@@ -296,15 +305,15 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                                 else: "success-btn"
                             }
                           >
-                            {if holiday.is_active, do: "Disable", else: "Enable"}
+                            {if holiday.is_active, do: gettext("Disable"), else: gettext("Enable")}
                           </.button>
                           <.button
                             phx-click="delete_holiday"
                             phx-value-id={holiday.id}
-                            data-confirm="Are you sure you want to delete this holiday?"
+                            data-confirm={gettext("Are you sure you want to delete this holiday?")}
                             class="cancel-btn"
                           >
-                            Delete
+                            {gettext("Delete")}
                           </.button>
                         </td>
                       </tr>
@@ -314,9 +323,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                       <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-sm">
                           <.icon name="hero-calendar-x" class="mx-auto h-12 w-12" />
-                          <h3 class="mt-2 text-sm font-medium">No holidays configured</h3>
+                          <h3 class="mt-2 text-sm font-medium">
+                            {gettext("No holidays configured")}
+                          </h3>
 
-                          <p class="mt-1 text-sm">Get started by adding a holiday.</p>
+                          <p class="mt-1 text-sm">{gettext("Get started by adding a holiday.")}</p>
                         </td>
                       </tr>
                     <% end %>
@@ -333,17 +344,17 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
       <.modal id="holiday-form-modal" show={@show_form} on_cancel={JS.push("cancel_form")}>
         <div class="mt-3">
           <h3 class="text-lg font-medium mb-4">
-            {if @form_holiday, do: "Edit Holiday", else: "Add New Holiday"}
+            {if @form_holiday, do: gettext("Edit Holiday"), else: gettext("Add New Holiday")}
           </h3>
 
           <.form for={@form} id="holiday-form" phx-submit="save_holiday">
             <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Unit (optional)</label>
+              <label class="block text-sm font-medium mb-2">{gettext("Unit (optional)")}</label>
               <select
                 name="lib_holiday[unit_id]"
                 class="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                <option value="">System Wide</option>
+                <option value="">{gettext("System Wide")}</option>
 
                 <%= for node <- @nodes do %>
                   <option value={node.id} selected={@form.params["unit_id"] == to_string(node.id)}>
@@ -352,21 +363,25 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 <% end %>
               </select>
             </div>
-            <.input field={@form[:name]} type="text" label="Holiday Name" required />
-            <.input field={@form[:holiday_date]} type="date" label="Date" required />
+            <.input field={@form[:name]} type="text" label={gettext("Holiday Name")} required />
+            <.input field={@form[:holiday_date]} type="date" label={gettext("Date")} required />
             <.input
               field={@form[:holiday_type]}
               type="select"
-              label="Type"
+              label={gettext("Type")}
               options={[
-                {"Public Holiday", "public"},
-                {"Library Holiday", "library"},
-                {"Custom Holiday", "custom"}
+                {gettext("Public Holiday"), "public"},
+                {gettext("Library Holiday"), "library"},
+                {gettext("Custom Holiday"), "custom"}
               ]}
               required
-            /> <.input field={@form[:description]} type="textarea" label="Description" />
-            <.input field={@form[:is_recurring]} type="checkbox" label="Recurring annually" />
-            <.input field={@form[:is_active]} type="checkbox" label="Active" />
+            /> <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+            <.input
+              field={@form[:is_recurring]}
+              type="checkbox"
+              label={gettext("Recurring annually")}
+            />
+            <.input field={@form[:is_active]} type="checkbox" label={gettext("Active")} />
             <!-- Hidden field to ensure schedule_type is set to 'holiday' -->
             <input type="hidden" name="lib_holiday[schedule_type]" value="holiday" />
             <div class="flex items-center justify-end space-x-2 mt-6">
@@ -375,10 +390,10 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                 phx-click="cancel_form"
                 class="cancel-btn"
               >
-                Cancel
+                {gettext("Cancel")}
               </.button>
               <.button type="submit" class="success-btn">
-                {if @form_holiday, do: "Update", else: "Create"} Holiday
+                {if @form_holiday, do: gettext("Update"), else: gettext("Create")} Holiday
               </.button>
             </div>
           </.form>
@@ -459,7 +474,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           {:ok, _holiday} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Holiday created successfully")
+             |> put_flash(:info, gettext("Holiday created successfully"))
              |> assign(:show_form, false)
              |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
              |> assign(
@@ -476,7 +491,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           {:ok, _holiday} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Holiday updated successfully")
+             |> put_flash(:info, gettext("Holiday updated successfully"))
              |> assign(:show_form, false)
              |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
              |> assign(
@@ -500,7 +515,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, "Holiday deleted successfully")
+     |> put_flash(:info, gettext("Holiday deleted successfully"))
      |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
      |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
   end
@@ -515,12 +530,12 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Holiday #{status_text} successfully")
+         |> put_flash(:info, gettext("Holiday %{status} successfully", status: status_text))
          |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
          |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
 
       {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to update holiday status")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to update holiday status"))}
     end
   end
 
@@ -534,7 +549,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, "Default weekly schedule set up (Monday-Friday business days)")
+     |> put_flash(:info, gettext("Default weekly schedule set up (Monday-Friday business days)"))
      |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
   end
 
@@ -554,11 +569,14 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
         {:noreply,
          socket
-         |> put_flash(:info, "#{day_name} set as #{status_text}")
+         |> put_flash(
+           :info,
+           gettext("%{day} set as %{status}", day: day_name, status: status_text)
+         )
          |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
 
       {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to update day schedule")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to update day schedule"))}
     end
   end
 
@@ -572,7 +590,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, "All days set as business days")
+     |> put_flash(:info, gettext("All days set as business days"))
      |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
   end
 
@@ -584,7 +602,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, "Schedule set to weekdays only (Monday-Friday)")
+     |> put_flash(:info, gettext("Schedule set to weekdays only (Monday-Friday)"))
      |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
   end
 
@@ -598,7 +616,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
     {:noreply,
      socket
-     |> put_flash(:info, "All days set as non-business days")
+     |> put_flash(:info, gettext("All days set as non-business days"))
      |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
   end
 

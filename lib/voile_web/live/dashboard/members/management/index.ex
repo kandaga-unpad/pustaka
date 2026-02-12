@@ -183,13 +183,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       {:ok, _} ->
         socket =
           socket
-          |> put_flash(:info, "Member deleted successfully")
+          |> put_flash(:info, gettext("Member deleted successfully"))
           |> load_members()
 
         {:noreply, socket}
 
       {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete member")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to delete member"))}
     end
   end
 
@@ -293,25 +293,27 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       <% else %>
         <%!-- Breadcrumb --%>
         <.breadcrumb items={[
-          %{label: "Manage", path: ~p"/manage"},
-          %{label: "Members", path: ~p"/manage/members"},
-          %{label: "Management", path: nil}
+          %{label: gettext("Manage"), path: ~p"/manage"},
+          %{label: gettext("Members"), path: ~p"/manage/members"},
+          %{label: gettext("Management"), path: nil}
         ]} />
 
         <%!-- Page Header --%>
         <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Member Management</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                {gettext("Member Management")}
+              </h1>
               <p class="text-gray-600 dark:text-gray-300 mt-1">
-                Manage and oversee all library members
+                {gettext("Manage and oversee all library members")}
               </p>
             </div>
 
             <%= if can?(@current_scope.user, "users.create") do %>
               <.link patch={~p"/manage/members/management/new"}>
                 <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> Add New Member
+                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> {gettext("Add New Member")}
                 </.button>
               </.link>
             <% end %>
@@ -328,7 +330,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   <.input
                     name="query"
                     value={@search_query}
-                    placeholder="Search by name, email, or username..."
+                    placeholder={gettext("Search by name, email, or username...")}
                     phx-debounce="300"
                   />
                 </div>
@@ -342,9 +344,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   <.input
                     name="node_id"
                     type="select"
-                    options={[{"All Nodes", ""}] ++ Enum.map(@nodes, &{&1.name, to_string(&1.id)})}
+                    options={
+                      [{gettext("All Nodes"), ""}] ++ Enum.map(@nodes, &{&1.name, to_string(&1.id)})
+                    }
                     value={@selected_node_id}
-                    label="Node"
+                    label={gettext("Node")}
                   />
                 </.form>
               <% end %>
@@ -353,9 +357,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 <.input
                   name="member_type_id"
                   type="select"
-                  options={[{"All Types", ""}] ++ Enum.map(@member_types, &{&1.name, &1.id})}
+                  options={[{gettext("All Types"), ""}] ++ Enum.map(@member_types, &{&1.name, &1.id})}
                   value={@selected_member_type_id}
-                  label="Member Type"
+                  label={gettext("Member Type")}
                 />
               </.form>
 
@@ -364,13 +368,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   name="status"
                   type="select"
                   options={[
-                    "All Status": "all",
-                    Active: "active",
-                    Suspended: "suspended",
-                    Expired: "expired"
+                    {gettext("All Status"), "all"},
+                    {gettext("Active"), "active"},
+                    {gettext("Suspended"), "suspended"},
+                    {gettext("Expired"), "expired"}
                   ]}
                   value={@selected_status}
-                  label="Status"
+                  label={gettext("Status")}
                 />
               </.form>
             </div>
@@ -378,7 +382,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
           <%!-- Results Summary --%>
           <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Showing {@members.offset + 1} to {min(@members.offset + @per_page, @members.total_entries)} of {@members.total_entries} members
+            {gettext("Showing %{from} to %{to} of %{total} members",
+              from: @members.offset + 1,
+              to: min(@members.offset + @per_page, @members.total_entries),
+              total: @members.total_entries
+            )}
           </div>
 
           <%!-- Members Table --%>
@@ -388,7 +396,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
               rows={@members.entries}
               row_click={fn member -> JS.navigate(~p"/manage/members/management/#{member}") end}
             >
-              <:col :let={member} label="Member">
+              <:col :let={member} label={gettext("Member")}>
                 <div class="flex items-center gap-3">
                   <div class="flex-shrink-0 h-10 w-10">
                     <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
@@ -405,23 +413,23 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 </div>
               </:col>
 
-              <:col :let={member} label="Member Type">
+              <:col :let={member} label={gettext("Member Type")}>
                 {member.user_type && member.user_type.name}
               </:col>
 
-              <:col :let={member} label="Status">
+              <:col :let={member} label={gettext("Status")}>
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(member)}"}>
                   {member_status(member)}
                 </span>
               </:col>
 
-              <:col :let={member} label="Registration Date">
+              <:col :let={member} label={gettext("Registration Date")}>
                 {if member.registration_date,
                   do: Calendar.strftime(member.registration_date, "%b %d, %Y"),
                   else: "-"}
               </:col>
 
-              <:col :let={member} label="Expiry Date">
+              <:col :let={member} label={gettext("Expiry Date")}>
                 {if member.expiry_date,
                   do: Calendar.strftime(member.expiry_date, "%b %d, %Y"),
                   else: "-"}
@@ -433,7 +441,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-voile-primary bg-voile-primary/10 hover:bg-voile-primary/20 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
                 >
                   <.icon name="hero-eye" class="w-4 h-4" />
-                  <span class="hidden md:inline">View</span>
+                  <span class="hidden md:inline">{gettext("View")}</span>
                 </.link>
               </:action>
             </.table>
@@ -443,7 +451,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           <%= if @members.total_pages > 1 do %>
             <div class="flex items-center justify-between mt-6">
               <div class="text-sm text-gray-700 dark:text-gray-300">
-                Page {@members.page_number} of {@members.total_pages}
+                {gettext("Page %{page} of %{total}",
+                  page: @members.page_number,
+                  total: @members.total_pages
+                )}
               </div>
 
               <div class="flex items-center gap-2">
@@ -454,7 +465,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                     }
                     class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
                   >
-                    <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
+                    <.icon name="hero-chevron-left" class="w-4 h-4" /> {gettext("Previous")}
                   </.link>
                 <% end %>
 
@@ -465,7 +476,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                     }
                     class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 transition-colors"
                   >
-                    Next <.icon name="hero-chevron-right" class="w-4 h-4" />
+                    {gettext("Next")} <.icon name="hero-chevron-right" class="w-4 h-4" />
                   </.link>
                 <% end %>
               </div>
@@ -492,7 +503,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
         socket =
           socket
-          |> put_flash(:info, "Member updated successfully")
+          |> put_flash(:info, gettext("Member updated successfully"))
           |> push_patch(to: ~p"/manage/members/management")
 
         {:noreply, socket}
@@ -522,7 +533,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
         socket =
           socket
-          |> put_flash(:info, "Member created successfully")
+          |> put_flash(:info, gettext("Member created successfully"))
           |> push_patch(to: ~p"/manage/members/management")
 
         {:noreply, socket}
@@ -644,9 +655,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
   defp member_status(member) do
     cond do
-      member.manually_suspended -> "Suspended"
-      member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) -> "Expired"
-      true -> "Active"
+      member.manually_suspended ->
+        gettext("Suspended")
+
+      member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) ->
+        gettext("Expired")
+
+      true ->
+        gettext("Active")
     end
   end
 

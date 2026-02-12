@@ -47,6 +47,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               |> assign(:thumbnail_url_input, "")
               |> assign(:asset_vault_files, Voile.Schema.Catalog.list_all_attachments("image"))
               |> assign(:shown_images_count, 12)
+              |> assign(:breadcrumb_items, [
+                %{label: gettext("Manage"), path: "/manage"},
+                %{label: gettext("Members"), path: "/manage/members"},
+                %{label: gettext("Management"), path: "/manage/members/management"},
+                %{label: gettext("Member"), path: nil}
+              ])
               |> allow_upload(:user_image,
                 accept: ~w(.jpg .jpeg .png .webp),
                 max_entries: 1,
@@ -467,12 +473,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     ~H"""
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
-      <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Management", path: ~p"/manage/members/management"},
-        %{label: @member.fullname, path: nil}
-      ]} />
+      <.breadcrumb items={@breadcrumb_items} />
 
       <%!-- Member Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
@@ -511,11 +512,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                   phx-click="unsuspend_member"
                   class="warning-btn"
                 >
-                  <.icon name="hero-play" class="w-4 h-4 mr-2" /> Unsuspend
+                  <.icon name="hero-play" class="w-4 h-4 mr-2" /> {gettext("Unsuspend")}
                 </.button>
               <% else %>
                 <.button phx-click="suspend_member" class="cancel-btn">
-                  <.icon name="hero-pause" class="w-4 h-4 mr-2" /> Suspend
+                  <.icon name="hero-pause" class="w-4 h-4 mr-2" /> {gettext("Suspend")}
                 </.button>
               <% end %>
             <% end %>
@@ -525,64 +526,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 patch={~p"/manage/members/management/#{@member.id}/edit"}
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
               >
-                <.icon name="hero-pencil" class="w-4 h-4 mr-2" /> Edit
+                <.icon name="hero-pencil" class="w-4 h-4 mr-2" /> {gettext("Edit")}
               </.link>
             <% end %>
           </div>
         </div>
       </div>
-
-      <%!-- Suspension Modal --%>
-      <.modal
-        :if={@suspend_modal_visible}
-        id="suspend-modal"
-        show
-        on_cancel={JS.push("cancel_suspend")}
-      >
-        <div class="p-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Suspend Member Account
-          </h3>
-          <p class="text-gray-600 dark:text-gray-300 mb-6">
-            Suspending {@member.fullname}'s account will prevent them from accessing the system.
-          </p>
-
-          <.form for={@suspend_form} phx-submit="confirm_suspend" class="space-y-6">
-            <div>
-              <.input
-                field={@suspend_form[:suspension_reason]}
-                type="textarea"
-                label="Suspension Reason"
-                placeholder="Reason for suspension..."
-                required
-              />
-            </div>
-
-            <div>
-              <.input
-                field={@suspend_form[:suspension_ends_at]}
-                type="datetime-local"
-                label="Suspension Ends At (Optional)"
-                placeholder="Leave empty for indefinite suspension"
-              />
-            </div>
-
-            <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
-              <.button type="submit" class="cancel-btn text-white">
-                <.icon name="hero-exclamation-triangle" class="w-4 h-4 mr-2" /> Suspend Account
-              </.button>
-
-              <.button
-                type="button"
-                phx-click="cancel_suspend"
-                class="primary-btn"
-              >
-                Cancel
-              </.button>
-            </div>
-          </.form>
-        </div>
-      </.modal>
 
       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
@@ -593,7 +542,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               phx-click="change_tab"
               phx-value-tab="overview"
             >
-              Overview
+              {gettext("Overview")}
             </.tab_button>
             <%= if can?(@current_scope.user, "users.update") do %>
               <.tab_button
@@ -601,7 +550,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 phx-click="change_tab"
                 phx-value-tab="edit"
               >
-                Edit Member
+                {gettext("Edit Member")}
               </.tab_button>
             <% end %>
             <%= if can?(@current_scope.user, "users.update") do %>
@@ -610,7 +559,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 phx-click="change_tab"
                 phx-value-tab="extend"
               >
-                Extend Membership
+                {gettext("Extend Membership")}
               </.tab_button>
             <% end %>
             <%= if can?(@current_scope.user, "users.update") do %>
@@ -619,7 +568,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 phx-click="change_tab"
                 phx-value-tab="change_password"
               >
-                Change Password
+                {gettext("Change Password")}
               </.tab_button>
             <% end %>
             <%= if @is_super_admin do %>
@@ -628,7 +577,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 phx-click="change_tab"
                 phx-value-tab="delete"
               >
-                Delete Member
+                {gettext("Delete Member")}
               </.tab_button>
             <% end %>
             <.tab_button
@@ -636,21 +585,21 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               phx-click="change_tab"
               phx-value-tab="activity"
             >
-              Activity History
+              {gettext("Activity History")}
             </.tab_button>
             <.tab_button
               active={@active_tab == "loans"}
               phx-click="change_tab"
               phx-value-tab="loans"
             >
-              Current Loans
+              {gettext("Current Loans")}
             </.tab_button>
             <.tab_button
               active={@active_tab == "fines"}
               phx-click="change_tab"
               phx-value-tab="fines"
             >
-              Fines & Payments
+              {gettext("Fines & Payments")}
             </.tab_button>
           </nav>
         </div>
@@ -796,9 +745,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
   defp member_status(member) do
     cond do
-      member.manually_suspended -> "Suspended"
-      member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) -> "Expired"
-      true -> "Active"
+      member.manually_suspended ->
+        gettext("Suspended")
+
+      member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) ->
+        gettext("Expired")
+
+      true ->
+        gettext("Active")
     end
   end
 

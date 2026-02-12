@@ -123,7 +123,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
       <div class="text-xs italic">
         {if @action == :edit, do: gettext("Edit Collection"), else: gettext("New Collection")} - {gettext(
-          "Step %{step} of 3", step: @step)}
+          "Step %{step} of 3",
+          step: @step
+        )}
       </div>
 
       <div class="mb-12">

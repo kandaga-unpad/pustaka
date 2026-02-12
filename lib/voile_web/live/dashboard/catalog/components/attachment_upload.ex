@@ -19,7 +19,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                 phx-target={@myself}
                 class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "upload", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
               >
-                Upload Files
+                {gettext("Upload Files")}
               </button>
               <button
                 phx-click="switch_tab"
@@ -27,7 +27,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                 phx-target={@myself}
                 class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "asset_vault", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
               >
-                Choose from Asset Vault ({length(@asset_vault_files)})
+                {gettext("Choose from Asset Vault (%{count})", count: length(@asset_vault_files))}
               </button>
             </nav>
           </div>
@@ -36,11 +36,13 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           <%= if @tab == "upload" do %>
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Upload Files</h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                  {gettext("Upload Files")}
+                </h3>
 
                 <%= if @collection_type do %>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
-                    {@collection_type} Collection
+                    {gettext("%{type} Collection", type: @collection_type)}
                   </span>
                 <% end %>
               </div>
@@ -75,14 +77,16 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         for={@uploads.attachments.ref}
                         class="relative cursor-pointer rounded-md font-medium text-voile-secondary"
                       >
-                        <span>Upload files</span>
+                        <span>{gettext("Upload files")}</span>
                         <.live_file_input upload={@uploads.attachments} class="sr-only" />
                       </label>
-                      <p class="pl-1">or drag and drop</p>
+                      <p class="pl-1">{gettext("or drag and drop")}</p>
                     </div>
                     <!-- Dynamic file type hints -->
                     <p class="text-xs text-gray-500 dark:text-gray-300">
-                      {format_allowed_types(@allowed_types)} up to 100MB each
+                      {gettext("%{types} up to 100MB each",
+                        types: format_allowed_types(@allowed_types)
+                      )}
                     </p>
                   </div>
                 </div>
@@ -101,7 +105,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                                 {format_bytes(entry.client_size)} • {entry.client_type}
                                 <%= if @collection_type && !is_file_type_allowed?(entry.client_type, @collection_type) do %>
                                   <span class="ml-2 text-voile-error font-medium">
-                                    ⚠ May not be suitable for this collection type
+                                    ⚠ {gettext("May not be suitable for this collection type")}
                                   </span>
                                 <% end %>
                               </p>
@@ -116,7 +120,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           phx-target={@myself}
                           class="ml-4 text-sm text-voile-error hover:text-voile-error"
                         >
-                          Cancel
+                          {gettext("Cancel")}
                         </button>
                       </div>
                       <!-- Progress Bar -->
@@ -130,8 +134,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         </div>
 
                         <div class="flex justify-between text-xs  mt-1">
-                          <span>{entry.progress}% uploaded</span>
-                          <span>{if entry.done?, do: "Complete", else: "Uploading..."}</span>
+                          <span>{gettext("%{progress}% uploaded", progress: entry.progress)}</span>
+                          <span>
+                            {if entry.done?, do: gettext("Complete"), else: gettext("Uploading...")}
+                          </span>
                         </div>
                       </div>
                       <!-- Upload Errors -->
@@ -161,13 +167,12 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                  Choose from Asset Vault
+                  {gettext("Choose from Asset Vault")}
                 </h3>
                 <span class="text-sm text-gray-500 dark:text-gray-400">
-                  Select existing files to attach to this {@entity.__struct__
-                  |> Module.split()
-                  |> List.last()
-                  |> String.downcase()}
+                  {gettext("Select existing files to attach to this %{entity}",
+                    entity: @entity.__struct__ |> Module.split() |> List.last() |> String.downcase()
+                  )}
                 </span>
               </div>
 
@@ -187,10 +192,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                     />
                   </svg>
                   <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                    No files in asset vault
+                    {gettext("No files in asset vault")}
                   </h3>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Upload files first to build your asset vault.
+                    {gettext("Upload files first to build your asset vault.")}
                   </p>
                 </div>
               <% else %>
@@ -228,7 +233,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                         phx-target={@myself}
                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       >
-                        Select
+                        {gettext("Select")}
                       </button>
                     </div>
                   <% end %>
@@ -240,7 +245,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         <!-- Existing Attachments -->
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Attachments</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              {gettext("Attachments")}
+            </h3>
 
             <div class="flex items-center space-x-4">
               <!-- File type filter -->
@@ -250,14 +257,18 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   phx-target={@myself}
                   class="text-sm border-voile-muted rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All files ({length(@attachments)})</option>
+                  <option value="">
+                    {gettext("All files (%{count})", count: length(@attachments))}
+                  </option>
 
                   <%= for {type, count} <- get_file_type_counts(@attachments) do %>
-                    <option value={type} class="capitalize">{type} ({count})</option>
+                    <option value={type} class="capitalize">
+                      {gettext("%{type} (%{count})", type: type, count: count)}
+                    </option>
                   <% end %>
                 </select>
               <% else %>
-                <span class="text-sm text-gray-500 dark:text-white">0 files</span>
+                <span class="text-sm text-gray-500 dark:text-white">{gettext("0 files")}</span>
               <% end %>
             </div>
           </div>
@@ -266,11 +277,12 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
             <div class="text-center py-12">
               {collection_type_icon(@collection_type, "h-12 w-12 mx-auto ")}
               <h3 class="mt-2 text-sm font-medium text-voile dark:text-voile-surface">
-                No attachments
+                {gettext("No attachments")}
               </h3>
 
               <p class="mt-1 text-xs italic">
-                Start by uploading your first {if @collection_type, do: @collection_type, else: "file"}.
+                <% type = if @collection_type, do: @collection_type, else: gettext("file") %>
+                {gettext("Start by uploading your first %{type}.", type: type)}
               </p>
             </div>
           <% else %>
@@ -297,7 +309,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                                 clip-rule="evenodd"
                               />
                             </svg>
-                            Primary
+                            {gettext("Primary")}
                           </span>
                         <% end %>
                       </div>
@@ -348,7 +360,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                             d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                           />
                         </svg>
-                        Set Primary
+                        {gettext("Set Primary")}
                       </button>
                     <% end %>
                     <!-- Download -->
@@ -365,7 +377,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
-                      Download
+                      {gettext("Download")}
                     </a>
                     <!-- Delete -->
                     <button
@@ -373,7 +385,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                       phx-click="delete_attachment"
                       phx-value-id={attachment.id}
                       phx-target={@myself}
-                      data-confirm="Are you sure you want to delete this file?"
+                      data-confirm={gettext("Are you sure you want to delete this file?")}
                       class="inline-flex items-center px-2 py-1 border border-voile-error rounded text-xs text-voile-error dark:text-voile-error hover:bg-voile-error/20 dark:hover:bg-voile-error focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-voile-error"
                     >
                       <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,7 +396,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                      Delete
+                      {gettext("Delete")}
                     </button>
                   </div>
                 </div>
@@ -398,7 +410,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                     {length(@attachments)}
                   </p>
 
-                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Total Files</p>
+                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">
+                    {gettext("Total Files")}
+                  </p>
                 </div>
 
                 <div class="text-center">
@@ -406,7 +420,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                     {format_bytes(Enum.sum(Enum.map(@attachments, & &1.file_size)))}
                   </p>
 
-                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Total Size</p>
+                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">
+                    {gettext("Total Size")}
+                  </p>
                 </div>
 
                 <div class="text-center">
@@ -415,7 +431,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                   </p>
 
                   <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">
-                    Recent Uploads
+                    {gettext("Recent Uploads")}
                   </p>
                 </div>
 
@@ -424,7 +440,9 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                     {@attachments |> Enum.count(& &1.is_primary)}
                   </p>
 
-                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">Primary Set</p>
+                  <p class="text-xs  dark:text-voile-surface uppercase tracking-wider">
+                    {gettext("Primary Set")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -526,15 +544,15 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           socket =
             socket
             |> assign(:attachments, updated_attachments)
-            |> put_flash(:info, "File selected from asset vault successfully")
+            |> put_flash(:info, gettext("File selected from asset vault successfully"))
 
           {:noreply, socket}
 
         {:error, _changeset} ->
-          {:noreply, put_flash(socket, :error, "Failed to select file from asset vault")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to select file from asset vault"))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Attachment not found in asset vault")}
+      {:noreply, put_flash(socket, :error, gettext("Attachment not found in asset vault"))}
     end
   end
 
@@ -550,12 +568,12 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         socket =
           socket
           |> assign(:attachments, updated_attachments)
-          |> put_flash(:info, "Primary attachment updated successfully")
+          |> put_flash(:info, gettext("Primary attachment updated successfully"))
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to set primary attachment")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to set primary attachment"))}
     end
   end
 
@@ -571,12 +589,12 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         socket =
           socket
           |> assign(:attachments, updated_attachments)
-          |> put_flash(:info, "Attachment deleted successfully")
+          |> put_flash(:info, gettext("Attachment deleted successfully"))
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete attachment")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to delete attachment"))}
     end
   end
 
@@ -610,16 +628,16 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         error_message =
           case changeset.errors do
             [attachable_id: {msg, _}] ->
-              "This entity already has an attachment. #{msg}"
+              gettext("This entity already has an attachment. %{msg}", msg: msg)
 
             _ ->
-              "Failed to save attachment"
+              gettext("Failed to save attachment")
           end
 
         {:noreply, put_flash(socket, :error, error_message)}
 
       _ ->
-        {:noreply, put_flash(socket, :error, "Unexpected error during upload")}
+        {:noreply, put_flash(socket, :error, gettext("Unexpected error during upload"))}
     end
   end
 
@@ -660,27 +678,28 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
   defp get_allowed_file_types(_), do: ["Any file type"]
 
   defp get_upload_hints("document"),
-    do: "Upload documents like PDFs, Word files, spreadsheets, and presentations."
+    do: gettext("Upload documents like PDFs, Word files, spreadsheets, and presentations.")
 
   defp get_upload_hints("photo"),
-    do: "Upload high-quality images. JPEG and PNG formats work best."
+    do: gettext("Upload high-quality images. JPEG and PNG formats work best.")
 
   defp get_upload_hints("video"),
-    do: "Upload video files. MP4 format is recommended for best compatibility."
+    do: gettext("Upload video files. MP4 format is recommended for best compatibility.")
 
-  defp get_upload_hints("audio"), do: "Upload audio files like music, podcasts, or recordings."
+  defp get_upload_hints("audio"),
+    do: gettext("Upload audio files like music, podcasts, or recordings.")
 
   defp get_upload_hints("software"),
-    do: "Upload software packages, executables, or installation files."
+    do: gettext("Upload software packages, executables, or installation files.")
 
-  defp get_upload_hints(_), do: "Upload any type of file to this collection."
+  defp get_upload_hints(_), do: gettext("Upload any type of file to this collection.")
 
   defp format_allowed_types(types) do
     case length(types) do
-      0 -> "No files allowed"
+      0 -> gettext("No files allowed")
       1 -> hd(types)
-      2 -> Enum.join(types, " and ")
-      _ -> "#{Enum.join(Enum.take(types, -1), ", ")} and #{List.last(types)}"
+      2 -> Enum.join(types, gettext(" and "))
+      _ -> "#{Enum.join(Enum.take(types, -1), ", ")} #{gettext("and")} #{List.last(types)}"
     end
   end
 
@@ -951,10 +970,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
     """
   end
 
-  defp humanize_upload_error(:too_large), do: "File is too large"
-  defp humanize_upload_error(:too_many_files), do: "Too many files selected"
-  defp humanize_upload_error(:not_accepted), do: "File type not accepted"
-  defp humanize_upload_error(_), do: "Something went wrong"
+  defp humanize_upload_error(:too_large), do: gettext("File is too large")
+  defp humanize_upload_error(:too_many_files), do: gettext("Too many files selected")
+  defp humanize_upload_error(:not_accepted), do: gettext("File type not accepted")
+  defp humanize_upload_error(_), do: gettext("Something went wrong")
 
   defp get_attachable_name(%Voile.Schema.Catalog.Collection{title: title}), do: title
   defp get_attachable_name(%Voile.Schema.Catalog.Item{item_code: code}), do: code

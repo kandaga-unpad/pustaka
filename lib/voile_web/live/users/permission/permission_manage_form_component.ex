@@ -12,9 +12,9 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
         {@title}
         <:subtitle>
           <%= if @action == :new do %>
-            Create a new permission for access control
+            {gettext("Create a new permission for access control")}
           <% else %>
-            Update permission information
+            {gettext("Update permission information")}
           <% end %>
         </:subtitle>
       </.header>
@@ -29,39 +29,41 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
         <.input
           field={@form[:name]}
           type="text"
-          label="Permission Name"
-          placeholder="e.g., collections.create, users.update"
+          label={gettext("Permission Name")}
+          placeholder={gettext("e.g., collections.create, users.update")}
           phx-debounce="blur"
         />
         <div class="text-xs text-gray-500 dark:text-gray-400 -mt-2 mb-4">
-          Format: resource.action (e.g., collections.create)
+          {gettext("Format: resource.action (e.g., collections.create)")}
         </div>
 
         <.input
           field={@form[:resource]}
           type="text"
-          label="Resource"
-          placeholder="e.g., collections, users, items"
+          label={gettext("Resource")}
+          placeholder={gettext("e.g., collections, users, items")}
           phx-debounce="blur"
         />
         <.input
           field={@form[:action]}
           type="text"
-          label="Action"
-          placeholder="e.g., create, read, update, delete"
+          label={gettext("Action")}
+          placeholder={gettext("e.g., create, read, update, delete")}
           phx-debounce="blur"
         />
         <.input
           field={@form[:description]}
           type="textarea"
-          label="Description"
-          placeholder="Describe what this permission allows users to do"
+          label={gettext("Description")}
+          placeholder={gettext("Describe what this permission allows users to do")}
           rows="3"
         />
         <div class="mt-6 flex items-center justify-end gap-x-3">
-          <.button type="button" phx-click={JS.patch(@patch)} class="secondary-btn">Cancel</.button>
-          <.button type="submit" phx-disable-with="Saving...">
-            {if @action == :new, do: "Create Permission", else: "Update Permission"}
+          <.button type="button" phx-click={JS.patch(@patch)} class="secondary-btn">
+            {gettext("Cancel")}
+          </.button>
+          <.button type="submit" phx-disable-with={gettext("Saving...")}>
+            {if @action == :new, do: gettext("Create Permission"), else: gettext("Update Permission")}
           </.button>
         </div>
       </.form>
@@ -100,7 +102,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Permission created successfully")
+         |> put_flash(:info, gettext("Permission created successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -115,7 +117,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Permission updated successfully")
+         |> put_flash(:info, gettext("Permission updated successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

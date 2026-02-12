@@ -14,7 +14,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
 
       socket =
         socket
-        |> assign(page_title: "Permission Management")
+        |> assign(page_title: gettext("Permission Management"))
         |> assign(searching: false)
         |> assign(current_path: "/manage/settings/permissions")
         |> assign(page: 1, per_page: 10, total_pages: total_pages)
@@ -37,7 +37,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Permission")
+    |> assign(:page_title, gettext("New Permission"))
     |> assign(:permission, %Permission{})
   end
 
@@ -45,7 +45,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
     permission = PermissionManager.get_permission(id)
 
     socket
-    |> assign(:page_title, "Edit Permission")
+    |> assign(:page_title, gettext("Edit Permission"))
     |> assign(:permission, permission)
   end
 
@@ -87,11 +87,11 @@ defmodule VoileWeb.Users.Permission.ManageLive do
           {:ok, _} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Permission deleted successfully")
+             |> put_flash(:info, gettext("Permission deleted successfully"))
              |> stream_delete(:permissions, permission)}
 
           {:error, _} ->
-            {:noreply, put_flash(socket, :error, "Failed to delete permission")}
+            {:noreply, put_flash(socket, :error, gettext("Failed to delete permission"))}
         end
 
       {:error, reason} ->
@@ -131,7 +131,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
       ) do
     {:noreply,
      socket
-     |> put_flash(:info, "Permission saved successfully")
+     |> put_flash(:info, gettext("Permission saved successfully"))
      |> stream_insert(:permissions, permission)}
   end
 
@@ -140,13 +140,13 @@ defmodule VoileWeb.Users.Permission.ManageLive do
     ~H"""
     <div>
       <.header>
-        Permission Management
-        <:subtitle>Manage system permissions and access controls</:subtitle>
+        {gettext("Permission Management")}
+        <:subtitle>{gettext("Manage system permissions and access controls")}</:subtitle>
 
         <:actions>
           <%= if can?(@current_scope.user, "permissions.manage") do %>
             <.link patch={~p"/manage/settings/permissions/new"}>
-              <.button>New Permission</.button>
+              <.button>{gettext("New Permission")}</.button>
             </.link>
           <% end %>
         </:actions>
@@ -168,7 +168,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
                   type="text"
                   name="search[query]"
                   value=""
-                  placeholder="Search permissions by name, resource, or action..."
+                  placeholder={gettext("Search permissions by name, resource, or action...")}
                   phx-debounce="300"
                 />
                 <%= if @searching do %>
@@ -209,31 +209,37 @@ defmodule VoileWeb.Users.Permission.ManageLive do
               fn {_id, permission} -> JS.navigate(~p"/manage/settings/permissions/#{permission}") end
             }
           >
-            <:col :let={{_id, permission}} label="Name">
+            <:col :let={{_id, permission}} label={gettext("Name")}>
               <span class="font-medium font-mono text-sm">{permission.name}</span>
             </:col>
 
-            <:col :let={{_id, permission}} label="Resource">
+            <:col :let={{_id, permission}} label={gettext("Resource")}>
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 {permission.resource}
               </span>
             </:col>
 
-            <:col :let={{_id, permission}} label="Action">
+            <:col :let={{_id, permission}} label={gettext("Action")}>
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                 {permission.action}
               </span>
             </:col>
 
-            <:col :let={{_id, permission}} label="Description">{permission.description || "-"}</:col>
+            <:col :let={{_id, permission}} label={gettext("Description")}>
+              {permission.description || "-"}
+            </:col>
 
             <:action :let={{_id, permission}}>
               <div class="sr-only">
-                <.link navigate={~p"/manage/settings/permissions/#{permission}"}>Show</.link>
+                <.link navigate={~p"/manage/settings/permissions/#{permission}"}>
+                  {gettext("Show")}
+                </.link>
               </div>
 
               <%= if can?(@current_scope.user, "permissions.manage") do %>
-                <.link navigate={~p"/manage/settings/permissions/#{permission}/edit"}>Edit</.link>
+                <.link navigate={~p"/manage/settings/permissions/#{permission}/edit"}>
+                  {gettext("Edit")}
+                </.link>
               <% end %>
             </:action>
 
@@ -241,9 +247,9 @@ defmodule VoileWeb.Users.Permission.ManageLive do
               <%= if can?(@current_scope.user, "permissions.manage") do %>
                 <.link
                   phx-click={JS.push("delete", value: %{id: permission.id}) |> hide("##{id}")}
-                  data-confirm="Are you sure you want to delete this permission?"
+                  data-confirm={gettext("Are you sure you want to delete this permission?")}
                 >
-                  Delete
+                  {gettext("Delete")}
                 </.link>
               <% end %>
             </:action>
@@ -289,7 +295,8 @@ defmodule VoileWeb.Users.Permission.ManageLive do
     role_count = count_roles_with_permission(permission.id)
 
     if role_count > 0 do
-      {:error, "Cannot delete permission that is assigned to #{role_count} role(s)"}
+      {:error,
+       gettext("Cannot delete permission that is assigned to %{count} role(s)", count: role_count)}
     else
       {:ok, permission}
     end

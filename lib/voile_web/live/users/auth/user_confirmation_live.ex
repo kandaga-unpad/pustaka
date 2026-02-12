@@ -14,9 +14,9 @@ defmodule VoileWeb.UserConfirmationLive do
             </div>
             <div class="text-center">
               <.header>
-                Confirm Your Account
+                {gettext("Confirm Your Account")}
                 <:subtitle>
-                  Please verify your email address to activate your account
+                  {gettext("Please verify your email address to activate your account")}
                 </:subtitle>
               </.header>
             </div>
@@ -30,7 +30,7 @@ defmodule VoileWeb.UserConfirmationLive do
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Confirming account for:
+                    {gettext("Confirming account for:")}
                   </p>
                   <p class="text-lg font-semibold text-gray-900 dark:text-white">
                     {@user.email}
@@ -55,21 +55,21 @@ defmodule VoileWeb.UserConfirmationLive do
                         name="hero-check-circle"
                         class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                       />
-                      <span>Access to all platform features</span>
+                      <span>{gettext("Access to all platform features")}</span>
                     </li>
                     <li class="flex items-start gap-2">
                       <.icon
                         name="hero-check-circle"
                         class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                       />
-                      <span>Secure your account with email verification</span>
+                      <span>{gettext("Secure your account with email verification")}</span>
                     </li>
                     <li class="flex items-start gap-2">
                       <.icon
                         name="hero-check-circle"
                         class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
                       />
-                      <span>Receive important notifications and updates</span>
+                      <span>{gettext("Receive important notifications and updates")}</span>
                     </li>
                   </ul>
                 </div>
@@ -79,7 +79,7 @@ defmodule VoileWeb.UserConfirmationLive do
                   class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
                 >
                   <.icon name="hero-check-badge" class="w-5 h-5 inline-block mr-2" />
-                  Confirm My Account
+                  {gettext("Confirm My Account")}
                 </.button>
               </div>
             </.form>
@@ -94,10 +94,12 @@ defmodule VoileWeb.UserConfirmationLive do
                 </div>
                 <div class="flex-1">
                   <p class="font-medium text-red-800 dark:text-red-300 mb-1">
-                    Invalid Confirmation Link
+                    {gettext("Invalid Confirmation Link")}
                   </p>
                   <p class="text-sm text-red-700 dark:text-red-400">
-                    This confirmation link is invalid or has expired. Please request a new confirmation email.
+                    {gettext(
+                      "This confirmation link is invalid or has expired. Please request a new confirmation email."
+                    )}
                   </p>
                 </div>
               </div>
@@ -107,27 +109,27 @@ defmodule VoileWeb.UserConfirmationLive do
               href={~p"/users/confirm"}
               class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
             >
-              Request New Confirmation Email
+              {gettext("Request New Confirmation Email")}
             </.link>
           <% end %>
 
           <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-              Already confirmed your account?
+              {gettext("Already confirmed your account?")}
               <.link
                 href={~p"/login"}
                 class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
               >
-                Sign in
+                {gettext("Sign in")}
               </.link>
             </p>
             <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-              Don't have an account?
+              {gettext("Don't have an account?")}
               <.link
                 href={~p"/register"}
                 class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
               >
-                Register
+                {gettext("Register")}
               </.link>
             </p>
           </div>
@@ -157,7 +159,7 @@ defmodule VoileWeb.UserConfirmationLive do
          socket
          |> put_flash(
            :info,
-           "Email confirmed successfully! Please log in to complete your profile."
+           gettext("Email confirmed successfully! Please log in to complete your profile.")
          )
          |> redirect(to: ~p"/login")}
 
@@ -173,7 +175,7 @@ defmodule VoileWeb.UserConfirmationLive do
           %{} ->
             {:noreply,
              socket
-             |> put_flash(:error, "User confirmation link is invalid or it has expired.")
+             |> put_flash(:error, gettext("User confirmation link is invalid or it has expired."))
              |> redirect(to: ~p"/")}
         end
     end

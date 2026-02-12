@@ -11,7 +11,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Edit do
     {:ok,
      socket
      |> assign(:location, location)
-     |> assign(:page_title, "Edit Location")
+     |> assign(:page_title, gettext("Edit Location"))
      |> assign(:live_action, :edit)}
   end
 
@@ -22,7 +22,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.Edit do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Location")
+    |> assign(:page_title, gettext("Edit Location"))
     |> assign(:location, Master.get_locations!(id))
   end
 

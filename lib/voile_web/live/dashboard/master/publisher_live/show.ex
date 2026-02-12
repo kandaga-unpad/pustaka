@@ -11,7 +11,10 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Show do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -28,6 +31,6 @@ defmodule VoileWeb.Dashboard.Master.PublisherLive.Show do
      |> assign(:publishers, Master.get_publishers!(id))}
   end
 
-  defp page_title(:show), do: "Show Publisher"
-  defp page_title(:edit), do: "Edit Publisher"
+  defp page_title(:show), do: gettext("Show Publisher")
+  defp page_title(:edit), do: gettext("Edit Publisher")
 end

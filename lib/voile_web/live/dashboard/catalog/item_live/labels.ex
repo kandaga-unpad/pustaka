@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
 
     {:ok,
      socket
-     |> assign(:page_title, "Print Item Labels")
+     |> assign(:page_title, gettext("Print Item Labels"))
      |> assign(:selected_items, [])
      |> assign(:selected_item_data, %{})
      |> assign(:search, "")

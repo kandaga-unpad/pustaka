@@ -113,7 +113,8 @@ defmodule Voile.MixProject do
         "tailwind voile --minify",
         "esbuild voile --minify",
         "phx.digest"
-      ]
+      ],
+      precommit: ["format", "compile"]
     ]
   end
 end

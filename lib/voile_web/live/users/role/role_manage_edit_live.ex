@@ -250,28 +250,30 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
     <div>
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Management", path: ~p"/manage/members/management"},
-        %{label: "Role Management", path: ~p"/manage/members/management/roles"},
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: ~p"/manage/members"},
+        %{label: gettext("Management"), path: ~p"/manage/members/management"},
+        %{label: gettext("Role Management"), path: ~p"/manage/members/management/roles"},
         %{label: String.capitalize(@role.name), path: ~p"/manage/settings/roles"}
       ]} />
       <.header>
-        Edit Role
-        <:subtitle>Update role information and manage permissions</:subtitle>
+        {gettext("Edit Role")}
+        <:subtitle>{gettext("Update role information and manage permissions")}</:subtitle>
       </.header>
 
       <div class="flex gap-4">
         <div class="w-full">
           <div class="mb-4">
-            <.back navigate={~p"/manage/members/management/roles/#{@role.id}"}>Back to Role</.back>
+            <.back navigate={~p"/manage/members/management/roles/#{@role.id}"}>
+              {gettext("Back to Role")}
+            </.back>
           </div>
 
           <div class="space-y-8">
             <%!-- Role Basic Information --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                Basic Information
+                {gettext("Basic Information")}
               </h3>
 
               <.live_component
@@ -288,7 +290,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
             <%= if can?(@current_scope.user, "permissions.manage") do %>
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                  Manage Permissions
+                  {gettext("Manage Permissions")}
                 </h3>
 
                 <div class="space-y-3">
@@ -339,11 +341,13 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                           ]}
                           title={
                             if all_enabled?,
-                              do: "Disable all #{resource} permissions",
-                              else: "Enable all #{resource} permissions"
+                              do: gettext("Disable all %{resource} permissions", resource: resource),
+                              else: gettext("Enable all %{resource} permissions", resource: resource)
                           }
                         >
-                          <span class="sr-only">Toggle all {resource} permissions</span>
+                          <span class="sr-only">
+                            {gettext("Toggle all %{resource} permissions", resource: resource)}
+                          </span>
                           <span class={[
                             "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                             if(all_enabled?, do: "translate-x-6", else: "translate-x-1")
@@ -381,7 +385,9 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                                   )
                                 ]}
                               >
-                                <span class="sr-only">Toggle {permission.name}</span>
+                                <span class="sr-only">
+                                  {gettext("Toggle %{permission}", permission: permission.name)}
+                                </span>
                                 <span class={[
                                   "inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
                                   if(has_permission?, do: "translate-x-5", else: "translate-x-1")
@@ -401,11 +407,11 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
                 <div class="flex items-center justify-between mb-6">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Assigned Users ({length(@role_users)})
+                    {gettext("Assigned Users")} ({length(@role_users)})
                   </h3>
 
                   <.button phx-click="toggle_add_user" class="secondary-btn">
-                    <.icon name="hero-plus" class="w-4 h-4 mr-1" /> Add User
+                    <.icon name="hero-plus" class="w-4 h-4 mr-1" /> {gettext("Add User")}
                   </.button>
                 </div>
 
@@ -415,13 +421,13 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                       <.input
                         name="query"
                         phx-debounce="300"
-                        placeholder="Search users by name or email..."
+                        placeholder={gettext("Search users by name or email...")}
                         value=""
                       />
                     </.form>
 
                     <%= if @searching_users do %>
-                      <div class="mt-2 text-sm text-gray-500">Searching...</div>
+                      <div class="mt-2 text-sm text-gray-500">{gettext("Searching...")}</div>
                     <% end %>
 
                     <%= if length(@search_results) > 0 do %>
@@ -439,7 +445,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                               phx-value-user-id={user.id}
                               class="text-xs"
                             >
-                              Add
+                              {gettext("Add")}
                             </.button>
                           </div>
                         <% end %>
@@ -478,10 +484,10 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                         <.button
                           phx-click="remove_user_from_role"
                           phx-value-user-id={user.id}
-                          data-confirm="Remove this user from the role?"
+                          data-confirm={gettext("Remove this user from the role?")}
                           class="text-xs text-red-600 hover:text-red-800"
                         >
-                          Remove
+                          {gettext("Remove")}
                         </.button>
                       </div>
                     <% end %>
@@ -498,7 +504,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                   <% end %>
                 <% else %>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    No users assigned to this role.
+                    {gettext("No users assigned to this role.")}
                   </p>
                 <% end %>
               </div>

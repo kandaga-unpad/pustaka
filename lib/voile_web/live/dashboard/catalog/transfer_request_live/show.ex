@@ -24,7 +24,7 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
 
     socket =
       socket
-      |> assign(:page_title, "Transfer Request Details")
+      |> assign(:page_title, gettext("Transfer Request Details"))
       |> assign(:transfer_request, transfer_request)
       |> assign(:can_review, can_review)
       |> assign(:review_notes, "")
@@ -41,12 +41,12 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
       {:ok, {updated_transfer, _item}} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Transfer request approved successfully")
+         |> put_flash(:info, gettext("Transfer request approved successfully"))
          |> assign(:transfer_request, Catalog.get_transfer_request!(updated_transfer.id))
          |> assign(:can_review, false)}
 
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Failed to approve transfer request")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to approve transfer request"))}
     end
   end
 
@@ -59,12 +59,12 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
       {:ok, updated_transfer} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Transfer request denied")
+         |> put_flash(:info, gettext("Transfer request denied"))
          |> assign(:transfer_request, updated_transfer)
          |> assign(:can_review, false)}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to deny transfer request")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to deny transfer request"))}
     end
   end
 
@@ -78,22 +78,24 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
       case status do
         "pending" ->
           {"bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200", "hero-clock",
-           "Pending"}
+           gettext("Pending")}
 
         "approved" ->
           {"bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
-           "hero-check-circle", "Approved"}
+           "hero-check-circle", gettext("Approved")}
 
         "denied" ->
-          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle", "Denied"}
+          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle",
+           gettext("Denied")}
 
         "cancelled" ->
           {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200", "hero-minus-circle",
-           "Cancelled"}
+           gettext("Cancelled")}
 
         _ ->
           {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200",
-           "hero-question-mark-circle", String.capitalize(status)}
+           "hero-question-mark-circle",
+           Gettext.gettext(VoileWeb.Gettext, String.capitalize(status))}
       end
 
     assigns = %{class: color_class, icon: icon, label: label}

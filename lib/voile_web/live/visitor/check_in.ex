@@ -467,9 +467,11 @@ defmodule VoileWeb.Visitor.CheckIn do
               <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-1">
                 {@app_name}
               </h1>
-              <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300">Visitor Services</p>
+              <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                {gettext("Visitor Services")}
+              </p>
               <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Check in or share your feedback
+                {gettext("Check in or share your feedback")}
               </p>
             </div>
           </div>
@@ -479,7 +481,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           <!-- Node Selection -->
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
             <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6 text-center">
-              Select Your Location
+              {gettext("Select Your Location")}
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
@@ -500,7 +502,9 @@ defmodule VoileWeb.Visitor.CheckIn do
                   <div>
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{node.name}</h3>
                     <%= if node.description do %>
-                      <p class="text-sm text-gray-600 dark:text-gray-300">{node.description}</p>
+                      <p class="text-sm text-gray-600 dark:text-gray-300">
+                        {node.description}
+                      </p>
                     <% end %>
                   </div>
                 </div>
@@ -518,7 +522,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 phx-click="back_to_nodes"
                 class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
               >
-                <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> Back to Locations
+                <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> {gettext("Back to Locations")}
               </button>
 
               <button
@@ -526,17 +530,19 @@ defmodule VoileWeb.Visitor.CheckIn do
                 phx-click="change_location"
                 class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors flex items-center"
               >
-                <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Change Location
+                <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
               </button>
             </div>
 
             <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6 text-center">
-              Select Room
+              {gettext("Select Room")}
             </h2>
 
             <%= if @locations == [] do %>
               <div class="text-center py-8">
-                <p class="text-gray-600 dark:text-gray-300">No rooms available at this location.</p>
+                <p class="text-gray-600 dark:text-gray-300">
+                  {gettext("No rooms available at this location.")}
+                </p>
               </div>
             <% else %>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -567,12 +573,14 @@ defmodule VoileWeb.Visitor.CheckIn do
               phx-click="back_to_rooms"
               class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center"
             >
-              <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> Back to Rooms
+              <.icon name="hero-arrow-left" class="w-5 h-5 mr-2" /> {gettext("Back to Rooms")}
             </button>
 
             <div class="text-center">
               <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-                {if @selected_location, do: @selected_location.location_name, else: "Services"}
+                {if @selected_location,
+                  do: @selected_location.location_name,
+                  else: gettext("Services")}
               </h2>
             </div>
 
@@ -581,7 +589,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               phx-click="change_location"
               class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors flex items-center"
             >
-              <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Change Location
+              <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
             </button>
           </div>
           
@@ -591,10 +599,12 @@ defmodule VoileWeb.Visitor.CheckIn do
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
                 <h3 class="text-2xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                  <.icon name="hero-clipboard-document-check" class="w-6 h-6 inline-block" /> Check In
+                  <.icon name="hero-clipboard-document-check" class="w-6 h-6 inline-block" /> {gettext(
+                    "Check In"
+                  )}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                  Register your visit
+                  {gettext("Register your visit")}
                 </p>
               </div>
 
@@ -607,7 +617,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <form phx-submit="submit_check_in" class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    ID / Student Number <span class="text-red-500">*</span>
+                    {gettext("ID / Student Number")} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -617,19 +627,19 @@ defmodule VoileWeb.Visitor.CheckIn do
                     phx-hook="IdentifierInput"
                     autocomplete="off"
                     class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    placeholder="Scan or enter ID"
+                    placeholder={gettext("Scan or enter ID")}
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Visitor Type
+                    {gettext("Visitor Type")}
                   </label>
                   <select
                     phx-change="select_origin"
                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Select type</option>
+                    <option value="">{gettext("Select type")}</option>
                     <option
                       :for={origin <- @visitor_origin_options}
                       value={origin}
@@ -651,7 +661,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   type="submit"
                   class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold rounded-lg transition-colors shadow-lg"
                 >
-                  Check In Now
+                  {gettext("Check In Now")}
                 </button>
               </form>
             </div>
@@ -660,10 +670,12 @@ defmodule VoileWeb.Visitor.CheckIn do
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
                 <h3 class="text-2xl font-semibold text-purple-600 dark:text-purple-400 mb-2">
-                  <.icon name="hero-chat-bubble-left-right" class="w-6 h-6 inline-block" /> Feedback
+                  <.icon name="hero-chat-bubble-left-right" class="w-6 h-6 inline-block" /> {gettext(
+                    "Feedback"
+                  )}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
-                  Share your experience
+                  {gettext("Share your experience")}
                 </p>
               </div>
 
@@ -676,7 +688,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <form phx-submit="submit_survey" class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">
-                    Rate your experience <span class="text-red-500">*</span>
+                    {gettext("Rate your experience")} <span class="text-red-500">*</span>
                   </label>
                   <div class="flex justify-center space-x-1">
                     <%= for star <- 1..5 do %>
@@ -708,7 +720,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   </div>
                   <%= if @rating > 0 do %>
                     <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-2">
-                      {@rating} {if @rating == 1, do: "star", else: "stars"}
+                      {@rating} {if @rating == 1, do: gettext("star"), else: gettext("stars")}
                     </p>
                   <% end %>
                 </div>
@@ -716,7 +728,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 <%= if @rating > 0 do %>
                   <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">
-                      Rate our staff (Optional)
+                      {gettext("Rate our staff (Optional)")}
                     </label>
                     <div class="flex justify-center space-x-0.5">
                       <%= for star <- 1..5 do %>
@@ -748,7 +760,9 @@ defmodule VoileWeb.Visitor.CheckIn do
                     </div>
                     <%= if @staff_rating > 0 do %>
                       <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        {@staff_rating} {if @staff_rating == 1, do: "star", else: "stars"}
+                        {@staff_rating} {if @staff_rating == 1,
+                          do: gettext("star"),
+                          else: gettext("stars")}
                       </p>
                     <% end %>
                   </div>
@@ -756,14 +770,14 @@ defmodule VoileWeb.Visitor.CheckIn do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Comments (Optional)
+                    {gettext("Comments (Optional)")}
                   </label>
                   <textarea
                     name="comment"
                     phx-change="update_comment"
                     rows="3"
                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="Share your thoughts..."
+                    placeholder={gettext("Share your thoughts...")}
                   >{@comment}</textarea>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {String.length(@comment)}/500
@@ -774,7 +788,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   type="submit"
                   class="w-full py-3 px-6 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white font-bold rounded-lg transition-colors shadow-lg"
                 >
-                  Submit Feedback
+                  {gettext("Submit Feedback")}
                 </button>
               </form>
               
@@ -787,17 +801,18 @@ defmodule VoileWeb.Visitor.CheckIn do
                     </div>
                     <div class="flex-1">
                       <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                        New to our system?
+                        {gettext("New to our system?")}
                       </h5>
                       <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                        Register for a member account to access more features.
+                        {gettext("Register for a member account to access more features.")}
                       </p>
                       <a
                         href={"#{@app_website}/register"}
                         target="_blank"
                         class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors"
                       >
-                        Register Now <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
+                        {gettext("Register Now")}
+                        <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3" />
                       </a>
                     </div>
                   </div>
@@ -828,20 +843,22 @@ defmodule VoileWeb.Visitor.CheckIn do
     <!-- Welcome Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                Welcome, {@visitor_name}!
+                {gettext("Welcome, %{name}!", name: @visitor_name)}
               </h3>
 
               <p class="text-lg text-gray-700 dark:text-gray-300">
-                Enjoy your stay at
+                {gettext("Enjoy your stay at")}
               </p>
 
               <p class="text-xl font-semibold text-blue-600 dark:text-blue-400">
-                {if @selected_location, do: @selected_location.location_name, else: "our facility"}
+                {if @selected_location,
+                  do: @selected_location.location_name,
+                  else: gettext("our facility")}
               </p>
 
               <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Have a productive visit! 📚
+                  {gettext("Have a productive visit! 📚")}
                 </p>
               </div>
             </div>
@@ -852,7 +869,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               phx-click="close_modal"
               class="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
             >
-              Continue
+              {gettext("Continue")}
             </button>
           </div>
         </div>
@@ -875,16 +892,16 @@ defmodule VoileWeb.Visitor.CheckIn do
     <!-- Thank You Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                Thank You for Your Feedback!
+                {gettext("Thank You for Your Feedback!")}
               </h3>
 
               <p class="text-lg text-gray-700 dark:text-gray-300">
-                Your {@rating}-star rating has been recorded
+                {gettext("Your %{rating}-star rating has been recorded", rating: @rating)}
               </p>
 
               <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  We appreciate you taking the time to help us improve! 💜
+                  {gettext("We appreciate you taking the time to help us improve! 💜")}
                 </p>
               </div>
             </div>
@@ -895,7 +912,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               phx-click="close_survey_success"
               class="mt-6 w-full py-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white font-medium rounded-lg transition-colors"
             >
-              Done
+              {gettext("Done")}
             </button>
           </div>
         </div>
@@ -926,7 +943,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <div class="text-xs text-gray-600 dark:text-gray-400">
                 <div class="font-semibold">{@app_name}</div>
                 <div class="flex items-center gap-1 justify-center md:justify-end">
-                  <span>Powered by Voile Framework</span>
+                  <span>{gettext("Powered by Voile Framework")}</span>
                   <span class="text-gray-400 dark:text-gray-500">v1.0</span>
                 </div>
               </div>

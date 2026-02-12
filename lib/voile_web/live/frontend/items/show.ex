@@ -47,13 +47,13 @@ defmodule VoileWeb.Frontend.Items.Show do
       {:error, :not_found} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Item not found")
+         |> put_flash(:error, gettext("Item not found"))
          |> push_navigate(to: ~p"/items")}
 
       {:error, :access_denied} ->
         {:noreply,
          socket
-         |> put_flash(:error, "You don't have permission to view this item")
+         |> put_flash(:error, gettext("You don't have permission to view this item"))
          |> push_navigate(to: ~p"/items")}
     end
   end
@@ -89,14 +89,16 @@ defmodule VoileWeb.Frontend.Items.Show do
              |> assign(:reservation_loading, false)
              |> put_flash(
                :info,
-               "Reservation request submitted successfully. The library will contact you soon."
+               gettext(
+                 "Reservation request submitted successfully. The library will contact you soon."
+               )
              )}
 
           {:error, reason} when is_binary(reason) ->
             {:noreply,
              socket
              |> assign(:reservation_loading, false)
-             |> put_flash(:error, "Failed to create reservation: #{reason}")}
+             |> put_flash(:error, gettext("Failed to create reservation: ") <> reason)}
 
           {:error, %Ecto.Changeset{} = changeset} ->
             errors =
@@ -107,13 +109,16 @@ defmodule VoileWeb.Frontend.Items.Show do
             {:noreply,
              socket
              |> assign(:reservation_loading, false)
-             |> put_flash(:error, "Failed to create reservation: #{errors}")}
+             |> put_flash(:error, gettext("Failed to create reservation: ") <> errors)}
 
           {:error, _} ->
             {:noreply,
              socket
              |> assign(:reservation_loading, false)
-             |> put_flash(:error, "Failed to create reservation. Please try again later.")}
+             |> put_flash(
+               :error,
+               gettext("Failed to create reservation. Please try again later.")
+             )}
         end
 
       {:error, reason} ->
@@ -132,24 +137,25 @@ defmodule VoileWeb.Frontend.Items.Show do
 
   # Private helper function to validate reservation eligibility
   defp validate_reservation_request(nil, _item) do
-    {:error, "You must be logged in to make a reservation."}
+    {:error, gettext("You must be logged in to make a reservation.")}
   end
 
   defp validate_reservation_request(%{confirmed_at: nil}, _item) do
-    {:error, "Please verify your email address before making reservations."}
+    {:error, gettext("Please verify your email address before making reservations.")}
   end
 
   defp validate_reservation_request(%{user_type: nil}, _item) do
-    {:error, "Your account doesn't have a member type assigned. Please contact the library."}
+    {:error,
+     gettext("Your account doesn't have a member type assigned. Please contact the library.")}
   end
 
   defp validate_reservation_request(_user, %{availability: availability})
        when availability != "available" do
     case availability do
-      "loaned" -> {:error, "This item is currently on loan."}
-      "reserved" -> {:error, "This item is already reserved by another member."}
-      "maintenance" -> {:error, "This item is currently under maintenance."}
-      _ -> {:error, "This item is not available for reservation."}
+      "loaned" -> {:error, gettext("This item is currently on loan.")}
+      "reserved" -> {:error, gettext("This item is already reserved by another member.")}
+      "maintenance" -> {:error, gettext("This item is currently under maintenance.")}
+      _ -> {:error, gettext("This item is not available for reservation.")}
     end
   end
 
@@ -164,7 +170,9 @@ defmodule VoileWeb.Frontend.Items.Show do
 
     if is_staff_or_admin do
       {:error,
-       "Staff and administrators cannot reserve items. Only members can make reservations."}
+       gettext(
+         "Staff and administrators cannot reserve items. Only members can make reservations."
+       )}
     else
       {:ok, :valid}
     end
@@ -178,7 +186,7 @@ defmodule VoileWeb.Frontend.Items.Show do
         <%= if @loading do %>
           <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-voile-primary"></div>
-            <span class="ml-2 text-gray-600 dark:text-gray-300">Loading item...</span>
+            <span class="ml-2 text-gray-600 dark:text-gray-300">{gettext("Loading item...")}</span>
           </div>
         <% else %>
           <%= if @item do %>
@@ -190,14 +198,16 @@ defmodule VoileWeb.Frontend.Items.Show do
                     navigate={~p"/items"}
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   >
-                    <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> Back to Items
+                    <.icon name="hero-chevron-left-solid" class="w-4 h-4 mr-1" /> {gettext(
+                      "Back to Items"
+                    )}
                   </.link>
                   <span class="text-gray-300 dark:text-gray-600">|</span>
                   <.link
                     navigate={~p"/collections/#{@item.collection.id}"}
                     class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   >
-                    View Collection
+                    {gettext("View Collection")}
                   </.link>
                 </div>
               </div>
@@ -227,7 +237,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                             <h1 class="text-2xl sm:text-3xl font-bold mb-2">{@item.item_code}</h1>
 
                             <div class="text-lg mb-4">
-                              From:
+                              {gettext("From:")}
                               <.link
                                 navigate={
                                   if @item.collection,
@@ -243,7 +253,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                             </div>
 
                             <%= if @item.collection && @item.collection.mst_creator do %>
-                              <div class="mb-6">By: {@item.collection.mst_creator.creator_name}</div>
+                              <div class="mb-6">
+                                {gettext("By:")} {@item.collection.mst_creator.creator_name}
+                              </div>
                             <% end %>
                           </div>
                           <!-- Status Badges -->
@@ -252,7 +264,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               {String.capitalize(@item.availability || "Unknown")}
                             </span>
                             <span class={"px-3 py-1 text-sm rounded-full #{VoileWeb.VoileComponents.condition_badge(@item.condition)}"}>
-                              {String.capitalize(@item.condition || "Unknown")} condition
+                              {String.capitalize(@item.condition || "Unknown")} {gettext("condition")}
                             </span>
                           </div>
                         </div>
@@ -270,7 +282,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                             </div>
 
                             <div class="flex flex-col">
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">Item Code:</span>
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Item Code:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {@item.item_code}
                               </span>
@@ -288,7 +302,7 @@ defmodule VoileWeb.Frontend.Items.Show do
 
                               <div class="flex flex-col">
                                 <span class="text-gray-500 dark:text-gray-400 mr-2">
-                                  Inventory Code:
+                                  {gettext("Inventory Code:")}
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   {@item.inventory_code}
@@ -306,7 +320,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                             </div>
 
                             <div class="flex flex-col">
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">Location:</span>
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Location:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {@item.location}
                               </span>
@@ -323,7 +339,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </div>
 
                               <div class="flex flex-col">
-                                <span class="text-gray-500 dark:text-gray-400 mr-2">Library:</span>
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  {gettext("Library:")}
+                                </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   {@item.node.name}
                                 </span>
@@ -339,7 +357,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                                   class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
                                 />
                               </div>
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">Price:</span>
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Price:")}
+                              </span>
                               <div class="flex flex-col">
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   ${@item.price}
@@ -358,7 +378,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </div>
 
                               <div class="flex flex-col">
-                                <span class="text-gray-500 dark:text-gray-400 mr-2">Acquired:</span>
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  {gettext("Acquired:")}
+                                </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   {Calendar.strftime(@item.acquisition_date, "%B %d, %Y")}
                                 </span>
@@ -377,7 +399,7 @@ defmodule VoileWeb.Frontend.Items.Show do
 
                               <div class="flex flex-col">
                                 <span class="text-gray-500 dark:text-gray-400 mr-2">
-                                  Last Circulated:
+                                  {gettext("Last Circulated:")}
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   {Calendar.strftime(@item.last_circulated, "%B %d, %Y")}
@@ -395,7 +417,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                             </div>
 
                             <div class="flex flex-col">
-                              <span class="text-gray-500 dark:text-gray-400 mr-2">Added:</span>
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Added:")}
+                              </span>
                               <span class="font-medium text-gray-900 dark:text-white">
                                 {Calendar.strftime(@item.inserted_at, "%B %d, %Y")}
                               </span>
@@ -409,7 +433,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                   <%= if @item.collection.description do %>
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        About this Collection
+                        {gettext("About this Collection")}
                       </h3>
 
                       <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -422,7 +446,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark">
                       <div class="px-6 py-4 border-b border-voile-light dark:border-voile-dark">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                          Other Items in this Collection
+                          {gettext("Other Items in this Collection")}
                         </h3>
                       </div>
 
@@ -439,7 +463,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                           navigate={~p"/collections/#{@item.collection.id}"}
                           class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
-                          View all items in this collection →
+                          {gettext("View all items in this collection →")}
                         </.link>
                       </div>
                     </div>
@@ -450,7 +474,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                   <div class="sticky top-8 space-y-6">
                     <!-- Actions -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
-                      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Actions</h3>
+                      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                        {gettext("Actions")}
+                      </h3>
 
                       <div class="space-y-3">
                         <%= if @item.availability == "available" do %>
@@ -463,7 +489,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                               end) %>
                             <%= if is_staff_or_admin do %>
                               <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
-                                Staff cannot reserve items
+                                {gettext("Staff cannot reserve items")}
                               </div>
                             <% else %>
                               <%= if @current_scope.user.confirmed_at && @current_scope.user.user_type do %>
@@ -472,17 +498,17 @@ defmodule VoileWeb.Frontend.Items.Show do
                                   class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                 >
                                   <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" />
-                                  Reserve Item
+                                  {gettext("Reserve Item")}
                                 </button>
                               <% else %>
                                 <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
                                   <%= cond do %>
                                     <% !@current_scope.user.confirmed_at -> %>
-                                      Please verify your email to reserve items
+                                      {gettext("Please verify your email to reserve items")}
                                     <% !@current_scope.user.user_type -> %>
-                                      Member type not assigned - contact library
+                                      {gettext("Member type not assigned - contact library")}
                                     <% true -> %>
-                                      Reservation unavailable
+                                      {gettext("Reservation unavailable")}
                                   <% end %>
                                 </div>
                               <% end %>
@@ -492,20 +518,22 @@ defmodule VoileWeb.Frontend.Items.Show do
                               navigate={~p"/login"}
                               class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
-                              <.icon name="hero-user-solid" class="w-4 h-4 mr-2" /> Login to Reserve
+                              <.icon name="hero-user-solid" class="w-4 h-4 mr-2" /> {gettext(
+                                "Login to Reserve"
+                              )}
                             </.link>
                           <% end %>
                         <% else %>
                           <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
                             <%= case @item.availability do %>
                               <% "loaned" -> %>
-                                Currently on Loan
+                                {gettext("Currently on Loan")}
                               <% "reserved" -> %>
-                                Already Reserved
+                                {gettext("Already Reserved")}
                               <% "maintenance" -> %>
-                                Under Maintenance
+                                {gettext("Under Maintenance")}
                               <% _ -> %>
-                                Not Available
+                                {gettext("Not Available")}
                             <% end %>
                           </div>
                         <% end %>
@@ -515,40 +543,46 @@ defmodule VoileWeb.Frontend.Items.Show do
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-voile-muted dark:border-voile-dark shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           <.icon name="hero-rectangle-stack-solid" class="w-4 h-4 mr-2" />
-                          View Collection
+                          {gettext("View Collection")}
                         </.link>
                         <.link
                           navigate={~p"/search?q=#{@item.collection.title}"}
                           class="w-full inline-flex justify-center items-center px-4 py-2 border border-voile-muted dark:border-voile-dark shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                           <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" />
-                          Find Similar
+                          {gettext("Find Similar")}
                         </.link>
                       </div>
                     </div>
                     <!-- Item Status Details -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Item Status
+                        {gettext("Item Status")}
                       </h3>
 
                       <div class="space-y-4">
                         <div class="flex items-center justify-between">
-                          <span class="text-sm text-gray-500 dark:text-gray-400">Availability:</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {gettext("Availability:")}
+                          </span>
                           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.VoileComponents.availability_badge(@item.availability)}"}>
                             {String.capitalize(@item.availability || "Unknown")}
                           </span>
                         </div>
 
                         <div class="flex items-center justify-between">
-                          <span class="text-sm text-gray-500 dark:text-gray-400">Condition:</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {gettext("Condition:")}
+                          </span>
                           <span class={"px-2 py-1 text-xs rounded-full #{VoileWeb.VoileComponents.condition_badge(@item.condition)}"}>
                             {String.capitalize(@item.condition || "Unknown")}
                           </span>
                         </div>
 
                         <div class="flex items-center justify-between">
-                          <span class="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {gettext("Status:")}
+                          </span>
                           <span class="text-sm font-medium text-gray-900 dark:text-white">
                             {String.capitalize(@item.status || "Unknown")}
                           </span>
@@ -558,11 +592,13 @@ defmodule VoileWeb.Frontend.Items.Show do
                     <!-- Contact Info -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Need Help?
+                        {gettext("Need Help?")}
                       </h3>
 
                       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Contact the library for more information about this item or to make special requests.
+                        {gettext(
+                          "Contact the library for more information about this item or to make special requests."
+                        )}
                       </p>
 
                       <div class="space-y-2 text-sm">
@@ -591,7 +627,9 @@ defmodule VoileWeb.Frontend.Items.Show do
               <div class="fixed inset-0 bg-gray-600/85 bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
                   <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Reserve Item</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                      {gettext("Reserve Item")}
+                    </h3>
 
                     <button
                       phx-click="hide_reservation_form"
@@ -602,7 +640,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                   </div>
 
                   <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    You are requesting to reserve: <strong>{@item.item_code}</strong>
+                    {gettext("You are requesting to reserve:")} <strong>{@item.item_code}</strong>
                   </p>
 
                   <form phx-submit="submit_reservation" class="space-y-4">
@@ -611,14 +649,14 @@ defmodule VoileWeb.Frontend.Items.Show do
                         for="reservation_notes"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                       >
-                        Notes (optional)
+                        {gettext("Notes (optional)")}
                       </label>
                       <textarea
                         id="reservation_notes"
                         name="notes"
                         rows="3"
                         class="block w-full border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Any special requests or notes..."
+                        placeholder={gettext("Any special requests or notes...")}
                         disabled={@reservation_loading}
                       ></textarea>
                     </div>
@@ -630,7 +668,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                         class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg_gray-100 dark:bg-gray-600 border border-voile-muted dark:border-voile-dark rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         disabled={@reservation_loading}
                       >
-                        Cancel
+                        {gettext("Cancel")}
                       </button>
                       <button
                         type="submit"
@@ -639,9 +677,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                       >
                         <%= if @reservation_loading do %>
                           <.icon name="hero-arrow-path" class="w-4 h-4 mr-2 animate-spin" />
-                          Submitting...
+                          {gettext("Submitting...")}
                         <% else %>
-                          Submit Reservation
+                          {gettext("Submit Reservation")}
                         <% end %>
                       </button>
                     </div>

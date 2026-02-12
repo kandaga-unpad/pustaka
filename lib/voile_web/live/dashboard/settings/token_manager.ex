@@ -23,14 +23,14 @@ defmodule VoileWeb.Dashboard.Settings.TokenManagerLive do
   def render(assigns) do
     ~H"""
     <.header>
-      <h4>API Token Manager</h4>
+      <h4>{gettext("API Token Manager")}</h4>
 
-      <:subtitle>Manage your API tokens</:subtitle>
+      <:subtitle>{gettext("Manage your API tokens")}</:subtitle>
     </.header>
 
     <div>
       <!-- Token management UI goes here -->
-      <p>This is where the token management interface will be implemented.</p>
+      <p>{gettext("This is where the token management interface will be implemented.")}</p>
     </div>
     """
   end

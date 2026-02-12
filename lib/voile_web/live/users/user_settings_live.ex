@@ -8,9 +8,9 @@ defmodule VoileWeb.UserSettingsLive do
   def render(assigns) do
     ~H"""
     <.header>
-      <h4>Account Settings</h4>
+      <h4>{gettext("Account Settings")}</h4>
 
-      <:subtitle>Manage your account email address and password settings</:subtitle>
+      <:subtitle>{gettext("Manage your account email address and password settings")}</:subtitle>
     </.header>
 
     <div class="flex gap-4">
@@ -26,16 +26,16 @@ defmodule VoileWeb.UserSettingsLive do
             phx-submit="update_email"
             phx-change="validate_email"
           >
-            <.input field={@email_form[:email]} type="email" label="Email" required />
+            <.input field={@email_form[:email]} type="email" label={gettext("Email")} required />
             <.input
               field={@email_form[:current_password]}
               name="current_password"
               id="current_password_for_email"
               type="password"
-              label="Current password"
+              label={gettext("Current password")}
               value={@email_form_current_password}
               required
-            /> <.button phx-disable-with="Changing...">Change Email</.button>
+            /> <.button phx-disable-with={gettext("Changing...")}>{gettext("Change Email")}</.button>
           </.form>
         </div>
 
@@ -56,42 +56,58 @@ defmodule VoileWeb.UserSettingsLive do
                 id="hidden_user_email"
                 value={@current_email}
               />
-              <.input field={@password_form[:password]} type="password" label="New password" required />
+              <.input
+                field={@password_form[:password]}
+                type="password"
+                label={gettext("New password")}
+                required
+              />
               <.input
                 field={@password_form[:password_confirmation]}
                 type="password"
-                label="Confirm new password"
+                label={gettext("Confirm new password")}
               />
               <.input
                 field={@password_form[:current_password]}
                 name="current_password"
                 type="password"
-                label="Current password"
+                label={gettext("Current password")}
                 id="current_password_for_password"
                 value={@current_password}
                 required
-              /> <.button phx-disable-with="Changing...">Change Password</.button>
+              />
+              <.button phx-disable-with={gettext("Changing...")}>
+                {gettext("Change Password")}
+              </.button>
             </.form>
 
             <div class="mt-3">
               <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Can't remember your current password? We'll email you a secure link so you can set a new password.
+                {gettext(
+                  "Can't remember your current password? We'll email you a secure link so you can set a new password."
+                )}
               </p>
 
-              <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
+              <.button phx-click="send_set_password_link">
+                {gettext("Send set-password link to my email")}
+              </.button>
             </div>
           <% else %>
-            <h4 class="text-lg font-semibold mb-2">Set a password for your account</h4>
+            <h4 class="text-lg font-semibold mb-2">{gettext("Set a password for your account")}</h4>
 
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Your account currently doesn't have a password because it was created via an external provider or import. You can set one now to enable email/password logins.
+              {gettext(
+                "Your account currently doesn't have a password because it was created via an external provider or import. You can set one now to enable email/password logins."
+              )}
             </p>
-            <.button phx-click="send_set_password_link">Send set-password link to my email</.button>
+            <.button phx-click="send_set_password_link">
+              {gettext("Send set-password link to my email")}
+            </.button>
           <% end %>
         </div>
 
         <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
-          <h4 class="text-lg font-semibold mb-4">Profile & Member Details</h4>
+          <h4 class="text-lg font-semibold mb-4">{gettext("Profile & Member Details")}</h4>
 
           <.form
             for={@profile_form}
@@ -100,11 +116,13 @@ defmodule VoileWeb.UserSettingsLive do
             phx-change="validate_profile"
           >
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <.input field={@profile_form[:fullname]} type="text" label="Full name" />
-              <.input field={@profile_form[:username]} type="text" label="Username" />
+              <.input field={@profile_form[:fullname]} type="text" label={gettext("Full name")} />
+              <.input field={@profile_form[:username]} type="text" label={gettext("Username")} />
             </div>
-            <.input field={@profile_form[:email]} type="email" label="Email" disabled />
-            <label class="block text-sm font-medium text-gray-700 mb-2">Profile image</label>
+            <.input field={@profile_form[:email]} type="email" label={gettext("Email")} disabled />
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {gettext("Profile image")}
+            </label>
             <div phx-drop-target={@uploads.user_image.ref} class="space-y-2">
               <%= if @profile_image_preview || @current_scope.user.user_image do %>
                 <div class="flex items-center gap-4">
@@ -113,30 +131,32 @@ defmodule VoileWeb.UserSettingsLive do
                     class="w-20 h-20 rounded-full object-cover"
                   />
                   <div class="flex-1">
-                    <p class="text-sm text-voile-muted">Uploaded</p>
+                    <p class="text-sm text-voile-muted">{gettext("Uploaded")}</p>
 
                     <.button
                       type="button"
                       phx-click="delete_user_image"
                       phx-value-image={@profile_image_preview || @current_scope.user.user_image}
-                      phx-disable-with="Removing..."
+                      phx-disable-with={gettext("Removing...")}
                     >
-                      Remove
+                      {gettext("Remove")}
                     </.button>
                   </div>
                 </div>
               <% else %>
                 <div class="border border-dashed rounded p-4 text-center">
-                  <p class="text-sm text-voile-muted">PNG, JPG, GIF up to 10MB</p>
+                  <p class="text-sm text-voile-muted">{gettext("PNG, JPG, GIF up to 10MB")}</p>
                   <.live_file_input upload={@uploads.user_image} class="hidden" />
                   <label
                     for={@uploads.user_image.ref}
                     class="inline-flex items-center px-4 py-2 mt-2 bg-indigo-600 text-white rounded cursor-pointer"
                   >
-                    Choose file
+                    {gettext("Choose file")}
                   </label>
                   <%= for entry <- @uploads.user_image.entries do %>
-                    <div class="mt-2 text-sm text-voile-muted">Uploading... {entry.progress}%</div>
+                    <div class="mt-2 text-sm text-voile-muted">
+                      {gettext("Uploading...")} {entry.progress}%
+                    </div>
                   <% end %>
                 </div>
               <% end %>
@@ -144,90 +164,106 @@ defmodule VoileWeb.UserSettingsLive do
 
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
-                Contact Information
+                {gettext("Contact Information")}
               </legend>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                <.input field={@profile_form[:phone_number]} type="text" label="Phone number" />
-                <.input field={@profile_form[:website]} type="url" label="Website" />
+                <.input
+                  field={@profile_form[:phone_number]}
+                  type="text"
+                  label={gettext("Phone number")}
+                />
+                <.input field={@profile_form[:website]} type="url" label={gettext("Website")} />
               </div>
 
               <div class="mt-3">
-                <.input field={@profile_form[:address]} type="text" label="Address" />
+                <.input field={@profile_form[:address]} type="text" label={gettext("Address")} />
               </div>
             </fieldset>
 
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
-                Social Media
+                {gettext("Social Media")}
               </legend>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                 <.input
                   field={@profile_form[:twitter]}
                   type="text"
-                  label="Twitter"
-                  placeholder="@username"
+                  label={gettext("Twitter")}
+                  placeholder={gettext("@username")}
                 />
                 <.input
                   field={@profile_form[:facebook]}
                   type="text"
-                  label="Facebook"
-                  placeholder="profile-url"
+                  label={gettext("Facebook")}
+                  placeholder={gettext("profile-url")}
                 />
                 <.input
                   field={@profile_form[:linkedin]}
                   type="text"
-                  label="LinkedIn"
-                  placeholder="profile-url"
+                  label={gettext("LinkedIn")}
+                  placeholder={gettext("profile-url")}
                 />
                 <.input
                   field={@profile_form[:instagram]}
                   type="text"
-                  label="Instagram"
-                  placeholder="@username"
+                  label={gettext("Instagram")}
+                  placeholder={gettext("@username")}
                 />
               </div>
             </fieldset>
 
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
-                Personal Information
+                {gettext("Personal Information")}
               </legend>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                <.input field={@profile_form[:birth_date]} type="date" label="Birth date" />
-                <.input field={@profile_form[:birth_place]} type="text" label="Birth place" />
+                <.input field={@profile_form[:birth_date]} type="date" label={gettext("Birth date")} />
+                <.input
+                  field={@profile_form[:birth_place]}
+                  type="text"
+                  label={gettext("Birth place")}
+                />
               </div>
 
               <div class="mt-3">
                 <.input
                   field={@profile_form[:gender]}
                   type="select"
-                  label="Gender"
-                  options={[{"Male", "male"}, {"Female", "female"}, {"Other", "other"}]}
-                  prompt="Select gender"
+                  label={gettext("Gender")}
+                  options={[
+                    {gettext("Male"), "male"},
+                    {gettext("Female"), "female"},
+                    {gettext("Other"), "other"}
+                  ]}
+                  prompt={gettext("Select gender")}
                 />
               </div>
             </fieldset>
 
             <fieldset class="border border-gray-300 rounded-lg p-4 mt-4">
               <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
-                Organization Details
+                {gettext("Organization Details")}
               </legend>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                <.input field={@profile_form[:organization]} type="text" label="Organization" />
-                <.input field={@profile_form[:department]} type="text" label="Department" />
+                <.input
+                  field={@profile_form[:organization]}
+                  type="text"
+                  label={gettext("Organization")}
+                />
+                <.input field={@profile_form[:department]} type="text" label={gettext("Department")} />
               </div>
 
               <div class="mt-3">
-                <.input field={@profile_form[:position]} type="text" label="Position" />
+                <.input field={@profile_form[:position]} type="text" label={gettext("Position")} />
               </div>
             </fieldset>
             <hr class="my-4" />
             <div class="mt-3 grid grid-cols-1 gap-2">
-              <.button phx-disable-with="Saving...">Save Profile</.button>
+              <.button phx-disable-with={gettext("Saving...")}>{gettext("Save Profile")}</.button>
             </div>
           </.form>
         </div>
@@ -240,10 +276,10 @@ defmodule VoileWeb.UserSettingsLive do
     socket =
       case Accounts.update_user_email(socket.assigns.current_scope.user, token) do
         :ok ->
-          put_flash(socket, :info, "Email changed successfully.")
+          put_flash(socket, :info, gettext("Email changed successfully."))
 
         :error ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
+          put_flash(socket, :error, gettext("Email change link is invalid or it has expired."))
       end
 
     {:ok, push_navigate(socket, to: ~p"/manage/settings")}
@@ -308,7 +344,7 @@ defmodule VoileWeb.UserSettingsLive do
           &url(~p"/manage/settings/confirm_email/#{&1}")
         )
 
-        info = "A link to confirm your email change has been sent to the new address."
+        info = gettext("A link to confirm your email change has been sent to the new address.")
         {:noreply, socket |> put_flash(:info, info) |> assign(email_form_current_password: nil)}
 
       {:error, changeset} ->
@@ -375,7 +411,7 @@ defmodule VoileWeb.UserSettingsLive do
              Accounts.change_user(persisted_user, %{"user_image" => persisted_user.user_image})
            )
          )
-         |> put_flash(:info, "Profile updated")}
+         |> put_flash(:info, gettext("Profile updated"))}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :profile_form, to_form(changeset))}
@@ -393,7 +429,7 @@ defmodule VoileWeb.UserSettingsLive do
        socket
        |> assign(:profile_image_preview, nil)
        |> assign(:current_scope, current_scope)
-       |> put_flash(:info, "Image removed")}
+       |> put_flash(:info, gettext("Image removed"))}
     else
       try do
         case Storage.delete(image) do
@@ -415,10 +451,10 @@ defmodule VoileWeb.UserSettingsLive do
            socket
            |> assign(:current_scope, current_scope)
            |> assign(:profile_form, to_form(profile_changeset))
-           |> put_flash(:info, "Profile image deleted successfully")}
+           |> put_flash(:info, gettext("Profile image deleted successfully"))}
 
         {:error, _} ->
-          {:noreply, put_flash(socket, :error, "Failed to delete image")}
+          {:noreply, put_flash(socket, :error, gettext("Failed to delete image"))}
       end
     end
   end
@@ -432,7 +468,7 @@ defmodule VoileWeb.UserSettingsLive do
     )
 
     {:noreply,
-     put_flash(socket, :info, "A link to set your password has been sent to your email.")}
+     put_flash(socket, :info, gettext("A link to set your password has been sent to your email."))}
   end
 
   def handle_event("validate_password", params, socket) do
@@ -540,7 +576,7 @@ defmodule VoileWeb.UserSettingsLive do
             |> assign(:profile_image_preview, nil)
             |> assign(:current_scope, current_scope)
             |> assign(:profile_form, to_form(Accounts.change_user(updated_user)))
-            |> put_flash(:info, "Profile image uploaded")
+            |> put_flash(:info, gettext("Profile image uploaded"))
 
           {:error, changeset} ->
             # Persisting failed - keep preview and show validation errors in
@@ -548,7 +584,7 @@ defmodule VoileWeb.UserSettingsLive do
             socket
             |> assign(:profile_image_preview, preview)
             |> assign(:profile_form, to_form(changeset))
-            |> put_flash(:error, "Failed to persist uploaded image")
+            |> put_flash(:error, gettext("Failed to persist uploaded image"))
         end
       else
         socket

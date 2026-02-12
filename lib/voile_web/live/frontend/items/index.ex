@@ -14,7 +14,7 @@ defmodule VoileWeb.Frontend.Items.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Browse Items")
+     |> assign(:page_title, gettext("Browse Items"))
      |> assign(:items, [])
      |> assign(:loading, false)
      |> assign(:current_page, 1)
@@ -105,10 +105,12 @@ defmodule VoileWeb.Frontend.Items.Index do
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse Items</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  {gettext("Browse Items")}
+                </h1>
 
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  Browse individual items in our library collection
+                  {gettext("Browse individual items in our library collection")}
                 </p>
               </div>
 
@@ -117,13 +119,17 @@ defmodule VoileWeb.Frontend.Items.Index do
                   navigate={~p"/collections"}
                   class="inline-flex items-center px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-voile-surface dark:hover:bg-voile-neutral-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <.icon name="hero-rectangle-stack-solid" class="w-4 h-4 mr-2" /> Browse Collections
+                  <.icon name="hero-rectangle-stack-solid" class="w-4 h-4 mr-2" /> {gettext(
+                    "Browse Collections"
+                  )}
                 </.link>
                 <.link
                   navigate={~p"/search"}
                   class="inline-flex items-center px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-voile-surface dark:hover:bg-voile-neutral-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" /> Advanced Search
+                  <.icon name="hero-magnifying-glass-solid" class="w-4 h-4 mr-2" /> {gettext(
+                    "Advanced Search"
+                  )}
                 </.link>
               </div>
             </div>
@@ -139,7 +145,7 @@ defmodule VoileWeb.Frontend.Items.Index do
                   type="text"
                   name="q"
                   value={@search_query}
-                  placeholder="Search items by code, location, or collection..."
+                  placeholder={gettext("Search items by code, location, or collection...")}
                   class="block w-full pl-10 pr-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md leading-5 bg-white dark:bg-voile-neutral-dark placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   phx-debounce="500"
                 />
@@ -154,13 +160,15 @@ defmodule VoileWeb.Frontend.Items.Index do
                 <!-- Availability Filter -->
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Availability
+                    {gettext("Availability")}
                   </label>
                   <select
                     name="availability"
                     class="block w-full px-3 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="all" selected={@filter_availability == "all"}>All</option>
+                    <option value="all" selected={@filter_availability == "all"}>
+                      {gettext("All")}
+                    </option>
 
                     <%= for value <- @availability_options do %>
                       <option value={value} selected={@filter_availability == value}>
@@ -172,13 +180,15 @@ defmodule VoileWeb.Frontend.Items.Index do
                 <!-- Condition Filter -->
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Condition
+                    {gettext("Condition")}
                   </label>
                   <select
                     name="condition"
                     class="block w-full px-3 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="all" selected={@filter_condition == "all"}>All Conditions</option>
+                    <option value="all" selected={@filter_condition == "all"}>
+                      {gettext("All Conditions")}
+                    </option>
 
                     <%= for value <- @condition_options do %>
                       <option value={value} selected={@filter_condition == value}>
@@ -190,13 +200,15 @@ defmodule VoileWeb.Frontend.Items.Index do
                 <!-- Location Filter -->
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Location
+                    {gettext("Location")}
                   </label>
                   <select
                     name="location"
                     class="block w-full px-3 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="all" selected={@filter_location == "all"}>All Locations</option>
+                    <option value="all" selected={@filter_location == "all"}>
+                      {gettext("All Locations")}
+                    </option>
 
                     <%= for value <- @location_options do %>
                       <option value={value} selected={@filter_location == value}>{value}</option>
@@ -206,39 +218,53 @@ defmodule VoileWeb.Frontend.Items.Index do
                 <!-- Sort By -->
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Sort By
+                    {gettext("Sort By")}
                   </label>
                   <select
                     name="sort"
                     class="block w-full px-3 py-2 border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="item_code" selected={@sort_by == "item_code"}>Item Code</option>
-
-                    <option value="location" selected={@sort_by == "location"}>Location</option>
-
-                    <option value="availability" selected={@sort_by == "availability"}>
-                      Availability
+                    <option value="item_code" selected={@sort_by == "item_code"}>
+                      {gettext("Item Code")}
                     </option>
 
-                    <option value="condition" selected={@sort_by == "condition"}>Condition</option>
+                    <option value="location" selected={@sort_by == "location"}>
+                      {gettext("Location")}
+                    </option>
 
-                    <option value="collection" selected={@sort_by == "collection"}>Collection</option>
+                    <option value="availability" selected={@sort_by == "availability"}>
+                      {gettext("Availability")}
+                    </option>
 
-                    <option value="date_added" selected={@sort_by == "date_added"}>Date Added</option>
+                    <option value="condition" selected={@sort_by == "condition"}>
+                      {gettext("Condition")}
+                    </option>
+
+                    <option value="collection" selected={@sort_by == "collection"}>
+                      {gettext("Collection")}
+                    </option>
+
+                    <option value="date_added" selected={@sort_by == "date_added"}>
+                      {gettext("Date Added")}
+                    </option>
                   </select>
                 </div>
                 <!-- Sort Order -->
                 <div>
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Order
+                    {gettext("Order")}
                   </label>
                   <select
                     name="order"
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="asc" selected={@sort_order == "asc"}>Ascending</option>
+                    <option value="asc" selected={@sort_order == "asc"}>
+                      {gettext("Ascending")}
+                    </option>
 
-                    <option value="desc" selected={@sort_order == "desc"}>Descending</option>
+                    <option value="desc" selected={@sort_order == "desc"}>
+                      {gettext("Descending")}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -250,15 +276,15 @@ defmodule VoileWeb.Frontend.Items.Index do
           <%= if @loading do %>
             <div class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-voile-primary"></div>
-              <span class="ml-2 text-gray-600 dark:text-gray-300">Loading items...</span>
+              <span class="ml-2 text-gray-600 dark:text-gray-300">{gettext("Loading items...")}</span>
             </div>
           <% else %>
             <!-- Results Header -->
             <div class="mb-6">
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing {length(@items)} items
+                {gettext("Showing")} {length(@items)} {gettext("items")}
                 <%= if @search_query != "" do %>
-                  for "<strong><%= @search_query %></strong>"
+                  {gettext("for")} "<strong><%= @search_query %></strong>"
                 <% end %>
               </p>
             </div>
@@ -288,8 +314,8 @@ defmodule VoileWeb.Frontend.Items.Index do
             <% else %>
               <.empty_state
                 search_query={@search_query}
-                title="No items found"
-                message="There are no items available at this time."
+                title={gettext("No items found")}
+                message={gettext("There are no items available at this time.")}
                 icon_name="hero-document"
               />
             <% end %>

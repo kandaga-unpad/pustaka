@@ -15,9 +15,9 @@ defmodule VoileWeb.UserPendingConfirmationLive do
 
             <div class="text-center">
               <.header>
-                Verify Your Email Address
+                {gettext("Verify Your Email Address")}
                 <:subtitle>
-                  We've sent a confirmation email to verify your account
+                  {gettext("We've sent a confirmation email to verify your account")}
                 </:subtitle>
               </.header>
             </div>
@@ -31,13 +31,15 @@ defmodule VoileWeb.UserPendingConfirmationLive do
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Confirmation email sent to:
+                    {gettext("Confirmation email sent to:")}
                   </p>
                   <p class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                     {@email}
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Please check your inbox and click the confirmation link to activate your account.
+                    {gettext(
+                      "Please check your inbox and click the confirmation link to activate your account."
+                    )}
                   </p>
                 </div>
               </div>
@@ -45,26 +47,26 @@ defmodule VoileWeb.UserPendingConfirmationLive do
 
             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mb-6">
               <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
-                What to do next:
+                {gettext("What to do next:")}
               </h3>
               <ol class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
                 <li class="flex items-start gap-3">
                   <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                     1
                   </span>
-                  <span>Check your email inbox (and spam folder)</span>
+                  <span>{gettext("Check your email inbox (and spam folder)")}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                     2
                   </span>
-                  <span>Click the confirmation link in the email</span>
+                  <span>{gettext("Click the confirmation link in the email")}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                     3
                   </span>
-                  <span>Return to login and access your account</span>
+                  <span>{gettext("Return to login and access your account")}</span>
                 </li>
               </ol>
             </div>
@@ -78,7 +80,7 @@ defmodule VoileWeb.UserPendingConfirmationLive do
                   class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
                 >
                   <.icon name="hero-paper-airplane" class="w-5 h-5 inline-block mr-2" />
-                  Resend Confirmation Email
+                  {gettext("Resend Confirmation Email")}
                 </.button>
               </.form>
 
@@ -86,19 +88,19 @@ defmodule VoileWeb.UserPendingConfirmationLive do
                 href={~p"/login"}
                 class="block w-full text-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-3 rounded-lg transition-colors"
               >
-                Return to Login
+                {gettext("Return to Login")}
               </.link>
             </div>
           <% else %>
             <div class="text-center">
               <p class="text-gray-600 dark:text-gray-400 mb-6">
-                No email address found. Please register or log in.
+                {gettext("No email address found. Please register or log in.")}
               </p>
               <.link
                 href={~p"/register"}
                 class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                Go to Registration
+                {gettext("Go to Registration")}
               </.link>
             </div>
           <% end %>
@@ -119,7 +121,7 @@ defmodule VoileWeb.UserPendingConfirmationLive do
     if is_user_logged_in do
       {:ok,
        socket
-       |> put_flash(:info, "You are already logged in.")
+       |> put_flash(:info, gettext("You are already logged in."))
        |> push_navigate(to: ~p"/")}
     else
       {:ok,
@@ -133,21 +135,21 @@ defmodule VoileWeb.UserPendingConfirmationLive do
       nil ->
         {:noreply,
          socket
-         |> put_flash(:error, "No account found with that email address.")
+         |> put_flash(:error, gettext("No account found with that email address."))
          |> push_navigate(to: ~p"/register")}
 
       user ->
         if user.confirmed_at do
           {:noreply,
            socket
-           |> put_flash(:info, "This account is already confirmed. You can log in now.")
+           |> put_flash(:info, gettext("This account is already confirmed. You can log in now."))
            |> push_navigate(to: ~p"/login")}
         else
           Accounts.deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
 
           {:noreply,
            socket
-           |> put_flash(:info, "Confirmation email sent! Please check your inbox.")}
+           |> put_flash(:info, gettext("Confirmation email sent! Please check your inbox."))}
         end
     end
   end

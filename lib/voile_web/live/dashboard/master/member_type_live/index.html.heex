@@ -1,11 +1,11 @@
 <section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">Kembali</.back>
+  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
 
   <.header>
-    Listing Member Types
+    {gettext("Listing Member Types")}
     <:actions>
       <.link patch={~p"/manage/master/member_types/new"}>
-        <.button>New Member Type</.button>
+        <.button>{gettext("New Member Type")}</.button>
       </.link>
     </:actions>
   </.header>
@@ -15,27 +15,27 @@
     rows={@streams.member_types}
     row_click={fn {_id, mt} -> JS.navigate(~p"/manage/master/member_types/#{mt.id}") end}
   >
-    <:col :let={{_id, mt}} label="Name">{mt.name}</:col>
+    <:col :let={{_id, mt}} label={gettext("Name")}>{mt.name}</:col>
 
-    <:col :let={{_id, mt}} label="Slug">{mt.slug}</:col>
+    <:col :let={{_id, mt}} label={gettext("Slug")}>{mt.slug}</:col>
 
-    <:col :let={{_id, mt}} label="Max Items">{mt.max_items}</:col>
+    <:col :let={{_id, mt}} label={gettext("Max Items")}>{mt.max_items}</:col>
 
-    <:col :let={{_id, mt}} label="Max Days">{mt.max_days}</:col>
+    <:col :let={{_id, mt}} label={gettext("Max Days")}>{mt.max_days}</:col>
 
     <:action :let={{_id, mt}}>
       <div class="sr-only">
-        <.link navigate={~p"/manage/master/member_types/#{mt.id}"}>Show</.link>
+        <.link navigate={~p"/manage/master/member_types/#{mt.id}"}>{gettext("Show")}</.link>
       </div>
-      <.link patch={~p"/manage/master/member_types/#{mt.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/member_types/#{mt.id}/edit"}>{gettext("Edit")}</.link>
     </:action>
 
     <:action :let={{id, mt}}>
       <.link
         phx-click={JS.push("delete", value: %{id: mt.id}) |> hide("##{id}")}
-        data-confirm="Are you sure?"
+        data-confirm={gettext("Are you sure?")}
       >
-        Delete
+        {gettext("Delete")}
       </.link>
     </:action>
   </.table>

@@ -32,7 +32,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       nodes = System.list_nodes()
 
       node_options = [
-        {"None (Show error for users without node)", ""}
+        {gettext("None (Show error for users without node)"), ""}
         | Enum.map(nodes, fn n -> {"#{n.name} (#{n.abbr})", to_string(n.id)} end)
       ]
 
@@ -58,9 +58,9 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
   def render(assigns) do
     ~H"""
     <.header>
-      <h4>App Profile Settings</h4>
+      <h4>{gettext("App Profile Settings")}</h4>
 
-      <:subtitle>Manage the application profile</:subtitle>
+      <:subtitle>{gettext("Manage the application profile")}</:subtitle>
     </.header>
 
     <div class="flex gap-4">
@@ -71,7 +71,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Application Logo
+                {gettext("Application Logo")}
               </label>
               <div phx-drop-target={@uploads.app_logo.ref} class="flex items-center gap-4">
                 <div class="flex-shrink-0">
@@ -79,11 +79,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                     <img
                       src={@app_logo_preview}
                       class="w-20 h-20 rounded object-cover border border-gray-200 dark:border-gray-600"
-                      alt="App logo"
+                      alt={gettext("App logo")}
                     />
                   <% else %>
                     <div class="w-20 h-20 bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-500">
-                      No logo
+                      {gettext("No logo")}
                     </div>
                   <% end %>
                 </div>
@@ -95,7 +95,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                       for={@uploads.app_logo.ref}
                       class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     >
-                      {if @app_logo_preview, do: "Change Logo", else: "Choose Logo"}
+                      {if @app_logo_preview, do: gettext("Change Logo"), else: gettext("Choose Logo")}
                     </label>
                     <%= if @app_logo_preview do %>
                       <button
@@ -103,13 +103,13 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                         phx-click="delete_app_logo"
                         class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
-                        Remove
+                        {gettext("Remove")}
                       </button>
                     <% end %>
                   </div>
 
                   <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                    PNG, JPG, WebP or SVG. Max 10MB.
+                    {gettext("PNG, JPG, WebP or SVG. Max 10MB.")}
                   </p>
 
                   <div :for={entry <- @uploads.app_logo.entries} class="flex items-center gap-2 mt-2">
@@ -134,7 +134,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                       phx-value-ref={entry.ref}
                       class="text-sm text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
-                      Cancel
+                      {gettext("Cancel")}
                     </button>
                   </div>
 
@@ -151,7 +151,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             <div>
               <.input
                 name="app_name"
-                label="Application Name"
+                label={gettext("Application Name")}
                 value={System.get_setting_value("app_name", "")}
               />
             </div>
@@ -160,7 +160,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 name="app_contact_email"
                 type="email"
-                label="Contact Email"
+                label={gettext("Contact Email")}
                 value={System.get_setting_value("app_contact_email", "")}
               />
             </div>
@@ -169,7 +169,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="textarea"
                 name="app_description"
-                label="Description"
+                label={gettext("Description")}
                 rows="3"
                 value={System.get_setting_value("app_description", "")}
               />
@@ -178,9 +178,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             <div class="md:col-span-2">
               <.input
                 name="app_home_title"
-                label="Homepage Title"
-                value={System.get_setting_value("app_home_title", "Voile, the Magic Library")}
-                placeholder="Voile, the Magic Library"
+                label={gettext("Homepage Title")}
+                value={
+                  System.get_setting_value("app_home_title", gettext("Voile, the Magic Library"))
+                }
+                placeholder={gettext("Voile, the Magic Library")}
               />
             </div>
 
@@ -188,15 +190,17 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="textarea"
                 name="app_home_description"
-                label="Homepage Description"
+                label={gettext("Homepage Description")}
                 rows="4"
                 value={
                   System.get_setting_value(
                     "app_home_description",
-                    "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+                    gettext(
+                      "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
+                    )
                   )
                 }
-                placeholder="Describe your digital library's mission and purpose..."
+                placeholder={gettext("Describe your digital library's mission and purpose...")}
               />
             </div>
 
@@ -204,7 +208,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="color"
                 name="app_main_color"
-                label="Main Color"
+                label={gettext("Main Color")}
                 value={System.get_setting_value("app_main_color", "#1d4ed8")}
               />
             </div>
@@ -213,7 +217,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="color"
                 name="app_secondary_color"
-                label="Secondary Color"
+                label={gettext("Secondary Color")}
                 value={System.get_setting_value("app_secondary_color", "#06b6d4")}
               />
             </div>
@@ -221,7 +225,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             <div class="md:col-span-2">
               <.input
                 name="app_website"
-                label="Website"
+                label={gettext("Website")}
                 value={System.get_setting_value("app_website", "")}
               />
             </div>
@@ -230,8 +234,8 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="select"
                 name="storage_adapter"
-                label="Storage Adapter"
-                options={[{"Local Filesystem", "local"}, {"S3 Compatible", "s3"}]}
+                label={gettext("Storage Adapter")}
+                options={[{gettext("Local Filesystem"), "local"}, {gettext("S3 Compatible"), "s3"}]}
                 value={System.get_setting_value("storage_adapter", "local")}
               />
             </div>
@@ -240,28 +244,28 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               <.input
                 type="select"
                 name="default_node_id_for_items"
-                label="Default Node/Location for Items"
+                label={gettext("Default Node/Location for Items")}
                 options={@node_options}
                 value={System.get_setting_value("default_node_id_for_items", "")}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Fallback location for users without assigned node (e.g., super_admin)
+                {gettext("Fallback location for users without assigned node (e.g., super_admin)")}
               </p>
             </div>
 
             <div class="md:col-span-2">
               <.input
                 name="app_address"
-                label="Address"
+                label={gettext("Address")}
                 value={System.get_setting_value("app_address", "")}
               />
             </div>
           </div>
 
           <div class="mt-6 flex items-center gap-3">
-            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="submit" class="btn btn-primary">{gettext("Save Settings")}</button>
             <span class="text-sm text-gray-500">
-              Your changes will be applied to the application profile.
+              {gettext("Your changes will be applied to the application profile.")}
             </span>
           </div>
         </.form>
@@ -316,9 +320,13 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             "#{key}: #{err}"
           end)
 
-        put_flash(socket, :error, "Failed to save: #{Enum.join(messages, "; ")}")
+        put_flash(
+          socket,
+          :error,
+          gettext("Failed to save: %{messages}", messages: Enum.join(messages, "; "))
+        )
       else
-        put_flash(socket, :info, "Application profile settings saved successfully")
+        put_flash(socket, :info, gettext("Application profile settings saved successfully"))
       end
 
     {:noreply, socket}
@@ -328,7 +336,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
   def handle_event("delete_app_logo", _params, socket) do
     case System.get_setting_by_name("app_logo_url") do
       nil ->
-        {:noreply, put_flash(socket, :error, "No app logo to delete")}
+        {:noreply, put_flash(socket, :error, gettext("No app logo to delete"))}
 
       %Voile.Schema.System.Setting{setting_value: url} = setting ->
         # Attempt to delete from storage
@@ -347,11 +355,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             {:noreply,
              socket
              |> assign(:app_logo_preview, nil)
-             |> put_flash(:info, "Application logo removed")}
+             |> put_flash(:info, gettext("Application logo removed"))}
 
           {:error, error} ->
             Logger.error("Setting delete error: #{inspect(error)}")
-            {:noreply, put_flash(socket, :error, "Failed to remove application logo")}
+            {:noreply, put_flash(socket, :error, gettext("Failed to remove application logo"))}
         end
     end
   end
@@ -431,7 +439,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       if success? do
         socket
         |> assign(:app_logo_preview, System.get_setting_value("app_logo_url", nil))
-        |> put_flash(:info, "Logo uploaded successfully!")
+        |> put_flash(:info, gettext("Logo uploaded successfully!"))
       else
         # Check for specific error types
         error_message =
@@ -440,16 +448,16 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               {:ok, {:upload_error, _}} -> true
               _ -> false
             end) ->
-              "Failed to upload logo to storage. Please try again."
+              gettext("Failed to upload logo to storage. Please try again.")
 
             Enum.any?(uploaded_files, fn
               {:ok, {:database_error, _}} -> true
               _ -> false
             end) ->
-              "Logo uploaded but failed to save settings. Please try again."
+              gettext("Logo uploaded but failed to save settings. Please try again.")
 
             true ->
-              "Upload failed. Please try again."
+              gettext("Upload failed. Please try again.")
           end
 
         put_flash(socket, :error, error_message)
@@ -464,9 +472,12 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
   end
 
   # Helper to convert upload errors to human-readable strings
-  defp error_to_string(:too_large), do: "File is too large (max 10MB)"
-  defp error_to_string(:not_accepted), do: "File type not accepted (use PNG, JPG, WebP, or SVG)"
-  defp error_to_string(:too_many_files), do: "Only one file allowed"
-  defp error_to_string(:external_client_failure), do: "Upload failed. Please try again."
-  defp error_to_string(error), do: "Upload error: #{inspect(error)}"
+  defp error_to_string(:too_large), do: gettext("File is too large (max 10MB)")
+
+  defp error_to_string(:not_accepted),
+    do: gettext("File type not accepted (use PNG, JPG, WebP, or SVG)")
+
+  defp error_to_string(:too_many_files), do: gettext("Only one file allowed")
+  defp error_to_string(:external_client_failure), do: gettext("Upload failed. Please try again.")
+  defp error_to_string(error), do: gettext("Upload error: %{error}", error: inspect(error))
 end

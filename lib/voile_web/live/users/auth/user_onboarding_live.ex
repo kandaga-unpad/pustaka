@@ -50,7 +50,7 @@ defmodule VoileWeb.UserOnboardingLive do
                 field={@form[:email]}
                 type="email"
                 label={gettext("Email")}
-                placeholder="your.email@example.com"
+                placeholder={gettext("your.email@example.com")}
                 phx-debounce="300"
               />
 
@@ -120,7 +120,7 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:email]}
                 type="email"
-                label="Email"
+                label={gettext("Email")}
                 readonly
                 disabled
                 class="bg-gray-100 dark:bg-gray-700"
@@ -193,15 +193,15 @@ defmodule VoileWeb.UserOnboardingLive do
               <.input
                 field={@form[:organization]}
                 type="text"
-                label="Organization"
-                placeholder="Company or Institution"
+                label={gettext("Organization")}
+                placeholder={gettext("Company or Institution")}
               />
 
               <.input
                 field={@form[:department]}
                 type="text"
-                label="Department"
-                placeholder="Your department"
+                label={gettext("Department")}
+                placeholder={gettext("Your department")}
               />
             </div>
 

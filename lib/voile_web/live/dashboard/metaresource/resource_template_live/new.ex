@@ -9,7 +9,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.New do
     {:ok,
      socket
      |> assign(:resource_template, %ResourceTemplate{})
-     |> assign(:page_title, "New Resource Template")
+     |> assign(:page_title, gettext("New Resource Template"))
      |> assign(:live_action, :new)}
   end
 
@@ -32,7 +32,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.New do
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Resource Template")
+    |> assign(:page_title, gettext("New Resource Template"))
     |> assign(:resource_template, %ResourceTemplate{})
   end
 

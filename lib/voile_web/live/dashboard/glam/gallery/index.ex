@@ -21,7 +21,7 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Gallery Dashboard")
+      |> assign(:page_title, gettext("Gallery Dashboard"))
       |> assign(:gallery_collections, gallery_collections)
       |> assign(:total_collections, total_collections)
       |> assign(:total_items, total_items)
@@ -37,17 +37,17 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "GLAM", path: ~p"/manage/glam"},
-        %{label: "Gallery", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+        %{label: gettext("Gallery"), path: nil}
       ]} /> <%!-- Page Header --%>
       <div class="voile-gradient rounded-xl p-8 text-white shadow-lg">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2">Gallery Management</h1>
+            <h1 class="text-3xl font-bold mb-2">{gettext("Gallery Management")}</h1>
 
             <p class="text-voile-accent text-lg">
-              Manage visual arts, photographs, and artistic collections
+              {gettext("Manage visual arts, photographs, and artistic collections")}
             </p>
           </div>
 
@@ -69,9 +69,13 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">View Collections</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("View Collections")}
+              </h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all gallery collections</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all gallery collections")}
+              </p>
             </div>
           </div>
         </.link>
@@ -88,9 +92,11 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">New Collection</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("New Collection")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Create a new gallery collection</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Create a new gallery collection")}
+              </p>
             </div>
           </div>
         </.link>
@@ -104,16 +110,20 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">View Items</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("View Items")}</h3>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">Browse all gallery items</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Browse all gallery items")}
+              </p>
             </div>
           </div>
         </.link>
       </div>
       <%!-- Statistics --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Gallery Statistics</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {gettext("Gallery Statistics")}
+        </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="text-center">
@@ -121,7 +131,9 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
               {@total_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Collections</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {gettext("Total Collections")}
+            </div>
           </div>
 
           <div class="text-center">
@@ -129,7 +141,7 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
               {@total_items}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Items</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Total Items")}</div>
           </div>
 
           <div class="text-center">
@@ -137,7 +149,7 @@ defmodule VoileWeb.Dashboard.Glam.Gallery.Index do
               {@published_collections}
             </div>
 
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Published</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Published")}</div>
           </div>
         </div>
       </div>

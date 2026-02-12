@@ -1,20 +1,20 @@
 <div class="px-4 py-6">
   <.breadcrumb items={[
-    %{label: "Manage", path: ~p"/manage"},
-    %{label: "GLAM", path: ~p"/manage/glam"},
-    %{label: "Library", path: ~p"/manage/glam/library"},
-    %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
-    %{label: "History", path: ~p"/manage/glam/library/circulation/circulation_history"},
-    %{label: "Details", path: nil}
+    %{label: gettext("Manage"), path: ~p"/manage"},
+    %{label: gettext("GLAM"), path: ~p"/manage/glam"},
+    %{label: gettext("Library"), path: ~p"/manage/glam/library"},
+    %{label: gettext("Circulation"), path: ~p"/manage/glam/library/circulation"},
+    %{label: gettext("History"), path: ~p"/manage/glam/library/circulation/circulation_history"},
+    %{label: gettext("Details"), path: nil}
   ]} />
   <!-- Header -->
   <div class="mb-6">
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Circulation History Details</h1>
+        <h1 class="text-2xl font-bold text-gray-900">{gettext("Circulation History Details")}</h1>
 
         <p class="mt-2 text-sm text-gray-700">
-          Complete information about this circulation activity
+          {gettext("Complete information about this circulation activity")}
         </p>
       </div>
 
@@ -31,13 +31,13 @@
     <div class="lg:col-span-2">
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Activity Information</h3>
+          <h3 class="text-lg font-medium text-gray-900">{gettext("Activity Information")}</h3>
         </div>
 
         <div class="px-6 py-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Action</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Action")}</dt>
 
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{action_badge_class(@history.action)}"}>
@@ -47,7 +47,7 @@
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Status")}</dt>
 
               <dd class="mt-1">
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.status)}"}>
@@ -57,14 +57,14 @@
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Action Date</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Action Date")}</dt>
 
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.action_date)}</dd>
             </div>
 
             <%= if @history.due_date do %>
               <div>
-                <dt class="text-sm font-medium text-gray-500">Due Date (at time)</dt>
+                <dt class="text-sm font-medium text-gray-500">{gettext("Due Date (at time)")}</dt>
 
                 <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.due_date)}</dd>
               </div>
@@ -72,7 +72,7 @@
 
             <%= if @history.return_date do %>
               <div>
-                <dt class="text-sm font-medium text-gray-500">Return Date</dt>
+                <dt class="text-sm font-medium text-gray-500">{gettext("Return Date")}</dt>
 
                 <dd class="mt-1 text-sm text-gray-900">
                   {format_datetime(@history.return_date)}
@@ -82,7 +82,7 @@
 
             <%= if @history.fine_amount do %>
               <div>
-                <dt class="text-sm font-medium text-gray-500">Fine Amount</dt>
+                <dt class="text-sm font-medium text-gray-500">{gettext("Fine Amount")}</dt>
 
                 <dd class="mt-1">
                   <span class={"text-sm font-medium #{if Decimal.equal?(@history.fine_amount, 0), do: "text-gray-900", else: "text-red-600"}"}>
@@ -93,13 +93,13 @@
             <% end %>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Record ID</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Record ID")}</dt>
 
               <dd class="mt-1 text-xs text-gray-500 font-mono">#{@history.id}</dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Created</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Created")}</dt>
 
               <dd class="mt-1 text-sm text-gray-500">{format_datetime(@history.inserted_at)}</dd>
             </div>
@@ -107,7 +107,7 @@
 
           <%= if @history.notes do %>
             <div class="pt-4 border-t border-gray-200">
-              <dt class="text-sm font-medium text-gray-500">Notes</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Notes")}</dt>
 
               <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{@history.notes}</dd>
             </div>
@@ -118,7 +118,7 @@
       <%= if @history.action in ["checkout", "return", "renewal"] do %>
         <div class="mt-6 bg-white shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Transaction Context</h3>
+            <h3 class="text-lg font-medium text-gray-900">{gettext("Transaction Context")}</h3>
           </div>
 
           <div class="px-6 py-4">
@@ -133,13 +133,13 @@
                     </div>
 
                     <div class="flex-1">
-                      <p class="font-medium text-gray-900">Item Checkout</p>
+                      <p class="font-medium text-gray-900">{gettext("Item Checkout")}</p>
 
-                      <p class="text-gray-500">Item was checked out to member</p>
+                      <p class="text-gray-500">{gettext("Item was checked out to member")}</p>
 
                       <%= if @history.due_date do %>
                         <p class="text-xs text-gray-400 mt-1">
-                          Due: {format_datetime(@history.due_date)}
+                          {gettext("Due:")} {format_datetime(@history.due_date)}
                         </p>
                       <% end %>
                     </div>
@@ -157,13 +157,15 @@
                     </div>
 
                     <div class="flex-1">
-                      <p class="font-medium text-gray-900">Item Return</p>
+                      <p class="font-medium text-gray-900">{gettext("Item Return")}</p>
 
-                      <p class="text-gray-500">Item was returned by member</p>
+                      <p class="text-gray-500">{gettext("Item was returned by member")}</p>
 
                       <%= if @history.return_date && @history.due_date && DateTime.compare(@history.return_date, @history.due_date) == :gt do %>
                         <p class="text-xs text-red-500 mt-1">
-                          Returned {DateTime.diff(@history.return_date, @history.due_date, :day)} days late
+                          {gettext("Returned %{days} days late",
+                            days: DateTime.diff(@history.return_date, @history.due_date, :day)
+                          )}
                         </p>
                       <% end %>
                     </div>
@@ -181,13 +183,13 @@
                     </div>
 
                     <div class="flex-1">
-                      <p class="font-medium text-gray-900">Item Renewal</p>
+                      <p class="font-medium text-gray-900">{gettext("Item Renewal")}</p>
 
-                      <p class="text-gray-500">Member renewed their checkout</p>
+                      <p class="text-gray-500">{gettext("Member renewed their checkout")}</p>
 
                       <%= if @history.due_date do %>
                         <p class="text-xs text-gray-400 mt-1">
-                          New due date: {format_datetime(@history.due_date)}
+                          {gettext("New due date:")} {format_datetime(@history.due_date)}
                         </p>
                       <% end %>
                     </div>
@@ -204,7 +206,7 @@
       <!-- Member Information -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Member Information</h3>
+          <h3 class="text-lg font-medium text-gray-900">{gettext("Member Information")}</h3>
         </div>
 
         <div class="px-6 py-4">
@@ -223,49 +225,55 @@
                   {@history.member.fullname}
                 </p>
 
-                <p class="text-sm text-gray-500">Member ID: {@history.member_id}</p>
+                <p class="text-sm text-gray-500">{gettext("Member ID:")} {@history.member_id}</p>
 
-                <p class="text-sm text-gray-500">Email: {@history.member.email}</p>
+                <p class="text-sm text-gray-500">{gettext("Email:")} {@history.member.email}</p>
               </div>
             </div>
           <% else %>
-            <p class="text-sm text-gray-500">Member information not available</p>
+            <p class="text-sm text-gray-500">{gettext("Member information not available")}</p>
           <% end %>
         </div>
       </div>
       <!-- Item Information -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Item Information</h3>
+          <h3 class="text-lg font-medium text-gray-900">{gettext("Item Information")}</h3>
         </div>
 
         <div class="px-6 py-4">
           <%= if @history.item do %>
             <div class="space-y-3">
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Item Code</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">
+                  {gettext("Item Code")}
+                </dt>
 
                 <dd class="mt-1 text-sm font-medium text-gray-900">{@history.item.item_code}</dd>
               </div>
 
               <%= if @history.item.collection do %>
                 <div>
-                  <dt class="text-xs font-medium text-gray-500 uppercase">Collection</dt>
+                  <dt class="text-xs font-medium text-gray-500 uppercase">
+                    {gettext("Collection")}
+                  </dt>
 
                   <dd class="mt-1 text-sm text-gray-900">{@history.item.collection.title}</dd>
                 </div>
               <% end %>
 
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Location</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">{gettext("Location")}</dt>
 
                 <dd class="mt-1 text-sm text-gray-900">
-                  {@history.item.location || "Not specified"}
+                  {@history.item.location || gettext("Not specified")}
                 </dd>
               </div>
 
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Current Status</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">
+                  {gettext("Current Status")}
+                </dt>
 
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.item.status)}"}>
@@ -275,7 +283,7 @@
               </div>
             </div>
           <% else %>
-            <p class="text-sm text-gray-500">Item information not available</p>
+            <p class="text-sm text-gray-500">{gettext("Item information not available")}</p>
           <% end %>
         </div>
       </div>
@@ -283,7 +291,7 @@
       <%= if @history.librarian do %>
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Processed By</h3>
+            <h3 class="text-lg font-medium text-gray-900">{gettext("Processed By")}</h3>
           </div>
 
           <div class="px-6 py-4">
@@ -299,7 +307,7 @@
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-900">{@history.librarian.fullname}</p>
 
-                <p class="text-sm text-gray-500">Staff Member</p>
+                <p class="text-sm text-gray-500">{gettext("Staff Member")}</p>
               </div>
             </div>
           </div>
@@ -309,13 +317,15 @@
       <%= if @history.transaction do %>
         <div class="bg-white shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Related Transaction</h3>
+            <h3 class="text-lg font-medium text-gray-900">{gettext("Related Transaction")}</h3>
           </div>
 
           <div class="px-6 py-4">
             <div class="space-y-3">
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Transaction ID</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">
+                  {gettext("Transaction ID")}
+                </dt>
 
                 <dd class="mt-1">
                   <.link
@@ -330,7 +340,7 @@
               </div>
 
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Type</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">{gettext("Type")}</dt>
 
                 <dd class="mt-1 text-sm text-gray-900">
                   {String.capitalize(@history.transaction.transaction_type)}
@@ -338,7 +348,7 @@
               </div>
 
               <div>
-                <dt class="text-xs font-medium text-gray-500 uppercase">Status</dt>
+                <dt class="text-xs font-medium text-gray-500 uppercase">{gettext("Status")}</dt>
 
                 <dd class="mt-1">
                   <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(@history.transaction.status)}"}>
@@ -353,25 +363,25 @@
       <!-- System Information -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">System Information</h3>
+          <h3 class="text-lg font-medium text-gray-900">{gettext("System Information")}</h3>
         </div>
 
         <div class="px-6 py-4">
           <dl class="space-y-3">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Record Created</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Record Created")}</dt>
 
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.inserted_at)}</dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("Last Updated")}</dt>
 
               <dd class="mt-1 text-sm text-gray-900">{format_datetime(@history.updated_at)}</dd>
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500">History ID</dt>
+              <dt class="text-sm font-medium text-gray-500">{gettext("History ID")}</dt>
 
               <dd class="mt-1 text-xs text-gray-500 font-mono">{@history.id}</dd>
             </div>
@@ -383,7 +393,7 @@
   <!-- Timeline Visualization -->
   <div class="bg-white shadow rounded-lg">
     <div class="px-6 py-4 border-b border-gray-200">
-      <h3 class="text-lg font-medium text-gray-900">Activity Timeline</h3>
+      <h3 class="text-lg font-medium text-gray-900">{gettext("Activity Timeline")}</h3>
     </div>
 
     <div class="px-6 py-4">
@@ -394,7 +404,7 @@
             class={"flex-shrink-0 w-3 h-3 rounded-full #{action_badge_class(@history.action)} bg-opacity-20 border-2"}
             style={"border-color: #{case @history.action do
             "checkout" -> "var(--color-voile-info)"
-            "return" -> "var(--color-voile-success)" 
+            "return" -> "var(--color-voile-success)"
             "renewal" -> "var(--color-voile-warning)"
             "reservation" -> "var(--color-voile-accent)"
             _ -> "var(--color-voile-muted)"
@@ -406,10 +416,10 @@
             <div class="flex items-center justify-between">
               <p class="text-sm font-medium text-gray-900">
                 {case @history.action do
-                  "checkout" -> "Item checked out"
-                  "return" -> "Item returned"
-                  "renewal" -> "Checkout renewed"
-                  "reservation" -> "Item reserved"
+                  "checkout" -> gettext("Item checked out")
+                  "return" -> gettext("Item returned")
+                  "renewal" -> gettext("Checkout renewed")
+                  "reservation" -> gettext("Item reserved")
                   _ -> String.capitalize(@history.action)
                 end}
               </p>
@@ -424,16 +434,24 @@
             <div class="mt-2 text-xs text-gray-400">
               {case @history.action do
                 "checkout" ->
-                  if @history.due_date, do: "Due: #{format_datetime(@history.due_date)}", else: ""
+                  if @history.due_date,
+                    do: gettext("Due: %{due_date}", due_date: format_datetime(@history.due_date)),
+                    else: ""
 
                 "return" ->
                   if @history.return_date,
-                    do: "Returned: #{format_datetime(@history.return_date)}",
+                    do:
+                      gettext("Returned: %{return_date}",
+                        return_date: format_datetime(@history.return_date)
+                      ),
                     else: ""
 
                 "renewal" ->
                   if @history.due_date,
-                    do: "Extended due date: #{format_datetime(@history.due_date)}",
+                    do:
+                      gettext("Extended due date: %{due_date}",
+                        due_date: format_datetime(@history.due_date)
+                      ),
                     else: ""
 
                 _ ->

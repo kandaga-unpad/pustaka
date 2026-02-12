@@ -12,7 +12,10 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Index do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -23,7 +26,7 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Index do
 
       socket =
         socket
-        |> assign(:page_title, "Listing Frequencies")
+        |> assign(:page_title, gettext("Listing Frequencies"))
         |> assign(:live_action, :index)
         |> assign(:frequencies, frequencies)
         |> assign(:page, page)
@@ -40,19 +43,19 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Frequency")
+    |> assign(:page_title, gettext("Edit Frequency"))
     |> assign(:frequency, Master.get_frequency!(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Frequency")
+    |> assign(:page_title, gettext("New Frequency"))
     |> assign(:frequency, %Frequency{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Frequencies")
+    |> assign(:page_title, gettext("Listing Frequencies"))
     |> assign(:frequency, nil)
   end
 

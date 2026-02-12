@@ -12,7 +12,10 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
     unless Authorization.can?(user, "metadata.manage") do
       socket =
         socket
-        |> put_flash(:error, "Access Denied: You don't have permission to access this page")
+        |> put_flash(
+          :error,
+          gettext("Access Denied: You don't have permission to access this page")
+        )
         |> push_navigate(to: ~p"/manage/master")
 
       {:ok, socket}
@@ -24,7 +27,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
 
       socket =
         socket
-        |> assign(:page_title, "Listing Member Types")
+        |> assign(:page_title, gettext("Listing Member Types"))
         |> assign(:live_action, :index)
         |> stream(:member_types, member_types)
         |> assign(:page, page)
@@ -41,19 +44,19 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Member Type")
+    |> assign(:page_title, gettext("Edit Member Type"))
     |> assign(:member_type, Master.get_member_type!(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Member Type")
+    |> assign(:page_title, gettext("New Member Type"))
     |> assign(:member_type, %MemberType{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Member Types")
+    |> assign(:page_title, gettext("Listing Member Types"))
     |> assign(:member_type, nil)
   end
 

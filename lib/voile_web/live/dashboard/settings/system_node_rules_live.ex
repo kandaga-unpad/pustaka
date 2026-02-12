@@ -15,28 +15,28 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
       </div>
 
       <div class="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-6xl">
-        <.back navigate={~p"/manage/settings/nodes"}>Back to Nodes</.back>
+        <.back navigate={~p"/manage/settings/nodes"}>{gettext("Back to Nodes")}</.back>
         <%!-- Header --%>
         <div class="mb-6">
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Node Loan Rules Configuration
+            {gettext("Node Loan Rules Configuration")}
           </h1>
 
           <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
-            Configure branch-specific lending policies and operational rules
+            {gettext("Configure branch-specific lending policies and operational rules")}
           </p>
         </div>
         <%!-- Node Selector --%>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Select Branch/Node
+            {gettext("Select Branch/Node")}
           </label>
           <form phx-change="select_node">
             <select
               name="node_id"
               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200"
             >
-              <option value="">-- Select a branch --</option>
+              <option value="">{gettext("-- Select a branch --")}</option>
 
               <option
                 :for={node <- @nodes}
@@ -65,23 +65,27 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   for="override_toggle"
                   class="font-semibold text-gray-900 dark:text-gray-100 cursor-pointer"
                 >
-                  Enable Branch-Specific Rules
+                  {gettext("Enable Branch-Specific Rules")}
                 </label>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  When enabled, this branch's rules will override member type rules. When disabled, member type rules will apply.
+                  {gettext(
+                    "When enabled, this branch's rules will override member type rules. When disabled, member type rules will apply."
+                  )}
                 </p>
               </div>
             </div>
           </div>
           <%!-- Loan Limits --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Loan Limits</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              {gettext("Loan Limits")}
+            </h3>
 
             <.form for={@form} phx-change="update_field" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Items per Loan
+                    {gettext("Max Items per Loan")}
                   </label>
                   <input
                     type="number"
@@ -95,7 +99,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Loan Days
+                    {gettext("Max Loan Days")}
                   </label>
                   <input
                     type="number"
@@ -109,7 +113,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Renewals
+                    {gettext("Max Renewals")}
                   </label>
                   <input
                     type="number"
@@ -123,7 +127,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Reserves
+                    {gettext("Max Reserves")}
                   </label>
                   <input
                     type="number"
@@ -137,7 +141,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Concurrent Loans
+                    {gettext("Max Concurrent Loans")}
                   </label>
                   <input
                     type="number"
@@ -154,14 +158,14 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
           <%!-- Fine Configuration --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Fine & Currency Settings
+              {gettext("Fine & Currency Settings")}
             </h3>
 
             <.form for={@form} phx-change="update_field" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fine per Day
+                    {gettext("Fine per Day")}
                   </label>
                   <input
                     type="number"
@@ -176,7 +180,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Max Fine (optional)
+                    {gettext("Max Fine (optional)")}
                   </label>
                   <input
                     type="number"
@@ -184,7 +188,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     value={@form_data.max_fine}
                     min="0"
                     step="0.01"
-                    placeholder="No limit"
+                    placeholder={gettext("No limit")}
                     disabled={!@form_data.override_loan_rules}
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -192,24 +196,32 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Currency
+                    {gettext("Currency")}
                   </label>
                   <select
                     name="currency"
                     disabled={!@form_data.override_loan_rules}
                     class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
-                    <option value="IDR" selected={@form_data.currency == "IDR"}>IDR (Rupiah)</option>
-
-                    <option value="USD" selected={@form_data.currency == "USD"}>USD (Dollar)</option>
-
-                    <option value="EUR" selected={@form_data.currency == "EUR"}>EUR (Euro)</option>
-
-                    <option value="SGD" selected={@form_data.currency == "SGD"}>
-                      SGD (Singapore Dollar)
+                    <option value="IDR" selected={@form_data.currency == "IDR"}>
+                      {gettext("IDR (Rupiah)")}
                     </option>
 
-                    <option value="MYR" selected={@form_data.currency == "MYR"}>MYR (Ringgit)</option>
+                    <option value="USD" selected={@form_data.currency == "USD"}>
+                      {gettext("USD (Dollar)")}
+                    </option>
+
+                    <option value="EUR" selected={@form_data.currency == "EUR"}>
+                      {gettext("EUR (Euro)")}
+                    </option>
+
+                    <option value="SGD" selected={@form_data.currency == "SGD"}>
+                      {gettext("SGD (Singapore Dollar)")}
+                    </option>
+
+                    <option value="MYR" selected={@form_data.currency == "MYR"}>
+                      {gettext("MYR (Ringgit)")}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -218,7 +230,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
           <%!-- Feature Toggles --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Features & Permissions
+              {gettext("Features & Permissions")}
             </h3>
 
             <div class="space-y-3">
@@ -233,7 +245,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label for="can_reserve" class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Allow Reservations
+                  {gettext("Allow Reservations")}
                 </label>
               </div>
 
@@ -248,7 +260,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label for="can_renew" class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Allow Renewals
+                  {gettext("Allow Renewals")}
                 </label>
               </div>
 
@@ -265,7 +277,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                   for="digital_access_enabled"
                   class="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Enable Digital Access
+                  {gettext("Enable Digital Access")}
                 </label>
               </div>
             </div>
@@ -273,7 +285,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
           <%!-- Operational Policies --%>
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Operational Policies
+              {gettext("Operational Policies")}
             </h3>
 
             <div class="space-y-4">
@@ -291,10 +303,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     for="allow_external_returns"
                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Allow Returns from Other Branches
+                    {gettext("Allow Returns from Other Branches")}
                   </label>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Accept items borrowed from other branches
+                    {gettext("Accept items borrowed from other branches")}
                   </p>
                 </div>
               </div>
@@ -313,10 +325,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                     for="allow_inter_node_loans"
                     class="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Allow Inter-Branch Loans
+                    {gettext("Allow Inter-Branch Loans")}
                   </label>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Permit borrowing items from other branches
+                    {gettext("Permit borrowing items from other branches")}
                   </p>
                 </div>
               </div>
@@ -336,10 +348,10 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                       for="require_deposit"
                       class="text-sm font-medium text-gray-700 dark:text-gray-300"
                     >
-                      Require Security Deposit
+                      {gettext("Require Security Deposit")}
                     </label>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      Require members to pay a refundable deposit
+                      {gettext("Require members to pay a refundable deposit")}
                     </p>
 
                     <.form for={@form} phx-change="update_field">
@@ -349,7 +361,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
                         value={@form_data.deposit_amount}
                         min="0"
                         step="0.01"
-                        placeholder="Enter amount"
+                        placeholder={gettext("Enter amount")}
                         disabled={!@form_data.require_deposit}
                         class="w-full sm:w-48 px-4 py-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-gray-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed text-sm"
                       />
@@ -366,20 +378,20 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
               phx-click="save_rules"
               class="flex-1 sm:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
-              Save Configuration
+              {gettext("Save Configuration")}
             </button>
             <button
               type="button"
               phx-click="reset_to_defaults"
               class="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg transition-colors"
             >
-              Reset to Defaults
+              {gettext("Reset to Defaults")}
             </button>
           </div>
           <%!-- Rule Preview --%>
           <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h4 class="font-semibold text-blue-900 dark:text-blue-300 mb-2">
-              Active Rule Source: {rule_source_badge(assigns)}
+              {gettext("Active Rule Source:")} {rule_source_badge(assigns)}
             </h4>
 
             <p class="text-sm text-blue-700 dark:text-blue-400">
@@ -397,7 +409,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
     socket =
       socket
-      |> assign(:page_title, "Node Loan Rules")
+      |> assign(:page_title, gettext("Node Loan Rules"))
       |> assign(:nodes, nodes)
       |> assign(:selected_node, nil)
       |> assign(:form, to_form(%{}))
@@ -486,13 +498,13 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
       {:ok, _node} ->
         socket =
           socket
-          |> put_flash(:info, "Node rules updated successfully!")
+          |> put_flash(:info, gettext("Node rules updated successfully!"))
           |> push_navigate(to: ~p"/manage/settings/nodes/rules")
 
         {:noreply, socket}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to update node rules")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to update node rules"))}
     end
   end
 
@@ -577,23 +589,25 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
     if assigns.form_data.override_loan_rules do
       ~H"""
       <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Branch Rules
+        {gettext("Branch Rules")}
       </span>
       """
     else
       ~H"""
       <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-        Member Type Rules
+        {gettext("Member Type Rules")}
       </span>
       """
     end
   end
 
   defp explain_rule_source(true) do
-    "This branch uses its own custom lending rules. Member type rules are overridden."
+    gettext("This branch uses its own custom lending rules. Member type rules are overridden.")
   end
 
   defp explain_rule_source(false) do
-    "This branch follows standard member type rules. Branch-specific fields are disabled."
+    gettext(
+      "This branch follows standard member type rules. Branch-specific fields are disabled."
+    )
   end
 end

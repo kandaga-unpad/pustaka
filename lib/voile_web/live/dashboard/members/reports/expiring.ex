@@ -12,7 +12,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
 
     socket =
       socket
-      |> assign(:page_title, "Expiring Memberships")
+      |> assign(:page_title, gettext("Expiring Memberships"))
       |> assign(:user, user)
       |> assign(:page, 1)
       |> assign(:per_page, 10)
@@ -27,23 +27,25 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
     <div class="space-y-6">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
-        %{label: "Manage", path: ~p"/manage"},
-        %{label: "Members", path: ~p"/manage/members"},
-        %{label: "Reports", path: ~p"/manage/members/reports"},
-        %{label: "Expiring", path: nil}
+        %{label: gettext("Manage"), path: ~p"/manage"},
+        %{label: gettext("Members"), path: ~p"/manage/members"},
+        %{label: gettext("Reports"), path: ~p"/manage/members/reports"},
+        %{label: gettext("Expiring"), path: nil}
       ]} />
 
       <%!-- Page Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Expiring Memberships</h1>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {gettext("Expiring Memberships")}
+            </h1>
             <p class="text-gray-600 dark:text-gray-300 mt-1">
-              Members whose memberships will expire soon
+              {gettext("Members whose memberships will expire soon")}
             </p>
           </div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Total: {@total_count}
+            {gettext("Total: %{count}", count: @total_count)}
           </div>
         </div>
       </div>
@@ -56,10 +58,10 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
               <.icon name="hero-check-circle" class="w-12 h-12 text-green-500" />
             </div>
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No Expiring Memberships
+              {gettext("No Expiring Memberships")}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              All memberships are current or no members have expiry dates set.
+              {gettext("All memberships are current or no members have expiry dates set.")}
             </p>
           </div>
         <% else %>
@@ -69,7 +71,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
               rows={@expiring_members}
               row_click={fn member -> JS.navigate(~p"/manage/members/management/#{member}") end}
             >
-              <:col :let={member} label="Member">
+              <:col :let={member} label={gettext("Member")}>
                 <div class="flex items-center gap-3">
                   <div class="flex-shrink-0 h-10 w-10">
                     <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
@@ -85,19 +87,19 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
                 </div>
               </:col>
 
-              <:col :let={member} label="Member Type">
+              <:col :let={member} label={gettext("Member Type")}>
                 {member.user_type && member.user_type.name}
               </:col>
 
-              <:col :let={member} label="Expiry Date">
+              <:col :let={member} label={gettext("Expiry Date")}>
                 <span class="font-medium">
                   {Calendar.strftime(member.expiry_date, "%b %d, %Y")}
                 </span>
               </:col>
 
-              <:col :let={member} label="Days Until Expiry">
+              <:col :let={member} label={gettext("Days Until Expiry")}>
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{days_until_class(days_until_expiry(member.expiry_date))}"}>
-                  {days_until_expiry(member.expiry_date)} days
+                  {gettext("%{days} days", days: days_until_expiry(member.expiry_date))}
                 </span>
               </:col>
 

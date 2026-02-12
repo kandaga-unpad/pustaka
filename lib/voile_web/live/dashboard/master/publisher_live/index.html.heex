@@ -1,10 +1,12 @@
 <section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">Kembali</.back>
+  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
 
   <.header>
-    Listing Publishers
+    {gettext("Listing Publishers")}
     <:actions>
-      <.link patch={~p"/manage/master/publishers/new"}><.button>New Publisher</.button></.link>
+      <.link patch={~p"/manage/master/publishers/new"}>
+        <.button>{gettext("New Publisher")}</.button>
+      </.link>
     </:actions>
   </.header>
 
@@ -13,27 +15,27 @@
     rows={@publishers || []}
     row_click={fn publisher -> JS.navigate(~p"/manage/master/publishers/#{publisher.id}") end}
   >
-    <:col :let={publisher} label="Publisher Name">{publisher.name}</:col>
+    <:col :let={publisher} label={gettext("Publisher Name")}>{publisher.name}</:col>
 
-    <:col :let={publisher} label="Address">{publisher.address}</:col>
+    <:col :let={publisher} label={gettext("Address")}>{publisher.address}</:col>
 
-    <:col :let={publisher} label="City">{publisher.city}</:col>
+    <:col :let={publisher} label={gettext("City")}>{publisher.city}</:col>
 
-    <:col :let={publisher} label="Contact">{publisher.contact}</:col>
+    <:col :let={publisher} label={gettext("Contact")}>{publisher.contact}</:col>
 
     <:action :let={publisher}>
       <div class="sr-only">
-        <.link navigate={~p"/manage/master/publishers/#{publisher.id}"}>Show</.link>
+        <.link navigate={~p"/manage/master/publishers/#{publisher.id}"}>{gettext("Show")}</.link>
       </div>
-      <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>Edit</.link>
+      <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>{gettext("Edit")}</.link>
     </:action>
 
     <:action :let={publisher}>
       <.link
         phx-click={JS.push("delete", value: %{id: publisher.id}) |> hide("##{publisher.id}")}
-        data-confirm="Are you sure?"
+        data-confirm={gettext("Are you sure?")}
       >
-        Delete
+        {gettext("Delete")}
       </.link>
     </:action>
   </.table>

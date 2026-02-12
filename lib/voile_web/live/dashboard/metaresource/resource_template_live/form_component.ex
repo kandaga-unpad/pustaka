@@ -9,7 +9,9 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
     ~H"""
     <div class="max-w-4xl mx-auto px-6 py-12">
       <h1 class="text-2xl font-bold mb-6">
-        {if @resource_template.id, do: "Edit Resource Template", else: "Create New Resource Template"}
+        {if @resource_template.id,
+          do: gettext("Edit Resource Template"),
+          else: gettext("Create New Resource Template")}
       </h1>
 
       <.form
@@ -23,26 +25,28 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
       >
         <!-- Template Name -->
         <div>
-          <.label>Template <span class="text-brand">{@resource_template.label}</span></.label>
+          <.label>
+            {gettext("Template")} <span class="text-brand">{@resource_template.label}</span>
+          </.label>
 
           <.input
             field={f[:label]}
             type="text"
-            label="Label"
-            placeholder="e.g., Book Template"
+            label={gettext("Label")}
+            placeholder={gettext("e.g., Book Template")}
             required_value={true}
           />
           <.input
             field={f[:description]}
             type="textarea"
-            label="Description"
-            placeholder="Description (optional)"
+            label={gettext("Description")}
+            placeholder={gettext("Description (optional)")}
             required_value={false}
           />
           <.input
             field={f[:resource_class_id]}
             type="select"
-            label="Resource Type"
+            label={gettext("Resource Type")}
             options={
               @resource_class
               |> Enum.group_by(& &1.glam_type)
@@ -54,19 +58,19 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                 {group, sorted_items}
               end)
             }
-            prompt="Select Resource Type"
+            prompt={gettext("Select Resource Type")}
             required_value={true}
           />
         </div>
         <!-- Property Search -->
         <div class="space-y-2">
-          <p>Add Properties</p>
+          <p>{gettext("Add Properties")}</p>
 
           <div class="relative">
             <input
               type="text"
               name="search"
-              placeholder="Search properties..."
+              placeholder={gettext("Search properties...")}
               autocomplete="off"
               phx-keyup="search"
               phx-debounce="300"
@@ -88,11 +92,11 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
             >
               <%= case {@loading, @search_term, @properties} do %>
                 <% {true, _, _} -> %>
-                  Searching for {@search_term}...
+                  {gettext("Searching for %{term}...", term: @search_term)}
                 <% {false, term, []} when term != "" -> %>
-                  No properties found for "{@search_term}"
+                  {gettext("No properties found for \"%{term}\"", term: @search_term)}
                 <% {_, _, _} -> %>
-                  You can add other properties by searching for them on the search box.
+                  {gettext("You can add other properties by searching for them on the search box.")}
               <% end %>
             </div>
 
@@ -115,7 +119,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
         </div>
         <!-- Selected Properties -->
         <div :if={!Enum.empty?(@selected_properties)} class="space-y-4">
-          <.label>Selected Properties</.label>
+          <.label>{gettext("Selected Properties")}</.label>
 
           <div
             id={"selected-properties-#{@myself}"}
@@ -148,12 +152,12 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
                 <div class="text-sm text-gray-300 dark:text-gray-400">{prop.local_name}</div>
 
                 <div class="mt-6">
-                  <.label>Custom Label :</.label>
+                  <.label>{gettext("Custom Label :")}</.label>
 
                   <input
                     type="text"
                     value={if is_map(prop), do: prop[:override_label] || "", else: ""}
-                    placeholder="Custom label..."
+                    placeholder={gettext("Custom label...")}
                     phx-blur="update_label"
                     phx-value-id={dom_id}
                     phx-target={@myself}
@@ -178,11 +182,15 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
         <div class="flex gap-4">
           <.button
             type="submit"
-            phx-disable-with={if @resource_template.id, do: "Updating...", else: "Creating..."}
+            phx-disable-with={
+              if @resource_template.id, do: gettext("Updating..."), else: gettext("Creating...")
+            }
           >
-            {if @resource_template.id, do: "Update Template", else: "Create Template"}
+            {if @resource_template.id,
+              do: gettext("Update Template"),
+              else: gettext("Create Template")}
           </.button>
-          <.link navigate={@return_to} class="btn btn-secondary">Cancel</.link>
+          <.link navigate={@return_to} class="btn btn-secondary">{gettext("Cancel")}</.link>
         </div>
       </.form>
     </div>
@@ -358,11 +366,18 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
     case result do
       {:ok, template} ->
-        action = if socket.assigns.resource_template.id, do: "updated", else: "created"
+        action =
+          if socket.assigns.resource_template.id, do: gettext("updated"), else: gettext("created")
 
         {:noreply,
          socket
-         |> put_flash(:info, "Template #{template.label} #{action} successfully!")
+         |> put_flash(
+           :info,
+           gettext("Template %{label} %{action} successfully!",
+             label: template.label,
+             action: action
+           )
+         )
          |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

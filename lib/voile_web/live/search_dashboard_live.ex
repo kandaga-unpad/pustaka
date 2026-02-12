@@ -1,54 +1,33 @@
-defmodule VoileWeb.SearchDashboardLive do
+defmodule VoileWeb.SearchDashboardComponent do
   @moduledoc """
-  LiveView for search dashboard with real-time analytics
+  Component for search dashboard with analytics
   """
-  use VoileWeb, :live_view
+  use VoileWeb, :html
 
-  alias Voile.Analytics.SearchAnalytics
+  attr :search_stats, :map, required: true
+  attr :popular_searches, :list, required: true
+  attr :search_trends, :map, required: true
 
-  @impl true
-  def mount(_params, _session, socket) do
-    if connected?(socket) do
-      # Subscribe to search updates (could be implemented with PubSub later)
-      :timer.send_interval(30_000, self(), :refresh_stats)
-    end
-
-    socket =
-      socket
-      |> assign(:search_stats, SearchAnalytics.get_search_stats())
-      |> assign(:popular_searches, SearchAnalytics.get_popular_searches())
-      |> assign(:search_trends, SearchAnalytics.get_search_trends())
-
-    {:ok, socket}
-  end
-
-  @impl true
-  def handle_info(:refresh_stats, socket) do
-    socket =
-      socket
-      |> assign(:search_stats, SearchAnalytics.get_search_stats())
-      |> assign(:popular_searches, SearchAnalytics.get_popular_searches())
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def render(assigns) do
+  def search_dashboard(assigns) do
     ~H"""
     <div class="p-6 space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Search Dashboard</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {gettext("Search Dashboard")}
+          </h1>
 
-          <p class="text-gray-600 dark:text-gray-300">Monitor search activity and trends</p>
+          <p class="text-gray-600 dark:text-gray-300">
+            {gettext("Monitor search activity and trends")}
+          </p>
         </div>
 
         <.link
           href="/search"
           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-voile-surface bg-voile-primary hover:bg-voile-primary/80 dark:bg-voile-primary dark:hover:bg-voile-primary/80"
         >
-          <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" /> New Search
+          <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" /> {gettext("New Search")}
         </.link>
       </div>
       <!-- Search Statistics Grid -->
@@ -61,7 +40,9 @@ defmodule VoileWeb.SearchDashboardLive do
         <div class="bg-white dark:bg-gray-700 rounded-xl p-5">
           <div class="flex items-center gap-3 mb-4">
             <.icon name="hero-fire" class="w-6 h-6 text-red-600 dark:text-red-400" />
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Trending Searches</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {gettext("Trending Searches")}
+            </h3>
           </div>
 
           <div class="space-y-3">
@@ -80,7 +61,9 @@ defmodule VoileWeb.SearchDashboardLive do
             <% end %>
 
             <%= if length(@popular_searches) == 0 do %>
-              <p class="text-sm text-gray-500 dark:text-gray-400 italic">No searches yet today</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+                {gettext("No searches yet today")}
+              </p>
             <% end %>
           </div>
         </div>
@@ -89,7 +72,9 @@ defmodule VoileWeb.SearchDashboardLive do
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
           <.icon name="hero-chart-bar" class="w-6 h-6 text-green-600 dark:text-green-400" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Search Activity by Hour</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {gettext("Search Activity by Hour")}
+          </h3>
         </div>
 
         <div class="grid grid-cols-12 gap-2 h-32">
@@ -106,14 +91,16 @@ defmodule VoileWeb.SearchDashboardLive do
         </div>
 
         <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-          <p>Peak search hours: {get_peak_hours(@search_trends)}</p>
+          <p>{gettext("Peak search hours:")} {get_peak_hours(@search_trends)}</p>
         </div>
       </div>
       <!-- Recent Search Activity -->
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6">
         <div class="flex items-center gap-3 mb-4">
           <.icon name="hero-clock" class="w-6 h-6 text-voile-primary dark:text-voile-primary" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {gettext("Recent Activity")}
+          </h3>
         </div>
 
         <div class="space-y-2">
@@ -122,7 +109,9 @@ defmodule VoileWeb.SearchDashboardLive do
           <% end %>
 
           <%= if length(@search_stats.recent_activity) == 0 do %>
-            <p class="text-sm text-gray-500 dark:text-gray-400 italic">No recent search activity</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+              {gettext("No recent search activity")}
+            </p>
           <% end %>
         </div>
       </div>
@@ -132,7 +121,7 @@ defmodule VoileWeb.SearchDashboardLive do
 
   # Helper functions
 
-  defp get_hour_percentage(trends, hour) do
+  def get_hour_percentage(trends, hour) do
     max_count = trends |> Map.values() |> Enum.max(fn -> 1 end)
     current_count = Map.get(trends, hour, 0)
 
@@ -143,9 +132,9 @@ defmodule VoileWeb.SearchDashboardLive do
     end
   end
 
-  defp get_peak_hours(trends) do
+  def get_peak_hours(trends) do
     if map_size(trends) == 0 do
-      "No data available"
+      gettext("No data available")
     else
       max_count = trends |> Map.values() |> Enum.max()
 

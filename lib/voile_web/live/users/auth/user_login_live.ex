@@ -17,7 +17,7 @@ defmodule VoileWeb.UserLoginLive do
           <.input
             field={@magic_link_form[:email]}
             type="email"
-            label="Email Address"
+            label={gettext("Email Address")}
             placeholder="you@example.com"
             required
             class="default-input"
@@ -103,7 +103,7 @@ defmodule VoileWeb.UserLoginLive do
                 <.input
                   field={@form[:email]}
                   type="text"
-                  label="Email, Username, or Identifier"
+                  label={gettext("Email, Username, or Identifier")}
                   placeholder={gettext("Enter your email, username, or identifier")}
                   required
                   class="default-input"
@@ -111,12 +111,16 @@ defmodule VoileWeb.UserLoginLive do
                 <.input
                   field={@form[:password]}
                   type="password"
-                  label="Password"
+                  label={gettext("Password")}
                   required
                   class="default-input"
                 />
                 <div class="flex items-center justify-between gap-4">
-                  <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
+                  <.input
+                    field={@form[:remember_me]}
+                    type="checkbox"
+                    label={gettext("Keep me logged in")}
+                  />
                   <.link
                     href={~p"/users/reset_password"}
                     class="text-sm font-semibold hover:underline"
@@ -132,7 +136,7 @@ defmodule VoileWeb.UserLoginLive do
 
               <div class="my-4 flex items-center gap-3">
                 <hr class="flex-1 border-voile-muted" />
-                <span class="text-sm text-voile-muted">or</span>
+                <span class="text-sm text-voile-muted">{gettext("or")}</span>
                 <hr class="flex-1 border-voile-muted" />
               </div>
 
@@ -175,7 +179,7 @@ defmodule VoileWeb.UserLoginLive do
                   <span>
                     <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
                   </span>
-                  <span>PAuS ID</span>
+                  <span>{gettext("PAuS ID")}</span>
                 </.button>
               </div>
             </div>
@@ -231,20 +235,24 @@ defmodule VoileWeb.UserLoginLive do
                socket
                |> put_flash(
                  :info,
-                 "We've sent a login link to #{email}. Please check your email."
+                 gettext("We've sent a login link to %{email}. Please check your email.",
+                   email: email
+                 )
                )
                |> redirect(to: ~p"/login")}
 
             {:error, _} ->
-              {:noreply, put_flash(socket, :error, "Unable to send email. Please try again.")}
+              {:noreply,
+               put_flash(socket, :error, gettext("Unable to send email. Please try again."))}
           end
 
         nil ->
           # User doesn't exist
-          {:noreply, put_flash(socket, :error, "No account found with that email address.")}
+          {:noreply,
+           put_flash(socket, :error, gettext("No account found with that email address."))}
       end
     else
-      {:noreply, put_flash(socket, :error, "Please enter your email address.")}
+      {:noreply, put_flash(socket, :error, gettext("Please enter your email address."))}
     end
   end
 

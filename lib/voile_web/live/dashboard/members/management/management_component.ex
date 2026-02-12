@@ -1,6 +1,8 @@
 defmodule VoileWeb.Dashboard.Members.Management.Component do
   use Phoenix.Component
 
+  use Gettext, backend: VoileWeb.Gettext
+
   import VoileWeb.CoreComponents
   import VoileWeb.VoileDashboardComponents
   import VoileWeb.Components.ImageUpload
@@ -31,10 +33,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
       <%= if @show_breadcrumb do %>
         <%!-- Breadcrumb --%>
         <.breadcrumb items={[
-          %{label: "Manage", path: "/manage"},
-          %{label: "Members", path: "/manage/members"},
-          %{label: "Management", path: "/manage/members/management"},
-          %{label: @member.fullname || "New Member", path: nil}
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Members"), path: "/manage/members"},
+          %{label: gettext("Management"), path: "/manage/members/management"},
+          %{label: @member.fullname || gettext("New Member"), path: nil}
         ]} />
       <% end %>
 
@@ -44,12 +46,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
             <div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {if @action == :new, do: "Add New Member", else: "Edit Member"}
+                {if @action == :new, do: gettext("Add New Member"), else: gettext("Edit Member")}
               </h1>
               <p class="text-gray-600 dark:text-gray-300">
                 {if @action == :new,
-                  do: "Create a new library member account",
-                  else: "Update member information"}
+                  do: gettext("Create a new library member account"),
+                  else: gettext("Update member information")}
               </p>
             </div>
           </div>
@@ -58,30 +60,30 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <.form for={@form} phx-submit={@submit_event} phx-change="validate" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <.input field={@form[:fullname]} type="text" label="Full Name" required />
-          <.input field={@form[:email]} type="email" label="Email" required />
-          <.input field={@form[:username]} type="text" label="Username" required />
+          <.input field={@form[:fullname]} type="text" label={gettext("Full Name")} required />
+          <.input field={@form[:email]} type="email" label={gettext("Email")} required />
+          <.input field={@form[:username]} type="text" label={gettext("Username")} required />
           <.input
             field={@form[:identifier]}
             type="text"
-            label="Member Identifier"
-            placeholder="Member ID or Student Number"
+            label={gettext("Member Identifier")}
+            placeholder={gettext("Member ID or Student Number")}
           />
 
           <%= if @action == :new do %>
-            <.input field={@form[:password]} type="password" label="Password" required />
+            <.input field={@form[:password]} type="password" label={gettext("Password")} required />
           <% end %>
 
-          <.input field={@form[:phone_number]} type="tel" label="Phone Number" />
-          <.input field={@form[:birth_date]} type="date" label="Birth Date" />
-          <.input field={@form[:address]} type="textarea" label="Address" />
-          <.input field={@form[:organization]} type="text" label="Organization" />
+          <.input field={@form[:phone_number]} type="tel" label={gettext("Phone Number")} />
+          <.input field={@form[:birth_date]} type="date" label={gettext("Birth Date")} />
+          <.input field={@form[:address]} type="textarea" label={gettext("Address")} />
+          <.input field={@form[:organization]} type="text" label={gettext("Organization")} />
 
           <%= if @is_super_admin do %>
             <.input
               field={@form[:node_id]}
               type="select"
-              label="Node"
+              label={gettext("Node")}
               options={Enum.map(@nodes, &{&1.name, &1.id})}
             />
           <% end %>
@@ -89,19 +91,19 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input
             field={@form[:user_type_id]}
             type="select"
-            label="Member Type"
+            label={gettext("Member Type")}
             options={Enum.map(@member_types, &{&1.name, &1.id})}
             required
           />
 
-          <.input field={@form[:registration_date]} type="date" label="Registration Date" />
-          <.input field={@form[:expiry_date]} type="date" label="Expiry Date" />
+          <.input field={@form[:registration_date]} type="date" label={gettext("Registration Date")} />
+          <.input field={@form[:expiry_date]} type="date" label={gettext("Expiry Date")} />
         </div>
 
         <div class="grid grid-cols-1 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Assign Roles
+              {gettext("Assign Roles")}
             </label>
             <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
               <%= for role <- @available_roles do %>
@@ -127,17 +129,19 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             </div>
 
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Users can have multiple roles. Role-specific permissions can be managed in the
+              {gettext(
+                "Users can have multiple roles. Role-specific permissions can be managed in the"
+              )}
               <.link navigate="/manage/settings/roles" class="text-blue-600 hover:underline">
-                Role Management
+                {gettext("Role Management")}
               </.link>
-              page.
+              {gettext("page.")}
             </p>
           </div>
         </div>
 
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">User Image</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{gettext("User Image")}</label>
           <%= if @member.user_image && @member.user_image != "" do %>
             <div class="space-y-4">
               <div>
@@ -151,14 +155,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
                 phx-click="remove_user_image"
                 class="text-red-600 hover:text-red-800 text-sm font-medium"
               >
-                <.icon name="hero-trash" class="w-4 h-4 inline mr-1" /> Remove Picture
+                <.icon name="hero-trash" class="w-4 h-4 inline mr-1" /> {gettext("Remove Picture")}
               </button>
             </div>
           <% else %>
             <.image_upload
               form={@form}
               field={:user_image}
-              label="Profile Picture"
+              label={gettext("Profile Picture")}
               upload_name={:user_image}
               tab={@tab || "upload"}
               thumbnail_source={@thumbnail_source}
@@ -174,22 +178,42 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
         <fieldset class="border border-gray-300 rounded-lg p-4">
           <legend class="text-sm font-medium text-gray-900 dark:text-gray-100 px-2">
-            Social Media
+            {gettext("Social Media")}
           </legend>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
-            <.input field={@form[:twitter]} type="text" label="Twitter" placeholder="@username" />
-            <.input field={@form[:facebook]} type="text" label="Facebook" placeholder="profile-url" />
-            <.input field={@form[:linkedin]} type="text" label="LinkedIn" placeholder="profile-url" />
-            <.input field={@form[:instagram]} type="text" label="Instagram" placeholder="@username" />
+            <.input
+              field={@form[:twitter]}
+              type="text"
+              label={gettext("Twitter")}
+              placeholder={gettext("@username")}
+            />
+            <.input
+              field={@form[:facebook]}
+              type="text"
+              label={gettext("Facebook")}
+              placeholder={gettext("profile-url")}
+            />
+            <.input
+              field={@form[:linkedin]}
+              type="text"
+              label={gettext("LinkedIn")}
+              placeholder={gettext("profile-url")}
+            />
+            <.input
+              field={@form[:instagram]}
+              type="text"
+              label={gettext("Instagram")}
+              placeholder={gettext("@username")}
+            />
           </div>
 
           <div class="mt-4">
             <.input
               field={@form[:website]}
               type="url"
-              label="Website"
-              placeholder="https://example.com"
+              label={gettext("Website")}
+              placeholder={gettext("https://example.com")}
             />
           </div>
         </fieldset>
@@ -198,8 +222,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input
             field={@form[:groups]}
             type="text"
-            label="Groups (comma-separated)"
-            placeholder="group1, group2, group3"
+            label={gettext("Groups (comma-separated)")}
+            placeholder={gettext("group1, group2, group3")}
           />
         </div>
 
@@ -217,14 +241,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
               patch="/manage/members/management"
               class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              Cancel
+              {gettext("Cancel")}
             </.link>
           <% else %>
             <.link
               patch="/manage/members/management/#{@member.id}"
               class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              Cancel
+              {gettext("Cancel")}
             </.link>
           <% end %>
         </div>
@@ -243,31 +267,37 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     <div class="space-y-6">
       <%!-- Personal Information --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Personal Information")}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Full Name
+              {gettext("Full Name")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.fullname || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Username")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.username || "-"}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Member Identifier
+              {gettext("Member Identifier")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.identifier || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Phone")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.phone_number || "-"}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Birth Date
+              {gettext("Birth Date")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {if @member.birth_date,
@@ -276,12 +306,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Address")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.address || "-"}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Organization
+              {gettext("Organization")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.organization || "-"}</p>
           </div>
@@ -290,11 +322,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <%!-- Membership Information --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Membership Information</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Membership Information")}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Member Type
+              {gettext("Member Type")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {(@member.user_type && @member.user_type.name) || "-"}
@@ -302,7 +336,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Registration Date
+              {gettext("Registration Date")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {if @member.registration_date,
@@ -312,7 +346,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Expiry Date
+              {gettext("Expiry Date")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {if @member.expiry_date,
@@ -321,7 +355,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Node</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Node")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {(@member.node && @member.node.name) || "-"}
             </p>
@@ -331,7 +367,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <%!-- Roles --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Roles</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{gettext("Roles")}</h3>
         <div class="space-y-2">
           <%= if @member.roles && @member.roles != [] do %>
             <%= for role <- @member.roles do %>
@@ -347,49 +383,61 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
               </div>
             <% end %>
           <% else %>
-            <p class="text-sm text-gray-500 dark:text-gray-400">No roles assigned</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No roles assigned")}</p>
           <% end %>
         </div>
       </div>
 
       <%!-- User Image --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">User Image</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("User Image")}
+        </h3>
         <%= if @member.user_image do %>
           <img src={@member.user_image} class="w-32 h-32 rounded-full object-cover" />
         <% else %>
-          <p class="text-sm text-gray-500 dark:text-gray-400">No image uploaded</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No image uploaded")}</p>
         <% end %>
       </div>
 
       <%!-- Social Media --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Social Media</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Social Media")}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Twitter</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Twitter")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {if @member.twitter, do: "@#{@member.twitter}", else: "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Facebook</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Facebook")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.facebook || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">LinkedIn</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("LinkedIn")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.linkedin || "-"}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Instagram
+              {gettext("Instagram")}
             </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">
               {if @member.instagram, do: "@#{@member.instagram}", else: "-"}
             </p>
           </div>
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {gettext("Website")}
+            </label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.website || "-"}</p>
           </div>
         </div>
@@ -397,7 +445,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <%!-- Groups --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Groups</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{gettext("Groups")}</h3>
         <p class="text-sm text-gray-900 dark:text-white">
           {if @member.groups && @member.groups != [], do: Enum.join(@member.groups, ", "), else: "-"}
         </p>
@@ -405,28 +453,30 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <%!-- Statistics Cards --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Statistics</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Statistics")}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <.stat_card
-            title="Total Loans"
+            title={gettext("Total Loans")}
             value={@stats.total_loans}
             icon="hero-book-open"
             color="blue"
           />
           <.stat_card
-            title="Active Loans"
+            title={gettext("Active Loans")}
             value={@stats.active_loans}
             icon="hero-clock"
             color="orange"
           />
           <.stat_card
-            title="Total Fines"
+            title={gettext("Total Fines")}
             value={@stats.total_fines}
             icon="hero-currency-dollar"
             color="red"
           />
           <.stat_card
-            title="Overdue Items"
+            title={gettext("Overdue Items")}
             value={@stats.overdue_items}
             icon="hero-exclamation-triangle"
             color="red"
@@ -442,8 +492,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def activity_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recent Activity</h3>
-      <p class="text-gray-600 dark:text-gray-300">Activity history will be displayed here.</p>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Recent Activity")}</h3>
+      <p class="text-gray-600 dark:text-gray-300">
+        {gettext("Activity history will be displayed here.")}
+      </p>
     </div>
     """
   end
@@ -453,8 +505,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def loans_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Current Loans</h3>
-      <p class="text-gray-600 dark:text-gray-300">Current loans will be displayed here.</p>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Current Loans")}</h3>
+      <p class="text-gray-600 dark:text-gray-300">
+        {gettext("Current loans will be displayed here.")}
+      </p>
     </div>
     """
   end
@@ -464,9 +518,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def fines_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">Fines & Payments</h3>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Fines & Payments")}</h3>
       <p class="text-gray-600 dark:text-gray-300">
-        Fines and payment history will be displayed here.
+        {gettext("Fines and payment history will be displayed here.")}
       </p>
     </div>
     """
@@ -479,21 +533,23 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Extend Membership</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Extend Membership")}
+        </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Extend the membership expiry date for {@member.fullname}.
+          {gettext("Extend the membership expiry date for %{name}.", name: @member.fullname)}
         </p>
       </div>
 
       <.form for={@form} phx-submit="extend_membership" class="space-y-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Current Expiry Date
+            {gettext("Current Expiry Date")}
           </label>
           <p class="text-sm text-gray-900 dark:text-white">
             {if @member.expiry_date,
               do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
-              else: "No expiry date set"}
+              else: gettext("No expiry date set")}
           </p>
         </div>
 
@@ -501,8 +557,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input
             field={@form[:extend_days]}
             type="number"
-            label="Extend by (days)"
-            placeholder="30"
+            label={gettext("Extend by (days)")}
+            placeholder={gettext("30")}
             min="1"
             required
           />
@@ -510,14 +566,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
         <div class="flex items-center gap-4">
           <.button type="submit" class="success-btn">
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> Extend Membership
+            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Extend Membership")}
           </.button>
 
           <.link
             patch="/manage/members/management/#{@member.id}"
             class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            Cancel
+            {gettext("Cancel")}
           </.link>
         </div>
       </.form>
@@ -532,9 +588,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {gettext("Change Password")}
+        </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Change the password for {@member.fullname}.
+          {gettext("Change the password for %{name}.", name: @member.fullname)}
         </p>
       </div>
 
@@ -543,7 +601,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input
             field={@form[:new_password]}
             type="password"
-            label="New Password"
+            label={gettext("New Password")}
             required
           />
         </div>
@@ -552,21 +610,21 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input
             field={@form[:confirm_password]}
             type="password"
-            label="Confirm New Password"
+            label={gettext("Confirm New Password")}
             required
           />
         </div>
 
         <div class="flex items-center gap-4">
           <.button type="submit" class="warning-btn">
-            <.icon name="hero-key" class="w-4 h-4 mr-2" /> Change Password
+            <.icon name="hero-key" class="w-4 h-4 mr-2" /> {gettext("Change Password")}
           </.button>
 
           <.link
             patch="/manage/members/management/#{@member.id}"
             class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            Cancel
+            {gettext("Cancel")}
           </.link>
         </div>
       </.form>
@@ -595,9 +653,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Delete Member</h3>
+        <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">
+          {gettext("Delete Member")}
+        </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Permanently delete {@member.fullname}'s account. This action cannot be undone.
+          {gettext("Permanently delete %{name} account. This action cannot be undone.",
+            name: @member.fullname
+          )}
         </p>
       </div>
 
@@ -609,19 +671,19 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           />
           <div>
             <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              Warning: This action is irreversible
+              {gettext("Warning: This action is irreversible")}
             </h4>
             <p class="text-sm text-red-700 dark:text-red-300 mb-4">
-              Deleting this member will permanently remove all their data including:
+              {gettext("Deleting this member will permanently remove all their data including:")}
             </p>
             <ul class="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1 mb-4">
-              <li>Account information and login credentials</li>
-              <li>Transaction history and current loans</li>
-              <li>Fine records and payment history</li>
-              <li>Membership and expiry information</li>
+              <li>{gettext("Account information and login credentials")}</li>
+              <li>{gettext("Transaction history and current loans")}</li>
+              <li>{gettext("Fine records and payment history")}</li>
+              <li>{gettext("Membership and expiry information")}</li>
             </ul>
             <p class="text-sm font-medium text-red-800 dark:text-red-200">
-              Are you sure you want to proceed?
+              {gettext("Are you sure you want to proceed?")}
             </p>
           </div>
         </div>
@@ -632,16 +694,20 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           type="button"
           phx-click="delete_member_confirm"
           class="cancel-btn"
-          data-confirm="Are you absolutely sure you want to delete this member? This action cannot be undone."
+          data-confirm={
+            gettext(
+              "Are you absolutely sure you want to delete this member? This action cannot be undone."
+            )
+          }
         >
-          <.icon name="hero-trash" class="w-4 h-4 mr-2" /> Delete Member Permanently
+          <.icon name="hero-trash" class="w-4 h-4 mr-2" /> {gettext("Delete Member Permanently")}
         </.button>
 
         <.link
           patch="/manage/members/management/#{@member.id}"
           class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
         >
-          Cancel
+          {gettext("Cancel")}
         </.link>
       </div>
     </div>
