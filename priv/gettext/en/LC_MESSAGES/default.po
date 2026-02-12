@@ -3,6 +3,7 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:198
 #: lib/voile_web/live/page_live/home.ex:203
 #, elixir-autogen
 msgid "Voile is your gateway to a world of cultural treasures. Imagine stepping into a digital sanctuary where libraries, museums, and archives converge into one intuitive space. Whether you're seeking your next great read, exploring rare artworks, or diving into historical archives, Voile offers a beautifully curated collection at your fingertips. Simply browse through diverse collections, uncover hidden gems, and let your curiosity lead you on a journey of discovery. With Voile, every click opens a door to inspiration and learning in an inviting, user-friendly environment."
@@ -22,7 +23,8 @@ msgstr "About"
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:263
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1252
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1431
-#: lib/voile_web/live/example_i18n_live.ex:66
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:244
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:73
 #: lib/voile_web/live/frontend/items/show.ex:478
 #, elixir-autogen, elixir-format
 msgid "Actions"
@@ -30,8 +32,15 @@ msgstr "Actions"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:795
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:480
-#: lib/voile_web/live/example_i18n_live.ex:74
-#: lib/voile_web/live/example_i18n_live.ex:135
+#: lib/voile_web/live/dashboard/members/management/index.ex:372
+#: lib/voile_web/live/dashboard/members/management/index.ex:665
+#: lib/voile_web/live/dashboard/members/management/show.ex:755
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:287
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:384
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:170
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:107
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:116
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:428
 #: lib/voile_web/live/users/manage/dashboard.ex:244
 #, elixir-autogen, elixir-format
 msgid "Active"
@@ -60,15 +69,16 @@ msgstr "Advanced Search"
 msgid "All Collections"
 msgstr "All Collections"
 
-#: lib/voile_web/live/example_i18n_live.ex:137
-#, elixir-autogen, elixir-format
-msgid "All systems operational"
-msgstr "All systems operational"
-
 ## Messages
 #: lib/voile_web/components/core_components.ex:127
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:404
-#: lib/voile_web/live/example_i18n_live.ex:101
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:36
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:31
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:35
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:36
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:30
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:36
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"
 msgstr "Are you sure?"
@@ -110,6 +120,21 @@ msgstr "Browse Collections"
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:431
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:639
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:778
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:27
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:77
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:19
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:21
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:244
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:251
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:576
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:627
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:710
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:193
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:137
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:393
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:301
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:282
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:106
 #: lib/voile_web/live/frontend/atrium/index.ex:2349
 #: lib/voile_web/live/frontend/items/show.ex:671
 #: lib/voile_web/live/users/auth/user_login_live.ex:31
@@ -148,8 +173,8 @@ msgstr "Collection Highlights"
 #: lib/voile_web/components/layouts.ex:325
 #: lib/voile_web/components/layouts.ex:518
 #: lib/voile_web/components/layouts.ex:651
-#: lib/voile_web/components/voile_dashboard_components.ex:142
-#: lib/voile_web/components/voile_dashboard_components.ex:318
+#: lib/voile_web/components/voile_dashboard_components.ex:145
+#: lib/voile_web/components/voile_dashboard_components.ex:321
 #: lib/voile_web/controllers/error_html/404.html.heex:105
 #: lib/voile_web/live/dashboard/catalog/index.ex:228
 #: lib/voile_web/live/dashboard/dashboard_live.ex:76
@@ -162,7 +187,8 @@ msgstr "Collections"
 msgid "Cover Background"
 msgstr "Cover Background"
 
-#: lib/voile_web/live/example_i18n_live.ex:34
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:396
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:304
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "Create"
@@ -171,26 +197,19 @@ msgstr "Create"
 #: lib/voile_web/components/layouts.ex:213
 #: lib/voile_web/components/layouts.ex:351
 #: lib/voile_web/components/layouts.ex:620
-#: lib/voile_web/components/voile_dashboard_components.ex:63
-#: lib/voile_web/components/voile_dashboard_components.ex:213
+#: lib/voile_web/components/voile_dashboard_components.ex:65
+#: lib/voile_web/components/voile_dashboard_components.ex:216
 #: lib/voile_web/live/dashboard/dashboard_live.ex:21
 #: lib/voile_web/live/dashboard/dashboard_live.ex:201
-#: lib/voile_web/live/example_i18n_live.ex:13
-#: lib/voile_web/live/example_i18n_live.ex:23
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: lib/voile_web/live/example_i18n_live.ex:169
-#, elixir-autogen, elixir-format
-msgid "Data refreshed"
-msgstr "Data refreshed"
-
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1550
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:237
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:367
 #: lib/voile_web/live/dashboard/visitor/statistics.ex:342
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:518
-#: lib/voile_web/live/example_i18n_live.ex:64
-#: lib/voile_web/live/example_i18n_live.ex:141
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "Date"
@@ -200,7 +219,16 @@ msgstr "Date"
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:105
 #: lib/voile_web/live/dashboard/catalog/components/attachment_upload.ex:399
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/index.html.heex:177
-#: lib/voile_web/live/example_i18n_live.ex:100
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:38
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:33
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:37
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:38
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:32
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:38
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:36
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:316
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:161
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:225
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:252
 #: lib/voile_web/live/users/role/role_manage_live.ex:356
 #, elixir-autogen, elixir-format
@@ -214,17 +242,22 @@ msgstr "Discover the collections within our digital sanctuary, from rare collect
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:439
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:62
-#: lib/voile_web/live/example_i18n_live.ex:92
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:30
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:25
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:29
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:30
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:24
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:30
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:28
+#: lib/voile_web/live/dashboard/members/management/show.ex:529
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:297
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:149
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:153
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:241
 #: lib/voile_web/live/users/role/role_manage_live.ex:343
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr "Edit"
-
-#: lib/voile_web/live/example_i18n_live.ex:181
-#, elixir-autogen, elixir-format
-msgid "Editing item %{id}"
-msgstr "Editing item %{id}"
 
 #: lib/voile_web/components/core_components.ex:266
 #, elixir-autogen, elixir-format
@@ -237,16 +270,6 @@ msgstr "Error!"
 msgid "Explore All Collections"
 msgstr "Explore All Collections"
 
-#: lib/voile_web/live/example_i18n_live.ex:37
-#, elixir-autogen, elixir-format
-msgid "Export"
-msgstr "Export"
-
-#: lib/voile_web/live/example_i18n_live.ex:162
-#, elixir-autogen, elixir-format
-msgid "Export started"
-msgstr "Export started"
-
 #: lib/voile_web/live/page_live/home.ex:741
 #, elixir-autogen, elixir-format
 msgid "Featured Collections"
@@ -258,7 +281,7 @@ msgid "Hang in there while we get back on track"
 msgstr "Hang in there while we get back on track"
 
 #: lib/voile_web/components/layouts.ex:204
-#: lib/voile_web/components/voile_dashboard_components.ex:115
+#: lib/voile_web/components/voile_dashboard_components.ex:118
 #, elixir-autogen, elixir-format
 msgid "Hello, %{name}!"
 msgstr "Hello, %{name}!"
@@ -267,8 +290,8 @@ msgstr "Hello, %{name}!"
 #: lib/voile_web/components/layouts.ex:313
 #: lib/voile_web/components/layouts.ex:516
 #: lib/voile_web/components/layouts.ex:649
-#: lib/voile_web/components/voile_dashboard_components.ex:85
-#: lib/voile_web/components/voile_dashboard_components.ex:433
+#: lib/voile_web/components/voile_dashboard_components.ex:88
+#: lib/voile_web/components/voile_dashboard_components.ex:436
 #: lib/voile_web/controllers/error_html/401.html.heex:91
 #: lib/voile_web/controllers/error_html/404.html.heex:95
 #, elixir-autogen, elixir-format
@@ -276,8 +299,8 @@ msgid "Home"
 msgstr "Home"
 
 #: lib/voile_web/components/layouts.ex:331
-#: lib/voile_web/components/voile_dashboard_components.ex:152
-#: lib/voile_web/components/voile_dashboard_components.ex:337
+#: lib/voile_web/components/voile_dashboard_components.ex:155
+#: lib/voile_web/components/voile_dashboard_components.ex:340
 #: lib/voile_web/live/dashboard/catalog/index.ex:119
 #: lib/voile_web/live/dashboard/catalog/index.ex:284
 #, elixir-autogen, elixir-format
@@ -315,13 +338,13 @@ msgstr "Loading nodes..."
 msgid "Log out"
 msgstr "Log out"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:82
-#: lib/voile_web/components/voile_dashboard_components.ex:447
+#: lib/voile_web/components/voile_dashboard_components.ex:85
+#: lib/voile_web/components/voile_dashboard_components.ex:450
 #, elixir-autogen, elixir-format
 msgid "Logout"
 msgstr "Logout"
 
-#: lib/voile_web/live/dashboard/master/master_live.ex:26
+#: lib/voile_web/live/dashboard/master/master_live.ex:29
 #, elixir-autogen, elixir-format
 msgid "Master Component"
 msgstr "Master Component"
@@ -333,8 +356,17 @@ msgstr "Master Dashboard"
 
 ## Common labels
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:217
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:23
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:21
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:22
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:18
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:16
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:18
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:24
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:16
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:18
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:365
 #: lib/voile_web/live/dashboard/visitor/logs.ex:416
-#: lib/voile_web/live/example_i18n_live.ex:60
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:212
 #: lib/voile_web/live/users/permission/permission_manage_show_live.ex:66
 #: lib/voile_web/live/users/role/role_manage_live.ex:301
@@ -362,7 +394,6 @@ msgstr "No active users"
 msgid "No collections available yet"
 msgstr "No collections available yet"
 
-#: lib/voile_web/live/example_i18n_live.ex:52
 #: lib/voile_web/live/search_dashboard_live.ex:137
 #, elixir-autogen, elixir-format
 msgid "No data available"
@@ -373,7 +404,7 @@ msgstr "No data available"
 msgid "No new additions this week"
 msgstr "No new additions this week"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:562
+#: lib/voile_web/components/voile_dashboard_components.ex:565
 #: lib/voile_web/controllers/search_html/advanced.html.heex:809
 #, elixir-autogen, elixir-format
 msgid "No results found"
@@ -390,17 +421,12 @@ msgstr "Open search"
 msgid "Per Node Statistics"
 msgstr "Per Node Statistics"
 
-#: lib/voile_web/live/example_i18n_live.ex:46
-#, elixir-autogen, elixir-format
-msgid "Products"
-msgstr "Products"
-
 #: lib/voile_web/live/page_live/home.ex:852
 #, elixir-autogen, elixir-format
 msgid "Quick Access"
 msgstr "Quick Access"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:470
+#: lib/voile_web/components/voile_dashboard_components.ex:473
 #, elixir-autogen, elixir-format
 msgid "Quick Search"
 msgstr "Quick Search"
@@ -413,12 +439,11 @@ msgstr "Recently added to our library"
 #: lib/voile_web/live/dashboard/visitor/logs.ex:271
 #: lib/voile_web/live/dashboard/visitor/statistics.ex:301
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:372
-#: lib/voile_web/live/example_i18n_live.ex:40
 #, elixir-autogen, elixir-format
 msgid "Refresh"
 msgstr "Refresh"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:483
+#: lib/voile_web/components/voile_dashboard_components.ex:486
 #, elixir-autogen, elixir-format
 msgid "Search collections, items, authors..."
 msgstr "Search collections, items, authors..."
@@ -430,17 +455,12 @@ msgstr "Search collections, items, authors..."
 msgid "Search collections..."
 msgstr "Search collections..."
 
-#: lib/voile_web/components/voile_dashboard_components.ex:510
+#: lib/voile_web/components/voile_dashboard_components.ex:513
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:430
 #: lib/voile_web/live/users/role/role_manage_live.ex:277
 #, elixir-autogen, elixir-format
 msgid "Searching..."
 msgstr "Searching..."
-
-#: lib/voile_web/live/example_i18n_live.ex:113
-#, elixir-autogen, elixir-format
-msgid "Showing %{start} to %{end} of %{total} entries"
-msgstr "Showing %{start} to %{end} of %{total} entries"
 
 ## Authentication
 #: lib/voile_web/components/layouts.ex:256
@@ -482,8 +502,11 @@ msgstr "Start building your digital library"
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:351
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1455
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1629
-#: lib/voile_web/live/example_i18n_live.ex:62
-#: lib/voile_web/live/example_i18n_live.ex:133
+#: lib/voile_web/live/dashboard/members/management/index.ex:377
+#: lib/voile_web/live/dashboard/members/management/index.ex:420
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:241
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:64
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:411
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Status"
@@ -494,25 +517,8 @@ msgstr "Status"
 msgid "Success!"
 msgstr ""
 
-#: lib/voile_web/live/example_i18n_live.ex:156
-#, elixir-autogen, elixir-format
-msgid "Successfully created"
-msgstr "Successfully created"
-
-#: lib/voile_web/live/example_i18n_live.ex:188
-#, elixir-autogen, elixir-format
-msgid "Successfully deleted"
-msgstr "Successfully deleted"
-
-## Time and date
-#: lib/voile_web/live/example_i18n_live.ex:143
-#, elixir-autogen, elixir-format
-msgid "Today"
-msgstr "Today"
-
 ## Data display
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:232
-#: lib/voile_web/live/example_i18n_live.ex:125
 #, elixir-autogen, elixir-format
 msgid "Total"
 msgstr "Total"
@@ -542,12 +548,7 @@ msgstr "Total Collections"
 msgid "Total Items"
 msgstr "Total items"
 
-#: lib/voile_web/live/example_i18n_live.ex:129
-#, elixir-autogen, elixir-format
-msgid "Total items"
-msgstr "Total items"
-
-#: lib/voile_web/components/voile_dashboard_components.ex:565
+#: lib/voile_web/components/voile_dashboard_components.ex:568
 #, elixir-autogen, elixir-format
 msgid "Try a different search term"
 msgstr "Try a different search term"
@@ -562,16 +563,11 @@ msgstr "Untitled"
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:432
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:248
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:321
-#: lib/voile_web/live/example_i18n_live.ex:84
+#: lib/voile_web/live/dashboard/members/management/index.ex:444
 #: lib/voile_web/live/users/role/role_manage_live.ex:332
 #, elixir-autogen, elixir-format
 msgid "View"
 msgstr "View"
-
-#: lib/voile_web/live/example_i18n_live.ex:175
-#, elixir-autogen, elixir-format
-msgid "Viewing item %{id}"
-msgstr "Viewing item %{id}"
 
 #: lib/voile_web/components/core_components.ex:270
 #, elixir-autogen, elixir-format
@@ -579,18 +575,17 @@ msgid "We can't find the internet"
 msgstr "We can't find the internet"
 
 ## Additional translations
-#: lib/voile_web/live/example_i18n_live.ex:29
 #: lib/voile_web/live/visitor/check_in.ex:846
 #, elixir-autogen, elixir-format
 msgid "Welcome, %{name}!"
 msgstr "Welcome, %{name}!"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:117
+#: lib/voile_web/components/voile_dashboard_components.ex:120
 #, elixir-autogen, elixir-format
 msgid "You can check your collection data here"
 msgstr "You can check your collection data here"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:544
+#: lib/voile_web/components/voile_dashboard_components.ex:547
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:219
 #, elixir-autogen, elixir-format
 msgid "by %{creator}"
@@ -598,7 +593,7 @@ msgstr "by %{creator}"
 
 #: lib/voile_web/components/core_components.ex:92
 #: lib/voile_web/components/core_components.ex:244
-#: lib/voile_web/components/voile_dashboard_components.ex:883
+#: lib/voile_web/components/voile_dashboard_components.ex:886
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "close"
@@ -730,6 +725,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:561
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:507
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:343
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:490
 #: lib/voile_web/live/frontend/atrium/index.ex:2142
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Close"
@@ -874,6 +871,10 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:171
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:251
+#: lib/voile_web/live/dashboard/members/management/index.ex:399
+#: lib/voile_web/live/dashboard/members/management/show.ex:54
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:74
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:73
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr ""
@@ -905,6 +906,7 @@ msgstr "Atrium"
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:581
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:504
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:359
+#: lib/voile_web/live/dashboard/members/management/index.ex:479
 #: lib/voile_web/live/dashboard/visitor/logs.ex:498
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:615
 #: lib/voile_web/live/frontend/atrium/index.ex:1408
@@ -920,6 +922,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:471
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1721
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:33
 #, elixir-autogen, elixir-format
 msgid "Overdue"
 msgstr ""
@@ -947,6 +950,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:571
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:494
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:351
+#: lib/voile_web/live/dashboard/members/management/index.ex:468
 #: lib/voile_web/live/dashboard/visitor/logs.ex:465
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:582
 #: lib/voile_web/live/users/role/role_manage_live.ex:376
@@ -1108,8 +1112,8 @@ msgstr "ETA"
 msgid "Expected to be back within a few minutes — thanks for your patience."
 msgstr "Expected to be back within a few minutes — thanks for your patience."
 
-#: lib/voile_web/components/voile_dashboard_components.ex:162
-#: lib/voile_web/components/voile_dashboard_components.ex:356
+#: lib/voile_web/components/voile_dashboard_components.ex:165
+#: lib/voile_web/components/voile_dashboard_components.ex:359
 #, elixir-autogen, elixir-format
 msgid "Labels"
 msgstr ""
@@ -1189,6 +1193,10 @@ msgstr "Browse"
 #: lib/voile_web/components/layouts.ex:388
 #: lib/voile_web/controllers/error_html/401.html.heex:109
 #: lib/voile_web/controllers/error_html/404.html.heex:113
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:24
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:27
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:24
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "Contact"
 msgstr "Contact"
@@ -1207,6 +1215,7 @@ msgstr "Helpful links"
 
 #: lib/voile_web/controllers/error_html/401.html.heex:92
 #: lib/voile_web/controllers/error_html/404.html.heex:96
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:180
 #: lib/voile_web/live/frontend/ebook_reader/show.ex:132
 #, elixir-autogen, elixir-format
 msgid "Open"
@@ -1258,6 +1267,8 @@ msgstr "We're experiencing an unexpected error. Our team has been notified, and 
 msgid "What you can try"
 msgstr "What you can try"
 
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:183
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:185
 #: lib/voile_web/live/page_live/about.ex:40
 #: lib/voile_web/live/page_live/home.ex:200
 #, elixir-autogen, elixir-format
@@ -1326,6 +1337,7 @@ msgid "Account Settings"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/dashboard_live.ex:64
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:467
 #: lib/voile_web/live/frontend/atrium/index.ex:984
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Active Loans"
@@ -1333,6 +1345,12 @@ msgstr "Actions"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:400
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:952
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:25
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:20
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:19
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:79
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:310
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:259
 #: lib/voile_web/live/frontend/atrium/index.ex:1151
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:160
 #: lib/voile_web/live/users/user_settings_live.ex:180
@@ -1441,6 +1459,9 @@ msgstr ""
 msgid "Cannot renew this item"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:592
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:620
+#: lib/voile_web/live/dashboard/members/management/show.ex:571
 #: lib/voile_web/live/frontend/atrium/index.ex:1228
 #: lib/voile_web/live/frontend/atrium/index.ex:1267
 #: lib/voile_web/live/users/user_settings_live.ex:80
@@ -1552,6 +1573,7 @@ msgid "Creator Affiliation"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:360
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Creator Contact"
 msgstr ""
@@ -1605,6 +1627,15 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1435
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1609
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1726
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:24
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:18
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:22
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:42
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:172
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:378
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:212
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:374
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:48
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:153
 #: lib/voile_web/live/users/permission/permission_manage_form_component.ex:57
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:228
@@ -1639,6 +1670,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:323
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:892
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:64
 #: lib/voile_web/live/frontend/atrium/index.ex:1078
 #: lib/voile_web/live/users/auth/user_confirmation_instructions_live.ex:20
 #: lib/voile_web/live/users/auth/user_forgot_password_live.ex:38
@@ -1985,6 +2017,8 @@ msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:303
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:349
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:80
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:316
 #: lib/voile_web/live/frontend/atrium/index.ex:1183
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:196
 #: lib/voile_web/live/users/user_settings_live.ex:255
@@ -2367,6 +2401,8 @@ msgstr ""
 msgid "Trying a simple search instead"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:188
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:411
 #: lib/voile_web/live/frontend/atrium/index.ex:1132
 #: lib/voile_web/live/users/user_settings_live.ex:193
 #, elixir-autogen, elixir-format
@@ -2435,6 +2471,8 @@ msgstr ""
 msgid "User image removed"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:65
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:282
 #: lib/voile_web/live/frontend/atrium/index.ex:1070
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:142
 #: lib/voile_web/live/users/user_settings_live.ex:120
@@ -2468,6 +2506,9 @@ msgstr "View"
 msgid "We'll send you a secure link to reset your password via email."
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:215
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:439
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:228
 #: lib/voile_web/live/frontend/atrium/index.ex:1127
 #: lib/voile_web/live/users/user_settings_live.ex:176
 #, elixir-autogen, elixir-format
@@ -2824,6 +2865,8 @@ msgid "Female"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:874
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:63
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:276
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:134
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Full Name"
@@ -2891,6 +2934,7 @@ msgstr ""
 msgid "Other"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:77
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:152
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone Number"
@@ -2917,6 +2961,12 @@ msgid "Profile completed successfully!"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/form_component.ex:187
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:27
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:26
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:76
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:18
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:28
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:20
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:218
 #: lib/voile_web/live/users/permission/permission_manage_form_component.ex:65
 #: lib/voile_web/live/users/role/role_manage_form_component.ex:91
@@ -2991,8 +3041,8 @@ msgstr ""
 msgid "Artist & creator tracking"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:173
-#: lib/voile_web/components/voile_dashboard_components.ex:376
+#: lib/voile_web/components/voile_dashboard_components.ex:176
+#: lib/voile_web/components/voile_dashboard_components.ex:379
 #, elixir-autogen, elixir-format
 msgid "Asset Vault"
 msgstr ""
@@ -3302,7 +3352,7 @@ msgstr ""
 msgid "Add Item to %{title}"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:221
+#: lib/voile_web/components/voile_dashboard_components.ex:224
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Catalogs"
 msgstr "Catalog"
@@ -3342,7 +3392,7 @@ msgstr "Error!"
 msgid "Find Your Collection"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:229
+#: lib/voile_web/components/voile_dashboard_components.ex:232
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:41
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:41
 #: lib/voile_web/live/dashboard/glam/index.ex:96
@@ -3365,7 +3415,7 @@ msgstr ""
 msgid "Include these details when contacting support."
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:249
+#: lib/voile_web/components/voile_dashboard_components.ex:252
 #, elixir-autogen, elixir-format
 msgid "More"
 msgstr ""
@@ -3392,7 +3442,7 @@ msgstr ""
 msgid "Profile image uploaded"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:286
+#: lib/voile_web/components/voile_dashboard_components.ex:289
 #, elixir-autogen, elixir-format
 msgid "Quick Navigation"
 msgstr ""
@@ -3459,7 +3509,7 @@ msgstr ""
 msgid "Select one to add an item"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:237
+#: lib/voile_web/components/voile_dashboard_components.ex:240
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
@@ -3477,14 +3527,14 @@ msgstr ""
 msgid "Status Code"
 msgstr "Status"
 
-#: lib/voile_web/components/voile_dashboard_components.ex:195
-#: lib/voile_web/components/voile_dashboard_components.ex:416
+#: lib/voile_web/components/voile_dashboard_components.ex:198
+#: lib/voile_web/components/voile_dashboard_components.ex:419
 #, elixir-autogen, elixir-format
 msgid "Stock Opname"
 msgstr ""
 
-#: lib/voile_web/components/voile_dashboard_components.ex:185
-#: lib/voile_web/components/voile_dashboard_components.ex:397
+#: lib/voile_web/components/voile_dashboard_components.ex:188
+#: lib/voile_web/components/voile_dashboard_components.ex:400
 #, elixir-autogen, elixir-format
 msgid "Transfers"
 msgstr ""
@@ -3826,6 +3876,7 @@ msgid "ID:"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:796
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:287
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Inactive"
 msgstr "Active"
@@ -3865,6 +3916,13 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/attachments.ex:83
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:5
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:2
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Kembali"
 msgstr ""
@@ -3961,6 +4019,7 @@ msgid "No creator"
 msgstr "by %{creator}"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:199
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:136
 #: lib/voile_web/live/users/permission/permission_manage_show_live.ex:104
 #, elixir-autogen, elixir-format
 msgid "No description provided"
@@ -4014,6 +4073,9 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:327
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:116
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:102
+#: lib/voile_web/live/dashboard/members/management/index.ex:351
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:86
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:359
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Node"
 msgstr ""
@@ -4109,6 +4171,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:167
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:137
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:49
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Resource Type"
 msgstr ""
@@ -4540,6 +4603,8 @@ msgstr ""
 msgid "?url="
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:189
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:207
 #: lib/voile_web/live/users/user_settings_live.ex:194
 #: lib/voile_web/live/users/user_settings_live.ex:212
 #, elixir-autogen, elixir-format, fuzzy
@@ -4630,6 +4695,9 @@ msgid "Active Filters:"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/dashboard_live.ex:90
+#: lib/voile_web/live/dashboard/members/index.ex:126
+#: lib/voile_web/live/dashboard/members/reports/index.ex:94
+#: lib/voile_web/live/dashboard/members/reports/index.ex:118
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Active Members"
 msgstr "Active"
@@ -4733,6 +4801,8 @@ msgstr ""
 #: lib/voile_web/live/dashboard/dashboard_live.ex:34
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:109
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:37
+#: lib/voile_web/live/dashboard/members/index.ex:81
+#: lib/voile_web/live/dashboard/members/management/index.ex:348
 #, elixir-autogen, elixir-format
 msgid "All Nodes"
 msgstr ""
@@ -4748,6 +4818,7 @@ msgstr ""
 msgid "All Rooms"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/index.ex:371
 #: lib/voile_web/live/frontend/collections/index.ex:240
 #, elixir-autogen, elixir-format, fuzzy
 msgid "All Status"
@@ -5465,6 +5536,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:276
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:102
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:67
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:453
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Created"
 msgstr "Create"
@@ -5475,6 +5548,8 @@ msgid "Credit Card"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:989
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:508
+#: lib/voile_web/live/dashboard/members/management/show.ex:595
 #, elixir-autogen, elixir-format
 msgid "Current Loans"
 msgstr ""
@@ -5609,6 +5684,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1180
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1268
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:102
 #, elixir-autogen, elixir-format
 msgid "Due Date"
 msgstr ""
@@ -5739,6 +5815,10 @@ msgid "Expected new due date"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:385
+#: lib/voile_web/live/dashboard/members/management/index.ex:374
+#: lib/voile_web/live/dashboard/members/management/index.ex:662
+#: lib/voile_web/live/dashboard/members/management/show.ex:752
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:111
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Expired"
 msgstr ""
@@ -5755,6 +5835,10 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:377
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:941
+#: lib/voile_web/live/dashboard/members/management/index.ex:432
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:100
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:349
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:94
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Expiry Date"
 msgstr ""
@@ -5789,6 +5873,8 @@ msgstr ""
 msgid "Extra Small"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:194
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:419
 #: lib/voile_web/live/users/user_settings_live.ex:199
 #, elixir-autogen, elixir-format
 msgid "Facebook"
@@ -5914,6 +6000,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/index.ex:88
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:42
+#: lib/voile_web/live/dashboard/members/index.ex:86
 #, elixir-autogen, elixir-format
 msgid "Filter node"
 msgstr ""
@@ -5956,6 +6043,7 @@ msgid "Fine"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:85
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:114
 #, elixir-autogen, elixir-format
 msgid "Fine Amount"
 msgstr ""
@@ -6150,6 +6238,8 @@ msgstr ""
 msgid "Include on Label"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:206
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:431
 #: lib/voile_web/live/users/user_settings_live.ex:211
 #, elixir-autogen, elixir-format
 msgid "Instagram"
@@ -6173,6 +6263,7 @@ msgid "Inventory code"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:183
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:91
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Item"
 msgstr "Items"
@@ -6368,6 +6459,8 @@ msgstr ""
 msgid "Library:"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:200
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:425
 #: lib/voile_web/live/users/user_settings_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "LinkedIn"
@@ -6488,6 +6581,13 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:141
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:844
 #: lib/voile_web/live/dashboard/glam/museum/index.ex:40
+#: lib/voile_web/live/dashboard/members/index.ex:94
+#: lib/voile_web/live/dashboard/members/management/index.ex:296
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:36
+#: lib/voile_web/live/dashboard/members/management/show.ex:51
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:30
+#: lib/voile_web/live/dashboard/members/reports/index.ex:28
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:30
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:253
 #: lib/voile_web/live/users/role/role_manage_live.ex:210
 #: lib/voile_web/live/users/role/role_manage_show_live.ex:42
@@ -6580,6 +6680,9 @@ msgstr ""
 msgid "Manage your account email address and password settings"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/index.ex:298
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:38
+#: lib/voile_web/live/dashboard/members/management/show.ex:53
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:255
 #: lib/voile_web/live/users/role/role_manage_live.ex:212
 #: lib/voile_web/live/users/role/role_manage_show_live.ex:44
@@ -6640,6 +6743,11 @@ msgid "Member Overview"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:901
+#: lib/voile_web/live/dashboard/members/management/index.ex:362
+#: lib/voile_web/live/dashboard/members/management/index.ex:416
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:94
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:331
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:90
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member Type"
 msgstr ""
@@ -6664,6 +6772,13 @@ msgstr ""
 msgid "Member type not assigned - contact library"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/index.ex:95
+#: lib/voile_web/live/dashboard/members/management/index.ex:297
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:37
+#: lib/voile_web/live/dashboard/members/management/show.ex:52
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:31
+#: lib/voile_web/live/dashboard/members/reports/index.ex:29
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:31
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:254
 #: lib/voile_web/live/users/role/role_manage_live.ex:211
 #: lib/voile_web/live/users/role/role_manage_show_live.ex:43
@@ -6741,6 +6856,9 @@ msgid "Need Help?"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:270
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:128
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:467
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:481
 #: lib/voile_web/live/users/manage/dashboard.ex:301
 #, elixir-autogen, elixir-format
 msgid "Never"
@@ -6748,6 +6866,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/index.ex:96
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:114
+#: lib/voile_web/live/dashboard/master/creator_live/index.ex:53
 #, elixir-autogen, elixir-format
 msgid "New Item"
 msgstr ""
@@ -7035,6 +7154,10 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/dashboard_live.ex:70
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:118
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:479
+#: lib/voile_web/live/dashboard/members/reports/index.ex:74
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:17
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:41
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Overdue Items"
 msgstr ""
@@ -7059,6 +7182,7 @@ msgstr ""
 msgid "Page %{page} of %{total_pages}"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/index.ex:454
 #: lib/voile_web/live/dashboard/visitor/logs.ex:387
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:493
 #, elixir-autogen, elixir-format
@@ -7083,6 +7207,7 @@ msgstr ""
 msgid "Partial Paid"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:74
 #: lib/voile_web/live/users/auth/user_login_live.ex:114
 #: lib/voile_web/live/users/auth/user_registration_live.ex:54
 #, elixir-autogen, elixir-format
@@ -7186,6 +7311,7 @@ msgstr ""
 msgid "Permission updated successfully"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:191
 #: lib/voile_web/live/users/role/role_manage_form_component.ex:46
 #: lib/voile_web/live/users/role/role_manage_live.ex:316
 #: lib/voile_web/live/users/role/role_manage_live.ex:452
@@ -7194,6 +7320,7 @@ msgstr ""
 msgid "Permissions"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:271
 #: lib/voile_web/live/users/user_settings_live.ex:219
 #, elixir-autogen, elixir-format
 msgid "Personal Information"
@@ -7201,6 +7328,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:336
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:910
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:294
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone"
 msgstr ""
@@ -7350,6 +7478,7 @@ msgstr ""
 msgid "Published Collections"
 msgstr "All Collections"
 
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:199
 #: lib/voile_web/live/frontend/collections/show.ex:442
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Quick Actions"
@@ -7423,6 +7552,7 @@ msgid "Receive important notifications and updates"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:373
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:495
 #: lib/voile_web/live/search_dashboard_live.ex:102
 #, elixir-autogen, elixir-format
 msgid "Recent Activity"
@@ -7480,6 +7610,9 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:362
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:929
+#: lib/voile_web/live/dashboard/members/management/index.ex:426
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:99
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:339
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Registration Date"
 msgstr ""
@@ -7506,6 +7639,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1160
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1353
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:106
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:490
 #: lib/voile_web/live/users/user_settings_live.ex:142
 #, elixir-autogen, elixir-format, fuzzy
@@ -7712,6 +7846,7 @@ msgstr ""
 msgid "Role Details"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:136
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:256
 #: lib/voile_web/live/users/role/role_manage_live.ex:19
 #: lib/voile_web/live/users/role/role_manage_live.ex:38
@@ -7987,6 +8122,12 @@ msgstr ""
 msgid "Share your thoughts..."
 msgstr ""
 
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:28
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:27
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:28
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:22
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:28
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:26
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:235
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Show"
@@ -8033,6 +8174,8 @@ msgstr ""
 msgid "Small (10.5cm × 3cm)"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:181
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:406
 #: lib/voile_web/live/users/user_settings_live.ex:186
 #, elixir-autogen, elixir-format
 msgid "Social Media"
@@ -8089,6 +8232,7 @@ msgstr ""
 msgid "Start typing to see matching members"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:457
 #: lib/voile_web/live/frontend/collections/show.ex:482
 #, elixir-autogen, elixir-format
 msgid "Statistics"
@@ -8133,6 +8277,8 @@ msgid "Survey Feedback Logs"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/dashboard_live.ex:95
+#: lib/voile_web/live/dashboard/members/index.ex:140
+#: lib/voile_web/live/dashboard/members/reports/index.ex:124
 #, elixir-autogen, elixir-format
 msgid "Suspended Members"
 msgstr ""
@@ -8146,6 +8292,7 @@ msgid "System"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:366
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:234
 #: lib/voile_web/live/users/manage/dashboard.ex:273
 #, elixir-autogen, elixir-format
 msgid "System Information"
@@ -8324,11 +8471,14 @@ msgid "Total Items:"
 msgstr "Total items"
 
 #: lib/voile_web/live/dashboard/dashboard_live.ex:58
+#: lib/voile_web/live/dashboard/members/index.ex:119
+#: lib/voile_web/live/dashboard/members/reports/index.ex:112
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Total Members"
 msgstr "Total items"
 
 #: lib/voile_web/live/dashboard/glam/index.ex:131
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:48
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Total Nodes"
 msgstr "Total items"
@@ -8454,6 +8604,13 @@ msgid "Try adjusting your filters or date range"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:343
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:25
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:22
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:21
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:17
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:20
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:239
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:371
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:533
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Type"
@@ -8609,6 +8766,7 @@ msgid "Use Legacy Item Code?"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/form_component.ex:16
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:13
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Use this form to manage item records in your database."
 msgstr ""
@@ -8782,6 +8940,7 @@ msgid "Waived"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1932
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:337
 #, elixir-autogen, elixir-format
 msgid "Warning:"
 msgstr ""
@@ -9000,6 +9159,8 @@ msgstr ""
 msgid "our facility"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:195
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:201
 #: lib/voile_web/live/users/user_settings_live.ex:200
 #: lib/voile_web/live/users/user_settings_live.ex:206
 #, elixir-autogen, elixir-format
@@ -9072,3 +9233,2455 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "⬇"
 msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:102
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:110
+#, elixir-autogen, elixir-format
+msgid "%{days} days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:574
+#, elixir-autogen, elixir-format
+msgid "%{day} set as %{status}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "-- Select a branch --"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:91
+#, elixir-autogen, elixir-format
+msgid "192.168.1.1, 10.0.0.1"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:561
+#, elixir-autogen, elixir-format
+msgid "30"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:304
+#, elixir-autogen, elixir-format
+msgid "API Token Created"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:358
+#, elixir-autogen, elixir-format
+msgid "API Token Details"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:27
+#: lib/voile_web/live/dashboard/settings/token_manager.ex:26
+#, elixir-autogen, elixir-format
+msgid "API Token Manager"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:52
+#, elixir-autogen, elixir-format
+msgid "API Tokens"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:205
+#, elixir-autogen, elixir-format
+msgid "Abbreviation"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:235
+#, elixir-autogen, elixir-format
+msgid "About Reservation Notifications"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "About System Nodes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:309
+#, elixir-autogen, elixir-format
+msgid "Accept items borrowed from other branches"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/index.ex:18
+#: lib/voile_web/live/dashboard/master/creator_live/show.ex:16
+#: lib/voile_web/live/dashboard/master/frequency_live/index.ex:17
+#: lib/voile_web/live/dashboard/master/master_live.ex:21
+#: lib/voile_web/live/dashboard/master/member_type_live/edit.ex:17
+#: lib/voile_web/live/dashboard/master/member_type_live/index.ex:17
+#: lib/voile_web/live/dashboard/master/places_live/index.ex:17
+#: lib/voile_web/live/dashboard/master/publisher_live/index.ex:17
+#: lib/voile_web/live/dashboard/master/publisher_live/show.ex:16
+#: lib/voile_web/live/dashboard/master/topic_live/edit.ex:17
+#: lib/voile_web/live/dashboard/master/topic_live/index.ex:17
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Access Denied: You don't have permission to access this page"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:680
+#, elixir-autogen, elixir-format
+msgid "Account information and login credentials"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:443
+#, elixir-autogen, elixir-format
+msgid "Active (No Expiry)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:350
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Active Processes"
+msgstr "Active Users"
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:394
+#, elixir-autogen, elixir-format
+msgid "Active Rule Source:"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/show.ex:588
+#, elixir-autogen, elixir-format
+msgid "Activity History"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:497
+#, elixir-autogen, elixir-format
+msgid "Activity history will be displayed here."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:183
+#, elixir-autogen, elixir-format
+msgid "Add First Node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:17
+#, elixir-autogen, elixir-format
+msgid "Add Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:347
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Add New Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:316
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:49
+#, elixir-autogen, elixir-format
+msgid "Add New Member"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:197
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Add New Node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:17
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Add Node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:67
+#, elixir-autogen, elixir-format
+msgid "Add Properties"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "Administrator"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:26
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:24
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Affiliation"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:195
+#, elixir-autogen, elixir-format
+msgid "All Business Days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:209
+#, elixir-autogen, elixir-format, fuzzy
+msgid "All Closed"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:360
+#, elixir-autogen, elixir-format
+msgid "All Types"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:593
+#, elixir-autogen, elixir-format
+msgid "All days set as business days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:619
+#, elixir-autogen, elixir-format
+msgid "All days set as non-business days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:64
+#, elixir-autogen, elixir-format
+msgid "All items have been returned on time."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:64
+#, elixir-autogen, elixir-format
+msgid "All memberships are current or no members have expiry dates set."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:328
+#, elixir-autogen, elixir-format
+msgid "Allow Inter-Branch Loans"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:263
+#, elixir-autogen, elixir-format
+msgid "Allow Renewals"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:248
+#, elixir-autogen, elixir-format
+msgid "Allow Reservations"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:306
+#, elixir-autogen, elixir-format
+msgid "Allow Returns from Other Branches"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:61
+#, elixir-autogen, elixir-format
+msgid "App Profile Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:82
+#, elixir-autogen, elixir-format
+msgid "App logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Application Logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "Application Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:358
+#, elixir-autogen, elixir-format
+msgid "Application logo removed"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:329
+#, elixir-autogen, elixir-format
+msgid "Application profile settings saved successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:316
+#, elixir-autogen, elixir-format
+msgid "Architecture"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:698
+#, elixir-autogen, elixir-format
+msgid "Are you absolutely sure you want to delete this member? This action cannot be undone."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:313
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Are you sure you want to delete this holiday?"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:155
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Are you sure you want to delete this node? This action cannot be undone."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:208
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Are you sure you want to permanently delete this token?"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:686
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Are you sure you want to proceed?"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:183
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Are you sure you want to revoke this token?"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:273
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to rotate this API token? The current token will be invalidated and a new one will be generated."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:106
+#, elixir-autogen, elixir-format
+msgid "Assign Roles"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:69
+#, elixir-autogen, elixir-format
+msgid "Auto Renew"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:18
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Back to Nodes"
+msgstr "Back to home"
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:26
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Back to creators"
+msgstr "Back to home"
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "Back to publishers"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:78
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:300
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Birth Date"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:592
+#, elixir-autogen, elixir-format
+msgid "Branch Rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:188
+#, elixir-autogen, elixir-format
+msgid "Browser Desktop Notifications"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:168
+#, elixir-autogen, elixir-format
+msgid "Business Day"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:168
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Cache"
+msgstr "Cancel"
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:71
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Can Renew"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:70
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Can Reserve"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:98
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Change Logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:595
+#, elixir-autogen, elixir-format
+msgid "Change the password for %{name}."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Choose Logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:26
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:22
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:21
+#, elixir-autogen, elixir-format
+msgid "City"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:246
+#, elixir-autogen, elixir-format
+msgid "Click on a notification to view the full reservation details"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "Click on any day to toggle its business status"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:248
+#, elixir-autogen, elixir-format
+msgid "Click to upload or drag and drop"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:180
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Closed"
+msgstr "Close"
+
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:19
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Code"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:94
+#, elixir-autogen, elixir-format
+msgid "Comma-separated list of allowed IP addresses"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:37
+#, elixir-autogen, elixir-format
+msgid "Comprehensive reports on member activity and status"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:23
+#, elixir-autogen, elixir-format
+msgid "Configure Rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:132
+#, elixir-autogen, elixir-format
+msgid "Configure and customize your GLAM system. Use the sidebar to navigate between different configuration areas."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:114
+#, elixir-autogen, elixir-format
+msgid "Configure and manage your GLAM system"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "Configure branch-specific lending policies and operational rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:95
+#, elixir-autogen, elixir-format
+msgid "Configure how staff and admins receive notifications when members request reservations"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Configure which days are business days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:613
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Confirm New Password"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:270
+#, elixir-autogen, elixir-format
+msgid "Confirm Token Rotation"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:156
+#, elixir-autogen, elixir-format
+msgid "Connected"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:163
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Contact Email"
+msgstr "Contact"
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Control how you want to be notified about new reservation requests"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:330
+#, elixir-autogen, elixir-format
+msgid "Copy to clipboard"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:39
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:14
+#, elixir-autogen, elixir-format
+msgid "Create Master Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:14
+#, elixir-autogen, elixir-format
+msgid "Create New Resource Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:191
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Create Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:43
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:16
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:109
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Create Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:28
+#, elixir-autogen, elixir-format
+msgid "Create a new API token for accessing the system"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:53
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Create a new library member account"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:22
+#, elixir-autogen, elixir-format
+msgid "Create a non-expiring master token with full admin privileges. Only super admins can create these."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:242
+#, elixir-autogen, elixir-format
+msgid "Create your first token to get started with the API."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:240
+#, elixir-autogen, elixir-format
+msgid "Create your first token to get started."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:186
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creating..."
+msgstr "Searching..."
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:3
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator %{id}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:18
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:19
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator contact"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:75
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator created successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:17
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:60
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Creator updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:46
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:199
+#, elixir-autogen, elixir-format
+msgid "Currency"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:547
+#, elixir-autogen, elixir-format
+msgid "Current Expiry Date"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:222
+#, elixir-autogen, elixir-format
+msgid "Current Year: %{year}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:510
+#, elixir-autogen, elixir-format
+msgid "Current loans will be displayed here."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:97
+#, elixir-autogen, elixir-format
+msgid "Currently active members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Currently logged in as"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:375
+#, elixir-autogen, elixir-format
+msgid "Custom Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "Custom Holidays"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:155
+#, elixir-autogen, elixir-format
+msgid "Custom Label :"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:160
+#, elixir-autogen, elixir-format
+msgid "Custom label..."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "Database"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:108
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Days Overdue"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:100
+#, elixir-autogen, elixir-format
+msgid "Days Until Expiry"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Default Node/Location for Items"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:552
+#, elixir-autogen, elixir-format
+msgid "Default weekly schedule set up (Monday-Friday business days)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:657
+#: lib/voile_web/live/dashboard/members/management/show.ex:580
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Delete Member"
+msgstr "Delete"
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:703
+#, elixir-autogen, elixir-format
+msgid "Delete Member Permanently"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:206
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Delete token"
+msgstr "Delete"
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:677
+#, elixir-autogen, elixir-format
+msgid "Deleting this member will permanently remove all their data including:"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:203
+#, elixir-autogen, elixir-format
+msgid "Describe your digital library's mission and purpose..."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:43
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Description (optional)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "Desktop notification settings updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:72
+#, elixir-autogen, elixir-format
+msgid "Digital Access"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:308
+#, elixir-autogen, elixir-format
+msgid "Disable"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "EUR (Euro)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:273
+#, elixir-autogen, elixir-format
+msgid "Ecto"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/index.ex:47
+#: lib/voile_web/live/dashboard/master/creator_live/show.ex:35
+#, elixir-autogen, elixir-format
+msgid "Edit Creator"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/edit.ex:14
+#: lib/voile_web/live/dashboard/master/frequency_live/edit.ex:25
+#: lib/voile_web/live/dashboard/master/frequency_live/index.ex:46
+#, elixir-autogen, elixir-format
+msgid "Edit Frequency"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:347
+#, elixir-autogen, elixir-format
+msgid "Edit Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/locations_live/edit.ex:14
+#: lib/voile_web/live/dashboard/master/locations_live/edit.ex:25
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Location"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:49
+#: lib/voile_web/live/dashboard/members/management/show.ex:553
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Member"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/edit.ex:28
+#: lib/voile_web/live/dashboard/master/member_type_live/edit.ex:40
+#: lib/voile_web/live/dashboard/master/member_type_live/index.ex:47
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Member Type"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:197
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Node"
+msgstr "Edit"
+
+#: lib/voile_web/live/dashboard/master/places_live/index.ex:46
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Place"
+msgstr "Edit"
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:209
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Profile →"
+msgstr "Edit"
+
+#: lib/voile_web/live/dashboard/master/publisher_live/index.ex:46
+#: lib/voile_web/live/dashboard/master/publisher_live/show.ex:35
+#, elixir-autogen, elixir-format
+msgid "Edit Publisher"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/edit.ex:14
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/edit.ex:37
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:13
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Resource Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:16
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit Token"
+msgstr "Edit"
+
+#: lib/voile_web/live/dashboard/master/topic_live/edit.ex:28
+#: lib/voile_web/live/dashboard/master/topic_live/edit.ex:40
+#: lib/voile_web/live/dashboard/master/topic_live/index.ex:46
+#, elixir-autogen, elixir-format
+msgid "Edit Topic"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Edit creator"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Edit publisher"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:137
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit token"
+msgstr "Edit"
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:239
+#, elixir-autogen, elixir-format
+msgid "Elixir"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:308
+#, elixir-autogen, elixir-format
+msgid "Enable"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "Enable Branch-Specific Rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:280
+#, elixir-autogen, elixir-format
+msgid "Enable Digital Access"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "Enable Reservation Notifications"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:364
+#, elixir-autogen, elixir-format
+msgid "Enter amount"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:310
+#, elixir-autogen, elixir-format
+msgid "Environment"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Erlang/OTP"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:79
+#, elixir-autogen, elixir-format
+msgid "Expiration Date (optional)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:130
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Expired Members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:432
+#, elixir-autogen, elixir-format
+msgid "Expired on %{date}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:70
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:461
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Expires"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:33
+#, elixir-autogen, elixir-format
+msgid "Expiring"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:15
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:41
+#: lib/voile_web/live/dashboard/members/reports/index.ex:53
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Expiring Memberships"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/index.ex:133
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Expiring Soon"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:537
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:569
+#: lib/voile_web/live/dashboard/members/management/show.ex:562
+#, elixir-autogen, elixir-format
+msgid "Extend Membership"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:560
+#, elixir-autogen, elixir-format
+msgid "Extend by (days)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:540
+#, elixir-autogen, elixir-format
+msgid "Extend the membership expiry date for %{name}."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:192
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to delete member"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:438
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to delete node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:644
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to delete token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:362
+#, elixir-autogen, elixir-format
+msgid "Failed to remove application logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:630
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to revoke token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:582
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to rotate token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:326
+#, elixir-autogen, elixir-format
+msgid "Failed to save: %{messages}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:579
+#, elixir-autogen, elixir-format
+msgid "Failed to update day schedule"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:85
+#, elixir-autogen, elixir-format
+msgid "Failed to update desktop notification settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:538
+#, elixir-autogen, elixir-format
+msgid "Failed to update holiday status"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:507
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Failed to update node rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:45
+#, elixir-autogen, elixir-format
+msgid "Failed to update notification settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:65
+#, elixir-autogen, elixir-format
+msgid "Failed to update sound notification settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:451
+#, elixir-autogen, elixir-format
+msgid "Failed to upload logo to storage. Please try again."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:252
+#, elixir-autogen, elixir-format
+msgid "Fallback location for users without assigned node (e.g., super_admin)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:233
+#, elixir-autogen, elixir-format
+msgid "Features & Permissions"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:475
+#, elixir-autogen, elixir-format, fuzzy
+msgid "File is too large (max 10MB)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:501
+#, elixir-autogen, elixir-format, fuzzy
+msgid "File is too large (max 5MB)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:504
+#, elixir-autogen, elixir-format, fuzzy
+msgid "File type not accepted (use JPG, PNG, or WEBP)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:478
+#, elixir-autogen, elixir-format, fuzzy
+msgid "File type not accepted (use PNG, JPG, WebP, or SVG)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "Fine & Currency Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:43
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Fine / Day"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:168
+#, elixir-autogen, elixir-format
+msgid "Fine per Day"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:682
+#, elixir-autogen, elixir-format
+msgid "Fine records and payment history"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:521
+#: lib/voile_web/live/dashboard/members/management/show.ex:602
+#, elixir-autogen, elixir-format
+msgid "Fines & Payments"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:523
+#, elixir-autogen, elixir-format
+msgid "Fines and payment history will be displayed here."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:22
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:18
+#, elixir-autogen, elixir-format
+msgid "Frequency"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:78
+#, elixir-autogen, elixir-format
+msgid "Frequency created successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:63
+#, elixir-autogen, elixir-format
+msgid "Frequency updated successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:330
+#, elixir-autogen, elixir-format
+msgid "Get started by adding a holiday."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:179
+#, elixir-autogen, elixir-format
+msgid "Get started by creating your first system node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:448
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Groups"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:225
+#, elixir-autogen, elixir-format
+msgid "Groups (comma-separated)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:533
+#, elixir-autogen, elixir-format
+msgid "Holiday %{status} successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Holiday Impact on Fines"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:234
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:366
+#, elixir-autogen, elixir-format
+msgid "Holiday Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:477
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Holiday created successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:518
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Holiday deleted successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:494
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Holiday updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:219
+#, elixir-autogen, elixir-format
+msgid "Holidays List"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:193
+#, elixir-autogen, elixir-format
+msgid "Homepage Description"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:181
+#, elixir-autogen, elixir-format
+msgid "Homepage Title"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "ID: %{id}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:207
+#, elixir-autogen, elixir-format
+msgid "IDR (Rupiah)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:90
+#, elixir-autogen, elixir-format
+msgid "IP Whitelist (optional)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Increment"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:35
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Label"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:475
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Last Used"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:80
+#, elixir-autogen, elixir-format
+msgid "Leave empty for no expiration"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:374
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Library Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:73
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Library Holidays"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:10
+#, elixir-autogen, elixir-format
+msgid "Library Holidays & Schedule Management"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/index.ex:30
+#: lib/voile_web/live/dashboard/master/creator_live/index.ex:59
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:5
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Listing Creators"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/index.ex:29
+#: lib/voile_web/live/dashboard/master/frequency_live/index.ex:58
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "Listing Frequencies"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:5
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Listing Locations"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/index.ex:30
+#: lib/voile_web/live/dashboard/master/member_type_live/index.ex:59
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:5
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Listing Member Types"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/index.ex:29
+#: lib/voile_web/live/dashboard/master/places_live/index.ex:58
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:5
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Listing Places"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/index.ex:29
+#: lib/voile_web/live/dashboard/master/publisher_live/index.ex:58
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "Listing Publishers"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/index.ex:29
+#: lib/voile_web/live/dashboard/master/topic_live/index.ex:58
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:5
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Listing Topics"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:265
+#, elixir-autogen, elixir-format, fuzzy
+msgid "LiveView"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:95
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Loan Date: %{date}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "Loan Limits"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "Local Filesystem"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:457
+#, elixir-autogen, elixir-format
+msgid "Logo uploaded but failed to save settings. Please try again."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:442
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Logo uploaded successfully!"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:223
+#, elixir-autogen, elixir-format
+msgid "MYR (Ringgit)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:211
+#, elixir-autogen, elixir-format
+msgid "Main Color"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:277
+#, elixir-autogen, elixir-format
+msgid "Make sure to update any applications using this token."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:221
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Manage Permissions →"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:30
+#, elixir-autogen, elixir-format
+msgid "Manage all API tokens across the system"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Manage and organize your system nodes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:309
+#, elixir-autogen, elixir-format
+msgid "Manage and oversee all library members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:12
+#, elixir-autogen, elixir-format
+msgid "Manage frequency records."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:12
+#, elixir-autogen, elixir-format
+msgid "Manage holidays, weekly schedules, and non-business days for fine calculations"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:13
+#, elixir-autogen, elixir-format
+msgid "Manage library branches, units, and organizational nodes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:12
+#, elixir-autogen, elixir-format
+msgid "Manage membership types and entitlements."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:12
+#, elixir-autogen, elixir-format
+msgid "Manage place records."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:63
+#, elixir-autogen, elixir-format
+msgid "Manage the application profile"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:12
+#, elixir-autogen, elixir-format
+msgid "Manage topic records."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:32
+#: lib/voile_web/live/dashboard/settings/token_manager.ex:28
+#, elixir-autogen, elixir-format
+msgid "Manage your API tokens"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:211
+#, elixir-autogen, elixir-format
+msgid "Master Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:33
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "Max Concurrent Loans"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:27
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Max Days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:38
+#, elixir-autogen, elixir-format
+msgid "Max Event Bookings / Year"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:44
+#, elixir-autogen, elixir-format
+msgid "Max Fine"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:183
+#, elixir-autogen, elixir-format
+msgid "Max Fine (optional)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:26
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:22
+#, elixir-autogen, elixir-format
+msgid "Max Items"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "Max Items per Loan"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "Max Loan Days"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:28
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:116
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Max Renewals"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:29
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:130
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Max Reserves"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:70
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member ID or Student Number"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:69
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:288
+#, elixir-autogen, elixir-format
+msgid "Member Identifier"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:306
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member Management"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/index.ex:104
+#, elixir-autogen, elixir-format
+msgid "Member Management & Administration"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:15
+#: lib/voile_web/live/dashboard/members/reports/index.ex:35
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member Reports"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:598
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member Type Rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:536
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member created successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:186
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member deleted successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:128
+#, elixir-autogen, elixir-format
+msgid "Member type created successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:113
+#, elixir-autogen, elixir-format
+msgid "Member type updated successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:506
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Member updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/index.ex:18
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Members Dashboard"
+msgstr "Master Dashboard"
+
+#: lib/voile_web/live/dashboard/members/index.ex:102
+#, elixir-autogen, elixir-format
+msgid "Members Management Dashboard"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:44
+#, elixir-autogen, elixir-format
+msgid "Members whose memberships will expire soon"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:56
+#, elixir-autogen, elixir-format
+msgid "Members with expiring memberships"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:44
+#, elixir-autogen, elixir-format
+msgid "Members with overdue library items"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:77
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Members with overdue loans"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:45
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Membership Fee"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:326
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Membership Information"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/index.ex:108
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Membership Overview"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:63
+#, elixir-autogen, elixir-format
+msgid "Membership Period (days)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:683
+#, elixir-autogen, elixir-format
+msgid "Membership and expiry information"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/metaresource_live.ex:15
+#, elixir-autogen, elixir-format
+msgid "Metaresource Component"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/metaresource_live.ex:7
+#, elixir-autogen, elixir-format
+msgid "Metaresource Dashboard"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:39
+#, elixir-autogen, elixir-format
+msgid "My API Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:8
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Creator"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/index.ex:52
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "New Frequency"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:8
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Location"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:39
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Member"
+msgstr "Searching..."
+
+#: lib/voile_web/live/dashboard/master/member_type_live/index.ex:53
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "New Member Type"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:604
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Password"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/index.ex:52
+#: lib/voile_web/live/dashboard/master/places_live/index.html.heex:8
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Place"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/index.ex:52
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:8
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Publisher"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/new.ex:12
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/new.ex:35
+#, elixir-autogen, elixir-format
+msgid "New Resource Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/index.ex:52
+#: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "New Topic"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:237
+#, elixir-autogen, elixir-format
+msgid "No API tokens found."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:61
+#, elixir-autogen, elixir-format
+msgid "No Expiring Memberships"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:61
+#, elixir-autogen, elixir-format, fuzzy
+msgid "No Overdue Items"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:339
+#, elixir-autogen, elixir-format
+msgid "No app logo to delete"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:377
+#, elixir-autogen, elixir-format, fuzzy
+msgid "No description"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:552
+#, elixir-autogen, elixir-format
+msgid "No expiry date set"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "No holidays configured"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:399
+#, elixir-autogen, elixir-format
+msgid "No image uploaded"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:191
+#, elixir-autogen, elixir-format
+msgid "No limit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "No logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "No nodes yet"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:97
+#, elixir-autogen, elixir-format
+msgid "No properties found for \"%{term}\""
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:386
+#, elixir-autogen, elixir-format
+msgid "No roles assigned"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:217
+#, elixir-autogen, elixir-format
+msgid "Node Image/Logo"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:412
+#, elixir-autogen, elixir-format
+msgid "Node Loan Rules"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:22
+#, elixir-autogen, elixir-format
+msgid "Node Loan Rules Configuration"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:304
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:201
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Node Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:390
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Node created successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:434
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Node deleted successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:223
+#, elixir-autogen, elixir-format
+msgid "Node preview"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:501
+#, elixir-autogen, elixir-format
+msgid "Node rules updated successfully!"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:404
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Node updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:99
+#, elixir-autogen, elixir-format
+msgid "Nodes List"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Nodes represent organizational units such as library branches, departments, or locations. Each node can have its own logo, abbreviation, and description for better organization."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:169
+#, elixir-autogen, elixir-format
+msgid "Non-Business"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "Non-business days (weekly schedule) and holidays defined here will be excluded from overdue fine calculations. Only business days will count toward fine amounts. This ensures fair fine calculation during library closures."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:212
+#, elixir-autogen, elixir-format
+msgid "Non-expiring master token with full access"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:35
+#, elixir-autogen, elixir-format
+msgid "None (Show error for users without node)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "Notification Preferences"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "Notification settings updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:240
+#, elixir-autogen, elixir-format
+msgid "Notifications appear when members request to reserve items"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:244
+#, elixir-autogen, elixir-format
+msgid "Notifications show member name, item details, and notes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:480
+#, elixir-autogen, elixir-format
+msgid "Only one file allowed"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:242
+#, elixir-autogen, elixir-format
+msgid "Only staff and admin users receive these notifications"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:130
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Only super admins can switch units"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:288
+#, elixir-autogen, elixir-format
+msgid "Operational Policies"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:49
+#, elixir-autogen, elixir-format
+msgid "Optional description for this token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/show.ex:545
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Overview"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:251
+#, elixir-autogen, elixir-format
+msgid "PNG, JPG, WEBP up to 5MB"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "PNG, JPG, WebP or SVG. Max 10MB."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:660
+#, elixir-autogen, elixir-format
+msgid "Permanently delete %{name} account. This action cannot be undone."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:331
+#, elixir-autogen, elixir-format
+msgid "Permit borrowing items from other branches"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:256
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Phoenix"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Place"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:70
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Place created successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:55
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Place updated successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "Play a sound when a new reservation notification arrives. Requires notifications to be enabled."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:281
+#, elixir-autogen, elixir-format
+msgid "PostgreSQL"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:65
+#, elixir-autogen, elixir-format
+msgid "Priority Level"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:339
+#, elixir-autogen, elixir-format
+msgid "Process & Scheduler Info"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:357
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Process Limit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:165
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Profile Picture"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:373
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Public Holiday"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:59
+#, elixir-autogen, elixir-format
+msgid "Public Holidays"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:3
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Publisher %{id}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:18
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Publisher Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:78
+#, elixir-autogen, elixir-format
+msgid "Publisher created successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:17
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Publisher name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:63
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Publisher updated successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:126
+#, elixir-autogen, elixir-format
+msgid "Receive real-time notifications when members create reservation requests. When disabled, no notification popup will appear but reservations will still be recorded."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/index.ex:154
+#, elixir-autogen, elixir-format
+msgid "Recent Members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:382
+#, elixir-autogen, elixir-format
+msgid "Recurring annually"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:158
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Remove Picture"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:32
+#: lib/voile_web/live/dashboard/members/reports/index.ex:30
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:32
+#, elixir-autogen, elixir-format
+msgid "Reports"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:351
+#, elixir-autogen, elixir-format
+msgid "Require Security Deposit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:354
+#, elixir-autogen, elixir-format
+msgid "Require members to pay a refundable deposit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "Reservation Notification Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:388
+#, elixir-autogen, elixir-format
+msgid "Reset to Defaults"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:199
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Revoke"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:182
+#, elixir-autogen, elixir-format
+msgid "Revoke token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:101
+#, elixir-autogen, elixir-format
+msgid "Revoked"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:416
+#, elixir-autogen, elixir-format
+msgid "Revoked on %{date}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:185
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Role"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:370
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Roles"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:175
+#, elixir-autogen, elixir-format
+msgid "Rotate"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:289
+#, elixir-autogen, elixir-format
+msgid "Rotate Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:159
+#, elixir-autogen, elixir-format
+msgid "Rotate token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:300
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Runtime Information"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "S3 Compatible"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:219
+#, elixir-autogen, elixir-format
+msgid "SGD (Singapore Dollar)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:381
+#, elixir-autogen, elixir-format
+msgid "Save Configuration"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:26
+#, elixir-autogen, elixir-format
+msgid "Save Frequency"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/form_component.ex:27
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Save Item"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:76
+#, elixir-autogen, elixir-format
+msgid "Save Member Type"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/places_live/form_component.ex:18
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Save Place"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:28
+#, elixir-autogen, elixir-format
+msgid "Save Publisher"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:266
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Save Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:20
+#, elixir-autogen, elixir-format
+msgid "Save Topic"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:605
+#, elixir-autogen, elixir-format
+msgid "Schedule set to weekdays only (Monday-Friday)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:343
+#, elixir-autogen, elixir-format
+msgid "Schedulers"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:398
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:56
+#, elixir-autogen, elixir-format
+msgid "Scopes"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:333
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Search by name, email, or username..."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:73
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Search properties..."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:95
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Searching for %{term}..."
+msgstr "Search collections..."
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:220
+#, elixir-autogen, elixir-format
+msgid "Secondary Color"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:32
+#, elixir-autogen, elixir-format
+msgid "Select Branch/Node"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:61
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Select Resource Type"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:129
+#, elixir-autogen, elixir-format
+msgid "Select unit to view/edit schedule"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:122
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Selected Properties"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "Setup Default Schedule"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:58
+#, elixir-autogen, elixir-format
+msgid "Shop Discount %"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.ex:34
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Show Creator"
+msgstr "by %{creator}"
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.ex:34
+#, elixir-autogen, elixir-format
+msgid "Show Publisher"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:191
+#, elixir-autogen, elixir-format
+msgid "Show browser notifications even when you're on a different tab. You'll need to grant permission in your browser. Requires notifications to be enabled."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:385
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Showing %{from} to %{to} of %{total} members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:23
+#: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Sound Alerts"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:59
+#, elixir-autogen, elixir-format
+msgid "Sound notification settings updated successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:237
+#, elixir-autogen, elixir-format
+msgid "Storage Adapter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "Storage Mode"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/show.ex:519
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Suspend"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/index.ex:373
+#: lib/voile_web/live/dashboard/members/management/index.ex:659
+#: lib/voile_web/live/dashboard/members/management/show.ex:749
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Suspended"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:12
+#, elixir-autogen, elixir-format
+msgid "System Nodes / Units Management"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "System Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:147
+#, elixir-autogen, elixir-format, fuzzy
+msgid "System Status"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:133
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:357
+#, elixir-autogen, elixir-format, fuzzy
+msgid "System Wide"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:29
+#, elixir-autogen, elixir-format
+msgid "Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:376
+#, elixir-autogen, elixir-format
+msgid "Template %{label} %{action} successfully!"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:219
+#, elixir-autogen, elixir-format
+msgid "These settings apply to your account only. Each staff member can configure their own notification preferences."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:609
+#, elixir-autogen, elixir-format
+msgid "This branch follows standard member type rules. Branch-specific fields are disabled."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:605
+#, elixir-autogen, elixir-format
+msgid "This branch uses its own custom lending rules. Member type rules are overridden."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/creator_live/show.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "This is a creator record from your database."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "This is a publisher record from your database."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_manager.ex:33
+#, elixir-autogen, elixir-format
+msgid "This is where the token management interface will be implemented."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:338
+#, elixir-autogen, elixir-format
+msgid "This token will only be shown once. Make sure to save it securely!"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:53
+#, elixir-autogen, elixir-format
+msgid "Ticket Discount %"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:23
+#, elixir-autogen, elixir-format
+msgid "Time Increment"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/form_component.ex:24
+#, elixir-autogen, elixir-format
+msgid "Time Unit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:61
+#, elixir-autogen, elixir-format
+msgid "Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:38
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Token Name"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:640
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Token deleted successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:626
+#, elixir-autogen, elixir-format
+msgid "Token revoked successfully"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:506
+#, elixir-autogen, elixir-format
+msgid "Too many files (max 1)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:72
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Topic created successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:57
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Topic updated successfully."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:473
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Total Fines"
+msgstr "Total items"
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:45
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Total Holidays"
+msgstr "Total items"
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:461
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Total Loans"
+msgstr "Total items"
+
+#: lib/voile_web/live/dashboard/members/reports/expiring.ex:48
+#: lib/voile_web/live/dashboard/members/reports/overdue.ex:48
+#, elixir-autogen, elixir-format
+msgid "Total: %{count}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:681
+#, elixir-autogen, elixir-format
+msgid "Transaction history and current loans"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:211
+#, elixir-autogen, elixir-format
+msgid "USD (Dollar)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:22
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Unit"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:352
+#, elixir-autogen, elixir-format
+msgid "Unit (optional)"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:390
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Unknown User"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:368
+#, elixir-autogen, elixir-format
+msgid "Unnamed Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/show.ex:515
+#, elixir-autogen, elixir-format
+msgid "Unsuspend"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:396
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:304
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Update"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Update App Settings →"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:190
+#, elixir-autogen, elixir-format
+msgid "Update Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:109
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Update Token"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:54
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Update member information"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_form_component.ex:27
+#, elixir-autogen, elixir-format
+msgid "Update token settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:186
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Updating..."
+msgstr "Loading"
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:507
+#, elixir-autogen, elixir-format
+msgid "Upload error occurred"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:482
+#, elixir-autogen, elixir-format
+msgid "Upload error: %{error}"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:460
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:481
+#, elixir-autogen, elixir-format
+msgid "Upload failed. Please try again."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:322
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Uptime"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:13
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Use this form to manage publishers records in your database."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:187
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:384
+#, elixir-autogen, elixir-format, fuzzy
+msgid "User"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:144
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:394
+#, elixir-autogen, elixir-format, fuzzy
+msgid "User Image"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:132
+#, elixir-autogen, elixir-format
+msgid "Users can have multiple roles. Role-specific permissions can be managed in the"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:363
+#, elixir-autogen, elixir-format
+msgid "Utilization"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/index.ex:162
+#, elixir-autogen, elixir-format, fuzzy
+msgid "View All →"
+msgstr "View"
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Viewing schedule for"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:674
+#, elixir-autogen, elixir-format
+msgid "Warning: This action is irreversible"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:202
+#, elixir-autogen, elixir-format
+msgid "Weekdays Only"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/holiday_live.ex:113
+#, elixir-autogen, elixir-format
+msgid "Weekly Schedule"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:129
+#, elixir-autogen, elixir-format
+msgid "Welcome to System Settings"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "When enabled, this branch's rules will override member type rules. When disabled, member type rules will apply."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:76
+#, elixir-autogen, elixir-format, fuzzy
+msgid "With Abbreviations"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "With Images"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:99
+#, elixir-autogen, elixir-format
+msgid "You can add other properties by searching for them on the search box."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/setting_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Your Access"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:268
+#, elixir-autogen, elixir-format
+msgid "Your changes will be applied to the application profile."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:308
+#, elixir-autogen, elixir-format
+msgid "Your new API token has been created successfully. Copy the token below and save it securely:"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:370
+#, elixir-autogen, elixir-format, fuzzy
+msgid "created"
+msgstr "Create"
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:36
+#, elixir-autogen, elixir-format
+msgid "e.g., Book Template"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/system_node_live.ex:206
+#, elixir-autogen, elixir-format
+msgid "e.g., MAIN, BR1"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:226
+#, elixir-autogen, elixir-format
+msgid "group1, group2, group3"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:216
+#, elixir-autogen, elixir-format
+msgid "https://example.com"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/management/management_component.ex:138
+#, elixir-autogen, elixir-format
+msgid "page."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:370
+#, elixir-autogen, elixir-format, fuzzy
+msgid "updated"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:22
+#, elixir-autogen, elixir-format, fuzzy
+msgid "← Back to Settings"
+msgstr "Total Collections"
