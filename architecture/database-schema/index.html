@@ -12,13 +12,9 @@
         <meta name="author" content="VOILE Development Team">
       
       
-        <link rel="canonical" href="https://curatorian.github.io/voile/authentication/role-management-guide/">
+        <link rel="canonical" href="https://curatorian.github.io/voile/architecture/database-schema/">
       
       
-        <link rel="prev" href="../rbac-quick-reference/">
-      
-      
-        <link rel="next" href="../role-management-quick-ref/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Guide - VOILE Documentation</title>
+        <title>Database schema & infrastructure (comprehensive) - VOILE Documentation</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#role-management-system" class="md-skip">
+        <a href="#database-schema-infrastructure-comprehensive" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Guide
+              Database schema &amp; infrastructure (comprehensive)
             
           </span>
         </div>
@@ -268,7 +264,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../architecture/" class="md-tabs__link">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -314,13 +310,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../authentication/" class="md-tabs__link">
           
   
   
@@ -768,7 +762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -796,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -824,7 +818,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/data-flow/" class="md-nav__link">
+      <a href="../data-flow/" class="md-nav__link">
         
   
   
@@ -2539,31 +2533,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -2581,7 +2572,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2599,7 +2590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../authentication/" class="md-nav__link">
         
   
   
@@ -2627,7 +2618,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../auth-system/" class="md-nav__link">
+      <a href="../../authentication/auth-system/" class="md-nav__link">
         
   
   
@@ -2655,7 +2646,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rbac-complete-guide/" class="md-nav__link">
+      <a href="../../authentication/rbac-complete-guide/" class="md-nav__link">
         
   
   
@@ -2683,7 +2674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rbac-quick-reference/" class="md-nav__link">
+      <a href="../../authentication/rbac-quick-reference/" class="md-nav__link">
         
   
   
@@ -2708,31 +2699,28 @@
                 
   
   
-    
   
   
-  
     
     
     
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
         
           
-          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
             
   
   
@@ -2750,7 +2738,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2765,37 +2753,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guide
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../authentication/role-management-guide/" class="md-nav__link">
         
   
   
@@ -2811,452 +2772,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#access-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Access Control
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#liveview-modules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiveView Modules
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="LiveView Modules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#voilewebusersrolemanagelive" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        VoileWeb.Users.Role.ManageLive
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveshow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        VoileWeb.Users.Role.ManageLive.Show
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveformcomponent" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        VoileWeb.Users.Role.ManageLive.FormComponent
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveedit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        VoileWeb.Users.Role.ManageLive.Edit
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Usage Examples
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Usage Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#accessing-role-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Accessing Role Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#creating-a-new-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creating a New Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#editing-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Editing a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assigning-users-to-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Assigning Users to a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#removing-users-from-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Removing Users from a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#managing-permissions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Managing Permissions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deleting-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deleting a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#business-logic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Business Logic
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Business Logic">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#role-creation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Creation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#role-deletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Deletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Assignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#user-assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        User Assignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#database-queries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Queries
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#security-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Considerations
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#uiux-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UI/UX Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-with-rbac-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration with RBAC System
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#future-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Enhancements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#role-deletion-fails" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Deletion Fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cannot-add-user-to-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cannot Add User to Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permissions-not-updating" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permissions Not Updating
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#search-not-working" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Search Not Working
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#developer-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Developer Notes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Developer Notes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#performance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#customization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Customization
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3269,7 +2784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../role-management-quick-ref/" class="md-nav__link">
+      <a href="../../authentication/role-management-quick-ref/" class="md-nav__link">
         
   
   
@@ -3311,13 +2826,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3326,7 +2838,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_6" >
         
           
-          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
             
   
   
@@ -3362,7 +2874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../permission-management-quick-ref/" class="md-nav__link">
+      <a href="../../authentication/permission-management-quick-ref/" class="md-nav__link">
         
   
   
@@ -3404,13 +2916,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3419,7 +2928,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_7" >
         
           
-          <label class="md-nav__link" for="__nav_5_7" id="__nav_5_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_7" id="__nav_5_7_label" tabindex="0">
             
   
   
@@ -3455,7 +2964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rbac-implementation-summary/" class="md-nav__link">
+      <a href="../../authentication/rbac-implementation-summary/" class="md-nav__link">
         
   
   
@@ -3491,7 +3000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom-redirects/" class="md-nav__link">
+      <a href="../../authentication/custom-redirects/" class="md-nav__link">
         
   
   
@@ -4618,10 +4127,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#global-infra-level-items" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Global / infra-level items
       
     </span>
   </a>
@@ -4629,10 +4138,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#conventions-cross-cutting-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Features
+        Conventions &amp; cross-cutting notes
       
     </span>
   </a>
@@ -4640,44 +4149,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#access-control" class="md-nav__link">
+  <a href="#per-table-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Access Control
+        Per-table reference
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#liveview-modules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LiveView Modules
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="LiveView Modules">
+    <nav class="md-nav" aria-label="Per-table reference">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#voilewebusersrolemanagelive" class="md-nav__link">
+  <a href="#users" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VoileWeb.Users.Role.ManageLive
+        users
       
     </span>
   </a>
@@ -4685,10 +4172,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveshow" class="md-nav__link">
+  <a href="#users_tokens" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VoileWeb.Users.Role.ManageLive.Show
+        users_tokens
       
     </span>
   </a>
@@ -4696,10 +4183,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveformcomponent" class="md-nav__link">
+  <a href="#user_api_tokens" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VoileWeb.Users.Role.ManageLive.FormComponent
+        user_api_tokens
       
     </span>
   </a>
@@ -4707,10 +4194,450 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#voilewebusersrolemanageliveedit" class="md-nav__link">
+  <a href="#metadata_vocabularies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VoileWeb.Users.Role.ManageLive.Edit
+        metadata_vocabularies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata_properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadata_properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource_class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resource_class
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource_template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resource_template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource_template_properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resource_template_properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system_logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        system_logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_creator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_creator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_member_types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_member_types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_locations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_places" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_places
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_publishers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_publishers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mst_topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mst_topics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection_fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collection_fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection_logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collection_logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#item_field_values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        item_field_values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attachments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attachment_role_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachment_role_access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attachment_user_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        attachment_user_access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_transactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_transactions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_reservations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_reservations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_fines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_fines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_circulation_history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_circulation_history
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_requisitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_requisitions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_holidays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_holidays
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#role_permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        role_permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user_role_assignments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user_role_assignments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user_permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user_permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection_permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        collection_permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit_logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audit_logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lib_payments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lib_payments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transfer_requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        transfer_requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stock_opname_sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stock_opname_sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stock_opname_librarian_assignments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stock_opname_librarian_assignments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stock_opname_items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stock_opname_items
       
     </span>
   </a>
@@ -4723,165 +4650,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage-examples" class="md-nav__link">
+  <a href="#additional-migrations-index-only-actions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage Examples
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Usage Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#accessing-role-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Accessing Role Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#creating-a-new-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creating a New Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#editing-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Editing a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#assigning-users-to-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Assigning Users to a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#removing-users-from-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Removing Users from a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#managing-permissions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Managing Permissions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deleting-a-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deleting a Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#business-logic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Business Logic
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Business Logic">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#role-creation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Creation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#role-deletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Deletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Assignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#user-assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        User Assignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#database-queries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Queries
+        Additional migrations &amp; index-only actions
       
     </span>
   </a>
@@ -4889,10 +4661,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-considerations" class="md-nav__link">
+  <a href="#recommended-maintenance-sample-inspection-queries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Security Considerations
+        Recommended maintenance &amp; sample inspection queries
       
     </span>
   </a>
@@ -4900,146 +4672,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#uiux-features" class="md-nav__link">
+  <a href="#suggested-next-steps-optional-exports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UI/UX Features
+        Suggested next steps / optional exports
       
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-with-rbac-system" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration with RBAC System
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#future-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Enhancements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#role-deletion-fails" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Role Deletion Fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cannot-add-user-to-role" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cannot Add User to Role
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permissions-not-updating" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permissions Not Updating
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#search-not-working" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Search Not Working
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#developer-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Developer Notes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Developer Notes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#performance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#customization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Customization
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -5063,266 +4702,923 @@
   
 
 
-<h1 id="role-management-system">Role Management System<a class="headerlink" href="#role-management-system" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>A comprehensive role management interface for administrators to manage roles, permissions, and user assignments through the dashboard.</p>
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<h1 id="database-schema-infrastructure-comprehensive">Database schema &amp; infrastructure (comprehensive)<a class="headerlink" href="#database-schema-infrastructure-comprehensive" title="Permanent link">&para;</a></h1>
+<p>This document is a single authoritative reference that merges the high-level overview and the full per-table breakdown of the database schema defined by the project's Ecto migrations. It includes:</p>
 <ul>
-<li><strong>Role CRUD Operations</strong>: Create, read, update, and delete roles</li>
-<li><strong>Permission Management</strong>: Assign and remove permissions from roles</li>
-<li><strong>User Assignment</strong>: Add and remove users from roles</li>
-<li><strong>Search Functionality</strong>: Search for roles and users</li>
-<li><strong>Visual Permission Toggle</strong>: Easy-to-use UI for managing role permissions</li>
-<li><strong>System Role Protection</strong>: Prevents modification of critical system roles</li>
-<li><strong>Real-time Updates</strong>: LiveView provides instant feedback</li>
+<li>Global DB-level configuration (extensions, custom types)</li>
+<li>ID/type conventions and use of JSONB/arrays</li>
+<li>Indexing patterns, constraints and performance notes</li>
+<li>A per-table reference (columns, types, nullability, defaults)</li>
+<li>Foreign keys, indexes, unique/partial/check constraints and important notes</li>
 </ul>
-<h2 id="access-control">Access Control<a class="headerlink" href="#access-control" title="Permanent link">&para;</a></h2>
-<p>All role management features require appropriate permissions:
-- <code>roles.create</code> - Create new roles
-- <code>roles.update</code> - Edit roles and manage user assignments
-- <code>roles.delete</code> - Delete roles
-- <code>permissions.manage</code> - Manage role permissions</p>
-<h2 id="routes">Routes<a class="headerlink" href="#routes" title="Permanent link">&para;</a></h2>
-<p>The role management system is accessible at <code>/manage/settings/roles</code> with the following routes:</p>
+<p>Canonical source: <code>priv/repo/migrations/</code> — consult the migrations for authoritative, line-level details and historical evolution.</p>
+<hr />
+<p>Contents
+- Global / infra-level items
+- Conventions &amp; cross-cutting notes
+- Per-table reference (alphabetical-ish by domain)
+  - Authentication &amp; users
+  - RBAC / permissions
+  - Metadata, resources &amp; templates
+  - Catalog: collections, items &amp; fields
+  - Attachments &amp; access control
+  - Library / circulation domain
+  - Stock opname / transfers / payments / logs / settings
+- Maintenance tips and quick inspection SQLs
+- Next steps you can request</p>
+<hr />
+<h2 id="global-infra-level-items">Global / infra-level items<a class="headerlink" href="#global-infra-level-items" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>/manage/settings/roles</code> - List all roles (index)</li>
-<li><code>/manage/settings/roles/new</code> - Create a new role</li>
-<li><code>/manage/settings/roles/:id</code> - View role details</li>
-<li><code>/manage/settings/roles/:id/show/edit</code> - Edit role (modal)</li>
-<li><code>/manage/settings/roles/:id/show/permissions</code> - Manage permissions (modal)</li>
-<li><code>/manage/settings/roles/:id/edit</code> - Edit role (dedicated page)</li>
+<li>Extensions</li>
+<li><code>citext</code> — case-insensitive text (used for usernames, emails).</li>
+<li>
+<p><code>pg_trgm</code> — trigram indexes to optimize ILIKE / fuzzy searches.</p>
+</li>
+<li>
+<p>Custom Postgres enum types (created via <code>execute</code> in migrations)</p>
+</li>
+<li><code>glam_type</code> — 'Gallery', 'Library', 'Archive', 'Museum'</li>
+<li><code>transaction_type</code> — loan/return/renewal/lost_item/damaged_item/cancel</li>
+<li><code>transaction_status</code> — active/returned/overdue/lost/damaged/canceled</li>
+<li><code>reservation_status</code> — pending/available/picked_up/expired/cancelled</li>
+<li><code>fine_type</code>, <code>fine_status</code></li>
+<li><code>circulation_event_type</code></li>
+<li>
+<p><code>patron_request_type</code>, <code>patron_request_status</code></p>
+</li>
+<li>
+<p>ID &amp; key conventions</p>
+</li>
+<li>Many domain tables use <code>:binary_id</code> (UUID) as primary keys. Migrations typically declare <code>primary_key: false</code> then <code>add :id, :binary_id, primary_key: true</code>.</li>
+<li>Some system/master tables (e.g., <code>nodes</code>) use integer / bigint primary keys — pay attention when referencing/mapping units.</li>
+<li>Foreign keys generally follow the referenced PK type. Many <code>users</code> references use <code>type: :binary_id</code>.</li>
+<li>
+<p>Timestamps use <code>type: :utc_datetime</code> across migrations.</p>
+</li>
+<li>
+<p>JSON, maps &amp; arrays</p>
+</li>
+<li>JSONB (<code>:map</code>) used widely for flexible metadata (attachments.metadata, collection_logs.old_values/new_values, stock_opname_items.changes, etc).</li>
+<li>
+<p>Array columns used for sets: <code>node_ids</code> in stock opname sessions, <code>scopes</code> in API tokens, <code>groups</code> on users.</p>
+</li>
+<li>
+<p>Indexing &amp; query optimization patterns</p>
+</li>
+<li>Trigram GIN indexes (gin_trgm_ops) applied to many text columns to speed ILIKE/fuzzy searches.</li>
+<li>JSONB GIN indexes for metadata columns.</li>
+<li>Partial indexes for common high-selectivity queries (e.g., available items, published collections, active loans, unpaid fines).</li>
+<li>Hash indexes used where equality lookups are frequent (applied via raw SQL).</li>
+<li>Covering indexes (using <code>INCLUDE</code>) created via raw SQL for index-only scans on listing queries.</li>
+<li>
+<p>Statistics (<code>ALTER TABLE ... SET STATISTICS</code>) tuned for specific text columns to improve planner estimates.</p>
+</li>
+<li>
+<p>Constraints &amp; data integrity</p>
+</li>
+<li>Check constraints for domain rules (barcode lengths; date consistency; embargo rules; schedule day_of_week).</li>
+<li>Unique and partial-unique indexes for business uniqueness (collection_code, item_code, old_biblio_id per unit).</li>
+<li>Foreign keys use <code>on_delete</code> semantics chosen per domain: <code>:nilify_all</code>, <code>:delete_all</code>, <code>:restrict</code> as appropriate.</li>
 </ul>
-<h2 id="liveview-modules">LiveView Modules<a class="headerlink" href="#liveview-modules" title="Permanent link">&para;</a></h2>
-<h3 id="voilewebusersrolemanagelive">VoileWeb.Users.Role.ManageLive<a class="headerlink" href="#voilewebusersrolemanagelive" title="Permanent link">&para;</a></h3>
-<p>The main index page that displays all roles in a searchable table.</p>
-<p><strong>Features:</strong>
-- Lists all roles with their permissions count and assigned users count
-- Search functionality to filter roles by name or description
-- Quick actions to edit or delete roles
-- Highlights system roles with a badge
-- Protects system roles from deletion</p>
-<p><strong>Events:</strong>
-- <code>search</code> - Filter roles based on search query
-- <code>delete</code> - Delete a role (with validation)</p>
-<p><strong>Assigns:</strong>
-- <code>@streams.roles</code> - Stream of all roles
-- <code>@searching</code> - Boolean indicating if search is in progress
-- <code>@role</code> - Currently selected role (for modal actions)</p>
-<h3 id="voilewebusersrolemanageliveshow">VoileWeb.Users.Role.ManageLive.Show<a class="headerlink" href="#voilewebusersrolemanageliveshow" title="Permanent link">&para;</a></h3>
-<p>The detailed role view page showing role information, permissions, and assigned users.</p>
-<p><strong>Features:</strong>
-- Display role name, description, and system role status
-- List all permissions assigned to the role
-- Manage users assigned to the role
-- Search and add new users to the role
-- Remove users from the role
-- Link to edit role or manage permissions</p>
-<p><strong>Events:</strong>
-- <code>toggle_add_user</code> - Show/hide user search interface
-- <code>search_users</code> - Search for users to add to the role
-- <code>add_user_to_role</code> - Assign a user to the role
-- <code>remove_user_from_role</code> - Remove a user from the role
-- <code>toggle_permission</code> - Add or remove a permission from the role</p>
-<p><strong>Assigns:</strong>
-- <code>@role</code> - The current role being viewed
-- <code>@role_users</code> - List of users assigned to this role
-- <code>@searching_users</code> - Boolean for user search state
-- <code>@search_results</code> - Users matching the search query
-- <code>@showing_add_user</code> - Boolean to show/hide add user form
-- <code>@all_permissions</code> - All available permissions (for permission management)</p>
-<h3 id="voilewebusersrolemanageliveformcomponent">VoileWeb.Users.Role.ManageLive.FormComponent<a class="headerlink" href="#voilewebusersrolemanageliveformcomponent" title="Permanent link">&para;</a></h3>
-<p>A live component for creating and editing roles.</p>
-<p><strong>Features:</strong>
-- Create new roles with name and description
-- Select permissions when creating a role
-- Edit existing role information
-- Validates role name uniqueness
-- Prevents editing system roles</p>
-<p><strong>Events:</strong>
-- <code>validate</code> - Validate form inputs
-- <code>save</code> - Save the role (create or update)</p>
-<p><strong>Assigns:</strong>
-- <code>@form</code> - The form changeset
-- <code>@role</code> - The role being created or edited
-- <code>@action</code> - <code>:new</code> or <code>:edit</code>
-- <code>@all_permissions</code> - All available permissions (for new roles)</p>
-<h3 id="voilewebusersrolemanageliveedit">VoileWeb.Users.Role.ManageLive.Edit<a class="headerlink" href="#voilewebusersrolemanageliveedit" title="Permanent link">&para;</a></h3>
-<p>A dedicated edit page for roles (alternative to modal editing).</p>
-<p><strong>Features:</strong>
-- Full-page edit interface
-- Uses the same FormComponent
-- Redirects to role detail page after save
-- Prevents editing system roles</p>
-<h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<h3 id="accessing-role-management">Accessing Role Management<a class="headerlink" href="#accessing-role-management" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Navigate to the dashboard settings</li>
-<li>Click on "Role Management" in the sidebar</li>
-<li>You'll see a list of all roles</li>
-</ol>
-<h3 id="creating-a-new-role">Creating a New Role<a class="headerlink" href="#creating-a-new-role" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Click the "New Role" button</li>
-<li>Enter a role name (e.g., "Content Manager")</li>
-<li>Add a description explaining the role's purpose</li>
-<li>Select the permissions this role should have</li>
-<li>Click "Save Role"</li>
-</ol>
-<h3 id="editing-a-role">Editing a Role<a class="headerlink" href="#editing-a-role" title="Permanent link">&para;</a></h3>
-<ol>
-<li>From the role list, click on a role to view details</li>
-<li>Click "Edit Role" to update name and description</li>
-<li>Or click "Manage Permissions" to add/remove permissions</li>
-</ol>
-<h3 id="assigning-users-to-a-role">Assigning Users to a Role<a class="headerlink" href="#assigning-users-to-a-role" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Navigate to a role's detail page</li>
-<li>Click "Add User" button</li>
-<li>Search for users by name or email</li>
-<li>Click "Add" next to the user you want to assign</li>
-<li>The user will immediately have this role's permissions</li>
-</ol>
-<h3 id="removing-users-from-a-role">Removing Users from a Role<a class="headerlink" href="#removing-users-from-a-role" title="Permanent link">&para;</a></h3>
-<ol>
-<li>On the role detail page, find the user in the assigned users list</li>
-<li>Click "Remove" next to the user</li>
-<li>Confirm the action</li>
-<li>The user will lose this role's permissions</li>
-</ol>
-<h3 id="managing-permissions">Managing Permissions<a class="headerlink" href="#managing-permissions" title="Permanent link">&para;</a></h3>
-<ol>
-<li>On the role detail page, click "Manage Permissions"</li>
-<li>Toggle permissions on/off using the switches</li>
-<li>Permissions are saved immediately</li>
-<li>Click "Done" when finished</li>
-</ol>
-<h3 id="deleting-a-role">Deleting a Role<a class="headerlink" href="#deleting-a-role" title="Permanent link">&para;</a></h3>
-<ol>
-<li>From the role list, click "Delete" on the role you want to remove</li>
-<li>Confirm the deletion</li>
-<li>Note: System roles and roles with assigned users cannot be deleted</li>
-</ol>
-<h2 id="business-logic">Business Logic<a class="headerlink" href="#business-logic" title="Permanent link">&para;</a></h2>
-<h3 id="role-creation">Role Creation<a class="headerlink" href="#role-creation" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="conventions-cross-cutting-notes">Conventions &amp; cross-cutting notes<a class="headerlink" href="#conventions-cross-cutting-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Role names must be unique</li>
-<li>Roles can be created with or without initial permissions</li>
-<li>New roles are not marked as system roles by default</li>
+<li>Audit fields: many tables include <code>created_by_id</code>, <code>updated_by_id</code>, <code>processed_by_id</code>, etc., referencing <code>users</code> and indexed for queries/audit.</li>
+<li>Polymorphism: <code>attachments</code> implements polymorphic relationships via <code>attachable_id</code> and <code>attachable_type</code>. Migrations add DB-level checks to restrict allowed types.</li>
+<li>Use of <code>:binary_id</code> favors distributed uniqueness and easier replication across nodes; <code>nodes</code> remain integer-based.</li>
+<li>When a migration executes raw SQL (e.g., create trigram index), look at the migration file to see both create/drop statements used for reversibility.</li>
+<li>For any schema change, update both migrations and this documentation.</li>
 </ul>
-<h3 id="role-deletion">Role Deletion<a class="headerlink" href="#role-deletion" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="per-table-reference">Per-table reference<a class="headerlink" href="#per-table-reference" title="Permanent link">&para;</a></h2>
+<p>Below are consolidated entries for each table present in the migrations. Each entry lists primary key, columns (type, nullability, defaults), foreign keys, indexes and notable constraints or SQL actions.</p>
+<p>(If you need a CSV/JSON export for this content, I can generate that as a follow-up.)</p>
+<hr />
+<h3 id="users">users<a class="headerlink" href="#users" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id</code> — <code>:binary_id</code> (UUID), primary key</p>
+<p>Columns (high level)
+- <code>username :citext</code> (NOT NULL)
+- <code>identifier :numeric</code> (nullable)
+- <code>email :citext</code> (NOT NULL)
+- <code>fullname :string</code>
+- <code>hashed_password :string</code> (NOT NULL)
+- <code>confirmed_at :utc_datetime</code>
+- <code>user_image :string</code>
+- <code>social_media :map</code> (jsonb)
+- <code>groups {:array, :string}</code>
+- <code>last_login :utc_datetime</code>
+- <code>last_login_ip :string</code>
+- Profile fields: <code>address :text</code>, <code>phone_number :string</code>, <code>birth_date :date</code>, <code>birth_place :string</code>, <code>gender :string</code>, <code>registration_date :date</code>, <code>expiry_date :date</code>, <code>organization :string</code>, <code>department :string</code>, <code>position :string</code>
+- Later additions: <code>node_id references(:nodes, type: :bigint)</code>, <code>user_type_id references(:mst_member_types, type: :binary_id)</code>, manual suspension fields (<code>manually_suspended :boolean</code> default false, <code>suspension_reason</code>, <code>suspended_at</code>, <code>suspended_by_id references(:users)</code>, <code>suspension_ends_at</code>)
+- <code>inserted_at</code>, <code>updated_at</code> — timestamps (utc_datetime)</p>
+<p>Foreign keys
+- <code>node_id</code> -&gt; <code>nodes</code> (on_delete: :nilify_all)
+- <code>user_type_id</code> -&gt; <code>mst_member_types</code> (on_delete: :nilify_all)
+- <code>suspended_by_id</code> -&gt; <code>users</code> (on_delete: :nilify_all)</p>
+<p>Indexes / Unique constraints
+- unique: <code>email</code>, <code>username</code>, <code>identifier</code>
+- indexes: <code>confirmed_at</code>, <code>last_login</code>, <code>node_id</code>, <code>user_type_id</code>, <code>manually_suspended</code>, <code>suspended_by_id</code></p>
+<p>Notes
+- <code>citext</code> extension used for username and email (case-insensitive uniqueness).</p>
+<hr />
+<h3 id="users_tokens">users_tokens<a class="headerlink" href="#users_tokens" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default numeric id (migration used default table PK)</p>
+<p>Columns
+- <code>user_id references(:users, type: :uuid, on_delete: :delete_all)</code> (NOT NULL)
+- <code>token :binary</code> (NOT NULL)
+- <code>context :string</code> (NOT NULL)
+- <code>sent_to :string</code>
+- <code>authenticated_at :utc_datetime</code>
+- timestamps (inserted_at, updated_at) — updated_at often false in token tables</p>
+<p>Indexes / Unique
+- index on <code>user_id</code>
+- unique on <code>[context, token]</code></p>
+<hr />
+<h3 id="user_api_tokens">user_api_tokens<a class="headerlink" href="#user_api_tokens" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>hashed_token :string</code> (NOT NULL)
+- <code>name :string</code> (NOT NULL)
+- <code>description :text</code>
+- <code>scopes {:array, :string}</code> default <code>[]</code>
+- <code>last_used_at :utc_datetime</code>
+- <code>expires_at :utc_datetime</code>
+- <code>revoked_at :utc_datetime</code>
+- <code>ip_whitelist {:array, :string}</code>
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>user_agent :string</code>
+- <code>last_used_ip :string</code>
+- timestamps (utc_datetime)</p>
+<p>Indexes / Unique
+- unique on <code>hashed_token</code>
+- index on <code>user_id</code>, <code>expires_at</code>, <code>revoked_at</code></p>
+<hr />
+<h3 id="metadata_vocabularies">metadata_vocabularies<a class="headerlink" href="#metadata_vocabularies" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>label :string</code>
+- <code>prefix :string</code>
+- <code>namespace_url :string</code>
+- <code>information :text</code>
+- <code>owner_id references(:users, type: :binary_id)</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>owner_id</code></p>
+<hr />
+<h3 id="metadata_properties">metadata_properties<a class="headerlink" href="#metadata_properties" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>label :string</code>
+- <code>local_name :string</code>
+- <code>information :text</code>
+- <code>type_value :string</code>
+- <code>owner_id references(:users, type: :binary_id)</code>
+- <code>vocabulary_id references(:metadata_vocabularies)</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>owner_id</code>, <code>vocabulary_id</code>
+- trigram GIN indexes on <code>label</code> and <code>local_name</code> added in a separate migration</p>
+<hr />
+<h3 id="resource_class">resource_class<a class="headerlink" href="#resource_class" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>label :string</code>
+- <code>local_name :string</code>
+- <code>information :text</code>
+- <code>glam_type :glam_type</code> (enum)
+- <code>owner_id references(:users, type: :binary_id)</code>
+- <code>vocabulary_id references(:metadata_vocabularies)</code>
+- timestamps</p>
+<p>Indexes &amp; Notes
+- index on <code>owner_id</code>, <code>vocabulary_id</code>
+- trigram GIN index on <code>label</code> via raw SQL</p>
+<hr />
+<h3 id="resource_template">resource_template<a class="headerlink" href="#resource_template" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>label :string</code>
+- <code>description :text</code>
+- <code>owner_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>resource_class_id references(:resource_class, on_delete: :nilify_all)</code> (NOT NULL)
+- timestamps</p>
+<p>Indexes
+- index on <code>owner_id</code>, <code>resource_class_id</code></p>
+<hr />
+<h3 id="resource_template_properties">resource_template_properties<a class="headerlink" href="#resource_template_properties" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>position :integer</code> (NOT NULL)
+- <code>override_label :string</code>
+- <code>template_id references(:resource_template)</code>
+- <code>property_id references(:metadata_properties)</code>
+- timestamps</p>
+<p>Indexes &amp; Unique
+- unique index <code>[template_id, property_id]</code> named <code>template_property_unique</code>
+- indexes on <code>template_id</code> and <code>property_id</code></p>
+<hr />
+<h3 id="nodes">nodes<a class="headerlink" href="#nodes" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- integer / bigint id</p>
+<p>Columns
+- <code>name :string</code>
+- <code>abbr :string</code>
+- <code>description :text</code>
+- <code>image :string</code>
+- timestamps</p>
+<p>Indexes / Unique
+- unique on <code>name</code>
+- trigram GIN index on <code>name</code> via raw SQL</p>
+<hr />
+<h3 id="settings">settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>setting_name :string</code>
+- <code>setting_value :text</code>
+- timestamps</p>
+<hr />
+<h3 id="system_logs">system_logs<a class="headerlink" href="#system_logs" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>log_type :string</code>
+- <code>log_location :string</code>
+- <code>log_msg :text</code>
+- <code>log_date :utc_datetime</code>
+- <code>owner_id references(:users, type: :binary_id)</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>owner_id</code></p>
+<hr />
+<h3 id="mst_creator">mst_creator<a class="headerlink" href="#mst_creator" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>creator_name :string</code>
+- <code>creator_contact :string</code>
+- <code>affiliation :string</code>
+- <code>type :string</code>
+- timestamps</p>
+<p>Indexes
+- unique on <code>creator_name</code>
+- trigram GIN index on <code>creator_name</code></p>
+<hr />
+<h3 id="mst_frequency">mst_frequency<a class="headerlink" href="#mst_frequency" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>frequency :string</code>
+- <code>time_increment :integer</code>
+- <code>time_unit :string</code>
+- timestamps</p>
+<hr />
+<h3 id="mst_member_types">mst_member_types<a class="headerlink" href="#mst_member_types" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns (selected)
+- <code>name :string</code> (NOT NULL)
+- <code>slug :string</code> (NOT NULL)
+- <code>description :text</code>
+- Various loan/fine/limit fields: <code>max_items</code>, <code>max_days</code>, <code>max_renewals</code>, <code>max_reserves</code>, <code>max_concurrent_loans</code>, <code>fine_per_day</code>, <code>max_fine</code>, <code>membership_fee</code>, <code>currency</code> (size 3, default "IDR"), <code>can_reserve</code>, <code>can_renew</code>, <code>digital_access</code>, <code>exhibition_preview_access</code>, discount fields, <code>membership_period_days</code>, <code>auto_renew</code>, recurrence fields, <code>priority_level</code>, <code>is_active</code>, <code>publicly_listed</code>, <code>institutional</code>, <code>allowed_collections :map</code>, <code>metadata :map</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>is_active</code>, <code>priority_level</code></p>
+<p>Notes
+- <code>users</code> table altered to include <code>user_type_id</code> referencing this table.</p>
+<hr />
+<h3 id="mst_locations">mst_locations<a class="headerlink" href="#mst_locations" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>location_code :string</code>
+- <code>location_name :string</code>
+- <code>location_place :string</code>
+- <code>location_type :string</code>
+- <code>description :text</code>
+- <code>notes :text</code>
+- <code>is_active :boolean</code> default true (NOT NULL)
+- <code>node_id references(:nodes, on_delete: :nilify_all)</code>
+- timestamps</p>
+<p>Indexes
+- unique on <code>location_code</code>
+- index on <code>location_type</code>, <code>is_active</code></p>
+<hr />
+<h3 id="mst_places">mst_places<a class="headerlink" href="#mst_places" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>name :string</code>
+- timestamps</p>
+<hr />
+<h3 id="mst_publishers">mst_publishers<a class="headerlink" href="#mst_publishers" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>name :string</code>
+- <code>city :string</code>
+- <code>address :string</code>
+- <code>contact :string</code>
+- timestamps</p>
+<hr />
+<h3 id="mst_topics">mst_topics<a class="headerlink" href="#mst_topics" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>name :string</code>
+- <code>type :string</code>
+- <code>description :text</code>
+- timestamps</p>
+<hr />
+<h3 id="collections">collections<a class="headerlink" href="#collections" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>collection_code :text</code> (NOT NULL)
+- <code>title :text</code> (NOT NULL)
+- <code>description :text</code>
+- <code>thumbnail :string</code>
+- <code>status :string</code> (NOT NULL, default "draft")
+- <code>access_level :string</code> (NOT NULL, default "private")
+- <code>old_biblio_id :integer</code>
+- <code>type_id references(:resource_class, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>template_id references(:resource_template, on_delete: :nilify_all)</code>
+- <code>creator_id references(:mst_creator, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>unit_id references(:nodes, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>created_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- <code>updated_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- Later alterations: <code>parent_id references(:collections, type: :binary_id, on_delete: :nilify_all)</code>, <code>sort_order :integer default 1</code>, <code>collection_type :string</code>
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- index on <code>title</code>, <code>type_id</code>, <code>template_id</code>, <code>creator_id</code>, <code>unit_id</code>, <code>status</code>, <code>access_level</code>, <code>created_by_id</code>
+- unique on <code>collection_code</code>
+- composite indexes: <code>[:unit_id, :status]</code> (collections_unit_status_idx), <code>[:creator_id, :status]</code> (collections_creator_status_idx)
+- partial index on <code>[:type_id, :unit_id]</code> where <code>status = 'published'</code> (collections_published_idx)
+- trigram GIN indexes on <code>title</code>, <code>description</code>, <code>collection_code</code> (raw SQL)
+- hash indexes on <code>status</code>, <code>access_level</code> (raw SQL)
+- covering index <code>collections_listing_covering_idx</code> (INCLUDE title, thumbnail, collection_code) WHERE status = 'published' (raw SQL)
+- unique partial index on <code>[:unit_id, :old_biblio_id]</code> when <code>old_biblio_id IS NOT NULL</code>
+- indexes on <code>parent_id</code>, <code>sort_order</code>, <code>collection_type</code> (trigram GIN on collection_type)</p>
+<p>Notes
+- <code>ALTER TABLE ... SET STATISTICS</code> set for title in migration to improve planner.</p>
+<hr />
+<h3 id="items">items<a class="headerlink" href="#items" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>item_code :text</code> (NOT NULL)
+- <code>barcode :text</code> (nullable)
+- <code>inventory_code :text</code> (NOT NULL)
+- <code>location :text</code> (NOT NULL)
+- <code>status :string</code> (NOT NULL, default "active")
+- <code>condition :string</code> (NOT NULL, default "good")
+- <code>availability :string</code> (NOT NULL, default "available")
+- <code>price :decimal, precision:10, scale:2</code>
+- <code>acquisition_date :date</code>
+- <code>last_inventory_date :date</code>
+- <code>last_circulated :utc_datetime</code>
+- <code>rfid_tag :string</code>
+- <code>legacy_item_code :text</code>
+- <code>unit_id references(:nodes, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>collection_id references(:collections, on_delete: :delete_all, type: :binary_id)</code> (NOT NULL)
+- <code>item_location_id references(:mst_locations, on_delete: :nilify_all)</code> (nullable)
+- Auditing fields added later: <code>created_by_id</code>, <code>updated_by_id</code> referencing <code>users</code> (type: :binary_id)
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- unique: <code>item_code</code>, <code>inventory_code</code>
+- unique partial: <code>rfid_tag</code> where not null; <code>barcode</code> where not null
+- index: <code>collection_id</code>, <code>unit_id</code>, <code>location</code>, <code>legacy_item_code</code>, <code>status</code>, <code>availability</code>
+- composite index: <code>[:collection_id, :status, :availability]</code> (items_collection_status_availability_idx)
+- partial index <code>items_available_idx</code> where <code>status = 'active' AND availability = 'available'</code>
+- trigram GIN indexes on <code>item_code</code>, <code>inventory_code</code>, <code>location</code>, <code>barcode</code> (raw SQL)
+- hash index on <code>status</code> (raw SQL)
+- covering index <code>items_catalog_covering_idx</code> (INCLUDE item_code, barcode, location) WHERE status = 'active'
+- check constraint (via raw SQL): <code>barcode IS NULL OR length(barcode) BETWEEN 10 AND 20</code></p>
+<p>Notes
+- Statistics tuning applied to columns <code>item_code</code> and <code>barcode</code>; comments on indexes added in migrations.</p>
+<hr />
+<h3 id="collection_fields">collection_fields<a class="headerlink" href="#collection_fields" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>name :string</code> (NOT NULL)
+- <code>label :string</code> (NOT NULL)
+- <code>value :text</code>
+- <code>value_lang :string</code> default "en"
+- <code>type_value :string</code> (NOT NULL)
+- <code>sort_order :integer</code> default 1
+- <code>collection_id references(:collections, on_delete: :delete_all, type: :binary_id)</code> (NOT NULL)
+- <code>property_id references(:metadata_properties, on_delete: :nilify_all)</code> (NOT NULL)
+- timestamps</p>
+<p>Indexes
+- index: <code>collection_id</code>, <code>property_id</code>, <code>name</code>, <code>sort_order</code>
+- composite index: <code>[:collection_id, :property_id]</code> (collection_fields_collection_property_idx)</p>
+<hr />
+<h3 id="collection_logs">collection_logs<a class="headerlink" href="#collection_logs" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>title :string</code>
+- <code>message :text</code>
+- <code>action :string</code>
+- <code>ip_address :string</code>
+- <code>user_agent :text</code>
+- <code>session_id :string</code>
+- <code>request_id :string</code>
+- <code>old_values :map</code>
+- <code>new_values :map</code>
+- <code>action_type :string</code>
+- <code>entity_type :string</code> default "collection"
+- <code>severity :string</code> default "info"
+- <code>metadata :map</code>
+- <code>duration_ms :integer</code>
+- <code>success :boolean</code> default true
+- <code>collection_id references(:collections, type: :binary_id)</code>
+- <code>user_id references(:users, type: :binary_id)</code>
+- timestamps</p>
+<p>Indexes
+- indexes on <code>action_type</code>, <code>entity_type</code>, <code>severity</code>, <code>success</code>, <code>inserted_at</code>, <code>session_id</code>
+- composite indexes: <code>[:collection_id, :action_type, :inserted_at]</code>, <code>[:user_id, :action_type, :inserted_at]</code></p>
+<hr />
+<h3 id="item_field_values">item_field_values<a class="headerlink" href="#item_field_values" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>value :string</code>
+- <code>locale :string</code>
+- <code>item_id references(:items, on_delete: :nothing, type: :binary_id)</code>
+- <code>collection_field_id references(:collection_fields, on_delete: :nothing, type: :binary_id)</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>item_id</code>, <code>collection_field_id</code></p>
+<p>Notes
+- Trigram index added on <code>value</code> in a later migration.</p>
+<hr />
+<h3 id="attachments">attachments<a class="headerlink" href="#attachments" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>file_name :string</code>
+- <code>original_name :string</code>
+- <code>file_path :string</code>
+- <code>file_key :string</code> (added later)
+- <code>file_size :integer</code>
+- <code>mime_type :string</code>
+- <code>file_type :string</code>
+- <code>description :text</code>
+- <code>sort_order :integer</code> (default 0)
+- <code>is_primary :boolean</code> (default false)
+- <code>metadata :map</code> default <code>%{}</code>
+- <code>attachable_id :binary_id</code> (polymorphic)
+- <code>attachable_type :string</code> (polymorphic)
+- <code>parent_id :binary_id</code> (nullable) for folder hierarchy; later modified to reference attachments
+- <code>access_level :string</code> (default "public") (added later)
+- <code>embargo_start_date, embargo_end_date :utc_datetime</code>
+- <code>access_settings_updated_by_id references(:users, type: :binary_id)</code>
+- <code>access_settings_updated_at :utc_datetime</code>
+- <code>unit_id references(:nodes, type: :integer)</code> added and later converted to FK
+- timestamps</p>
+<p>Indexes &amp; Unique
+- index on <code>(attachable_id, attachable_type)</code>
+- index on <code>file_type</code>, <code>is_primary</code>, <code>sort_order</code>
+- unique index on <code>(attachable_id, attachable_type, file_name)</code> named <code>attachments_unique_file_per_entity</code>
+- index on <code>parent_id</code>
+- index on <code>file_key</code>, <code>unit_id</code></p>
+<p>Constraints
+- <code>attachable_type_must_be_valid</code> — check constraint restricting attachable_type to a set (initially 'collection','item', extended later: 'asset_vault','folder', and NULL allowed)
+- <code>file_type_must_be_valid</code> — check allowed file_type values
+- <code>file_size_must_be_positive</code> — <code>file_size &gt; 0</code>
+- <code>sort_order_must_be_non_negative</code> — <code>sort_order &gt;= 0</code>
+- Embargo validation: ensure start &lt; end when both present
+- <code>parent_id_fk</code> check to avoid self-parenting and then proper FK added</p>
+<p>Notes
+- <code>attachments</code> is polymorphic; migration updates made over time to support folders, unit scoping, and file_key for storage backends.</p>
+<hr />
+<h3 id="attachment_role_access">attachment_role_access<a class="headerlink" href="#attachment_role_access" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>attachment_id references(:attachments, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>role_id references(:roles, on_delete: :delete_all)</code> (NOT NULL)
+- timestamps (utc_datetime)</p>
+<p>Indexes &amp; Unique
+- index on <code>attachment_id</code>, <code>role_id</code>
+- unique <code>(attachment_id, role_id)</code> named <code>attachment_role_access_unique</code></p>
+<hr />
+<h3 id="attachment_user_access">attachment_user_access<a class="headerlink" href="#attachment_user_access" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>attachment_id references(:attachments, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>granted_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (nullable)
+- <code>granted_at :utc_datetime</code> (NOT NULL)
+- timestamps</p>
+<p>Indexes &amp; Unique
+- index on <code>attachment_id</code>, <code>user_id</code>, <code>granted_by_id</code>
+- unique <code>(attachment_id, user_id)</code> named <code>attachment_user_access_unique</code></p>
+<hr />
+<h3 id="lib_transactions">lib_transactions<a class="headerlink" href="#lib_transactions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>transaction_type :transaction_type</code> (enum, NOT NULL)
+- <code>transaction_date :utc_datetime</code>
+- <code>due_date :utc_datetime</code>
+- <code>return_date :utc_datetime</code>
+- <code>renewal_count :integer</code> default 0
+- <code>notes :text</code>
+- <code>status :transaction_status</code> (enum, NOT NULL)
+- <code>fine_amount :decimal, precision:10, scale:2</code> default 0.0
+- <code>is_overdue :boolean</code> default false
+- <code>item_id references(:items, on_delete: :nilify_all, type: :binary_id)</code> (NOT NULL)
+- <code>member_id references(:users, on_delete: :nilify_all, type: :binary_id)</code> (NOT NULL)
+- <code>librarian_id references(:users, on_delete: :nilify_all, type: :binary_id)</code> (NOT NULL)
+- <code>unit_id references(:nodes, on_delete: :nilify_all)</code> (nullable)
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- indexes: <code>due_date</code>, <code>is_overdue</code>, <code>item_id</code>, <code>member_id</code>, <code>librarian_id</code>, <code>status</code>, <code>transaction_type</code>, <code>transaction_date</code>
+- composite index: <code>[:member_id, :status, :due_date]</code> (lib_transactions_member_status_due_idx)
+- partial indexes:
+  - <code>lib_transactions_active_loans_idx</code> where <code>status = 'active'</code>
+  - <code>lib_transactions_overdue_idx</code> where <code>is_overdue = true AND status = 'active'</code>
+- ordered index via raw SQL: <code>lib_transactions_date_desc_idx</code> (transaction_date DESC)
+- checks:
+  - <code>transactions_due_date_check</code>: <code>due_date IS NULL OR due_date &gt;= transaction_date</code>
+  - <code>transactions_return_date_check</code>: <code>return_date IS NULL OR return_date &gt;= transaction_date</code></p>
+<p>Notes
+- Stats tuning for <code>due_date</code> applied in migration.</p>
+<hr />
+<h3 id="lib_reservations">lib_reservations<a class="headerlink" href="#lib_reservations" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>reservation_date :utc_datetime</code> (NOT NULL)
+- <code>expiry_date :utc_datetime</code>
+- <code>notification_sent :boolean</code> default false
+- <code>status :reservation_status</code> (enum, NOT NULL)
+- <code>priority :integer</code> default 1
+- <code>notes :text</code>
+- <code>pickup_date :utc_datetime</code>
+- <code>cancelled_date :utc_datetime</code>
+- <code>cancellation_reason :text</code>
+- <code>item_id references(:items, on_delete: :nilify_all, type: :binary_id)</code> (NOT NULL)
+- <code>member_id references(:users, on_delete: :nilify_all, type: :binary_id)</code> (nullable)
+- <code>collection_id references(:collections, on_delete: :nilify_all, type: :binary_id)</code> (nullable)
+- <code>processed_by_id references(:users, on_delete: :nilify_all, type: :binary_id)</code> (nullable)
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- indexes: <code>item_id</code>, <code>collection_id</code>, <code>member_id</code>, <code>status</code>, <code>reservation_date</code>, <code>expiry_date</code>, <code>priority</code>, <code>member_id,status</code>
+- partial index <code>lib_reservations_active_idx</code> for <code>(item_id, status)</code> where status IN ('pending','available')
+- checks:
+  - <code>item_or_collection_check</code>: <code>item_id IS NOT NULL OR collection_id IS NOT NULL</code>
+  - <code>reservations_expiry_date_check</code>: <code>expiry_date IS NULL OR expiry_date &gt;= reservation_date</code></p>
+<hr />
+<h3 id="lib_fines">lib_fines<a class="headerlink" href="#lib_fines" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>fine_type :fine_type</code> (enum)
+- <code>amount :decimal, precision:10, scale:2</code> (NOT NULL)
+- <code>paid_amount :decimal, precision:10, scale:2</code> default 0.0
+- <code>balance :decimal, precision:10, scale:2</code>
+- <code>fine_date :utc_datetime</code> (NOT NULL)
+- <code>payment_date :utc_datetime</code>
+- <code>fine_status :fine_status</code> (enum, NOT NULL)
+- <code>description :text</code>
+- waiver fields: <code>waived :boolean</code> default false, <code>waived_date :utc_datetime</code>, <code>waived_reason :text</code>, <code>waived_by_id references(:users, type: :binary_id)</code>
+- <code>payment_method</code>, <code>receipt_number</code>
+- <code>member_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>item_id references(:items, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>transaction_id references(:lib_transactions, type: :binary_id)</code> (nullable)
+- <code>processed_by_id references(:users, type: :binary_id)</code> (nullable)
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- indexes: by member, item, transaction_id, processed_by_id, fine_type, fine_status, fine_date, payment_date, waived
+- composite index <code>[:member_id, :fine_status]</code>
+- partial index <code>lib_fines_unpaid_idx</code> where <code>fine_status IN ('pending','partial_paid')</code> on <code>(member_id, fine_status, balance)</code>
+- checks:
+  - <code>balance_non_negative</code>: <code>balance &gt;= 0</code>
+  - <code>paid_amount_non_negative</code>: <code>paid_amount &gt;= 0</code>
+  - <code>fines_paid_amount_check</code>: <code>paid_amount &lt;= amount</code></p>
+<hr />
+<h3 id="lib_circulation_history">lib_circulation_history<a class="headerlink" href="#lib_circulation_history" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>event_type :circulation_event_type</code> (enum, NOT NULL)
+- <code>event_date :utc_datetime</code> (NOT NULL)
+- <code>description :text</code>
+- <code>old_value :map</code>
+- <code>new_value :map</code>
+- <code>ip_address :string</code>
+- <code>user_agent :text</code>
+- <code>member_id references(:users, type: :binary_id)</code>
+- <code>item_id references(:items, type: :binary_id)</code>
+- <code>transaction_id references(:lib_transactions, type: :binary_id)</code>
+- <code>reservation_id references(:lib_reservations, type: :binary_id)</code>
+- <code>fine_id references(:lib_fines, type: :binary_id)</code>
+- <code>processed_by_id references(:users, type: :binary_id)</code> (NOT NULL)
+- timestamps</p>
+<p>Indexes
+- indexes on <code>event_type</code>, <code>event_date</code>, <code>member_id</code>, <code>item_id</code>, <code>processed_by_id</code></p>
+<hr />
+<h3 id="lib_requisitions">lib_requisitions<a class="headerlink" href="#lib_requisitions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>request_date :utc_datetime</code> (NOT NULL)
+- <code>request_type :patron_request_type</code> (enum, NOT NULL)
+- <code>status :patron_request_status</code> (enum, NOT NULL, default 'submitted')
+- <code>title :text</code> (NOT NULL)
+- <code>author</code>, <code>publisher</code>, <code>isbn</code>, <code>publication_year</code>, <code>description</code>, <code>justification</code>, <code>priority</code> (default 'normal'), <code>estimated_cost</code>, <code>notes</code>, <code>staff_notes</code>, <code>due_date</code>, <code>fulfilled_date</code>
+- <code>requested_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>assigned_to_id references(:users, type: :binary_id)</code> (nullable)
+- <code>unit_id references(:nodes)</code> (nullable)
+- timestamps</p>
+<p>Indexes
+- indexes on <code>request_type</code>, <code>request_date</code>, <code>requested_by_id</code>, <code>assigned_to_id</code>, <code>unit_id</code>, <code>status</code>, <code>priority</code>, <code>due_date</code></p>
+<hr />
+<h3 id="lib_holidays">lib_holidays<a class="headerlink" href="#lib_holidays" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>name :string</code> (NOT NULL)
+- <code>holiday_date :date</code> (nullable; schedule entries may omit date)
+- <code>holiday_type :string</code> (NOT NULL)
+- <code>is_recurring :boolean</code> default false (NOT NULL)
+- <code>description :text</code>
+- <code>is_active :boolean</code> default true (NOT NULL)
+- <code>unit_id references(:nodes, on_delete: :delete_all)</code> (nullable)
+- <code>day_of_week :integer</code> (nullable) — 1=Monday..7=Sunday
+- <code>schedule_type :string</code> (NOT NULL, default 'holiday') — 'holiday' or 'schedule'
+- timestamps</p>
+<p>Indexes &amp; Unique
+- many indexes for holiday_date, holiday_type, is_active, unit_id, day_of_week, schedule_type and combos
+- unique partial index on <code>(holiday_date, holiday_type, unit_id)</code> where schedule_type = 'holiday'
+- unique partial index on <code>(day_of_week, holiday_type, unit_id)</code> where schedule_type = 'schedule'</p>
+<p>Constraints
+- <code>valid_day_of_week</code>: day_of_week IS NULL OR day_of_week BETWEEN 1 AND 7
+- <code>valid_schedule_type</code>: schedule_type IN ('holiday','schedule')
+- <code>schedule_requires_day_of_week</code> and <code>holiday_requires_date</code> to ensure schedule rows and holiday rows have required fields</p>
+<hr />
+<h3 id="roles">roles<a class="headerlink" href="#roles" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>name :string</code> (NOT NULL)
+- <code>description :text</code>
+- <code>is_system_role :boolean</code> default false (NOT NULL)
+- timestamps</p>
+<p>Indexes
+- unique on <code>name</code></p>
+<hr />
+<h3 id="permissions">permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>name :string</code> (NOT NULL)
+- <code>resource :string</code> (NOT NULL)
+- <code>action :string</code> (NOT NULL)
+- <code>description :text</code>
+- timestamps</p>
+<p>Indexes
+- unique on <code>name</code>
+- index on <code>resource</code>, <code>action</code></p>
+<hr />
+<h3 id="role_permissions">role_permissions<a class="headerlink" href="#role_permissions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>role_id references(:roles, on_delete: :delete_all)</code> (NOT NULL)
+- <code>permission_id references(:permissions, on_delete: :delete_all)</code> (NOT NULL)
+- timestamps (no updated_at)</p>
+<p>Indexes
+- unique on <code>(role_id, permission_id)</code>
+- index on <code>role_id</code>, <code>permission_id</code></p>
+<hr />
+<h3 id="user_role_assignments">user_role_assignments<a class="headerlink" href="#user_role_assignments" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>role_id references(:roles, on_delete: :delete_all)</code> (NOT NULL)
+- <code>scope_type :string</code> (NOT NULL, default 'global')
+- <code>scope_id :binary_id</code> (nullable)
+- <code>glam_type :string</code> (nullable)
+- <code>assigned_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (nullable)
+- <code>assigned_at :utc_datetime</code> (NOT NULL)
+- <code>expires_at :utc_datetime</code> (nullable)</p>
+<p>Indexes &amp; Constraints
+- indexes: user_id, role_id, (scope_type, scope_id), (user_id, scope_type, scope_id), (user_id, glam_type)
+- unique index <code>(user_id, role_id, scope_type, scope_id)</code> to avoid duplicates
+- check <code>valid_glam_type</code>: glam_type IS NULL OR glam_type IN ('Gallery','Library','Archive','Museum')</p>
+<hr />
+<h3 id="user_permissions">user_permissions<a class="headerlink" href="#user_permissions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>permission_id references(:permissions, on_delete: :delete_all)</code> (NOT NULL)
+- <code>scope_type :string</code> (NOT NULL, default 'global')
+- <code>scope_id :binary_id</code> (nullable)
+- <code>granted :boolean</code> default true (NOT NULL)
+- <code>assigned_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (nullable)
+- <code>assigned_at :utc_datetime</code> (NOT NULL)
+- <code>expires_at :utc_datetime</code> (nullable)</p>
+<p>Indexes &amp; Constraints
+- indexes on user_id, permission_id, (scope_type, scope_id)
+- unique <code>(user_id, permission_id, scope_type, scope_id)</code> to avoid duplicates</p>
+<hr />
+<h3 id="collection_permissions">collection_permissions<a class="headerlink" href="#collection_permissions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>collection_id references(:collections, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (nullable)
+- <code>role_id references(:roles, on_delete: :delete_all)</code> (nullable)
+- <code>permission_level :string</code> (NOT NULL)
+- timestamps</p>
+<p>Indexes &amp; Constraints
+- index on <code>collection_id</code>, <code>user_id</code>, <code>role_id</code>
+- check <code>user_or_role_required</code>: <code>(user_id IS NOT NULL AND role_id IS NULL) OR (user_id IS NULL AND role_id IS NOT NULL)</code></p>
+<hr />
+<h3 id="audit_logs">audit_logs<a class="headerlink" href="#audit_logs" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- default integer id</p>
+<p>Columns
+- <code>user_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- <code>action :string</code> (NOT NULL)
+- <code>resource_type :string</code>
+- <code>resource_id :binary_id</code>
+- <code>ip_address :string</code>
+- <code>user_agent :text</code>
+- <code>metadata :map</code> (jsonb)
+- timestamps (updated_at: false)</p>
+<p>Indexes &amp; Extras
+- index: <code>user_id</code>, <code>action</code>, <code>(resource_type, resource_id)</code>, <code>inserted_at</code>
+- raw SQL: ordered index <code>audit_logs_timestamp_desc_idx</code> on <code>inserted_at DESC</code>
+- raw SQL GIN JSONB index on <code>metadata</code> (<code>audit_logs_metadata_gin_idx</code>)</p>
+<hr />
+<h3 id="lib_payments">lib_payments<a class="headerlink" href="#lib_payments" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>fine_id references(:lib_fines, type: :binary_id, on_delete: :nilify_all)</code> (nullable)
+- <code>member_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>payment_gateway :string</code> (NOT NULL, default 'xendit')
+- <code>payment_link_id :string</code>
+- <code>external_id :string</code> (NOT NULL)
+- <code>payment_url :string</code>
+- <code>amount :decimal, precision:15, scale:2</code> (NOT NULL)
+- <code>paid_amount :decimal, precision:15, scale:2</code> (default 0)
+- <code>currency :string</code> default 'IDR'
+- <code>payment_method</code>, <code>payment_channel</code>
+- <code>status :string</code> default 'pending' (NOT NULL)
+- <code>payment_date</code>, <code>expired_at :utc_datetime</code>
+- <code>failure_reason :string</code>
+- <code>description :text</code>
+- <code>callback_data :map</code>
+- <code>metadata :map</code>
+- <code>processed_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (nullable)
+- timestamps (utc_datetime)</p>
+<p>Indexes
+- index on <code>fine_id</code>, <code>member_id</code>, <code>external_id</code>, <code>payment_link_id</code>, <code>status</code>, <code>payment_gateway</code></p>
+<hr />
+<h3 id="transfer_requests">transfer_requests<a class="headerlink" href="#transfer_requests" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>item_id references(:items, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>from_node_id references(:nodes, on_delete: :restrict)</code> (nullable)
+- <code>to_node_id references(:nodes, on_delete: :restrict)</code> (NOT NULL)
+- <code>from_location :string</code>
+- <code>to_location :string</code> (NOT NULL)
+- <code>status :string</code> default 'pending' (NOT NULL)
+- <code>reason :text</code>
+- <code>notes :text</code>
+- <code>requested_by_id references(:users, type: :binary_id, on_delete: :restrict)</code> (NOT NULL)
+- <code>reviewed_by_id references(:users, type: :binary_id, on_delete: :restrict)</code> (nullable)
+- <code>reviewed_at</code>, <code>completed_at :utc_datetime</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>item_id</code>, <code>from_node_id</code>, <code>to_node_id</code>, <code>status</code>, <code>requested_by_id</code>, <code>reviewed_by_id</code></p>
+<hr />
+<h3 id="stock_opname_sessions">stock_opname_sessions<a class="headerlink" href="#stock_opname_sessions" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>session_code :string</code> (NOT NULL)
+- <code>title :string</code> (NOT NULL)
+- <code>description :text</code>
+- <code>node_ids {:array, :integer}</code> (NOT NULL)
+- <code>collection_types {:array, :string}</code> (NOT NULL)
+- <code>scope_type :string</code> (NOT NULL)
+- <code>scope_id :string</code>
+- <code>status :string</code> default 'draft' (NOT NULL)
+- <code>started_at</code>, <code>completed_at</code>, <code>reviewed_at</code>, <code>approved_at :utc_datetime</code>
+- counters: <code>total_items</code>, <code>checked_items</code>, <code>missing_items</code>, <code>items_with_changes</code> (integers default 0)
+- <code>notes</code>, <code>review_notes</code>, <code>rejection_reason</code>
+- <code>created_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code> (NOT NULL)
+- <code>updated_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- <code>reviewed_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- timestamps</p>
+<p>Indexes &amp; Unique
+- unique on <code>session_code</code>
+- index on <code>status</code>, <code>created_by_id</code>, <code>inserted_at</code></p>
+<hr />
+<h3 id="stock_opname_librarian_assignments">stock_opname_librarian_assignments<a class="headerlink" href="#stock_opname_librarian_assignments" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>session_id references(:stock_opname_sessions, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>user_id references(:users, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>work_status :string</code> default 'pending' (NOT NULL)
+- <code>items_checked :integer</code> default 0
+- <code>started_at</code>, <code>completed_at :utc_datetime</code>
+- <code>notes :text</code>
+- timestamps</p>
+<p>Indexes
+- index on <code>session_id</code>, <code>user_id</code>, <code>work_status</code>
+- unique index on <code>(session_id, user_id)</code></p>
+<hr />
+<h3 id="stock_opname_items">stock_opname_items<a class="headerlink" href="#stock_opname_items" title="Permanent link">&para;</a></h3>
+<p>Primary key
+- <code>id :binary_id</code></p>
+<p>Columns
+- <code>session_id references(:stock_opname_sessions, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>item_id references(:items, type: :binary_id, on_delete: :delete_all)</code> (NOT NULL)
+- <code>collection_id references(:collections, type: :binary_id, on_delete: :delete_all)</code> (nullable)
+- <code>changes :jsonb</code> (nullable) — store diffs only
+- <code>scanned_barcode :string</code>
+- <code>check_status :string</code> default 'pending' (NOT NULL)
+- <code>has_changes :boolean</code> default false
+- <code>notes :text</code>
+- <code>scanned_at :utc_datetime</code>
+- <code>checked_by_id references(:users, type: :binary_id, on_delete: :nilify_all)</code>
+- timestamps</p>
+<p>Indexes &amp; Unique
+- index on <code>session_id</code>, <code>item_id</code>, <code>check_status</code>, <code>checked_by_id</code>
+- unique on <code>(session_id, item_id)</code>
+- GIN index on <code>changes</code> (JSONB)</p>
+<hr />
+<h2 id="additional-migrations-index-only-actions">Additional migrations &amp; index-only actions<a class="headerlink" href="#additional-migrations-index-only-actions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Cannot delete system roles (marked with <code>is_system_role: true</code>)</li>
-<li>Cannot delete roles that have users assigned to them</li>
-<li>Must first remove all user assignments before deletion</li>
+<li>Several migrations run raw SQL <code>execute</code> commands to:</li>
+<li>Create trigram GIN indexes for many text columns (e.g., <code>collections.title</code>, <code>items.item_code</code>) via <code>gin_trgm_ops</code>.</li>
+<li>Create JSONB GIN indexes on metadata fields (e.g., <code>audit_logs.metadata</code>).</li>
+<li>Create covering indexes (using <code>INCLUDE</code>) for faster listing queries (e.g., <code>collections_listing_covering_idx</code>, <code>items_catalog_covering_idx</code>).</li>
+<li>Tune column statistics for planner accuracy using <code>ALTER TABLE ... SET STATISTICS</code>.</li>
 </ul>
-<h3 id="permission-assignment">Permission Assignment<a class="headerlink" href="#permission-assignment" title="Permanent link">&para;</a></h3>
+<p>Search <code>priv/repo/migrations</code> for <code>execute</code> lines to find these SQL operations and their DROP counterparts.</p>
+<hr />
+<h2 id="recommended-maintenance-sample-inspection-queries">Recommended maintenance &amp; sample inspection queries<a class="headerlink" href="#recommended-maintenance-sample-inspection-queries" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Permissions can be added or removed from roles at any time</li>
-<li>Changes to role permissions immediately affect all users with that role</li>
-<li>System roles' permissions should be carefully managed</li>
+<li>Check that key extensions are installed:</li>
+<li>
+<p>SELECT * FROM pg_extension WHERE extname IN ('citext','pg_trgm');</p>
+</li>
+<li>
+<p>List custom enum types:</p>
+</li>
+<li>
+<p>SELECT n.nspname AS schema, t.typname AS enum_name
+    FROM pg_type t JOIN pg_enum e ON t.oid = e.enumtypid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+    GROUP BY n.nspname, t.typname;</p>
+</li>
+<li>
+<p>Inspect trigram indexes:</p>
+</li>
+<li>
+<p>SELECT indexname, tablename FROM pg_indexes WHERE indexdef LIKE '%gin_trgm_ops%';</p>
+</li>
+<li>
+<p>Inspect JSONB GIN indexes:</p>
+</li>
+<li>
+<p>SELECT indexname, tablename FROM pg_indexes WHERE indexdef LIKE '%USING gin (%' AND indexdef LIKE '%jsonb%';</p>
+</li>
+<li>
+<p>Get table columns directly from Postgres if you want quick authoritative view:</p>
+</li>
+<li>SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'items';</li>
 </ul>
-<h3 id="user-assignment">User Assignment<a class="headerlink" href="#user-assignment" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Users can have multiple roles</li>
-<li>Role assignments can be global or scoped to specific resources</li>
-<li>Removing a user from a role immediately revokes the role's permissions</li>
-<li>Users that already have a role won't appear in the search results</li>
-</ul>
-<h2 id="database-queries">Database Queries<a class="headerlink" href="#database-queries" title="Permanent link">&para;</a></h2>
-<p>The system uses optimized queries to:
-- Count users per role efficiently
-- Search users excluding already assigned users
-- Filter expired role assignments
-- Preload permissions with roles for efficient display</p>
-<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
-<ol>
-<li><strong>Permission Checks</strong>: All actions require appropriate permissions</li>
-<li><strong>System Role Protection</strong>: System roles cannot be modified or deleted</li>
-<li><strong>Validation</strong>: Role names are validated for uniqueness and format</li>
-<li><strong>Confirmation</strong>: Destructive actions require user confirmation</li>
-<li><strong>Assignment Tracking</strong>: Records who assigned roles/permissions and when</li>
-</ol>
-<h2 id="uiux-features">UI/UX Features<a class="headerlink" href="#uiux-features" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Responsive Design</strong>: Works on desktop and mobile devices</li>
-<li><strong>Dark Mode Support</strong>: Fully supports light and dark themes</li>
-<li><strong>Loading States</strong>: Shows spinners during search operations</li>
-<li><strong>Error Handling</strong>: Displays clear error messages for failed operations</li>
-<li><strong>Success Feedback</strong>: Flash messages confirm successful actions</li>
-<li><strong>Badges</strong>: Visual indicators for system roles and permission counts</li>
-<li><strong>Icons</strong>: Heroicons for intuitive action buttons</li>
-<li><strong>Modal Dialogs</strong>: Non-disruptive editing and permission management</li>
-</ul>
-<h2 id="integration-with-rbac-system">Integration with RBAC System<a class="headerlink" href="#integration-with-rbac-system" title="Permanent link">&para;</a></h2>
-<p>The role management UI integrates with the existing RBAC system:</p>
-<ul>
-<li>Uses <code>VoileWeb.Auth.PermissionManager</code> for role CRUD operations</li>
-<li>Uses <code>VoileWeb.Auth.Authorization</code> for permission checks and user assignments</li>
-<li>Respects the permission hierarchy (denials &gt; grants &gt; roles)</li>
-<li>Works with scoped permissions and global permissions</li>
-<li>Supports time-based role assignments (though not exposed in UI yet)</li>
-</ul>
-<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
-<p>Potential improvements for the role management system:</p>
-<ol>
-<li><strong>Bulk User Assignment</strong>: Assign multiple users to a role at once</li>
-<li><strong>Role Templates</strong>: Create roles from pre-defined templates</li>
-<li><strong>Permission Categories</strong>: Group permissions by resource type</li>
-<li><strong>Audit Log</strong>: Track all changes to roles and assignments</li>
-<li><strong>Role Hierarchy</strong>: Support parent-child role relationships</li>
-<li><strong>Expiring Assignments</strong>: UI for setting expiration dates on role assignments</li>
-<li><strong>Role Comparison</strong>: Compare permissions between roles</li>
-<li><strong>Import/Export</strong>: Backup and restore role configurations</li>
-<li><strong>Activity Dashboard</strong>: Visualize role usage and permission distribution</li>
-<li><strong>Notifications</strong>: Alert users when their role changes</li>
-</ol>
-<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="role-deletion-fails">Role Deletion Fails<a class="headerlink" href="#role-deletion-fails" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Check if users are assigned to the role</li>
-<li>Verify the role is not a system role</li>
-<li>Ensure you have <code>roles.delete</code> permission</li>
-</ul>
-<h3 id="cannot-add-user-to-role">Cannot Add User to Role<a class="headerlink" href="#cannot-add-user-to-role" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Confirm the user exists</li>
-<li>Check that the user doesn't already have this role</li>
-<li>Verify you have <code>roles.update</code> permission</li>
-</ul>
-<h3 id="permissions-not-updating">Permissions Not Updating<a class="headerlink" href="#permissions-not-updating" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Clear the browser cache</li>
-<li>Check that you have <code>permissions.manage</code> permission</li>
-<li>Verify the role was successfully updated in the database</li>
-</ul>
-<h3 id="search-not-working">Search Not Working<a class="headerlink" href="#search-not-working" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Ensure the search query is at least 2 characters</li>
-<li>Check database connection</li>
-<li>Look for JavaScript errors in browser console</li>
-</ul>
-<h2 id="developer-notes">Developer Notes<a class="headerlink" href="#developer-notes" title="Permanent link">&para;</a></h2>
-<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
-<p>Create test cases for:
-- Role CRUD operations
-- Permission assignments
-- User assignments
-- Search functionality
-- Authorization checks
-- System role protection</p>
-<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Role list uses streaming for efficient rendering</li>
-<li>User search is limited to 10 results</li>
-<li>Permissions are preloaded to minimize database queries</li>
-<li>Counts are calculated using aggregate queries</li>
-</ul>
-<h3 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">&para;</a></h3>
-<p>To customize the role management system:
-- Modify the component templates in the render functions
-- Add custom validations in the Role schema
-- Extend the PermissionManager with additional functions
-- Create custom authorization rules in the Authorization module</p>
+<hr />
+<h2 id="suggested-next-steps-optional-exports">Suggested next steps / optional exports<a class="headerlink" href="#suggested-next-steps-optional-exports" title="Permanent link">&para;</a></h2>
+<p>If you'd like, I can:
+- Generate a machine-friendly CSV or JSON export listing every table/column with type/null/default/fk/notes (one row per column).
+- Produce per-table Markdown tables (compact tabular style: column | type | null | default | FK | notes).
+- Add a small script to parse migrations and auto-generate this document so it's kept in-sync.</p>
+<p>Tell me which format you prefer for downstream uses (CSV, JSON, or compact Markdown tables) and I will produce it and save it under <code>docs/architecture/</code>.</p>
+<hr />
+<p>If you want me to remove one of the prior documents and keep only this merged file, say so and I'll remove the duplicate and ensure only this comprehensive file remains as the canonical reference.</p>
 
 
 
