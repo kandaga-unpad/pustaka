@@ -1,7 +1,7 @@
 [project]
 name = "docs"
 version = "0.1.0"
-description = "Add your description here"
+description = "VOILE is a next-generation digital library management system designed to bridge the gap between traditional library heritage and modern information technology. Built with **Elixir** and **Phoenix**, VOILE leverages high concurrency, fault tolerance, and real-time performance to offer a robust, scalable platform for organizing, preserving, and accessing a vast range of literary, cultural, and artistic content."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
@@ -11,4 +11,5 @@ dev = [
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.7.1",
     "mkdocs-mermaid2-plugin>=1.2.3",
+    "mkdocs-exclude>=1.0.2",
 ]
