@@ -271,16 +271,43 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         availability: "available"
       }
 
+      # Maintain search-related assigns so we can return to search modal
+      # and keep the collections stream populated for the main list view
+      page = socket.assigns.page || 1
+      per_page = 10
+      search = socket.assigns.search || ""
+      filters = socket.assigns.filters || %{}
+
+      {collections, total_pages, _} =
+        Catalog.list_collections_paginated(page, per_page, search, filters)
+
+      # Check if user is super_admin to determine edit permissions
+      is_super_admin = Catalog.is_user_admin?(current_user)
+
+      dbg(collection)
+
       socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:total_pages, total_pages)
       |> assign(:page_title, "Add Item to Collection")
       |> assign(:collection, collection)
       |> assign(:item, item)
       |> assign(:nodes, node_options)
       |> assign(:all_locations, all_locations)
-      |> assign(:editable_identifiers, false)
-      |> assign(:lock_unit_id, true)
+      |> assign(:editable_identifiers, is_super_admin)
+      |> assign(:lock_unit_id, !is_super_admin)
       |> assign(:current_user, current_user)
       |> assign(:patch, ~p"/manage/catalog/collections/search")
+      # Maintain search modal state
+      |> assign(:collection_search_query, socket.assigns[:collection_search_query] || "")
+      |> assign(
+        :collection_search_results,
+        socket.assigns[:collection_search_results] || []
+      )
+      |> assign(
+        :collection_search_performed,
+        socket.assigns[:collection_search_performed] || false
+      )
     end
   end
 

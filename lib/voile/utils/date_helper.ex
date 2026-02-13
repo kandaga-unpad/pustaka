@@ -48,6 +48,11 @@ defmodule Voile.Utils.DateHelper do
     end
   end
 
+  def to_local_time(%Date{} = date, _timezone, format) do
+    # Date doesn't have timezone info, just format it
+    apply_date_format(date, format)
+  end
+
   def to_local_time(nil, _timezone, _format), do: ""
 
   @doc """
@@ -237,6 +242,51 @@ defmodule Voile.Utils.DateHelper do
     end
   end
 
+  # Apply format specifically for Date structs (no time component)
+  defp apply_date_format(date, format) when is_binary(format) do
+    Calendar.strftime(date, format)
+  end
+
+  defp apply_date_format(date, :indonesian) do
+    day_name = get_indonesian_day_name_from_date(date)
+    month_name = get_indonesian_month_name_from_date(date)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, :indonesian_short) do
+    day_name = get_indonesian_day_name_from_date(date, :short)
+    month_name = get_indonesian_month_name_from_date(date, :short)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, :indonesian_date) do
+    day_name = get_indonesian_day_name_from_date(date)
+    month_name = get_indonesian_month_name_from_date(date)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, country_code) when is_atom(country_code) do
+    apply_date_format(date, Atom.to_string(country_code))
+  end
+
+  defp apply_date_format(date, country_code) do
+    case String.upcase(country_code) do
+      "US" -> Calendar.strftime(date, "%m/%d/%Y")
+      "GB" -> Calendar.strftime(date, "%d/%m/%Y")
+      "DE" -> Calendar.strftime(date, "%d.%m.%Y")
+      "FR" -> Calendar.strftime(date, "%d/%m/%Y")
+      "JP" -> Calendar.strftime(date, "%Y/%m/%d")
+      "CN" -> Calendar.strftime(date, "%Y年%m月%d日")
+      "KR" -> Calendar.strftime(date, "%Y-%m-%d")
+      "ID" -> Calendar.strftime(date, "%d/%m/%Y")
+      "BR" -> Calendar.strftime(date, "%d/%m/%Y")
+      "AU" -> Calendar.strftime(date, "%d/%m/%Y")
+      "CA" -> Calendar.strftime(date, "%Y-%m-%d")
+      "IN" -> Calendar.strftime(date, "%d-%m-%Y")
+      _ -> Date.to_iso8601(date)
+    end
+  end
+
   defp get_indonesian_day_name(dt, format \\ :full) do
     day_of_week = Date.day_of_week(DateTime.to_date(dt))
 
@@ -260,6 +310,57 @@ defmodule Voile.Utils.DateHelper do
 
   defp get_indonesian_month_name(dt, format \\ :full) do
     case {dt.month, format} do
+      {1, :full} -> "Januari"
+      {2, :full} -> "Februari"
+      {3, :full} -> "Maret"
+      {4, :full} -> "April"
+      {5, :full} -> "Mei"
+      {6, :full} -> "Juni"
+      {7, :full} -> "Juli"
+      {8, :full} -> "Agustus"
+      {9, :full} -> "September"
+      {10, :full} -> "Oktober"
+      {11, :full} -> "November"
+      {12, :full} -> "Desember"
+      {1, :short} -> "Jan"
+      {2, :short} -> "Feb"
+      {3, :short} -> "Mar"
+      {4, :short} -> "Apr"
+      {5, :short} -> "Mei"
+      {6, :short} -> "Jun"
+      {7, :short} -> "Jul"
+      {8, :short} -> "Agu"
+      {9, :short} -> "Sep"
+      {10, :short} -> "Okt"
+      {11, :short} -> "Nov"
+      {12, :short} -> "Des"
+    end
+  end
+
+  # Helper functions for Date structs
+  defp get_indonesian_day_name_from_date(date, format \\ :full) do
+    day_of_week = Date.day_of_week(date)
+
+    case {day_of_week, format} do
+      {1, :full} -> "Senin"
+      {2, :full} -> "Selasa"
+      {3, :full} -> "Rabu"
+      {4, :full} -> "Kamis"
+      {5, :full} -> "Jumat"
+      {6, :full} -> "Sabtu"
+      {7, :full} -> "Minggu"
+      {1, :short} -> "Sen"
+      {2, :short} -> "Sel"
+      {3, :short} -> "Rab"
+      {4, :short} -> "Kam"
+      {5, :short} -> "Jum"
+      {6, :short} -> "Sab"
+      {7, :short} -> "Min"
+    end
+  end
+
+  defp get_indonesian_month_name_from_date(date, format \\ :full) do
+    case {date.month, format} do
       {1, :full} -> "Januari"
       {2, :full} -> "Februari"
       {3, :full} -> "Maret"

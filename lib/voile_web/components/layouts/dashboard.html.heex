@@ -33,6 +33,10 @@
             <p>Hello, Guest!</p>
           </div>
         <% end %>
+        <div class="mt-4">
+          <span>{gettext("Language:")}</span>
+          <.locale_switcher current_path={@current_path} />
+        </div>
       </div>
 
       <div class="bg-white rounded-full p-4">

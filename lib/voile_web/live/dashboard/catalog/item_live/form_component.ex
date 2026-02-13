@@ -27,13 +27,36 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         >
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Collection (full row, read-only) -->
-            <div class="col-span-full flex items-center gap-3">
-              <.input field={@form[:collection_id]} type="hidden" />
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 w-32">
-                {gettext("Collection")}
-              </label>
-              <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
-                {@collection_name || ""}
+            <div class="col-span-full flex items-start gap-3 w-full">
+              <div>
+                <%= if @collection_data.thumbnail do %>
+                  <img
+                    src={@collection_data.thumbnail}
+                    alt={@collection_data.title}
+                    class="aspect-[1/1.414] w-32 object-cover border-2 border-gray-300 dark:border-gray-600 rounded shadow-sm"
+                  />
+                <% else %>
+                  <img
+                    src="/images/v.png"
+                    alt={@collection_data.title}
+                    class="aspect-[1/1.414] w-32 object-cover border-2 border-gray-300 dark:border-gray-600 rounded shadow-sm"
+                  />
+                <% end %>
+              </div>
+              <div>
+                <.input field={@form[:collection_id]} type="hidden" />
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300 w-32">
+                  {gettext("Collection")}
+                </label>
+                <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                  {@collection_data.title || ""}
+                </div>
+                <label class="text-xs text-gray-500 mt-1 block">
+                  {gettext("Author")}
+                </label>
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                  {@collection_data.mst_creator.creator_name || ""}
+                </div>
               </div>
             </div>
             <!-- Identifiers (editable only for super_admin) -->
@@ -85,7 +108,13 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
                   {gettext("Unit / Node")}
                 </label>
                 <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white">
-                  {Enum.find(@nodes, fn {_label, id} -> id == @form[:unit_id].value end) |> elem(0)}
+                  {case Enum.find(@nodes, fn {_label, id} ->
+                          # Handle both string and integer unit_id values
+                          to_string(id) == to_string(@form[:unit_id].value)
+                        end) do
+                    {label, _id} -> label
+                    nil -> gettext("Unknown")
+                  end}
                 </div>
                 <.input field={@form[:unit_id]} type="hidden" />
               <% else %>
@@ -224,17 +253,15 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
 
     location_options = Enum.map(filtered_locations, &{&1.location_name, &1.id})
 
-    collection_name =
-      case item do
-        %{collection: %_{} = coll} ->
-          coll.title
-
-        %{collection_id: cid} when not is_nil(cid) ->
-          # fallback to empty string; parent LiveView may pass collection_name
-          ""
-
-        _ ->
-          ""
+    # Use collection_data from assigns if provided (it's preloaded with creator)
+    # The parent component passes this as collection_data when opening the form
+    collection_data =
+      if assigns[:collection_data] do
+        assigns.collection_data
+      else
+        # Fallback: create a minimal collection struct if not provided
+        # This shouldn't happen in normal flow, but prevents crashes
+        %{title: "", thumbnail: nil, mst_creator: %{creator_name: ""}}
       end
 
     # Determine whether identifier fields should be editable by this user.
@@ -253,7 +280,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
      |> assign(:locations, location_options)
      |> assign(:all_locations, all_locations)
      |> assign_new(:collections, fn -> [] end)
-     |> assign(:collection_name, collection_name)
+     |> assign(:collection_data, collection_data)
      |> assign(:editable_identifiers, is_super_admin)
      |> assign_new(:lock_unit_id, fn -> false end)
      |> assign_new(:form, fn ->

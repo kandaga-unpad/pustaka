@@ -1206,6 +1206,19 @@ defmodule Voile.Schema.Catalog do
       {:condition, condition}, q ->
         from i in q, where: i.condition == ^condition
 
+      {:location_id, nil}, q ->
+        q
+
+      {:location_id, ""}, q ->
+        q
+
+      {:location_id, location_id}, q when is_binary(location_id) ->
+        location_id = String.to_integer(location_id)
+        from i in q, where: i.item_location_id == ^location_id
+
+      {:location_id, location_id}, q when is_integer(location_id) ->
+        from i in q, where: i.item_location_id == ^location_id
+
       _, q ->
         q
     end)

@@ -156,9 +156,9 @@
             value={@filter_status}
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">{gettext("All Statuses")}</option>
+            <option value="" selected={@filter_status == ""}>{gettext("All Statuses")}</option>
             <%= for {label, value} <- @status_options do %>
-              <option value={value}>{label}</option>
+              <option value={value} selected={value == @filter_status}>{label}</option>
             <% end %>
           </select>
         </div>
@@ -172,25 +172,11 @@
             value={@filter_availability}
             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">{gettext("All Availabilities")}</option>
+            <option value="" selected={@filter_availability == ""}>
+              {gettext("All Availabilities")}
+            </option>
             <%= for {label, value} <- @availability_options do %>
-              <option value={value}>{label}</option>
-            <% end %>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {gettext("Condition")}
-          </label>
-          <select
-            name="condition"
-            value={@filter_condition}
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">{gettext("All Conditions")}</option>
-            <%= for {label, value} <- @condition_options do %>
-              <option value={value}>{label}</option>
+              <option value={value} selected={value == @filter_availability}>{label}</option>
             <% end %>
           </select>
         </div>
@@ -207,11 +193,14 @@
             >
               <option value="">{gettext("All Locations")}</option>
               <%= for {name, id} <- @nodes do %>
-                <option value={id}>{name}</option>
+                <option value={to_string(id)} selected={to_string(id) == @filter_node_id}>
+                  {name}
+                </option>
               <% end %>
             </select>
           <% else %>
             <%= if @user_node_id do %>
+              <input type="hidden" name="node_id" value={@user_node_id} />
               <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 {Enum.find(@nodes, fn {_, nid} -> nid == @user_node_id end) |> elem(0) ||
                   gettext("Your Location")}
@@ -220,6 +209,41 @@
               <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500">
                 {gettext("No Location Assigned")}
               </div>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {gettext("Specific Location")}
+          </label>
+          <%= if @filtered_locations == [] && @is_admin do %>
+            <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 italic">
+              {gettext("Select a node first")}
+            </div>
+          <% else %>
+            <%= if @filtered_locations == [] do %>
+              <div class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 italic">
+                {gettext("No locations available")}
+              </div>
+            <% else %>
+              <select
+                name="location_id"
+                value={@filter_location_id}
+                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="" selected={@filter_location_id == ""}>
+                  {gettext("All Locations")}
+                </option>
+                <%= for location <- @filtered_locations do %>
+                  <option
+                    value={to_string(location.id)}
+                    selected={to_string(location.id) == @filter_location_id}
+                  >
+                    {location.location_name}
+                  </option>
+                <% end %>
+              </select>
             <% end %>
           <% end %>
         </div>
@@ -254,12 +278,15 @@
               </span>
             <% end %>
 
-            <%= if @filter_condition != "" do %>
+            <%= if @filter_node_id != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                {gettext("Condition:")} {@filter_condition}
+                {gettext("Node:")} {Enum.find(@nodes, fn {_, nid} ->
+                  nid == String.to_integer(@filter_node_id)
+                end)
+                |> elem(0) || @filter_node_id}
                 <button
                   phx-click="filter_change"
-                  phx-value-condition=""
+                  phx-value-node_id=""
                   class="text-indigo-600 hover:text-indigo-800"
                 >
                   <.icon name="hero-x-mark" class="w-3 h-3" />
@@ -267,15 +294,17 @@
               </span>
             <% end %>
 
-            <%= if @filter_node_id != "" do %>
+            <%= if @filter_location_id != "" do %>
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
-                {gettext("Location:")} {Enum.find(@nodes, fn {_, nid} ->
-                  nid == String.to_integer(@filter_node_id)
-                end)
-                |> elem(0) || @filter_node_id}
+                {gettext("Location:")} {case Enum.find(@filtered_locations, fn loc ->
+                                               loc.id == String.to_integer(@filter_location_id)
+                                             end) do
+                  nil -> @filter_location_id
+                  loc -> loc.location_name
+                end}
                 <button
                   phx-click="filter_change"
-                  phx-value-node_id=""
+                  phx-value-location_id=""
                   class="text-indigo-600 hover:text-indigo-800"
                 >
                   <.icon name="hero-x-mark" class="w-3 h-3" />
@@ -323,15 +352,7 @@
             </th>
 
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
-              {gettext("Location")}
-            </th>
-
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
-              {gettext("Status")}
-            </th>
-
-            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
-              {gettext("Condition")}
+              {gettext("Unit/Node")}
             </th>
 
             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
@@ -346,7 +367,7 @@
 
         <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
           <tr :if={@items_empty?} class="only:table-row hidden">
-            <td class="px-4 py-6 text-center text-sm text-gray-500" colspan="8">
+            <td class="px-4 py-6 text-center text-sm text-gray-500" colspan="6">
               {gettext("No items found. Try a different search or")} <.link
                 patch={~p"/manage/catalog/items/new"}
                 class="text-indigo-600 hover:underline"
@@ -355,31 +376,51 @@
           </tr>
 
           <%= for {id, item} <- @streams.items do %>
-            <tr
-              id={id}
-              class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-              phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
-            >
-              <td class="px-4 py-3 text-sm">{item.collection.title || "-"}</td>
+            <tr id={id} class="hover:bg-gray-50 dark:hover:bg-gray-800">
+              <td
+                class="px-4 py-3 text-sm cursor-pointer"
+                phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
+              >
+                {item.collection.title || "-"}
+              </td>
 
-              <td class="px-4 py-3 text-sm">{item.item_code || "-"}</td>
+              <td
+                class="px-4 py-3 text-sm cursor-pointer"
+                phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
+              >
+                {item.item_code || "-"}
+              </td>
 
-              <td class="px-4 py-3 text-sm">{item.inventory_code || "-"}</td>
+              <td
+                class="px-4 py-3 text-sm cursor-pointer"
+                phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
+              >
+                {item.inventory_code || "-"}
+              </td>
 
-              <td class="px-4 py-3 text-sm">{item.location || "-"}</td>
+              <td
+                class="px-4 py-3 text-sm cursor-pointer"
+                phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
+              >
+                {if item.node, do: item.node.name, else: "-"}
+              </td>
 
-              <td class="px-4 py-3 text-sm">{item.status || "-"}</td>
-
-              <td class="px-4 py-3 text-sm">{item.condition || "-"}</td>
-
-              <td class="px-4 py-3 text-sm">
+              <td
+                class="px-4 py-3 text-sm cursor-pointer"
+                phx-click={JS.navigate(~p"/manage/catalog/items/#{item}")}
+              >
                 <span class={[
                   "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                  item.availability == "available" && "bg-green-100 text-green-800",
-                  item.availability == "loaned" && "bg-yellow-100 text-yellow-800",
-                  item.availability == "reserved" && "bg-indigo-100 text-indigo-800",
-                  item.availability == "maintenance" && "bg-red-100 text-red-800",
-                  is_nil(item.availability) && "bg-gray-100 text-gray-800"
+                  item.availability == "available" &&
+                    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+                  item.availability == "loaned" &&
+                    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+                  item.availability == "reserved" &&
+                    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+                  item.availability == "maintenance" &&
+                    "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+                  is_nil(item.availability) &&
+                    "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
                 ]}>
                   {item.availability || "-"}
                 </span>
@@ -390,23 +431,28 @@
                   <%= if can?(@current_scope.user, "items.update") do %>
                     <.link
                       patch={~p"/manage/catalog/items/#{item}/edit"}
-                      class="text-indigo-600 hover:underline"
-                      title="Edit"
                       phx-click={JS.push_focus()}
                     >
-                      <.icon name="hero-pencil" class="w-4 h-4" />
+                      <.button
+                        type="button"
+                        class="primary-btn flex items-center gap-1"
+                      >
+                        <.icon name="hero-pencil" class="w-3.5 h-3.5 mr-1" />
+                        {gettext("Edit")}
+                      </.button>
                     </.link>
                   <% end %>
 
                   <%= if can?(@current_scope.user, "items.delete") do %>
-                    <.link
+                    <.button
+                      type="button"
                       phx-click={JS.push("delete", value: %{id: item.id}) |> hide("##{id}")}
                       data-confirm={gettext("Are you sure?")}
-                      class="text-red-600 hover:underline"
-                      title="Delete"
+                      class="cancel-btn flex items-center gap-1"
                     >
-                      <.icon name="hero-trash" class="w-4 h-4" />
-                    </.link>
+                      <.icon name="hero-trash" class="w-3.5 h-3.5 mr-1" />
+                      {gettext("Delete")}
+                    </.button>
                   <% end %>
                 </div>
               </td>
