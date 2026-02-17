@@ -184,7 +184,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
             </div>
 
             <div class="mt-6 flex items-center justify-between">
-              <div class="text-sm">{gettext("Click on any day to toggle its business status")}</div>
+              <div class="text-xs">{gettext("Click on any day to toggle its business status")}</div>
 
               <div class="space-x-2">
                 <.button
@@ -348,21 +348,17 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </h3>
 
           <.form for={@form} id="holiday-form" phx-submit="save_holiday">
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">{gettext("Unit (optional)")}</label>
-              <select
-                name="lib_holiday[unit_id]"
-                class="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="">{gettext("System Wide")}</option>
-
-                <%= for node <- @nodes do %>
-                  <option value={node.id} selected={@form.params["unit_id"] == to_string(node.id)}>
-                    {node.name} ({node.abbr})
-                  </option>
-                <% end %>
-              </select>
-            </div>
+            <.input
+              field={@form[:unit_id]}
+              type="select"
+              label={gettext("Unit (optional)")}
+              options={
+                [
+                  {gettext("System Wide"), ""}
+                ] ++ Enum.map(@nodes, &{"#{&1.name} (#{&1.abbr})", &1.id})
+              }
+              disabled={not @is_super_admin}
+            />
             <.input field={@form[:name]} type="text" label={gettext("Holiday Name")} required />
             <.input field={@form[:holiday_date]} type="date" label={gettext("Date")} required />
             <.input
@@ -447,7 +443,17 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
   end
 
   def handle_event("new_holiday", _params, socket) do
-    changeset = LibHolidays.change_holiday(%LibHoliday{})
+    current_user = socket.assigns.current_scope.user
+    is_super_admin = socket.assigns.is_super_admin
+
+    holiday_struct =
+      if is_super_admin do
+        %LibHoliday{}
+      else
+        %LibHoliday{unit_id: current_user.node_id}
+      end
+
+    changeset = LibHolidays.change_holiday(holiday_struct)
 
     {:noreply,
      socket
@@ -468,6 +474,17 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
   end
 
   def handle_event("save_holiday", %{"lib_holiday" => holiday_params}, socket) do
+    current_user = socket.assigns.current_scope.user
+    is_super_admin = socket.assigns.is_super_admin
+
+    # For non-super-admins, force unit_id to their assigned node
+    holiday_params =
+      if is_super_admin do
+        holiday_params
+      else
+        Map.put(holiday_params, "unit_id", to_string(current_user.node_id))
+      end
+
     case socket.assigns.form_holiday do
       nil ->
         case LibHolidays.create_holiday(holiday_params) do

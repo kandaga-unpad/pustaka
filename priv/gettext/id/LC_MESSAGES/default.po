@@ -3503,7 +3503,7 @@ msgstr "Cari berdasarkan judul, deskripsi, atau kode..."
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:616
 #, elixir-autogen, elixir-format
 msgid "Search for an existing collection to add an item to, or create a new collection if none match."
-msgstr "Cari koleksi yang ada untuk menambah item, atau buat koleksi baru jika tidak ada yang cocok."
+msgstr "Cari koleksi yang ada untuk menambah item, atau buat koleksi baru jika tidak ada yang sesuai."
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:696
 #, elixir-autogen, elixir-format
@@ -3518,7 +3518,7 @@ msgstr "Pengaturan"
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:799
 #, elixir-autogen, elixir-format
 msgid "Start typing above to search for an existing collection to add new item to the collection, or create a brand new collection if there is no collection exist."
-msgstr "Mulai mengetik di atas untuk mencari koleksi yang ada untuk menambahkan item baru, atau buat koleksi baru jika tidak ada koleksi yang sesuai."
+msgstr "Silahkan cari terlebih dahulu koleksi yang ada untuk ditambahkan sebagai item baru, atau buat koleksi baru jika tidak ada koleksi yang sesuai."
 
 #: lib/voile_web/controllers/error_html/401.html.heex:57
 #: lib/voile_web/controllers/error_html/404.html.heex:61
@@ -9611,7 +9611,7 @@ msgstr "Klik notifikasi untuk melihat detail reservasi lengkap"
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:187
 #, elixir-autogen, elixir-format
 msgid "Click on any day to toggle its business status"
-msgstr "Klik pada hari apa pun untuk mengubah status hari kerja"
+msgstr "Klik salah satu untuk mengatur hari layanan"
 
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:248
 #, elixir-autogen, elixir-format
