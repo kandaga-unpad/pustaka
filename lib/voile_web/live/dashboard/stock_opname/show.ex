@@ -284,6 +284,19 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
               >
                 <.icon name="hero-user-minus" class="w-4 h-4" />
               </button>
+              <button
+                :if={
+                  assignment.work_status != "completed" and
+                    @session.status in ["draft", "initializing", "in_progress"] and
+                    @can_assign_librarians
+                }
+                phx-click="open_complete_modal"
+                phx-value-assignment-id={assignment.id}
+                class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1 rounded"
+                title="Mark as completed"
+              >
+                <.icon name="hero-check-circle" class="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -492,9 +505,43 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         </div>
       </div>
     </div>
+
+    <%!-- Complete Librarian Modal --%>
+    <%= if @show_complete_modal do %>
+      <.modal id="complete-librarian-modal" show={true} on_cancel={JS.push("cancel_complete_modal")}>
+        <div class="flex items-start gap-4">
+          <div class="flex-none">
+            <.icon name="hero-exclamation-triangle-solid" class="h-8 w-8 text-red-600" />
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold">Mark Librarian as Completed</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Are you sure you want to mark this librarian's work as completed? This action cannot be undone.
+            </p>
+            <div class="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                phx-click="cancel_complete_modal"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                phx-click="confirm_complete_librarian"
+                class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md"
+              >
+                Mark as Completed
+              </button>
+            </div>
+          </div>
+        </div>
+      </.modal>
+    <% end %>
     """
   end
 
+  @spec mount(map(), any(), Phoenix.LiveView.Socket.t()) :: {:ok, map()}
   def mount(%{"id" => id}, _session, socket) do
     session = StockOpname.get_session_without_items!(id)
     current_user = socket.assigns.current_scope.user
@@ -573,6 +620,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         |> assign(:filtered_librarians, [])
         |> assign(:selected_librarian_id, nil)
         |> assign(:selected_librarian, nil)
+        |> assign(:show_complete_modal, false)
+        |> assign(:selected_assignment_id, nil)
 
       {:ok, socket}
     else
@@ -864,6 +913,103 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
     end
   end
 
+  def handle_event("open_complete_modal", %{"assignment-id" => assignment_id}, socket) do
+    socket =
+      socket
+      |> assign(:show_complete_modal, true)
+      |> assign(:selected_assignment_id, assignment_id)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_complete_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:show_complete_modal, false)
+      |> assign(:selected_assignment_id, nil)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("confirm_complete_librarian", _params, socket) do
+    assignment_id = socket.assigns.selected_assignment_id
+
+    if assignment_id do
+      case StockOpname.admin_complete_librarian_assignment(
+             assignment_id,
+             socket.assigns.current_user
+           ) do
+        {:ok, _assignment} ->
+          # Reload session and available librarians
+          session = StockOpname.get_session_without_items!(socket.assigns.session.id)
+
+          available_librarians =
+            StockOpname.list_available_librarians(session, socket.assigns.current_user)
+
+          # Update librarian pagination
+          librarian_assignments = session.librarian_assignments
+          total_librarians = length(librarian_assignments)
+
+          librarian_pagination = %{
+            items: Enum.take(librarian_assignments, 3),
+            page: 1,
+            per_page: 3,
+            total_count: total_librarians,
+            total_pages:
+              if(total_librarians > 0, do: Float.ceil(total_librarians / 3) |> trunc(), else: 0),
+            has_prev: false,
+            has_next: total_librarians > 3
+          }
+
+          socket =
+            socket
+            |> assign(:session, session)
+            |> assign(:available_librarians, available_librarians)
+            |> assign(:librarian_pagination, librarian_pagination)
+            |> assign(:all_librarians_completed, StockOpname.all_librarians_completed?(session))
+            |> assign(:show_complete_modal, false)
+            |> assign(:selected_assignment_id, nil)
+            |> put_flash(:info, "Librarian's work marked as completed!")
+
+          {:noreply, socket}
+
+        {:error, :assignment_not_found} ->
+          {:noreply,
+           socket
+           |> assign(:show_complete_modal, false)
+           |> assign(:selected_assignment_id, nil)
+           |> put_flash(:error, "Librarian assignment not found")}
+
+        {:error, :already_completed} ->
+          {:noreply,
+           socket
+           |> assign(:show_complete_modal, false)
+           |> assign(:selected_assignment_id, nil)
+           |> put_flash(:error, "This librarian's work is already completed")}
+
+        {:error, :invalid_session_status} ->
+          {:noreply,
+           socket
+           |> assign(:show_complete_modal, false)
+           |> assign(:selected_assignment_id, nil)
+           |> put_flash(:error, "Cannot complete assignments for sessions in this status")}
+
+        {:error, _} ->
+          {:noreply,
+           socket
+           |> assign(:show_complete_modal, false)
+           |> assign(:selected_assignment_id, nil)
+           |> put_flash(:error, "Failed to complete librarian's work")}
+      end
+    else
+      {:noreply,
+       socket
+       |> assign(:show_complete_modal, false)
+       |> assign(:selected_assignment_id, nil)
+       |> put_flash(:error, "No assignment selected")}
+    end
+  end
+
   def handle_event("search_librarians", %{"search_term" => search_term}, socket) do
     filtered_librarians =
       if String.trim(search_term) == "" do
@@ -963,6 +1109,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Show do
         |> assign(:filtered_librarians, [])
         |> assign(:selected_librarian_id, nil)
         |> assign(:selected_librarian, nil)
+        |> assign(:show_complete_modal, false)
+        |> assign(:selected_assignment_id, nil)
       end
 
     {:noreply, socket}

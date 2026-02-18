@@ -353,6 +353,37 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
+  Admin completes a librarian's assignment by assignment ID (Super Admin only).
+  """
+  def admin_complete_librarian_assignment(assignment_id, _admin_user) do
+    case Repo.get(LibrarianAssignment, assignment_id) do
+      nil ->
+        {:error, :assignment_not_found}
+
+      assignment ->
+        # Check session status
+        session = Repo.get!(Session, assignment.session_id)
+
+        if session.status not in ["draft", "initializing", "in_progress"] do
+          {:error, :invalid_session_status}
+        else
+          # Check if already completed
+          if assignment.work_status == "completed" do
+            {:error, :already_completed}
+          else
+            # Complete the assignment
+            assignment
+            |> Ecto.Changeset.change(%{
+              work_status: "completed",
+              completed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+            })
+            |> Repo.update()
+          end
+        end
+    end
+  end
+
+  @doc """
   List librarians available for assignment to a session.
   Returns users with eligible staff roles who are not suspended,
   not already assigned to the session, and (if not super_admin) from the same node.

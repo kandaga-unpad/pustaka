@@ -381,6 +381,33 @@ defmodule VoileWeb.Auth.Authorization do
 
   def is_super_admin?(nil), do: false
 
+  # Check if user is Node Admin (can manage collections/items for their own node)
+  def is_node_admin?(%User{} = user) do
+    user = Repo.preload(user, :roles)
+
+    Enum.any?(user.roles, fn role ->
+      role.name == "admin"
+    end)
+  end
+
+  def is_node_admin?(%Phoenix.LiveView.Socket{assigns: assigns}) when is_map(assigns) do
+    case Map.get(assigns, :current_scope) do
+      %{user: user} when not is_nil(user) -> is_node_admin?(user)
+      _ -> false
+    end
+  end
+
+  def is_node_admin?(%Phoenix.LiveView.Socket{}), do: false
+
+  def is_node_admin?(%Plug.Conn{} = conn) do
+    case conn.assigns[:current_scope] do
+      %{user: user} when not is_nil(user) -> is_node_admin?(user)
+      _ -> false
+    end
+  end
+
+  def is_node_admin?(nil), do: false
+
   # Private functions
 
   defp has_explicit_permission?(user_id, permission_name, scope) do

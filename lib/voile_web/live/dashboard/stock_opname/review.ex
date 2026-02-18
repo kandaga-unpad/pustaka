@@ -210,7 +210,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:      {item.item.barcode}</span>
+                      <span :if={item.item.barcode}> • Barcode:       {item.item.barcode}</span>
                     </p>
                   </div>
 
@@ -341,7 +341,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:      {item.item.barcode}</span>
+                      <span :if={item.item.barcode}> • Barcode:       {item.item.barcode}</span>
                     </p>
                   </div>
 

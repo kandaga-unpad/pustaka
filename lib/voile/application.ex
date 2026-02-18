@@ -44,7 +44,9 @@ defmodule Voile.Application do
           # Start the email queue for rate-limited email sending
           Voile.Notifications.EmailQueue,
           # Start the loan reminder scheduler
-          Voile.Task.LoanReminderScheduler
+          Voile.Task.LoanReminderScheduler,
+          # Start the suspension expiry scheduler
+          Voile.Task.SuspensionExpiryScheduler
         ]
       end
 

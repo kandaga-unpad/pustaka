@@ -40,7 +40,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               |> assign(:suspend_modal_visible, false)
               |> assign(
                 :suspend_form,
-                to_form(%{"suspension_reason" => "", "suspension_ends_at" => ""})
+                to_form(%{"suspension_reason" => "", "suspension_ends_at" => ""}, as: "suspend")
               )
               |> assign(:tab, "upload")
               |> assign(:thumbnail_source, nil)
@@ -281,14 +281,17 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   end
 
   @impl true
-  def handle_event("confirm_suspend", params, socket) do
+  def handle_event("confirm_suspend", %{"suspend" => params}, socket) do
     reason = params["suspension_reason"]
     ends_at_str = params["suspension_ends_at"]
 
     ends_at =
       if ends_at_str && ends_at_str != "" do
-        case NaiveDateTime.from_iso8601(ends_at_str) do
-          {:ok, naive} -> DateTime.from_naive!(naive, "Etc/UTC")
+        # datetime-local format is YYYY-MM-DDTHH:MM, need to add :00 for seconds
+        datetime_str = ends_at_str <> ":00"
+
+        case DateTime.from_iso8601(datetime_str) do
+          {:ok, datetime, _} -> datetime
           _ -> nil
         end
       else
@@ -507,7 +510,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             </span>
 
             <%= if can?(@current_scope.user, "users.update") do %>
-              <%= if @member.manually_suspended do %>
+              <%= if @member.manually_suspended && (is_nil(@member.suspension_ends_at) || DateTime.after?(@member.suspension_ends_at, DateTime.utc_now())) do %>
                 <.button
                   phx-click="unsuspend_member"
                   class="warning-btn"
@@ -645,6 +648,43 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
         </div>
       </div>
     </div>
+
+    <%= if @suspend_modal_visible do %>
+      <div
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        id="suspend-modal"
+      >
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-700">
+          <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {gettext("Suspend Member")}
+            </h3>
+            <.form for={@suspend_form} phx-submit="confirm_suspend" class="space-y-4">
+              <.input
+                field={@suspend_form[:suspension_reason]}
+                type="textarea"
+                label={gettext("Suspension Reason")}
+                placeholder={gettext("Reason for suspension")}
+                required
+              />
+              <.input
+                field={@suspend_form[:suspension_ends_at]}
+                type="datetime-local"
+                label={gettext("Suspension Ends At (optional)")}
+              />
+              <div class="flex items-center gap-4 pt-4">
+                <.button type="submit" class="cancel-btn">
+                  <.icon name="hero-pause" class="w-4 h-4 mr-2" /> {gettext("Suspend Member")}
+                </.button>
+                <.button type="button" phx-click="cancel_suspend" class="secondary-btn">
+                  {gettext("Cancel")}
+                </.button>
+              </div>
+            </.form>
+          </div>
+        </div>
+      </div>
+    <% end %>
     """
   end
 
@@ -745,7 +785,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
   defp member_status(member) do
     cond do
-      member.manually_suspended ->
+      member.manually_suspended &&
+          (is_nil(member.suspension_ends_at) ||
+             DateTime.after?(member.suspension_ends_at, DateTime.utc_now())) ->
         gettext("Suspended")
 
       member.expiry_date && Date.before?(member.expiry_date, Date.utc_today()) ->

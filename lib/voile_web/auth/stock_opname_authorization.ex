@@ -97,9 +97,14 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   def can_delete_session?(%User{} = user, %Session{status: status} = session)
       when status in ["approved", "cancelled"] do
     cond do
-      Authorization.is_super_admin?(user) -> true
-      user.node_id && user.node_id in session.node_ids -> true
-      true -> false
+      Authorization.is_super_admin?(user) ->
+        true
+
+      user.node_id && user.node_id in session.node_ids && Authorization.is_node_admin?(user) ->
+        true
+
+      true ->
+        false
     end
   end
 
@@ -118,9 +123,14 @@ defmodule VoileWeb.Auth.StockOpnameAuthorization do
   """
   def can_approve_session?(%User{} = user, %Session{} = session) do
     cond do
-      Authorization.is_super_admin?(user) -> true
-      user.node_id && user.node_id in session.node_ids -> true
-      true -> false
+      Authorization.is_super_admin?(user) ->
+        true
+
+      user.node_id && user.node_id in session.node_ids && Authorization.is_node_admin?(user) ->
+        true
+
+      true ->
+        false
     end
   end
 
