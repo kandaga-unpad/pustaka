@@ -111,7 +111,17 @@ defmodule VoileWeb.UserRegistrationLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     # add username to the user_params
     username = String.split(user_params["email"], "@") |> hd
-    user_params = Map.put(user_params, "username", username)
+
+    registration_date_value =
+      case User.__schema__(:type, :registration_date) do
+        :date -> Date.utc_today()
+        _ -> Date.to_iso8601(Date.utc_today())
+      end
+
+    user_params =
+      user_params
+      |> Map.put("username", username)
+      |> Map.put("registration_date", registration_date_value)
 
     case Accounts.register_user(user_params) do
       {:ok, user} ->

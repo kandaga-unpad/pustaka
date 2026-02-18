@@ -41,6 +41,106 @@ defmodule Voile.Schema.Accounts do
     Repo.get_by(User, email: email) |> preload_user_assocs()
   end
 
+  # Assign a member type based on identifier heuristics:
+  # - 12-digit numeric -> `member_verified`
+  # - numeric and length >= 13 (likely generated unix-timestamp+rand) -> `public_verified`
+  # Otherwise, leave as-is.
+  defp maybe_assign_member_type_from_identifier(%User{} = user) do
+    require Logger
+
+    identifier_str =
+      case user.identifier do
+        %Decimal{} = d -> Decimal.to_string(d)
+        i when is_integer(i) -> Integer.to_string(i)
+        s when is_binary(s) -> s
+        _ -> nil
+      end
+
+    target_slug =
+      cond do
+        is_binary(identifier_str) and String.length(identifier_str) == 12 and
+            String.match?(identifier_str, ~r/^[0-9]+$/) ->
+          "member_verified"
+
+        is_binary(identifier_str) and String.length(identifier_str) == 14 and
+            String.match?(identifier_str, ~r/^[0-9]+$/) ->
+          "public_verified"
+
+        is_binary(identifier_str) and String.length(identifier_str) == 18 and
+            String.match?(identifier_str, ~r/^[0-9]+$/) ->
+          "member_organization"
+
+        true ->
+          nil
+      end
+
+    if is_binary(target_slug) do
+      member_type = Repo.get_by(MemberType, slug: target_slug)
+
+      cond do
+        member_type == nil ->
+          Logger.debug("MemberType #{target_slug} not found, skipping assignment")
+          user
+
+        user.user_type_id == member_type.id ->
+          # already assigned
+          user
+
+        true ->
+          # Build update attrs. Also compute expiry_date from registration_date
+          # and the member_type.membership_period_days if available.
+          registration_date =
+            case user.registration_date do
+              %Date{} = d ->
+                d
+
+              nil ->
+                Date.utc_today()
+
+              s when is_binary(s) ->
+                case Date.from_iso8601(s) do
+                  {:ok, d} -> d
+                  _ -> Date.utc_today()
+                end
+
+              _ ->
+                Date.utc_today()
+            end
+
+          update_attrs =
+            if is_integer(member_type.membership_period_days) and
+                 member_type.membership_period_days > 0 do
+              expiry = Date.add(registration_date, member_type.membership_period_days)
+
+              attrs = %{user_type_id: member_type.id, expiry_date: expiry}
+
+              # If user has no registration_date set, persist it too so expiry is meaningful
+              if is_nil(user.registration_date) do
+                Map.put(attrs, :registration_date, registration_date)
+              else
+                attrs
+              end
+            else
+              %{user_type_id: member_type.id}
+            end
+
+          case user |> User.update_profile_changeset(update_attrs) |> Repo.update() do
+            {:ok, updated} ->
+              updated
+
+            {:error, changeset} ->
+              Logger.error(
+                "Failed to assign member_type #{target_slug} for user #{user.id}: #{inspect(changeset.errors)}"
+              )
+
+              user
+          end
+      end
+    else
+      user
+    end
+  end
+
   @doc """
   Gets a user by email and password.
 
@@ -383,6 +483,9 @@ defmodule Voile.Schema.Accounts do
         # NPM (student id), try to assign a node based on the identifier prefix.
         updated_user = maybe_assign_node_from_identifier(user)
 
+        # Also attempt to set a member type based on the identifier value.
+        updated_user = maybe_assign_member_type_from_identifier(updated_user)
+
         {:ok,
          Repo.preload(updated_user, [:roles, :user_type, :user_role_assignments], force: true)}
 
@@ -434,8 +537,8 @@ defmodule Voile.Schema.Accounts do
 
       case Map.get(prefix_to_abbr, prefix) do
         nil ->
-          # No mapping for this prefix
-          user
+          # No mapping for this prefix — try default node from system setting
+          maybe_assign_default_node(user)
 
         target_abbr ->
           # Try to find node by abbr (case-insensitive)
@@ -446,7 +549,8 @@ defmodule Voile.Schema.Accounts do
           cond do
             node == nil ->
               Logger.debug("No node found for NPM prefix #{prefix} (abbr #{target_abbr})")
-              user
+              # fallback to default node setting if configured
+              maybe_assign_default_node(user)
 
             user.node_id == node.id ->
               # Already assigned
@@ -470,6 +574,60 @@ defmodule Voile.Schema.Accounts do
       end
     else
       user
+    end
+  end
+
+  # Try to assign default node from system setting `default_node_id`.
+  defp maybe_assign_default_node(%User{} = user) do
+    require Logger
+
+    case Voile.Schema.System.get_setting_value("default_node_id", nil) do
+      nil ->
+        user
+
+      value when is_binary(value) ->
+        case Integer.parse(value) do
+          {int_id, ""} ->
+            assign_node_by_id(user, int_id)
+
+          _ ->
+            Logger.debug("default_node_id setting is not an integer: #{inspect(value)}")
+            user
+        end
+
+      int when is_integer(int) ->
+        assign_node_by_id(user, int)
+
+      _ ->
+        user
+    end
+  end
+
+  defp assign_node_by_id(%User{} = user, node_id) do
+    require Logger
+
+    node = Repo.get(Voile.Schema.System.Node, node_id)
+
+    cond do
+      node == nil ->
+        Logger.debug("Default node id #{node_id} not found in DB")
+        user
+
+      user.node_id == node.id ->
+        user
+
+      true ->
+        case user |> User.update_profile_changeset(%{node_id: node.id}) |> Repo.update() do
+          {:ok, updated} ->
+            updated
+
+          {:error, changeset} ->
+            Logger.error(
+              "Failed to assign default node #{node_id} for user #{user.id}: #{inspect(changeset.errors)}"
+            )
+
+            user
+        end
     end
   end
 

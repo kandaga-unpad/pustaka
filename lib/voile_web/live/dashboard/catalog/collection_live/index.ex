@@ -194,7 +194,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     node_id =
       if is_nil(current_user.node_id) do
         # Get fallback node from system settings
-        fallback_node_id = System.get_setting_value("default_node_id_for_items")
+        fallback_node_id = System.get_setting_value("default_node_id")
 
         case fallback_node_id do
           nil ->

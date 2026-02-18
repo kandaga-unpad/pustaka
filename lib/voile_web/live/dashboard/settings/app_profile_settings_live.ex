@@ -243,10 +243,10 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             <div>
               <.input
                 type="select"
-                name="default_node_id_for_items"
+                name="default_node_id"
                 label={gettext("Default Node/Location for Items")}
                 options={@node_options}
-                value={System.get_setting_value("default_node_id_for_items", "")}
+                value={System.get_setting_value("default_node_id", "")}
               />
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {gettext("Fallback location for users without assigned node (e.g., super_admin)")}
@@ -297,7 +297,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       "app_contact_email",
       "app_address",
       "storage_adapter",
-      "default_node_id_for_items"
+      "default_node_id"
     ]
 
     results =
