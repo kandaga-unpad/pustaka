@@ -79,7 +79,9 @@ defmodule Voile.Schema.Catalog.Collection do
     |> cast_assoc(:collection_fields, with: &CollectionField.changeset/2, required: false)
     |> cast_assoc(:items, with: &Item.changeset/2, required: false)
     |> cast_assoc(:attachments, with: &Attachment.changeset/2, required: false)
-    |> validate_required([:title, :description, :status, :access_level, :thumbnail, :creator_id],
+    |> validate_length(:collection_code, max: 255)
+    |> validate_length(:collection_type, max: 255)
+    |> validate_required([:title, :description, :status, :access_level, :creator_id],
       message: "This field is required"
     )
     |> validate_inclusion(:status, @statuses, message: "Status tidak valid")
