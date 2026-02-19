@@ -765,6 +765,13 @@
                               {collection.resource_class.label}
                             </span>
                           <% end %>
+
+                          <%= if collection.items do %>
+                            <span class="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-full text-xs font-medium">
+                              <.icon name="hero-document" class="w-3 h-3 mr-1" />
+                              {length(collection.items)} {gettext("Items")}
+                            </span>
+                          <% end %>
                         </div>
 
                         <div class="flex items-center justify-center py-3 border-t border-gray-100 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">

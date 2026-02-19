@@ -79,7 +79,7 @@ defmodule VoileWeb.Dashboard.Master.LocationsLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Location updated successfully.")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_navigate(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

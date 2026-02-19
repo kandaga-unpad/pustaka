@@ -7366,7 +7366,7 @@ msgstr ""
 #: lib/voile_web/live/visitor/check_in.ex:946
 #: lib/voile_web/live/visitor/check_out.ex:916
 #, elixir-autogen, elixir-format
-msgid "Powered by Voile Framework"
+msgid "Powered by Voile"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:358

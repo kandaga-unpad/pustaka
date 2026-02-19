@@ -422,6 +422,14 @@ defmodule VoileWeb.Visitor.CheckOut do
     end
   end
 
+  # Get Node Name
+  defp get_node_name(node_id, nodes) do
+    case Enum.find(nodes, &(&1.id == node_id)) do
+      nil -> "Unknown Node"
+      node -> node.name
+    end
+  end
+
   @impl true
   @spec render(any()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
@@ -627,23 +635,6 @@ defmodule VoileWeb.Visitor.CheckOut do
                   {gettext("Check Out Now")}
                 </button>
               </form>
-
-              <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <div class="flex items-start gap-3">
-                  <.icon
-                    name="hero-information-circle"
-                    class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
-                  />
-                  <div class="text-sm text-blue-800 dark:text-blue-300">
-                    <p class="font-medium mb-1">{gettext("Important:")}</p>
-                    <p>
-                      {gettext(
-                        "Please check out when leaving to help us maintain accurate visitor records."
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
             
     <!-- Survey Form -->
@@ -654,9 +645,14 @@ defmodule VoileWeb.Visitor.CheckOut do
                     "Feedback"
                   )}
                 </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
                   {gettext("Share your experience")}
                 </p>
+                <div class="flex items-center justify-center">
+                  <span class="font-bold bg-violet-100 px-3 py-1 rounded-xl text-center">
+                    {@selected_location.location_name} | {get_node_name(@selected_node, @nodes)}
+                  </span>
+                </div>
               </div>
 
               <%= if @survey_error_message do %>
@@ -788,6 +784,22 @@ defmodule VoileWeb.Visitor.CheckOut do
                   </div>
                 </div>
               </div>
+              <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <.icon
+                    name="hero-information-circle"
+                    class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+                  />
+                  <div class="text-xs text-blue-800 dark:text-blue-300">
+                    <p class="font-medium mb-1">{gettext("Important:")}</p>
+                    <p>
+                      {gettext(
+                        "Please check out when leaving to help us maintain accurate visitor records."
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         <% end %>
@@ -890,7 +902,12 @@ defmodule VoileWeb.Visitor.CheckOut do
         <div class="max-w-7xl mx-auto px-4 py-3">
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- Clock and Date -->
-            <div class="flex items-center gap-3" phx-hook="RealtimeClock" id="realtime-clock">
+            <div
+              class="flex items-center gap-3"
+              phx-hook="RealtimeClock"
+              phx-update="ignore"
+              id="realtime-clock"
+            >
               <.icon
                 name="hero-clock"
                 class="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0"
@@ -913,8 +930,8 @@ defmodule VoileWeb.Visitor.CheckOut do
               <div class="text-xs text-gray-600 dark:text-gray-400">
                 <div class="font-semibold">{@app_name}</div>
                 <div class="flex items-center gap-1 justify-center md:justify-end">
-                  <span>{gettext("Powered by Voile Framework")}</span>
-                  <span class="text-gray-400 dark:text-gray-500">v1.0</span>
+                  <span>{gettext("Powered by Voile")}</span>
+                  <span class="text-gray-400 dark:text-gray-500">v0.1.0</span>
                 </div>
               </div>
             </div>

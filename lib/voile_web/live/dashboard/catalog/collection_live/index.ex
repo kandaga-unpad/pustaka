@@ -173,6 +173,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     {collections, total_pages, _} =
       Catalog.list_collections_paginated(page, per_page, search, filters)
 
+    dbg(collections)
+
     socket
     |> stream(:collections, collections, reset: true)
     |> assign(:total_pages, total_pages)

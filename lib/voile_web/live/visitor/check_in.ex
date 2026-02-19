@@ -441,6 +441,14 @@ defmodule VoileWeb.Visitor.CheckIn do
 
   defp extract_fullname_from_response(_body, fallback), do: fallback
 
+  # Get Node Name
+  defp get_node_name(node_id, nodes) do
+    case Enum.find(nodes, &(&1.id == node_id)) do
+      nil -> "Unknown Node"
+      node -> node.name
+    end
+  end
+
   @impl true
   @spec render(any()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
@@ -674,9 +682,14 @@ defmodule VoileWeb.Visitor.CheckIn do
                     "Feedback"
                   )}
                 </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
                   {gettext("Share your experience")}
                 </p>
+                <div class="flex items-center justify-center">
+                  <span class="font-bold bg-violet-100 px-3 py-1 rounded-xl text-center">
+                    {@selected_location.location_name} | {get_node_name(@selected_node, @nodes)}
+                  </span>
+                </div>
               </div>
 
               <%= if @survey_error_message do %>
@@ -923,7 +936,12 @@ defmodule VoileWeb.Visitor.CheckIn do
         <div class="max-w-7xl mx-auto px-4 py-3">
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- Clock and Date -->
-            <div class="flex items-center gap-3" phx-hook="RealtimeClock" id="realtime-clock">
+            <div
+              class="flex items-center gap-3"
+              phx-hook="RealtimeClock"
+              phx-update="ignore"
+              id="realtime-clock"
+            >
               <.icon name="hero-clock" class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <div class="flex flex-col">
                 <span
@@ -943,8 +961,8 @@ defmodule VoileWeb.Visitor.CheckIn do
               <div class="text-xs text-gray-600 dark:text-gray-400">
                 <div class="font-semibold">{@app_name}</div>
                 <div class="flex items-center gap-1 justify-center md:justify-end">
-                  <span>{gettext("Powered by Voile Framework")}</span>
-                  <span class="text-gray-400 dark:text-gray-500">v1.0</span>
+                  <span>{gettext("Powered by Voile")}</span>
+                  <span class="text-gray-400 dark:text-gray-500">v0.1.0</span>
                 </div>
               </div>
             </div>

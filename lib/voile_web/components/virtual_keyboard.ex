@@ -191,7 +191,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
                 Voile - Visitor Management System
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Version 1.0.0
+                Version 0.1.0
               </p>
             </div>
 

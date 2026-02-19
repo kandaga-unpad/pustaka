@@ -7367,8 +7367,8 @@ msgstr "Silakan verifikasi email Anda untuk mereservasi item"
 #: lib/voile_web/live/visitor/check_in.ex:946
 #: lib/voile_web/live/visitor/check_out.ex:916
 #, elixir-autogen, elixir-format
-msgid "Powered by Voile Framework"
-msgstr "Didukung oleh Voile Framework"
+msgid "Powered by Voile"
+msgstr "Didukung oleh Voile"
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:358
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:603
@@ -8121,7 +8121,7 @@ msgstr "Bagikan pengalaman Anda"
 #: lib/voile_web/live/visitor/check_out.ex:760
 #, elixir-autogen, elixir-format
 msgid "Share your thoughts..."
-msgstr "Bagikan pemikiran Anda..."
+msgstr "Bagikan pendapat Anda..."
 
 #: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:28
 #: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:27
