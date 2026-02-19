@@ -3,6 +3,7 @@ defmodule VoileWeb.UserRegistrationLive do
 
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.User
+  alias Voile.Schema.System
 
   def render(assigns) do
     ~H"""
@@ -11,7 +12,11 @@ defmodule VoileWeb.UserRegistrationLive do
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div class="flex items-center justify-center">
             <div class="max-w-sm text-center">
-              <img src={~p"/images/v.png"} class="mx-auto h-36 w-36 object-contain" alt="Voile logo" />
+              <img
+                src={System.get_setting_by_name("app_logo_url").setting_value || "/images/v.png"}
+                class="mx-auto h-36 w-36 object-contain"
+                alt="Voile logo"
+              />
               <h3 class="mt-6 text-lg font-semibold">{gettext("Create your account")}</h3>
 
               <p class="mt-2 text-sm">

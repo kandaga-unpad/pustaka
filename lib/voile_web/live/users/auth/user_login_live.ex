@@ -84,18 +84,20 @@ defmodule VoileWeb.UserLoginLive do
             <!-- Right: Form Card -->
             <div class="default-card rounded-xl shadow-md p-6 sm:p-8">
               <div class="flex items-center justify-between mb-6">
-                <div>
+                <div class="w-full">
                   <h2 class="text-2xl font-bold">{gettext("Sign in to your account")}</h2>
 
-                  <p class="text-sm italic">
-                    {gettext("Don't have an account?")}
+                  <div class="flex flex-col w-full">
+                    <p class="text-sm italic">
+                      {gettext("Don't have an account?")}
+                    </p>
                     <.link
                       navigate={~p"/register"}
-                      class="font-semibold hover:underline"
+                      class="default-btn mt-2 px-4 py-2 text-sm text-center w-full"
                     >
-                      {gettext("Create one")}
+                      {gettext("Register")}
                     </.link>
-                  </p>
+                  </div>
                 </div>
               </div>
 

@@ -252,9 +252,14 @@ defmodule VoileWeb.Layouts do
                   </div>
                 </div>
               <% else %>
-                <.link href="/login">
-                  <.button class="ml-2 default-btn">{gettext("Sign in")}</.button>
-                </.link>
+                <div class="flex items-center justify-center gap-1">
+                  <.link href="/login">
+                    <.button class="ml-2 default-btn">{gettext("Sign in")}</.button>
+                  </.link>
+                  <.link href="/register">
+                    <.button class="ml-2 default-btn">{gettext("Register")}</.button>
+                  </.link>
+                </div>
               <% end %>
             </div>
           </div>
@@ -631,6 +636,9 @@ defmodule VoileWeb.Layouts do
                 </div>
               <% else %>
                 <.link navigate="/login" class="default-btn w-full">{gettext("Sign in")}</.link>
+                <.link navigate="/register" class="default-btn w-full mt-2">
+                  {gettext("Register")}
+                </.link>
               <% end %>
             </div>
           </nav>
