@@ -1,6 +1,8 @@
 defmodule VoileWeb.Visitor.CheckIn do
   use VoileWeb, :live_view
 
+  import VoileWeb.Utils.UnpadNodeList, only: [get_node_by_id: 1]
+
   alias Voile.Schema.System
   alias Voile.Schema.Master
   alias VoileWeb.Components.VirtualKeyboard
@@ -205,6 +207,23 @@ defmodule VoileWeb.Visitor.CheckIn do
       # Try to find user by identifier to get their full name
       visitor_name = lookup_visitor_name(identifier)
 
+      # derive origin from identifier prefix if no origin selected
+      prefix = String.slice(identifier, 0, 3)
+
+      derived_origin =
+        case Integer.parse(prefix) do
+          {int_prefix, ""} ->
+            case get_node_by_id(int_prefix) do
+              nil -> ""
+              node when is_map(node) -> node[:namaFakultas] || node[:singkatan] || ""
+            end
+
+          _ ->
+            ""
+        end
+
+      origin = if is_nil(origin) or origin == "", do: derived_origin, else: origin
+
       attrs = %{
         "visitor_identifier" => identifier,
         "visitor_name" => visitor_name,
@@ -363,7 +382,6 @@ defmodule VoileWeb.Visitor.CheckIn do
       "Student",
       "Faculty/Staff",
       "Alumni",
-      "Public/Guest",
       "Researcher",
       "Other University",
       "Other"
@@ -380,7 +398,6 @@ defmodule VoileWeb.Visitor.CheckIn do
 
   defp get_ip_address(_), do: nil
 
-  # Lookup visitor name from local database or external API
   defp lookup_visitor_name(identifier) do
     case Decimal.parse(identifier) do
       {_decimal, ""} ->
@@ -407,16 +424,35 @@ defmodule VoileWeb.Visitor.CheckIn do
     api_url = get_external_api_url()
 
     # Return identifier as-is if no API URL configured
-    if api_url == "" or is_nil(api_url) do
+    if api_url == "" do
       identifier
     else
-      url = "#{api_url}/#{identifier}"
+      # Build URL safely (avoid double slashes)
+      url =
+        if String.ends_with?(api_url, "/"),
+          do: api_url <> identifier,
+          else: api_url <> "/" <> identifier
 
-      case Req.get(url, receive_timeout: 5000) do
+      case Req.get(url, receive_timeout: 5_000) do
         {:ok, %{status: 200, body: body}} ->
-          # Try to extract fullname from response
-          # Adjust the key based on your API response structure
-          extract_fullname_from_response(body, identifier)
+          # Ensure we have a map (Req may return decoded JSON or raw string)
+          body_map =
+            cond do
+              is_map(body) ->
+                body
+
+              is_binary(body) ->
+                case Jason.decode(body) do
+                  {:ok, m} when is_map(m) -> m
+                  _ -> %{}
+                end
+
+              true ->
+                %{}
+            end
+
+          # Try to extract fullname from response (supports MhsNama etc.)
+          extract_fullname_from_response(body_map, identifier)
 
         _ ->
           # API request failed, use identifier as-is
@@ -428,15 +464,27 @@ defmodule VoileWeb.Visitor.CheckIn do
   # Get external API URL from config or environment variable
   # Priority: 1. Environment variable, 2. Application config, 3. Default
   defp get_external_api_url do
-    Elixir.System.get_env("VOILE_EXTERNAL_USER_API") ||
-      Application.get_env(:voile, :external_user_api_url) ||
-      "https://voile.id/user"
+    raw =
+      Elixir.System.get_env("VOILE_UNPAD_VISITOR_SOURCE") ||
+        Application.get_env(:voile, :external_user_api_url)
+
+    case raw do
+      nil -> "https://voile.id/user"
+      "" -> "https://voile.id/user"
+      url -> String.trim_trailing(url, "/")
+    end
   end
 
   # Extract fullname from API response
   defp extract_fullname_from_response(body, fallback) when is_map(body) do
-    # Try common field names for fullname
-    body["fullname"] || body["full_name"] || body["name"] || fallback
+    # Try common field names for fullname including the Unpad API field `MhsNama`
+    # Try nested `data` key if present
+    body["MhsNama"] || body["mhsnama"] || body["MhsNama"] || body["fullname"] || body["full_name"] ||
+      body["name"] ||
+      case body["data"] do
+        d when is_map(d) -> extract_fullname_from_response(d, fallback)
+        _ -> fallback
+      end
   end
 
   defp extract_fullname_from_response(_body, fallback), do: fallback
@@ -644,6 +692,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                     {gettext("Visitor Type")}
                   </label>
                   <select
+                    name="origin"
                     phx-change="select_origin"
                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500"
                   >

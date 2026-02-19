@@ -26,7 +26,8 @@
       "*": ["../deps/*"]
     },
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "lib": ["ES2020", "DOM"]
   },
   "include": ["js/**/*"]
 }
