@@ -210,6 +210,11 @@ if config_env() == :prod do
       client_id: System.get_env("VOILE_GOOGLE_CLIENT_ID"),
       client_secret: System.get_env("VOILE_GOOGLE_CLIENT_SECRET"),
       redirect_uri: System.get_env("VOILE_GOOGLE_REDIRECT_URI")
+    ],
+    paus: [
+      client_id: System.get_env("VOILE_PAUS_CLIENT_ID"),
+      client_secret: System.get_env("VOILE_PAUS_CLIENT_SECRET"),
+      redirect_uri: System.get_env("VOILE_PAUS_REDIRECT_URI")
     ]
 
   # OAI-PMH Configuration

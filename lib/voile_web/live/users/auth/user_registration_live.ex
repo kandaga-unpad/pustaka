@@ -8,17 +8,19 @@ defmodule VoileWeb.UserRegistrationLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="max-w-5xl mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div class="w-full min-h-screen mx-auto px-4 py-12 bg-gradient-voile flex items-center justify-center">
+        <div class="max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center">
           <div class="flex items-center justify-center">
-            <div class="max-w-sm text-center">
+            <div class="max-w-sm text-center glass-card animate-fade-in p-8 rounded-xl shadow-lg border border-gray-100">
               <img
                 src={System.get_setting_by_name("app_logo_url").setting_value || "/images/v.png"}
-                class="mx-auto h-36 w-36 object-contain"
+                class="mx-auto h-36 w-36 object-contain animate-fade-in"
                 alt="Voile logo"
               />
-              <h3 class="mt-6 text-lg font-semibold">{gettext("Create your account")}</h3>
-
+              <h3 class="mt-6 text-2xl font-bold voile-text-gradient animate-fade-in flex items-center justify-center gap-2">
+                <.icon name="hero-user-plus" class="w-7 h-7 text-voile-primary" />
+                {gettext("Create your account")}
+              </h3>
               <p class="mt-2 text-sm">
                 {gettext(
                   "Join %{app_name} today and start explore collection, manage your favorite items, and connect with us.",
@@ -27,24 +29,27 @@ defmodule VoileWeb.UserRegistrationLive do
               </p>
             </div>
           </div>
-
-          <div class="default-card shadow rounded-lg border border-gray-100 p-6 md:p-8">
+          <div class="glass-card animate-fade-in rounded-xl shadow-lg border border-gray-100 p-8">
             <.header>
-              {gettext("Register for an account")}
+              <span class="text-2xl font-bold voile-text-gradient flex items-center gap-2 mb-4">
+                <.icon name="hero-user-circle" class="w-7 h-7 text-voile-primary" />
+                {gettext("Register for an account")}
+              </span>
               <:subtitle>
                 <span class="text-sm">
                   {gettext("Already registered?")}
-                  <.link
-                    navigate={~p"/login"}
-                    class="font-semibold text-voile-primary hover:underline ml-1"
-                  >
-                    {gettext("Log in")}
-                  </.link>
-                  {gettext("to your account now.")}
                 </span>
               </:subtitle>
             </.header>
-
+            <div class="flex mb-5 -mt-5 w-full">
+              <.link
+                navigate={~p"/login"}
+                class="gradient-btn-outline font-semibold w-full text-sm text-center"
+              >
+                <.icon name="hero-arrow-left-on-rectangle" class="w-5 h-5 mr-1" />
+                {gettext("Log in")}
+              </.link>
+            </div>
             <.form
               for={@form}
               id="registration_form"
@@ -55,36 +60,45 @@ defmodule VoileWeb.UserRegistrationLive do
               method="post"
             >
               <div class="space-y-4">
-                <.input field={@form[:email]} type="email" label={gettext("Email")} required />
+                <.input
+                  field={@form[:email]}
+                  type="email"
+                  label={gettext("Email")}
+                  required
+                  class="default-input"
+                />
                 <div id="reg-password-wrapper" phx-hook="PasswordToggle">
                   <.input
                     field={@form[:password]}
                     type="password"
                     label={gettext("Password")}
                     required
+                    class="default-input"
                   />
                 </div>
-                <.button phx-disable-with="Creating account..." class="default-btn w-full">
+                <.button phx-disable-with="Creating account..." class="gradient-btn w-full">
+                  <.icon name="hero-user-plus" class="w-5 h-5 mr-1" />
                   {gettext("Create an account")}
                 </.button>
               </div>
             </.form>
-
             <div class="my-6 flex items-center gap-3">
-              <hr class="flex-1 border-gray-300" />
-              <span class="text-sm">{gettext("or register with")}</span>
-              <hr class="flex-1 border-gray-300" />
+              <hr class="flex-1 border-voile-muted animate-fade-in" />
+              <span class="text-sm text-voile-muted animate-fade-in">
+                {gettext("or register with")}
+              </span>
+              <hr class="flex-1 border-voile-muted animate-fade-in" />
             </div>
-
             <.button
               phx-click="google_auth"
-              class="w-full btn border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50"
+              class="gradient-btn-outline w-full flex items-center justify-center gap-2 bg-white text-voile-primary hover:shadow-md"
             >
               <img
                 src={~p"/images/google_img.png"}
                 class="inline h-5 w-5 mr-2"
                 alt="Google logo"
-              /> <span>{gettext("Continue with Google")}</span>
+              />
+              <span>{gettext("Continue with Google")}</span>
             </.button>
           </div>
         </div>

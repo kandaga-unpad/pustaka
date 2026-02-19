@@ -513,6 +513,13 @@ defmodule VoileWeb.Router do
     get "/callback", GoogleAuthController, :callback
   end
 
+  scope "/auth/paus", VoileWeb do
+    pipe_through [:browser]
+
+    get "/", PausAuthController, :request
+    get "/callback", PausAuthController, :callback
+  end
+
   # Gmail API OAuth callback (for email sending setup, NOT user login)
   scope "/auth/gmail", VoileWeb do
     pipe_through [:browser]
