@@ -126,14 +126,22 @@ if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.migrate()'; t
 else
     print_error "Migrations failed!"
     print_warning "Rolling back to old container..."
-    
+
     # Rollback
-    podman stop "$APP_CONTAINER"
-    podman rm "$APP_CONTAINER"
-    podman rename "$OLD_APP_CONTAINER" "$APP_CONTAINER"
-    podman start "$APP_CONTAINER"
-    
-    print_error "Update failed! Rolled back to previous version."
+    if podman container exists "$APP_CONTAINER" 2>/dev/null; then
+        podman stop "$APP_CONTAINER" 2>/dev/null || true
+        podman rm "$APP_CONTAINER" 2>/dev/null || true
+    else
+        print_status "No new container to stop/remove."
+    fi
+
+    if podman container exists "$OLD_APP_CONTAINER" 2>/dev/null; then
+        podman rename "$OLD_APP_CONTAINER" "$APP_CONTAINER" 2>/dev/null || true
+        podman start "$APP_CONTAINER" 2>/dev/null || true
+        print_error "Update failed! Rolled back to previous version."
+    else
+        print_error "Old container $OLD_APP_CONTAINER not found — manual rollback required."
+    fi
     exit 1
 fi
 
@@ -165,14 +173,23 @@ if podman exec "$APP_CONTAINER" /app/bin/voile eval 'IO.puts("Health check OK")'
 else
     print_error "Health check failed!"
     print_warning "Rolling back to old container..."
-    
+
     # Rollback
-    podman stop "$APP_CONTAINER"
-    podman rm "$APP_CONTAINER"
-    podman rename "$OLD_APP_CONTAINER" "$APP_CONTAINER"
-    podman start "$APP_CONTAINER"
-    
-    print_error "Update failed! Rolled back to previous version."
-    print_status "Check logs with: podman logs voile-app-old"
+    if podman container exists "$APP_CONTAINER" 2>/dev/null; then
+        podman stop "$APP_CONTAINER" 2>/dev/null || true
+        podman rm "$APP_CONTAINER" 2>/dev/null || true
+    else
+        print_status "No new container to stop/remove."
+    fi
+
+    if podman container exists "$OLD_APP_CONTAINER" 2>/dev/null; then
+        podman rename "$OLD_APP_CONTAINER" "$APP_CONTAINER" 2>/dev/null || true
+        podman start "$APP_CONTAINER" 2>/dev/null || true
+        print_error "Update failed! Rolled back to previous version."
+        print_status "Check logs with: podman logs $APP_CONTAINER"
+    else
+        print_error "Old container $OLD_APP_CONTAINER not found — manual rollback required."
+        print_status "Check logs with: podman logs $OLD_APP_CONTAINER"
+    fi
     exit 1
 fi

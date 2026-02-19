@@ -41,8 +41,13 @@ podman build -t voile:latest -f Containerfile .
 
 # Stop and remove old container
 print_status "Stopping old container..."
-podman stop "$APP_CONTAINER"
-podman rm "$APP_CONTAINER"
+OLD_ID=$(podman ps -a -q -f name="$APP_CONTAINER")
+if [[ -n "$OLD_ID" ]]; then
+    podman stop "$APP_CONTAINER"
+    podman rm "$APP_CONTAINER"
+else
+    print_status "No existing container named '$APP_CONTAINER' found, skipping stop/remove."
+fi
 
 # Start new container
 print_status "Starting new container..."
