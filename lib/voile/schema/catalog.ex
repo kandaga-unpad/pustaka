@@ -1904,13 +1904,23 @@ defmodule Voile.Schema.Catalog do
   Get file path for serving
   """
   def get_file_url(%Attachment{} = attachment) do
-    # Return the file path as-is if it already contains the full path
-    # This handles both asset_vault files and regular attachment files
-    if attachment.file_path && String.starts_with?(attachment.file_path, "/uploads") do
-      attachment.file_path
-    else
-      # Fallback for legacy attachments that only have filename
-      "/uploads/attachments/#{Path.basename(attachment.file_path)}"
+    fp = attachment.file_path
+
+    cond do
+      is_nil(fp) ->
+        nil
+
+      # Full URL (S3/external storage) — use directly
+      String.starts_with?(fp, "http://") or String.starts_with?(fp, "https://") ->
+        fp
+
+      # Local uploads path — use directly
+      String.starts_with?(fp, "/uploads") ->
+        fp
+
+      # Legacy attachments that only stored a bare filename
+      true ->
+        "/uploads/attachments/#{Path.basename(fp)}"
     end
   end
 
