@@ -27,7 +27,7 @@
     </.header>
 
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full">
-      <div class="flex items-start justify-center w-full lg:w-96 flex-shrink-0">
+      <div class="flex items-start justify-center aspect-[210/297] w-full">
         <%= if @collection.thumbnail do %>
           <img
             src={@collection.thumbnail}
@@ -35,7 +35,7 @@
             alt={@collection.title}
           />
         <% else %>
-          <div class="w-full h-64 sm:h-80 lg:h-96 flex items-center justify-center border rounded-lg border-voile-primary dark:border-gray-200 bg-gray-50 dark:bg-gray-800">
+          <div class="w-full h-full flex items-center justify-center border rounded-lg border-voile-primary dark:border-gray-200 bg-gray-50 dark:bg-gray-800">
             <p class="text-sm text-gray-500">{gettext("No thumbnail available")}</p>
           </div>
         <% end %>

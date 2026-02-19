@@ -252,7 +252,7 @@ defmodule VoileWeb.Layouts do
                   </div>
                 </div>
               <% else %>
-                <div class="flex items-center justify-center gap-1">
+                <div class="flex items-center justify-center">
                   <.link href="/login">
                     <.button class="ml-2 default-btn">{gettext("Sign in")}</.button>
                   </.link>

@@ -56,7 +56,14 @@ defmodule VoileWeb.UserRegistrationLive do
             >
               <div class="space-y-4">
                 <.input field={@form[:email]} type="email" label={gettext("Email")} required />
-                <.input field={@form[:password]} type="password" label={gettext("Password")} required />
+                <div id="reg-password-wrapper" phx-hook="PasswordToggle">
+                  <.input
+                    field={@form[:password]}
+                    type="password"
+                    label={gettext("Password")}
+                    required
+                  />
+                </div>
                 <.button phx-disable-with="Creating account..." class="default-btn w-full">
                   {gettext("Create an account")}
                 </.button>

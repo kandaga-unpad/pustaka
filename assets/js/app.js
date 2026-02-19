@@ -36,6 +36,7 @@ import position_panel from "./hooks/position_panel";
 import MobileNav from "./hooks/mobile_nav";
 import SearchFocus from "./hooks/search_focus";
 import SearchResultsLoading from "./hooks/search_results_loading";
+import PasswordToggle from "./hooks/password_toggle";
 
 // Notification Sound Hook for reservation notifications
 const NotificationSound = {
@@ -302,6 +303,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     RealtimeClock,
     Turnstile: TurnstileHook,
     EbookReader,
+    PasswordToggle,
     ...colocatedHooks,
   },
 });

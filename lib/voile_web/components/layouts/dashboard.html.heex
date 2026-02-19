@@ -71,7 +71,7 @@
       <%!-- Desktop Nav Bar (hidden on mobile) --%>
       <div class="hidden lg:block"><.nav_bar active_nav={@current_path} /></div>
       <%!-- Mobile: Dashboard Menu Bar shows icon button --%>
-      <%= if @current_path |> String.starts_with?("/manage/catalog") do %>
+      <%= if @current_path |> String.starts_with?("/manage") do %>
         <div>
           <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
         </div>

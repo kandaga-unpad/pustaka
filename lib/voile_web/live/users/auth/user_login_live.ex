@@ -110,13 +110,15 @@ defmodule VoileWeb.UserLoginLive do
                   required
                   class="default-input"
                 />
-                <.input
-                  field={@form[:password]}
-                  type="password"
-                  label={gettext("Password")}
-                  required
-                  class="default-input"
-                />
+                <div id="login-password-wrapper" phx-hook="PasswordToggle">
+                  <.input
+                    field={@form[:password]}
+                    type="password"
+                    label={gettext("Password")}
+                    required
+                    class="default-input"
+                  />
+                </div>
                 <div class="flex items-center justify-between gap-4">
                   <.input
                     field={@form[:remember_me]}

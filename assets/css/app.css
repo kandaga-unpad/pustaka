@@ -62,26 +62,26 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: rgb(41, 47, 55);
-  --color-base-200: rgb(30, 35, 41);
-  --color-base-300: rgb(19, 23, 28);
-  --color-base-content: rgb(236, 249, 255);
-  --color-primary: rgb(96, 93, 255);
-  --color-primary-content: rgb(237, 241, 254);
-  --color-secondary: rgb(96, 93, 255);
-  --color-secondary-content: rgb(237, 241, 254);
-  --color-accent: rgb(140, 79, 255);
-  --color-accent-content: rgb(242, 240, 252);
-  --color-neutral: rgb(49, 65, 87);
-  --color-neutral-content: rgb(247, 249, 250);
-  --color-info: rgb(0, 130, 206);
-  --color-info-content: rgb(237, 247, 253);
-  --color-success: rgb(0, 150, 137);
-  --color-success-content: rgb(239, 252, 249);
-  --color-warning: rgb(223, 111, 0);
-  --color-warning-content: rgb(253, 249, 232);
-  --color-error: rgb(234, 0, 62);
-  --color-error-content: rgb(252, 238, 239);
+  --color-base-100: oklch(30.33% 0.016 252.42);
+  --color-base-200: oklch(25.26% 0.014 253.1);
+  --color-base-300: oklch(20.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: oklch(58% 0.233 277.117);
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(58% 0.233 277.117);
+  --color-secondary-content: oklch(96% 0.018 272.314);
+  --color-accent: oklch(60% 0.25 292.717);
+  --color-accent-content: oklch(96% 0.016 293.756);
+  --color-neutral: oklch(37% 0.044 257.287);
+  --color-neutral-content: oklch(98% 0.003 247.858);
+  --color-info: oklch(58% 0.158 241.966);
+  --color-info-content: oklch(97% 0.013 236.62);
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
   --radius-selector: 0.25rem;
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
@@ -97,26 +97,26 @@
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: rgb(248, 248, 248);
-  --color-base-200: rgb(242, 242, 242);
-  --color-base-300: rgb(228, 228, 231);
-  --color-base-content: rgb(24, 24, 27);
-  --color-primary: rgb(255, 103, 0);
-  --color-primary-content: rgb(255, 247, 237);
-  --color-secondary: rgb(106, 114, 130);
-  --color-secondary-content: rgb(247, 248, 250);
-  --color-accent: rgb(0, 0, 0);
-  --color-accent-content: rgb(255, 255, 255);
-  --color-neutral: rgb(81, 81, 92);
-  --color-neutral-content: rgb(248, 248, 248);
-  --color-info: rgb(42, 126, 255);
-  --color-info-content: rgb(239, 246, 255);
-  --color-success: rgb(0, 186, 166);
-  --color-success-content: rgb(239, 252, 249);
-  --color-warning: rgb(223, 111, 0);
-  --color-warning-content: rgb(253, 249, 232);
-  --color-error: rgb(234, 0, 62);
-  --color-error-content: rgb(252, 238, 239);
+  --color-base-100: oklch(98% 0 0);
+  --color-base-200: oklch(96% 0.001 286.375);
+  --color-base-300: oklch(92% 0.004 286.32);
+  --color-base-content: oklch(21% 0.006 285.885);
+  --color-primary: oklch(70% 0.213 47.604);
+  --color-primary-content: oklch(98% 0.016 73.684);
+  --color-secondary: oklch(55% 0.027 264.364);
+  --color-secondary-content: oklch(98% 0.002 247.839);
+  --color-accent: oklch(0% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(44% 0.017 285.786);
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: oklch(62% 0.214 259.815);
+  --color-info-content: oklch(97% 0.014 254.604);
+  --color-success: oklch(70% 0.14 182.503);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
   --radius-selector: 0.25rem;
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
@@ -144,23 +144,23 @@
 /* This file is for your main application CSS */
 /* Base styles */
 @theme {
-  --color-brand: rgb(127, 34, 254);
-  --color-brand-50: rgb(245, 243, 255);
-  --color-brand-100: rgb(237, 233, 254);
-  --color-brand-200: rgb(221, 214, 255);
-  --color-brand-300: rgb(196, 180, 255);
-  --color-brand-400: rgb(166, 132, 255);
-  --color-brand-500: rgb(142, 81, 255);
-  --color-brand-600: rgb(127, 34, 254);
-  --color-brand-700: rgb(112, 8, 231);
-  --color-brand-800: rgb(93, 14, 192);
-  --color-brand-900: rgb(77, 23, 154);
-  --color-brand-950: rgb(47, 13, 104);
+  --color-brand: oklch(54.1% 0.281 293.009);
+  --color-brand-50: oklch(96.9% 0.016 293.756);
+  --color-brand-100: oklch(94.3% 0.029 294.588);
+  --color-brand-200: oklch(89.4% 0.057 293.283);
+  --color-brand-300: oklch(81.1% 0.111 293.571);
+  --color-brand-400: oklch(70.2% 0.183 293.541);
+  --color-brand-500: oklch(60.6% 0.25 292.717);
+  --color-brand-600: oklch(54.1% 0.281 293.009);
+  --color-brand-700: oklch(49.1% 0.27 292.581);
+  --color-brand-800: oklch(43.2% 0.232 292.759);
+  --color-brand-900: oklch(38% 0.189 293.745);
+  --color-brand-950: oklch(28.3% 0.141 291.089);
 
   /* Voile Brand */
-  --color-voile-primary: rgb(139, 58, 229);
-  --color-voile-secondary: rgb(208, 178, 255);
-  --color-voile-accent: rgb(253, 115, 213);
+  --color-voile-primary: oklch(55% 0.24 300);
+  --color-voile-secondary: oklch(82% 0.12 300);
+  --color-voile-accent: oklch(75% 0.2 340);
 
   /* Voile Neutral / Surface
     Updated values to improve light/dark contrast and avoid identical surface/neutral
@@ -170,28 +170,28 @@
 
   /* Light mode neutrals */
   /* Make surface a soft, light violet so panels show a gentle brand tint */
-  --color-voile-surface: rgb(244, 238, 255);
+  --color-voile-surface: oklch(96.5% 0.05 292.5);
   /* Slightly darker surface variant used for active states so it reads
     clearly against the main surface while keeping a soft violet hue. */
-  --color-voile-surface-variant: rgb(184, 158, 255);
-  --color-voile-neutral: rgb(239, 241, 255);
-  --color-voile-text: rgb(5, 17, 39);
+  --color-voile-surface-variant: oklch(76% 0.14 295.1);
+  --color-voile-neutral: oklch(96% 0.02 280);
+  --color-voile-text: oklch(18% 0.05 260);
 
   /* Dark mode neutrals */
-  --color-voile-surface-dark: rgb(2, 3, 9);
-  --color-voile-neutral-dark: rgb(17, 21, 36);
-  --color-voile-text-dark: rgb(236, 242, 255);
+  --color-voile-surface-dark: oklch(10% 0.02 270);
+  --color-voile-neutral-dark: oklch(20% 0.03 270);
+  --color-voile-text-dark: oklch(96% 0.02 270);
 
   /* Border token variants for the Voile theme */
-  --color-voile-light: rgb(247, 248, 255);
-  --color-voile-muted: rgb(162, 163, 177);
-  --color-voile-dark: rgb(8, 12, 26);
+  --color-voile-light: oklch(98% 0.01 280);
+  --color-voile-muted: oklch(72% 0.02 280);
+  --color-voile-dark: oklch(16% 0.03 270);
 
   /* Voile Functional Color */
-  --color-voile-info: rgb(80, 105, 200);
-  --color-voile-success: rgb(0, 197, 124);
-  --color-voile-warning: rgb(243, 203, 0);
-  --color-voile-error: rgb(249, 65, 68);
+  --color-voile-info: oklch(55% 0.15 270);
+  --color-voile-success: oklch(72% 0.18 160);
+  --color-voile-warning: oklch(85% 0.18 95);
+  --color-voile-error: oklch(65% 0.22 25);
 }
 
 @layer base {
