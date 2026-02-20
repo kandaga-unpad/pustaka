@@ -611,96 +611,98 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   def save_collection(socket, :edit, collection_params) do
     # Validate that all items have item_location_id
-    items = collection_params["items"] || %{}
+    # items = collection_params["items"] || %{}
 
-    invalid_items =
-      Enum.filter(items, fn {_key, item} -> item["item_location_id"] in [nil, ""] end)
+    # invalid_items =
+    #   Enum.filter(items, fn {_key, item} -> item["item_location_id"] in [nil, ""] end)
 
-    if invalid_items != [] do
-      {:noreply,
-       socket
-       |> put_flash(:error, "All items must have a location selected.")
-       |> assign(:form, to_form(socket.assigns.form, action: :validate))}
-    else
-      updated_by = socket.assigns.current_scope.user.id
+    # if invalid_items != [] do
+    #   {:noreply,
+    #    socket
+    #    |> put_flash(:error, "All items must have a location selected.")
+    #    |> assign(:form, to_form(socket.assigns.form, action: :validate))}
+    # else
+    updated_by = socket.assigns.current_scope.user.id
 
-      collection_params =
-        collection_params
-        |> Map.put("updated_by_id", updated_by)
-        |> add_barcodes_to_items()
+    collection_params =
+      collection_params
+      |> Map.put("updated_by_id", updated_by)
+      |> add_barcodes_to_items()
 
-      case Catalog.update_collection(socket.assigns.original_collection, collection_params) do
-        {:ok, collection} ->
-          notify_parent({:saved, collection})
+    case Catalog.update_collection(socket.assigns.original_collection, collection_params) do
+      {:ok, collection} ->
+        notify_parent({:saved, collection})
 
-          {:noreply,
-           socket
-           |> put_flash(:info, "Collection updated successfully")
-           |> push_patch(to: socket.assigns.patch)}
+        {:noreply,
+         socket
+         |> put_flash(:info, "Collection updated successfully")
+         |> push_patch(to: socket.assigns.patch)}
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, form: to_form(changeset))}
-      end
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
+
+    # end
   end
 
   def save_collection(socket, :new, collection_params) do
     # Validate that all items have item_location_id
-    items = collection_params["items"] || %{}
+    # items = collection_params["items"] || %{}
 
-    invalid_items =
-      Enum.filter(items, fn {_key, item} -> item["item_location_id"] in [nil, ""] end)
+    # invalid_items =
+    #   Enum.filter(items, fn {_key, item} -> item["item_location_id"] in [nil, ""] end)
 
-    if invalid_items != [] do
-      {:noreply,
-       socket
-       |> put_flash(:error, "All items must have a location selected.")
-       |> assign(:form, to_form(socket.assigns.form, action: :validate))}
-    else
-      get_unit_abbr =
-        if collection_params["unit_id"] do
-          case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
-            nil -> "UNK"
-            node -> node.abbr
-          end
-        else
-          "UNK"
+    # if invalid_items != [] do
+    #   {:noreply,
+    #    socket
+    #    |> put_flash(:error, "All items must have a location selected.")
+    #    |> assign(:form, to_form(socket.assigns.form, action: :validate))}
+    # else
+    get_unit_abbr =
+      if collection_params["unit_id"] do
+        case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
+          nil -> "UNK"
+          node -> node.abbr
         end
-
-      get_collection_type =
-        if collection_params["type_id"] do
-          case Metadata.get_resource_class!(collection_params["type_id"]) do
-            nil -> "UNK"
-            rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
-          end
-        else
-          "UNK"
-        end
-
-      generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
-      created_by = socket.assigns.current_scope.user.id
-
-      collection_params =
-        collection_params
-        |> Map.put("collection_code", generated_code)
-        |> Map.put("created_by_id", created_by)
-        |> add_barcodes_to_items()
-
-      case Catalog.create_collection(collection_params) do
-        {:ok, collection} ->
-          notify_parent({:saved, collection})
-
-          {:noreply,
-           socket
-           |> put_flash(:info, "Collection created successfully")
-           |> push_patch(
-             to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
-           )}
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, form: to_form(changeset))}
+      else
+        "UNK"
       end
+
+    get_collection_type =
+      if collection_params["type_id"] do
+        case Metadata.get_resource_class!(collection_params["type_id"]) do
+          nil -> "UNK"
+          rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
+        end
+      else
+        "UNK"
+      end
+
+    generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+    created_by = socket.assigns.current_scope.user.id
+
+    collection_params =
+      collection_params
+      |> Map.put("collection_code", generated_code)
+      |> Map.put("created_by_id", created_by)
+      |> add_barcodes_to_items()
+
+    case Catalog.create_collection(collection_params) do
+      {:ok, collection} ->
+        notify_parent({:saved, collection})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Collection created successfully")
+         |> push_patch(
+           to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
+         )}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
+
+    # end
   end
 
   def save_collection_as_draft(socket, :edit, collection_params) do

@@ -479,15 +479,20 @@ defmodule Voile.Schema.Catalog do
       {[%Collection{}], total_pages, total_count}
 
   """
-  def list_pending_collections_paginated(page \\ 1, per_page \\ 10, user \\ nil) do
+  def list_pending_collections_paginated(
+        page \\ 1,
+        per_page \\ 10,
+        _user \\ nil,
+        search_query \\ nil,
+        filter_status \\ nil,
+        node_id \\ nil
+      ) do
     offset = (page - 1) * per_page
 
-    query =
+    base_query =
       from c in Collection,
         where: c.status in ["pending", "draft"],
         order_by: [desc: c.inserted_at],
-        limit: ^per_page,
-        offset: ^offset,
         preload: [
           :resource_class,
           :mst_creator,
@@ -498,13 +503,47 @@ defmodule Voile.Schema.Catalog do
           :updated_by
         ]
 
-    # Filter by user's node if user is admin (not super_admin)
+    # Apply search
     query =
-      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
-        query |> where([c], c.unit_id == ^user.node_id)
+      if is_binary(search_query) and search_query != "" do
+        like = "%" <> search_query <> "%"
+
+        from c in base_query,
+          left_join: creator in assoc(c, :mst_creator),
+          left_join: node in assoc(c, :node),
+          where:
+            ilike(c.title, ^like) or
+              ilike(c.description, ^like) or
+              ilike(c.collection_type, ^like) or
+              ilike(c.collection_code, ^like) or
+              ilike(c.status, ^like) or
+              ilike(c.access_level, ^like) or
+              ilike(creator.creator_name, ^like) or
+              ilike(node.name, ^like)
+      else
+        base_query
+      end
+
+    # Apply status filter
+    query =
+      if is_binary(filter_status) and filter_status != "" do
+        from c in query, where: c.status == ^filter_status
       else
         query
       end
+
+    # Apply node filter for non-super_admin
+    query =
+      if node_id do
+        from c in query, where: c.unit_id == ^node_id
+      else
+        query
+      end
+
+    query =
+      query
+      |> limit(^per_page)
+      |> offset(^offset)
 
     collections = Repo.all(query)
 
@@ -515,8 +554,35 @@ defmodule Voile.Schema.Catalog do
         select: count(c.id)
 
     count_query =
-      if user && !VoileWeb.Auth.Authorization.is_super_admin?(user) do
-        count_query |> where([c], c.unit_id == ^user.node_id)
+      if is_binary(search_query) and search_query != "" do
+        like = "%" <> search_query <> "%"
+
+        from c in count_query,
+          left_join: creator in assoc(c, :mst_creator),
+          left_join: node in assoc(c, :node),
+          where:
+            ilike(c.title, ^like) or
+              ilike(c.description, ^like) or
+              ilike(c.collection_type, ^like) or
+              ilike(c.collection_code, ^like) or
+              ilike(c.status, ^like) or
+              ilike(c.access_level, ^like) or
+              ilike(creator.creator_name, ^like) or
+              ilike(node.name, ^like)
+      else
+        count_query
+      end
+
+    count_query =
+      if is_binary(filter_status) and filter_status != "" do
+        from c in count_query, where: c.status == ^filter_status
+      else
+        count_query
+      end
+
+    count_query =
+      if node_id do
+        from c in count_query, where: c.unit_id == ^node_id
       else
         count_query
       end
@@ -687,13 +753,13 @@ defmodule Voile.Schema.Catalog do
         search_term = "%#{search}%"
 
         from c in query,
+          left_join: creator in assoc(c, :mst_creator),
+          left_join: rc in assoc(c, :resource_class),
           where:
             ilike(c.title, ^search_term) or
               ilike(c.description, ^search_term) or
-              (not is_nil(c.mst_creator_id) and
-                 ilike(fragment("(?->>'creator_name')", c.mst_creator), ^search_term)) or
-              (not is_nil(c.resource_class_id) and
-                 ilike(fragment("(?->>'label')", c.resource_class), ^search_term))
+              ilike(creator.creator_name, ^search_term) or
+              ilike(rc.label, ^search_term)
       else
         query
       end
@@ -719,14 +785,16 @@ defmodule Voile.Schema.Catalog do
       if search && search != "" do
         search_term = "%#{search}%"
 
-        from c in count_query,
+        from c in Collection,
+          where: c.created_by_id == ^user.id,
+          left_join: creator in assoc(c, :mst_creator),
+          left_join: rc in assoc(c, :resource_class),
           where:
             ilike(c.title, ^search_term) or
               ilike(c.description, ^search_term) or
-              (not is_nil(c.mst_creator_id) and
-                 ilike(fragment("(?->>'creator_name')", c.mst_creator), ^search_term)) or
-              (not is_nil(c.resource_class_id) and
-                 ilike(fragment("(?->>'label')", c.resource_class), ^search_term))
+              ilike(creator.creator_name, ^search_term) or
+              ilike(rc.label, ^search_term),
+          select: count(c.id)
       else
         count_query
       end

@@ -22,9 +22,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       page = 1
       per_page = 10
       current_user = socket.assigns.current_scope.user
+      search_query = ""
+      filter_status = ""
 
       {collections, total_pages, total_count} =
-        Catalog.list_pending_collections_paginated(page, per_page, current_user)
+        list_review_collections(page, per_page, current_user, search_query, filter_status)
 
       socket =
         socket
@@ -37,6 +39,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:action_type, nil)
         |> assign(:review_notes, "")
         |> assign(:show_view_modal, false)
+        |> assign(:search_query, search_query)
+        |> assign(:filter_status, filter_status)
 
       {:ok, socket}
     end
@@ -96,14 +100,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     {:noreply, socket}
   end
 
+  # All handle_event/3 clauses grouped together
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
     page = String.to_integer(page)
     per_page = 10
     current_user = socket.assigns.current_scope.user
+    search_query = socket.assigns.search_query
+    filter_status = socket.assigns.filter_status
 
     {collections, total_pages, total_count} =
-      Catalog.list_pending_collections_paginated(page, per_page, current_user)
+      list_review_collections(page, per_page, current_user, search_query, filter_status)
 
     socket =
       socket
@@ -112,6 +119,32 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       |> assign(:total_pages, total_pages)
       |> assign(:total_count, total_count)
       |> assign(:collections_empty?, collections == [])
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event(
+        "search_filter",
+        %{"search" => search_query, "status" => filter_status},
+        socket
+      ) do
+    page = 1
+    per_page = 10
+    current_user = socket.assigns.current_scope.user
+
+    {collections, total_pages, total_count} =
+      list_review_collections(page, per_page, current_user, search_query, filter_status)
+
+    socket =
+      socket
+      |> stream(:collections, collections, reset: true)
+      |> assign(:page, page)
+      |> assign(:total_pages, total_pages)
+      |> assign(:total_count, total_count)
+      |> assign(:collections_empty?, collections == [])
+      |> assign(:search_query, search_query)
+      |> assign(:filter_status, filter_status)
 
     {:noreply, socket}
   end
@@ -241,6 +274,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
            |> assign(:show_view_modal, false)}
       end
     end
+  end
+
+  # Helper to scope collection list for review
+  defp list_review_collections(page, per_page, user, search_query, filter_status) do
+    is_super_admin =
+      user
+      |> Repo.preload(:roles)
+      |> Map.get(:roles, [])
+      |> Enum.any?(fn role -> role.name == "super_admin" end)
+
+    node_id = if is_super_admin, do: nil, else: user.node_id
+
+    Catalog.list_pending_collections_paginated(
+      page,
+      per_page,
+      user,
+      search_query,
+      filter_status,
+      node_id
+    )
   end
 
   # Helper function to check if user can review collections

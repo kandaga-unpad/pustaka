@@ -54,14 +54,53 @@ defmodule Voile.Utils.ItemHelper do
   sequence number to produce a short scannable barcode.
   """
   def generate_barcode_from_item_code(item_code) when is_binary(item_code) do
-    parts = String.split(item_code, "-")
+    # Preferred strategy:
+    # 1. Find the last UUID in the string (if present). Use the UUID's final block (12 hex chars).
+    # 2. Use the trailing sequence (last hyphen-separated segment) zero-padded to 3 digits.
+    # 3. Fallbacks: try to parse inventory-like codes, then fall back to earlier heuristics.
 
-    if length(parts) >= 3 do
-      uuid_segment = Enum.at(parts, -3)
-      sequence = List.last(parts)
-      "#{uuid_segment}#{sequence}"
-    else
-      String.replace(item_code, "-", "") |> String.slice(0, 15)
+    # prefer trailing numeric sequence (handles both `-001` and `/002` cases)
+    seq =
+      case Regex.run(~r/(\d+)\s*$/, item_code) do
+        [_, s] -> s
+        _ -> List.last(String.split(item_code, "-")) || "1"
+      end
+
+    # look for UUID anywhere in the string and take the last match
+    uuid_regex = ~r/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
+
+    case Regex.scan(uuid_regex, item_code) do
+      [] ->
+        # attempt inventory-style `.../<collection_uuid>/<seq>` by looking for UUID in slashes
+        case Regex.scan(uuid_regex, item_code |> String.replace("/", "-")) do
+          [] ->
+            # no UUID found; fallback to previous heuristic: use third-to-last part if available
+            parts = String.split(item_code, "-")
+
+            if length(parts) >= 3 do
+              uuid_segment = Enum.at(parts, -3)
+              sequence = seq
+
+              "#{String.replace(uuid_segment, "-", "")}#{String.pad_leading(sequence, 3, "0")}"
+              |> String.slice(0, 20)
+            else
+              String.replace(item_code, "-", "") |> String.slice(0, 15)
+            end
+
+          matches ->
+            last_uuid = matches |> List.last() |> List.first()
+            last_block = last_uuid |> String.split("-") |> List.last()
+
+            "#{String.downcase(last_block)}#{String.pad_leading(seq, 3, "0")}"
+            |> String.slice(0, 20)
+        end
+
+      matches ->
+        last_uuid = matches |> List.last() |> List.first()
+        last_block = last_uuid |> String.split("-") |> List.last()
+
+        "#{String.downcase(last_block)}#{String.pad_leading(seq, 3, "0")}"
+        |> String.slice(0, 20)
     end
   end
 

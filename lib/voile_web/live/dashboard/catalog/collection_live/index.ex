@@ -286,8 +286,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       # Check if user is super_admin to determine edit permissions
       is_super_admin = Catalog.is_user_admin?(current_user)
 
-      dbg(collection)
-
       socket
       |> stream(:collections, collections, reset: true)
       |> assign(:total_pages, total_pages)

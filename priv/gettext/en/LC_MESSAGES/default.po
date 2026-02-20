@@ -996,7 +996,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/visitor/logs.ex:364
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Search"
-msgstr "Searching..."
+msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:201
 #, elixir-autogen, elixir-format

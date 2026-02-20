@@ -33,7 +33,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
     creator = Master.list_mst_creator()
     collection_type = Metadata.list_resource_class()
     node_location = System.list_nodes()
-    time_identifier = NaiveDateTime.utc_now()
+    time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
 
     # Add review notes to each collection
     collections_with_notes =

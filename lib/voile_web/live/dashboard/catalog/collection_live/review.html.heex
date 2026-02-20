@@ -27,6 +27,60 @@
       </div>
     </div>
   </div>
+
+  <%!-- Search and Filter Bar --%>
+  <div class="mb-6">
+    <form
+      phx-change="search_filter"
+      phx-submit="search_filter"
+      class="w-full flex flex-col md:flex-row gap-3 items-start md:items-end"
+    >
+      <div class="flex-1 min-w-0">
+        <label
+          for="search"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >
+          {gettext("Search")}
+        </label>
+        <input
+          type="text"
+          name="search"
+          id="search"
+          value={@search_query}
+          placeholder={gettext("Search by title, custodian, node...")}
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        />
+      </div>
+      <div>
+        <label
+          for="status"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >
+          {gettext("Status")}
+        </label>
+        <select
+          name="status"
+          id="status"
+          value={@filter_status}
+          class="w-full md:w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        >
+          <option value="">{gettext("All Statuses")}</option>
+          <option value="pending">{gettext("Pending")}</option>
+          <option value="draft">{gettext("Draft")}</option>
+          <option value="published">{gettext("Published")}</option>
+          <option value="archived">{gettext("Archived")}</option>
+        </select>
+      </div>
+      <div class="w-full md:w-auto">
+        <button
+          type="submit"
+          class="w-full md:w-auto mt-6 md:mt-0 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+        >
+          <.icon name="hero-magnifying-glass" class="h-4 w-4 mr-1" /> {gettext("Search")}
+        </button>
+      </div>
+    </form>
+  </div>
   <%!-- View Modal --%>
   <%= if @show_view_modal && @selected_collection do %>
     <.modal id="view-collection-modal" show on_cancel={JS.push("close_view_modal")}>

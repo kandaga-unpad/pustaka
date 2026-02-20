@@ -6,7 +6,7 @@ defmodule VoileWeb.UserLoginLive do
   def render(assigns) do
     ~H"""
     <.modal id="magic-link-modal">
-      <div class="glass-card animate-fade-in p-8 max-w-md mx-auto">
+      <div class="animate-fade-in p-8 max-w-md mx-auto">
         <h3 class="text-2xl font-bold voile-text-gradient mb-2 flex items-center gap-2">
           <.icon name="hero-link" class="size-6 text-voile-primary" />
           {gettext("Login with Email Link")}
@@ -51,8 +51,9 @@ defmodule VoileWeb.UserLoginLive do
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <!-- Left: Brand / Illustration -->
             <div class="hidden lg:flex flex-col justify-center items-start px-6 py-8 glass-card animate-fade-in rounded-xl text-voile-surface">
-              <h1 class="text-4xl font-extrabold mb-2 voile-text-gradient animate-fade-in">
+              <h1 class="text-4xl font-extrabold mb-2 voile-text-gradient animate-fade-in text-center">
                 <.icon name="hero-lock-closed" class="w-8 h-8 mr-2 inline-block text-voile-primary" />
+                <br />
                 {gettext("Welcome back to")} {@app_name}
               </h1>
               <p class="text-voile-dark/90 dark:text-voile-light max-w-prose mb-6">
