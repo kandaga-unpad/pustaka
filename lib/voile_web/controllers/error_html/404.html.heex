@@ -70,13 +70,13 @@
                 {assigns[:requested_url] || "(unknown)"}
               </span>
             </div>
-            <%= if @request_id do %>
+            <%= if assigns[:request_id] do %>
               <div>
                 <span class="text-xs text-gray-500 dark:text-gray-400">
                   {gettext("Request ID")}:
                 </span>
                 <span class="text-sm font-mono text-gray-900 dark:text-white">
-                  {@request_id}
+                  {assigns[:request_id]}
                 </span>
               </div>
             <% else %>
