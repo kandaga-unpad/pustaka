@@ -79,6 +79,12 @@ Detailed documentation for each major feature.
 - [Quickstart](features/oai-pmh/quickstart.md)
 - [Metadata Mapping](features/oai-pmh/metadata-mapping.md)
 
+#### Plugin System
+
+- [Plugin Overview](features/plugins/index.md)
+- [Developer Guide](features/plugins/developer-guide.md)
+- [User Guide](features/plugins/user-guide.md)
+
 ### 🔐 Authentication & Authorization
 
 Security and access control documentation.

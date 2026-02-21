@@ -372,9 +372,23 @@ defmodule Voile.Schema.Catalog do
 
   """
   def create_collection(attrs \\ %{}) do
-    %Collection{}
-    |> Collection.changeset(attrs)
-    |> Repo.insert()
+    # Let plugins modify attrs before save
+    enriched_attrs = Voile.Hooks.run_filter(:collection_before_save, attrs)
+
+    result =
+      %Collection{}
+      |> Collection.changeset(enriched_attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, collection} ->
+        # Let plugins react to the new collection
+        Voile.Hooks.run_action(:collection_after_save, collection)
+        {:ok, collection}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -1306,9 +1320,23 @@ defmodule Voile.Schema.Catalog do
 
   """
   def create_item(attrs \\ %{}) do
-    %Item{}
-    |> Item.changeset(attrs)
-    |> Repo.insert()
+    # Let plugins modify attrs before save
+    enriched_attrs = Voile.Hooks.run_filter(:item_before_save, attrs)
+
+    result =
+      %Item{}
+      |> Item.changeset(enriched_attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, item} ->
+        # Let plugins react to the new item
+        Voile.Hooks.run_action(:item_after_create, item)
+        {:ok, item}
+
+      error ->
+        error
+    end
   end
 
   @doc """

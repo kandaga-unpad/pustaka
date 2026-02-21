@@ -188,6 +188,16 @@ defmodule VoileWeb.DashboardLive do
       <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
         <.search_stats_widget stats={@search_stats} />
       </div>
+
+      <%!-- Plugin Dashboard Widgets --%>
+      <%= for widget <- @plugin_widgets do %>
+        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {widget.title}
+          </h3>
+          <.live_component module={widget.component} id={to_string(widget.key)} />
+        </div>
+      <% end %>
     </section>
     """
   end
@@ -220,6 +230,10 @@ defmodule VoileWeb.DashboardLive do
       |> load_member_stats(user)
       |> load_circulation_stats(user)
       |> load_catalog_stats(user)
+
+    # Let plugins inject their own widgets
+    plugin_widgets = Voile.Hooks.run_filter(:dashboard_widgets, [])
+    socket = assign(socket, :plugin_widgets, plugin_widgets)
 
     {:ok, socket}
   end

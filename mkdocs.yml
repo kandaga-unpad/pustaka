@@ -140,6 +140,10 @@ nav:
           - Implementation: features/oai-pmh/implementation.md
           - Metadata Mapping: features/oai-pmh/metadata-mapping.md
           - Architecture: features/oai-pmh/architecture.md
+      - Plugins:
+          - Overview: features/plugins/index.md
+          - Developer Guide: features/plugins/developer-guide.md
+          - User Guide: features/plugins/user-guide.md
   - Authentication:
       - Overview: authentication/index.md
       - Auth System: authentication/auth-system.md

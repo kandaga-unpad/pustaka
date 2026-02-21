@@ -32,7 +32,10 @@ defmodule Voile.Application do
       # Start the Finch HTTP client for sending emails
       {Finch, name: Voile.Finch},
       # Supervisor for short-lived tasks (used by LiveViews for async work)
-      {Task.Supervisor, name: Voile.TaskSupervisor}
+      {Task.Supervisor, name: Voile.TaskSupervisor},
+      # Plugin infrastructure — start before endpoint, after Repo
+      Voile.Hooks,
+      Voile.PluginManager
     ]
 
     # Conditionally add email queue (disabled in dev if configured)

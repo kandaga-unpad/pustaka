@@ -82,3 +82,7 @@ npm-debug.log
 
 # MKDocs Generated Site
 /site/
+
+# Plugins - ignore all plugin directories but keep README
+/plugins/*
+!/plugins/README.md
