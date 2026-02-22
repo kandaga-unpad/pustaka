@@ -6,8 +6,9 @@ defmodule Voile.AccountsFixtures do
 
   import Ecto.Query
 
+  alias Voile.Repo
   alias Voile.Schema.Accounts
-  alias Voile.Schema.Accounts.Scope
+  alias Voile.Schema.Accounts.{Scope, Role, UserRoleAssignment}
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
@@ -76,5 +77,36 @@ defmodule Voile.AccountsFixtures do
       from(ut in Accounts.UserToken, where: ut.token == ^token),
       set: [inserted_at: dt, authenticated_at: dt]
     )
+  end
+
+  @doc """
+  Generate a role.
+  """
+  def role_fixture(attrs \\ %{}) do
+    name = "role_#{System.unique_integer()}"
+
+    role =
+      attrs
+      |> Enum.into(%{
+        name: name,
+        description: "Test role"
+      })
+      |> then(&Repo.insert!(%Role{} |> Role.changeset(&1)))
+
+    role
+  end
+
+  @doc """
+  Assign a role to a user.
+  """
+  def user_role_assignment_fixture(attrs \\ %{}) do
+    assignment =
+      attrs
+      |> Enum.into(%{
+        scope_type: "global"
+      })
+      |> then(&Repo.insert!(%UserRoleAssignment{} |> UserRoleAssignment.changeset(&1)))
+
+    assignment
   end
 end

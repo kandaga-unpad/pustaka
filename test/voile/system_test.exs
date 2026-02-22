@@ -64,6 +64,19 @@ defmodule Voile.SystemTest do
       node = node_fixture()
       assert %Ecto.Changeset{} = System.change_node(node)
     end
+
+    test "get_node_basic/1 returns minimal node fields for a valid node_id" do
+      node = node_fixture()
+
+      assert {:ok, node_data} = System.get_node_basic(node.id)
+      assert node_data.id == node.id
+      assert is_binary(node_data.name)
+      assert is_binary(node_data.abbr)
+    end
+
+    test "get_node_basic/1 returns :not_found for missing node_id" do
+      assert {:error, :not_found} = System.get_node_basic(0)
+    end
   end
 
   describe "settings" do

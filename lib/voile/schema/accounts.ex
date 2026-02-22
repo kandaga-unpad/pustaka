@@ -1507,6 +1507,121 @@ defmodule Voile.Schema.Accounts do
 
   def is_manually_suspended?(_), do: false
 
+  ## Cross-App Auth Functions
+
+  @doc """
+  Fetches minimal user auth data by user_id with roles preloaded.
+
+  Returns only the fields needed for cross-app token generation.
+  Does not load any library associations (transactions, fines, reservations,
+  audit_logs, collection_permissions). Significantly lighter than
+  preload_user_assocs/1 for auth-only use cases.
+
+  ## Returns
+
+      {:ok, %{
+        user_id: binary(),       # UUID
+        node_id: integer(),
+        roles:   [%{name: String.t()}]
+      }}
+      {:error, :not_found}
+
+  ## Usage
+
+      case Voile.Schema.Accounts.get_user_with_roles(user.id) do
+        {:ok, auth_data} -> # proceed
+        {:error, :not_found} -> # handle missing user
+      end
+  """
+  def get_user_with_roles(user_id) do
+    user =
+      Repo.one(
+        from u in User,
+          where: u.id == ^user_id,
+          select: %{user_id: u.id, node_id: u.node_id}
+      )
+
+    case user do
+      nil ->
+        {:error, :not_found}
+
+      user_data ->
+        roles =
+          Repo.all(
+            from r in Role,
+              join: ura in UserRoleAssignment,
+              on: ura.role_id == r.id,
+              where: ura.user_id == ^user_id,
+              select: %{name: r.name}
+          )
+
+        {:ok, Map.put(user_data, :roles, roles)}
+    end
+  end
+
+  @doc """
+  Verifies a session token and returns all auth data needed for cross-app
+  token generation in a single optimized call.
+
+  This is the primary function Curatorian should call during session
+  verification. It replaces the pattern of:
+    1. get_user_by_session_token/1
+    2. get_user_with_roles/1
+    3. Voile.Schema.System.get_node_basic/1
+
+  ## Returns
+
+      {:ok, %{
+        user_id:   binary(),       # UUID string
+        node_id:   integer(),
+        node_name: String.t(),     # organization display name
+        node_abbr: String.t(),     # organization abbreviation
+        roles:     [%{name: String.t()}]
+      }}
+
+      {:error, :invalid_token}    # token did not verify
+      {:error, :user_not_found}   # token valid but user missing (deleted?)
+      {:error, :node_not_found}   # user exists but node missing (corrupted data?)
+
+  ## Usage in Curatorian
+
+      case Voile.Schema.Accounts.get_user_session_auth(session_token) do
+        {:ok, auth_info} ->
+          cross_app_token = Curatorian.CrossAppToken.sign(auth_info)
+          # ...
+        {:error, reason} ->
+          # redirect to login
+      end
+  """
+  def get_user_session_auth(session_token) do
+    with {:ok, query} <- UserToken.verify_session_token_query(session_token),
+         result when not is_nil(result) <- Repo.one(query),
+         {user, _inserted_at} = result,
+         {:ok, node} <- Voile.Schema.System.get_node_basic(user.node_id) do
+      roles =
+        Repo.all(
+          from r in Role,
+            join: ura in UserRoleAssignment,
+            on: ura.role_id == r.id,
+            where: ura.user_id == ^user.id,
+            select: %{name: r.name}
+        )
+
+      {:ok,
+       %{
+         user_id: user.id,
+         node_id: user.node_id,
+         node_name: node.name,
+         node_abbr: node.abbr,
+         roles: roles
+       }}
+    else
+      nil -> {:error, :invalid_token}
+      {:error, :not_found} -> {:error, :node_not_found}
+      _ -> {:error, :invalid_token}
+    end
+  end
+
   @doc """
   Automatically lifts expired suspensions.
   Should be called periodically (e.g., via a scheduled job).

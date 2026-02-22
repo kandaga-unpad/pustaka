@@ -540,4 +540,68 @@ defmodule Voile.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "get_user_with_roles/1" do
+    test "returns user auth data with roles for valid user_id" do
+      node = Voile.SystemFixtures.node_fixture()
+      user = user_fixture(%{node_id: node.id})
+      role = role_fixture(%{name: "staff"})
+      user_role_assignment_fixture(%{user_id: user.id, role_id: role.id})
+
+      assert {:ok, auth_data} = Accounts.get_user_with_roles(user.id)
+      assert auth_data.user_id == user.id
+      assert auth_data.node_id == node.id
+      assert Enum.any?(auth_data.roles, &(&1.name == "staff"))
+    end
+
+    test "returns empty roles list when user has no roles assigned" do
+      user = user_fixture()
+
+      assert {:ok, auth_data} = Accounts.get_user_with_roles(user.id)
+      assert auth_data.roles == []
+    end
+
+    test "returns not_found for missing user_id" do
+      assert {:error, :not_found} =
+               Accounts.get_user_with_roles(Ecto.UUID.generate())
+    end
+  end
+
+  describe "get_user_session_auth/1" do
+    test "returns full auth info for a valid session token" do
+      node = Voile.SystemFixtures.node_fixture()
+      user = user_fixture(%{node_id: node.id})
+      role = role_fixture(%{name: "admin"})
+      user_role_assignment_fixture(%{user_id: user.id, role_id: role.id})
+      token = Accounts.generate_user_session_token(user)
+
+      assert {:ok, auth_info} = Accounts.get_user_session_auth(token)
+      assert auth_info.user_id == user.id
+      assert auth_info.node_id == node.id
+      assert is_binary(auth_info.node_name)
+      assert is_binary(auth_info.node_abbr)
+      assert Enum.any?(auth_info.roles, &(&1.name == "admin"))
+    end
+
+    test "returns :invalid_token for a garbage token" do
+      assert {:error, :invalid_token} =
+               Accounts.get_user_session_auth("not-a-real-token")
+    end
+
+    test "returns :invalid_token for a deleted token" do
+      user = user_fixture()
+      token = Accounts.generate_user_session_token(user)
+      Accounts.delete_user_session_token(token)
+
+      assert {:error, :invalid_token} =
+               Accounts.get_user_session_auth(token)
+    end
+
+    test "returns :node_not_found when user has no node_id" do
+      user = user_fixture()
+      token = Accounts.generate_user_session_token(user)
+
+      assert {:error, :node_not_found} = Accounts.get_user_session_auth(token)
+    end
+  end
 end

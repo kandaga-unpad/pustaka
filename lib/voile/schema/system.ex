@@ -116,6 +116,50 @@ defmodule Voile.Schema.System do
   end
 
   @doc """
+  Fetches minimal node identity for cross-app token encoding.
+
+  Returns only display fields — no collections, no users, no heavy associations.
+  Used by Curatorian when building cross-app tokens so Atrium can display
+  the organization name without a separate Voile database call.
+
+  ## Returns
+
+      {:ok, %{
+        id:   integer(),
+        name: String.t(),   # display name, e.g. "SD Negeri 1 Bandung"
+        abbr: String.t()    # abbreviation, e.g. "SDN1BDG"
+      }}
+      {:error, :not_found}
+
+  ## Examples
+
+      iex> get_node_basic(1)
+      {:ok, %{id: 1, name: "SD Negeri 1 Bandung", abbr: "SDN1BDG"}}
+
+      iex> get_node_basic(999)
+      {:error, :not_found}
+  """
+  def get_node_basic(nil), do: {:error, :not_found}
+
+  def get_node_basic(node_id) do
+    result =
+      Repo.one(
+        from n in Node,
+          where: n.id == ^node_id,
+          select: %{
+            id: n.id,
+            name: n.name,
+            abbr: n.abbr
+          }
+      )
+
+    case result do
+      nil -> {:error, :not_found}
+      node -> {:ok, node}
+    end
+  end
+
+  @doc """
   Returns the list of settings.
 
   ## Examples
