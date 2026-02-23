@@ -3879,7 +3879,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:287
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Inactive"
-msgstr "Active"
+msgstr "Inactive"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:596
 #, elixir-autogen, elixir-format

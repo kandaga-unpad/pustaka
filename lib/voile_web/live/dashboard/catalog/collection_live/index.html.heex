@@ -529,9 +529,24 @@
                 </td>
 
                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">
-                  <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 capitalize">
-                    {collection.status || "-"}
-                  </span>
+                  <%= case collection.status do %>
+                    <% "draft" -> %>
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 capitalize">
+                        {gettext("Draft")}
+                      </span>
+                    <% "pending" -> %>
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-600 capitalize">
+                        {gettext("Pending")}
+                      </span>
+                    <% "published" -> %>
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-600 capitalize">
+                        {gettext("Published")}
+                      </span>
+                    <% _ -> %>
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 capitalize">
+                        {collection.status || "-"}
+                      </span>
+                  <% end %>
                 </td>
 
                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden xl:table-cell">
@@ -547,24 +562,30 @@
                     <%= if can?(@current_scope.user, "collections.update") do %>
                       <.link
                         patch={~p"/manage/catalog/collections/#{collection}/edit"}
-                        class="text-indigo-600 hover:underline"
-                        title="Edit"
+                        phx-click={JS.push_focus()}
                       >
-                        <.icon name="hero-pencil" class="w-4 h-4" />
+                        <.button
+                          type="button"
+                          class="primary-btn flex items-center gap-1"
+                        >
+                          <.icon name="hero-pencil" class="w-3.5 h-3.5 mr-1" />
+                          {gettext("Edit")}
+                        </.button>
                       </.link>
                     <% end %>
 
                     <%= if can_delete_collections?(@current_scope.user) do %>
-                      <.link
+                      <.button
+                        type="button"
                         phx-click={
                           JS.push("delete", value: %{id: collection.id}) |> hide("##{id}")
                         }
-                        data-confirm="Are you sure?"
-                        class="text-red-600 hover:underline"
-                        title="Delete"
+                        data-confirm={gettext("Are you sure?")}
+                        class="cancel-btn flex items-center gap-1"
                       >
-                        <.icon name="hero-trash" class="w-4 h-4" />
-                      </.link>
+                        <.icon name="hero-trash" class="w-3.5 h-3.5 mr-1" />
+                        {gettext("Delete")}
+                      </.button>
                     <% end %>
                   </div>
                 </td>
