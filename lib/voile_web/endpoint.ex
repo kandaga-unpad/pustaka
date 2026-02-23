@@ -22,7 +22,8 @@ defmodule VoileWeb.Endpoint do
     store: :cookie,
     key: "_voile_key",
     signing_salt: "yYGzasTL",
-    same_site: "Lax"
+    same_site: "None",
+    secure: true
   ]
 
   socket "/live", Phoenix.LiveView.Socket,

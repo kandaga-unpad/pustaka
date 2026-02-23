@@ -692,12 +692,21 @@ defmodule Voile.Schema.Accounts do
 
   """
   def register_user(attrs) do
+    # Ensure we work with a uniformly string-keyed map.
+    # callers (e.g. Google callback) sometimes pass atom keys, which
+    # would later cause `Ecto.CastError` when we `Map.put/3` with a
+    # string key and end up with a mixed-key map.  Convert early so
+    # downstream code can rely on string names only.
+    attrs =
+      attrs
+      |> Enum.into(%{}, fn {k, v} -> {to_string(k), v} end)
+
     # Get the Guest member type
     guest_member_type = Repo.get_by(MemberType, slug: "guest")
 
     # Set the user_type_id to Guest if not provided
     attrs =
-      if guest_member_type && !Map.get(attrs, "user_type_id") do
+      if guest_member_type && !Map.has_key?(attrs, "user_type_id") do
         Map.put(attrs, "user_type_id", guest_member_type.id)
       else
         attrs

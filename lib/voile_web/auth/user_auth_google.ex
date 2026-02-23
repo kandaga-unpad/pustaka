@@ -36,9 +36,19 @@ defmodule VoileWeb.UserAuthGoogle do
     # a POST request where the params is in the POST body.
     %{params: params} = fetch_query_params(conn)
 
+    # log incoming values for debugging in production
+    IO.inspect("Google callback hit, params=#{inspect(params)}")
+
     # The session params (used for OAuth 2.0 and OIDC Strategies) stored in the
     # request phase will be used in the callback phase
     session_params = get_session(conn, :session_params)
+    IO.inspect("session_params=#{inspect(session_params)}")
+
+    if is_nil(session_params) do
+      IO.inspect(
+        "no session_params present on Google callback, likely the session cookie was not sent"
+      )
+    end
 
     case Application.get_env(:assent, :google, [])
          # Session params should be added to the config so the strategi can use them
@@ -64,6 +74,10 @@ defmodule VoileWeb.UserAuthGoogle do
         |> maybe_redirect_to_onboarding(needs_onboarding)
 
       {:error, error} ->
+        IO.inspect(
+          "Google auth error: #{inspect(error)} session_params=#{inspect(session_params)}"
+        )
+
         # Authorization failed
         conn
         |> put_resp_content_type("text/plain")

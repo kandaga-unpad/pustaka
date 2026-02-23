@@ -127,6 +127,17 @@ defmodule Voile.AccountsTest do
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
+
+    test "accepts atom-keyed attrs (works around Google callback)" do
+      # Build attrs originally produced by forms, then convert to atoms
+      email = unique_user_email()
+
+      attrs =
+        valid_user_attributes(email: email)
+        |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
+
+      assert {:ok, %User{email: ^email}} = Accounts.register_user(attrs)
+    end
   end
 
   describe "change_user_registration/2" do
