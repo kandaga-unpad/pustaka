@@ -63,8 +63,10 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       <:subtitle>{gettext("Manage the application profile")}</:subtitle>
     </.header>
 
-    <div class="flex gap-4">
-      <div class="w-full max-w-64"><.dashboard_settings_sidebar current_user={@current_user} /></div>
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
+        <.dashboard_settings_sidebar current_user={@current_user} />
+      </div>
 
       <div class="w-full bg-white dark:bg-gray-700 p-4 rounded-lg">
         <.form for={%{}} phx-submit="save" phx-change="validate">

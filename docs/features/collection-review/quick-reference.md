@@ -44,7 +44,7 @@ draft → pending → published
 # Backend (lib/voile/schema/catalog.ex)
 Catalog.list_pending_collections()
 Catalog.list_pending_collections_paginated(page, per_page)
-Catalog.approve_collection(collection, reviewer, notes)
+Catalog.approve_collection(collection, reviewer, notes)  # publishes and marks items available
 Catalog.reject_collection(collection, reviewer, reason)
 Catalog.count_pending_collections()
 ```

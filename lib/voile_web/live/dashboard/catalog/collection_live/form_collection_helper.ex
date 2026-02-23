@@ -116,7 +116,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       # Use "good" as a sane default instead of the previously used "new" which
       # is not in the allowed list and caused validation failures.
       "condition" => "good",
-      "availability" => "available",
+      # Default availability should start as "in_processing" instead of
+      # "available".  This matches the new requirement and avoids the user
+      # having to remember to change it when adding items.
+      "availability" => "in_processing",
       "unit_id" => unit_id,
       "legacy_item_code" => nil
     }

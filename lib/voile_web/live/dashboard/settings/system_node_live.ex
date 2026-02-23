@@ -8,11 +8,17 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
 
   def render(assigns) do
     ~H"""
-    <.header>
-      {gettext("System Nodes / Units Management")}
-      <:subtitle>{gettext("Manage library branches, units, and organizational nodes")}</:subtitle>
+    <div class="w-full flex flex-col md:flex-row items-start justify-between my-6">
+      <div class="flex flex-col">
+        <h5>
+          {gettext("System Nodes / Units Management")}
+        </h5>
+        <p class="text-gray-500 text-sm mt-1">
+          {gettext("Manage library branches, units, and organizational nodes")}
+        </p>
+      </div>
 
-      <:actions>
+      <div>
         <.button phx-click="new_node" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Node")}
         </.button>
@@ -22,11 +28,11 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         >
           <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("Configure Rules")}
         </.button>
-      </:actions>
-    </.header>
+      </div>
+    </div>
 
-    <section class="flex gap-4">
-      <div class="w-full max-w-64">
+    <section class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}

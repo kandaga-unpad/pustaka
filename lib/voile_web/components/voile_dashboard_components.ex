@@ -99,7 +99,7 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def side_bar_dashboard(assigns) do
     ~H"""
-    <section class="bg-white dark:bg-gray-700 rounded-xl p-5 max-w-64 w-full h-full mr-5">
+    <section class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full max-w-64 h-full md:mr-5 mb-4 md:mb-0 md:sticky md:top-0">
       <div class="flex flex-col gap-2">{render_slot(@inner_block)}</div>
     </section>
     """
@@ -107,102 +107,105 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   attr :active_menu, :string, default: ""
   attr :user, :map, default: %{fullname: ""}
+  attr :current_path, :string, default: "/"
 
   def dashboard_menu_bar(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-      <div class="flex flex-col items-start justify-between gap-4 lg:gap-10 w-full">
-        <div class="w-full flex items-center justify-between">
-          <div>
-            <h5 class="text-lg md:text-xl">{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
+    <%= if @current_path |> String.starts_with?("/manage/catalog") do %>
+      <div class="bg-white dark:bg-gray-700 rounded-xl p-5 w-full flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+        <div class="flex flex-col items-start justify-between gap-4 lg:gap-10 w-full">
+          <div class="w-full flex items-center justify-between">
+            <div>
+              <h5 class="text-lg md:text-xl">{gettext("Hello, %{name}!", name: @user.fullname)}</h5>
 
-            <p class="text-sm md:text-base">{gettext("You can check your collection data here")}</p>
+              <p class="text-sm md:text-base">{gettext("You can check your collection data here")}</p>
+            </div>
+            <%!-- Mobile/Tablet Menu Toggle --%>
+            <button
+              type="button"
+              phx-click={
+                JS.show(to: "#dashboard-mobile-menu-backdrop")
+                |> JS.show(to: "#dashboard-mobile-menu-panel")
+              }
+              class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
+            </button>
           </div>
-          <%!-- Mobile/Tablet Menu Toggle --%>
-          <button
-            type="button"
-            phx-click={
-              JS.show(to: "#dashboard-mobile-menu-backdrop")
-              |> JS.show(to: "#dashboard-mobile-menu-panel")
-            }
-            class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-            aria-label="Toggle menu"
-          >
-            <.icon name="hero-squares-2x2" class="h-6 w-6 text-voile-primary" />
-          </button>
-        </div>
-        <%!-- Navigation Menu (Always visible, responsive) --%>
-        <div class="flex gap-2 flex-wrap w-full">
-          <.link
-            patch="/manage/catalog/collections"
-            class={[
-              "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/catalog/collections") &&
-                "dashboard-menu-btn-active"
-            ]}
-          >
-            {gettext("Collections")}
-          </.link>
-          <.link
-            patch="/manage/catalog/items"
-            class={[
-              "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/catalog/items") &&
-                "dashboard-menu-btn-active"
-            ]}
-          >
-            {gettext("Items")}
-          </.link>
-          <.link
-            patch="/manage/catalog/labels"
-            class={[
-              "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/catalog/labels") &&
-                "dashboard-menu-btn-active"
-            ]}
-          >
-            {gettext("Labels")}
-          </.link>
-          <%= if has_admin_role?(@user) do %>
+          <%!-- Navigation Menu (Always visible, responsive) --%>
+          <div class="flex gap-2 flex-wrap w-full">
             <.link
-              navigate="/manage/catalog/asset-vault"
+              patch="/manage/catalog/collections"
               class={[
                 "dashboard-menu-btn",
-                @active_menu |> String.starts_with?("/manage/catalog/asset-vault") &&
+                @active_menu |> String.starts_with?("/manage/catalog/collections") &&
                   "dashboard-menu-btn-active"
               ]}
             >
-              {gettext("Asset Vault")}
+              {gettext("Collections")}
             </.link>
-          <% end %>
+            <.link
+              patch="/manage/catalog/items"
+              class={[
+                "dashboard-menu-btn",
+                @active_menu |> String.starts_with?("/manage/catalog/items") &&
+                  "dashboard-menu-btn-active"
+              ]}
+            >
+              {gettext("Items")}
+            </.link>
+            <.link
+              patch="/manage/catalog/labels"
+              class={[
+                "dashboard-menu-btn",
+                @active_menu |> String.starts_with?("/manage/catalog/labels") &&
+                  "dashboard-menu-btn-active"
+              ]}
+            >
+              {gettext("Labels")}
+            </.link>
+            <%= if has_admin_role?(@user) do %>
+              <.link
+                navigate="/manage/catalog/asset-vault"
+                class={[
+                  "dashboard-menu-btn",
+                  @active_menu |> String.starts_with?("/manage/catalog/asset-vault") &&
+                    "dashboard-menu-btn-active"
+                ]}
+              >
+                {gettext("Asset Vault")}
+              </.link>
+            <% end %>
 
-          <.link
-            patch="/manage/catalog/transfers"
-            class={[
-              "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/catalog/transfers") &&
-                "dashboard-menu-btn-active"
-            ]}
-          >
-            {gettext("Transfers")}
-          </.link>
-          <.link
-            patch="/manage/catalog/stock_opname"
-            class={[
-              "dashboard-menu-btn",
-              @active_menu |> String.starts_with?("/manage/catalog/stock_opname") &&
-                "dashboard-menu-btn-active"
-            ]}
-          >
-            {gettext("Stock Opname")}
-          </.link>
+            <.link
+              patch="/manage/catalog/transfers"
+              class={[
+                "dashboard-menu-btn",
+                @active_menu |> String.starts_with?("/manage/catalog/transfers") &&
+                  "dashboard-menu-btn-active"
+              ]}
+            >
+              {gettext("Transfers")}
+            </.link>
+            <.link
+              patch="/manage/catalog/stock_opname"
+              class={[
+                "dashboard-menu-btn",
+                @active_menu |> String.starts_with?("/manage/catalog/stock_opname") &&
+                  "dashboard-menu-btn-active"
+              ]}
+            >
+              {gettext("Stock Opname")}
+            </.link>
+          </div>
+        </div>
+
+        <div class="hidden lg:block flex-shrink-0">
+          <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
         </div>
       </div>
-
-      <div class="hidden lg:block flex-shrink-0">
-        <.icon name="hero-document-magnifying-glass" class="w-32 h-32 voile-gradient" />
-      </div>
-    </div>
+    <% end %>
     <%!-- Fixed Bottom Navigation for Mobile/Tablet --%>
     <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-lg">
       <div class="grid grid-cols-5 gap-1 px-2 py-2">
@@ -774,33 +777,127 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def dashboard_settings_sidebar(assigns) do
     ~H"""
-    <.side_bar_dashboard>
-      <.link navigate="/manage/settings/">
-        <h3 class="text-lg font-semibold mb-4">Settings</h3>
-      </.link>
-      <ul class="space-y-4 text-sm">
-        <%= for item <- @menu_items do %>
-          <li>
-            <.link
-              navigate={item.path}
-              class={[
-                "rounded-lg flex items-center gap-2",
-                if(is_menu_active?(@current_path, item),
-                  do:
-                    "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
-                  else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+    <%!-- desktop sidebar --%>
+    <div class="hidden lg:block">
+      <.side_bar_dashboard>
+        <.link navigate="/manage/settings/">
+          <h3 class="text-lg font-semibold mb-4">Settings</h3>
+        </.link>
+        <ul class="space-y-4 text-sm">
+          <%= for item <- @menu_items do %>
+            <li>
+              <.link
+                navigate={item.path}
+                class={[
+                  "rounded-lg flex items-center gap-2",
+                  if(is_menu_active?(@current_path, item),
+                    do:
+                      "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
+                    else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                  )
+                ]}
+              >
+                <%= if Map.get(item, :icon) do %>
+                  <.icon name={item.icon} class="w-5 h-5" />
+                <% end %>
+                {item.label}
+              </.link>
+            </li>
+          <% end %>
+        </ul>
+      </.side_bar_dashboard>
+    </div>
+
+    <%!-- mobile toggle and drawer --%>
+    <div class="lg:hidden w-full flex items-center justify-end px-4 py-2">
+      <button
+        type="button"
+        phx-click={
+          JS.show(to: "#settings-mobile-sidebar-backdrop")
+          |> JS.show(
+            to: "#settings-mobile-sidebar",
+            transition:
+              {"transition-transform ease-out duration-200", "-translate-x-full", "translate-x-0"}
+          )
+        }
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-1 border-gray-300 dark:border-gray-600"
+        aria-label="Open settings"
+      >
+        <span class="text-sm text-voile-primary font-medium">
+          {gettext("Menu")}
+        </span>
+        <.icon name="hero-cog-6-tooth" class="w-6 h-6 text-voile-primary" />
+      </button>
+
+      <%!-- backdrop for drawer --%>
+      <div
+        id="settings-mobile-sidebar-backdrop"
+        class="hidden fixed inset-0 bg-black/50 z-40"
+        phx-click={
+          JS.hide(to: "#settings-mobile-sidebar-backdrop")
+          |> JS.hide(
+            to: "#settings-mobile-sidebar",
+            transition:
+              {"transition-transform ease-in duration-200", "translate-x-0", "-translate-x-full"}
+          )
+        }
+      />
+
+      <%!-- sliding panel itself --%>
+      <div
+        id="settings-mobile-sidebar"
+        class="hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-700 z-50 transform -translate-x-full transition-transform"
+      >
+        <div class="p-5 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Settings</h3>
+            <button
+              type="button"
+              phx-click={
+                JS.hide(to: "#settings-mobile-sidebar-backdrop")
+                |> JS.hide(
+                  to: "#settings-mobile-sidebar",
+                  transition:
+                    {"transition-transform ease-in duration-200", "translate-x-0",
+                     "-translate-x-full"}
                 )
-              ]}
+              }
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Close"
             >
-              <%= if Map.get(item, :icon) do %>
-                <.icon name={item.icon} class="w-5 h-5" />
-              <% end %>
-              {item.label}
-            </.link>
-          </li>
-        <% end %>
-      </ul>
-    </.side_bar_dashboard>
+              <.icon name="hero-x-mark" class="w-5 h-5" />
+            </button>
+          </div>
+
+          <ul class="space-y-4 text-sm flex-1 overflow-y-auto">
+            <%= for item <- @menu_items do %>
+              <li>
+                <.link
+                  navigate={item.path}
+                  phx-click={
+                    JS.hide(to: "#settings-mobile-sidebar-backdrop")
+                    |> JS.hide(to: "#settings-mobile-sidebar")
+                  }
+                  class={[
+                    "rounded-lg flex items-center gap-2",
+                    if(is_menu_active?(@current_path, item),
+                      do:
+                        "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
+                      else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                    )
+                  ]}
+                >
+                  <%= if Map.get(item, :icon) do %>
+                    <.icon name={item.icon} class="w-5 h-5" />
+                  <% end %>
+                  {item.label}
+                </.link>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
     """
   end
 

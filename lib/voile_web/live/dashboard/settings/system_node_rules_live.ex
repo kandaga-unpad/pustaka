@@ -6,8 +6,8 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
 
   def render(assigns) do
     ~H"""
-    <section class="flex gap-4">
-      <div class="w-full max-w-64">
+    <section class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}

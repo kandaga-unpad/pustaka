@@ -114,8 +114,10 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
       <:subtitle>{gettext("Configure and manage your GLAM system")}</:subtitle>
     </.header>
 
-    <div class="flex gap-4">
-      <div class="w-full max-w-64"><.dashboard_settings_sidebar current_user={@current_user} /></div>
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
+        <.dashboard_settings_sidebar current_user={@current_user} />
+      </div>
 
       <div class="w-full space-y-6">
         <!-- Welcome Section -->
@@ -141,7 +143,7 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
           </div>
         </div>
         <!-- System Overview Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
             <div class="flex items-center justify-between mb-4">
               <h5 class="font-semibold text-gray-900 dark:text-white">{gettext("System Status")}</h5>

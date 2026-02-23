@@ -6,24 +6,27 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
   def render(assigns) do
     ~H"""
-    <.header>
-      {gettext("Library Holidays & Schedule Management")}
-      <:subtitle>
-        {gettext("Manage holidays, weekly schedules, and non-business days for fine calculations")}
-      </:subtitle>
-
-      <:actions>
+    <div class="w-full flex flex-col md:flex-row items-start justify-between my-6">
+      <div class="flex flex-col">
+        <h5>
+          {gettext("Library Holidays & Schedule Management")}
+        </h5>
+        <p class="text-gray-500 text-sm mt-1">
+          {gettext("Manage holidays, weekly schedules, and non-business days for fine calculations")}
+        </p>
+      </div>
+      <div>
         <.button phx-click="new_holiday" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Holiday")}
         </.button>
         <.button phx-click="setup_default_schedule" class="warning-btn">
           <.icon name="hero-calendar-days" class="w-4 h-4 mr-2" /> {gettext("Setup Default Schedule")}
         </.button>
-      </:actions>
-    </.header>
+      </div>
+    </div>
 
-    <section class="flex gap-4">
-      <div class="w-full max-w-64">
+    <section class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
@@ -117,7 +120,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </div>
 
           <div class="px-4 py-5 sm:p-6">
-            <div class="mb-4 flex items-center space-x-3">
+            <div class="mb-4 flex flex-col md:flex-wrap space-x-3">
               <label class="text-sm font-medium">{gettext("Viewing schedule for")}</label>
               <form phx-change="select_unit">
                 <select
@@ -183,10 +186,10 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <% end %>
             </div>
 
-            <div class="mt-6 flex items-center justify-between">
-              <div class="text-xs">{gettext("Click on any day to toggle its business status")}</div>
+            <div class="mt-6 flex flex-col md:flex-wrap justify-between">
+              <h6>{gettext("Click on any day to toggle its business status")}</h6>
 
-              <div class="space-x-2">
+              <div class="flex space-x-2 mt-2">
                 <.button
                   phx-click="set_all_business"
                   phx-value-unit_id={@selected_unit_id}

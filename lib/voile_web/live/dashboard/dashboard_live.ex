@@ -15,7 +15,7 @@ defmodule VoileWeb.DashboardLive do
   def render(assigns) do
     ~H"""
     <section class="space-y-6 p-6">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col md:flex-wrap items-center justify-between gap-4">
         <div class="w-full">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             {gettext("Dashboard")}

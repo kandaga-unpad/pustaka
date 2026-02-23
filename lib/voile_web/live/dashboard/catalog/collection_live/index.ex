@@ -270,7 +270,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         barcode: barcode,
         status: "active",
         condition: "good",
-        availability: "available"
+        availability: "in_processing"
       }
 
       # Maintain search-related assigns so we can return to search modal

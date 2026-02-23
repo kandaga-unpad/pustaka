@@ -7,8 +7,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
   @impl true
   def render(assigns) do
     ~H"""
-    <section class="flex gap-4">
-      <div class="w-full max-w-64">
+    <section class="flex flex-col md:flex-row gap-4">
+      <div class="w-full md:w-auto md:max-w-64">
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
@@ -22,7 +22,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
           {gettext("← Back to Settings")}
         </.link>
 
-        <div class="flex justify-between items-center mb-6 mt-4">
+        <div class="flex flex-col md:flex-wrap justify-between mb-6 mt-4">
           <div>
             <h1 class="text-2xl font-bold">{gettext("API Token Manager")}</h1>
             <p class="text-gray-600 mt-1">

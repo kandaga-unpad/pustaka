@@ -3777,7 +3777,7 @@ msgstr "Pembuat:"
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:72
 #, elixir-autogen, elixir-format
 msgid "Custodian"
-msgstr "Penjaga"
+msgstr "Penanggungjawab"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:798
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:812
@@ -4349,7 +4349,7 @@ msgstr "Ini akan mengembalikan koleksi ke status draf. Penanggung jawab akan dap
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:56
 #, elixir-autogen, elixir-format
 msgid "Thumbnail"
-msgstr "Miniatur"
+msgstr "Miniatur Gambar"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:325
 #, elixir-autogen, elixir-format

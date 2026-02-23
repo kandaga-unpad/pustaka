@@ -360,7 +360,8 @@ defmodule Voile.Catalog.CollectionCsvImporter do
             location: location,
             status: get_value(row_data, "item_#{i}_status") || "active",
             condition: get_value(row_data, "item_#{i}_condition") || "good",
-            availability: get_value(row_data, "item_#{i}_availability") || "available",
+            # default to in_processing when not provided by CSV
+            availability: get_value(row_data, "item_#{i}_availability") || "in_processing",
             price: parse_decimal(get_value(row_data, "item_#{i}_price")),
             acquisition_date: parse_date(get_value(row_data, "item_#{i}_acquisition_date")),
             rfid_tag: get_value(row_data, "item_#{i}_rfid_tag"),

@@ -108,6 +108,8 @@ defmodule Voile.Schema.Catalog.Item do
       :created_by_id,
       :updated_by_id
     ])
+    # Set a default availability when it's missing (e.g. new form additions)
+    |> set_default_availability()
     |> cast_assoc(:attachments, with: &Attachment.changeset/2, required: false)
     |> validate_required([
       :item_code,
@@ -124,6 +126,13 @@ defmodule Voile.Schema.Catalog.Item do
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:condition, @conditions)
     |> validate_inclusion(:availability, @availabilities)
+  end
+
+  defp set_default_availability(changeset) do
+    case get_field(changeset, :availability) do
+      nil -> put_change(changeset, :availability, "in_processing")
+      _ -> changeset
+    end
   end
 
   @doc """

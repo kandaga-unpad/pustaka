@@ -72,7 +72,7 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 px-3 md:px-0">
+    <div class="space-y-6 px-3 mt-5 md:px-0">
       <%= if @is_super_admin do %>
         <div class="mb-4">
           <.form :let={f} for={%{}} phx-change="select_node">

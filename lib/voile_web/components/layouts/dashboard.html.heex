@@ -73,7 +73,11 @@
       <%!-- Mobile: Dashboard Menu Bar shows icon button --%>
       <%= if @current_path |> String.starts_with?("/manage") do %>
         <div>
-          <.dashboard_menu_bar active_menu={@current_path} user={@current_scope.user} />
+          <.dashboard_menu_bar
+            active_menu={@current_path}
+            user={@current_scope.user}
+            current_path={@current_path}
+          />
         </div>
       <% end %>
     </div>
@@ -124,10 +128,10 @@
               <% end %>
             </div>
 
-            <div class="default-card">{@inner_content}</div>
+            <div class="default-card px-2 py-4">{@inner_content}</div>
           </div>
         <% else %>
-          <div class="w-full">{@inner_content}</div>
+          <div class="w-full px-2 py-4">{@inner_content}</div>
         <% end %>
       </div>
     </section>

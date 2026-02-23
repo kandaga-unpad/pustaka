@@ -78,6 +78,21 @@ defmodule Voile.CatalogTest do
       collection = collection_fixture()
       assert %Ecto.Changeset{} = Catalog.change_collection(collection)
     end
+
+    test "approve_collection/3 publishes collection and makes items available" do
+      # create a pending collection
+      collection = collection_fixture(%{status: "pending"})
+      # create reviewer user via accounts fixtures
+      reviewer = Voile.AccountsFixtures.user_fixture()
+
+      # add an item with nil availability and link to collection
+      item = item_fixture(%{collection_id: collection.id, availability: nil})
+
+      assert {:ok, _updated} = Catalog.approve_collection(collection, reviewer, "Looks good")
+      # reload item and verify availability
+      updated_item = Catalog.get_item!(item.id)
+      assert updated_item.availability == "available"
+    end
   end
 
   describe "items" do
@@ -124,6 +139,21 @@ defmodule Voile.CatalogTest do
       assert item.barcode == "some barcode"
       assert item.condition == "some condition"
       assert item.availability == "some availability"
+    end
+
+    test "create_item/1 without availability defaults to in_processing" do
+      attrs = %{
+        status: "ok status",
+        location: "ok location",
+        item_code: "ok code",
+        inventory_code: "ok inv",
+        barcode: "ok barcode",
+        condition: "good"
+        # note: availability omitted
+      }
+
+      assert {:ok, %Item{} = item} = Catalog.create_item(attrs)
+      assert item.availability == "in_processing"
     end
 
     test "create_item/1 with invalid data returns error changeset" do

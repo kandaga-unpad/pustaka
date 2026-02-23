@@ -646,6 +646,14 @@ defmodule Voile.Schema.Catalog do
           metadata: metadata
         )
 
+        # When a collection is published we also want all of its items to be
+        # available so they can show up in public listings.  Update any related
+        # items en masse.  We don't care what their prior availability was; the
+        # business rule is that published collections make contained material
+        # available.
+        from(i in Item, where: i.collection_id == ^updated_collection.id)
+        |> Repo.update_all(set: [availability: "available"])
+
         {:ok, updated_collection}
 
       error ->

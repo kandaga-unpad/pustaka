@@ -962,7 +962,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
            "unit_id" => item.unit_id,
            "status" => item.status,
            "condition" => item.condition,
-           "availability" => item.availability,
+           # If existing record has no availability set, default to in_processing
+           "availability" => item.availability || "in_processing",
            "legacy_item_code" => item.legacy_item_code
          }}
       end)

@@ -29,10 +29,7 @@ defmodule Voile.CatalogFixtures do
     {:ok, item} =
       attrs
       |> Enum.into(%{
-        availability: "some availability",
-        barcode: "some barcode",
-        condition: "some condition",
-        inventory_code: "some inventory_code",
+        # provide a valid availability but allow tests to override or omit
         item_code: "some item_code",
         location: "some location",
         status: "some status"
