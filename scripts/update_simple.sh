@@ -17,6 +17,7 @@ cd "$PROJECT_ROOT"
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Configuration
@@ -25,6 +26,10 @@ ENV_FILE=".env.prod"
 
 print_status() {
     echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
 echo -e "${GREEN}================================${NC}"
@@ -49,7 +54,22 @@ else
     print_status "No existing container named '$APP_CONTAINER' found, skipping stop/remove."
 fi
 
-# Start new container
+# Run migrations BEFORE starting the server
+print_status "Running migrations..."
+if ! podman run --rm \
+    --pod voile-pod \
+    --env-file "$ENV_FILE" \
+    -e DATABASE_HOST=localhost \
+    -e DATABASE_PORT=5432 \
+    voile:latest \
+    /app/bin/voile eval 'Voile.Release.migrate()'; then
+    print_error "Migrations failed! Aborting deployment."
+    exit 1
+fi
+
+print_status "Migrations completed successfully."
+
+# Start new container (only after migrations succeed)
 print_status "Starting new container..."
 podman run -d \
     --name "$APP_CONTAINER" \
@@ -65,13 +85,17 @@ podman run -d \
     -v /data/voile/sfx:/app/priv/static/sfx:Z \
     voile:latest
 
-# Wait a bit
-print_status "Waiting for app to start..."
+# Wait and verify the container is still running (didn't crash on startup)
+print_status "Verifying container started successfully..."
 sleep 5
 
-# Run migrations
-print_status "Running migrations..."
-podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.migrate()'
+if podman ps -q -f name="$APP_CONTAINER" -f status=running | grep -q .; then
+    print_status "Container is running."
+else
+    print_error "Container crashed after startup! Check logs:"
+    echo -e "  ${YELLOW}podman logs $APP_CONTAINER${NC}"
+    exit 1
+fi
 
 echo ""
 print_status "Update completed!"
