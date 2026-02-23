@@ -223,6 +223,12 @@ end
 
 ## Controller Integration Example
 
+> **Note:** the download controller should always perform an explicit
+> permission check using `AttachmentAccess.can_access?/2`. this function
+> checks not only the access level (public/limited/restricted) but also
+> evaluates embargo start/end dates. without this guard users could
+> bypass embargo windows by hitting the download URL directly.
+
 ```elixir
 defmodule MyAppWeb.AttachmentController do
   use MyAppWeb, :controller
@@ -233,9 +239,12 @@ defmodule MyAppWeb.AttachmentController do
     current_user = conn.assigns.current_scope[:user]
 
     if AttachmentAccess.can_access?(attachment, current_user) do
+      # use whatever delivery mechanism your app prefers; we show
+      # `send_download/2` from Phoenix as a shorthand.
       send_download(conn, {:file, attachment.file_path}, filename: attachment.original_name)
     else
       conn
+      |> put_status(:forbidden)
       |> put_flash(:error, "Access denied")
       |> redirect(to: ~p"/")
     end

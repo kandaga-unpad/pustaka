@@ -154,6 +154,11 @@ defmodule Voile.CatalogTest do
 
       assert {:ok, %Item{} = item} = Catalog.create_item(attrs)
       assert item.availability == "in_processing"
+
+      # blank string should also be converted
+      attrs2 = Map.put(attrs, :availability, "")
+      assert {:ok, %Item{} = item2} = Catalog.create_item(attrs2)
+      assert item2.availability == "in_processing"
     end
 
     test "create_item/1 with invalid data returns error changeset" do

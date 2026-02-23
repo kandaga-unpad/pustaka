@@ -129,8 +129,12 @@ defmodule Voile.Schema.Catalog.Item do
   end
 
   defp set_default_availability(changeset) do
+    # Treat nil or empty-string as missing so caller doesn't have to worry about
+    # form inputs producing "".  Default to in_processing when availability
+    # isn't a meaningful value.
     case get_field(changeset, :availability) do
       nil -> put_change(changeset, :availability, "in_processing")
+      "" -> put_change(changeset, :availability, "in_processing")
       _ -> changeset
     end
   end

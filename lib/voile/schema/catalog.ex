@@ -647,11 +647,13 @@ defmodule Voile.Schema.Catalog do
         )
 
         # When a collection is published we also want all of its items to be
-        # available so they can show up in public listings.  Update any related
-        # items en masse.  We don't care what their prior availability was; the
-        # business rule is that published collections make contained material
-        # available.
-        from(i in Item, where: i.collection_id == ^updated_collection.id)
+        # available so they can show up in public listings.  Only items that are
+        # still marked "in_processing" should be bumped; curators may have
+        # manually assigned other statuses (non_circulating, reservation, etc.)
+        # which we must not override.
+        from(i in Item,
+          where: i.collection_id == ^updated_collection.id and i.availability == "in_processing"
+        )
         |> Repo.update_all(set: [availability: "available"])
 
         {:ok, updated_collection}

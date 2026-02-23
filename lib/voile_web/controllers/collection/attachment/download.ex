@@ -6,79 +6,95 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
   def download(conn, %{"id" => id}) do
     attachment = Catalog.get_attachment!(id)
 
-    # For local attachments (uploaded into priv/static/uploads) we serve the
-    # file directly from disk using send_file which is efficient.
-    if attachment.file_path && String.starts_with?(attachment.file_path, "/uploads") do
-      url = build_url_attachment(attachment)
+    # Perform authorization check using the same logic that powers
+    # AttachmentAccess.accessible_by/2 and AttachmentAccess.can_access?/2.
+    # The `current_scope` assign is populated by the browser pipeline so we
+    # pull the user out if it's available.  This prevents users from
+    # bypassing embargo/window restrictions or downloading files they
+    # shouldn't see.
+    user = conn.assigns[:current_scope] && conn.assigns.current_scope.user
 
+    unless Voile.Catalog.AttachmentAccess.can_access?(attachment, user) do
       conn
-      |> put_resp_content_type(MIME.from_path(attachment.file_name))
-      |> put_resp_header(
-        "content-disposition",
-        ~s[attachment; filename="#{attachment.original_name}"]
-      )
-      |> send_file(200, url)
+      |> put_status(:forbidden)
+      |> put_resp_content_type("text/plain")
+      |> send_resp(403, "You are not authorized to access this attachment")
     else
-      # Remote file (S3 or other HTTP URL). Try to get a presigned URL and
-      # redirect the client to it to offload bandwidth to the object store.
-      fp = attachment.file_path || ""
+      # For local attachments (uploaded into priv/static/uploads) we serve the
+      # file directly from disk using send_file which is efficient.
+      if attachment.file_path && String.starts_with?(attachment.file_path, "/uploads") do
+        url = build_url_attachment(attachment)
 
-      if String.starts_with?(fp, "http://") or String.starts_with?(fp, "https://") do
-        # Extract a file key and try to presign via the storage adapter.
-        file_key = Client.Storage.S3.extract_file_key_from_url(fp)
+        conn
+        |> put_resp_content_type(MIME.from_path(attachment.file_name))
+        |> put_resp_header(
+          "content-disposition",
+          ~s[attachment; filename="#{attachment.original_name}"]
+        )
+        |> send_file(200, url)
+      else
+        # Remote file (S3 or other HTTP URL). Try to get a presigned URL and
+        # redirect the client to it to offload bandwidth to the object store.
+        fp = attachment.file_path || ""
 
-        case Client.Storage.presign(file_key) do
-          {:ok, presigned_url} when is_binary(presigned_url) ->
-            conn
-            |> redirect(external: presigned_url)
+        if String.starts_with?(fp, "http://") or String.starts_with?(fp, "https://") do
+          # Extract a file key and try to presign via the storage adapter.
+          file_key = Client.Storage.S3.extract_file_key_from_url(fp)
 
-          _ ->
-            # Fallback: proxy the remote resource through the app. This
-            # preserves authorization but consumes server bandwidth. Use
-            # streaming to avoid buffering the entire file in memory.
-            # We use hackney directly for chunked streaming.
-            case :hackney.request(:get, fp, [], :stream, [
-                   {:recv_timeout, 120_000},
-                   {:follow_redirect, true}
-                 ]) do
-              {:ok, status, headers, client_ref} ->
-                # Determine content type
-                content_type =
-                  case MIME.from_path(attachment.file_name) do
-                    "application/octet-stream" ->
-                      # Try to get from response headers
-                      get_resp_header_value(headers, "content-type") || "application/octet-stream"
+          case Client.Storage.presign(file_key) do
+            {:ok, presigned_url} when is_binary(presigned_url) ->
+              conn
+              |> redirect(external: presigned_url)
 
-                    ct ->
-                      ct
+            _ ->
+              # Fallback: proxy the remote resource through the app. This
+              # preserves authorization but consumes server bandwidth. Use
+              # streaming to avoid buffering the entire file in memory.
+              # We use hackney directly for chunked streaming.
+              case :hackney.request(:get, fp, [], :stream, [
+                     {:recv_timeout, 120_000},
+                     {:follow_redirect, true}
+                   ]) do
+                {:ok, status, headers, client_ref} ->
+                  # Determine content type
+                  content_type =
+                    case MIME.from_path(attachment.file_name) do
+                      "application/octet-stream" ->
+                        # Try to get from response headers
+                        get_resp_header_value(headers, "content-type") ||
+                          "application/octet-stream"
+
+                      ct ->
+                        ct
+                    end
+
+                  conn =
+                    conn
+                    |> put_resp_content_type(content_type)
+                    |> put_resp_header(
+                      "content-disposition",
+                      ~s[attachment; filename="#{attachment.original_name}"]
+                    )
+
+                  case Plug.Conn.send_chunked(conn, status) do
+                    %Plug.Conn{} = chunked_conn ->
+                      # send_chunked returns the connection; stream from it
+                      stream_hackney_body(chunked_conn, client_ref)
                   end
 
-                conn =
+                {:error, reason} ->
                   conn
-                  |> put_resp_content_type(content_type)
-                  |> put_resp_header(
-                    "content-disposition",
-                    ~s[attachment; filename="#{attachment.original_name}"]
-                  )
-
-                case Plug.Conn.send_chunked(conn, status) do
-                  %Plug.Conn{} = chunked_conn ->
-                    # send_chunked returns the connection; stream from it
-                    stream_hackney_body(chunked_conn, client_ref)
-                end
-
-              {:error, reason} ->
-                conn
-                |> put_status(502)
-                |> put_resp_content_type("text/plain")
-                |> send_resp(502, "Failed to fetch remote file: #{inspect(reason)}")
-            end
+                  |> put_status(502)
+                  |> put_resp_content_type("text/plain")
+                  |> send_resp(502, "Failed to fetch remote file: #{inspect(reason)}")
+              end
+          end
+        else
+          conn
+          |> put_status(400)
+          |> put_resp_content_type("text/plain")
+          |> send_resp(400, "Unsupported attachment path")
         end
-      else
-        conn
-        |> put_status(400)
-        |> put_resp_content_type("text/plain")
-        |> send_resp(400, "Unsupported attachment path")
       end
     end
   end

@@ -1243,8 +1243,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
       |> Catalog.change_collection(current_params)
       |> Map.put(:action, :validate)
 
-    dbg(changeset)
-
     if changeset.valid? do
       collection = Changeset.apply_changes(changeset)
 
