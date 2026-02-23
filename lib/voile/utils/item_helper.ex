@@ -1,6 +1,70 @@
 defmodule Voile.Utils.ItemHelper do
   alias Ecto.UUID
 
+  @doc """
+  Extracts the barcode prefix from a collection UUID.
+  The barcode prefix is the last 12 characters of the UUID (the final block).
+
+  ## Examples
+
+      iex> extract_barcode_prefix("b371e6aa-3fb1-48cf-8439-90373dfcd91a")
+      "90373dfcd91a"
+
+      iex> extract_barcode_prefix("invalid")
+      nil
+  """
+  def extract_barcode_prefix(collection_id) when is_binary(collection_id) do
+    case UUID.cast(collection_id) do
+      {:ok, _} ->
+        # UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        # We want the last 12 characters (the final block)
+        collection_id
+        |> String.split("-")
+        |> List.last()
+        |> String.downcase()
+
+      :error ->
+        nil
+    end
+  end
+
+  def extract_barcode_prefix(_), do: nil
+
+  @doc """
+  Generates a unique collection UUID that doesn't collide with existing barcode prefixes.
+  Takes a function that checks if a barcode prefix exists and generates new UUIDs until
+  a unique one is found.
+
+  ## Parameters
+
+    - check_exists_fn: A function that takes a barcode prefix and returns true if it exists
+    - max_attempts: Maximum number of attempts (default: 100)
+
+  ## Returns
+
+    - {:ok, uuid} - A unique UUID
+    - {:error, :max_attempts_reached} - If unable to find unique UUID after max attempts
+  """
+  def generate_unique_collection_uuid(check_exists_fn, max_attempts \\ 100) do
+    do_generate_unique_uuid(check_exists_fn, max_attempts, 0)
+  end
+
+  defp do_generate_unique_uuid(_check_exists_fn, max_attempts, attempts)
+       when attempts >= max_attempts do
+    {:error, :max_attempts_reached}
+  end
+
+  defp do_generate_unique_uuid(check_exists_fn, max_attempts, attempts) do
+    uuid = UUID.generate()
+    barcode_prefix = extract_barcode_prefix(uuid)
+
+    if check_exists_fn.(barcode_prefix) do
+      do_generate_unique_uuid(check_exists_fn, max_attempts, attempts + 1)
+    else
+      {:ok, uuid}
+    end
+  end
+
   def generate_item_code(unit, type, collection, time_identifier, index) do
     unit = String.downcase(unit)
     type = String.downcase(type)

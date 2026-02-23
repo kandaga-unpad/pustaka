@@ -38,6 +38,69 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
+  Checks if a barcode prefix already exists in any collection's ID.
+
+  The barcode prefix is the last 12 characters of a UUID (the final block).
+  This is used to ensure unique barcode generation for items.
+
+  ## Examples
+
+      iex> barcode_prefix_exists("90373dfcd91a")
+      true
+
+      iex> barcode_prefix_exists("nonexistent00")
+      false
+
+  ## Parameters
+
+    - prefix: The 12-character barcode prefix to check
+    - exclude_id: Optional collection ID to exclude from the check (for updates)
+
+  ## Returns
+
+    - true if the prefix exists in another collection
+    - false if the prefix is unique
+  """
+  def barcode_prefix_exists(prefix, exclude_id \\ nil) when is_binary(prefix) do
+    # The prefix is the last 12 characters of a UUID
+    # We need to find collections whose ID ends with this prefix
+    # UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    # The last block is 12 characters
+
+    query =
+      from c in Collection,
+        where: fragment("LOWER(RIGHT(id::text, 12)) = ?", ^String.downcase(prefix))
+
+    query =
+      if exclude_id do
+        from c in query, where: c.id != ^exclude_id
+      else
+        query
+      end
+
+    Repo.exists?(query)
+  end
+
+  @doc """
+  Gets all collection IDs that have a matching barcode prefix.
+
+  This is useful for debugging and finding collisions.
+
+  ## Examples
+
+      iex> get_collections_by_barcode_prefix("90373dfcd91a")
+      [%Collection{id: "b371e6aa-3fb1-48cf-8439-90373dfcd91a"}, ...]
+
+  """
+  def get_collections_by_barcode_prefix(prefix) when is_binary(prefix) do
+    from(c in Collection,
+      where: fragment("LOWER(RIGHT(id::text, 12)) = ?", ^String.downcase(prefix)),
+      select: c.id
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Return the list of collections for pagination with comprehensive filtering.
   ## Examples
 

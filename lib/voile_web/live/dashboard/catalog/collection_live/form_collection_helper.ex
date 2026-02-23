@@ -10,6 +10,114 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
 
+  @doc """
+  Ensures the collection has a unique UUID that won't cause barcode collisions.
+
+  For new collections, this checks if the current UUID's barcode prefix (last 12 chars)
+  collides with any existing collection. If so, it generates a new unique UUID.
+
+  For existing collections (edit mode), this returns the params unchanged since
+  the collection ID should not be changed.
+
+  ## Parameters
+
+    - collection_params: The collection parameters map containing "id" key
+    - action: :new or :edit
+
+  ## Returns
+
+    - {:ok, updated_params} - Params with unique UUID
+    - {:error, :max_attempts_reached} - If unable to find unique UUID
+  """
+  def ensure_unique_collection_uuid(collection_params, :edit) do
+    # For edit mode, we don't change the collection ID
+    # But we should verify that the existing ID doesn't collide with others
+    # (this would be a data integrity issue, but we handle it gracefully)
+    {:ok, collection_params}
+  end
+
+  def ensure_unique_collection_uuid(collection_params, :new) do
+    collection_id = collection_params["id"]
+
+    # Check if the current UUID's barcode prefix collides with existing collections
+    barcode_prefix = extract_barcode_prefix(collection_id)
+
+    if barcode_prefix && Catalog.barcode_prefix_exists(barcode_prefix) do
+      # Collision detected - generate a new unique UUID
+      case generate_unique_collection_uuid(&Catalog.barcode_prefix_exists/1) do
+        {:ok, new_uuid} ->
+          # Update the collection ID and regenerate item codes if items exist
+          updated_params = update_collection_id_in_params(collection_params, new_uuid)
+          {:ok, updated_params}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    else
+      # No collision, use the existing UUID
+      {:ok, collection_params}
+    end
+  end
+
+  @doc false
+  defp update_collection_id_in_params(collection_params, new_uuid) do
+    old_id = collection_params["id"]
+
+    # Update the collection ID
+    updated_params = Map.put(collection_params, "id", new_uuid)
+
+    # Update item codes if items exist
+    items = collection_params["items"] || %{}
+
+    updated_items =
+      items
+      |> Enum.map(fn {key, item_data} ->
+        updated_item = update_item_with_new_collection_id(item_data, old_id, new_uuid)
+        {key, updated_item}
+      end)
+      |> Enum.into(%{})
+
+    Map.put(updated_params, "items", updated_items)
+  end
+
+  @doc false
+  defp update_item_with_new_collection_id(item_data, _old_collection_id, new_collection_id) do
+    # Extract the index from the current item_code
+    # Item code format: unit-type-collection_uuid-timestamp-index
+    current_item_code = item_data["item_code"]
+
+    if current_item_code do
+      # Get the index (last segment after the last hyphen)
+      index =
+        current_item_code
+        |> String.split("-")
+        |> List.last()
+
+      # Get unit and type from the current item_code
+      parts = String.split(current_item_code, "-")
+
+      unit = Enum.at(parts, 0) || "unk"
+      type = Enum.at(parts, 1) || "unk"
+
+      # Get the time_identifier from socket assigns if available, or use current time
+      time_identifier = System.system_time(:millisecond)
+
+      # Generate new codes with the new collection ID
+      new_item_code = generate_item_code(unit, type, new_collection_id, time_identifier, index)
+      new_barcode = generate_barcode_from_item_code(new_item_code)
+
+      # Update inventory code as well
+      new_inventory_code = generate_inventory_code(unit, type, new_collection_id, index)
+
+      item_data
+      |> Map.put("item_code", new_item_code)
+      |> Map.put("inventory_code", new_inventory_code)
+      |> Map.put("barcode", new_barcode)
+    else
+      item_data
+    end
+  end
+
   def add_property_to_form(prop_id, socket) do
     # Get current form params
     current_params = socket.assigns.form.params || %{}
@@ -659,48 +767,58 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
     #    |> put_flash(:error, "All items must have a location selected.")
     #    |> assign(:form, to_form(socket.assigns.form, action: :validate))}
     # else
-    get_unit_abbr =
-      if collection_params["unit_id"] do
-        case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
-          nil -> "UNK"
-          node -> node.abbr
+
+    # Ensure unique collection UUID to prevent barcode collisions
+    case ensure_unique_collection_uuid(collection_params, :new) do
+      {:ok, collection_params} ->
+        get_unit_abbr =
+          if collection_params["unit_id"] do
+            case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
+              nil -> "UNK"
+              node -> node.abbr
+            end
+          else
+            "UNK"
+          end
+
+        get_collection_type =
+          if collection_params["type_id"] do
+            case Metadata.get_resource_class!(collection_params["type_id"]) do
+              nil -> "UNK"
+              rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
+            end
+          else
+            "UNK"
+          end
+
+        generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+        created_by = socket.assigns.current_scope.user.id
+
+        collection_params =
+          collection_params
+          |> Map.put("collection_code", generated_code)
+          |> Map.put("created_by_id", created_by)
+          |> add_barcodes_to_items()
+
+        case Catalog.create_collection(collection_params) do
+          {:ok, collection} ->
+            notify_parent({:saved, collection})
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Collection created successfully")
+             |> push_patch(
+               to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
+             )}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, form: to_form(changeset))}
         end
-      else
-        "UNK"
-      end
 
-    get_collection_type =
-      if collection_params["type_id"] do
-        case Metadata.get_resource_class!(collection_params["type_id"]) do
-          nil -> "UNK"
-          rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
-        end
-      else
-        "UNK"
-      end
-
-    generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
-    created_by = socket.assigns.current_scope.user.id
-
-    collection_params =
-      collection_params
-      |> Map.put("collection_code", generated_code)
-      |> Map.put("created_by_id", created_by)
-      |> add_barcodes_to_items()
-
-    case Catalog.create_collection(collection_params) do
-      {:ok, collection} ->
-        notify_parent({:saved, collection})
-
+      {:error, :max_attempts_reached} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Collection created successfully")
-         |> push_patch(
-           to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
-         )}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+         |> put_flash(:error, "Failed to generate unique collection ID. Please try again.")}
     end
 
     # end
@@ -731,51 +849,60 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def save_collection_as_draft(socket, :new, collection_params) do
-    # For draft, allow saving without item_location_id
-    get_unit_abbr =
-      if collection_params["unit_id"] do
-        case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
-          nil -> "UNK"
-          node -> node.abbr
+    # Ensure unique collection UUID to prevent barcode collisions
+    case ensure_unique_collection_uuid(collection_params, :new) do
+      {:ok, collection_params} ->
+        # For draft, allow saving without item_location_id
+        get_unit_abbr =
+          if collection_params["unit_id"] do
+            case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
+              nil -> "UNK"
+              node -> node.abbr
+            end
+          else
+            "UNK"
+          end
+
+        get_collection_type =
+          if collection_params["type_id"] do
+            case Metadata.get_resource_class!(collection_params["type_id"]) do
+              nil -> "UNK"
+              rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
+            end
+          else
+            "UNK"
+          end
+
+        generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
+        created_by = socket.assigns.current_scope.user.id
+
+        # Ensure status is set to draft and add generated code
+        draft_params =
+          collection_params
+          |> Map.put("collection_code", generated_code)
+          |> Map.put("status", "draft")
+          |> Map.put("created_by_id", created_by)
+          |> add_barcodes_to_items()
+
+        case Catalog.create_collection(draft_params) do
+          {:ok, collection} ->
+            notify_parent({:saved, collection})
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Collection saved as draft successfully")
+             |> push_patch(
+               to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
+             )}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, form: to_form(changeset))}
         end
-      else
-        "UNK"
-      end
 
-    get_collection_type =
-      if collection_params["type_id"] do
-        case Metadata.get_resource_class!(collection_params["type_id"]) do
-          nil -> "UNK"
-          rc -> rc.glam_type |> String.slice(0, 3) |> String.upcase()
-        end
-      else
-        "UNK"
-      end
-
-    generated_code = generate_collection_code(get_unit_abbr, get_collection_type)
-    created_by = socket.assigns.current_scope.user.id
-
-    # Ensure status is set to draft and add generated code
-    draft_params =
-      collection_params
-      |> Map.put("collection_code", generated_code)
-      |> Map.put("status", "draft")
-      |> Map.put("created_by_id", created_by)
-      |> add_barcodes_to_items()
-
-    case Catalog.create_collection(draft_params) do
-      {:ok, collection} ->
-        notify_parent({:saved, collection})
-
+      {:error, :max_attempts_reached} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Collection saved as draft successfully")
-         |> push_patch(
-           to: socket.assigns.patch || ~p"/manage/catalog/collections/#{collection.id}"
-         )}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+         |> put_flash(:error, "Failed to generate unique collection ID. Please try again.")}
     end
   end
 
