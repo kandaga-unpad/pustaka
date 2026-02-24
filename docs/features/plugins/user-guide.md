@@ -51,7 +51,7 @@ Each plugin displays a status badge indicating its current state:
 !!! warning "Deployment Required"
     Before a plugin appears in the management interface, your IT team must:
     
-    1. Add the plugin to Voile's dependencies
+    1. Place the plugin directory in Voile's `plugins/` folder
     2. Rebuild and redeploy Voile (Docker/Podman container or mix release)
     3. Restart the server
     

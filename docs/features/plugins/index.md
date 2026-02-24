@@ -138,7 +138,7 @@ Each active plugin has its own URL namespace:
 
 - **No sandboxing** — Plugins have full access to the system
 - **No hot code loading** — Adding a plugin requires deployment
-- **No marketplace** — Plugins are added via `mix.exs` dependencies
+- **Runtime loading** — Plugins are discovered and loaded at runtime from the `plugins/` directory by `Voile.PluginManager`
 
 ---
 

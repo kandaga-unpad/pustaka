@@ -36,6 +36,185 @@ This separation ensures:
 - Clear boundary between core and extensions
 - Simple git ignore rules for excluding plugins
 
+### Managing plugins stored in separate repos
+
+If you keep each plugin in its own GitHub repository you may be tempted to
+add it to the main application's `deps` so `mix deps.get` can fetch updates.
+That only works if the plugin does **not** depend on `:voile` at compile time.
+A compile‑time dependency is what causes the "loop compile" error you
+mentioned – Mix tries to compile Voile to build the plugin and the plugin
+tries to compile Voile again, resulting in a circular compilation failure.
+
+There are two idiomatic ways to keep plugins in external repos without
+triggering a cycle:
+
+1. **Clone (or submodule) into `plugins/` and update via Git.**
+   ```bash
+   # add once
+   git submodule add https://github.com/your-org/voile_sop_manager.git plugins/voile_sop_manager
+
+   # later, pull the latest
+   git -C plugins/voile_sop_manager pull
+   # or, for all submodules:
+   git submodule update --remote --merge
+   ```
+   A small script or mix task can automate pulling every `plugins/*` repo.
+   Voile will automatically discover and load the OTP app at runtime, and
+   since the plugin is not in `deps` Mix never tries to compile Voile for it.
+
+2. **Declare the plugin as a Git/Hex dependency, but ensure the plugin
+   itself has no `:voile` dep.**
+   ```elixir
+   defp deps do
+     [
+       {:voile_sop_manager,
+        git: "https://github.com/your-org/voile_sop_manager.git",
+        tag: "v1.2.0"}
+     ]
+   end
+   ```
+   The plugin’s `mix.exs` must only list generic libraries (`phoenix`,
+   `ecto_sql`, etc.) and **never** `{:voile, …}`. Voile modules are available
+   at runtime through the plugin manager, so there is no compile‑time
+   requirement. You can then run `mix deps.update voile_sop_manager` to
+   fetch updates the same way you would for any other library.
+
+Both methods avoid circular compilation. The first is simplest when you
+prefer to treat plugins as part of the source tree; the second uses Mix’s
+normal dependency resolver but still keeps the runtime boundary clean.
+
+!!! warning "Avoid compile‑time Voile deps"
+    The only reason you see a loop is because the plugin is declaring a
+    compile‑time dependency on Voile. **Remove that dependency** and you can
+    freely add the plugin to `mix.exs` or update it with git.  Plugins should
+    compile independently and rely on Voile only when they are started by the
+    host application.
+
+## Developing plugins alongside Voile
+
+Active development usually involves editing the plugin **and** running the
+main Voile project to verify behaviour. There are a few simple tricks to make
+this pleasant:
+
+1. **Keep the plugin repository separate.**
+   - Clone it next to the Voile repo rather than inside `plugins/`:
+     ```bash
+     cd ~/Development
+     git clone git@github.com/your-org/voile.git
+     git clone git@github.com/your-org/voile_sop_manager.git
+     ```
+   - Open a multi‑root workspace in VS Code containing both folders. Each
+     project gets its own ElixirLS process; the warnings about
+     `Voile.Repo`/`Voile.Plugin` will only appear in the plugin window.
+
+2. **Silence harmless warnings.**
+   The plugin doesn’t compile against Voile, so ElixirLS and Dialyzer will
+   complain about missing modules. The ignore file you pasted earlier is
+   exactly the right start – make sure it lives in the root of the plugin
+   repo and that `elixirLS.dialyzerWarnOverrides` is enabled in
+   `.vscode/settings.json` if you use VS Code.
+
+   If the warnings still appear (ElixirLS sometimes ignores the ignore file)
+   you can give the compiler some actual definitions by adding a "dev stub"
+   module. Create a file such as `lib/dev_stubs.ex` in the plugin project with
+   contents similar to the following:
+
+   ```elixir
+   # lib/dev_stubs.ex
+   if Code.ensure_loaded?(Voile) == {:module, Voile} do
+     # running inside Voile, real modules exist – don’t define stubs
+     nil
+   else
+     defmodule Voile do
+       defmodule Repo do
+         use Ecto.Repo, otp_app: :voile_sop_manager, adapter: Ecto.Adapters.Postgres
+       end
+     end
+
+     defmodule Voile.Plugin do
+       @callback metadata() :: map()
+       @callback on_install() :: :ok | {:ok, any()} | {:error, any()}
+       # …other callbacks copied from core behaviour…
+       defmacro __using__(_opts) do
+         quote do
+           @behaviour Voile.Plugin
+         end
+       end
+     end
+
+     defmodule Voile.Plugins do
+       def get_plugin_setting(_id, _key, default), do: default
+       def put_plugin_setting(_id, _key, _val), do: :ok
+     end
+
+     defmodule Voile.Hooks do
+       def register(_hook, _handler, _opts \ []), do: :ok
+       def unregister_all(_mod), do: :ok
+     end
+
+     # add further stub modules as necessary
+   end
+   ```
+
+   This file is compiled only when the real `Voile` module is absent, so it
+   has no effect once the plugin is loaded by the host application. You can
+   safely keep it in your repo during development, but either:
+   
+   * delete it or move it out before shipping the plugin to a Voile
+     installation, or
+   * add it to `.gitignore` so it never ends up in the deployed code.
+
+   With either the ignore file *or* a dev stub in place you should stop
+   seeing warnings about `Voile.Repo`, `Voile.Plugin` etc. while working on
+   the plugin in isolation.
+
+3. **Use a path override when running the host app.**
+   In `voile/mix.exs` add:
+   ```elixir
+   defp deps do
+     [
+       # other deps …
+       {:voile_sop_manager, path: "../voile_sop_manager", override: true}
+     ]
+   end
+   ```
+   This tells Mix to compile the local plugin source instead of fetching a
+   release from Git. After changing the plugin, run `mix deps.compile
+   voile_sop_manager` in the Voile repo and restart the server. You can also
+   point at any other local path – it doesn’t have to live under `plugins/`.
+
+4. **Optionally symlink into `plugins/` or use a submodule when you need
+   the app to discover it.**
+   When Voile loads plugins it looks under `plugins/` by default, so you
+   can create a symlink or add the repo as a Git submodule at `plugins/` for
+   installation testing.  If you use a submodule, remove the corresponding
+   `plugins/*` ignore rule or explicitly un‑ignore the directory so Git will
+   track the submodule reference.
+
+5. **Git ignore considerations.**
+   The main Voile repo ships with:
+   ```gitignore
+   # Plugins - ignore all plugin directories but keep README
+   /plugins/*
+   !/plugins/README.md
+   ```
+   This keeps end‑user plugin copies out of version control. During
+   development you can:
+   * remove or comment out the `/plugins/*` line, or
+   * explicitly add a submodule (which Git tracks despite the ignore), or
+   * simply work outside of `plugins/` and use the path override described
+     above.  There’s no need to nest repositories unless you prefer
+     submodules – in fact nesting Git repos makes operations like `git add`
+     tricky if the inner repo isn’t a submodule.
+
+With these steps you can edit a plugin project independently, run Dialyzer
+without noise, and easily exercise changes inside a running Voile server.
+When you’re ready to publish, push the plugin repo to GitHub and switch the
+main app’s dependency back to the Git URL or Hex package as described above.
+
+---
+
+
 ## Plugin Structure
 
 A plugin is a standard OTP application with a specific structure:
@@ -100,12 +279,24 @@ defmodule VoileMyPlugin.MixProject do
     [
       {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.0"},
-      {:ecto_sql, "~> 3.12"},
-      {:voile, path: "../../"}  # Points to Voile root (plugin is in plugins/)
+      {:ecto_sql, "~> 3.12"}
+      # NOTE: Do NOT add {:voile, path: "../../"} here!
+      # Plugins are loaded at runtime by Voile's PluginManager.
+      # Adding Voile as a dependency creates a circular dependency.
     ]
   end
 end
 ```
+
+!!! warning "No Circular Dependencies"
+    **Do NOT add `{:voile, path: "../../"}` to your plugin's `mix.exs`!**
+    
+    This creates a circular dependency because:
+    1. Voile would try to compile the plugin
+    2. The plugin would try to compile Voile
+    3. Mix detects the module is being defined twice and fails
+    
+    Plugins are discovered and loaded at runtime by [`Voile.PluginManager`](/reference/plugin-manager/). The plugin code has access to Voile's modules (like `Voile.Repo`) at runtime without needing a compile-time dependency.
 
 ---
 
@@ -214,12 +405,81 @@ end
 
 ## Step 3: Create the Migrator
 
+Plugins need a migrator module to handle database schema changes. Since plugins cannot have a compile-time dependency on Voile, create a self-contained migrator:
+
 ```elixir
 # lib/voile_my_plugin/migrator.ex
 defmodule VoileMyPlugin.Migrator do
-  use Voile.Plugin.Migrator, otp_app: :voile_my_plugin
+  @moduledoc """
+  Migration runner for the plugin.
+  Provides migration functions called by Voile's plugin system at runtime.
+  """
+
+  require Logger
+
+  @otp_app :voile_my_plugin
+
+  @doc "Run all pending migrations for this plugin."
+  def run do
+    migrations_path = migrations_path()
+    repo = Voile.Repo
+
+    unless File.dir?(migrations_path) do
+      Logger.info("[MyPlugin.Migrator] No migrations directory, skipping")
+      :ok
+    else
+      case Ecto.Migrator.run(repo, migrations_path, :up, all: true) do
+        versions when is_list(versions) -> {:ok, versions}
+        _ -> :ok
+      end
+    end
+  rescue
+    e -> {:error, "Migration failed: #{Exception.message(e)}"}
+  end
+
+  @doc """
+  Rollback all migrations for this plugin.
+  WARNING: This drops plugin tables and destroys all plugin data.
+  """
+  def rollback do
+    migrations_path = migrations_path()
+    repo = Voile.Repo
+
+    case Ecto.Migrator.run(repo, migrations_path, :down, all: true) do
+      versions when is_list(versions) -> {:ok, versions}
+      _ -> :ok
+    end
+  rescue
+    e -> {:error, "Rollback failed: #{Exception.message(e)}"}
+  end
+
+  @doc "Returns true if all migrations have been applied."
+  def migrated? do
+    migrations_path()
+    |> then(&Ecto.Migrator.migrations(Voile.Repo, [&1]))
+    |> Enum.all?(fn {status, _, _} -> status == :up end)
+  end
+
+  @doc "Returns list of {status, version, name} for all migrations."
+  def status do
+    Ecto.Migrator.migrations(Voile.Repo, [migrations_path()])
+  end
+
+  defp migrations_path do
+    case :code.priv_dir(@otp_app) do
+      {:error, :bad_name} ->
+        # Fallback for development - use relative path
+        Path.join([File.cwd!(), "plugins", "voile_my_plugin", "priv", "migrations"])
+
+      path ->
+        Path.join(to_string(path), "migrations")
+    end
+  end
 end
 ```
+
+!!! note "Why Not Use Voile.Plugin.Migrator?"
+    The `Voile.Plugin.Migrator` macro exists in Voile core, but using it creates a compile-time dependency. Since plugins are loaded at runtime, they must be self-contained and cannot depend on Voile modules at compile time.
 
 ---
 
@@ -350,10 +610,16 @@ end
 
 ## Step 8: Create LiveView UI
 
+Plugin LiveViews should use `Phoenix.LiveView` directly with explicit imports, not `VoileWeb, :live_view`:
+
 ```elixir
 # lib/voile_my_plugin/web/live/index_live.ex
 defmodule VoileMyPlugin.Web.Live.IndexLive do
   use Phoenix.LiveView
+
+  # Import what you need explicitly
+  import Phoenix.HTML
+  import Phoenix.Component
 
   alias VoileMyPlugin.{Entities, Settings}
 
@@ -397,8 +663,21 @@ defmodule VoileMyPlugin.Web.Live.IndexLive do
     </div>
     """
   end
-end
 ```
+
+!!! warning "Route Paths in Plugins"
+    Use string paths instead of the `~p` sigil for navigation in plugin LiveViews:
+    
+    ```elixir
+    # ✅ Correct - use string paths
+    <.link navigate="/manage/plugins/my_plugin/new">New Item</.link>
+    push_navigate(socket, to: "/manage/plugins/my_plugin/#{item.id}")
+    
+    # ❌ Wrong - ~p requires VoileWeb's router at compile time
+    <.link navigate={~p"/manage/plugins/my_plugin/new"}>New Item</.link>
+    ```
+    
+    The `~p` sigil requires access to Voile's verified routes at compile time, which plugins don't have.
 
 ---
 
@@ -408,6 +687,10 @@ end
 # lib/voile_my_plugin/web/components/widget.ex
 defmodule VoileMyPlugin.Web.Components.Widget do
   use Phoenix.LiveComponent
+
+  # Import what you need explicitly
+  import Phoenix.HTML
+  import Phoenix.Component
 
   alias VoileMyPlugin.Entities
 
@@ -555,7 +838,7 @@ end
 
 | Action | Requires Redeploy? | Explanation |
 |--------|-------------------|-------------|
-| Add new plugin to `mix.exs` | **Yes** | Code must be compiled into the release |
+| Add new plugin to `plugins/` | **Yes** | Code must be compiled into the release |
 | Install plugin (run migrations) | No | Database operation via admin UI |
 | Activate/deactivate plugin | No | In-memory operations via admin UI |
 | Server restart | Auto-reactivates | Active plugins are rehydrated from database |
@@ -564,35 +847,25 @@ end
 
 ```mermaid
 flowchart LR
-    A[Create plugin in plugins/] --> B[Add to mix.exs]
-    B --> C[Build release]
-    C --> D[Deploy to server]
-    D --> E[Server starts]
-    E --> F[Admin installs plugin]
-    F --> G[Admin activates plugin]
-    G --> H[Plugin is live]
+    A[Create plugin in plugins/] --> B[Build release]
+    B --> C[Deploy to server]
+    C --> D[Server starts]
+    D --> E[Admin installs plugin]
+    E --> F[Admin activates plugin]
+    F --> G[Plugin is live]
 ```
 
-### 1. Add to Voile's Dependencies
+### 1. Place Plugin in plugins/ Directory
 
-In Voile's `mix.exs`, add the plugin as a path dependency:
+The plugin directory should be at `plugins/voile_my_plugin/`. Voile's PluginManager will discover and load it at runtime.
 
-```elixir
-defp deps do
-  [
-    # ... other deps
-    {:voile_my_plugin, path: "plugins/voile_my_plugin"}  # plugins/ directory
-    # or from git (for external plugins):
-    # {:voile_my_plugin, git: "https://github.com/org/voile_my_plugin", tag: "v1.0.0"}
-  ]
-end
-```
-
-### 2. Fetch Dependencies
+### 2. Build and Deploy Voile
 
 ```bash
 cd voile
 mix deps.get
+mix compile
+# Build your release or Docker image
 ```
 
 ### 3. Start Voile
@@ -604,6 +877,61 @@ The plugin OTP app will start automatically with Voile.
 1. Navigate to `/manage/plugins`
 2. Click **Install** on your plugin
 3. Click **Activate** to enable it
+
+---
+
+## Suppressing ElixirLS Warnings
+
+When developing a plugin in isolation (e.g., in its own Git repository), ElixirLS will show warnings about Voile modules that don't exist at compile time. These warnings are expected because the plugin depends on Voile's runtime modules.
+
+### Create .dialyzer_ignore.exs
+
+Create a `.dialyzer_ignore.exs` file in your plugin root to suppress Dialyzer warnings:
+
+```elixir
+# .dialyzer_ignore.exs
+[
+  # Unknown behaviour - Voile.Plugin is loaded at runtime
+  {"lib/voile_my_plugin.ex", :unknown_behaviour, _},
+  
+  # Unknown callbacks - defined by Voile.Plugin behaviour
+  {"lib/voile_my_plugin.ex", :callback_spec_argument_type_mismatch, _},
+  {"lib/voile_my_plugin.ex", :callback_spec_type_mismatch, _},
+  {"lib/voile_my_plugin.ex", :callback_missing_spec, _},
+  
+  # Unknown functions in plugin modules - Voile.Repo and Voile.Plugins available at runtime
+  {"lib/voile_my_plugin/", :unknown_function, _},
+  {"lib/voile_my_plugin/", :unknown_type, _},
+  
+  # Ignore unknown function warnings for Voile modules (using MFA tuples)
+  {_, :unknown_function, {Voile.Repo, _, _}},
+  {_, :unknown_function, {Voile.Plugin, _, _}},
+  {_, :unknown_function, {Voile.Plugins, _, _}},
+  {_, :unknown_function, {Voile.Hooks, _, _}},
+  {_, :unknown_type, {Voile.Repo, _}},
+  {_, :unknown_type, {Voile.Plugin, _}}
+]
+```
+
+### VS Code Settings (Optional)
+
+For additional suppression in VS Code, create `.vscode/settings.json` in your plugin:
+
+```json
+{
+  "elixirLS.dialyzerEnabled": true,
+  "elixirLS.dialyzerWarnOverrides": true
+}
+```
+
+!!! tip "Understanding the Warnings"
+    These warnings occur because:
+    
+    1. **No compile-time dependency** - Plugins cannot depend on Voile at compile time (circular dependency)
+    2. **Runtime loading** - Voile modules like `Voile.Repo` are available when the plugin runs inside Voile
+    3. **Isolated development** - When editing the plugin alone, ElixirLS can't see Voile's modules
+    
+    The warnings are cosmetic and don't affect compilation or runtime behavior.
 
 ---
 
