@@ -93,7 +93,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         |> String.split("-")
         |> List.last()
 
-      # Get unit and type from the current item_code
+      # Extract unit and type from the existing item_code. The unit segment was
+      # already generated from the librarian's node abbr (via add_item_to_form),
+      # so parsing it back here preserves the correct node-based unit assignment.
       parts = String.split(current_item_code, "-")
 
       unit = Enum.at(parts, 0) || "unk"
@@ -168,14 +170,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
     # Get collection data from form params (step 1 data)
     collection_id = current_params["id"]
-    unit_id = current_params["unit_id"]
     type_id = current_params["type_id"]
     collection_title = current_params["title"]
 
-    # Safely get unit and type data
+    # The unit is determined by the librarian's assigned node (current_scope.user.node_id),
+    # NOT the collection's unit_id. An item's location is owned by the node that adds it;
+    # the same collection metadata can be split across multiple nodes, each with its own
+    # item codes and inventory codes.
+    librarian_node_id = socket.assigns.current_scope.user.node_id
+
     unit_data =
-      if unit_id && unit_id != "",
-        do: Voile.Schema.System.get_node!(unit_id) || %{abbr: "UNK", name: "Unknown"},
+      if librarian_node_id && librarian_node_id != "",
+        do: Voile.Schema.System.get_node!(librarian_node_id) || %{abbr: "UNK", name: "Unknown"},
         else: %{abbr: "UNK", name: "Unknown"}
 
     type_data =
@@ -215,7 +221,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       # collection title if collection_id is missing.
       "inventory_code" => inventory_code,
       "barcode" => barcode,
-      "item_location_id" => socket.assigns.current_scope.user.node_id,
+      "item_location_id" => librarian_node_id,
       "location" => "",
       "status" => "active",
       # Schema defines allowed conditions as: excellent, good, fair, poor, damaged
@@ -226,7 +232,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       # "available".  This matches the new requirement and avoids the user
       # having to remember to change it when adding items.
       "availability" => "in_processing",
-      "unit_id" => unit_id,
+      # unit_id reflects the librarian's node, not the collection's node,
+      # because the item physically belongs to the node that registered it.
+      "unit_id" => librarian_node_id,
       "legacy_item_code" => nil
     }
 
