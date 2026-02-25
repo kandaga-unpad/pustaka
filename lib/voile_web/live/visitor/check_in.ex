@@ -185,6 +185,11 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   @impl true
+  def handle_event("update_identifier", %{"identifier" => value}, socket) do
+    {:noreply, assign(socket, :visitor_identifier, value)}
+  end
+
+  @impl true
   def handle_event("select_origin", %{"origin" => origin}, socket) do
     {:noreply, assign(socket, :selected_origin, origin)}
   end
@@ -207,7 +212,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       # Try to find user by identifier to get their full name
       visitor_name = lookup_visitor_name(identifier)
 
-      # derive origin from identifier prefix if no origin selected
+      # Derive origin from identifier prefix (always takes precedence over auto-filled node selection)
       prefix = String.slice(identifier, 0, 3)
 
       derived_origin =
@@ -222,7 +227,12 @@ defmodule VoileWeb.Visitor.CheckIn do
             ""
         end
 
-      origin = if is_nil(origin) or origin == "", do: derived_origin, else: origin
+      # Identifier-derived origin takes precedence; fall back to user-selected origin only when
+      # the identifier prefix yields nothing (e.g. non-numeric / guest identifiers)
+      origin =
+        if derived_origin != "",
+          do: derived_origin,
+          else: if(is_nil(origin), do: "", else: origin)
 
       attrs = %{
         "visitor_identifier" => identifier,
@@ -681,9 +691,10 @@ defmodule VoileWeb.Visitor.CheckIn do
                     name="identifier"
                     value={@visitor_identifier}
                     phx-hook="IdentifierInput"
+                    phx-change="update_identifier"
                     autocomplete="off"
                     class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    placeholder={gettext("Scan or enter ID")}
+                    placeholder={gettext("Scan or enter ID or Your Name")}
                   />
                 </div>
 
@@ -735,7 +746,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   {gettext("Share your experience")}
                 </p>
                 <div class="flex items-center justify-center">
-                  <span class="font-bold bg-violet-100 px-3 py-1 rounded-xl text-center">
+                  <span class="font-bold bg-violet-100 dark:bg-purple-700 px-3 py-1 rounded-xl text-center">
                     {@selected_location.location_name} | {get_node_name(@selected_node, @nodes)}
                   </span>
                 </div>

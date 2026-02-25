@@ -44,6 +44,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       |> assign(:logs, [])
       |> assign(:total_count, 0)
       |> assign(:total_pages, 0)
+      |> assign(:export_url, "/manage/visitor/logs/export")
 
     {:ok, socket}
   end
@@ -235,10 +236,33 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
     {logs, total_pages, total_count} =
       System.list_visitor_logs_paginated(socket.assigns.page, @per_page, opts)
 
+    export_params =
+      %{
+        "from_date" => Date.to_string(socket.assigns.from_date),
+        "to_date" => Date.to_string(socket.assigns.to_date)
+      }
+      |> then(fn p ->
+        if socket.assigns.selected_node_id,
+          do: Map.put(p, "node_id", socket.assigns.selected_node_id),
+          else: p
+      end)
+      |> then(fn p ->
+        if socket.assigns.selected_location_id,
+          do: Map.put(p, "location_id", socket.assigns.selected_location_id),
+          else: p
+      end)
+      |> then(fn p ->
+        search = String.trim(socket.assigns.search)
+        if search != "", do: Map.put(p, "search", search), else: p
+      end)
+
+    export_url = "/manage/visitor/logs/export?" <> URI.encode_query(export_params)
+
     socket
     |> assign(:logs, logs)
     |> assign(:total_pages, total_pages)
     |> assign(:total_count, total_count)
+    |> assign(:export_url, export_url)
   end
 
   @impl true
@@ -263,13 +287,22 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Filters")}</h2>
-          <button
-            type="button"
-            phx-click="refresh"
-            class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
-          >
-            <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
-          </button>
+          <div class="flex items-center gap-2">
+            <a
+              href={@export_url}
+              id="export-csv-btn"
+              class="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg flex items-center"
+            >
+              <.icon name="hero-arrow-down-tray" class="w-4 h-4 mr-1" /> {gettext("Export CSV")}
+            </a>
+            <button
+              type="button"
+              phx-click="refresh"
+              class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
+            >
+              <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

@@ -36,6 +36,17 @@ defmodule VoileWeb.Utils.FormatIndonesiaTime do
     end
   end
 
+  @doc """
+  Shifts a UTC DateTime to Asia/Jakarta (WIB, UTC+7).
+  Returns the shifted DateTime, or the original if conversion fails.
+  """
+  def shift_to_jakarta(%DateTime{} = datetime) do
+    case DateTime.shift_zone(datetime, "Asia/Jakarta") do
+      {:ok, jakarta_datetime} -> jakarta_datetime
+      {:error, _} -> datetime
+    end
+  end
+
   def format_indonesian_date(%DateTime{} = datetime) do
     day_of_week = get_day_of_week(datetime)
     month = get_month(datetime)

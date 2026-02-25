@@ -5010,66 +5010,66 @@ msgstr ""
 #: lib/voile_web/live/users/manage/dashboard.ex:75
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Dashboard"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/frontend/items/show.ex:201
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Items"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/visitor/check_in.ex:525
 #: lib/voile_web/live/visitor/check_out.ex:506
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Locations"
-msgstr "Total Collections"
+msgstr ""
 
 #: lib/voile_web/live/users/permission/permission_manage_edit_live.ex:54
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Permission"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/users/permission/permission_manage_show_live.ex:43
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Permissions"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:268
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Role"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/users/role/role_manage_show_live.ex:57
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Roles"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/visitor/check_in.ex:576
 #: lib/voile_web/live/visitor/check_out.ex:559
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Rooms"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:854
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Search"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/dashboard/visitor/statistics.ex:241
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Settings"
-msgstr "Total Collections"
+msgstr ""
 
 #: lib/voile_web/live/dashboard/visitor/logs.ex:259
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:306
 #, elixir-autogen, elixir-format
-msgid "Back to Statistics"
+msgid "Back to Surveys"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:2
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:350
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to items"
-msgstr "Back to home"
+msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:9
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:326
@@ -7904,12 +7904,12 @@ msgstr ""
 
 #: lib/voile_web/live/visitor/check_in.ex:630
 #, elixir-autogen, elixir-format
-msgid "Scan or enter ID"
+msgid "Scan or enter ID or Your Name"
 msgstr ""
 
 #: lib/voile_web/live/visitor/check_out.ex:612
 #, elixir-autogen, elixir-format
-msgid "Scan or enter your ID"
+msgid "Scan or enter your ID or Your Name"
 msgstr ""
 
 #: lib/voile_web/live/search_dashboard_live.ex:76

@@ -617,7 +617,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                     phx-hook="IdentifierInput"
                     autocomplete="off"
                     class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400"
-                    placeholder={gettext("Scan or enter your ID")}
+                    placeholder={gettext("Scan or enter ID or Your Name")}
                   />
                 </div>
 
@@ -649,7 +649,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                   {gettext("Share your experience")}
                 </p>
                 <div class="flex items-center justify-center">
-                  <span class="font-bold bg-violet-100 px-3 py-1 rounded-xl text-center">
+                  <span class="font-bold bg-violet-100 dark:bg-purple-700 px-3 py-1 rounded-xl text-center">
                     {@selected_location.location_name} | {get_node_name(@selected_node, @nodes)}
                   </span>
                 </div>

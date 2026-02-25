@@ -2,6 +2,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Helpers do
   @moduledoc """
   Helper functions for the circulation dashboard components.
   """
+  import VoileWeb.Utils.FormatIndonesiaTime,
+    only: [safe_format_utc_to_jakarta: 1, shift_to_jakarta: 1]
 
   @doc """
   Returns CSS classes for transaction type badges.
@@ -124,7 +126,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Helpers do
 
   def format_datetime(datetime) do
     datetime
-    |> Calendar.strftime("%m/%d/%Y %I:%M %p")
+    |> safe_format_utc_to_jakarta()
   end
 
   @doc """
@@ -139,6 +141,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Helpers do
 
   def format_date(%DateTime{} = datetime) do
     datetime
+    |> shift_to_jakarta()
     |> DateTime.to_date()
     |> format_date()
   end

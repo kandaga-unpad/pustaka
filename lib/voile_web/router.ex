@@ -465,6 +465,7 @@ defmodule VoileWeb.Router do
     end
 
     get "/attachments/:id/download", Collection.AttachmentController.Download, :download
+    get "/manage/visitor/logs/export", Dashboard.Visitor.LogsExportController, :export
   end
 
   scope "/api", VoileWeb do

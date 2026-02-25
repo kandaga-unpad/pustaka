@@ -7902,12 +7902,12 @@ msgstr ""
 
 #: lib/voile_web/live/visitor/check_in.ex:630
 #, elixir-autogen, elixir-format
-msgid "Scan or enter ID"
+msgid "Scan or enter ID or Your Name"
 msgstr ""
 
 #: lib/voile_web/live/visitor/check_out.ex:612
 #, elixir-autogen, elixir-format
-msgid "Scan or enter your ID"
+msgid "Scan or enter your ID or Your Name"
 msgstr ""
 
 #: lib/voile_web/live/search_dashboard_live.ex:76
