@@ -434,7 +434,7 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_collection(attrs \\ %{}) do
+  def create_collection(attrs \\ %{}, user_id \\ nil) do
     # Let plugins modify attrs before save
     enriched_attrs = Voile.Hooks.run_filter(:collection_before_save, attrs)
 
@@ -447,9 +447,32 @@ defmodule Voile.Schema.Catalog do
       {:ok, collection} ->
         # Let plugins react to the new collection
         Voile.Hooks.run_action(:collection_after_save, collection)
+
+        Task.start(fn ->
+          CollectionLogger.log_action(collection.id, user_id, "create",
+            title: "Collection Created",
+            message: "Collection '#{collection.title}' was created",
+            new_values:
+              Map.take(collection, [
+                :title,
+                :status,
+                :access_level,
+                :description,
+                :collection_type
+              ]),
+            entity_type: "collection"
+          )
+        end)
+
         {:ok, collection}
 
-      error ->
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(nil, user_id, "create", changeset,
+            metadata: %{entity_type: "collection", attempted_attrs: attrs}
+          )
+        end)
+
         error
     end
   end
@@ -466,10 +489,39 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_collection(%Collection{} = collection, attrs) do
-    collection
-    |> Collection.changeset(attrs)
-    |> Repo.update()
+  def update_collection(%Collection{} = collection, attrs, user_id \\ nil) do
+    old_values =
+      Map.take(collection, [:title, :status, :access_level, :description, :collection_type])
+
+    result =
+      collection
+      |> Collection.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(updated.id, user_id, "update",
+            title: "Collection Updated",
+            message: "Collection '#{updated.title}' was updated",
+            old_values: old_values,
+            new_values:
+              Map.take(updated, [:title, :status, :access_level, :description, :collection_type]),
+            entity_type: "collection"
+          )
+        end)
+
+        {:ok, updated}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(collection.id, user_id, "update", changeset,
+            metadata: %{entity_type: "collection"}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -484,8 +536,31 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_collection(%Collection{} = collection) do
-    Repo.delete(collection)
+  def delete_collection(%Collection{} = collection, user_id \\ nil) do
+    result = Repo.delete(collection)
+
+    case result do
+      {:ok, deleted} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(nil, user_id, "delete",
+            title: "Collection Deleted",
+            message: "Collection '#{deleted.title}' was deleted",
+            old_values: Map.take(deleted, [:id, :title, :status, :access_level]),
+            entity_type: "collection"
+          )
+        end)
+
+        {:ok, deleted}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(collection.id, user_id, "delete", changeset,
+            metadata: %{entity_type: "collection"}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -701,13 +776,15 @@ defmodule Voile.Schema.Catalog do
         # Log the approval action with review notes
         metadata = if notes && notes != "", do: %{review_notes: notes}, else: %{}
 
-        CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "publish",
-          title: "Collection Approved",
-          message: "Collection '#{collection.title}' was approved and published",
-          old_values: %{status: collection.status, access_level: collection.access_level},
-          new_values: %{status: "published", access_level: "public"},
-          metadata: metadata
-        )
+        Task.start(fn ->
+          CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "publish",
+            title: "Collection Approved",
+            message: "Collection '#{collection.title}' was approved and published",
+            old_values: %{status: collection.status, access_level: collection.access_level},
+            new_values: %{status: "published", access_level: "public"},
+            metadata: metadata
+          )
+        end)
 
         # When a collection is published we also want all of its items to be
         # available so they can show up in public listings.  Only items that are
@@ -758,13 +835,15 @@ defmodule Voile.Schema.Catalog do
         # Log the rejection action with review notes
         metadata = if reason && reason != "", do: %{review_notes: reason}, else: %{}
 
-        CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "update",
-          title: "Collection Rejected",
-          message: "Collection '#{collection.title}' was rejected and sent back to draft",
-          old_values: %{status: collection.status},
-          new_values: %{status: "draft"},
-          metadata: metadata
-        )
+        Task.start(fn ->
+          CollectionLogger.log_action(updated_collection.id, reviewer_user.id, "update",
+            title: "Collection Rejected",
+            message: "Collection '#{collection.title}' was rejected and sent back to draft",
+            old_values: %{status: collection.status},
+            new_values: %{status: "draft"},
+            metadata: metadata
+          )
+        end)
 
         {:ok, updated_collection}
 
@@ -1392,7 +1471,7 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_item(attrs \\ %{}) do
+  def create_item(attrs \\ %{}, user_id \\ nil) do
     # Let plugins modify attrs before save
     enriched_attrs = Voile.Hooks.run_filter(:item_before_save, attrs)
 
@@ -1405,9 +1484,36 @@ defmodule Voile.Schema.Catalog do
       {:ok, item} ->
         # Let plugins react to the new item
         Voile.Hooks.run_action(:item_after_create, item)
+
+        Task.start(fn ->
+          CollectionLogger.log_action(item.collection_id, user_id, "create",
+            title: "Item Created",
+            message: "Item '#{item.item_code}' was added to collection",
+            new_values:
+              Map.take(item, [
+                :item_code,
+                :inventory_code,
+                :barcode,
+                :status,
+                :condition,
+                :availability
+              ]),
+            entity_type: "item",
+            metadata: %{item_id: item.id}
+          )
+        end)
+
         {:ok, item}
 
-      error ->
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          collection_id = Map.get(attrs, :collection_id) || Map.get(attrs, "collection_id")
+
+          CollectionLogger.log_error(collection_id, user_id, "create", changeset,
+            metadata: %{entity_type: "item", attempted_attrs: attrs}
+          )
+        end)
+
         error
     end
   end
@@ -1424,10 +1530,47 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_item(%Item{} = item, attrs) do
-    item
-    |> Item.changeset(attrs)
-    |> Repo.update()
+  def update_item(%Item{} = item, attrs, user_id \\ nil) do
+    old_values =
+      Map.take(item, [:item_code, :barcode, :status, :condition, :availability, :location])
+
+    result =
+      item
+      |> Item.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(updated.collection_id, user_id, "update",
+            title: "Item Updated",
+            message: "Item '#{updated.item_code}' was updated",
+            old_values: old_values,
+            new_values:
+              Map.take(updated, [
+                :item_code,
+                :barcode,
+                :status,
+                :condition,
+                :availability,
+                :location
+              ]),
+            entity_type: "item",
+            metadata: %{item_id: updated.id}
+          )
+        end)
+
+        {:ok, updated}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(item.collection_id, user_id, "update", changeset,
+            metadata: %{entity_type: "item", item_id: item.id}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -1442,8 +1585,32 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_item(%Item{} = item) do
-    Repo.delete(item)
+  def delete_item(%Item{} = item, user_id \\ nil) do
+    result = Repo.delete(item)
+
+    case result do
+      {:ok, deleted} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(deleted.collection_id, user_id, "delete",
+            title: "Item Deleted",
+            message: "Item '#{deleted.item_code}' was deleted from collection",
+            old_values: Map.take(deleted, [:id, :item_code, :barcode, :status, :condition]),
+            entity_type: "item",
+            metadata: %{item_id: deleted.id}
+          )
+        end)
+
+        {:ok, deleted}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(item.collection_id, user_id, "delete", changeset,
+            metadata: %{entity_type: "item", item_id: item.id}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -1699,10 +1866,37 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_collection_field(attrs \\ %{}) do
-    %CollectionField{}
-    |> CollectionField.changeset(attrs)
-    |> Repo.insert()
+  def create_collection_field(attrs \\ %{}, user_id \\ nil) do
+    result =
+      %CollectionField{}
+      |> CollectionField.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, field} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(field.collection_id, user_id, "update",
+            title: "Metadata Field Added",
+            message: "Field '#{field.label}' (#{field.name}) was added to collection",
+            new_values: Map.take(field, [:name, :label, :value, :value_lang, :sort_order]),
+            entity_type: "collection_field",
+            metadata: %{field_id: field.id, field_name: field.name}
+          )
+        end)
+
+        {:ok, field}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          collection_id = Map.get(attrs, :collection_id) || Map.get(attrs, "collection_id")
+
+          CollectionLogger.log_error(collection_id, user_id, "update", changeset,
+            metadata: %{entity_type: "collection_field", attempted_attrs: attrs}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -1717,10 +1911,38 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_collection_field(%CollectionField{} = collection_field, attrs) do
-    collection_field
-    |> CollectionField.changeset(attrs)
-    |> Repo.update()
+  def update_collection_field(%CollectionField{} = collection_field, attrs, user_id \\ nil) do
+    old_values = Map.take(collection_field, [:name, :label, :value, :value_lang, :sort_order])
+
+    result =
+      collection_field
+      |> CollectionField.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(updated.collection_id, user_id, "update",
+            title: "Metadata Field Updated",
+            message: "Field '#{updated.label}' (#{updated.name}) was updated",
+            old_values: old_values,
+            new_values: Map.take(updated, [:name, :label, :value, :value_lang, :sort_order]),
+            entity_type: "collection_field",
+            metadata: %{field_id: updated.id, field_name: updated.name}
+          )
+        end)
+
+        {:ok, updated}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(collection_field.collection_id, user_id, "update", changeset,
+            metadata: %{entity_type: "collection_field", field_id: collection_field.id}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """
@@ -1735,8 +1957,32 @@ defmodule Voile.Schema.Catalog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_collection_field(%CollectionField{} = collection_field) do
-    Repo.delete(collection_field)
+  def delete_collection_field(%CollectionField{} = collection_field, user_id \\ nil) do
+    result = Repo.delete(collection_field)
+
+    case result do
+      {:ok, deleted} ->
+        Task.start(fn ->
+          CollectionLogger.log_action(deleted.collection_id, user_id, "update",
+            title: "Metadata Field Removed",
+            message: "Field '#{deleted.label}' (#{deleted.name}) was removed from collection",
+            old_values: Map.take(deleted, [:id, :name, :label, :value, :value_lang]),
+            entity_type: "collection_field",
+            metadata: %{field_id: deleted.id, field_name: deleted.name}
+          )
+        end)
+
+        {:ok, deleted}
+
+      {:error, changeset} = error ->
+        Task.start(fn ->
+          CollectionLogger.log_error(collection_field.collection_id, user_id, "delete", changeset,
+            metadata: %{entity_type: "collection_field", field_id: collection_field.id}
+          )
+        end)
+
+        error
+    end
   end
 
   @doc """

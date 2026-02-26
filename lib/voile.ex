@@ -25,7 +25,9 @@ defmodule Voile do
 
   defdelegate get_collection!(id), to: Voile.Schema.Catalog
   defdelegate create_collection(attrs \\ %{}), to: Voile.Schema.Catalog
+  defdelegate create_collection(attrs, user_id), to: Voile.Schema.Catalog
   defdelegate update_collection(collection, attrs), to: Voile.Schema.Catalog
+  defdelegate update_collection(collection, attrs, user_id), to: Voile.Schema.Catalog
 
   defdelegate list_pending_collections_paginated(page \\ 1, per_page \\ 10, user \\ nil),
     to: Voile.Schema.Catalog
@@ -56,6 +58,7 @@ defmodule Voile do
 
   # Additional collection CRUD operations
   defdelegate delete_collection(collection), to: Voile.Schema.Catalog
+  defdelegate delete_collection(collection, user_id), to: Voile.Schema.Catalog
   defdelegate change_collection(collection, attrs \\ %{}), to: Voile.Schema.Catalog
 
   defdelegate approve_collection(collection, reviewer_user, notes \\ nil),
@@ -71,8 +74,11 @@ defmodule Voile do
 
   defdelegate get_item!(id), to: Voile.Schema.Catalog
   defdelegate create_item(attrs \\ %{}), to: Voile.Schema.Catalog
+  defdelegate create_item(attrs, user_id), to: Voile.Schema.Catalog
   defdelegate update_item(item, attrs), to: Voile.Schema.Catalog
+  defdelegate update_item(item, attrs, user_id), to: Voile.Schema.Catalog
   defdelegate delete_item(item), to: Voile.Schema.Catalog
+  defdelegate delete_item(item, user_id), to: Voile.Schema.Catalog
   defdelegate change_item(item, attrs \\ %{}), to: Voile.Schema.Catalog
 
   # Additional node CRUD operations

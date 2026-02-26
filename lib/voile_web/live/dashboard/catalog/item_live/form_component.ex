@@ -341,7 +341,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   end
 
   defp save_item(socket, :edit, item_params) do
-    case Catalog.update_item(socket.assigns.item, item_params) do
+    case Catalog.update_item(
+           socket.assigns.item,
+           item_params,
+           socket.assigns.current_scope.user.id
+         ) do
       {:ok, item} ->
         notify_parent({:saved, item})
 
@@ -356,7 +360,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
   end
 
   defp save_item(socket, :new, item_params) do
-    case Catalog.create_item(item_params) do
+    case Catalog.create_item(item_params, socket.assigns.current_scope.user.id) do
       {:ok, item} ->
         notify_parent({:saved, item})
 

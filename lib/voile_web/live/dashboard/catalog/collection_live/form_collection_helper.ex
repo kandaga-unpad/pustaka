@@ -403,7 +403,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
       field ->
         # Delete the field from database
-        case Catalog.delete_collection_field(field) do
+        user_id = socket.assigns.current_scope.user.id
+
+        case Catalog.delete_collection_field(field, user_id) do
           {:ok, _} ->
             # Get current form params
             current_params = socket.assigns.form.params || %{}
@@ -444,7 +446,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         socket
 
       item ->
-        case Catalog.delete_item(item) do
+        user_id = socket.assigns.current_scope.user.id
+
+        case Catalog.delete_item(item, user_id) do
           {:ok, _} ->
             # Re-fetch authoritative collection state from DB (with preloads)
             # and rebuild the form so the UI reflects the deletion reliably.
@@ -746,7 +750,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       |> Map.put("updated_by_id", updated_by)
       |> add_barcodes_to_items()
 
-    case Catalog.update_collection(socket.assigns.original_collection, collection_params) do
+    case Catalog.update_collection(
+           socket.assigns.original_collection,
+           collection_params,
+           updated_by
+         ) do
       {:ok, collection} ->
         notify_parent({:saved, collection})
 
@@ -808,7 +816,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
           |> Map.put("created_by_id", created_by)
           |> add_barcodes_to_items()
 
-        case Catalog.create_collection(collection_params) do
+        case Catalog.create_collection(collection_params, created_by) do
           {:ok, collection} ->
             notify_parent({:saved, collection})
 
@@ -842,7 +850,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       |> Map.put("status", "draft")
       |> add_barcodes_to_items()
 
-    case Catalog.update_collection(socket.assigns.original_collection, draft_params) do
+    case Catalog.update_collection(socket.assigns.original_collection, draft_params, updated_by) do
       {:ok, collection} ->
         notify_parent({:saved, collection})
 
@@ -892,7 +900,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
           |> Map.put("created_by_id", created_by)
           |> add_barcodes_to_items()
 
-        case Catalog.create_collection(draft_params) do
+        case Catalog.create_collection(draft_params, created_by) do
           {:ok, collection} ->
             notify_parent({:saved, collection})
 
@@ -929,8 +937,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
   defp handle_delete_thumbnail_edit(_thumbnail_path, socket) do
     collection = socket.assigns.collection
+    user_id = socket.assigns.current_scope.user.id
 
-    case Catalog.update_collection(collection, %{thumbnail: nil}) do
+    case Catalog.update_collection(collection, %{thumbnail: nil}, user_id) do
       {:ok, updated_collection} ->
         socket =
           socket

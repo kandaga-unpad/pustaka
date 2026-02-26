@@ -195,6 +195,7 @@ defmodule Voile.Utils.CollectionLogger do
       user_id: user_id,
       action: action,
       action_type: Keyword.get(opts, :action_type, action),
+      entity_type: Keyword.get(opts, :entity_type, "collection"),
       title: Keyword.get(opts, :title, "Collection #{action}"),
       message: Keyword.get(opts, :message, "Collection was #{action}"),
       old_values: Keyword.get(opts, :old_values),
