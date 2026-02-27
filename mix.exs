@@ -22,7 +22,7 @@ defmodule Voile.MixProject do
   def application do
     [
       mod: {Voile.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :esbuild, :tailwind]
     ]
   end
 
