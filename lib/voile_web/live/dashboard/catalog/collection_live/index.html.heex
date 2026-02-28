@@ -620,6 +620,7 @@
         current_scope={@current_scope}
         time_identifier={@time_identifier}
         patch={~p"/manage/catalog/collections"}
+        external_book={@external_book}
       />
     </.collection_modal>
 
@@ -630,7 +631,7 @@
       show
       on_cancel={JS.patch(~p"/manage/catalog/collections")}
     >
-      <div class="flex flex-col h-full max-h-[85vh]">
+      <div class="flex flex-col h-full ">
         <div class="flex-shrink-0">
           <.header>
             {gettext("Search Existing Collection")}
@@ -676,135 +677,115 @@
           </div>
         </.form>
 
-        <%!-- Search Results --%>
+        <%!-- Search Results Container --%>
         <%= if @collection_search_performed do %>
-          <div class="flex-1 flex flex-col mt-6 min-h-0">
+          <div class="flex-1 flex flex-col mt-6 min-h-0 overflow-hidden">
+            <%!-- Internal Collection Results --%>
             <%= if @collection_search_results == [] do %>
-              <div class="flex-1 flex items-center justify-center">
-                <div class="text-center py-16 px-8">
-                  <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-12 max-w-md mx-auto">
+              <div class="flex-shrink-0">
+                <div class="text-center py-8">
+                  <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 max-w-md mx-auto">
                     <.icon
                       name="hero-magnifying-glass"
-                      class="w-20 h-20 mx-auto text-indigo-400 mb-6"
+                      class="w-16 h-16 mx-auto text-indigo-400 mb-4"
                     />
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                      {gettext("No Results Found")}
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      {gettext("No Collections Found")}
                     </h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-8 text-base leading-relaxed">
+                    <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                       {gettext("We couldn't find any collections matching ")}
                       <span class="font-semibold text-indigo-600 dark:text-indigo-400">
                         "{@collection_search_query}"
                       </span>
                     </p>
-                    <.link patch={~p"/manage/catalog/collections/new"}>
-                      <.button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                        <.icon name="hero-plus" class="w-5 h-5 mr-2" />
-                        {gettext("Create New Collection")}
-                      </.button>
-                    </.link>
                   </div>
                 </div>
               </div>
             <% else %>
-              <div class="flex items-center justify-between mb-4 flex-shrink-0 pb-3 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex-shrink-0 flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 class="text-base font-semibold text-gray-900 dark:text-white">
                     {length(@collection_search_results)} {if length(@collection_search_results) ==
                                                                1,
                                                              do: gettext("Collection Found"),
                                                              else: gettext("Collections Found")}
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                    {gettext("Select one to add an item")}
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {gettext("Internal collections - select one to add an item")}
                   </p>
                 </div>
-                <.link patch={~p"/manage/catalog/collections/new"}>
-                  <.button class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                    <.icon name="hero-plus" class="w-5 h-5 mr-2" />
-                    {gettext("Create New")}
-                  </.button>
-                </.link>
               </div>
 
-              <div class="flex-1 overflow-y-auto pr-2 -mr-2 scroll-smooth">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 pb-4">
+              <div
+                class="overflow-y-auto pr-2 -mr-2 scroll-smooth mb-4"
+                style="max-height: 40vh; min-height: 200px;"
+              >
+                <div class="grid grid-cols-1 gap-3 pb-2">
                   <.link
                     :for={collection <- @collection_search_results}
                     patch={~p"/manage/catalog/collections/add-item/#{collection.id}"}
                     class="group block"
                   >
-                    <div class="h-full border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="h-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg transition-all flex flex-row">
                       <%!-- Thumbnail --%>
-                      <div class="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                      <div class="relative w-20 sm:w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center">
                         <%= if collection.thumbnail do %>
                           <img
                             src={collection.thumbnail}
                             alt={collection.title}
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            class="w-full h-full object-cover"
                           />
                         <% else %>
-                          <div class="w-full h-full flex items-center justify-center">
-                            <.icon
-                              name="hero-book-open"
-                              class="w-16 h-16 text-gray-300 dark:text-gray-600 group-hover:text-indigo-400 transition-colors"
-                            />
-                          </div>
+                          <.icon
+                            name="hero-book-open"
+                            class="w-8 h-8 text-gray-300 dark:text-gray-600"
+                          />
                         <% end %>
-                        <%!-- Overlay gradient --%>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        </div>
                       </div>
 
                       <%!-- Collection Info --%>
-                      <div class="p-4">
-                        <h4 class="font-semibold text-gray-900 dark:text-white text-lg mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {collection.title}
-                        </h4>
-
-                        <%= if collection.description do %>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3 leading-relaxed">
-                            {collection.description}
-                          </p>
-                        <% end %>
-
-                        <div class="flex flex-wrap gap-1.5 mb-3">
+                      <div class="p-3 flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            {collection.title}
+                          </h4>
+                          <%!-- Author --%>
                           <%= if collection.mst_creator do %>
-                            <span class="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-medium">
-                              <.icon name="hero-user" class="w-3 h-3 mr-1" />
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                              <.icon name="hero-user" class="w-3 h-3 inline mr-1" />
                               {collection.mst_creator.creator_name}
-                            </span>
+                            </p>
                           <% end %>
-
-                          <%= if collection.node do %>
-                            <span class="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full text-xs font-medium">
-                              <.icon name="hero-building-library" class="w-3 h-3 mr-1" />
-                              {collection.node.name}
-                            </span>
+                          <%!-- Description (trimmed) --%>
+                          <%= if collection.description do %>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 line-clamp-2">
+                              {trim_text(collection.description, 80)}
+                            </p>
                           <% end %>
-
-                          <%= if collection.resource_class do %>
-                            <span class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
-                              {collection.resource_class.label}
+                          <%!-- Type and Items Count --%>
+                          <div class="flex items-center gap-2 mt-2">
+                            <%= if collection.collection_type do %>
+                              <span class="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full capitalize">
+                                {collection.collection_type}
+                              </span>
+                            <% end %>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              <.icon name="hero-rectangle-stack" class="w-3 h-3 inline mr-1" />
+                              {length(collection.items || [])} {if length(collection.items || []) ==
+                                                                     1,
+                                                                   do: gettext("item"),
+                                                                   else: gettext("items")}
                             </span>
-                          <% end %>
-
-                          <%= if collection.items do %>
-                            <span class="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-full text-xs font-medium">
-                              <.icon name="hero-document" class="w-3 h-3 mr-1" />
-                              {length(collection.items)} {gettext("Items")}
-                            </span>
-                          <% end %>
-                        </div>
-
-                        <div class="flex items-center justify-center py-3 border-t border-gray-100 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">
-                          <div class="inline-flex items-center text-green-700 dark:text-green-400 font-medium text-sm group-hover:scale-105 transition-transform">
-                            <.icon name="hero-plus-circle" class="w-5 h-5 mr-2" />
-                            {gettext("Add Item")}
-                            <.icon
-                              name="hero-arrow-right"
-                              class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
-                            />
                           </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <span class="text-xs text-gray-400">
+                            {gettext("Click to add item")}
+                          </span>
+                          <.icon
+                            name="hero-arrow-right"
+                            class="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors"
+                          />
                         </div>
                       </div>
                     </div>
@@ -812,16 +793,135 @@
                 </div>
               </div>
             <% end %>
+
+            <%!-- External Book Results - Below Internal Results --%>
+            <%= if @external_book_performed do %>
+              <div class="flex-shrink-0 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <%= if @external_book_results == [] do %>
+                  <div class="text-center py-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {gettext("No external books found for \"{query}\"",
+                        query: @collection_search_query
+                      )}
+                    </p>
+                  </div>
+                <% else %>
+                  <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                      <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <.icon name="hero-globe-alt" class="w-4 h-4 text-blue-500" />
+                        {gettext("External Sources")}
+                      </h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {length(@external_book_results)} {gettext(
+                          "books from OpenLibrary, Google Books & OpenAlex"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    class="overflow-y-auto pr-2 -mr-2 scroll-smooth"
+                    style="max-height: 35vh; min-height: 150px;"
+                  >
+                    <div class="space-y-2 pb-2">
+                      <div
+                        :for={book <- @external_book_results}
+                        class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer group"
+                        phx-click="select_external_book"
+                        phx-value-book={Jason.encode!(book)}
+                      >
+                        <%!-- Thumbnail --%>
+                        <div class="relative w-12 h-16 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                          <%= if book.thumbnail do %>
+                            <img
+                              src={book.thumbnail}
+                              alt={book.title}
+                              class="w-full h-full object-cover"
+                            />
+                          <% else %>
+                            <div class="w-full h-full flex items-center justify-center">
+                              <.icon name="hero-book-open" class="w-6 h-6 text-gray-400" />
+                            </div>
+                          <% end %>
+                        </div>
+
+                        <%!-- Book Info --%>
+                        <div class="ml-3 flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-1">
+                            <h5 class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {book.title}
+                            </h5>
+                            <%!-- Source Badge --%>
+                            <span class={[
+                              "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium flex-shrink-0",
+                              case book.source do
+                                "openlibrary" ->
+                                  "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+
+                                "googlebooks" ->
+                                  "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+
+                                "openalex" ->
+                                  "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+
+                                _ ->
+                                  "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                              end
+                            ]}>
+                              <%= case book.source do %>
+                                <% "openlibrary" -> %>
+                                  OL
+                                <% "googlebooks" -> %>
+                                  GB
+                                <% "openalex" -> %>
+                                  OA
+                              <% end %>
+                            </span>
+                          </div>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <%= if book.authors && book.authors != [] do %>
+                              {Enum.join(book.authors, ", ")}
+                              <%= if book.published_date do %>
+                                • {book.published_date}
+                              <% end %>
+                            <% else %>
+                              <%= if book.published_date do %>
+                                {book.published_date}
+                              <% end %>
+                            <% end %>
+                          </p>
+                          <%= if book.publisher do %>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                              {book.publisher}
+                            </p>
+                          <% end %>
+                        </div>
+
+                        <%!-- Arrow Icon --%>
+                        <div class="ml-2 flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors self-center">
+                          <.icon name="hero-plus" class="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+                    {gettext("Click a book to create a new collection with prefilled data")}
+                  </p>
+                <% end %>
+              </div>
+            <% end %>
           </div>
         <% else %>
-          <%!-- Initial state - before any search --%>
-          <div class="flex-1 flex items-center justify-center mt-6">
+          <%!-- Empty State --%>
+          <div class="flex-1 flex items-center justify-center">
             <div class="text-center py-16 px-8">
-              <div class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-pink-900/20 rounded-3xl p-12 max-w-lg mx-auto shadow-xl">
-                <div class="bg-gradient-to-br from-indigo-400 to-purple-500 w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <.icon name="hero-magnifying-glass-circle" class="w-16 h-16 text-white" />
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-12 max-w-md mx-auto">
+                <.icon
+                  name="hero-magnifying-glass"
+                  class="w-20 h-20 mx-auto text-indigo-400 mb-6"
+                />
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                   {gettext("Find Your Collection")}
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 mb-8 text-base leading-relaxed">

@@ -94,7 +94,7 @@ defmodule VoileWeb.UserLoginLive do
                     <p class="text-sm italic">{gettext("Don't have an account?")}</p>
                     <.link
                       navigate={~p"/register"}
-                      class="gradient-btn-outline mt-2 text-sm text-center w-full"
+                      class="gradient-btn-outline bg-gray-300 mt-2 text-sm text-center w-full"
                     >
                       <.icon name="hero-user-plus" class="w-5 h-5 mr-1" />
                       {gettext("Register")}

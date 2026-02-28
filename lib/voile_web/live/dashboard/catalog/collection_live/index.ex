@@ -105,6 +105,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:current_user, current_user)
         # Track current query params for navigation
         |> assign(:current_query_params, %{})
+        # External book search assigns
+        |> assign(:external_book_query, "")
+        |> assign(:external_book_results, [])
+        |> assign(:external_book_loading, false)
+        |> assign(:external_book_performed, false)
+        |> assign(:external_book, nil)
 
       {:ok, socket}
     end
@@ -180,6 +186,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:collection_search_query, "")
     |> assign(:collection_search_results, [])
     |> assign(:collection_search_performed, false)
+    # External book search assigns
+    |> assign(:external_book_query, "")
+    |> assign(:external_book_results, [])
+    |> assign(:external_book_loading, false)
+    |> assign(:external_book_performed, false)
     |> assign(:patch, ~p"/manage/catalog/collections")
   end
 
@@ -309,22 +320,42 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     end
   end
 
-  defp apply_action(socket, :new, _params) do
+  defp apply_action(socket, :new, params) do
     # Check create permission for creating new collections
     authorize!(socket, "collections.create")
 
+    # Check for external book prefill data
+    external_book = extract_external_book(params)
+
     collection = %Collection{}
 
+    # If we have external book data, prefill the collection
     collection =
-      collection
-      |> Repo.preload([
-        :resource_class,
-        :resource_template,
-        :mst_creator,
-        :node,
-        :collection_fields,
-        :items
-      ])
+      if external_book do
+        # Create collection with prefilled data from external book
+        collection
+        |> Map.put(:title, external_book.title)
+        |> Map.put(:description, external_book.description)
+        |> Map.put(:thumbnail, external_book.thumbnail)
+        |> Repo.preload([
+          :resource_class,
+          :resource_template,
+          :mst_creator,
+          :node,
+          :collection_fields,
+          :items
+        ])
+      else
+        collection
+        |> Repo.preload([
+          :resource_class,
+          :resource_template,
+          :mst_creator,
+          :node,
+          :collection_fields,
+          :items
+        ])
+      end
 
     # Load collection_properties only when form opens
     collection_properties =
@@ -354,9 +385,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:collection, collection)
     |> assign(:collection_properties, collection_properties)
     |> assign(:resource_templates, resource_templates)
+    |> assign(:external_book, external_book)
     |> assign(:patch, ~p"/manage/catalog/collections")
   end
 
+  # Extract external book data from params
   defp apply_action(socket, :index, params) do
     # When returning to index (e.g., after closing modal), always refresh collections
     # to ensure the stream is properly maintained
@@ -674,17 +707,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_query, "")
         |> assign(:collection_search_results, [])
         |> assign(:collection_search_performed, false)
+        |> assign(:external_book_query, "")
+        |> assign(:external_book_results, [])
+        |> assign(:external_book_performed, false)
 
       {:noreply, socket}
     else
       # Search collections without node scoping
       results = Catalog.search_collections_all_nodes(trimmed_query)
 
+      # Also search external books
+      external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
+
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
         |> assign(:collection_search_results, results)
         |> assign(:collection_search_performed, true)
+        |> assign(:external_book_query, trimmed_query)
+        |> assign(:external_book_results, external_results)
+        |> assign(:external_book_performed, true)
 
       {:noreply, socket}
     end
@@ -701,16 +743,23 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_query, "")
         |> assign(:collection_search_results, [])
         |> assign(:collection_search_performed, false)
+        |> assign(:external_book_query, "")
+        |> assign(:external_book_results, [])
+        |> assign(:external_book_performed, false)
 
       {:noreply, socket}
     else
       results = Catalog.search_collections_all_nodes(trimmed_query)
+      external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
 
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
         |> assign(:collection_search_results, results)
         |> assign(:collection_search_performed, true)
+        |> assign(:external_book_query, trimmed_query)
+        |> assign(:external_book_results, external_results)
+        |> assign(:external_book_performed, true)
 
       {:noreply, socket}
     end
@@ -723,6 +772,69 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:collection_search_query, "")
       |> assign(:collection_search_results, [])
       |> assign(:collection_search_performed, false)
+      |> assign(:external_book_query, "")
+      |> assign(:external_book_results, [])
+      |> assign(:external_book_performed, false)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("search_external_books", %{"query" => query}, socket) do
+    trimmed_query = String.trim(query)
+
+    if trimmed_query == "" do
+      socket =
+        socket
+        |> assign(:external_book_query, "")
+        |> assign(:external_book_results, [])
+        |> assign(:external_book_loading, false)
+        |> assign(:external_book_performed, false)
+
+      {:noreply, socket}
+    else
+      # Search external books
+      results = Voile.ExternalBookSearch.search(trimmed_query, limit: 15)
+
+      socket =
+        socket
+        |> assign(:external_book_query, trimmed_query)
+        |> assign(:external_book_results, results)
+        |> assign(:external_book_loading, false)
+        |> assign(:external_book_performed, true)
+
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("select_external_book", %{"book" => book_json}, socket) do
+    # Parse the book data from JSON string
+    case Jason.decode(book_json) do
+      {:ok, book} ->
+        # Navigate to new collection with prefill data
+        # Encode book data as base64 to pass as param
+        encoded_book = Base.encode64(Jason.encode!(book))
+
+        {:noreply,
+         push_navigate(socket,
+           to: ~p"/manage/catalog/collections/new?external_book=#{encoded_book}"
+         )}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to process selected book")}
+    end
+  end
+
+  @impl true
+  def handle_event("clear_external_book_search", _params, socket) do
+    socket =
+      socket
+      |> assign(:external_book_query, "")
+      |> assign(:external_book_results, [])
+      |> assign(:external_book_performed, false)
 
     {:noreply, socket}
   end
@@ -807,4 +919,34 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       role.name in ["super_admin", "admin", "editor"]
     end)
   end
+
+  defp extract_external_book(%{"external_book" => encoded_book}) when is_binary(encoded_book) do
+    case Base.decode64(encoded_book) do
+      {:ok, json} ->
+        case Jason.decode(json) do
+          {:ok, book} ->
+            %Voile.ExternalBookSearch.Book{
+              source: Map.get(book, "source", "unknown"),
+              external_id: Map.get(book, "external_id"),
+              open_library_id: Map.get(book, "open_library_id"),
+              title: Map.get(book, "title"),
+              authors: Map.get(book, "authors", []),
+              publisher: Map.get(book, "publisher"),
+              published_date: Map.get(book, "published_date"),
+              description: Map.get(book, "description"),
+              thumbnail: Map.get(book, "thumbnail"),
+              isbn: Map.get(book, "isbn"),
+              page_count: Map.get(book, "page_count")
+            }
+
+          _ ->
+            nil
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  defp extract_external_book(_), do: nil
 end

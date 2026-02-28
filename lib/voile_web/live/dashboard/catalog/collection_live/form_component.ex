@@ -917,11 +917,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
 
     seed_source = if assigns.action == :edit, do: original_collection, else: collection
 
-    # Initialize creator_input based on existing data
+    # Initialize creator_input based on existing data or external book
     initial_creator_input =
       case assigns.action do
         :edit when not is_nil(original_collection.mst_creator) ->
           original_collection.mst_creator.creator_name
+
+        :new ->
+          # Check if we have external book data with authors
+          external_book = assigns[:external_book]
+
+          if external_book && external_book.authors && external_book.authors != [] do
+            Enum.join(external_book.authors, ", ")
+          else
+            nil
+          end
 
         _ ->
           nil
