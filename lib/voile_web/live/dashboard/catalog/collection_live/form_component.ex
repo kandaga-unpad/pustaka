@@ -918,33 +918,50 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
     seed_source = if assigns.action == :edit, do: original_collection, else: collection
 
     # Initialize creator_input based on existing data or external book
-    initial_creator_input =
+    {initial_creator_input, initial_creator_suggestions, initial_suggestions_done} =
       case assigns.action do
         :edit when not is_nil(original_collection.mst_creator) ->
-          original_collection.mst_creator.creator_name
+          {original_collection.mst_creator.creator_name, [], true}
 
         :new ->
           # Check if we have external book data with authors
           external_book = assigns[:external_book]
 
           if external_book && external_book.authors && external_book.authors != [] do
-            Enum.join(external_book.authors, ", ")
+            author_query = Enum.join(external_book.authors, ", ")
+
+            # Pre-populate suggestions by searching for matching creators
+            suggestions =
+              try do
+                Voile.Schema.Master.search_mst_creator_names(author_query, 10, 0)
+              rescue
+                _ -> []
+              end
+
+            done = length(suggestions) < 10
+            {author_query, suggestions, done}
           else
-            nil
+            {nil, [], true}
           end
 
         _ ->
-          nil
+          {nil, [], true}
       end
+
+    # Get external collection fields from assigns (for new collections from external books)
+    external_fields = assigns[:external_collection_fields] || []
 
     seed_params =
       (seed_source.collection_fields || [])
+      |> Enum.concat(external_fields)
       |> Enum.with_index()
       |> Enum.into(%{}, fn {field, idx} ->
         {to_string(idx),
          %{
            "id" => field.id,
+           "name" => field.name,
            "label" => field.label,
+           "property_id" => Map.get(field, :property_id),
            "information" =>
              case Map.get(field, :metadata_properties) do
                %Ecto.Association.NotLoaded{} -> ""
@@ -988,9 +1005,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
      |> assign(:selected_parent_title, get_selected_parent_title(collection))
      |> assign(:creator_input, initial_creator_input)
      |> assign(:creator_list, assigns.creator_list)
-     |> assign(:creator_suggestions, [])
-     |> assign(:creator_suggestions_offset, 0)
-     |> assign(:creator_suggestions_done, false)
+     |> assign(:creator_suggestions, initial_creator_suggestions)
+     |> assign(:creator_suggestions_offset, length(initial_creator_suggestions))
+     |> assign(:creator_suggestions_done, initial_suggestions_done)
      |> assign(:creator_searching, false)
      |> assign(:step2_params, nil)
      |> assign(:step3_params, nil)
@@ -1269,6 +1286,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
         socket
         |> put_flash(:error, gettext("Please fill in all required fields."))
         |> assign(:form, to_form(changeset, action: :validate))
+
+      dbg(changeset)
 
       {:noreply, socket}
     end

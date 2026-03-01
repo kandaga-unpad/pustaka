@@ -857,6 +857,81 @@ defmodule Voile.Schema.Catalog do
   end
 
   @doc """
+  Batch approve multiple collections.
+  Returns a tuple with {success_count, failed_count, errors}.
+
+  ## Examples
+
+      iex> batch_approve_collections([%Collection{}, ...], reviewer_user, "Notes")
+      {2, 0, []}
+
+      iex> batch_approve_collections([invalid_collection], reviewer_user, "Notes")
+      {0, 1, [%{id: "...", title: "...", error: :invalid_status}]}
+
+  """
+  def batch_approve_collections(collections, reviewer_user, notes \\ nil) do
+    Enum.reduce(collections, {0, 0, []}, fn collection, {success, failed, errors} ->
+      case approve_collection(collection, reviewer_user, notes) do
+        {:ok, _} ->
+          {success + 1, failed, errors}
+
+        {:error, reason} ->
+          {success, failed + 1,
+           [%{id: collection.id, title: collection.title, error: reason} | errors]}
+      end
+    end)
+  end
+
+  @doc """
+  Batch reject multiple collections.
+  Returns a tuple with {success_count, failed_count, errors}.
+
+  ## Examples
+
+      iex> batch_reject_collections([%Collection{}, ...], reviewer_user, "Reason")
+      {2, 0, []}
+
+      iex> batch_reject_collections([invalid_collection], reviewer_user, "Reason")
+      {0, 1, [%{id: "...", title: "...", error: :invalid_status}]}
+
+  """
+  def batch_reject_collections(collections, reviewer_user, reason) do
+    if String.trim(reason) == "" do
+      {0, length(collections),
+       Enum.map(collections, fn c -> %{id: c.id, title: c.title, error: :missing_reason} end)}
+    else
+      Enum.reduce(collections, {0, 0, []}, fn collection, {success, failed, errors} ->
+        case reject_collection(collection, reviewer_user, reason) do
+          {:ok, _} ->
+            {success + 1, failed, errors}
+
+          {:error, reason} ->
+            {success, failed + 1,
+             [%{id: collection.id, title: collection.title, error: reason} | errors]}
+        end
+      end)
+    end
+  end
+
+  @doc """
+  Get collections by their IDs for batch operations.
+  Filters to only include collections that are in pending or draft status.
+
+  ## Examples
+
+      iex> get_collections_for_review(["id1", "id2"])
+      [%Collection{status: "pending"}, %Collection{status: "draft"}]
+
+  """
+  def get_collections_for_review(ids) when is_list(ids) do
+    from(c in Collection,
+      where: c.id in ^ids and c.status in ["pending", "draft"],
+      preload: [:items, :created_by, :node]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Count pending collections.
 
   ## Examples

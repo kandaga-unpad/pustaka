@@ -156,19 +156,19 @@ else
     exit 1
 fi
 
-print_status "Running seeds..."
-if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.seed()'; then
-    print_status "Seeds completed successfully"
-else
-    print_warning "Seeds might have failed, check logs if needed"
-fi
+# print_status "Running seeds..."
+# if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.seed()'; then
+#     print_status "Seeds completed successfully"
+# else
+#     print_warning "Seeds might have failed, check logs if needed"
+# fi
 
-print_status "Importing data..."
-if podman exec "$APP_CONTAINER" /app/bin/voile rpc 'Voile.Release.import_data()'; then
-    print_status "Data import completed successfully"
-else
-    print_warning "Data import might have failed, check logs if needed"
-fi
+# print_status "Importing data..."
+# if podman exec "$APP_CONTAINER" /app/bin/voile rpc 'Voile.Release.import_data()'; then
+#     print_status "Data import completed successfully"
+# else
+#     print_warning "Data import might have failed, check logs if needed"
+# fi
 
 # Display status
 echo ""

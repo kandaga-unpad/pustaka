@@ -105,6 +105,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:current_user, current_user)
         # Track current query params for navigation
         |> assign(:current_query_params, %{})
+        # Collection search assigns (modal)
+        |> assign(:collection_search_query, "")
+        |> assign(:collection_search_results, [])
+        |> assign(:collection_search_performed, false)
+        |> assign(:collection_search_loading, false)
         # External book search assigns
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
@@ -186,6 +191,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:collection_search_query, "")
     |> assign(:collection_search_results, [])
     |> assign(:collection_search_performed, false)
+    |> assign(:collection_search_loading, false)
     # External book search assigns
     |> assign(:external_book_query, "")
     |> assign(:external_book_results, [])
@@ -330,31 +336,49 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     collection = %Collection{}
 
     # If we have external book data, prefill the collection
-    collection =
+    {collection, external_collection_fields} =
       if external_book do
+        # Build collection fields from external book metadata
+        # ISBN property ID = 185 (from Perpustakaan Unpad schema)
+        # Publisher property ID = 5 (standard Dublin Core)
+        # Published Year property ID = 188 (from Perpustakaan Unpad schema)
+        collection_fields =
+          []
+          |> maybe_add_collection_field(185, external_book.isbn)
+          |> maybe_add_collection_field(5, external_book.publisher)
+          |> maybe_add_collection_field(188, external_book.published_date)
+
         # Create collection with prefilled data from external book
-        collection
-        |> Map.put(:title, external_book.title)
-        |> Map.put(:description, external_book.description)
-        |> Map.put(:thumbnail, external_book.thumbnail)
-        |> Repo.preload([
-          :resource_class,
-          :resource_template,
-          :mst_creator,
-          :node,
-          :collection_fields,
-          :items
-        ])
+        # type_id: 40 = Book resource class
+        collection =
+          collection
+          |> Map.put(:title, external_book.title)
+          |> Map.put(:description, external_book.description)
+          |> Map.put(:thumbnail, external_book.thumbnail)
+          |> Map.put(:type_id, 40)
+          |> Repo.preload([
+            :resource_class,
+            :resource_template,
+            :mst_creator,
+            :node,
+            :collection_fields,
+            :items
+          ])
+
+        {collection, collection_fields}
       else
-        collection
-        |> Repo.preload([
-          :resource_class,
-          :resource_template,
-          :mst_creator,
-          :node,
-          :collection_fields,
-          :items
-        ])
+        collection =
+          collection
+          |> Repo.preload([
+            :resource_class,
+            :resource_template,
+            :mst_creator,
+            :node,
+            :collection_fields,
+            :items
+          ])
+
+        {collection, []}
       end
 
     # Load collection_properties only when form opens
@@ -386,6 +410,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
     |> assign(:collection_properties, collection_properties)
     |> assign(:resource_templates, resource_templates)
     |> assign(:external_book, external_book)
+    |> assign(:external_collection_fields, external_collection_fields)
     |> assign(:patch, ~p"/manage/catalog/collections")
   end
 
@@ -473,6 +498,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       ) do
     # After item is saved, redirect to the item show page
     {:noreply, push_navigate(socket, to: ~p"/manage/catalog/items/#{item.id}")}
+  end
+
+  @impl true
+  def handle_info({:perform_search, trimmed_query}, socket) do
+    # Perform searches asynchronously
+    results = Catalog.search_collections_all_nodes(trimmed_query)
+    external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
+
+    socket =
+      socket
+      |> assign(:collection_search_results, results)
+      |> assign(:collection_search_performed, true)
+      |> assign(:collection_search_loading, false)
+      |> assign(:external_book_query, trimmed_query)
+      |> assign(:external_book_results, external_results)
+      |> assign(:external_book_performed, true)
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -707,26 +750,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_query, "")
         |> assign(:collection_search_results, [])
         |> assign(:collection_search_performed, false)
+        |> assign(:collection_search_loading, false)
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
         |> assign(:external_book_performed, false)
 
       {:noreply, socket}
     else
-      # Search collections without node scoping
-      results = Catalog.search_collections_all_nodes(trimmed_query)
-
-      # Also search external books
-      external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
-
+      # Set loading state immediately, clear previous results, and trigger async search
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
-        |> assign(:collection_search_results, results)
-        |> assign(:collection_search_performed, true)
-        |> assign(:external_book_query, trimmed_query)
-        |> assign(:external_book_results, external_results)
-        |> assign(:external_book_performed, true)
+        |> assign(:collection_search_loading, true)
+        |> assign(:collection_search_performed, false)
+        |> assign(:collection_search_results, [])
+        |> assign(:external_book_performed, false)
+        |> assign(:external_book_results, [])
+
+      # Use send_after to give the browser time to render the loading spinner
+      # before starting the heavy search work
+      Process.send_after(self(), {:perform_search, trimmed_query}, 500)
 
       {:noreply, socket}
     end
@@ -743,23 +786,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_query, "")
         |> assign(:collection_search_results, [])
         |> assign(:collection_search_performed, false)
+        |> assign(:collection_search_loading, false)
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
         |> assign(:external_book_performed, false)
 
       {:noreply, socket}
     else
-      results = Catalog.search_collections_all_nodes(trimmed_query)
-      external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
-
+      # Set loading state immediately, clear previous results, and trigger async search
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
-        |> assign(:collection_search_results, results)
-        |> assign(:collection_search_performed, true)
-        |> assign(:external_book_query, trimmed_query)
-        |> assign(:external_book_results, external_results)
-        |> assign(:external_book_performed, true)
+        |> assign(:collection_search_loading, true)
+        |> assign(:collection_search_performed, false)
+        |> assign(:collection_search_results, [])
+        |> assign(:external_book_performed, false)
+        |> assign(:external_book_results, [])
+
+      # Use send_after to give the browser time to render the loading spinner
+      # before starting the heavy search work
+      Process.send_after(self(), {:perform_search, trimmed_query}, 500)
 
       {:noreply, socket}
     end
@@ -772,6 +818,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:collection_search_query, "")
       |> assign(:collection_search_results, [])
       |> assign(:collection_search_performed, false)
+      |> assign(:collection_search_loading, false)
       |> assign(:external_book_query, "")
       |> assign(:external_book_results, [])
       |> assign(:external_book_performed, false)
@@ -919,6 +966,38 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       role.name in ["super_admin", "admin", "editor"]
     end)
   end
+
+  # Helper function to build collection fields from external book metadata
+  # Only adds field if value is present
+  defp maybe_add_collection_field(fields, _property_id, nil), do: fields
+  defp maybe_add_collection_field(fields, _property_id, ""), do: fields
+
+  defp maybe_add_collection_field(fields, property_id, value) do
+    # Get property info for name and label
+    {name, label} = get_property_info(property_id)
+
+    field = %{
+      id: Ecto.UUID.generate(),
+      metadata_property_id: property_id,
+      property_id: property_id,
+      name: name,
+      label: label,
+      value: to_string(value),
+      information: nil,
+      type_value: "text",
+      value_lang: "en",
+      sort_order: length(fields)
+    }
+
+    fields ++ [field]
+  end
+
+  # Property ID mappings for external book metadata fields
+  # These should match the metadata properties in your database
+  defp get_property_info(185), do: {"isbn", "ISBN"}
+  defp get_property_info(5), do: {"publisher", "Publisher"}
+  defp get_property_info(188), do: {"published_date", "Published Date"}
+  # defp get_property_info(_), do: {"field", "Field"}
 
   defp extract_external_book(%{"external_book" => encoded_book}) when is_binary(encoded_book) do
     case Base.decode64(encoded_book) do

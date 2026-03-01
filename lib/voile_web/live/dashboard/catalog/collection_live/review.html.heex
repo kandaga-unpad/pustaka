@@ -28,6 +28,51 @@
     </div>
   </div>
 
+  <%!-- Batch Actions Toolbar --%>
+  <%= if @selected_collection_ids != [] do %>
+    <div class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-medium text-blue-900 dark:text-blue-200">
+            {length(@selected_collection_ids)} {if length(@selected_collection_ids) == 1,
+              do: gettext("collection selected"),
+              else: gettext("collections selected")}
+          </span>
+          <button
+            type="button"
+            phx-click="select_none"
+            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
+          >
+            {gettext("Clear selection")}
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            phx-click="select_all"
+            class="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-800 rounded-md hover:bg-blue-200 dark:hover:bg-blue-700"
+          >
+            <.icon name="hero-check-square" class="h-4 w-4 mr-1" /> {gettext("Select All on Page")}
+          </button>
+          <button
+            type="button"
+            phx-click="confirm_batch_approve"
+            class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500"
+          >
+            <.icon name="hero-check-circle" class="h-4 w-4 mr-1" /> {gettext("Approve Selected")}
+          </button>
+          <button
+            type="button"
+            phx-click="confirm_batch_reject"
+            class="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:ring-2 focus:ring-red-500"
+          >
+            <.icon name="hero-x-circle" class="h-4 w-4 mr-1" /> {gettext("Reject Selected")}
+          </button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <%!-- Search and Filter Bar --%>
   <div class="mb-6">
     <form
@@ -462,6 +507,146 @@
       </div>
     </.modal>
   <% end %>
+
+  <%!-- Batch Action Modal --%>
+  <%= if @batch_action_type do %>
+    <.modal id="batch-action-modal" show on_cancel={JS.push("cancel_batch_action")}>
+      <div class="max-h-[80vh] overflow-y-auto">
+        <%!-- Batch Approve Confirmation --%>
+        <%= if @batch_action_type == :approve do %>
+          <div class="mb-6">
+            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-4">
+              <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                  <.icon
+                    name="hero-check-circle"
+                    class="h-6 w-6 text-green-600 dark:text-green-400"
+                  />
+                </div>
+
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+                    {gettext("Batch Approve Collections")}
+                  </h3>
+
+                  <p class="text-sm text-green-700 dark:text-green-300 mt-1">
+                    {gettext(
+                      "You are about to approve %{count} collection(s). This will change their status to \"published\" and make them visible to the public.",
+                      count: length(@selected_collection_ids)
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {gettext("Approval Notes (Optional)")}
+              </label>
+              <textarea
+                phx-change="update_notes"
+                name="notes"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                placeholder={gettext("Add any notes about this batch approval...")}
+              >{@review_notes}</textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                phx-click="cancel_batch_action"
+                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                {gettext("Cancel")}
+              </button>
+              <button
+                type="button"
+                phx-click="execute_batch_approve"
+                class="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500"
+              >
+                {gettext("Confirm Batch Approval")}
+              </button>
+            </div>
+          </div>
+        <% end %>
+
+        <%!-- Batch Reject Confirmation --%>
+        <%= if @batch_action_type == :reject do %>
+          <div class="mb-6">
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 mb-4">
+              <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                  <.icon name="hero-x-circle" class="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+
+                <div class="flex-1">
+                  <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                    {gettext("Batch Reject Collections")}
+                  </h3>
+
+                  <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                    {gettext(
+                      "You are about to reject %{count} collection(s). This will send them back to draft status. The custodians will be able to see your feedback and make corrections.",
+                      count: length(@selected_collection_ids)
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {gettext("Rejection Reason (Required)")} <span class="text-red-600">*</span>
+              </label>
+              <form phx-change="update_notes">
+                <textarea
+                  name="notes"
+                  rows="4"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder={
+                    gettext("Please explain why these collections are being rejected...")
+                  }
+                >{@review_notes}</textarea>
+              </form>
+
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {gettext(
+                  "The custodians will see this reason and can make corrections before resubmitting."
+                )}
+              </p>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                phx-click="cancel_batch_action"
+                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                {gettext("Cancel")}
+              </button>
+              <button
+                type="button"
+                phx-click="execute_batch_reject"
+                disabled={String.trim(@review_notes) == ""}
+                class={[
+                  "flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg focus:ring-2 focus:ring-red-500",
+                  if(String.trim(@review_notes) == "",
+                    do: "bg-red-300 cursor-not-allowed",
+                    else: "bg-red-600 hover:bg-red-700"
+                  )
+                ]}
+              >
+                {gettext("Confirm Batch Rejection")}
+              </button>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </.modal>
+  <% end %>
+
   <%!-- Collections List --%>
   <%= if @collections_empty? do %>
     <div class="text-center py-12">
@@ -480,6 +665,25 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
+              <th
+                scope="col"
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-10"
+              >
+                <input
+                  type="checkbox"
+                  phx-click={
+                    if @selected_collection_ids == [], do: "select_all", else: "select_none"
+                  }
+                  checked={@selected_collection_ids != []}
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  title={
+                    if @selected_collection_ids == [],
+                      do: gettext("Select all on page"),
+                      else: gettext("Clear selection")
+                  }
+                />
+              </th>
+
               <th
                 scope="col"
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -525,8 +729,25 @@
             <tr
               :for={{id, collection} <- @streams.collections}
               id={id}
-              class="hover:bg-gray-50 dark:hover:bg-gray-700"
+              class={[
+                "hover:bg-gray-50 dark:hover:bg-gray-700",
+                @selected_collection_ids |> Enum.member?(collection.id) &&
+                  "bg-blue-50 dark:bg-blue-900/20"
+              ]}
             >
+              <td class="px-4 py-3">
+                <form phx-change="toggle_selection" class="inline">
+                  <input type="hidden" name="collection_id" value={collection.id} />
+                  <input
+                    type="checkbox"
+                    name="value"
+                    value="on"
+                    checked={@selected_collection_ids |> Enum.member?(collection.id)}
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                </form>
+              </td>
+
               <td class="px-4 py-3">
                 <div class="flex items-start gap-2">
                   <%= if collection.thumbnail && collection.thumbnail != "" do %>

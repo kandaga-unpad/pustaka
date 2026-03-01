@@ -28,6 +28,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       {collections, total_pages, total_count} =
         list_review_collections(page, per_page, current_user, search_query, filter_status)
 
+      # Store collection IDs for batch selection
+      collection_ids = Enum.map(collections, fn c -> c.id end)
+
       socket =
         socket
         |> stream(:collections, collections)
@@ -41,6 +44,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:show_view_modal, false)
         |> assign(:search_query, search_query)
         |> assign(:filter_status, filter_status)
+        |> assign(:selected_collection_ids, [])
+        |> assign(:batch_action_type, nil)
+        |> assign(:current_page_collection_ids, collection_ids)
 
       {:ok, socket}
     end
@@ -112,6 +118,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     {collections, total_pages, total_count} =
       list_review_collections(page, per_page, current_user, search_query, filter_status)
 
+    collection_ids = Enum.map(collections, fn c -> c.id end)
+
     socket =
       socket
       |> stream(:collections, collections, reset: true)
@@ -119,6 +127,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       |> assign(:total_pages, total_pages)
       |> assign(:total_count, total_count)
       |> assign(:collections_empty?, collections == [])
+      |> assign(:selected_collection_ids, [])
+      |> assign(:current_page_collection_ids, collection_ids)
 
     {:noreply, socket}
   end
@@ -136,6 +146,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     {collections, total_pages, total_count} =
       list_review_collections(page, per_page, current_user, search_query, filter_status)
 
+    collection_ids = Enum.map(collections, fn c -> c.id end)
+
     socket =
       socket
       |> stream(:collections, collections, reset: true)
@@ -145,6 +157,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       |> assign(:collections_empty?, collections == [])
       |> assign(:search_query, search_query)
       |> assign(:filter_status, filter_status)
+      |> assign(:selected_collection_ids, [])
+      |> assign(:current_page_collection_ids, collection_ids)
 
     {:noreply, socket}
   end
@@ -171,6 +185,180 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     {:noreply, socket}
   end
 
+  # Batch selection event handlers
+  @impl true
+  def handle_event("toggle_selection", %{"collection_id" => id, "value" => value}, socket) do
+    selected_ids = socket.assigns.selected_collection_ids
+
+    # value is "on" when checked, nil/empty when unchecked
+    is_selected = value == "on"
+
+    updated_ids =
+      if is_selected do
+        [id | selected_ids] |> Enum.uniq()
+      else
+        Enum.reject(selected_ids, fn sid -> sid == id end)
+      end
+
+    {:noreply, assign(socket, :selected_collection_ids, updated_ids)}
+  end
+
+  @impl true
+  def handle_event("select_all", _params, socket) do
+    # Use the stored collection IDs for the current page
+    {:noreply,
+     assign(socket, :selected_collection_ids, socket.assigns.current_page_collection_ids)}
+  end
+
+  @impl true
+  def handle_event("select_none", _params, socket) do
+    {:noreply, assign(socket, :selected_collection_ids, [])}
+  end
+
+  # Batch action event handlers
+  @impl true
+  def handle_event("confirm_batch_approve", _params, socket) do
+    socket = assign(socket, :batch_action_type, :approve)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("confirm_batch_reject", _params, socket) do
+    socket = assign(socket, :batch_action_type, :reject)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("cancel_batch_action", _params, socket) do
+    socket =
+      socket
+      |> assign(:batch_action_type, nil)
+      |> assign(:review_notes, "")
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("execute_batch_approve", _params, socket) do
+    selected_ids = socket.assigns.selected_collection_ids
+    reviewer = socket.assigns.current_scope.user
+    notes = socket.assigns.review_notes
+
+    collections = Catalog.get_collections_for_review(selected_ids)
+
+    {success_count, failed_count, errors} =
+      Catalog.batch_approve_collections(collections, reviewer, notes)
+
+    # Refresh the list
+    page = socket.assigns.page
+    per_page = 10
+    current_user = socket.assigns.current_scope.user
+    search_query = socket.assigns.search_query
+    filter_status = socket.assigns.filter_status
+
+    {refreshed_collections, total_pages, total_count} =
+      list_review_collections(page, per_page, current_user, search_query, filter_status)
+
+    refreshed_collection_ids = Enum.map(refreshed_collections, fn c -> c.id end)
+
+    socket =
+      socket
+      |> stream(:collections, refreshed_collections, reset: true)
+      |> assign(:total_pages, total_pages)
+      |> assign(:total_count, total_count)
+      |> assign(:collections_empty?, refreshed_collections == [])
+      |> assign(:selected_collection_ids, [])
+      |> assign(:batch_action_type, nil)
+      |> assign(:review_notes, "")
+      |> assign(:current_page_collection_ids, refreshed_collection_ids)
+
+    socket =
+      cond do
+        failed_count == 0 ->
+          put_flash(socket, :info, "Successfully approved #{success_count} collection(s)")
+
+        success_count == 0 ->
+          error_details = Enum.map_join(errors, ", ", fn e -> "#{e.title}: #{e.error}" end)
+          put_flash(socket, :error, "Failed to approve all collections. Errors: #{error_details}")
+
+        true ->
+          error_details = Enum.map_join(errors, ", ", fn e -> "#{e.title}: #{e.error}" end)
+
+          put_flash(
+            socket,
+            :warning,
+            "Approved #{success_count} collection(s), #{failed_count} failed. Errors: #{error_details}"
+          )
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("execute_batch_reject", _params, socket) do
+    selected_ids = socket.assigns.selected_collection_ids
+    reviewer = socket.assigns.current_scope.user
+    reason = socket.assigns.review_notes
+
+    if String.trim(reason) == "" do
+      {:noreply, put_flash(socket, :error, "Please provide a reason for rejection")}
+    else
+      collections = Catalog.get_collections_for_review(selected_ids)
+
+      {success_count, failed_count, errors} =
+        Catalog.batch_reject_collections(collections, reviewer, reason)
+
+      # Refresh the list
+      page = socket.assigns.page
+      per_page = 10
+      current_user = socket.assigns.current_scope.user
+      search_query = socket.assigns.search_query
+      filter_status = socket.assigns.filter_status
+
+      {refreshed_collections, total_pages, total_count} =
+        list_review_collections(page, per_page, current_user, search_query, filter_status)
+
+      refreshed_collection_ids = Enum.map(refreshed_collections, fn c -> c.id end)
+
+      socket =
+        socket
+        |> stream(:collections, refreshed_collections, reset: true)
+        |> assign(:total_pages, total_pages)
+        |> assign(:total_count, total_count)
+        |> assign(:collections_empty?, refreshed_collections == [])
+        |> assign(:selected_collection_ids, [])
+        |> assign(:batch_action_type, nil)
+        |> assign(:review_notes, "")
+        |> assign(:current_page_collection_ids, refreshed_collection_ids)
+
+      socket =
+        cond do
+          failed_count == 0 ->
+            put_flash(socket, :info, "Successfully rejected #{success_count} collection(s)")
+
+          success_count == 0 ->
+            error_details = Enum.map_join(errors, ", ", fn e -> "#{e.title}: #{e.error}" end)
+
+            put_flash(
+              socket,
+              :error,
+              "Failed to reject all collections. Errors: #{error_details}"
+            )
+
+          true ->
+            error_details = Enum.map_join(errors, ", ", fn e -> "#{e.title}: #{e.error}" end)
+
+            put_flash(
+              socket,
+              :warning,
+              "Rejected #{success_count} collection(s), #{failed_count} failed. Errors: #{error_details}"
+            )
+        end
+
+      {:noreply, socket}
+    end
+  end
+
   @impl true
   def handle_event("update_notes", %{"notes" => notes}, socket) do
     {:noreply, assign(socket, :review_notes, notes)}
@@ -192,6 +380,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         {collections, total_pages, total_count} =
           Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
+        collection_ids = Enum.map(collections, fn c -> c.id end)
+
         socket =
           socket
           |> put_flash(:info, "Collection approved and published successfully")
@@ -203,6 +393,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
           |> assign(:action_type, nil)
           |> assign(:review_notes, "")
           |> assign(:show_view_modal, false)
+          |> assign(:selected_collection_ids, [])
+          |> assign(:current_page_collection_ids, collection_ids)
 
         {:noreply, socket}
 
@@ -243,6 +435,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
           {collections, total_pages, total_count} =
             Catalog.list_pending_collections_paginated(page, per_page, current_user)
 
+          collection_ids = Enum.map(collections, fn c -> c.id end)
+
           socket =
             socket
             |> put_flash(:info, "Collection rejected and sent back to draft")
@@ -254,6 +448,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
             |> assign(:action_type, nil)
             |> assign(:review_notes, "")
             |> assign(:show_view_modal, false)
+            |> assign(:selected_collection_ids, [])
+            |> assign(:current_page_collection_ids, collection_ids)
 
           {:noreply, socket}
 
