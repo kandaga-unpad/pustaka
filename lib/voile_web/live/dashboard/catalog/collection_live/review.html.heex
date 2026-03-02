@@ -116,6 +116,23 @@
           <option value="archived">{gettext("Archived")}</option>
         </select>
       </div>
+      <div>
+        <label
+          for="sort_order"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >
+          {gettext("Sort")}
+        </label>
+        <select
+          name="sort_order"
+          id="sort_order"
+          value={@sort_order}
+          class="w-full md:w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        >
+          <option value="asc">{gettext("Oldest first")}</option>
+          <option value="desc">{gettext("Newest first")}</option>
+        </select>
+      </div>
       <div class="w-full md:w-auto">
         <button
           type="submit"
@@ -299,6 +316,25 @@
                   <% end %>
                 </p>
               </div>
+
+              <%= if @selected_collection.collection_fields && @selected_collection.collection_fields != [] do %>
+                <div class="md:col-span-2">
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Additional Metadata")}
+                  </p>
+                  <div class="text-gray-600 dark:text-gray-400 mt-1 space-y-1 text-sm">
+                    <%= for field <- @selected_collection.collection_fields do %>
+                      <p>
+                        <strong>
+                          {(field.metadata_properties && field.metadata_properties.label) ||
+                            field.name}:
+                        </strong>
+                        {field.value || "-"}
+                      </p>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
             </div>
           </div>
           <%!-- Parent/Child Relationship --%>

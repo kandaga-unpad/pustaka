@@ -18,12 +18,24 @@ defmodule Voile.ExternalBookSearch.GoogleBooks do
       orderBy: "relevance"
     ]
 
-    case Req.get(@base_url, params: params, receive_timeout: 10_000) do
+    # include retry config to gracefully handle rate‑limit (429) responses
+    # use Req built-in transient retry behaviour with custom delay
+    # defaults to max_retries:3 so we only override delay here
+    case Req.get(@base_url,
+           params: params,
+           receive_timeout: 10_000,
+           retry: &Voile.ExternalBookSearch.retry_no_429/2,
+           max_retries: 0
+         ) do
       {:ok, %{status: 200, body: body}} ->
         items = Map.get(body, "items", [])
         {:ok, Enum.map(items, &parse_result/1)}
 
       {:ok, %{status: status}} ->
+        if status == 429 do
+          Voile.ExternalBookSearch.mark_rate_limited("googlebooks")
+        end
+
         {:error, {:http_error, status}}
 
       {:error, reason} ->

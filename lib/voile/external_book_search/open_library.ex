@@ -21,12 +21,28 @@ defmodule Voile.ExternalBookSearch.OpenLibrary do
         "key,title,author_name,first_publish_year,publisher,isbn,cover_i,first_sentence,number_of_pages_median"
     ]
 
-    case Req.get(url, params: params, receive_timeout: 10_000) do
+    # add simple retry in case the remote returns 429 (trigram search can hit limits)
+    # include identification in User-Agent to get higher rate limit
+    headers = [
+      {"User-Agent", "KandagaUnpad (chrisna.adhi@unpad.ac.id)"}
+    ]
+
+    case Req.get(url,
+           params: params,
+           headers: headers,
+           receive_timeout: 10_000,
+           retry: &Voile.ExternalBookSearch.retry_no_429/2,
+           max_retries: 0
+         ) do
       {:ok, %{status: 200, body: body}} ->
         docs = Map.get(body, "docs", [])
         {:ok, Enum.map(docs, &parse_result/1)}
 
       {:ok, %{status: status}} ->
+        if status == 429 do
+          Voile.ExternalBookSearch.mark_rate_limited("openlibrary")
+        end
+
         {:error, {:http_error, status}}
 
       {:error, reason} ->

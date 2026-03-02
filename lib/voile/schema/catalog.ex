@@ -625,10 +625,25 @@ defmodule Voile.Schema.Catalog do
   @doc """
   Get paginated list of pending collections for review.
 
+  Supports optional filtering/search and sort order.
+
   ## Examples
 
       iex> list_pending_collections_paginated(1, 10)
       {[%Collection{}], total_pages, total_count}
+
+      iex> list_pending_collections_paginated(1, 10, nil, nil, nil, nil, "desc")
+      # newest items first
+
+  ## Parameters
+
+    * `page` - page number
+    * `per_page` - results per page
+    * `_user` - (unused) user for scoping/filtering
+    * `search_query` - optional string to match against title, node, creator, etc.
+    * `filter_status` - filter by specific status ("pending"/"draft")
+    * `node_id` - restrict to a particular node (for non-superadmins)
+    * `sort_order` - "asc" for oldest first, "desc" for newest first
 
   """
   def list_pending_collections_paginated(
@@ -637,14 +652,15 @@ defmodule Voile.Schema.Catalog do
         _user \\ nil,
         search_query \\ nil,
         filter_status \\ nil,
-        node_id \\ nil
+        node_id \\ nil,
+        sort_order \\ "asc"
       ) do
     offset = (page - 1) * per_page
 
+    # Build base query without ordering; we will apply sort_order below
     base_query =
       from c in Collection,
         where: c.status in ["pending", "draft"],
-        order_by: [desc: c.inserted_at],
         preload: [
           :resource_class,
           :mst_creator,
@@ -654,6 +670,13 @@ defmodule Voile.Schema.Catalog do
           :created_by,
           :updated_by
         ]
+
+    # Apply sorting direction (asc = oldest first, desc = newest first)
+    base_query =
+      case sort_order do
+        "desc" -> from c in base_query, order_by: [desc: c.inserted_at]
+        _ -> from c in base_query, order_by: [asc: c.inserted_at]
+      end
 
     # Apply search
     query =
@@ -699,7 +722,7 @@ defmodule Voile.Schema.Catalog do
 
     collections = Repo.all(query)
 
-    # Count query with same filters
+    # Count query with same filters (ordering irrelevant for counts)
     count_query =
       from c in Collection,
         where: c.status in ["pending", "draft"],

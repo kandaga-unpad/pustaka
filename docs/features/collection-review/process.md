@@ -118,7 +118,7 @@ The system tracks:
 - **File**: `lib/voile/schema/catalog.ex`
 - **Functions**:
   - `list_pending_collections()` - Get all pending collections
-  - `list_pending_collections_paginated(page, per_page)` - Paginated pending list
+  - `list_pending_collections_paginated(page, per_page)` (supports search, filters and optional `sort_order` argument) - Paginated pending list
   - `approve_collection(collection, reviewer_user, notes)` - Approve collection (publishes and sets all contained items to available)
   - `reject_collection(collection, reviewer_user, reason)` - Reject collection
   - `count_pending_collections()` - Count pending collections

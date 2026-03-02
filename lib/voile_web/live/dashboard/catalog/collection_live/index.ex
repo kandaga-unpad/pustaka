@@ -110,6 +110,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_results, [])
         |> assign(:collection_search_performed, false)
         |> assign(:collection_search_loading, false)
+        |> assign(:collection_search_timer, nil)
         # External book search assigns
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
@@ -502,6 +503,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_info({:perform_search, trimmed_query}, socket) do
+    # clear debounce timer reference since we are executing
+    socket = assign(socket, :collection_search_timer, nil)
+
     # Perform searches asynchronously
     results = Catalog.search_collections_all_nodes(trimmed_query)
     external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
@@ -740,6 +744,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("search_collections", %{"query" => query}, socket) do
+    # cancel any pending debounce timer
+    if timer = socket.assigns[:collection_search_timer] do
+      Process.cancel_timer(timer)
+    end
+
     # Trim and check if query is empty
     trimmed_query = String.trim(query)
 
@@ -754,10 +763,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
         |> assign(:external_book_performed, false)
+        |> assign(:collection_search_timer, nil)
 
       {:noreply, socket}
     else
-      # Set loading state immediately, clear previous results, and trigger async search
+      # Set loading state immediately, clear previous results
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
@@ -766,10 +776,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_search_results, [])
         |> assign(:external_book_performed, false)
         |> assign(:external_book_results, [])
+        |> assign(:external_book_error, false)
 
-      # Use send_after to give the browser time to render the loading spinner
-      # before starting the heavy search work
-      Process.send_after(self(), {:perform_search, trimmed_query}, 500)
+      # perform search immediately on explicit submit
+      send(self(), {:perform_search, trimmed_query})
 
       {:noreply, socket}
     end
@@ -777,8 +787,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("live_search_collections", %{"query" => query}, socket) do
-    # Live search as user types (with debouncing from template)
+    # Live search as user types (with server-side debounce)
     trimmed_query = String.trim(query)
+
+    # cancel existing timer if any
+    if timer = socket.assigns[:collection_search_timer] do
+      Process.cancel_timer(timer)
+    end
 
     if trimmed_query == "" do
       socket =
@@ -790,10 +805,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:external_book_query, "")
         |> assign(:external_book_results, [])
         |> assign(:external_book_performed, false)
+        |> assign(:collection_search_timer, nil)
 
       {:noreply, socket}
     else
-      # Set loading state immediately, clear previous results, and trigger async search
+      # Set loading state immediately, clear previous results
       socket =
         socket
         |> assign(:collection_search_query, trimmed_query)
@@ -803,16 +819,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:external_book_performed, false)
         |> assign(:external_book_results, [])
 
-      # Use send_after to give the browser time to render the loading spinner
-      # before starting the heavy search work
-      Process.send_after(self(), {:perform_search, trimmed_query}, 500)
-
-      {:noreply, socket}
+      # schedule real search only after user has been idle for 2s
+      timer = Process.send_after(self(), {:perform_search, trimmed_query}, 2_000)
+      {:noreply, assign(socket, :collection_search_timer, timer)}
     end
   end
 
   @impl true
   def handle_event("clear_collection_search", _params, socket) do
+    # cancel any pending search timer
+    if timer = socket.assigns[:collection_search_timer] do
+      Process.cancel_timer(timer)
+    end
+
     socket =
       socket
       |> assign(:collection_search_query, "")
@@ -822,6 +841,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:external_book_query, "")
       |> assign(:external_book_results, [])
       |> assign(:external_book_performed, false)
+      |> assign(:collection_search_timer, nil)
 
     {:noreply, socket}
   end

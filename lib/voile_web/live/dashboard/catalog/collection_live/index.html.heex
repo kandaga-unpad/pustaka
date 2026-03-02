@@ -734,6 +734,16 @@
                     {gettext("Internal collections - select one to add an item")}
                   </p>
                 </div>
+                <div>
+                  <.link
+                    patch={
+                      ~p"/manage/catalog/collections/new?#{%{search: @collection_search_query}}"
+                    }
+                    class="success-btn"
+                  >
+                    {gettext("Or create a new collection")}
+                  </.link>
+                </div>
               </div>
 
               <div

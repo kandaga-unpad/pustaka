@@ -3,6 +3,8 @@ defmodule Voile.ExternalBookSearch do
   External book search module that aggregates results from OpenLibrary, Google Books, and OpenAlex.
   """
 
+  require Logger
+
   alias Voile.ExternalBookSearch.OpenLibrary
   alias Voile.ExternalBookSearch.GoogleBooks
   alias Voile.ExternalBookSearch.OpenAlex
@@ -43,6 +45,32 @@ defmodule Voile.ExternalBookSearch do
           }
   end
 
+  @rate_limit_table :external_book_search_rate_limit
+  @default_cooldown 60_000
+
+  defp ensure_rate_table do
+    case :ets.whereis(@rate_limit_table) do
+      :undefined -> :ets.new(@rate_limit_table, [:named_table, :public, read_concurrency: true])
+      _ -> :ok
+    end
+  end
+
+  defp source_allowed?(source) do
+    ensure_rate_table()
+
+    case :ets.lookup(@rate_limit_table, source) do
+      [{^source, until}] -> System.system_time(:millisecond) >= until
+      [] -> true
+    end
+  end
+
+  def mark_rate_limited(source, cooldown_ms \\ @default_cooldown) do
+    ensure_rate_table()
+    until = System.system_time(:millisecond) + cooldown_ms
+    :ets.insert(@rate_limit_table, {source, until})
+    :ok
+  end
+
   @doc """
   Search all external book sources and return combined results.
   Each result includes a `source` field indicating where it came from.
@@ -50,24 +78,51 @@ defmodule Voile.ExternalBookSearch do
   def search(query, opts \\ []) do
     limit = Keyword.get(opts, :limit, 10)
 
-    # Run all searches in parallel
+    tasks = []
+
+    tasks =
+      if source_allowed?("openlibrary"),
+        do: tasks ++ [fn -> OpenLibrary.search(query, limit) end],
+        else: tasks
+
+    tasks =
+      if source_allowed?("googlebooks"),
+        do: tasks ++ [fn -> GoogleBooks.search(query, limit) end],
+        else: tasks
+
+    tasks =
+      if source_allowed?("openalex"),
+        do: tasks ++ [fn -> OpenAlex.search(query, limit) end],
+        else: tasks
+
     results =
-      Task.async_stream(
-        [
-          fn -> OpenLibrary.search(query, limit) end,
-          fn -> GoogleBooks.search(query, limit) end,
-          fn -> OpenAlex.search(query, limit) end
-        ],
-        fn task -> task.() end,
-        timeout: 15_000
+      Task.async_stream(tasks, fn task -> task.() end,
+        timeout: 15_000,
+        on_timeout: :kill_task
       )
       |> Enum.reduce([], fn
-        {:ok, {:ok, results}}, acc -> results ++ acc
-        {:ok, {:error, _}}, acc -> acc
-        {:error, _}, acc -> acc
+        {:ok, {:ok, results}}, acc ->
+          results ++ acc
+
+        {:ok, {:error, {:http_error, 429}}} = entry, acc ->
+          # mark whichever source returned 429 and log it
+          Logger.warning("external book search rate limited: #{inspect(entry)}")
+          acc
+
+        {:ok, {:error, _reason}} = entry, acc ->
+          Logger.error("external book search error: #{inspect(entry)}")
+          acc
+
+        {:error, _reason} = entry, acc ->
+          Logger.error("external book search task failed: #{inspect(entry)}")
+          acc
+
+        {:exit, _reason} = entry, acc ->
+          # task crashed or timed out
+          Logger.error("external book search task exited: #{inspect(entry)}")
+          acc
       end)
 
-    # Sort by relevance (simple alphabetical for now)
     Enum.sort_by(results, & &1.title)
   end
 
@@ -108,4 +163,11 @@ defmodule Voile.ExternalBookSearch do
   defp maybe_put(_map, _key, nil), do: %{}
   defp maybe_put(_map, _key, ""), do: %{}
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  # Used in adapters to prevent repeating on 429
+  # new Req versions expect a `fun/2` (request, response_or_exception)
+  def retry_no_429(_request, %{status: 429}), do: false
+
+  def retry_no_429(request, response_or_exception),
+    do: Req.Steps.retry({request, response_or_exception})
 end

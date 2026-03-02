@@ -43,7 +43,7 @@ draft → pending → published
 ```elixir
 # Backend (lib/voile/schema/catalog.ex)
 Catalog.list_pending_collections()
-Catalog.list_pending_collections_paginated(page, per_page)
+Catalog.list_pending_collections_paginated(page, per_page, user \ nil, search_query \ nil, filter_status \ nil, node_id \ nil, sort_order \ "asc")
 Catalog.approve_collection(collection, reviewer, notes)  # publishes and marks items available
 Catalog.reject_collection(collection, reviewer, reason)
 Catalog.count_pending_collections()

@@ -11,7 +11,7 @@ A complete review system for collections where librarians submit collections for
 Added 6 new functions:
 
 - `list_pending_collections()` - List all pending collections
-- `list_pending_collections_paginated(page, per_page)` - Paginated pending list
+- `list_pending_collections_paginated(page, per_page)` (now accepts search, filters and `sort_order` arg) - Paginated pending list
 - `approve_collection(collection, reviewer, notes)` - Approve collection (pending → published)
 - `reject_collection(collection, reviewer, reason)` - Reject collection (pending → draft)
 - `count_pending_collections()` - Count pending collections for badge

@@ -159,6 +159,15 @@ defmodule Voile.Schema.System do
     end
   end
 
+  def get_default_node do
+    default = get_setting_value("default_node_id", nil)
+
+    case default do
+      nil -> nil
+      node -> get_node!(String.to_integer(node))
+    end
+  end
+
   @doc """
   Returns the list of settings.
 

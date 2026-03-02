@@ -24,9 +24,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       current_user = socket.assigns.current_scope.user
       search_query = ""
       filter_status = ""
+      # default to oldest first
+      sort_order = "asc"
 
       {collections, total_pages, total_count} =
-        list_review_collections(page, per_page, current_user, search_query, filter_status)
+        list_review_collections(
+          page,
+          per_page,
+          current_user,
+          search_query,
+          filter_status,
+          sort_order
+        )
 
       # Store collection IDs for batch selection
       collection_ids = Enum.map(collections, fn c -> c.id end)
@@ -44,6 +53,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:show_view_modal, false)
         |> assign(:search_query, search_query)
         |> assign(:filter_status, filter_status)
+        |> assign(:sort_order, sort_order)
         |> assign(:selected_collection_ids, [])
         |> assign(:batch_action_type, nil)
         |> assign(:current_page_collection_ids, collection_ids)
@@ -114,9 +124,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     current_user = socket.assigns.current_scope.user
     search_query = socket.assigns.search_query
     filter_status = socket.assigns.filter_status
+    sort_order = socket.assigns.sort_order || "asc"
 
     {collections, total_pages, total_count} =
-      list_review_collections(page, per_page, current_user, search_query, filter_status)
+      list_review_collections(
+        page,
+        per_page,
+        current_user,
+        search_query,
+        filter_status,
+        sort_order
+      )
 
     collection_ids = Enum.map(collections, fn c -> c.id end)
 
@@ -136,15 +154,25 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   @impl true
   def handle_event(
         "search_filter",
-        %{"search" => search_query, "status" => filter_status},
+        %{"search" => search_query, "status" => filter_status, "sort_order" => sort_order},
         socket
       ) do
     page = 1
     per_page = 10
     current_user = socket.assigns.current_scope.user
 
+    # ensure sort_order has a default
+    sort_order = sort_order || "asc"
+
     {collections, total_pages, total_count} =
-      list_review_collections(page, per_page, current_user, search_query, filter_status)
+      list_review_collections(
+        page,
+        per_page,
+        current_user,
+        search_query,
+        filter_status,
+        sort_order
+      )
 
     collection_ids = Enum.map(collections, fn c -> c.id end)
 
@@ -157,6 +185,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       |> assign(:collections_empty?, collections == [])
       |> assign(:search_query, search_query)
       |> assign(:filter_status, filter_status)
+      |> assign(:sort_order, sort_order)
       |> assign(:selected_collection_ids, [])
       |> assign(:current_page_collection_ids, collection_ids)
 
@@ -255,9 +284,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     current_user = socket.assigns.current_scope.user
     search_query = socket.assigns.search_query
     filter_status = socket.assigns.filter_status
+    sort_order = socket.assigns.sort_order || "asc"
 
     {refreshed_collections, total_pages, total_count} =
-      list_review_collections(page, per_page, current_user, search_query, filter_status)
+      list_review_collections(
+        page,
+        per_page,
+        current_user,
+        search_query,
+        filter_status,
+        sort_order
+      )
 
     refreshed_collection_ids = Enum.map(refreshed_collections, fn c -> c.id end)
 
@@ -314,9 +351,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       current_user = socket.assigns.current_scope.user
       search_query = socket.assigns.search_query
       filter_status = socket.assigns.filter_status
+      sort_order = socket.assigns.sort_order || "asc"
 
       {refreshed_collections, total_pages, total_count} =
-        list_review_collections(page, per_page, current_user, search_query, filter_status)
+        list_review_collections(
+          page,
+          per_page,
+          current_user,
+          search_query,
+          filter_status,
+          sort_order
+        )
 
       refreshed_collection_ids = Enum.map(refreshed_collections, fn c -> c.id end)
 
@@ -372,13 +417,23 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
     case Catalog.approve_collection(collection, reviewer, notes) do
       {:ok, _updated_collection} ->
-        # Refresh the list
+        # Refresh the list (preserve filters and sort order)
         page = socket.assigns.page
         per_page = 10
         current_user = socket.assigns.current_scope.user
+        search_query = socket.assigns.search_query
+        filter_status = socket.assigns.filter_status
+        sort_order = socket.assigns.sort_order || "asc"
 
         {collections, total_pages, total_count} =
-          Catalog.list_pending_collections_paginated(page, per_page, current_user)
+          list_review_collections(
+            page,
+            per_page,
+            current_user,
+            search_query,
+            filter_status,
+            sort_order
+          )
 
         collection_ids = Enum.map(collections, fn c -> c.id end)
 
@@ -427,13 +482,23 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
     else
       case Catalog.reject_collection(collection, reviewer, reason) do
         {:ok, _updated_collection} ->
-          # Refresh the list
+          # Refresh the list (preserve filters and sort order)
           page = socket.assigns.page
           per_page = 10
           current_user = socket.assigns.current_scope.user
+          search_query = socket.assigns.search_query
+          filter_status = socket.assigns.filter_status
+          sort_order = socket.assigns.sort_order || "asc"
 
           {collections, total_pages, total_count} =
-            Catalog.list_pending_collections_paginated(page, per_page, current_user)
+            list_review_collections(
+              page,
+              per_page,
+              current_user,
+              search_query,
+              filter_status,
+              sort_order
+            )
 
           collection_ids = Enum.map(collections, fn c -> c.id end)
 
@@ -473,7 +538,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   end
 
   # Helper to scope collection list for review
-  defp list_review_collections(page, per_page, user, search_query, filter_status) do
+  defp list_review_collections(page, per_page, user, search_query, filter_status, sort_order) do
     is_super_admin =
       user
       |> Repo.preload(:roles)
@@ -488,7 +553,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       user,
       search_query,
       filter_status,
-      node_id
+      node_id,
+      sort_order
     )
   end
 

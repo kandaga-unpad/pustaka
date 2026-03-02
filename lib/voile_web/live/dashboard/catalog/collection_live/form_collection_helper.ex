@@ -789,12 +789,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       {:ok, collection_params} ->
         get_unit_abbr =
           if collection_params["unit_id"] do
+            default_node = Voile.Schema.System.get_default_node()
+
             case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
-              nil -> "UNK"
+              nil -> default_node.abbr || "UNK"
               node -> node.abbr
             end
           else
-            "UNK"
+            default_node = Voile.Schema.System.get_default_node()
+
+            case default_node do
+              nil -> "UNK"
+              node -> node.abbr
+            end
           end
 
         get_collection_type =
@@ -871,12 +878,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
         # For draft, allow saving without item_location_id
         get_unit_abbr =
           if collection_params["unit_id"] do
+            default_node = Voile.Schema.System.get_default_node()
+
             case Voile.Schema.System.get_node!(collection_params["unit_id"]) do
-              nil -> "UNK"
+              nil -> default_node.abbr || "UNK"
               node -> node.abbr
             end
           else
-            "UNK"
+            default_node = Voile.Schema.System.get_default_node()
+
+            case default_node do
+              nil -> "UNK"
+              node -> node.abbr
+            end
           end
 
         get_collection_type =

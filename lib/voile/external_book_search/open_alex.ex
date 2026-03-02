@@ -22,12 +22,23 @@ defmodule Voile.ExternalBookSearch.OpenAlex do
       {"User-Agent", "Voile/1.0 (https://github.com/voile; mailto:dev@voile.local)"}
     ]
 
-    case Req.get(@base_url, params: params, headers: headers, receive_timeout: 10_000) do
+    # OpenAlex is also subject to rate limits; configure simple retry
+    case Req.get(@base_url,
+           params: params,
+           headers: headers,
+           receive_timeout: 10_000,
+           retry: &Voile.ExternalBookSearch.retry_no_429/2,
+           max_retries: 0
+         ) do
       {:ok, %{status: 200, body: body}} ->
         results = Map.get(body, "results", [])
         {:ok, Enum.map(results, &parse_result/1)}
 
       {:ok, %{status: status}} ->
+        if status == 429 do
+          Voile.ExternalBookSearch.mark_rate_limited("openalex")
+        end
+
         {:error, {:http_error, status}}
 
       {:error, reason} ->

@@ -93,6 +93,24 @@ defmodule Voile.CatalogTest do
       updated_item = Catalog.get_item!(item.id)
       assert updated_item.availability == "available"
     end
+
+    test "list_pending_collections_paginated/7 honors sort_order parameter" do
+      # insert two pending collections sequentially
+      c1 = collection_fixture(%{status: "pending"})
+      # ensure the second has a later timestamp
+      Process.sleep(1)
+      c2 = collection_fixture(%{status: "pending"})
+
+      {asc_list, _, _} =
+        Catalog.list_pending_collections_paginated(1, 10, nil, nil, nil, nil, "asc")
+
+      assert Enum.map(asc_list, & &1.id) == [c1.id, c2.id]
+
+      {desc_list, _, _} =
+        Catalog.list_pending_collections_paginated(1, 10, nil, nil, nil, nil, "desc")
+
+      assert Enum.map(desc_list, & &1.id) == [c2.id, c1.id]
+    end
   end
 
   describe "items" do
