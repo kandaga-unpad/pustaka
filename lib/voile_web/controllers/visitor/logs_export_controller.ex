@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Visitor.LogsExportController do
 
   alias Voile.Schema.System
   alias VoileWeb.Auth.Authorization
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   def export(conn, params) do
     current_user = conn.assigns.current_scope.user
@@ -60,11 +61,12 @@ defmodule VoileWeb.Dashboard.Visitor.LogsExportController do
   defp build_csv(logs) do
     headers = [
       [
-        "Check-In Time",
-        "Check-Out Time",
+        "Check-In Time (WIB)",
+        "Check-Out Time (WIB)",
         "Identifier",
         "Name",
         "Origin",
+        "Visit Purpose",
         "Location/Room",
         "Faculty/Node",
         "IP Address"
@@ -79,6 +81,7 @@ defmodule VoileWeb.Dashboard.Visitor.LogsExportController do
           log.visitor_identifier || "",
           log.visitor_name || "",
           log.visitor_origin || "",
+          get_in(log.additional_data || %{}, ["visit_purpose"]) || "",
           (log.location && log.location.location_name) || "",
           (log.node && log.node.name) || "",
           log.ip_address || ""
@@ -93,7 +96,9 @@ defmodule VoileWeb.Dashboard.Visitor.LogsExportController do
   defp format_datetime(nil), do: ""
 
   defp format_datetime(%DateTime{} = dt) do
-    Calendar.strftime(dt, "%Y-%m-%d %H:%M:%S")
+    dt
+    |> FormatIndonesiaTime.shift_to_jakarta()
+    |> Calendar.strftime("%d/%m/%Y %H:%M:%S WIB")
   end
 
   defp parse_date(nil, default), do: default

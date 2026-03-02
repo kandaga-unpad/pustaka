@@ -76,7 +76,10 @@ defmodule Voile.Schema.Library.Transaction do
   defp normalize_params(val), do: val
 
   def overdue?(%__MODULE__{due_date: due_date, return_date: nil}) do
-    DateTime.compare(due_date, DateTime.utc_now()) == :lt
+    # use UTC dates by default; function accepts a timezone if needed later
+    due_date_only = local_date(due_date)
+    today = local_today()
+    Date.compare(due_date_only, today) == :lt
   end
 
   def overdue?(_), do: false
@@ -86,11 +89,14 @@ defmodule Voile.Schema.Library.Transaction do
   This is the default calculation that respects the library's holiday calendar.
   """
   def days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
-    case DateTime.compare(due_date, DateTime.utc_now()) do
+    due_date_only = local_date(due_date)
+    today = local_today()
+
+    case Date.compare(due_date_only, today) do
       :lt ->
-        # Use holiday-aware calculation that excludes weekends and holidays
         alias Voile.Schema.System.LibHoliday
-        LibHoliday.business_days_between(due_date, DateTime.utc_now())
+        start_day = Date.add(due_date_only, 1)
+        LibHoliday.business_days_between(start_day, today)
 
       _ ->
         0
@@ -105,12 +111,12 @@ defmodule Voile.Schema.Library.Transaction do
   regardless of whether it's a holiday or weekend.
   """
   def calendar_days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
-    case DateTime.compare(due_date, DateTime.utc_now()) do
+    due_date_only = local_date(due_date)
+    today = local_today()
+
+    case Date.compare(due_date_only, today) do
       :lt ->
-        # Calculate total calendar days between due_date and now
-        due_date_only = DateTime.to_date(due_date)
-        now_date = DateTime.utc_now() |> DateTime.to_date()
-        Date.diff(now_date, due_date_only)
+        Date.diff(today, Date.add(due_date_only, 1))
 
       _ ->
         0
@@ -118,6 +124,24 @@ defmodule Voile.Schema.Library.Transaction do
   end
 
   def calendar_days_overdue(_), do: 0
+
+  # helper to convert UTC datetime to a local date
+  defp local_date(dt, tz \\ "UTC")
+
+  defp local_date(%DateTime{} = dt, tz) do
+    case DateTime.shift_zone(dt, tz) do
+      {:ok, shifted} -> DateTime.to_date(shifted)
+      _ -> DateTime.to_date(dt)
+    end
+  end
+
+  defp local_date(%Date{} = d, _tz), do: d
+
+  defp local_today(tz \\ "UTC") do
+    DateTime.utc_now()
+    |> DateTime.shift_zone!(tz)
+    |> DateTime.to_date()
+  end
 
   @doc """
   Calculates days overdue with optional skip_holidays flag.

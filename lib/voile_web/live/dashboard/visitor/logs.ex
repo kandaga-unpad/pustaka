@@ -4,6 +4,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
   alias Voile.Schema.System
   alias Voile.Schema.Master
   alias VoileWeb.Auth.Authorization
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @per_page 50
 
@@ -452,6 +453,9 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                     {gettext("Origin")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {gettext("Visit Purpose")}
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {gettext("Location/Room")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -462,7 +466,9 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={log <- @logs} class="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {Calendar.strftime(log.check_in_time, "%Y-%m-%d %H:%M:%S")}
+                    {log.check_in_time
+                    |> FormatIndonesiaTime.shift_to_jakarta()
+                    |> Calendar.strftime("%d/%m/%Y %H:%M WIB")}
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {log.visitor_identifier}
@@ -472,6 +478,9 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {log.visitor_origin || "-"}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    {get_in(log.additional_data, ["visit_purpose"]) || "-"}
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {log.location && log.location.location_name}

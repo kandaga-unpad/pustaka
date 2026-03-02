@@ -1,6 +1,12 @@
 defmodule Voile.ExternalBookSearch do
   @moduledoc """
   External book search module that aggregates results from OpenLibrary, Google Books, and OpenAlex.
+
+  ## Async search
+
+  Use `search_async/3` inside LiveView processes. It runs the HTTP work in
+  `Voile.TaskSupervisor` so the LiveView socket is never blocked.
+  Results are delivered as `{:external_search_result, query, results}` sent to the caller pid.
   """
 
   require Logger
@@ -45,89 +51,32 @@ defmodule Voile.ExternalBookSearch do
           }
   end
 
-  @rate_limit_table :external_book_search_rate_limit
-  @default_cooldown 60_000
+  # ── Public API ──────────────────────────────────────────────────────────────
 
-  defp ensure_rate_table do
-    case :ets.whereis(@rate_limit_table) do
-      :undefined -> :ets.new(@rate_limit_table, [:named_table, :public, read_concurrency: true])
-      _ -> :ok
-    end
+  @doc """
+  Synchronous search. Returns a (possibly empty) list of `Book` structs.
+  """
+  def search(query, opts \\ []) do
+    do_search(query, opts)
   end
 
-  defp source_allowed?(source) do
-    ensure_rate_table()
+  @doc """
+  Asynchronous search for use inside LiveView processes.
 
-    case :ets.lookup(@rate_limit_table, source) do
-      [{^source, until}] -> System.system_time(:millisecond) >= until
-      [] -> true
-    end
-  end
+  Runs HTTP work in `Voile.TaskSupervisor` so the LiveView socket is never blocked.
+  Results are delivered as `{:external_search_result, query, results}` sent to `caller_pid`.
+  """
+  def search_async(query, caller_pid, opts \\ []) do
+    Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
+      results = do_search(query, opts)
+      send(caller_pid, {:external_search_result, query, results})
+    end)
 
-  def mark_rate_limited(source, cooldown_ms \\ @default_cooldown) do
-    ensure_rate_table()
-    until = System.system_time(:millisecond) + cooldown_ms
-    :ets.insert(@rate_limit_table, {source, until})
     :ok
   end
 
   @doc """
-  Search all external book sources and return combined results.
-  Each result includes a `source` field indicating where it came from.
-  """
-  def search(query, opts \\ []) do
-    limit = Keyword.get(opts, :limit, 10)
-
-    tasks = []
-
-    tasks =
-      if source_allowed?("openlibrary"),
-        do: tasks ++ [fn -> OpenLibrary.search(query, limit) end],
-        else: tasks
-
-    tasks =
-      if source_allowed?("googlebooks"),
-        do: tasks ++ [fn -> GoogleBooks.search(query, limit) end],
-        else: tasks
-
-    tasks =
-      if source_allowed?("openalex"),
-        do: tasks ++ [fn -> OpenAlex.search(query, limit) end],
-        else: tasks
-
-    results =
-      Task.async_stream(tasks, fn task -> task.() end,
-        timeout: 15_000,
-        on_timeout: :kill_task
-      )
-      |> Enum.reduce([], fn
-        {:ok, {:ok, results}}, acc ->
-          results ++ acc
-
-        {:ok, {:error, {:http_error, 429}}} = entry, acc ->
-          # mark whichever source returned 429 and log it
-          Logger.warning("external book search rate limited: #{inspect(entry)}")
-          acc
-
-        {:ok, {:error, _reason}} = entry, acc ->
-          Logger.error("external book search error: #{inspect(entry)}")
-          acc
-
-        {:error, _reason} = entry, acc ->
-          Logger.error("external book search task failed: #{inspect(entry)}")
-          acc
-
-        {:exit, _reason} = entry, acc ->
-          # task crashed or timed out
-          Logger.error("external book search task exited: #{inspect(entry)}")
-          acc
-      end)
-
-    Enum.sort_by(results, & &1.title)
-  end
-
-  @doc """
-  Search a specific source only.
+  Search a specific source only (bypasses cache).
   """
   def search_source(query, source, opts \\ []) do
     limit = Keyword.get(opts, :limit, 10)
@@ -160,14 +109,41 @@ defmodule Voile.ExternalBookSearch do
     |> maybe_put("external_olia", external_book.open_library_id)
   end
 
-  defp maybe_put(_map, _key, nil), do: %{}
-  defp maybe_put(_map, _key, ""), do: %{}
+  # ── Private ─────────────────────────────────────────────────────────────────
+
+  defp do_search(query, opts) do
+    limit = Keyword.get(opts, :limit, 10)
+
+    tasks = [
+      fn -> OpenLibrary.search(query, limit) end,
+      fn -> GoogleBooks.search(query, limit) end,
+      fn -> OpenAlex.search(query, limit) end
+    ]
+
+    Task.async_stream(tasks, fn task -> task.() end,
+      timeout: 25_000,
+      on_timeout: :kill_task
+    )
+    |> Enum.reduce([], fn
+      {:ok, {:ok, results}}, acc ->
+        results ++ acc
+
+      {:ok, {:error, reason}}, acc ->
+        Logger.warning("external_book_search: source error: #{inspect(reason)}")
+        acc
+
+      {:error, :timeout}, acc ->
+        Logger.warning("external_book_search: source timed out")
+        acc
+
+      {:exit, reason}, acc ->
+        Logger.warning("external_book_search: task exited: #{inspect(reason)}")
+        acc
+    end)
+    |> Enum.sort_by(& &1.title)
+  end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, _key, ""), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
-
-  # Used in adapters to prevent repeating on 429
-  # new Req versions expect a `fun/2` (request, response_or_exception)
-  def retry_no_429(_request, %{status: 429}), do: false
-
-  def retry_no_429(request, response_or_exception),
-    do: Req.Steps.retry({request, response_or_exception})
 end

@@ -503,23 +503,46 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_info({:perform_search, trimmed_query}, socket) do
-    # clear debounce timer reference since we are executing
+    # Clear the debounce timer reference since we are now executing.
     socket = assign(socket, :collection_search_timer, nil)
 
-    # Perform searches asynchronously
-    results = Catalog.search_collections_all_nodes(trimmed_query)
-    external_results = Voile.ExternalBookSearch.search(trimmed_query, limit: 10)
+    # 1. Run the local catalog search synchronously — it's a fast DB query.
+    local_results = Catalog.search_collections_all_nodes(trimmed_query)
 
+    # 2. Show local results immediately so the librarian sees something right away.
     socket =
       socket
-      |> assign(:collection_search_results, results)
+      |> assign(:collection_search_results, local_results)
       |> assign(:collection_search_performed, true)
       |> assign(:collection_search_loading, false)
       |> assign(:external_book_query, trimmed_query)
-      |> assign(:external_book_results, external_results)
-      |> assign(:external_book_performed, true)
+      # keep the loading indicator on the external books section
+      |> assign(:external_book_loading, true)
+      |> assign(:external_book_performed, false)
+      |> assign(:external_book_results, [])
+
+    # 3. Fire the external search in a supervised task.
+    #    When done it sends {:external_search_result, query, results} back here.
+    Voile.ExternalBookSearch.search_async(trimmed_query, self(), limit: 10)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:external_search_result, query, results}, socket) do
+    # Only apply if this result is still for the current query (user may have
+    # started a new search while this one was in flight).
+    if socket.assigns[:external_book_query] == query do
+      socket =
+        socket
+        |> assign(:external_book_results, results)
+        |> assign(:external_book_performed, true)
+        |> assign(:external_book_loading, false)
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true
@@ -819,8 +842,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:external_book_performed, false)
         |> assign(:external_book_results, [])
 
-      # schedule real search only after user has been idle for 2s
-      timer = Process.send_after(self(), {:perform_search, trimmed_query}, 2_000)
+      # schedule real search only after user has been idle for 800ms
+      timer = Process.send_after(self(), {:perform_search, trimmed_query}, 800)
       {:noreply, assign(socket, :collection_search_timer, timer)}
     end
   end
@@ -860,15 +883,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
       {:noreply, socket}
     else
-      # Search external books
-      results = Voile.ExternalBookSearch.search(trimmed_query, limit: 15)
+      # Kick off async external search; show loading state immediately.
+      # Results arrive via handle_info({:external_search_result, ...}).
+      Voile.ExternalBookSearch.search_async(trimmed_query, self(), limit: 15)
 
       socket =
         socket
         |> assign(:external_book_query, trimmed_query)
-        |> assign(:external_book_results, results)
-        |> assign(:external_book_loading, false)
-        |> assign(:external_book_performed, true)
+        |> assign(:external_book_loading, true)
+        |> assign(:external_book_performed, false)
+        |> assign(:external_book_results, [])
 
       {:noreply, socket}
     end

@@ -10,9 +10,9 @@
     <.back navigate="/manage/glam/library/circulation">{gettext("Back")}</.back>
 
     <div class="text-center">
-      <h1 class="text-2xl font-bold text-gray-900">{gettext("Circulation History")}</h1>
+      <h1 class="text-2xl font-bold">{gettext("Circulation History")}</h1>
 
-      <p class="mt-2 text-sm text-gray-700">
+      <p class="mt-2 text-sm">
         {gettext("View detailed logs and audit trails of all circulation activities")}
       </p>
     </div>
@@ -27,11 +27,11 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-white shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-gray-200">
+  <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium mb-1">
             {gettext("Event Type")}
           </label>
           <.form :let={f} for={%{}} phx-change="filter">
@@ -59,7 +59,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Search")}</label>
+          <label class="block text-sm font-medium mb-1">
+            {gettext("Search")}
+          </label>
           <form phx-change="search" phx-submit="search">
             <input
               type="text"
@@ -72,7 +74,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium mb-1">
             {gettext("Date From")}
           </label>
           <form phx-change="date_filter">
@@ -80,26 +82,30 @@
               type="date"
               name="from"
               value={if @date_from, do: Date.to_iso8601(@date_from), else: ""}
-              class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
+              class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             />
           </form>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Date To")}</label>
+          <label class="block text-sm font-medium mb-1">
+            {gettext("Date To")}
+          </label>
           <form phx-change="date_filter">
             <input
               type="date"
               name="to"
               value={if @date_to, do: Date.to_iso8601(@date_to), else: ""}
-              class="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              class="block w-full text-sm border-voile-muted rounded-md shadow-sm focus:ring-voile-primary focus:border-voile-primary"
             />
           </form>
         </div>
 
         <%= if @is_super_admin do %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{gettext("Node")}</label>
+            <label class="block text-sm font-medium mb-1">
+              {gettext("Node")}
+            </label>
             <.form :let={f} for={%{}} phx-change="select_node">
               <.input
                 field={f[:node_id]}
@@ -119,51 +125,57 @@
       </div>
     </div>
     <!-- Quick Stats -->
-    <div class="px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
+    <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-info">-</div>
+        <div class="text-2xl font-semibold text-voile-info">{@stats.total}</div>
 
-        <div class="text-xs text-gray-500 uppercase">{gettext("Today's Events")}</div>
+        <div class="text-xs uppercase">
+          {gettext("Today's Events")}
+        </div>
       </div>
 
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-success">-</div>
+        <div class="text-2xl font-semibold text-voile-success">{@stats.loans}</div>
 
-        <div class="text-xs text-gray-500 uppercase">{gettext("Loans")}</div>
+        <div class="text-xs uppercase">{gettext("Loans")}</div>
       </div>
 
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-primary">-</div>
+        <div class="text-2xl font-semibold text-voile-primary">{@stats.returns}</div>
 
-        <div class="text-xs text-gray-500 uppercase">{gettext("Returns")}</div>
+        <div class="text-xs uppercase">{gettext("Returns")}</div>
       </div>
 
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-warning">-</div>
+        <div class="text-2xl font-semibold text-voile-warning">{@stats.renewals}</div>
 
-        <div class="text-xs text-gray-500 uppercase">{gettext("Renewals")}</div>
+        <div class="text-xs uppercase">
+          {gettext("Renewals")}
+        </div>
       </div>
 
       <div class="text-center">
-        <div class="text-2xl font-semibold text-voile-error">-</div>
+        <div class="text-2xl font-semibold text-voile-error">{@stats.fines}</div>
 
-        <div class="text-xs text-gray-500 uppercase">{gettext("Fines")}</div>
+        <div class="text-xs uppercase">{gettext("Fines")}</div>
       </div>
     </div>
   </div>
   <!-- History Table -->
-  <div class="bg-white shadow overflow-hidden sm:rounded-md">
+  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
     <.table id="history" rows={@streams.history}>
       <:col :let={{_id, entry}} label={gettext("Event")}>
         <div class="flex items-center">
           <div class={"w-3 h-3 rounded-full mr-3 #{event_type_color(entry.event_type)}"}></div>
 
           <div>
-            <div class="text-sm font-medium text-gray-900">
+            <div class="text-sm font-medium">
               {entry.event_type |> String.replace("_", " ") |> String.capitalize()}
             </div>
 
-            <div class="text-xs text-gray-500">{format_datetime(entry.event_date)}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              {format_datetime(entry.event_date)}
+            </div>
           </div>
         </div>
       </:col>
@@ -171,11 +183,13 @@
       <:col :let={{_id, entry}} label={gettext("Member")}>
         <div>
           <%= if entry.member do %>
-            <div class="text-sm font-medium text-gray-900">{entry.member.fullname}</div>
+            <div class="text-sm font-medium">{entry.member.fullname}</div>
 
-            <div class="text-sm text-gray-500">{gettext("ID:")} {entry.member_id}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              {gettext("ID:")} {entry.member_id}
+            </div>
           <% else %>
-            <div class="text-sm text-gray-500">-</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">-</div>
           <% end %>
         </div>
       </:col>
@@ -183,39 +197,41 @@
       <:col :let={{_id, entry}} label={gettext("Item")}>
         <div>
           <%= if entry.item do %>
-            <div class="text-sm font-medium text-gray-900">{entry.item.item_code}</div>
+            <div class="text-sm font-medium">{entry.item.item_code}</div>
 
             <%= if entry.item.collection do %>
-              <div class="text-sm text-gray-500">{entry.item.collection.title}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                {entry.item.collection.title}
+              </div>
             <% end %>
           <% else %>
-            <div class="text-sm text-gray-500">-</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">-</div>
           <% end %>
         </div>
       </:col>
 
       <:col :let={{_id, entry}} label={gettext("Description")}>
         <div class="max-w-xs">
-          <div class="text-sm text-gray-900 truncate">{entry.description}</div>
+          <div class="text-sm truncate">{entry.description}</div>
         </div>
       </:col>
 
       <:col :let={{_id, entry}} label={gettext("Processed By")}>
         <div>
           <%= if entry.processed_by do %>
-            <div class="text-sm font-medium text-gray-900">{entry.processed_by.fullname}</div>
+            <div class="text-sm font-medium">{entry.processed_by.fullname}</div>
 
-            <div class="text-sm text-gray-500">
-              {if entry.processed_by.role, do: entry.processed_by.role, else: gettext("Staff")}
-            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{gettext("Staff")}</div>
           <% else %>
-            <div class="text-sm text-gray-500">{gettext("System")}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">{gettext("System")}</div>
           <% end %>
         </div>
       </:col>
 
       <:col :let={{_id, entry}} label={gettext("IP Address")}>
-        <div class="text-sm text-gray-500 font-mono">{entry.ip_address || "-"}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 font-mono">
+          {entry.ip_address || "-"}
+        </div>
       </:col>
 
       <:col :let={{_id, entry}} label={gettext("Related")}>
@@ -250,7 +266,7 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+    <div class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
       <.pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>

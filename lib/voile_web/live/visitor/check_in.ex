@@ -30,6 +30,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:selected_location, nil)
       |> assign(:visitor_identifier, "")
       |> assign(:visitor_name, nil)
+      |> assign(:visit_purpose, "")
       |> assign(:visitor_origin_options, get_origin_options())
       |> assign(:selected_origin, "")
       |> assign(:form, to_form(%{}, as: :visitor))
@@ -185,6 +186,11 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   @impl true
+  def handle_event("update_visit_purpose", %{"visit_purpose" => value}, socket) do
+    {:noreply, assign(socket, :visit_purpose, value)}
+  end
+
+  @impl true
   def handle_event("update_identifier", %{"identifier" => value}, socket) do
     {:noreply, assign(socket, :visitor_identifier, value)}
   end
@@ -201,7 +207,8 @@ defmodule VoileWeb.Visitor.CheckIn do
       selected_location: location,
       selected_node: node_id,
       ip_address: ip_address,
-      user_agent: user_agent
+      user_agent: user_agent,
+      visit_purpose: visit_purpose
     } = socket.assigns
 
     identifier = String.trim(identifier)
@@ -241,7 +248,9 @@ defmodule VoileWeb.Visitor.CheckIn do
         "location_id" => location.id,
         "node_id" => node_id,
         "ip_address" => ip_address,
-        "user_agent" => user_agent
+        "user_agent" => user_agent,
+        "additional_data" =>
+          if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
       }
 
       case System.create_visitor_log(attrs) do
@@ -251,6 +260,7 @@ defmodule VoileWeb.Visitor.CheckIn do
             |> assign(:show_success_modal, true)
             |> assign(:visitor_name, visitor_log.visitor_name || identifier)
             |> assign(:visitor_identifier, "")
+            |> assign(:visit_purpose, "")
             |> assign(:error_message, nil)
 
           # Auto-close modal after 4 seconds
@@ -352,6 +362,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       socket
       |> assign(:show_success_modal, false)
       |> assign(:visitor_identifier, "")
+      |> assign(:visit_purpose, "")
       |> assign(:selected_origin, "")
       |> assign(:visitor_name, nil)
       |> assign(:error_message, nil)
@@ -366,6 +377,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       socket
       |> assign(:show_success_modal, false)
       |> assign(:visitor_identifier, "")
+      |> assign(:visit_purpose, "")
       |> assign(:selected_origin, "")
       |> assign(:visitor_name, nil)
       |> assign(:error_message, nil)
@@ -695,6 +707,25 @@ defmodule VoileWeb.Visitor.CheckIn do
                     autocomplete="off"
                     class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                     placeholder={gettext("Scan or enter ID or Your Name")}
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {gettext("Visit Purpose")}
+                    <span class="text-gray-400 dark:text-gray-500 font-normal ml-1">
+                      {gettext("(Optional)")}
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="visit_purpose"
+                    value={@visit_purpose}
+                    phx-change="update_visit_purpose"
+                    autocomplete="off"
+                    maxlength="255"
+                    class="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                    placeholder={gettext("e.g. Reading, Research, Borrowing books...")}
                   />
                 </div>
 

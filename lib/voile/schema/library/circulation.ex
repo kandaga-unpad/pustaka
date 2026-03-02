@@ -21,6 +21,28 @@ defmodule Voile.Schema.Library.Circulation do
   alias Client.Xendit
 
   # Circulation History Base CRUD
+
+  @doc """
+  Count history entries that occurred on a given date (UTC date comparison).
+  """
+  def count_history_by_date(%Date{} = date) do
+    from(ch in CirculationHistory,
+      where: fragment("DATE(?)", ch.event_date) == ^date
+    )
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Count history entries for a specific event type on a given date.
+  """
+  def count_history_by_date_and_type(%Date{} = date, type) when is_binary(type) do
+    from(ch in CirculationHistory,
+      where: fragment("DATE(?)", ch.event_date) == ^date and ch.event_type == ^type
+    )
+    |> Repo.aggregate(:count, :id)
+  end
+
+  # Circulation History Base CRUD
   def list_circulation_history_paginated(page \\ 1, per_page \\ 10) do
     offset = (page - 1) * per_page
 
@@ -28,11 +50,11 @@ defmodule Voile.Schema.Library.Circulation do
       from ch in CirculationHistory,
         preload: [
           :member,
-          :item,
           :transaction,
           :reservation,
           :fine,
-          :processed_by
+          :processed_by,
+          item: :collection
         ],
         order_by: [desc: ch.inserted_at, desc: ch.id],
         offset: ^offset,
@@ -53,11 +75,11 @@ defmodule Voile.Schema.Library.Circulation do
       from ch in CirculationHistory,
         preload: [
           :member,
-          :item,
           :transaction,
           :reservation,
           :fine,
-          :processed_by
+          :processed_by,
+          item: :collection
         ]
 
     # event_type filter
@@ -147,11 +169,11 @@ defmodule Voile.Schema.Library.Circulation do
         where: is_nil(i.id) or i.unit_id == ^node_id,
         preload: [
           :member,
-          :item,
           :transaction,
           :reservation,
           :fine,
-          :processed_by
+          :processed_by,
+          item: :collection
         ]
 
     # event_type filter

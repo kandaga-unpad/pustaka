@@ -125,8 +125,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Helpers do
   def format_datetime(nil), do: "-"
 
   def format_datetime(datetime) do
-    datetime
-    |> safe_format_utc_to_jakarta()
+    case safe_format_utc_to_jakarta(datetime) do
+      {:ok, formatted} -> formatted
+      {:error, _} -> Calendar.strftime(datetime, "%d/%m/%Y %H:%M")
+    end
   end
 
   @doc """

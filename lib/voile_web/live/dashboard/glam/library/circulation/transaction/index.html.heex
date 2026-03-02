@@ -190,26 +190,9 @@
 
       <:action :let={{_id, transaction}}>
         <div class="flex space-x-2">
-          <%= if transaction.status == "active" do %>
-            <button
-              phx-click="show_return_modal"
-              phx-value-id={transaction.id}
-              class="text-green-600 hover:text-green-900 text-sm font-medium"
-            >
-              Return
-            </button>
-            <button
-              phx-click="show_renew_modal"
-              phx-value-id={transaction.id}
-              class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-            >
-              Renew
-            </button>
-          <% end %>
-
           <.link
             navigate={~p"/manage/glam/library/circulation/transactions/#{transaction.id}"}
-            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-200 hover:dark:text-indigo-100 text-sm font-medium"
+            class="success-btn"
           >
             View
           </.link>

@@ -22,23 +22,16 @@ defmodule Voile.ExternalBookSearch.OpenAlex do
       {"User-Agent", "Voile/1.0 (https://github.com/voile; mailto:dev@voile.local)"}
     ]
 
-    # OpenAlex is also subject to rate limits; configure simple retry
     case Req.get(@base_url,
            params: params,
            headers: headers,
-           receive_timeout: 10_000,
-           retry: &Voile.ExternalBookSearch.retry_no_429/2,
-           max_retries: 0
+           receive_timeout: 20_000
          ) do
       {:ok, %{status: 200, body: body}} ->
         results = Map.get(body, "results", [])
         {:ok, Enum.map(results, &parse_result/1)}
 
       {:ok, %{status: status}} ->
-        if status == 429 do
-          Voile.ExternalBookSearch.mark_rate_limited("openalex")
-        end
-
         {:error, {:http_error, status}}
 
       {:error, reason} ->
@@ -70,16 +63,22 @@ defmodule Voile.ExternalBookSearch.OpenAlex do
     # Get description (OpenAlex uses 'abstract' as well)
     description = Map.get(work, "abstract") || Map.get(work, "description")
 
-    # Get ISBN from best identifier
-    ids = Map.get(work, "ids", %{})
-    isbn = Map.get(ids, "isbn")
+    # Get ISBN from best identifier (OpenAlex returns a list of ISBNs)
+    ids = Map.get(work, "ids") || %{}
+
+    isbn =
+      case Map.get(ids, "isbn") do
+        [first | _] -> first
+        bin when is_binary(bin) -> bin
+        _ -> nil
+      end
 
     # Get page count from biblio
     biblio = Map.get(work, "biblio", %{})
     page_count = Map.get(biblio, "page_count")
 
-    # Get publisher
-    host_organization = Map.get(work, "host_organization", %{})
+    # Get publisher — host_organization may be nil even if the key is present
+    host_organization = Map.get(work, "host_organization") || %{}
 
     publisher =
       Map.get(host_organization, "display_name") ||

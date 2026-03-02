@@ -42,6 +42,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
           )
         end
 
+      today = Date.utc_today()
+
+      stats = %{
+        total: Circulation.count_history_by_date(today),
+        loans: Circulation.count_history_by_date_and_type(today, "loan"),
+        returns: Circulation.count_history_by_date_and_type(today, "return"),
+        renewals: Circulation.count_history_by_date_and_type(today, "renewal"),
+        fines: Circulation.count_history_by_date_and_type(today, "fine_paid")
+      }
+
       socket =
         socket
         |> stream(:history, history)
@@ -55,6 +65,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
         |> assign(:is_super_admin, is_super_admin)
         |> assign(:nodes, nodes)
         |> assign(:selected_node_id, selected_node_id)
+        |> assign(:stats, stats)
 
       {:ok, socket}
     end
@@ -184,10 +195,22 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
         )
       end
 
+    # update quick‑stats as well
+    today = Date.utc_today()
+
+    stats = %{
+      total: Circulation.count_history_by_date(today),
+      loans: Circulation.count_history_by_date_and_type(today, "loan"),
+      returns: Circulation.count_history_by_date_and_type(today, "return"),
+      renewals: Circulation.count_history_by_date_and_type(today, "renewal"),
+      fines: Circulation.count_history_by_date_and_type(today, "fine_paid")
+    }
+
     socket
     |> stream(:history, history, reset: true)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
+    |> assign(:stats, stats)
   end
 
   defp parse_date(""), do: nil

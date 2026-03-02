@@ -216,17 +216,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
   # Batch selection event handlers
   @impl true
-  def handle_event("toggle_selection", %{"collection_id" => id, "value" => value}, socket) do
+  def handle_event("toggle_selection", %{"collection_id" => id}, socket) do
+    # ID comes in as string from phx-value; convert to integer to match Ecto schema IDs
+    id = String.to_integer(id)
     selected_ids = socket.assigns.selected_collection_ids
 
-    # value is "on" when checked, nil/empty when unchecked
-    is_selected = value == "on"
-
     updated_ids =
-      if is_selected do
-        [id | selected_ids] |> Enum.uniq()
-      else
+      if Enum.member?(selected_ids, id) do
         Enum.reject(selected_ids, fn sid -> sid == id end)
+      else
+        [id | selected_ids]
       end
 
     {:noreply, assign(socket, :selected_collection_ids, updated_ids)}
