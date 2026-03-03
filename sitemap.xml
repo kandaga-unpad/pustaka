@@ -2,334 +2,334 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://curatorian.github.io/voile/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/architecture/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/architecture/data-flow/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/architecture/database-schema/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/architecture/overview/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/auth-system/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/custom-redirects/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/permission-management-quick-ref/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/rbac-complete-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/rbac-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/rbac-implementation-summary/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/rbac-quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/role-management-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/authentication/role-management-quick-ref/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/configuration/default-node-for-items/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/configuration/node-loan-rules/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/configuration/node-management/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/configuration/storage-auto-selection/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/deployment/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/deployment/ci-deploy/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/deployment/podman-deployment/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/access-control/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/flow-diagrams/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/liveview-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/manager-quickstart/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/presign/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/attachments/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/catalog/circulation-quick-ref/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/catalog/module-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/circulation/fine-calculation/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/circulation/ledger-implementation/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/circulation/module-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/collection-review/implementation-summary/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/collection-review/process/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/collection-review/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/glam/dashboard-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/glam/manual/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/glam/rbac-complete-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/oai-pmh/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/oai-pmh/architecture/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/oai-pmh/implementation/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/oai-pmh/metadata-mapping/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/oai-pmh/quickstart/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/plugins/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/plugins/developer-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/plugins/user-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/async-implementation/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/collection-fields-editing/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/completion-quickstart/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/context-migration/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/design/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/librarian-completion/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/stock-opname/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/transfers/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/transfers/flow-diagrams/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/transfers/location-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/transfers/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/visitor-management/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/features/visitor-management/quick-start/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/getting-started/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/getting-started/admin-user/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/getting-started/environment-setup/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/getting-started/seeds-setup/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/email-queue/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/gmail-api-complete/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/gmail-api-quickstart/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/gmail-api-setup/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/integrations/email/production-setup/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/internationalization/dashboard-i18n/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/internationalization/i18n-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/internationalization/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/database-enhancements/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/implementation-summary/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/migration-analysis/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/migration-guide/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/onboarding-flow/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/quick-reference/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/seeds-idempotency/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/reference/sequence-diagrams/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
     <url>
          <loc>https://curatorian.github.io/voile/roadmap/ai-preparedness/</loc>
-         <lastmod>2026-03-02</lastmod>
+         <lastmod>2026-03-03</lastmod>
     </url>
 </urlset>
