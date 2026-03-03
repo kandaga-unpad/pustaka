@@ -1374,6 +1374,13 @@ defmodule Voile.Schema.Catalog do
     ])
   end
 
+  def get_item(id) do
+    case Repo.get(Item, id) do
+      nil -> nil
+      item -> Repo.preload(item, [:node, :item_location, collection: [:mst_creator, :node]])
+    end
+  end
+
   @doc """
   Get a single item based on the item_code passed.
   """
@@ -1951,6 +1958,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def get_collection_field!(id), do: Repo.get!(CollectionField, id)
+
+  def get_collection_field(id), do: Repo.get(CollectionField, id)
 
   @doc """
   Creates a collection_field.

@@ -164,6 +164,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
       |> assign(:collection, collection)
       |> assign(:collection_properties, collection_properties)
       |> assign(:resource_templates, resource_templates)
+      |> assign(:external_collection_fields, [])
       |> assign(:patch, ~p"/manage/catalog/collections")
     else
       socket

@@ -395,10 +395,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def delete_existing_field(id, socket) do
-    # Try to fetch the collection field
-    case Catalog.get_collection_field!(id) do
+    # Try to fetch the collection field (non-bang to handle already-deleted gracefully)
+    case Catalog.get_collection_field(id) do
       nil ->
-        # Field not found, return unchanged socket
+        # Field not found (already deleted), return unchanged socket
         socket
 
       field ->
@@ -407,30 +407,104 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
 
         case Catalog.delete_collection_field(field, user_id) do
           {:ok, _} ->
-            # Get current form params
-            current_params = socket.assigns.form.params || %{}
+            # Re-fetch authoritative collection state from DB (with preloads)
+            # so the UI reliably reflects the deletion without stale form state.
+            coll_id = socket.assigns.collection.id
 
-            # Get current collection fields
-            current_fields = Map.get(current_params, "collection_fields", %{})
+            updated_collection =
+              try do
+                Catalog.get_collection!(coll_id)
+                |> Repo.preload([:mst_creator, :items, collection_fields: [:metadata_properties]])
+              rescue
+                _ -> socket.assigns.collection
+              end
 
-            # Remove the deleted field from form state
-            updated_fields =
-              current_fields
-              |> Enum.reject(fn {_, field_data} ->
-                field_data["id"] == id || field_data[:id] == id
+            # Extract any unsaved (no DB id) fields from the current form params
+            # so they are preserved across the DB-refresh rebuild.
+            current_form_params = socket.assigns.form.params || %{}
+            current_form_fields = Map.get(current_form_params, "collection_fields", %{})
+
+            unsaved_form_fields =
+              current_form_fields
+              |> Enum.sort_by(fn {k, _} -> String.to_integer(k) end)
+              |> Enum.map(fn {_, v} -> v end)
+              |> Enum.reject(fn field_data ->
+                field_id = field_data["id"] || field_data[:id]
+                field_id not in [nil, ""]
               end)
+
+            # Build persisted-field params from the refreshed DB state
+            db_field_params =
+              (updated_collection.collection_fields || [])
+              |> Enum.map(fn cf ->
+                %{
+                  "id" => cf.id,
+                  "label" => cf.label,
+                  "name" => cf.name,
+                  "information" =>
+                    case Map.get(cf, :metadata_properties) do
+                      %Ecto.Association.NotLoaded{} -> ""
+                      nil -> ""
+                      mp -> mp.information
+                    end,
+                  "type_value" => cf.type_value,
+                  "value_lang" => cf.value_lang,
+                  "value" => cf.value,
+                  "sort_order" => cf.sort_order,
+                  "property_id" => cf.property_id
+                }
+              end)
+
+            # Merge: persisted DB fields first, then unsaved in-memory fields
+            field_params =
+              (db_field_params ++ unsaved_form_fields)
               |> Enum.with_index()
-              |> Enum.into(%{}, fn {field_data, idx} -> {to_string(idx), field_data} end)
+              |> Enum.into(%{}, fn {v, idx} -> {to_string(idx), v} end)
 
-            # Create updated params preserving all other data
-            new_params = Map.put(current_params, "collection_fields", updated_fields)
+            item_params =
+              (updated_collection.items || [])
+              |> Enum.with_index()
+              |> Enum.into(%{}, fn {item, idx} ->
+                {to_string(idx),
+                 %{
+                   "id" => item.id,
+                   "item_code" => item.item_code,
+                   "inventory_code" => item.inventory_code,
+                   "barcode" => Map.get(item, :barcode, ""),
+                   "location" => item.location,
+                   "item_location_id" => item.item_location_id,
+                   "unit_id" => item.unit_id,
+                   "status" => item.status,
+                   "condition" => item.condition,
+                   "availability" => item.availability
+                 }}
+              end)
 
-            # Create changeset with updated params
-            changeset = Catalog.change_collection(socket.assigns.collection, new_params)
+            initial_params = %{
+              "id" => updated_collection.id,
+              "title" => updated_collection.title || "",
+              "description" => updated_collection.description || "",
+              "status" => updated_collection.status || "draft",
+              "access_level" => updated_collection.access_level || "private",
+              "type_id" => updated_collection.type_id,
+              "unit_id" => updated_collection.unit_id,
+              "creator_id" => updated_collection.creator_id,
+              "thumbnail" => updated_collection.thumbnail || "",
+              "parent_id" => updated_collection.parent_id,
+              "collection_type" => updated_collection.collection_type,
+              "sort_order" => updated_collection.sort_order || 1,
+              "collection_fields" => field_params,
+              "items" => item_params
+            }
 
-            # Update socket without reloading collection
+            changeset = Catalog.change_collection(updated_collection, initial_params)
+
             socket
             |> assign(:form, to_form(changeset, action: :validate))
+            |> assign(:collection, updated_collection)
+            |> assign(:original_collection, updated_collection)
+            |> assign(:chosen_collection_field, nil)
+            |> assign(:delete_field_confirmation_id, nil)
 
           {:error, _} ->
             # Deletion failed, show error
@@ -539,19 +613,36 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
   end
 
   def confirm_field_deletion(id, socket) do
-    chosen_collection_field = Catalog.get_collection_field!(id)
+    case Catalog.get_collection_field(id) do
+      nil ->
+        # Field was already deleted (e.g. a previous deletion succeeded but the
+        # UI hadn't re-rendered yet). Silently clear the confirmation state so
+        # the LiveView process doesn't crash.
+        socket
+        |> assign(:delete_field_confirmation_id, nil)
+        |> assign(:chosen_collection_field, nil)
+        |> put_flash(:info, "Field has already been removed.")
 
-    socket
-    |> assign(:delete_field_confirmation_id, id)
-    |> assign(:chosen_collection_field, chosen_collection_field)
+      chosen_collection_field ->
+        socket
+        |> assign(:delete_field_confirmation_id, id)
+        |> assign(:chosen_collection_field, chosen_collection_field)
+    end
   end
 
   def confirm_item_deletion(id, socket) do
-    chosen_item = Catalog.get_item!(id)
+    case Catalog.get_item(id) do
+      nil ->
+        socket
+        |> assign(:delete_item_confirmation_id, nil)
+        |> assign(:chosen_item_field, nil)
+        |> put_flash(:info, "Item has already been removed.")
 
-    socket
-    |> assign(:delete_item_confirmation_id, id)
-    |> assign(:chosen_item_field, chosen_item)
+      chosen_item ->
+        socket
+        |> assign(:delete_item_confirmation_id, id)
+        |> assign(:chosen_item_field, chosen_item)
+    end
   end
 
   def search_properties(query, socket) do

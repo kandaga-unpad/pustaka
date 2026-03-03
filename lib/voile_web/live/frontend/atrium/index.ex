@@ -299,7 +299,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
       # Attempt to renew via Circulation
       case Circulation.renew_transaction(tx.id, get_admin_id, %{}) do
         {:ok, updated_transaction} ->
-          {loans, loans_total_pages} =
+          {loans, loans_total_pages, _} =
             Circulation.list_member_active_transactions_paginated(
               member.id,
               socket.assigns.loans_page || 1,
@@ -371,7 +371,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           else
             case Circulation.pay_fine(fine_id, dec, "cash", member.id, nil) do
               {:ok, _updated} ->
-                {fines, fines_total_pages} =
+                {fines, fines_total_pages, _} =
                   Circulation.list_member_unpaid_fines_paginated(
                     member.id,
                     socket.assigns.fines_page || 1,
@@ -658,7 +658,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     fines_page = socket.assigns[:fines_page] || 1
 
     # Reload fines after webhook should have processed
-    {fines, fines_total_pages} =
+    {fines, fines_total_pages, _} =
       Circulation.list_member_unpaid_fines_paginated(member.id, fines_page, 10)
 
     total_unpaid_fines = Circulation.count_member_unpaid_fines(member.id)
