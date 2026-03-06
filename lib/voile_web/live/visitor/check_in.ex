@@ -47,6 +47,8 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:app_logo, app_logo)
       |> assign(:app_name, app_name)
       |> assign(:app_website, app_website)
+      |> assign(:gender, nil)
+      |> assign(:study_program, nil)
 
     {:ok, socket}
   end
@@ -216,8 +218,11 @@ defmodule VoileWeb.Visitor.CheckIn do
     if identifier == "" do
       {:noreply, assign(socket, :error_message, "Please enter your identifier")}
     else
-      # Try to find user by identifier to get their full name
-      visitor_name = lookup_visitor_name(identifier)
+      # Gather visitor info (name, gender, study program)
+      visitor_info = lookup_visitor_information(identifier)
+      visitor_name = visitor_info.fullname
+      gender = visitor_info.gender
+      study_program = visitor_info.study_program
 
       # Derive origin from identifier prefix (always takes precedence over auto-filled node selection)
       prefix = String.slice(identifier, 0, 3)
@@ -241,6 +246,13 @@ defmodule VoileWeb.Visitor.CheckIn do
           do: derived_origin,
           else: if(is_nil(origin), do: "", else: origin)
 
+      # build additional data map
+      base_add = if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
+      extra_add = %{}
+      extra_add = if gender, do: Map.put(extra_add, "gender", gender), else: extra_add
+      extra_add = if study_program, do: Map.put(extra_add, "study_program", study_program), else: extra_add
+      additional_data = Map.merge(base_add, extra_add)
+
       attrs = %{
         "visitor_identifier" => identifier,
         "visitor_name" => visitor_name,
@@ -249,13 +261,25 @@ defmodule VoileWeb.Visitor.CheckIn do
         "node_id" => node_id,
         "ip_address" => ip_address,
         "user_agent" => user_agent,
-        "additional_data" =>
-          if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
+        "additional_data" => additional_data
       }
 
       case System.create_visitor_log(attrs) do
         {:ok, visitor_log} ->
           socket =
+            socket
+            |> assign(:show_success_modal, true)
+            |> assign(:visitor_name, visitor_log.visitor_name || identifier)
+            |> assign(:visitor_identifier, "")
+            |> assign(:visit_purpose, "")
+            |> assign(:error_message, nil)
+            |> assign(:gender, gender)
+            |> assign(:study_program, study_program)
+
+          # Auto-close modal after 4 seconds
+          Process.send_after(self(), :close_modal, 1000)
+
+          {:noreply, socket}
             socket
             |> assign(:show_success_modal, true)
             |> assign(:visitor_name, visitor_log.visitor_name || identifier)
@@ -365,6 +389,8 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:visit_purpose, "")
       |> assign(:selected_origin, "")
       |> assign(:visitor_name, nil)
+      |> assign(:gender, nil)
+      |> assign(:study_program, nil)
       |> assign(:error_message, nil)
       |> push_event("focus_identifier", %{})
 
@@ -380,6 +406,8 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:visit_purpose, "")
       |> assign(:selected_origin, "")
       |> assign(:visitor_name, nil)
+      |> assign(:gender, nil)
+      |> assign(:study_program, nil)
       |> assign(:error_message, nil)
       |> push_event("focus_identifier", %{})
 
@@ -420,7 +448,8 @@ defmodule VoileWeb.Visitor.CheckIn do
 
   defp get_ip_address(_), do: nil
 
-  defp lookup_visitor_name(identifier) do
+  # returns map with keys :fullname, :gender, :study_program
+  defp lookup_visitor_information(identifier) do
     case Decimal.parse(identifier) do
       {_decimal, ""} ->
         # Identifier is numeric, try local database first
@@ -432,12 +461,16 @@ defmodule VoileWeb.Visitor.CheckIn do
             lookup_from_external_api(identifier)
 
           user ->
-            user.fullname || identifier
+            %{
+              fullname: user.fullname || identifier,
+              gender: user.gender,
+              study_program: nil
+            }
         end
 
       _ ->
-        # Identifier is not numeric, use it as-is (guest/unregistered visitor)
-        identifier
+        # Identifier is not numeric; treat as guest
+        %{fullname: identifier, gender: nil, study_program: nil}
     end
   end
 
@@ -445,9 +478,9 @@ defmodule VoileWeb.Visitor.CheckIn do
   defp lookup_from_external_api(identifier) do
     api_url = get_external_api_url()
 
-    # Return identifier as-is if no API URL configured
+    # Return fallback map if no API URL configured
     if api_url == "" do
-      identifier
+      %{fullname: identifier, gender: nil, study_program: nil}
     else
       # Build URL safely (avoid double slashes)
       url =
@@ -473,12 +506,15 @@ defmodule VoileWeb.Visitor.CheckIn do
                 %{}
             end
 
-          # Try to extract fullname from response (supports MhsNama etc.)
-          extract_fullname_from_response(body_map, identifier)
+          %{
+            fullname: extract_fullname_from_response(body_map, identifier),
+            gender: extract_gender_from_response(body_map),
+            study_program: extract_study_program_from_response(body_map)
+          }
 
         _ ->
           # API request failed, use identifier as-is
-          identifier
+          %{fullname: identifier, gender: nil, study_program: nil}
       end
     end
   end
@@ -501,7 +537,7 @@ defmodule VoileWeb.Visitor.CheckIn do
   defp extract_fullname_from_response(body, fallback) when is_map(body) do
     # Try common field names for fullname including the Unpad API field `MhsNama`
     # Try nested `data` key if present
-    body["MhsNama"] || body["mhsnama"] || body["MhsNama"] || body["fullname"] || body["full_name"] ||
+    body["MhsNama"] || body["mhsnama"] || body["fullname"] || body["full_name"] ||
       body["name"] ||
       case body["data"] do
         d when is_map(d) -> extract_fullname_from_response(d, fallback)
@@ -510,6 +546,34 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   defp extract_fullname_from_response(_body, fallback), do: fallback
+
+  defp extract_gender_from_response(body) when is_map(body) do
+    val =
+      body["MhsKelamin"] || body["kelamin"] || body["gender"] ||
+        case body["data"] do
+          d when is_map(d) -> extract_gender_from_response(d)
+          _ -> nil
+        end
+
+    case val do
+      "L" -> "Male"
+      "P" -> "Female"
+      v when is_binary(v) -> v
+      _ -> nil
+    end
+  end
+
+  defp extract_gender_from_response(_), do: nil
+
+  defp extract_study_program_from_response(body) when is_map(body) do
+    body["MhsProdi"] || body["study_program"] || body["prodi"] ||
+      case body["data"] do
+        d when is_map(d) -> extract_study_program_from_response(d)
+        _ -> nil
+      end
+  end
+
+  defp extract_study_program_from_response(_), do: nil
 
   # Get Node Name
   defp get_node_name(node_id, nodes) do
@@ -670,7 +734,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
             </button>
           </div>
-          
+
     <!-- Two Column Layout -->
           <div class="flex flex-col lg:flex-row gap-6">
             <!-- Check-in Form -->
@@ -764,7 +828,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </button>
               </form>
             </div>
-            
+
     <!-- Survey Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
@@ -895,7 +959,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   {gettext("Submit Feedback")}
                 </button>
               </form>
-              
+
     <!-- Registration Info -->
               <%= if @app_website do %>
                 <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -926,7 +990,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         <% end %>
       </div>
-      
+
     <!-- Check-In Success Modal -->
       <%= if @show_success_modal do %>
         <div
@@ -943,12 +1007,24 @@ defmodule VoileWeb.Visitor.CheckIn do
                 <.icon name="hero-check-circle" class="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            
+
     <!-- Welcome Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
                 {gettext("Welcome, %{name}!", name: @visitor_name)}
               </h3>
+
+              <%= if @gender do %>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                  {gettext("Gender: %{gender}", gender: @gender)}
+                </p>
+              <% end %>
+
+              <%= if @study_program do %>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                  {gettext("Program: %{program}", program: @study_program)}
+                </p>
+              <% end %>
 
               <p class="text-lg text-gray-700 dark:text-gray-300">
                 {gettext("Enjoy your stay at")}
@@ -966,7 +1042,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </p>
               </div>
             </div>
-            
+
     <!-- Close Button -->
             <button
               type="button"
@@ -978,7 +1054,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Survey Success Modal -->
       <%= if @show_survey_success do %>
         <div
@@ -992,7 +1068,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 <.icon name="hero-heart" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            
+
     <!-- Thank You Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1009,7 +1085,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </p>
               </div>
             </div>
-            
+
     <!-- Close Button -->
             <button
               type="button"
@@ -1021,7 +1097,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Footer -->
       <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
         <div class="max-w-7xl mx-auto px-4 py-3">
@@ -1046,7 +1122,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </span>
               </div>
             </div>
-            
+
     <!-- Software Info -->
             <div class="flex items-center gap-3 text-center md:text-right">
               <div class="text-xs text-gray-600 dark:text-gray-400">

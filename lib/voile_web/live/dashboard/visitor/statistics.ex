@@ -4,6 +4,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
   alias Voile.Schema.System
   alias VoileWeb.Auth.Authorization
 
+  @per_page 5
+
   @impl true
   def mount(_params, _session, socket) do
     nodes = System.list_nodes()
@@ -30,6 +32,13 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
       |> assign(:today_stats, nil)
       |> assign(:month_stats, nil)
       |> assign(:year_stats, nil)
+      # pagination state for today & month tables
+      |> assign(:today_page, 1)
+      |> assign(:month_page, 1)
+      |> assign(:today_pagination, %{})
+      |> assign(:month_pagination, %{})
+      |> assign(:today_displayed_rooms, [])
+      |> assign(:month_displayed_rooms, [])
       |> assign(:loading, false)
 
     {:ok, socket}
@@ -130,8 +139,38 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
     {:noreply, load_all_statistics(socket)}
   end
 
+  @impl true
+  def handle_event("paginate_today", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    pagination = paginate_list(socket.assigns.today_stats.by_room, page, @per_page)
+
+    socket =
+      socket
+      |> assign(:today_page, pagination.page)
+      |> assign(:today_pagination, pagination)
+      |> assign(:today_displayed_rooms, pagination.items)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("paginate_month", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    pagination = paginate_list(socket.assigns.month_stats.by_room, page, @per_page)
+
+    socket =
+      socket
+      |> assign(:month_page, pagination.page)
+      |> assign(:month_pagination, pagination)
+      |> assign(:month_displayed_rooms, pagination.items)
+
+    {:noreply, socket}
+  end
+
   defp load_all_statistics(socket) do
     socket
+    |> assign(:today_page, 1)
+    |> assign(:month_page, 1)
     |> load_today_statistics()
     |> load_month_statistics()
     |> load_year_statistics()
@@ -140,6 +179,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
   defp load_today_statistics(socket) do
     date = socket.assigns.selected_date
     node_id = socket.assigns.selected_node_id
+    page = socket.assigns.today_page || 1
 
     IO.inspect(%{date: date, node_id: node_id}, label: "load_today_statistics params")
 
@@ -155,7 +195,14 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
 
     IO.inspect(stats.total_visitors, label: "Total visitors returned")
 
-    assign(socket, :today_stats, stats)
+    # build pagination for rooms
+    pagination = paginate_list(stats.by_room, page, @per_page)
+
+    socket
+    |> assign(:today_stats, stats)
+    |> assign(:today_page, pagination.page)
+    |> assign(:today_pagination, pagination)
+    |> assign(:today_displayed_rooms, pagination.items)
   end
 
   defp load_month_statistics(socket) do
@@ -179,7 +226,14 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
 
     IO.inspect(stats.total_visitors, label: "Month total visitors returned")
 
-    assign(socket, :month_stats, stats)
+    # pagination
+    pagination = paginate_list(stats.by_room, socket.assigns.month_page || 1, @per_page)
+
+    socket
+    |> assign(:month_stats, stats)
+    |> assign(:month_pagination, pagination)
+    |> assign(:month_page, pagination.page)
+    |> assign(:month_displayed_rooms, pagination.items)
   end
 
   defp load_year_statistics(socket) do
@@ -223,6 +277,25 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
   defp month_name(11), do: "November"
   defp month_name(12), do: "December"
 
+  # generic paginator for simple lists
+  defp paginate_list(list, page, per_page) do
+    total_count = Enum.count(list)
+    total_pages = if total_count > 0, do: Float.ceil(total_count / per_page) |> trunc(), else: 0
+    page = max(min(page, total_pages), 1)
+    offset = (page - 1) * per_page
+    items = Enum.slice(list, offset, per_page)
+
+    %{
+      items: items,
+      page: page,
+      per_page: per_page,
+      total_count: total_count,
+      total_pages: total_pages,
+      has_prev: page > 1,
+      has_next: page < total_pages
+    }
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -240,7 +313,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
       <div class="mb-4">
         <.back navigate="/manage/settings">{gettext("Back to Settings")}</.back>
       </div>
-      
+
     <!-- Quick Links -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -288,7 +361,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </.link>
         </div>
       </div>
-      
+
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
@@ -382,7 +455,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             </div>
           </form>
         </div>
-        
+
     <!-- Selected Filter Display -->
         <%= if @selected_node_id do %>
           <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -396,7 +469,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         <% end %>
       </div>
-      
+
     <!-- Today's Visitors -->
       <%= if @today_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -407,10 +480,10 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             {Calendar.strftime(@selected_date, "%B %-d, %Y")}
           </p>
 
-          <%= if @today_stats.by_room != [] do %>
+              <%= if @today_stats.by_room != [] do %>
             <div class="space-y-2 mb-4">
               <div
-                :for={room <- @today_stats.by_room}
+                :for={room <- @today_displayed_rooms}
                 class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
               >
                 <span class="font-medium text-gray-700 dark:text-gray-300">{room.room_name}</span>
@@ -422,6 +495,32 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                 </div>
               </div>
             </div>
+
+            <%= if @today_pagination.total_pages > 1 do %>
+              <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                  Page {@today_pagination.page} of {@today_pagination.total_pages}
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    :if={@today_pagination.has_prev}
+                    phx-click="paginate_today"
+                    phx-value-page={@today_pagination.page - 1}
+                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    :if={@today_pagination.has_next}
+                    phx-click="paginate_today"
+                    phx-value-page={@today_pagination.page + 1}
+                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            <% end %>
           <% else %>
             <div class="p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
               <.icon
@@ -449,7 +548,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
+
     <!-- This Month's Visitors -->
       <%= if @month_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -463,7 +562,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           <%= if @month_stats.by_room != [] do %>
             <div class="space-y-2 mb-4">
               <div
-                :for={room <- @month_stats.by_room}
+                :for={room <- @month_displayed_rooms}
                 class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
               >
                 <span class="font-medium text-gray-700 dark:text-gray-300">{room.room_name}</span>
@@ -475,6 +574,32 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
                 </div>
               </div>
             </div>
+
+            <%= if @month_pagination.total_pages > 1 do %>
+              <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                  Page {@month_pagination.page} of {@month_pagination.total_pages}
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    :if={@month_pagination.has_prev}
+                    phx-click="paginate_month"
+                    phx-value-page={@month_pagination.page - 1}
+                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    :if={@month_pagination.has_next}
+                    phx-click="paginate_month"
+                    phx-value-page={@month_pagination.page + 1}
+                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            <% end %>
           <% else %>
             <div class="p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
               <.icon
@@ -502,7 +627,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Yearly Statistics -->
       <%= if @year_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

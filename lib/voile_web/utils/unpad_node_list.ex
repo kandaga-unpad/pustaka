@@ -87,6 +87,11 @@ defmodule VoileWeb.Utils.UnpadNodeList do
         singkatan: "ftg"
       },
       %{
+        id: 280,
+        namaFakultas: "Sekolah Vokasi",
+        singkatan: "sv"
+      },
+      %{
         id: 500,
         namaFakultas: "Unpad Press",
         singkatan: "unpad_press"

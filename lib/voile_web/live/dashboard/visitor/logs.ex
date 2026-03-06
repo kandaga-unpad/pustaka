@@ -283,7 +283,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       <div class="mb-4">
         <.back navigate="/manage/visitor/statistics">{gettext("Back to Statistics")}</.back>
       </div>
-      
+
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
@@ -340,7 +340,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
               </div>
             </div>
           <% end %>
-          
+
     <!-- Room/Location Filter -->
           <form phx-change="filter_location">
             <div>
@@ -408,7 +408,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           </form>
         </div>
       </div>
-      
+
     <!-- Results Info -->
       <div class="flex items-center justify-between">
         <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -421,7 +421,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
         </p>
       </div>
-      
+
     <!-- Logs Table -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <%= if @logs == [] do %>
@@ -448,6 +448,12 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {gettext("Name")}
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {gettext("Gender")}
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {gettext("Study Program")}
                   </th>
                   <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {gettext("Origin")}
@@ -477,6 +483,12 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                     {log.visitor_name || "-"}
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {get_in(log.additional_data || %{}, ["gender"]) || "-"}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {get_in(log.additional_data || %{}, ["study_program"]) || "-"}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {log.visitor_origin || "-"}
                   </td>
                   <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
@@ -494,7 +506,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           </div>
         <% end %>
       </div>
-      
+
     <!-- Pagination -->
       <%= if @total_pages > 1 do %>
         <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow px-6 py-3">
