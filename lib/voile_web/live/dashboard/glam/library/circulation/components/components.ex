@@ -178,7 +178,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <%= if can?(@current_user, "circulation.checkout") do %>
           <button
             phx-click="show_quick_checkout"
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-voile text-sm font-medium rounded-md shadow-sm bg-voile-primary text-white hover:bg-voile-primary-dark transition-colors"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-voile text-xs font-medium rounded-md shadow-sm bg-voile-primary text-white hover:bg-voile-primary-dark transition-colors"
           >
             <.icon name="hero-arrow-right-circle" class="w-4 h-4 mr-2" /> Quick Checkout
           </button>
@@ -186,7 +186,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <button
             disabled
             title="You don't have permission to checkout items"
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-xs font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
           >
             <.icon name="hero-arrow-right-circle" class="w-4 h-4 mr-2" /> Quick Checkout
           </button>
@@ -195,7 +195,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <%= if can?(@current_user, "circulation.return") do %>
           <button
             phx-click="show_quick_return"
-            class="success-btn"
+            class="success-btn text-xs"
           >
             <.icon name="hero-arrow-left-circle" class="w-4 h-4 mr-2" /> Quick Return
           </button>
@@ -203,7 +203,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <button
             disabled
             title="You don't have permission to return items"
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-xs font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
           >
             <.icon name="hero-arrow-left-circle" class="w-4 h-4 mr-2" /> Quick Return
           </button>
@@ -212,7 +212,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <%= if can?(@current_user, "members.lookup") do %>
           <button
             phx-click="show_member_lookup"
-            class="primary-btn"
+            class="primary-btn text-xs"
           >
             <.icon name="hero-user-circle" class="w-4 h-4 mr-2" /> Member Lookup
           </button>
@@ -220,7 +220,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <button
             disabled
             title="You don't have permission to lookup members"
-            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
+            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-xs font-medium rounded-md bg-gray-100 text-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 cursor-not-allowed"
           >
             <.icon name="hero-user-circle" class="w-4 h-4 mr-2" /> Member Lookup
           </button>
@@ -228,7 +228,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
         <.link
           navigate={~p"/search?type=items"}
-          class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm border border-voile bg-voile-primary text-white hover:bg-voile-primary-dark transition-colors"
+          class="w-full inline-flex items-center justify-center px-4 py-2 text-xs font-medium rounded-md shadow-sm border border-voile bg-voile-primary text-white hover:bg-voile-primary-dark transition-colors"
         >
           <.icon name="hero-magnifying-glass" class="w-4 h-4 mr-2" /> Item Search
         </.link>
