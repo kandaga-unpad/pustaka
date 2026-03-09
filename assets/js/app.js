@@ -52,11 +52,32 @@ const NotificationSound = {
 };
 
 // Check-in Storage Hook for persisting node and location selection
+// Helper: set a cookie with a max-age (seconds). SameSite=Lax keeps it
+// compatible with standard same-origin navigation while still surviving
+// browser restarts (unlike sessionStorage) and "clear on close" settings
+// that only target sessionStorage / some localStorage implementations.
+const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
+function setCookie(name, value, maxAge = ONE_YEAR_SECONDS) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+}
+function getCookie(name) {
+  const match = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
+  return match ? decodeURIComponent(match.split("=")[1]) : null;
+}
+function deleteCookie(name) {
+  document.cookie = `${name}=; max-age=0; path=/; SameSite=Lax`;
+}
+
 const CheckInStorage = {
   mounted() {
-    // Try to restore from localStorage on mount
-    const nodeId = localStorage.getItem("visitor_check_in_node_id");
-    const locationId = localStorage.getItem("visitor_check_in_location_id");
+    // Try to restore from cookie on mount (falls back to localStorage for
+    // clients that already had the old value stored there)
+    const nodeId =
+      getCookie("visitor_check_in_node_id") ||
+      localStorage.getItem("visitor_check_in_node_id");
+    const locationId =
+      getCookie("visitor_check_in_location_id") ||
+      localStorage.getItem("visitor_check_in_location_id");
 
     if (nodeId && locationId) {
       this.pushEvent("restore_from_storage", {
@@ -67,24 +88,29 @@ const CheckInStorage = {
 
     // Handle clear storage events
     this.handleEvent("clear_location_storage", () => {
+      deleteCookie("visitor_check_in_location_id");
       localStorage.removeItem("visitor_check_in_location_id");
     });
 
     this.handleEvent("clear_check_in_storage", () => {
+      deleteCookie("visitor_check_in_node_id");
+      deleteCookie("visitor_check_in_location_id");
       localStorage.removeItem("visitor_check_in_node_id");
       localStorage.removeItem("visitor_check_in_location_id");
     });
   },
   updated() {
-    // Save to localStorage when node or location changes
+    // Save to cookie when node or location changes
     const nodeId = this.el.dataset.nodeId;
     const locationId = this.el.dataset.locationId;
 
     if (nodeId && nodeId !== "undefined" && nodeId !== "null") {
+      setCookie("visitor_check_in_node_id", nodeId);
       localStorage.setItem("visitor_check_in_node_id", nodeId);
     }
 
     if (locationId && locationId !== "undefined" && locationId !== "null") {
+      setCookie("visitor_check_in_location_id", locationId);
       localStorage.setItem("visitor_check_in_location_id", locationId);
     }
   },
