@@ -250,7 +250,10 @@ defmodule VoileWeb.Visitor.CheckIn do
       base_add = if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
       extra_add = %{}
       extra_add = if gender, do: Map.put(extra_add, "gender", gender), else: extra_add
-      extra_add = if study_program, do: Map.put(extra_add, "study_program", study_program), else: extra_add
+
+      extra_add =
+        if study_program, do: Map.put(extra_add, "study_program", study_program), else: extra_add
+
       additional_data = Map.merge(base_add, extra_add)
 
       attrs = %{
@@ -280,12 +283,13 @@ defmodule VoileWeb.Visitor.CheckIn do
           Process.send_after(self(), :close_modal, 1000)
 
           {:noreply, socket}
-            socket
-            |> assign(:show_success_modal, true)
-            |> assign(:visitor_name, visitor_log.visitor_name || identifier)
-            |> assign(:visitor_identifier, "")
-            |> assign(:visit_purpose, "")
-            |> assign(:error_message, nil)
+
+          socket
+          |> assign(:show_success_modal, true)
+          |> assign(:visitor_name, visitor_log.visitor_name || identifier)
+          |> assign(:visitor_identifier, "")
+          |> assign(:visit_purpose, "")
+          |> assign(:error_message, nil)
 
           # Auto-close modal after 4 seconds
           Process.send_after(self(), :close_modal, 1000)
@@ -734,7 +738,7 @@ defmodule VoileWeb.Visitor.CheckIn do
               <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
             </button>
           </div>
-
+          
     <!-- Two Column Layout -->
           <div class="flex flex-col lg:flex-row gap-6">
             <!-- Check-in Form -->
@@ -828,7 +832,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </button>
               </form>
             </div>
-
+            
     <!-- Survey Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
@@ -959,7 +963,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                   {gettext("Submit Feedback")}
                 </button>
               </form>
-
+              
     <!-- Registration Info -->
               <%= if @app_website do %>
                 <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -990,7 +994,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         <% end %>
       </div>
-
+      
     <!-- Check-In Success Modal -->
       <%= if @show_success_modal do %>
         <div
@@ -1007,7 +1011,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 <.icon name="hero-check-circle" class="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-
+            
     <!-- Welcome Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1042,7 +1046,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </p>
               </div>
             </div>
-
+            
     <!-- Close Button -->
             <button
               type="button"
@@ -1054,7 +1058,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         </div>
       <% end %>
-
+      
     <!-- Survey Success Modal -->
       <%= if @show_survey_success do %>
         <div
@@ -1068,7 +1072,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 <.icon name="hero-heart" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-
+            
     <!-- Thank You Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -1085,7 +1089,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </p>
               </div>
             </div>
-
+            
     <!-- Close Button -->
             <button
               type="button"
@@ -1097,7 +1101,7 @@ defmodule VoileWeb.Visitor.CheckIn do
           </div>
         </div>
       <% end %>
-
+      
     <!-- Footer -->
       <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
         <div class="max-w-7xl mx-auto px-4 py-3">
@@ -1122,7 +1126,7 @@ defmodule VoileWeb.Visitor.CheckIn do
                 </span>
               </div>
             </div>
-
+            
     <!-- Software Info -->
             <div class="flex items-center gap-3 text-center md:text-right">
               <div class="text-xs text-gray-600 dark:text-gray-400">

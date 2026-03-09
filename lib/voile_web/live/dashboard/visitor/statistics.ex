@@ -313,7 +313,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
       <div class="mb-4">
         <.back navigate="/manage/settings">{gettext("Back to Settings")}</.back>
       </div>
-
+      
     <!-- Quick Links -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -361,7 +361,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </.link>
         </div>
       </div>
-
+      
     <!-- Filters -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
@@ -455,7 +455,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             </div>
           </form>
         </div>
-
+        
     <!-- Selected Filter Display -->
         <%= if @selected_node_id do %>
           <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -469,7 +469,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         <% end %>
       </div>
-
+      
     <!-- Today's Visitors -->
       <%= if @today_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -480,7 +480,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             {Calendar.strftime(@selected_date, "%B %-d, %Y")}
           </p>
 
-              <%= if @today_stats.by_room != [] do %>
+          <%= if @today_stats.by_room != [] do %>
             <div class="space-y-2 mb-4">
               <div
                 :for={room <- @today_displayed_rooms}
@@ -548,7 +548,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-
+      
     <!-- This Month's Visitors -->
       <%= if @month_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -627,7 +627,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-
+      
     <!-- Yearly Statistics -->
       <%= if @year_stats do %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

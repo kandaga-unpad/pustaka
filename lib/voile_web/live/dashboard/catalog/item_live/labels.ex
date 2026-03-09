@@ -10,9 +10,12 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
     # Check read permission for viewing items
     authorize!(socket, "items.read")
 
+    app_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", nil)
+
     {:ok,
      socket
      |> assign(:page_title, gettext("Print Item Labels"))
+     |> assign(:app_logo_url, app_logo_url)
      |> assign(:selected_items, [])
      |> assign(:selected_item_data, %{})
      |> assign(:search, "")
@@ -21,6 +24,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
      |> assign(:group_by_collection, false)
      |> assign(:label_size, "medium")
      |> assign(:labels_per_row, 2)
+     |> assign(:paper_size, "default")
      |> assign(:include_barcode, true)
      |> assign(:include_location, true)
      |> assign(:include_call_number, true)
@@ -176,6 +180,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
       socket
       |> assign(:label_size, params["label_size"] || socket.assigns.label_size)
       |> assign(:labels_per_row, 2)
+      |> assign(:paper_size, params["paper_size"] || socket.assigns.paper_size)
       |> assign(
         :include_barcode,
         params["include_barcode"] == "true"

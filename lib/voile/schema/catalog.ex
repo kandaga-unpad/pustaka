@@ -1802,7 +1802,8 @@ defmodule Voile.Schema.Catalog do
           ilike(c.description, ^search_term) or
           ilike(i.item_code, ^search_term) or
           ilike(i.inventory_code, ^search_term) or
-          ilike(i.location, ^search_term)
+          ilike(i.location, ^search_term) or
+          ilike(fragment("COALESCE(?, '')", i.barcode), ^search_term)
       )
       |> where([i], i.status == "active")
       |> order_by([i], asc: i.item_code, desc: i.inserted_at)

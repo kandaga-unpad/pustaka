@@ -376,22 +376,59 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
 
         <div class="divide-y divide-gray-200">
           <%= for activity <- @recent_activities do %>
-            <div class="px-6 py-4 flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
+            <div class="px-6 py-4 flex items-start justify-between gap-4">
+              <div class="flex items-start gap-3 min-w-0">
+                <div class="flex-shrink-0 mt-1.5">
                   <div class={"w-2 h-2 rounded-full #{activity_color(activity.event_type)}"}></div>
                 </div>
 
-                <div class="ml-4">
-                  <p class="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <%= if activity.item && activity.item.collection do %>
+                      {activity.item.collection.title}
+                      <span class="font-normal text-gray-500 dark:text-gray-400 text-xs">
+                        ({activity.item.item_code})
+                      </span>
+                    <% else %>
+                      {activity.description}
+                    <% end %>
+                  </p>
 
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {format_datetime(activity.event_date)}
+                  <%= if activity.item && activity.item.node do %>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <.icon name="hero-map-pin" class="w-3 h-3 inline-block mr-0.5" />
+                      {activity.item.node.name}
+                    </p>
+                  <% end %>
+
+                  <p class="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                    <.icon name="hero-user" class="w-3 h-3 inline-block mr-0.5" />
+                    <%= if activity.member do %>
+                      {activity.member.fullname}
+                      <span class="text-gray-400 dark:text-gray-500">
+                        ({activity.member.identifier})
+                      </span>
+                    <% else %>
+                      {gettext("Unknown member")}
+                    <% end %>
+                  </p>
+
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    <.icon name="hero-user-circle" class="w-3 h-3 inline-block mr-0.5" />
+                    {gettext("by")}
+                    <%= if activity.processed_by do %>
+                      {activity.processed_by.fullname}
+                    <% else %>
+                      —
+                    <% end %>
+                    · {format_datetime(activity.event_date)}
                   </p>
                 </div>
               </div>
 
-              <div class="text-xs text-gray-400 dark:text-gray-300">{activity.event_type}</div>
+              <div class={"flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full #{activity_badge_class(activity.event_type)}"}>
+                {activity.event_type}
+              </div>
             </div>
           <% end %>
         </div>
@@ -964,4 +1001,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
   defp activity_color("reserve"), do: "bg-purple-400"
   defp activity_color("fine_paid"), do: "bg-green-400"
   defp activity_color(_), do: "bg-gray-400"
+
+  defp activity_badge_class("loan"),
+    do: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+
+  defp activity_badge_class("return"),
+    do: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+
+  defp activity_badge_class("renewal"),
+    do: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300"
+
+  defp activity_badge_class("reserve"),
+    do: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+
+  defp activity_badge_class("cancel_reserve"),
+    do: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+
+  defp activity_badge_class("fine_paid"),
+    do: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+
+  defp activity_badge_class("fine_waived"),
+    do: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300"
+
+  defp activity_badge_class(_),
+    do: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
 end

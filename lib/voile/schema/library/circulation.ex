@@ -54,7 +54,7 @@ defmodule Voile.Schema.Library.Circulation do
           :reservation,
           :fine,
           :processed_by,
-          item: :collection
+          item: [:collection, :node]
         ],
         order_by: [desc: ch.inserted_at, desc: ch.id],
         offset: ^offset,
@@ -352,11 +352,12 @@ defmodule Voile.Schema.Library.Circulation do
 
     query =
       from f in Fine,
+        join: m in assoc(f, :member),
         preload: [
-          :member,
           :transaction,
           :processed_by,
           :waived_by,
+          member: m,
           item: [:collection]
         ]
 
@@ -364,14 +365,25 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       case Map.get(filters, :status, "all") do
         "all" -> query
-        status -> where(query, [f], f.fine_status == ^status)
+        status -> where(query, [f, _m], f.fine_status == ^status)
       end
 
     # Apply type filter
     query =
       case Map.get(filters, :type, "all") do
         "all" -> query
-        type -> where(query, [f], f.fine_type == ^type)
+        type -> where(query, [f, _m], f.fine_type == ^type)
+      end
+
+    # Apply text search filter (member name only)
+    query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+          where(query, [_f, m], ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern))
       end
 
     # Add pagination and ordering
@@ -384,19 +396,34 @@ defmodule Voile.Schema.Library.Circulation do
     fines = Repo.all(query)
 
     # Count total with same filters for pagination
-    count_query = from(f in Fine)
+    count_query = from f in Fine, join: m in assoc(f, :member)
 
     # Apply same filters for count
     count_query =
       case Map.get(filters, :status, "all") do
         "all" -> count_query
-        status -> where(count_query, [f], f.fine_status == ^status)
+        status -> where(count_query, [f, _m], f.fine_status == ^status)
       end
 
     count_query =
       case Map.get(filters, :type, "all") do
         "all" -> count_query
-        type -> where(count_query, [f], f.fine_type == ^type)
+        type -> where(count_query, [f, _m], f.fine_type == ^type)
+      end
+
+    count_query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [_f, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     total_count = Repo.aggregate(count_query, :count, :id)
@@ -420,12 +447,13 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       from f in Fine,
         join: i in assoc(f, :item),
+        join: m in assoc(f, :member),
         where: i.unit_id == ^node_id,
         preload: [
-          :member,
           :transaction,
           :processed_by,
           :waived_by,
+          member: m,
           item: [:collection]
         ]
 
@@ -433,14 +461,30 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       case Map.get(filters, :status, "all") do
         "all" -> query
-        status -> where(query, [f, _i], f.fine_status == ^status)
+        status -> where(query, [f, _i, _m], f.fine_status == ^status)
       end
 
     # Apply type filter
     query =
       case Map.get(filters, :type, "all") do
         "all" -> query
-        type -> where(query, [f, _i], f.fine_type == ^type)
+        type -> where(query, [f, _i, _m], f.fine_type == ^type)
+      end
+
+    # Apply text search filter (member name only)
+    query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            query,
+            [_f, _i, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     # Add pagination and ordering
@@ -456,19 +500,35 @@ defmodule Voile.Schema.Library.Circulation do
     count_query =
       from f in Fine,
         join: i in assoc(f, :item),
+        join: m in assoc(f, :member),
         where: i.unit_id == ^node_id
 
     # Apply same filters for count
     count_query =
       case Map.get(filters, :status, "all") do
         "all" -> count_query
-        status -> where(count_query, [f, _i], f.fine_status == ^status)
+        status -> where(count_query, [f, _i, _m], f.fine_status == ^status)
       end
 
     count_query =
       case Map.get(filters, :type, "all") do
         "all" -> count_query
-        type -> where(count_query, [f, _i], f.fine_type == ^type)
+        type -> where(count_query, [f, _i, _m], f.fine_type == ^type)
+      end
+
+    count_query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [_f, _i, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     total_count = Repo.aggregate(count_query, :count, :id)
@@ -776,17 +836,29 @@ defmodule Voile.Schema.Library.Circulation do
 
     query =
       from r in Reservation,
+        join: m in assoc(r, :member),
         preload: [
           {:item, [:collection]},
-          :member,
           :collection,
-          :processed_by
+          :processed_by,
+          member: m
         ]
 
     query =
       case Map.get(filters, :status, "all") do
         "all" -> query
-        s -> where(query, [r], r.status == ^s)
+        s -> where(query, [r, _m], r.status == ^s)
+      end
+
+    # Apply text search filter (member name only)
+    query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+          where(query, [_r, m], ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern))
       end
 
     query =
@@ -797,12 +869,27 @@ defmodule Voile.Schema.Library.Circulation do
 
     reservations = Repo.all(query)
 
-    count_query = from(r in Reservation)
+    count_query = from r in Reservation, join: m in assoc(r, :member)
 
     count_query =
       case Map.get(filters, :status, "all") do
         "all" -> count_query
-        s -> where(count_query, [r], r.status == ^s)
+        s -> where(count_query, [r, _m], r.status == ^s)
+      end
+
+    count_query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [_r, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     total_count = Repo.aggregate(count_query, :count, :id)
@@ -826,18 +913,35 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       from r in Reservation,
         join: i in assoc(r, :item),
+        join: m in assoc(r, :member),
         where: i.unit_id == ^node_id,
         preload: [
           {:item, [:collection]},
-          :member,
           :collection,
-          :processed_by
+          :processed_by,
+          member: m
         ]
 
     query =
       case Map.get(filters, :status, "all") do
         "all" -> query
-        s -> where(query, [r], r.status == ^s)
+        s -> where(query, [r, _i, _m], r.status == ^s)
+      end
+
+    # Apply text search filter (member name only)
+    query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            query,
+            [_r, _i, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     query =
@@ -851,12 +955,28 @@ defmodule Voile.Schema.Library.Circulation do
     count_query =
       from r in Reservation,
         join: i in assoc(r, :item),
+        join: m in assoc(r, :member),
         where: i.unit_id == ^node_id
 
     count_query =
       case Map.get(filters, :status, "all") do
         "all" -> count_query
-        s -> where(count_query, [r], r.status == ^s)
+        s -> where(count_query, [r, _i, _m], r.status == ^s)
+      end
+
+    count_query =
+      case Map.get(filters, :search, "") do
+        "" ->
+          count_query
+
+        search ->
+          search_pattern = "%#{search}%"
+
+          where(
+            count_query,
+            [_r, _i, m],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
+          )
       end
 
     total_count = Repo.aggregate(count_query, :count, :id)
@@ -964,7 +1084,7 @@ defmodule Voile.Schema.Library.Circulation do
         status -> where(query, [t, _m, _l, _i, _c], t.status == ^status)
       end
 
-    # Apply search filter (by member name, member identifier, item code, or collection title)
+    # Apply search filter (member name only)
     query =
       case Map.get(filters, :query, "") do
         "" ->
@@ -975,11 +1095,8 @@ defmodule Voile.Schema.Library.Circulation do
 
           where(
             query,
-            [t, m, _l, i, c],
-            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+            [_t, m, _l, _i, _c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
           )
       end
 
@@ -1016,11 +1133,8 @@ defmodule Voile.Schema.Library.Circulation do
 
           where(
             count_query,
-            [t, m, _l, i, c],
-            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+            [_t, m, _l, _i, _c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
           )
       end
 
@@ -1063,7 +1177,7 @@ defmodule Voile.Schema.Library.Circulation do
         status -> where(query, [t, _m, _l, _i, _c], t.status == ^status)
       end
 
-    # Apply search filter
+    # Apply search filter (member name only)
     query =
       case Map.get(filters, :query, "") do
         "" ->
@@ -1074,11 +1188,8 @@ defmodule Voile.Schema.Library.Circulation do
 
           where(
             query,
-            [t, m, _l, i, c],
-            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+            [_t, m, _l, _i, _c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
           )
       end
 
@@ -1116,11 +1227,8 @@ defmodule Voile.Schema.Library.Circulation do
 
           where(
             count_query,
-            [t, m, _l, i, c],
-            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", m.identifier), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", i.item_code), ^search_pattern) or
-              ilike(fragment("COALESCE(?, '')", c.title), ^search_pattern)
+            [_t, m, _l, _i, _c],
+            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
           )
       end
 

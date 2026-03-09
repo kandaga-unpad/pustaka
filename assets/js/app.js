@@ -448,6 +448,30 @@ window.addEventListener("phx:download", (e) => {
   document.body.removeChild(a);
 });
 
+// Label print isolation: clone #print-labels to a direct body child so
+// the dashboard layout (min-h-screen) doesn't produce blank print pages.
+let _printLabelsClone = null;
+
+window.addEventListener("beforeprint", () => {
+  const el = document.getElementById("print-labels");
+  if (el) {
+    _printLabelsClone = document.createElement("div");
+    _printLabelsClone.id = "print-labels-clone";
+    _printLabelsClone.style.display = "block";
+    _printLabelsClone.innerHTML = el.innerHTML;
+    document.body.appendChild(_printLabelsClone);
+    document.body.classList.add("is-printing");
+  }
+});
+
+window.addEventListener("afterprint", () => {
+  if (_printLabelsClone) {
+    _printLabelsClone.remove();
+    _printLabelsClone = null;
+  }
+  document.body.classList.remove("is-printing");
+});
+
 // connect if there are any LiveViews on the page
 liveSocket.connect();
 

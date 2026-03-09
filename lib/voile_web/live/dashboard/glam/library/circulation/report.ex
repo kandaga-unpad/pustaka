@@ -441,13 +441,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Due Date
               </th>
+
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
 
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@transactions) do %>
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   No transactions found
                 </td>
               </tr>
@@ -486,6 +490,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(transaction.due_date)}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <.link
+                      navigate={~p"/manage/glam/library/circulation/transactions/#{transaction.id}"}
+                      class="text-voile-primary hover:underline font-medium"
+                    >
+                      View
+                    </.link>
                   </td>
                 </tr>
               <% end %>
@@ -539,13 +552,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Expiry
               </th>
+
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
 
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@reservations) do %>
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   No reservations found
                 </td>
               </tr>
@@ -554,7 +571,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {reservation.member.full_name}
+                      {reservation.member.fullname}
                     </div>
 
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -564,7 +581,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900 dark:text-gray-100">
-                      {reservation.item.title}
+                      {reservation.item.collection.title}
                     </div>
 
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -579,11 +596,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                   </td>
 
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format_datetime(reservation.reserved_at)}
+                    {format_datetime(reservation.reservation_date)}
                   </td>
 
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format_datetime(reservation.expires_at)}
+                    {format_datetime(reservation.expiry_date)}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <.link
+                      navigate={~p"/manage/glam/library/circulation/reservations/#{reservation.id}"}
+                      class="text-voile-primary hover:underline font-medium"
+                    >
+                      View
+                    </.link>
                   </td>
                 </tr>
               <% end %>
@@ -641,13 +667,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Date
               </th>
+
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
 
           <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@fines) do %>
               <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   No fines found
                 </td>
               </tr>
@@ -656,7 +686,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {fine.member.full_name}
+                      {fine.member.fullname}
                     </div>
 
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -686,6 +716,15 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format_datetime(fine.inserted_at)}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <.link
+                      navigate={~p"/manage/glam/library/circulation/fines/#{fine.id}"}
+                      class="text-voile-primary hover:underline font-medium"
+                    >
+                      View
+                    </.link>
                   </td>
                 </tr>
               <% end %>
@@ -1129,7 +1168,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
     filters =
       if search_query != "" do
-        %{search: search_query}
+        %{query: search_query}
       else
         %{}
       end

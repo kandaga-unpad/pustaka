@@ -192,7 +192,7 @@
                           {gettext("Location: %{location}",
                             location:
                               item.location ||
-                                (item.item_location && item.item_location.name) ||
+                                (item.item_location && item.item_location.location_name) ||
                                 "N/A"
                           )}
                         </div>
@@ -218,27 +218,34 @@
         id="label-config-form"
         class="space-y-4 flex-1 overflow-y-auto"
       >
-        <%!-- Label Size --%>
+        <%!-- Paper Size Select --%>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {gettext("Label Size")}
+            {gettext("Paper Size")}
           </label>
           <select
-            name="label_size"
+            name="paper_size"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value="small" selected={@label_size == "small"}>
-              {gettext("Small (10.5cm × 3cm)")}
+            <option value="default" selected={@paper_size == "default"}>
+              {gettext("Default (16.5cm × 20cm)")}
             </option>
-
-            <option value="medium" selected={@label_size == "medium"}>
-              {gettext("Medium (10.5cm × 4cm)")}
+            <option value="a4" selected={@paper_size == "a4"}>
+              {gettext("A4 (21cm × 29.7cm)")}
             </option>
-
-            <option value="large" selected={@label_size == "large"}>
-              {gettext("Large (10.5cm × 5cm)")}
+            <option value="a5" selected={@paper_size == "a5"}>
+              {gettext("A5 (14.8cm × 21cm)")}
+            </option>
+            <option value="b5" selected={@paper_size == "b5"}>
+              {gettext("B5 (17.6cm × 25cm)")}
+            </option>
+            <option value="letter" selected={@paper_size == "letter"}>
+              {gettext("Letter (21.59cm × 27.94cm)")}
             </option>
           </select>
+          <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            {gettext("Per label: 7.5cm × 3.5cm · 2 per row")}
+          </p>
         </div>
         <%!-- Font Size --%>
         <div>
@@ -346,6 +353,7 @@
                 include_barcode={@include_barcode}
                 include_location={@include_location}
                 include_call_number={@include_call_number}
+                app_logo_url={@app_logo_url}
               />
             <% end %>
           <% end %>
@@ -357,21 +365,12 @@
 <%!-- Print Styles --%>
 <style>
   @media print {
-    /* Hide everything except the print container */
-    body * {
-      visibility: hidden;
+    /* Hide all direct body children except the cloned print container */
+    body.is-printing > *:not(#print-labels-clone) {
+      display: none !important;
     }
 
-    #print-labels,
-    #print-labels * {
-      visibility: visible;
-    }
-
-    #print-labels {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
+    body.is-printing #print-labels-clone {
       display: block !important;
     }
 
@@ -382,61 +381,30 @@
       color-adjust: exact !important;
     }
 
-    /* White background to save ink - remove all page borders */
     body,
     html {
       background-color: white !important;
-      border: none !important;
       margin: 0 !important;
       padding: 0 !important;
     }
 
-    /* Force remove dark mode backgrounds */
-    .dark,
-    .dark *,
-    [data-theme="dark"],
-    [data-theme="dark"] * {
-      background-color: white !important;
-      color: black !important;
-    }
-
-    /* Remove any dark backgrounds and borders */
-    .bg-gray-200,
-    .bg-gray-700,
-    .bg-gray-800,
-    .bg-gray-900,
-    .dark\:bg-gray-700,
-    .dark\:bg-gray-800,
-    .dark\:bg-gray-900,
-    .border-gray-300 {
-      background-color: transparent !important;
-      border-color: transparent !important;
-    }
-
-    /* Keep label internal borders but remove external container borders */
     .print-label {
       page-break-inside: avoid;
       break-inside: avoid;
       background-color: white !important;
     }
 
-    /* Match print gap with preview gap */
-    .print-grid {
-      gap: 1rem !important; /* Same as gap-4 in preview */
-    }
-
-    /* Reset print layout - remove page margins if needed */
     @page {
       margin: 0.5cm;
-      size: A4;
+      size: <%= case @paper_size do %><% "a4" -> %> 21cm 29.7cm<% "a5" -> %> 14.8cm 21cm<% "b5" -> %> 17.6cm 25cm<% "letter" -> %> 21.59cm 27.94cm<% _ -> %> 16.5cm 20cm<% end %>;
     }
   }
 </style>
 <%!-- Hidden Print Container --%>
 <div id="print-labels" style="display: none;">
   <div
-    class="print-grid grid gap-4 justify-items-center"
-    style={"grid-template-columns: repeat(#{@labels_per_row}, 1fr);"}
+    class="print-grid grid justify-items-center"
+    style="grid-template-columns: repeat(2, 7.5cm); gap: 0.4cm;"
   >
     <%= for item_id <- @selected_items do %>
       <% item = Map.get(@selected_item_data, to_string(item_id)) %>
@@ -448,6 +416,7 @@
           include_barcode={@include_barcode}
           include_location={@include_location}
           include_call_number={@include_call_number}
+          app_logo_url={@app_logo_url}
         />
       <% end %>
     <% end %>
