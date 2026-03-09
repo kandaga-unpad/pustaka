@@ -3,6 +3,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
   alias Voile.Repo
   alias Voile.Schema.Catalog
+  alias Voile.Schema.Master
+  alias Voile.Schema.Metadata
 
   import Voile.Utils.DateHelper, only: [to_local_time: 1]
 
@@ -57,6 +59,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:selected_collection_ids, [])
         |> assign(:batch_action_type, nil)
         |> assign(:current_page_collection_ids, collection_ids)
+        |> assign(:editing_metadata, false)
+        |> assign(:review_edits, %{})
+        |> assign(:creator_query, "")
+        |> assign(:creator_results, [])
+        |> assign(:creator_selected_name, "")
+        |> assign(:review_resource_classes, Metadata.list_resource_class())
 
       {:ok, socket}
     end
@@ -112,6 +120,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       |> assign(:show_view_modal, false)
       |> assign(:action_type, nil)
       |> assign(:review_notes, "")
+      |> assign(:editing_metadata, false)
+      |> assign(:review_edits, %{})
+      |> assign(:creator_query, "")
+      |> assign(:creator_results, [])
+      |> assign(:creator_selected_name, "")
 
     {:noreply, socket}
   end
@@ -210,6 +223,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
       socket
       |> assign(:action_type, nil)
       |> assign(:review_notes, "")
+      |> assign(:editing_metadata, false)
+      |> assign(:review_edits, %{})
+      |> assign(:creator_query, "")
+      |> assign(:creator_results, [])
+      |> assign(:creator_selected_name, "")
 
     {:noreply, socket}
   end
@@ -409,64 +427,179 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   end
 
   @impl true
+  def handle_event("toggle_edit_metadata", _params, socket) do
+    editing = !socket.assigns.editing_metadata
+
+    # When entering edit mode, pre-populate review_edits from the current collection
+    {review_edits, creator_selected_name} =
+      if editing && socket.assigns.selected_collection do
+        c = socket.assigns.selected_collection
+
+        # Build per-field map: field_id (string) => current value
+        fields_edits =
+          (c.collection_fields || [])
+          |> Enum.reduce(%{}, fn f, acc ->
+            Map.put(acc, to_string(f.id), f.value || "")
+          end)
+
+        creator_selected_name =
+          if c.mst_creator, do: c.mst_creator.creator_name, else: ""
+
+        review_edits = %{
+          "title" => c.title || "",
+          "description" => c.description || "",
+          "access_level" => c.access_level || "public",
+          "collection_type" => c.collection_type || "",
+          "creator_id" => to_string(c.creator_id || ""),
+          "type_id" => to_string(c.type_id || ""),
+          "collection_fields" => fields_edits
+        }
+
+        {review_edits, creator_selected_name}
+      else
+        {%{}, ""}
+      end
+
+    {:noreply,
+     socket
+     |> assign(:editing_metadata, editing)
+     |> assign(:review_edits, review_edits)
+     |> assign(:creator_selected_name, creator_selected_name)
+     |> assign(:creator_query, "")
+     |> assign(:creator_results, [])}
+  end
+
+  @impl true
+  def handle_event("update_review_edit", %{"collection" => params}, socket) do
+    # Merge to preserve creator_id set by pick_creator (hidden input keeps it in params)
+    {:noreply, assign(socket, :review_edits, params)}
+  end
+
+  @impl true
+  def handle_event("search_creator", %{"creator_query" => query}, socket) do
+    results =
+      if String.trim(query) == "", do: [], else: Master.search_mst_creator(query, 10)
+
+    {:noreply,
+     socket
+     |> assign(:creator_query, query)
+     |> assign(:creator_results, results)}
+  end
+
+  @impl true
+  def handle_event("pick_creator", %{"id" => id, "name" => name}, socket) do
+    review_edits = Map.put(socket.assigns.review_edits, "creator_id", id)
+
+    {:noreply,
+     socket
+     |> assign(:review_edits, review_edits)
+     |> assign(:creator_selected_name, name)
+     |> assign(:creator_query, "")
+     |> assign(:creator_results, [])}
+  end
+
+  @impl true
+  def handle_event("clear_creator", _params, socket) do
+    review_edits = Map.put(socket.assigns.review_edits, "creator_id", "")
+
+    {:noreply,
+     socket
+     |> assign(:review_edits, review_edits)
+     |> assign(:creator_selected_name, "")
+     |> assign(:creator_query, "")
+     |> assign(:creator_results, [])}
+  end
+
+  @impl true
   def handle_event("approve_collection", %{"id" => id}, socket) do
     collection = Catalog.get_collection!(id)
     reviewer = socket.assigns.current_scope.user
     notes = socket.assigns.review_notes
+    review_edits = socket.assigns.review_edits
 
-    case Catalog.approve_collection(collection, reviewer, notes) do
-      {:ok, _updated_collection} ->
-        # Refresh the list (preserve filters and sort order)
-        page = socket.assigns.page
-        per_page = 10
-        current_user = socket.assigns.current_scope.user
-        search_query = socket.assigns.search_query
-        filter_status = socket.assigns.filter_status
-        sort_order = socket.assigns.sort_order || "asc"
+    # If reviewer has made edits, persist them before approving
+    # Separate collection-level attrs from the per-field values
+    {field_edits, collection_attrs} = Map.pop(review_edits, "collection_fields", %{})
 
-        {collections, total_pages, total_count} =
-          list_review_collections(
-            page,
-            per_page,
-            current_user,
-            search_query,
-            filter_status,
-            sort_order
-          )
+    update_result =
+      if map_size(collection_attrs) > 0 do
+        Catalog.update_collection(collection, collection_attrs, reviewer.id)
+      else
+        {:ok, collection}
+      end
 
-        collection_ids = Enum.map(collections, fn c -> c.id end)
+    case update_result do
+      {:ok, updated_collection} ->
+        # Update individual collection fields when there are edits
+        if map_size(field_edits) > 0 do
+          for f <- collection.collection_fields || [],
+              new_val = Map.get(field_edits, to_string(f.id)),
+              new_val != nil,
+              new_val != f.value do
+            Catalog.update_collection_field(f, %{value: new_val}, reviewer.id)
+          end
+        end
 
-        socket =
-          socket
-          |> put_flash(:info, "Collection approved and published successfully")
-          |> stream(:collections, collections, reset: true)
-          |> assign(:total_pages, total_pages)
-          |> assign(:total_count, total_count)
-          |> assign(:collections_empty?, collections == [])
-          |> assign(:selected_collection, nil)
-          |> assign(:action_type, nil)
-          |> assign(:review_notes, "")
-          |> assign(:show_view_modal, false)
-          |> assign(:selected_collection_ids, [])
-          |> assign(:current_page_collection_ids, collection_ids)
+        case Catalog.approve_collection(updated_collection, reviewer, notes) do
+          {:ok, _approved_collection} ->
+            # Refresh the list (preserve filters and sort order)
+            page = socket.assigns.page
+            per_page = 10
+            current_user = socket.assigns.current_scope.user
+            search_query = socket.assigns.search_query
+            filter_status = socket.assigns.filter_status
+            sort_order = socket.assigns.sort_order || "asc"
 
-        {:noreply, socket}
+            {collections, total_pages, total_count} =
+              list_review_collections(
+                page,
+                per_page,
+                current_user,
+                search_query,
+                filter_status,
+                sort_order
+              )
 
-      {:error, :invalid_status} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Collection is not in pending status")
-         |> assign(:selected_collection, nil)
-         |> assign(:action_type, nil)
-         |> assign(:show_view_modal, false)}
+            collection_ids = Enum.map(collections, fn c -> c.id end)
+
+            socket =
+              socket
+              |> put_flash(:info, "Collection approved and published successfully")
+              |> stream(:collections, collections, reset: true)
+              |> assign(:total_pages, total_pages)
+              |> assign(:total_count, total_count)
+              |> assign(:collections_empty?, collections == [])
+              |> assign(:selected_collection, nil)
+              |> assign(:action_type, nil)
+              |> assign(:review_notes, "")
+              |> assign(:show_view_modal, false)
+              |> assign(:selected_collection_ids, [])
+              |> assign(:editing_metadata, false)
+              |> assign(:review_edits, %{})
+              |> assign(:current_page_collection_ids, collection_ids)
+
+            {:noreply, socket}
+
+          {:error, :invalid_status} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Collection is not in pending status")
+             |> assign(:selected_collection, nil)
+             |> assign(:action_type, nil)
+             |> assign(:show_view_modal, false)}
+
+          {:error, changeset} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, "Failed to approve collection: #{inspect(changeset.errors)}")
+             |> assign(:selected_collection, nil)
+             |> assign(:action_type, nil)
+             |> assign(:show_view_modal, false)}
+        end
 
       {:error, changeset} ->
         {:noreply,
-         socket
-         |> put_flash(:error, "Failed to approve collection: #{inspect(changeset.errors)}")
-         |> assign(:selected_collection, nil)
-         |> assign(:action_type, nil)
-         |> assign(:show_view_modal, false)}
+         put_flash(socket, :error, "Failed to save edits: #{inspect(changeset.errors)}")}
     end
   end
 

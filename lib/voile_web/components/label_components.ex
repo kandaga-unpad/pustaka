@@ -29,10 +29,10 @@ defmodule VoileWeb.Components.LabelComponents do
               />
             <% end %>
             <div style="overflow: hidden;">
-              <div style="font-size: 8px; color: #9ca3af; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 6px; color: #9ca3af; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {get_node_name(@item)}
               </div>
-              <div style="font-size: 10px; color: #1f2937; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 8px; color: #1f2937; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {get_location(@item)}
               </div>
             </div>
@@ -89,10 +89,10 @@ defmodule VoileWeb.Components.LabelComponents do
               />
             <% end %>
             <div style="overflow: hidden;">
-              <div style="font-size: 8px; color: #9ca3af !important; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 6px; color: #9ca3af !important; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {get_node_name(@item)}
               </div>
-              <div style="font-size: 10px; color: #1f2937 !important; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 8px; color: #1f2937 !important; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {get_location(@item)}
               </div>
             </div>

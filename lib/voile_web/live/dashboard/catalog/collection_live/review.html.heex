@@ -231,111 +231,337 @@
           </div>
           <%!-- Metadata --%>
           <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              {gettext("Metadata")}
-            </h3>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {gettext("Metadata")}
+              </h3>
+              <button
+                type="button"
+                phx-click="toggle_edit_metadata"
+                class={[
+                  "inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md",
+                  if(@editing_metadata,
+                    do:
+                      "text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600",
+                    else:
+                      "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                  )
+                ]}
+              >
+                <%= if @editing_metadata do %>
+                  <.icon name="hero-x-mark" class="h-3.5 w-3.5" /> {gettext("Cancel Edits")}
+                <% else %>
+                  <.icon name="hero-pencil-square" class="h-3.5 w-3.5" /> {gettext(
+                    "Edit Metadata"
+                  )}
+                <% end %>
+              </button>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p class="font-medium text-gray-700 dark:text-gray-300">{gettext("Creator")}</p>
+            <%= if @editing_metadata do %>
+              <%!-- Editable metadata form --%>
+              <form
+                phx-change="update_review_edit"
+                id="review-edit-form"
+                class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"
+              >
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Title")} <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="collection[title]"
+                    value={@review_edits["title"]}
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  />
+                </div>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  <%= if @selected_collection.mst_creator do %>
-                    {@selected_collection.mst_creator.creator_name}
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Collection Type")}
+                  </label>
+                  <select
+                    name="collection[collection_type]"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  >
+                    <option value="">{gettext("— select —")}</option>
+                    <%= for ct <- ~w(series book movie album course other) do %>
+                      <option value={ct} selected={@review_edits["collection_type"] == ct}>
+                        {String.capitalize(ct)}
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Access Level")}
+                  </label>
+                  <select
+                    name="collection[access_level]"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  >
+                    <%= for al <- ~w(public private restricted) do %>
+                      <option value={al} selected={@review_edits["access_level"] == al}>
+                        {String.capitalize(al)}
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Description")}
+                  </label>
+                  <textarea
+                    name="collection[description]"
+                    rows="4"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  >{@review_edits["description"]}</textarea>
+                </div>
+
+                <%!-- Editable Creator (typeahead search) --%>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Creator")} <span class="text-red-500">*</span>
+                  </label>
+                  <%!-- Hidden input keeps the selected creator_id in form params --%>
+                  <input
+                    type="hidden"
+                    name="collection[creator_id]"
+                    value={@review_edits["creator_id"] || ""}
+                  />
+                  <%= if @review_edits["creator_id"] && @review_edits["creator_id"] != "" do %>
+                    <%!-- Selected creator display --%>
+                    <div class="flex items-center gap-2 px-3 py-2 border border-green-400 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20">
+                      <.icon
+                        name="hero-user"
+                        class="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0"
+                      />
+                      <span class="text-sm text-gray-900 dark:text-white flex-1">
+                        {@creator_selected_name}
+                      </span>
+                      <button
+                        type="button"
+                        phx-click="clear_creator"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        <.icon name="hero-x-mark" class="h-4 w-4" />
+                      </button>
+                    </div>
                   <% else %>
-                    -
+                    <%!-- Search input --%>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        name="creator_query"
+                        value={@creator_query}
+                        phx-change="search_creator"
+                        phx-debounce="300"
+                        placeholder={gettext("Type to search creator...")}
+                        autocomplete="off"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                      />
+                      <%= if @creator_results != [] do %>
+                        <div class="absolute z-20 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                          <%= for creator <- @creator_results do %>
+                            <button
+                              type="button"
+                              phx-click="pick_creator"
+                              phx-value-id={creator.id}
+                              phx-value-name={creator.creator_name}
+                              class="w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                            >
+                              {creator.creator_name}
+                            </button>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
                   <% end %>
-                </p>
-              </div>
+                </div>
 
-              <div>
-                <p class="font-medium text-gray-700 dark:text-gray-300">
-                  {gettext("Resource Type")}
-                </p>
+                <%!-- Editable Resource Type --%>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {gettext("Resource Type")} <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="collection[type_id]"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  >
+                    <option value="">{gettext("— select resource type —")}</option>
+                    <%= for rc <- @review_resource_classes do %>
+                      <option
+                        value={rc.id}
+                        selected={@review_edits["type_id"] == to_string(rc.id)}
+                      >
+                        {rc.label}
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  <%= if @selected_collection.resource_class do %>
-                    {@selected_collection.resource_class.label}
-                  <% else %>
-                    -
-                  <% end %>
-                </p>
-              </div>
+                <%!-- Read-only: Total Items --%>
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Total Items")}
+                  </p>
 
-              <div>
-                <p class="font-medium text-gray-700 dark:text-gray-300">
-                  {gettext("Collection Type")}
-                </p>
+                  <p class="text-gray-500 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.items && length(@selected_collection.items) > 0 do %>
+                      {length(@selected_collection.items)} {if length(@selected_collection.items) ==
+                                                                 1,
+                                                               do: gettext("item"),
+                                                               else: gettext("items")}
+                    <% else %>
+                      0 {gettext("items")}
+                    <% end %>
+                  </p>
+                </div>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  <%= if @selected_collection.collection_type && @selected_collection.collection_type != "" do %>
-                    {String.capitalize(@selected_collection.collection_type)}
-                  <% else %>
-                    -
-                  <% end %>
-                </p>
-              </div>
+                <%!-- Editable Additional Metadata (collection_fields) --%>
+                <%= if @selected_collection.collection_fields && @selected_collection.collection_fields != [] do %>
+                  <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-3">
+                      {gettext("Additional Metadata")}
+                    </p>
+                    <div class="space-y-3">
+                      <%= for field <- @selected_collection.collection_fields do %>
+                        <div>
+                          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            {(field.metadata_properties && field.metadata_properties.label) ||
+                              field.name}
+                          </label>
+                          <input
+                            type="text"
+                            name={"collection[collection_fields][#{field.id}]"}
+                            value={
+                              Map.get(
+                                @review_edits["collection_fields"] || %{},
+                                to_string(field.id),
+                                field.value || ""
+                              )
+                            }
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                          />
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </form>
 
-              <div>
-                <p class="font-medium text-gray-700 dark:text-gray-300">
-                  {gettext("Total Items")}
-                </p>
+              <p class="mt-3 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                <.icon name="hero-information-circle" class="h-3.5 w-3.5 flex-shrink-0" />
+                {gettext("Changes will be saved automatically when you confirm approval below.")}
+              </p>
+            <% else %>
+              <%!-- Read-only metadata display --%>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">{gettext("Creator")}</p>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  <%= if @selected_collection.items && length(@selected_collection.items) > 0 do %>
-                    {length(@selected_collection.items)} {if length(@selected_collection.items) ==
-                                                               1,
-                                                             do: gettext("item"),
-                                                             else: gettext("items")}
-                  <% else %>
-                    0 {gettext("items")}
-                  <% end %>
-                </p>
-              </div>
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.mst_creator do %>
+                      {@selected_collection.mst_creator.creator_name}
+                    <% else %>
+                      -
+                    <% end %>
+                  </p>
+                </div>
 
-              <div>
-                <p class="font-medium text-gray-700 dark:text-gray-300">
-                  {gettext("Access Level")}
-                </p>
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Resource Type")}
+                  </p>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  {String.capitalize(@selected_collection.access_level)}
-                </p>
-              </div>
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.resource_class do %>
+                      {@selected_collection.resource_class.label}
+                    <% else %>
+                      -
+                    <% end %>
+                  </p>
+                </div>
 
-              <div class="md:col-span-2">
-                <p class="font-medium text-gray-700 dark:text-gray-300">
-                  {gettext("Description")}
-                </p>
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Collection Type")}
+                  </p>
 
-                <p class="text-gray-600 dark:text-gray-400 mt-1">
-                  <%= if @selected_collection.description && @selected_collection.description != "" do %>
-                    {@selected_collection.description}
-                  <% else %>
-                    {gettext("No description provided")}
-                  <% end %>
-                </p>
-              </div>
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.collection_type && @selected_collection.collection_type != "" do %>
+                      {String.capitalize(@selected_collection.collection_type)}
+                    <% else %>
+                      -
+                    <% end %>
+                  </p>
+                </div>
 
-              <%= if @selected_collection.collection_fields && @selected_collection.collection_fields != [] do %>
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Total Items")}
+                  </p>
+
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.items && length(@selected_collection.items) > 0 do %>
+                      {length(@selected_collection.items)} {if length(@selected_collection.items) ==
+                                                                 1,
+                                                               do: gettext("item"),
+                                                               else: gettext("items")}
+                    <% else %>
+                      0 {gettext("items")}
+                    <% end %>
+                  </p>
+                </div>
+
+                <div>
+                  <p class="font-medium text-gray-700 dark:text-gray-300">
+                    {gettext("Access Level")}
+                  </p>
+
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    {String.capitalize(@selected_collection.access_level)}
+                  </p>
+                </div>
+
                 <div class="md:col-span-2">
                   <p class="font-medium text-gray-700 dark:text-gray-300">
-                    {gettext("Additional Metadata")}
+                    {gettext("Description")}
                   </p>
-                  <div class="text-gray-600 dark:text-gray-400 mt-1 space-y-1 text-sm">
-                    <%= for field <- @selected_collection.collection_fields do %>
-                      <p>
-                        <strong>
-                          {(field.metadata_properties && field.metadata_properties.label) ||
-                            field.name}:
-                        </strong>
-                        {field.value || "-"}
-                      </p>
+
+                  <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <%= if @selected_collection.description && @selected_collection.description != "" do %>
+                      {@selected_collection.description}
+                    <% else %>
+                      {gettext("No description provided")}
                     <% end %>
-                  </div>
+                  </p>
                 </div>
-              <% end %>
-            </div>
+
+                <%= if @selected_collection.collection_fields && @selected_collection.collection_fields != [] do %>
+                  <div class="md:col-span-2">
+                    <p class="font-medium text-gray-700 dark:text-gray-300">
+                      {gettext("Additional Metadata")}
+                    </p>
+                    <div class="text-gray-600 dark:text-gray-400 mt-1 space-y-1 text-sm">
+                      <%= for field <- @selected_collection.collection_fields do %>
+                        <p>
+                          <strong>
+                            {(field.metadata_properties && field.metadata_properties.label) ||
+                              field.name}:
+                          </strong>
+                          {field.value || "-"}
+                        </p>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
           </div>
           <%!-- Parent/Child Relationship --%>
           <%= if @selected_collection.parent_id || (@selected_collection.children && length(@selected_collection.children) > 0) do %>
@@ -412,6 +638,12 @@
           <%!-- Approve Confirmation --%>
           <%= if @action_type == :approve do %>
             <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <%= if map_size(@review_edits) > 0 do %>
+                <div class="mb-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-2 flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
+                  <.icon name="hero-pencil-square" class="h-4 w-4 flex-shrink-0" />
+                  {gettext("Your metadata edits will be saved as part of this approval.")}
+                </div>
+              <% end %>
               <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-4">
                 <div class="flex items-start gap-3">
                   <div class="flex-shrink-0">
