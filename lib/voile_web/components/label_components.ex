@@ -23,7 +23,7 @@ defmodule VoileWeb.Components.LabelComponents do
       style="width: 7.5cm; height: 3.5cm; box-sizing: border-box; padding: 2mm 3mm;"
     >
       <%!-- Node Name + Location with optional logo --%>
-      <%= if @include_location do %>
+      <%= if @app_logo_url || @include_location do %>
         <div style="display: flex; justify-content: center;">
           <div style="display: flex; align-items: center; gap: 3px;">
             <%= if @app_logo_url do %>
@@ -32,14 +32,16 @@ defmodule VoileWeb.Components.LabelComponents do
                 style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;"
               />
             <% end %>
-            <div style="overflow: hidden;">
-              <div style="font-size: 6px; color: #9ca3af; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {get_node_name(@item)}
+            <%= if @include_location do %>
+              <div style="overflow: hidden;">
+                <div style="font-size: 8px; color: #1f2937; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {get_node_name(@item)}
+                </div>
+                <div style="font-size: 6px; color: #9ca3af; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {get_location(@item)}
+                </div>
               </div>
-              <div style="font-size: 8px; color: #1f2937; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {get_location(@item)}
-              </div>
-            </div>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -84,7 +86,7 @@ defmodule VoileWeb.Components.LabelComponents do
       style={"width: 7.5cm; height: 3.5cm; box-sizing: border-box; padding: 2mm 3mm; background-color: white !important;#{if @include_border, do: " border: 1px solid #9ca3af;", else: ""}"}
     >
       <%!-- Node Name + Location with optional logo --%>
-      <%= if @include_location do %>
+      <%= if @app_logo_url || @include_location do %>
         <div style="display: flex; justify-content: center;">
           <div style="display: flex; align-items: center; gap: 3px;">
             <%= if @app_logo_url do %>
@@ -93,14 +95,16 @@ defmodule VoileWeb.Components.LabelComponents do
                 style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;"
               />
             <% end %>
-            <div style="overflow: hidden;">
-              <div style="font-size: 6px; color: #9ca3af !important; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {get_node_name(@item)}
+            <%= if @include_location do %>
+              <div style="overflow: hidden;">
+                <div style="font-size: 8px; color: #1f2937 !important; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {get_node_name(@item)}
+                </div>
+                <div style="font-size: 6px; color: #9ca3af !important; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {get_location(@item)}
+                </div>
               </div>
-              <div style="font-size: 8px; color: #1f2937 !important; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {get_location(@item)}
-              </div>
-            </div>
+            <% end %>
           </div>
         </div>
       <% end %>

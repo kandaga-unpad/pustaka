@@ -5,12 +5,60 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
   require Logger
   import VoileWeb.Components.LabelComponents
 
+  # Converts a logo URL to an inline base64 data URI so it renders correctly
+  # inside the hidden print container (browsers skip loading images in
+  # display:none elements, so a plain src URL would show nothing when printing).
+  defp logo_to_data_uri(nil), do: nil
+
+  defp logo_to_data_uri(url) when is_binary(url) do
+    cond do
+      # Local file: URL starts with /uploads, map to priv/static on disk
+      String.starts_with?(url, "/") ->
+        path = Path.join([:code.priv_dir(:voile), "static", url])
+
+        case File.read(path) do
+          {:ok, data} ->
+            mime = mime_from_path(url)
+            "data:#{mime};base64,#{Base.encode64(data)}"
+
+          {:error, _} ->
+            url
+        end
+
+      # Remote URL: fetch via Req
+      String.starts_with?(url, "http://") or String.starts_with?(url, "https://") ->
+        case Req.get(url, receive_timeout: 5_000) do
+          {:ok, %{status: 200, body: data}} when is_binary(data) ->
+            mime = mime_from_path(url)
+            "data:#{mime};base64,#{Base.encode64(data)}"
+
+          _ ->
+            url
+        end
+
+      true ->
+        url
+    end
+  end
+
+  defp mime_from_path(url) do
+    cond do
+      String.ends_with?(url, ".png") -> "image/png"
+      String.ends_with?(url, ".jpg") or String.ends_with?(url, ".jpeg") -> "image/jpeg"
+      String.ends_with?(url, ".webp") -> "image/webp"
+      String.ends_with?(url, ".svg") -> "image/svg+xml"
+      String.ends_with?(url, ".gif") -> "image/gif"
+      true -> "image/png"
+    end
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     # Check read permission for viewing items
     authorize!(socket, "items.read")
 
-    app_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", nil)
+    raw_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", nil)
+    app_logo_url = logo_to_data_uri(raw_logo_url)
 
     {:ok,
      socket
