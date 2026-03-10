@@ -51,7 +51,7 @@ defmodule Voile.Schema.StockOpname.Session do
     timestamps(type: :utc_datetime)
   end
 
-  @statuses ~w(draft initializing in_progress completed pending_review approved rejected cancelled)
+  @statuses ~w(draft initializing in_progress completed pending_review applying approved rejected cancelled)
   @scope_types ~w(all collection location)
   @collection_types ~w(Gallery Archive Museum Library)
 
@@ -146,6 +146,7 @@ defmodule Voile.Schema.StockOpname.Session do
       {"In Progress", "in_progress"},
       {"Completed", "completed"},
       {"Pending Review", "pending_review"},
+      {"Applying", "applying"},
       {"Approved", "approved"},
       {"Rejected", "rejected"},
       {"Cancelled", "cancelled"}
@@ -184,6 +185,7 @@ defmodule Voile.Schema.StockOpname.Session do
       "in_progress" -> "blue"
       "completed" -> "yellow"
       "pending_review" -> "orange"
+      "applying" -> "blue"
       "approved" -> "green"
       "rejected" -> "red"
       "cancelled" -> "gray"

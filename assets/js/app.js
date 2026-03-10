@@ -61,7 +61,9 @@ function setCookie(name, value, maxAge = ONE_YEAR_SECONDS) {
   document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
 }
 function getCookie(name) {
-  const match = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
+  const match = document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(name + "="));
   return match ? decodeURIComponent(match.split("=")[1]) : null;
 }
 function deleteCookie(name) {

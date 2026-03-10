@@ -247,24 +247,6 @@
             {gettext("Per label: 7.5cm × 3.5cm · 2 per row")}
           </p>
         </div>
-        <%!-- Font Size --%>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {gettext("Font Size")}
-          </label>
-          <select
-            name="font_size"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value="xs" selected={@font_size == "xs"}>{gettext("Extra Small")}</option>
-
-            <option value="sm" selected={@font_size == "sm"}>{gettext("Small")}</option>
-
-            <option value="base" selected={@font_size == "base"}>{gettext("Medium")}</option>
-
-            <option value="lg" selected={@font_size == "lg"}>{gettext("Large")}</option>
-          </select>
-        </div>
         <%!-- Include Options --%>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -298,6 +280,15 @@
             />
             <span class="text-sm text-gray-700 dark:text-gray-300">{gettext("Call Number")}</span>
           </label>
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="include_border"
+              value="true"
+              checked={@include_border}
+            />
+            <span class="text-sm text-gray-700 dark:text-gray-300">{gettext("Border")}</span>
+          </label>
         </div>
       </.form>
       <%!-- Print Button --%>
@@ -317,14 +308,48 @@
   </div>
   <%!-- Preview Panel (Full Width Below) --%>
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-      {gettext("Preview")}
-      <%= if length(@selected_items) > 0 do %>
-        <span class="text-sm font-normal text-gray-500">
-          {gettext("(%{count} label(s))", count: length(@selected_items))}
-        </span>
-      <% end %>
-    </h2>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        {gettext("Preview")}
+        <%= if length(@selected_items) > 0 do %>
+          <span class="text-sm font-normal text-gray-500">
+            {gettext("(%{count} label(s))", count: length(@selected_items))}
+          </span>
+        <% end %>
+      </h2>
+      <div class="flex items-center gap-2">
+        <%= if @saved_concept do %>
+          <button
+            type="button"
+            phx-click="delete_concept"
+            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg font-medium transition-colors"
+          >
+            <.icon name="hero-trash" class="w-3.5 h-3.5" />
+            {gettext("Delete Concept")}
+          </button>
+          <%= if length(@saved_concept.selected_items) > 0 do %>
+            <button
+              type="button"
+              phx-click="restore_concept"
+              class="flex items-center gap-1 text-xs px-3 py-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50 rounded-lg font-medium transition-colors"
+            >
+              <.icon name="hero-arrow-path" class="w-3.5 h-3.5" />
+              {gettext("Restore (%{count})", count: length(@saved_concept.selected_items))}
+            </button>
+          <% end %>
+        <% end %>
+        <%= if length(@selected_items) > 0 do %>
+          <button
+            type="button"
+            phx-click="save_concept"
+            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 rounded-lg font-medium transition-colors"
+          >
+            <.icon name="hero-bookmark" class="w-3.5 h-3.5" />
+            {gettext("Save Concept")}
+          </button>
+        <% end %>
+      </div>
+    </div>
 
     <%= if length(@selected_items) == 0 do %>
       <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-8 bg-gray-50 dark:bg-gray-700">
@@ -349,10 +374,10 @@
               <.label_preview
                 item={item}
                 size={@label_size}
-                font_size={@font_size}
                 include_barcode={@include_barcode}
                 include_location={@include_location}
                 include_call_number={@include_call_number}
+                include_border={@include_border}
                 app_logo_url={@app_logo_url}
               />
             <% end %>
@@ -412,10 +437,10 @@
         <.label_print
           item={item}
           size={@label_size}
-          font_size={@font_size}
           include_barcode={@include_barcode}
           include_location={@include_location}
           include_call_number={@include_call_number}
+          include_border={@include_border}
           app_logo_url={@app_logo_url}
         />
       <% end %>

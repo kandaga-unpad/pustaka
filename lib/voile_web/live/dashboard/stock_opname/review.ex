@@ -210,7 +210,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:             {item.item.barcode}</span>
+                      <span :if={item.item.barcode}>
+                        • Barcode: {item.item.barcode}
+                      </span>
                     </p>
                   </div>
 
@@ -341,7 +343,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Inventory: {item.item.inventory_code}
-                      <span :if={item.item.barcode}> • Barcode:             {item.item.barcode}</span>
+                      <span :if={item.item.barcode}>
+                        • Barcode: {item.item.barcode}
+                      </span>
                     </p>
                   </div>
 
@@ -473,8 +477,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
       {:ok, socket}
     else
-      # Verify status
-      unless session.status == "pending_review" do
+      # Allow reviewing a session that is pending_review OR currently applying
+      # (background approval in progress — page stays live until PubSub notifies).
+      unless session.status in ["pending_review", "applying"] do
         socket =
           socket
           |> put_flash(:error, "This session is not pending review")
@@ -482,6 +487,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
         {:ok, socket}
       else
+        # Subscribe to real-time approval completion events for this session.
+        # Messages arrive via handle_info/2 below.
+        if Phoenix.LiveView.connected?(socket) do
+          StockOpname.subscribe_session(session.id)
+        end
+
         # Recalculate counters to ensure they're up to date
         {:ok, session} = StockOpname.recalculate_session_counters(session)
 
@@ -500,6 +511,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           |> assign(:approve_form, to_form(%{}))
           |> assign(:revision_form, to_form(%{}))
           |> assign(:reject_form, to_form(%{}))
+          |> assign(:applying?, session.status == "applying")
 
         {:ok, socket}
       end
@@ -534,11 +546,15 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
            socket.assigns.current_user,
            notes
          ) do
-      {:ok, _session} ->
+      {:ok, applying_session} ->
+        # approve_session/3 returns immediately once the session is marked
+        # "applying". The heavy bulk updates run in the background. We stay on
+        # the page and wait for the {:session_approved, _} PubSub message.
         socket =
           socket
-          |> put_flash(:info, "Session approved! All changes have been applied.")
-          |> redirect(to: ~p"/manage/catalog/stock_opname")
+          |> assign(:session, applying_session)
+          |> assign(:applying?, true)
+          |> put_flash(:info, "Approval started — applying changes in the background…")
 
         {:noreply, socket}
 
@@ -591,6 +607,35 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           {:noreply, put_flash(socket, :error, "Failed to reject session")}
       end
     end
+  end
+
+  # Background approval completed successfully.
+  def handle_info({:session_approved, approved_session}, socket) do
+    socket =
+      socket
+      |> assign(:session, approved_session)
+      |> assign(:applying?, false)
+      |> put_flash(:info, "Session approved! All changes have been applied.")
+      |> redirect(to: ~p"/manage/catalog/stock_opname")
+
+    {:noreply, socket}
+  end
+
+  # Background approval failed — session was rolled back to pending_review.
+  def handle_info({:session_approval_failed, _reason}, socket) do
+    # Reload the session so the UI reflects the rolled-back pending_review state.
+    session = StockOpname.get_session_without_items!(socket.assigns.session.id)
+
+    socket =
+      socket
+      |> assign(:session, session)
+      |> assign(:applying?, false)
+      |> put_flash(
+        :error,
+        "Approval failed while applying changes. The session has been reset to pending review — please try again."
+      )
+
+    {:noreply, socket}
   end
 
   defp work_status_badge(assigns) do

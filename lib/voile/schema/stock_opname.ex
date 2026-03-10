@@ -1472,7 +1472,18 @@ defmodule Voile.Schema.StockOpname do
   end
 
   @doc """
-  Approve a stock opname session and apply all changes to main tables.
+  Approve a stock opname session.
+
+  Returns `{:ok, session}` immediately after marking the session as
+  `"applying"`. The actual bulk item updates (Steps 1-3) run in a supervised
+  background task so the caller is never blocked.
+
+  Subscribers on the topic `"stock_opname:session:<id>"` will receive either:
+  - `{:session_approved, %Session{}}` on success
+  - `{:session_approval_failed, reason}` on failure
+
+  Use `subscribe_session/1` to subscribe before calling this function if you
+  need real-time completion feedback in a LiveView.
   """
   def approve_session(session, admin_user, notes \\ nil)
 
@@ -1484,170 +1495,228 @@ defmodule Voile.Schema.StockOpname do
       ) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:apply_changes, fn repo, _changes ->
-      # Step 1: Mark all unchecked (pending) items as missing in catalog
-      {unchecked_count, _} =
-        from(i in CatalogItem,
-          join: oi in Item,
-          on: oi.item_id == i.id,
-          where: oi.session_id == ^session.id,
-          where: oi.check_status == "pending"
-        )
-        |> repo.update_all(
-          set: [
-            availability: "missing",
-            updated_by_id: admin_user.id,
-            updated_at: now
-          ]
-        )
+    # Phase 1 — fast, synchronous: commit the reviewer's intent and mark the
+    # session as "applying" so no other process can race to approve it.
+    with {:ok, applying_session} <-
+           session
+           |> Ecto.Changeset.change(%{
+             status: "applying",
+             reviewed_at: now,
+             reviewed_by_id: admin_user.id,
+             review_notes: notes
+           })
+           |> Repo.update() do
+      # Phase 2 — background: run the heavy bulk updates without blocking the
+      # caller. Voile.TaskSupervisor is started in application.ex.
+      Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
+        result = do_apply_session_changes(applying_session, admin_user, now)
 
-      # Step 2: Mark items with availability changed to "missing" in catalog
-      {missing_count, _} =
-        from(i in CatalogItem,
-          join: oi in Item,
-          on: oi.item_id == i.id,
-          where: oi.session_id == ^session.id,
-          where: fragment("?->>'availability' = 'missing'", oi.changes)
-        )
-        |> repo.update_all(
-          set: [
-            availability: "missing",
-            updated_by_id: admin_user.id,
-            updated_at: now
-          ]
-        )
+        case result do
+          {:ok, approved_session} ->
+            Phoenix.PubSub.broadcast(
+              Voile.PubSub,
+              session_topic(approved_session.id),
+              {:session_approved, approved_session}
+            )
 
-      # Step 3: Apply changes from JSONB to catalog items
-      # Use efficient batch updates for large datasets (500k+ items)
+          {:error, reason} ->
+            Logger.error(
+              "approve_session background task failed for session #{session.id}: #{inspect(reason)}"
+            )
+
+            # Roll the session back to pending_review so the admin can retry.
+            session
+            |> Ecto.Changeset.change(%{status: "pending_review"})
+            |> Repo.update()
+
+            Phoenix.PubSub.broadcast(
+              Voile.PubSub,
+              session_topic(session.id),
+              {:session_approval_failed, reason}
+            )
+        end
+      end)
+
+      {:ok, applying_session}
+    end
+  end
+
+  def approve_session(%Session{}, _admin_user, _notes) do
+    {:error, :invalid_status}
+  end
+
+  @doc """
+  Subscribe to real-time updates for a specific stock opname session.
+
+  Messages you will receive:
+  - `{:session_approved, %Session{}}` — background approval completed
+  - `{:session_approval_failed, reason}` — background approval failed
+  """
+  def subscribe_session(session_id) do
+    Phoenix.PubSub.subscribe(Voile.PubSub, session_topic(session_id))
+  end
+
+  defp session_topic(session_id), do: "stock_opname:session:#{session_id}"
+
+  # ---------------------------------------------------------------------------
+  # Private: the actual bulk-update work, called from the background task.
+  # ---------------------------------------------------------------------------
+
+  defp do_apply_session_changes(%Session{} = session, admin_user, now) do
+    admin_id_bin = Ecto.UUID.dump!(admin_user.id)
+
+    # Step 1 & 2: mark pending/explicitly-missing items as missing in catalog.
+    # These two bulk UPDATE statements are fast (index scans) and run in a
+    # single transaction to stay atomic.
+    with {:ok, _} <-
+           Ecto.Multi.new()
+           |> Ecto.Multi.run(:apply_missing, fn repo, _changes ->
+             # Step 1: items in-scope but never scanned by any librarian.
+             {unchecked_count, _} =
+               from(i in CatalogItem,
+                 join: oi in Item,
+                 on: oi.item_id == i.id,
+                 where: oi.session_id == ^session.id,
+                 where: oi.check_status == "pending"
+               )
+               |> repo.update_all(
+                 set: [
+                   availability: "missing",
+                   updated_by_id: admin_user.id,
+                   updated_at: now
+                 ]
+               )
+
+             # Step 2: items a librarian explicitly flagged as missing during
+             # the scan (check_status == "missing"). These may have no `changes`
+             # JSONB entry so they must be handled separately from Step 3.
+             {explicit_missing_count, _} =
+               from(i in CatalogItem,
+                 join: oi in Item,
+                 on: oi.item_id == i.id,
+                 where: oi.session_id == ^session.id,
+                 where: oi.check_status == "missing"
+               )
+               |> repo.update_all(
+                 set: [
+                   availability: "missing",
+                   updated_by_id: admin_user.id,
+                   updated_at: now
+                 ]
+               )
+
+             {:ok, {unchecked_count, explicit_missing_count}}
+           end)
+           |> Repo.transaction() do
+      # Step 3: apply per-field JSONB changes for all "checked" items that had
+      # differences recorded by a librarian.
+      #
+      # We fetch the full list of changed items first (one SELECT), then process
+      # them in chunks of 1000 concurrently using Task.async_stream. Each task
+      # gets its own Repo connection from the pool so the BEAM schedulers and
+      # the DB connection pool are both used efficiently.
+      #
+      # max_concurrency is capped at 4 — this is intentionally conservative so
+      # we don't flood the DB connection pool (default: 10) and starve other
+      # requests running in parallel on the same node.
       items_with_changes =
         from(oi in Item,
           where: oi.session_id == ^session.id,
           where: oi.has_changes == true,
           where: oi.check_status == "checked",
           where: not is_nil(oi.changes),
-          select: %{
-            item_id: oi.item_id,
-            changes: oi.changes
-          }
+          select: %{item_id: oi.item_id, changes: oi.changes}
         )
-        |> repo.all()
+        |> Repo.all()
 
-      # Process in chunks of 1000 to avoid memory issues
-      changes_count =
+      chunk_results =
         items_with_changes
         |> Enum.chunk_every(1000)
-        |> Enum.reduce(0, fn chunk, acc ->
-          # Build batch update queries for each field that changed
-          # Batch update status
-          status_updates =
-            chunk
-            |> Enum.filter(&Map.has_key?(&1.changes, "status"))
-            |> Enum.map(&{&1.item_id, &1.changes["status"]})
+        |> Task.async_stream(
+          &apply_item_changes_chunk(&1, admin_id_bin, now),
+          timeout: :infinity,
+          max_concurrency: 4
+        )
+        |> Enum.to_list()
 
-          if status_updates != [] do
-            {ids, values} = Enum.unzip(status_updates)
+      # Raise on any task failure so the caller can roll back and notify.
+      Enum.each(chunk_results, fn
+        {:ok, _count} -> :ok
+        {:exit, reason} -> raise "Chunk processing failed: #{inspect(reason)}"
+      end)
 
-            repo.query!(
-              "UPDATE items SET status = data.value, updated_by_id = $1, updated_at = $2
-               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
-               WHERE items.id = data.id",
-              [admin_user.id, now, ids, values]
-            )
-          end
-
-          # Batch update condition
-          condition_updates =
-            chunk
-            |> Enum.filter(&Map.has_key?(&1.changes, "condition"))
-            |> Enum.map(&{&1.item_id, &1.changes["condition"]})
-
-          if condition_updates != [] do
-            {ids, values} = Enum.unzip(condition_updates)
-
-            repo.query!(
-              "UPDATE items SET condition = data.value, updated_by_id = $1, updated_at = $2
-               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
-               WHERE items.id = data.id",
-              [admin_user.id, now, ids, values]
-            )
-          end
-
-          # Batch update availability
-          availability_updates =
-            chunk
-            |> Enum.filter(&Map.has_key?(&1.changes, "availability"))
-            |> Enum.map(&{&1.item_id, &1.changes["availability"]})
-
-          if availability_updates != [] do
-            {ids, values} = Enum.unzip(availability_updates)
-
-            repo.query!(
-              "UPDATE items SET availability = data.value, updated_by_id = $1, updated_at = $2
-               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
-               WHERE items.id = data.id",
-              [admin_user.id, now, ids, values]
-            )
-          end
-
-          # Batch update location
-          location_updates =
-            chunk
-            |> Enum.filter(&Map.has_key?(&1.changes, "location"))
-            |> Enum.map(&{&1.item_id, &1.changes["location"]})
-
-          if location_updates != [] do
-            {ids, values} = Enum.unzip(location_updates)
-
-            repo.query!(
-              "UPDATE items SET location = data.value, updated_by_id = $1, updated_at = $2
-               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::text[]) as value) AS data
-               WHERE items.id = data.id",
-              [admin_user.id, now, ids, values]
-            )
-          end
-
-          # Batch update item_location_id
-          item_location_updates =
-            chunk
-            |> Enum.filter(&Map.has_key?(&1.changes, "item_location_id"))
-            |> Enum.map(&{&1.item_id, &1.changes["item_location_id"]})
-
-          if item_location_updates != [] do
-            {ids, values} = Enum.unzip(item_location_updates)
-
-            repo.query!(
-              "UPDATE items SET item_location_id = data.value, updated_by_id = $1, updated_at = $2
-               FROM (SELECT unnest($3::uuid[]) as id, unnest($4::integer[]) as value) AS data
-               WHERE items.id = data.id",
-              [admin_user.id, now, ids, values]
-            )
-          end
-
-          acc + length(chunk)
-        end)
-
-      {:ok, {changes_count, missing_count, unchecked_count}}
-    end)
-    |> Ecto.Multi.update(:update_session, fn _changes ->
+      # All changes applied — stamp the session as fully approved.
       session
       |> Ecto.Changeset.change(%{
         status: "approved",
-        approved_at: now,
-        reviewed_at: now,
-        reviewed_by_id: admin_user.id,
-        review_notes: notes
+        approved_at: now
       })
-    end)
-    |> Repo.transaction(timeout: :infinity)
-    |> case do
-      {:ok, %{update_session: session}} -> {:ok, session}
-      {:error, _step, error, _changes} -> {:error, error}
+      |> Repo.update()
     end
   end
 
-  def approve_session(%Session{}, _admin_user, _notes) do
-    {:error, :invalid_status}
+  # Applies all recorded field changes for one chunk of up to 1000 items.
+  # Uses unnest-based batch UPDATEs to minimise round-trips to Postgres.
+  defp apply_item_changes_chunk(chunk, admin_id_bin, now) do
+    encode_ids = fn pairs ->
+      Enum.map(pairs, fn {id, val} -> {Ecto.UUID.dump!(id), val} end)
+    end
+
+    for {field, sql_col, cast_type} <- [
+          {"status", "status", "text"},
+          {"condition", "condition", "text"},
+          {"availability", "availability", "text"},
+          {"location", "location", "text"}
+        ] do
+      updates =
+        chunk
+        |> Enum.filter(&Map.has_key?(&1.changes, field))
+        |> Enum.map(&{&1.item_id, &1.changes[field]})
+        |> encode_ids.()
+
+      if updates != [] do
+        {ids, values} = Enum.unzip(updates)
+
+        Repo.query!(
+          """
+          UPDATE items
+             SET #{sql_col} = data.value,
+                 updated_by_id = $1,
+                 updated_at = $2
+            FROM (SELECT unnest($3::uuid[]) AS id,
+                         unnest($4::#{cast_type}[]) AS value) AS data
+           WHERE items.id = data.id
+          """,
+          [admin_id_bin, now, ids, values]
+        )
+      end
+    end
+
+    # item_location_id is an integer FK — needs a separate cast type.
+    location_id_updates =
+      chunk
+      |> Enum.filter(&Map.has_key?(&1.changes, "item_location_id"))
+      |> Enum.map(&{&1.item_id, &1.changes["item_location_id"]})
+      |> encode_ids.()
+
+    if location_id_updates != [] do
+      {ids, values} = Enum.unzip(location_id_updates)
+
+      Repo.query!(
+        """
+        UPDATE items
+           SET item_location_id = data.value,
+               updated_by_id = $1,
+               updated_at = $2
+          FROM (SELECT unnest($3::uuid[]) AS id,
+                       unnest($4::integer[]) AS value) AS data
+         WHERE items.id = data.id
+        """,
+        [admin_id_bin, now, ids, values]
+      )
+    end
+
+    length(chunk)
   end
 
   @doc """

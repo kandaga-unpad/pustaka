@@ -10,12 +10,16 @@ defmodule VoileWeb.Components.LabelComponents do
   attr :include_barcode, :boolean, default: true
   attr :include_location, :boolean, default: true
   attr :include_call_number, :boolean, default: true
+  attr :include_border, :boolean, default: true
   attr :app_logo_url, :string, default: nil
 
   def label_preview(assigns) do
     ~H"""
     <div
-      class="print-label border-2 border-dashed border-gray-300 rounded overflow-hidden bg-white flex flex-col"
+      class={[
+        "print-label rounded overflow-hidden bg-white flex flex-col",
+        if(@include_border, do: "border-2 border-dashed border-gray-300", else: "")
+      ]}
       style="width: 7.5cm; height: 3.5cm; box-sizing: border-box; padding: 2mm 3mm;"
     >
       <%!-- Node Name + Location with optional logo --%>
@@ -70,13 +74,14 @@ defmodule VoileWeb.Components.LabelComponents do
   attr :include_barcode, :boolean, default: true
   attr :include_location, :boolean, default: true
   attr :include_call_number, :boolean, default: true
+  attr :include_border, :boolean, default: true
   attr :app_logo_url, :string, default: nil
 
   def label_print(assigns) do
     ~H"""
     <div
       class="print-label overflow-hidden bg-white flex flex-col"
-      style="width: 7.5cm; height: 3.5cm; box-sizing: border-box; padding: 2mm 3mm; border: 1px solid #9ca3af; background-color: white !important;"
+      style={"width: 7.5cm; height: 3.5cm; box-sizing: border-box; padding: 2mm 3mm; background-color: white !important;#{if @include_border, do: " border: 1px solid #9ca3af;", else: ""}"}
     >
       <%!-- Node Name + Location with optional logo --%>
       <%= if @include_location do %>

@@ -28,7 +28,8 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
      |> assign(:include_barcode, true)
      |> assign(:include_location, true)
      |> assign(:include_call_number, true)
-     |> assign(:font_size, "base")
+     |> assign(:include_border, true)
+     |> assign(:saved_concept, nil)
      |> stream(:items, [])
      |> stream(:collections, [])}
   end
@@ -193,9 +194,45 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
         :include_call_number,
         params["include_call_number"] == "true"
       )
-      |> assign(:font_size, params["font_size"] || socket.assigns.font_size)
+      |> assign(
+        :include_border,
+        params["include_border"] == "true"
+      )
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("save_concept", _params, socket) do
+    concept = %{
+      selected_items: socket.assigns.selected_items,
+      selected_item_data: socket.assigns.selected_item_data
+    }
+
+    {:noreply, assign(socket, :saved_concept, concept)}
+  end
+
+  @impl true
+  def handle_event("delete_concept", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:saved_concept, nil)
+     |> assign(:selected_items, [])
+     |> assign(:selected_item_data, %{})}
+  end
+
+  @impl true
+  def handle_event("restore_concept", _params, socket) do
+    case socket.assigns.saved_concept do
+      nil ->
+        {:noreply, socket}
+
+      concept ->
+        {:noreply,
+         socket
+         |> assign(:selected_items, concept.selected_items)
+         |> assign(:selected_item_data, concept.selected_item_data)}
+    end
   end
 
   @impl true
