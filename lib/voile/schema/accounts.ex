@@ -532,6 +532,7 @@ defmodule Voile.Schema.Accounts do
         "250" => "SPS",
         "260" => "FARMASI",
         "270" => "FTG",
+        "280" => "Vokasi",
         "500" => "UNPAD_PRESS"
       }
 
@@ -708,6 +709,20 @@ defmodule Voile.Schema.Accounts do
     attrs =
       if guest_member_type && !Map.has_key?(attrs, "user_type_id") do
         Map.put(attrs, "user_type_id", guest_member_type.id)
+      else
+        attrs
+      end
+
+    # Default node_id: prefer "default_node_id" setting, fall back to 1
+    attrs =
+      if !Map.has_key?(attrs, "node_id") do
+        node_id =
+          case Voile.Schema.System.get_setting_value("default_node_id", nil) do
+            nil -> 1
+            val -> String.to_integer(val)
+          end
+
+        Map.put(attrs, "node_id", node_id)
       else
         attrs
       end
