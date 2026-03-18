@@ -115,8 +115,16 @@ defmodule Voile.PluginManager do
 
   @impl true
   def handle_continue(:rehydrate, state) do
-    Plugins.list_plugins()
-    |> Enum.each(fn record ->
+    plugins =
+      try do
+        Plugins.list_plugins()
+      rescue
+        e in [Postgrex.Error, Ecto.QueryError] ->
+          Logger.debug("[PluginManager] Could not load plugins (likely missing plugin table): #{inspect(e)}")
+          []
+      end
+
+    Enum.each(plugins, fn record ->
       try do
         module = String.to_existing_atom(record.module)
         status_atom = String.to_existing_atom(to_string(record.status))
