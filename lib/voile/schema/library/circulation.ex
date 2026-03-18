@@ -2628,6 +2628,7 @@ defmodule Voile.Schema.Library.Circulation do
         member_id: member.id,
         item_id: item.id,
         librarian_id: librarian_id,
+        unit_id: item.unit_id,
         transaction_type: "loan",
         transaction_date: DateTime.utc_now(),
         due_date: due_date,
@@ -3459,4 +3460,114 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   defp parse_xendit_datetime(_), do: nil
+
+  # ===========================================================================
+  # CIRCULATION STATS - Reusable stats queries for dashboards
+  # ===========================================================================
+
+  @doc """
+  Returns a map with all circulation stats for a given node.
+  If node_id is nil, returns stats for all nodes (super admin view).
+
+  ## Examples
+
+      iex> get_circulation_stats(1)
+      %{active_transactions: 10, overdue_count: 2, active_reservations: 5, outstanding_fines: 50000}
+
+      iex> get_circulation_stats(nil)
+      %{active_transactions: 100, overdue_count: 20, active_reservations: 50, outstanding_fines: 500000}
+  """
+  def get_circulation_stats(node_id \\ nil) do
+    %{
+      active_transactions: count_active_transactions(node_id),
+      overdue_count: count_overdue_transactions(node_id),
+      active_reservations: count_active_reservations(node_id),
+      outstanding_fines: sum_outstanding_fines(node_id)
+    }
+  end
+
+  @doc """
+  Count active transactions. If node_id is nil, returns count for all nodes.
+  """
+  def count_active_transactions(nil) do
+    Transaction
+    |> where([t], t.status == "active")
+    |> Repo.aggregate(:count, :id)
+  end
+
+  def count_active_transactions(node_id) when is_integer(node_id) do
+    Transaction
+    |> where([t], t.status == "active" and (t.unit_id == ^node_id or is_nil(t.unit_id)))
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Count overdue transactions. If node_id is nil, returns count for all nodes.
+  """
+  def count_overdue_transactions(nil) do
+    Transaction
+    |> where([t], t.status == "overdue")
+    |> Repo.aggregate(:count, :id)
+  end
+
+  def count_overdue_transactions(node_id) when is_integer(node_id) do
+    Transaction
+    |> where([t], t.status == "overdue" and (t.unit_id == ^node_id or is_nil(t.unit_id)))
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Count active reservations (pending and available). If node_id is nil, returns count for all nodes.
+  Reservations don't have unit_id, so we join to collection.
+  """
+  def count_active_reservations(nil) do
+    Reservation
+    |> where([r], r.status in ["pending", "available"])
+    |> Repo.aggregate(:count, :id)
+  end
+
+  def count_active_reservations(node_id) when is_integer(node_id) do
+    Reservation
+    |> join(:inner, [r], c in assoc(r, :collection))
+    |> where(
+      [r, c],
+      r.status in ["pending", "available"] and (c.unit_id == ^node_id or is_nil(c.unit_id))
+    )
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Sum outstanding fines. If node_id is nil, returns sum for all nodes.
+  """
+  def sum_outstanding_fines(nil) do
+    base_query =
+      from(f in Fine,
+        where: f.fine_status in ["pending", "partial_paid"]
+      )
+
+    sum_balance = Repo.one(from(f in base_query, select: sum(f.balance))) || Decimal.new(0)
+
+    sum_balance
+    |> Decimal.to_float()
+    |> trunc()
+  end
+
+  def sum_outstanding_fines(node_id) when is_integer(node_id) do
+    base_query =
+      from(f in Fine,
+        where: f.fine_status in ["pending", "partial_paid"]
+      )
+
+    query =
+      from(f in base_query,
+        join: m in assoc(f, :member),
+        where: m.node_id == ^node_id
+      )
+
+    sum_balance = Repo.one(from(f in query, select: sum(f.balance))) || Decimal.new(0)
+
+    sum_balance
+    |> Decimal.to_float()
+    |> trunc()
+  end
 end

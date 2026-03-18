@@ -2,8 +2,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
   use VoileWeb, :live_view_dashboard
 
   import VoileWeb.Dashboard.Glam.Library.Circulation.Helpers
+  import VoileWeb.Dashboard.Glam.Library.Circulation.Components
 
-  alias Voile.Repo
   alias Voile.Schema.Library.Circulation
   alias VoileWeb.Auth.Authorization
   alias Voile.Schema.System, as: VoileSystem
@@ -150,179 +150,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
         </div>
       <% end %>
       <%!-- Statistics Section --%>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-blue-500">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <.icon name="hero-book-open" class="w-8 h-8 text-blue-500" />
-            </div>
-
-            <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Active Transactions
-              </h3>
-
-              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                <%= if @stats.active_transactions do %>
-                  {@stats.active_transactions}
-                <% else %>
-                  <svg
-                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    >
-                    </circle>
-
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    >
-                    </path>
-                  </svg>
-                <% end %>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-yellow-500">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <.icon name="hero-clock" class="w-8 h-8 text-yellow-500" />
-            </div>
-
-            <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overdue Items</h3>
-
-              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                <%= if @stats.overdue_count do %>
-                  {@stats.overdue_count}
-                <% else %>
-                  <svg
-                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    >
-                    </circle>
-
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    >
-                    </path>
-                  </svg>
-                <% end %>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-green-500">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <.icon name="hero-bookmark" class="w-8 h-8 text-green-500" />
-            </div>
-
-            <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Active Reservations
-              </h3>
-
-              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                <%= if @stats.active_reservations do %>
-                  {@stats.active_reservations}
-                <% else %>
-                  <svg
-                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    >
-                    </circle>
-
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    >
-                    </path>
-                  </svg>
-                <% end %>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-red-500">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
-            </div>
-
-            <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Outstanding Fines</h3>
-
-              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                <%= if @stats.outstanding_fines do %>
-                  {format_idr(@stats.outstanding_fines)}
-                <% else %>
-                  <svg
-                    class="animate-spin h-6 w-6 text-gray-600 inline-block"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    >
-                    </circle>
-
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    >
-                    </path>
-                  </svg>
-                <% end %>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <.circulation_stats stats={@stats} />
       <%!-- Recent Activities Section --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 mb-8">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
@@ -856,21 +684,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
     # Allow super_admin to select a node; if selected_node_id is set, override
     # the user's node_id when computing scoped stats.
-    user_for_stats =
+    node_id =
       if Authorization.is_super_admin?(current_user) and
            Map.has_key?(socket.assigns, :selected_node_id) and
            not is_nil(socket.assigns.selected_node_id) do
-        Map.put(current_user, :node_id, socket.assigns.selected_node_id)
+        socket.assigns.selected_node_id
       else
-        current_user
+        current_user.node_id
       end
 
-    stats = %{
-      active_transactions: get_active_transactions_count(user_for_stats),
-      overdue_count: get_overdue_transactions_count(user_for_stats),
-      active_reservations: get_active_reservations_count(user_for_stats),
-      outstanding_fines: calculate_outstanding_fines(user_for_stats)
-    }
+    stats = Voile.get_circulation_stats(node_id)
 
     {recent_activities, _, _} = Circulation.list_circulation_history_paginated(1, 10)
 
@@ -978,185 +801,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       end
 
     {:noreply, socket}
-  end
-
-  # Helper functions to compute statistics
-
-  defp get_active_transactions_count(user) do
-    # Count active transactions scoped by unit (collection.unit_id) unless super_admin
-    alias Voile.Schema.Library.Transaction
-    alias Voile.Repo
-    import Ecto.Query
-
-    cache_key =
-      if is_nil(user.node_id),
-        do: {:active_transactions, :all},
-        else: {:active_transactions, user.node_id}
-
-    case cache_get(cache_key) do
-      {:ok, val} ->
-        val
-
-      :miss ->
-        val =
-          if is_nil(user.node_id) do
-            Transaction
-            |> where([t], t.status == "active")
-            |> Repo.aggregate(:count, :id)
-          else
-            Transaction
-            |> join(:inner, [t], c in assoc(t, :collection))
-            |> where([t, c], t.status == "active" and c.unit_id == ^user.node_id)
-            |> Repo.aggregate(:count, :id)
-          end
-
-        cache_put(cache_key, val, 30_000)
-        val
-    end
-  end
-
-  defp get_overdue_transactions_count(user) do
-    # Count overdue transactions scoped by unit unless super_admin
-    alias Voile.Schema.Library.Transaction
-    alias Voile.Repo
-    import Ecto.Query
-
-    cache_key =
-      if is_nil(user.node_id),
-        do: {:overdue_transactions, :all},
-        else: {:overdue_transactions, user.node_id}
-
-    case cache_get(cache_key) do
-      {:ok, val} ->
-        val
-
-      :miss ->
-        val =
-          if is_nil(user.node_id) do
-            Transaction
-            |> where([t], t.status == "overdue")
-            |> Repo.aggregate(:count, :id)
-          else
-            Transaction
-            |> join(:inner, [t], c in assoc(t, :collection))
-            |> where([t, c], t.status == "overdue" and c.unit_id == ^user.node_id)
-            |> Repo.aggregate(:count, :id)
-          end
-
-        cache_put(cache_key, val, 30_000)
-        val
-    end
-  end
-
-  defp get_active_reservations_count(user) do
-    # Count active reservations (pending and available) scoped by collection.unit_id unless super_admin
-    alias Voile.Schema.Library.Reservation
-    alias Voile.Repo
-    import Ecto.Query
-
-    cache_key =
-      if is_nil(user.node_id),
-        do: {:active_reservations, :all},
-        else: {:active_reservations, user.node_id}
-
-    case cache_get(cache_key) do
-      {:ok, val} ->
-        val
-
-      :miss ->
-        val =
-          if is_nil(user.node_id) do
-            Reservation
-            |> where([r], r.status in ["pending", "available"])
-            |> Repo.aggregate(:count, :id)
-          else
-            Reservation
-            |> join(:inner, [r], c in assoc(r, :collection))
-            |> where([r, c], r.status in ["pending", "available"] and c.unit_id == ^user.node_id)
-            |> Repo.aggregate(:count, :id)
-          end
-
-        cache_put(cache_key, val, 30_000)
-        val
-    end
-  end
-
-  defp calculate_outstanding_fines(user) do
-    # Use cached result when available. Cache scoped by node (unit) unless super_admin.
-    cache_key =
-      if is_nil(user.node_id),
-        do: {:outstanding_fines, :all},
-        else: {:outstanding_fines, user.node_id}
-
-    case cache_get(cache_key) do
-      {:ok, val} ->
-        val
-
-      :miss ->
-        alias Voile.Schema.Library.Fine
-        alias Voile.Repo
-        import Ecto.Query
-
-        base_query =
-          from(f in Fine,
-            where: f.fine_status in ["pending", "partial_paid"]
-          )
-
-        query =
-          if is_nil(user.node_id) do
-            base_query
-          else
-            from(f in base_query,
-              join: m in assoc(f, :member),
-              where: m.node_id == ^user.node_id
-            )
-          end
-
-        sum_balance = Repo.one(from(f in query, select: sum(f.balance))) || Decimal.new(0)
-
-        total =
-          sum_balance
-          |> Decimal.to_float()
-          |> trunc()
-
-        cache_put(cache_key, total, 30_000)
-        total
-    end
-  end
-
-  # Simple ETS cache helpers (table: :voile_dashboard_cache)
-  defp ensure_cache_table do
-    case :ets.info(:voile_dashboard_cache) do
-      :undefined ->
-        :ets.new(:voile_dashboard_cache, [:named_table, :public, read_concurrency: true])
-
-      _ ->
-        :ok
-    end
-  end
-
-  defp cache_put(key, value, ttl_ms) do
-    ensure_cache_table()
-    expire_at = System.system_time(:millisecond) + ttl_ms
-    :ets.insert(:voile_dashboard_cache, {key, value, expire_at})
-    :ok
-  end
-
-  defp cache_get(key) do
-    ensure_cache_table()
-
-    case :ets.lookup(:voile_dashboard_cache, key) do
-      [{^key, value, expire_at}] ->
-        if System.system_time(:millisecond) <= expire_at do
-          {:ok, value}
-        else
-          :ets.delete(:voile_dashboard_cache, key)
-          :miss
-        end
-
-      _ ->
-        :miss
-    end
   end
 
   # Data loading functions for each tab

@@ -7,7 +7,6 @@ defmodule VoileWeb.DashboardLive do
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.{Collection, Item}
-  alias Voile.Schema.Library.{Transaction, Reservation, Fine}
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
@@ -384,72 +383,9 @@ defmodule VoileWeb.DashboardLive do
   end
 
   defp load_circulation_stats(socket, user) do
-    # Active transactions
-    active_transactions =
-      if is_nil(user.node_id) do
-        Transaction
-        |> where([t], t.status == "active")
-        |> Repo.aggregate(:count, :id)
-      else
-        Transaction
-        |> join(:inner, [t], c in assoc(t, :collection))
-        |> where([t, c], t.status == "active" and c.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Overdue transactions
-    overdue_count =
-      if is_nil(user.node_id) do
-        Transaction
-        |> where([t], t.status == "overdue")
-        |> Repo.aggregate(:count, :id)
-      else
-        Transaction
-        |> join(:inner, [t], c in assoc(t, :collection))
-        |> where([t, c], t.status == "overdue" and c.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Active reservations
-    active_reservations =
-      if is_nil(user.node_id) do
-        Reservation
-        |> where([r], r.status in ["pending", "available"])
-        |> Repo.aggregate(:count, :id)
-      else
-        Reservation
-        |> join(:inner, [r], c in assoc(r, :collection))
-        |> where([r, c], r.status in ["pending", "available"] and c.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Outstanding fines
-    base_fine_query =
-      from(f in Fine,
-        where: f.fine_status in ["pending", "partial_paid"]
-      )
-
-    fine_query =
-      if is_nil(user.node_id) do
-        base_fine_query
-      else
-        from(f in base_fine_query,
-          join: m in assoc(f, :member),
-          where: m.node_id == ^user.node_id
-        )
-      end
-
-    outstanding_fines =
-      (Repo.one(from(f in fine_query, select: sum(f.balance))) || Decimal.new(0))
-      |> Decimal.to_float()
-      |> trunc()
-
-    circulation_stats = %{
-      active_transactions: active_transactions,
-      overdue_count: overdue_count,
-      active_reservations: active_reservations,
-      outstanding_fines: outstanding_fines
-    }
+    # Use the shared circulation stats function from the context
+    # This handles all the node filtering and null unit_id logic
+    circulation_stats = Voile.get_circulation_stats(user.node_id)
 
     assign(socket, :circulation_stats, circulation_stats)
   end

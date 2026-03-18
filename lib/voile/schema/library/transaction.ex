@@ -4,6 +4,7 @@ defmodule Voile.Schema.Library.Transaction do
 
   alias Voile.Schema.Catalog.Item
   alias Voile.Schema.Accounts.User
+  alias Voile.Schema.System.Node
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "lib_transactions" do
@@ -20,6 +21,7 @@ defmodule Voile.Schema.Library.Transaction do
     belongs_to :item, Item, type: :binary_id
     belongs_to :member, User, type: :binary_id
     belongs_to :librarian, User, foreign_key: :librarian_id, type: :binary_id
+    belongs_to :node, Node, foreign_key: :unit_id
 
     has_one :collection, through: [:item, :collection]
 
@@ -44,6 +46,7 @@ defmodule Voile.Schema.Library.Transaction do
       :status,
       :fine_amount,
       :is_overdue,
+      :unit_id,
       :member_id,
       :item_id,
       :librarian_id
@@ -55,6 +58,7 @@ defmodule Voile.Schema.Library.Transaction do
       :item_id,
       :librarian_id
     ])
+    |> foreign_key_constraint(:unit_id)
     |> validate_inclusion(:transaction_type, @transaction_types)
     |> validate_inclusion(:status, @statuses)
     |> validate_number(:renewal_count, greater_than_or_equal_to: 0)

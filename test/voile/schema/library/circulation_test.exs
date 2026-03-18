@@ -430,6 +430,28 @@ defmodule Voile.Schema.Library.CirculationTest do
       assert updated_item.availability == "loaned"
     end
 
+    test "checkout_item/4 sets unit_id from item's node" do
+      member = user_fixture()
+      item = fine_fixture().item
+      librarian = user_fixture()
+
+      # Make sure item is available and has a unit_id
+      item =
+        Repo.get!(Item, item.id)
+        |> Ecto.Changeset.change(availability: "available", unit_id: 1)
+        |> Repo.update!()
+
+      assert {:ok, transaction} =
+               Circulation.checkout_item(member.id, item.id, librarian.id, %{})
+
+      # Verify unit_id is correctly set from item
+      assert transaction.unit_id == item.unit_id
+
+      # Verify we can preload the node association
+      transaction_with_node = Circulation.get_transaction!(transaction.id) |> Repo.preload(:node)
+      assert transaction_with_node.node != nil
+    end
+
     test "return_item/3 completes a transaction successfully" do
       transaction = transaction_fixture()
       librarian = user_fixture()

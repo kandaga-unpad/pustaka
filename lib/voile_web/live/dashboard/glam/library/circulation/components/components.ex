@@ -808,4 +808,194 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
   defp badge_class_for_type(:requisition, status), do: requisition_status_badge_class(status)
   defp badge_class_for_type(:fine, status), do: fine_status_badge_class(status)
   defp badge_class_for_type(:general, status), do: status_badge_class(status)
+
+  @doc """
+  Renders a circulation stats dashboard component.
+  Displays key circulation metrics: active transactions, overdue items,
+  active reservations, and outstanding fines.
+
+  ## Attributes
+
+    * `stats` - A map containing :active_transactions, :overdue_count,
+                :active_reservations, :outstanding_fines
+    * `loading` - Boolean flag to show loading spinners (default: false)
+    * `format_fines` - Boolean to format fines as IDR currency (default: true)
+
+  ## Example
+
+      <.circulation_stats stats={@stats} loading={@loading} />
+  """
+  attr :stats, :map, required: true
+  attr :loading, :boolean, default: false
+  attr :format_fines, :boolean, default: true
+
+  def circulation_stats(assigns) do
+    ~H"""
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <%!-- Active Transactions --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-blue-500">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <.icon name="hero-book-open" class="w-8 h-8 text-blue-500" />
+          </div>
+
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {gettext("Active Transactions")}
+            </h3>
+
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <%= if @loading || is_nil(@stats.active_transactions) do %>
+                <svg
+                  class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                  </path>
+                </svg>
+              <% else %>
+                {@stats.active_transactions}
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Overdue Items --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-yellow-500">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <.icon name="hero-clock" class="w-8 h-8 text-yellow-500" />
+          </div>
+
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {gettext("Overdue Items")}
+            </h3>
+
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <%= if @loading || is_nil(@stats.overdue_count) do %>
+                <svg
+                  class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                  </path>
+                </svg>
+              <% else %>
+                {@stats.overdue_count}
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Active Reservations --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-green-500">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <.icon name="hero-bookmark" class="w-8 h-8 text-green-500" />
+          </div>
+
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {gettext("Active Reservations")}
+            </h3>
+
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <%= if @loading || is_nil(@stats.active_reservations) do %>
+                <svg
+                  class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                  </path>
+                </svg>
+              <% else %>
+                {@stats.active_reservations}
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <%!-- Outstanding Fines --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-red-500">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
+          </div>
+
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {gettext("Outstanding Fines")}
+            </h3>
+
+            <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <%= if @loading || is_nil(@stats.outstanding_fines) do %>
+                <svg
+                  class="animate-spin h-6 w-6 text-gray-600 inline-block"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  >
+                  </circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                  </path>
+                </svg>
+              <% else %>
+                <%= if @format_fines do %>
+                  {format_idr(@stats.outstanding_fines)}
+                <% else %>
+                  {@stats.outstanding_fines}
+                <% end %>
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
 end
