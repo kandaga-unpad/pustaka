@@ -22,7 +22,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
     resource_templates =
       Metadata.list_resource_template() |> Repo.preload([:resource_class, :owner])
 
-    time_identifier = DateTime.utc_now() |> DateTime.to_unix()
+    time_identifier = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
 
     socket =
       socket

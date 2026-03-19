@@ -113,16 +113,54 @@ defmodule Voile.Utils.ItemHelper do
   @doc """
   Generate a compact barcode string from an item_code.
 
-  Behavior mirrors the importer helper: it extracts the third-to-last
-  segment (expected to be the last UUID segment) concatenated with the
-  sequence number to produce a short scannable barcode.
+  ## New Format (preferred for new items)
+  Combines unix timestamp (milliseconds) + collection UUID segment + item index.
+  Example: `17738990974338c87c8d23358001`
+    - `1773899097433` = unix timestamp in milliseconds
+    - `8c87c8d23358` = last 12 chars of collection UUID
+    - `001` = item index (padded to 3 digits)
+
+  ## Old Format (backward compatibility)
+  Falls back to extracting UUID last block + sequence for older item_codes.
+  Example: `8c87c8d23358001`
+
+  ## Item Code Format
+  Expected: `unit-type-collection_uuid-timestamp-index`
+  Example: `curatorian-book-c1fcfbee-8674-4ee1-bc30-8c87c8d23358-1773899097433-000`
   """
   def generate_barcode_from_item_code(item_code) when is_binary(item_code) do
-    # Preferred strategy:
-    # 1. Find the last UUID in the string (if present). Use the UUID's final block (12 hex chars).
-    # 2. Use the trailing sequence (last hyphen-separated segment) zero-padded to 3 digits.
-    # 3. Fallbacks: try to parse inventory-like codes, then fall back to earlier heuristics.
+    parts = String.split(item_code, "-")
 
+    # Check if we have enough parts for new format (at least 5 parts: unit-type-uuid-timestamp-index)
+    cond do
+      length(parts) >= 5 ->
+        # New format: unit-type-collection_uuid-timestamp-index
+        timestamp = Enum.at(parts, -2) || ""
+        collection_uuid = Enum.at(parts, -3) || ""
+        index = List.last(parts) || "001"
+
+        # Get last 12 characters of collection UUID
+        collection_segment =
+          if String.length(collection_uuid) >= 12 do
+            String.slice(collection_uuid, -12, 12)
+          else
+            # Pad with zeros if UUID is shorter
+            String.pad_leading(collection_uuid, 12, "0")
+          end
+
+        # Combine: timestamp + collection_segment + padded_index
+        "#{timestamp}#{collection_segment}#{String.pad_leading(index, 3, "0")}"
+
+      # Try to find UUID and sequence for old format
+      true ->
+        generate_barcode_legacy(item_code)
+    end
+  end
+
+  def generate_barcode_from_item_code(_), do: ""
+
+  # Legacy barcode generation for backward compatibility
+  defp generate_barcode_legacy(item_code) when is_binary(item_code) do
     # prefer trailing numeric sequence (handles both `-001` and `/002` cases)
     seq =
       case Regex.run(~r/(\d+)\s*$/, item_code) do
@@ -167,6 +205,4 @@ defmodule Voile.Utils.ItemHelper do
         |> String.slice(0, 20)
     end
   end
-
-  def generate_barcode_from_item_code(_), do: ""
 end

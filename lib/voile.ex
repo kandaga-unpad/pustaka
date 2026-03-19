@@ -213,6 +213,54 @@ defmodule Voile do
   defdelegate is_user_admin?(user), to: Voile.Schema.Catalog
 
   # ============================================================================
+  # ATTACHMENT CONTEXT - Attachment management functions
+  # ============================================================================
+
+  # Create attachments
+  defdelegate create_attachment(entity, attrs), to: Voile.Schema.Catalog
+  defdelegate create_attachments(entity, files_params), to: Voile.Schema.Catalog
+
+  # List attachments
+  defdelegate list_attachments(entity), to: Voile.Schema.Catalog
+  defdelegate list_all_attachments(file_type \\ nil), to: Voile.Schema.Catalog
+  defdelegate list_attachments_by_type(entity, file_type), to: Voile.Schema.Catalog
+
+  # Get attachments
+  defdelegate get_attachment!(id), to: Voile.Schema.Catalog
+  defdelegate get_primary_attachment(entity), to: Voile.Schema.Catalog
+  defdelegate get_attachment_stats(entity), to: Voile.Schema.Catalog
+
+  # Update attachments
+  defdelegate update_attachment(attachment, attrs), to: Voile.Schema.Catalog
+  defdelegate set_primary_attachment(attachment), to: Voile.Schema.Catalog
+  defdelegate reorder_attachments(entity, attachment_ids), to: Voile.Schema.Catalog
+
+  # Delete attachments
+  defdelegate delete_attachment(attachment), to: Voile.Schema.Catalog
+
+  # Search and utilities
+  defdelegate search_attachments(entity, query), to: Voile.Schema.Catalog
+  defdelegate get_file_url(attachment), to: Voile.Schema.Catalog
+
+  # ============================================================================
+  # ITEM HELPER CONTEXT - Item code, barcode, and inventory code utilities
+  # ============================================================================
+
+  defdelegate extract_barcode_prefix(collection_id), to: Voile.Utils.ItemHelper
+
+  defdelegate generate_unique_collection_uuid(check_exists_fn, max_attempts \\ 100),
+    to: Voile.Utils.ItemHelper
+
+  defdelegate generate_item_code(unit, type, collection, time_identifier, index),
+    to: Voile.Utils.ItemHelper
+
+  defdelegate generate_inventory_code(unit, type, collection, sequential_number),
+    to: Voile.Utils.ItemHelper
+
+  defdelegate default_item_params(collection_id, location_id, index), to: Voile.Utils.ItemHelper
+  defdelegate generate_barcode_from_item_code(item_code), to: Voile.Utils.ItemHelper
+
+  # ============================================================================
   # SYSTEM CONTEXT - Additional node and system functions
   # ============================================================================
 

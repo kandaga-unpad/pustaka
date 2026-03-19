@@ -120,7 +120,10 @@ defmodule Voile.PluginManager do
         Plugins.list_plugins()
       rescue
         e in [Postgrex.Error, Ecto.QueryError] ->
-          Logger.debug("[PluginManager] Could not load plugins (likely missing plugin table): #{inspect(e)}")
+          Logger.debug(
+            "[PluginManager] Could not load plugins (likely missing plugin table): #{inspect(e)}"
+          )
+
           []
       end
 

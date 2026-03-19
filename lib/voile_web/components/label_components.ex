@@ -164,24 +164,52 @@ defmodule VoileWeb.Components.LabelComponents do
   end
 
   # Generate compact Code 128 barcode as SVG for small labels (7.5cm × 3.5cm)
+  # Supports both old format (UUID last block + sequence) and new format (timestamp + UUID + index)
   defp generate_barcode_small(text) when is_binary(text) do
     clean_text = String.trim(text)
 
+    # The new format is: timestamp(13) + collection_segment(12) + index(3) = 28 chars
+    # The old format is: uuid_last_block(12) + sequence(3) = 15 chars
+    # Both formats should work with Code128 without truncation
     barcode_text =
-      if String.length(clean_text) > 20 do
-        parts = String.split(clean_text, "-")
+      cond do
+        # New format: starts with unix timestamp (13 digits), has timestamp-uuid-index structure
+        String.length(clean_text) >= 20 and
+            match?({_, ""}, Integer.parse(String.slice(clean_text, 0, 13))) ->
+          # New format - extract timestamp + collection segment + index
+          parts = String.split(clean_text, "-")
 
-        cond do
-          length(parts) >= 6 ->
-            uuid_part = Enum.at(parts, -3) || ""
-            sequence = List.last(parts) || ""
-            uuid_part <> sequence
+          cond do
+            # Already has dashes (unlikely but handle it)
+            length(parts) >= 3 ->
+              Enum.at(parts, -3, "") <> List.last(parts)
 
-          true ->
-            String.slice(clean_text, -15, 15)
-        end
-      else
-        clean_text
+            # New format without dashes: timestamp(13) + collection(12) + index(3)
+            String.length(clean_text) >= 28 ->
+              # Take last 15 characters for the barcode (collection segment + index)
+              String.slice(clean_text, -15, 15)
+
+            true ->
+              clean_text
+          end
+
+        # Old format: check if it has UUID structure
+        String.length(clean_text) > 20 ->
+          parts = String.split(clean_text, "-")
+
+          cond do
+            length(parts) >= 6 ->
+              uuid_part = Enum.at(parts, -3) || ""
+              sequence = List.last(parts) || ""
+              uuid_part <> sequence
+
+            true ->
+              String.slice(clean_text, -15, 15)
+          end
+
+        # Short barcodes or exactly formatted ones - use as is
+        true ->
+          clean_text
       end
 
     try do
