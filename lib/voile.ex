@@ -285,6 +285,63 @@ defmodule Voile do
   defdelegate change_collection_log(collection_log, attrs \\ %{}), to: Voile.Schema.System
 
   # ============================================================================
+  # LIBRARY HOLIDAYS CONTEXT - Holiday and business day management
+  # ============================================================================
+
+  # Holiday CRUD operations
+  defdelegate list_holidays(unit_id \\ nil), to: Voile.Schema.System.LibHolidays
+
+  defdelegate list_holidays_paginated(page \\ 1, per_page \\ 20, unit_id \\ nil),
+    to: Voile.Schema.System.LibHolidays
+
+  defdelegate get_holiday!(id), to: Voile.Schema.System.LibHolidays
+  defdelegate create_holiday(attrs \\ %{}), to: Voile.Schema.System.LibHolidays
+  defdelegate update_holiday(holiday, attrs), to: Voile.Schema.System.LibHolidays
+  defdelegate delete_holiday(holiday), to: Voile.Schema.System.LibHolidays
+  defdelegate change_holiday(holiday, attrs \\ %{}), to: Voile.Schema.System.LibHolidays
+
+  # Business day calculations
+  defdelegate business_days_between(start_date, end_date, unit_id \\ nil),
+    to: Voile.Schema.System.LibHolidays
+
+  defdelegate is_holiday?(date, unit_id \\ nil), to: Voile.Schema.System.LibHolidays
+  defdelegate is_weekend?(date), to: Voile.Schema.System.LibHolidays
+  defdelegate get_holidays_in_range(start_date, end_date), to: Voile.Schema.System.LibHolidays
+  defdelegate get_upcoming_holidays(days \\ 30), to: Voile.Schema.System.LibHolidays
+
+  # Business day utilities
+  defdelegate next_business_day(date), to: Voile.Schema.System.LibHolidays
+  defdelegate add_business_days(date, days), to: Voile.Schema.System.LibHolidays
+  defdelegate get_holiday_stats(unit_id \\ nil), to: Voile.Schema.System.LibHolidays
+
+  # Weekly schedule management
+  defdelegate get_weekly_schedule(unit_id \\ nil), to: Voile.Schema.System.LibHolidays
+  defdelegate setup_default_weekly_schedule(unit_id \\ nil), to: Voile.Schema.System.LibHolidays
+
+  defdelegate update_day_schedule(
+                day_of_week,
+                is_business_day,
+                description \\ nil,
+                unit_id \\ nil
+              ),
+              to: Voile.Schema.System.LibHolidays
+
+  defdelegate get_business_days(), to: Voile.Schema.System.LibHolidays
+  defdelegate get_non_business_days(), to: Voile.Schema.System.LibHolidays
+
+  # Schedule configuration CRUD
+  defdelegate list_schedule_configurations(), to: Voile.Schema.System.LibHolidays
+  defdelegate create_schedule(attrs \\ %{}), to: Voile.Schema.System.LibHolidays
+  defdelegate update_schedule(schedule, attrs), to: Voile.Schema.System.LibHolidays
+  defdelegate delete_schedule(schedule), to: Voile.Schema.System.LibHolidays
+  defdelegate get_day_schedule(day_of_week), to: Voile.Schema.System.LibHolidays
+  defdelegate is_business_day?(day_of_week), to: Voile.Schema.System.LibHolidays
+
+  # Schema-level functions (cache management)
+  defdelegate clear_holiday_cache(), to: Voile.Schema.System.LibHoliday, as: :clear_cache
+  defdelegate has_weekly_schedule?(), to: Voile.Schema.System.LibHoliday
+
+  # ============================================================================
   # MASTER DATA CONTEXT - Additional master data functions
   # ============================================================================
 

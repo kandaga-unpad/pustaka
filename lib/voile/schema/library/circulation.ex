@@ -1437,8 +1437,12 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Creates a transaction (checkout) - respects node and member type policies.
 
-  Pass `node` in attrs to apply node-specific rules:
+  Pass `node` or `node_id` in attrs to apply node-specific rules:
     checkout_item(member_id, item_id, librarian_id, %{node: node})
+    checkout_item(member_id, item_id, librarian_id, %{node_id: 123})
+
+  When `node_id` is provided but `node` is not, the node will be fetched automatically.
+  Node rules are applied when node.override_loan_rules is true.
   """
   def checkout_item(member_id, item_id, librarian_id, attrs \\ %{}) do
     Repo.transaction(fn ->
@@ -1460,6 +1464,38 @@ defmodule Voile.Schema.Library.Circulation do
     end)
   end
 
+  # Helper to resolve node from different sources
+  # Priority: 1. attrs[:node], 2. attrs[:node_id], 3. item.unit_id
+  # Only returns node if node.override_loan_rules == true
+  defp resolve_node(attrs, item, _librarian_id) do
+    node =
+      case Map.get(attrs, :node) do
+        nil ->
+          case Map.get(attrs, :node_id) do
+            nil ->
+              # Try to get from item's unit_id
+              if item && item.unit_id do
+                Repo.get(Voile.Schema.System.Node, item.unit_id)
+              else
+                nil
+              end
+
+            node_id ->
+              Repo.get(Voile.Schema.System.Node, node_id)
+          end
+
+        node ->
+          node
+      end
+
+    # Only use node if override_loan_rules is true
+    if node && node.override_loan_rules do
+      node
+    else
+      nil
+    end
+  end
+
   @doc """
   Returns an item (return).
 
@@ -1467,10 +1503,15 @@ defmodule Voile.Schema.Library.Circulation do
   - skip_holidays: boolean (default: false) - when true, counts ALL calendar days for fines;
     when false, excludes holidays/weekends from fine calculation
   - node: Node struct (optional) - for node-based fine calculation
+  - node_id: integer (optional) - fetch node automatically for fine calculation
   """
   def return_item(transaction_id, librarian_id, attrs \\ %{}) do
     Repo.transaction(fn ->
-      node = Map.get(attrs, :node)
+      # First get transaction to access item for node resolution
+      transaction = Repo.get(Transaction, transaction_id) |> Repo.preload(item: :node)
+
+      # Resolve node: explicit -> item.node -> check override_loan_rules
+      node = resolve_node(attrs, transaction && transaction.item, librarian_id)
 
       with {:ok, transaction} <- get_active_transaction(transaction_id),
            {:ok, member} <- get_member_with_type(transaction.member_id),
