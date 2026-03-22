@@ -10,6 +10,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def confirmation_instructions(user, url) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -78,9 +84,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -93,6 +99,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def reset_password_instructions(user, url) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -161,9 +173,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -176,6 +188,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def update_email_instructions(user, url) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -244,9 +262,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -259,6 +277,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def magic_link_instructions(user, url) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -327,9 +351,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -344,6 +368,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def loan_reminder_html(member, transactions, days_before_due) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -446,9 +476,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -555,6 +585,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def overdue_reminder_html(member, transactions) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     """
     <!DOCTYPE html>
@@ -652,9 +688,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -746,6 +782,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def manual_reminder_html(member, transactions, earliest_days_until_due) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
 
     urgency_message =
       cond do
@@ -881,9 +923,9 @@ defmodule VoileWeb.EmailComponent.Template do
             <p><strong>Pengingat manual dari Perpustakaan.</strong><br>
             Manual reminder from the Library.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -984,6 +1026,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_started(session, librarian) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
@@ -1091,9 +1139,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1109,6 +1157,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_librarian_completed(session, librarian, assignment) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
@@ -1209,9 +1263,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1227,6 +1281,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_completed(session) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     review_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}/review"
 
     """
@@ -1365,9 +1425,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1383,6 +1443,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_approved(session, librarian) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
@@ -1501,9 +1567,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1519,6 +1585,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_session_rejected(session, librarian, reason) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
 
     """
@@ -1638,9 +1710,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1656,6 +1728,12 @@ defmodule VoileWeb.EmailComponent.Template do
   def stock_opname_revision_requested(session, librarian, notes) do
     app_name = System.get_setting_value("app_name", "Voile")
     app_logo_url = System.get_setting_value("app_logo_url", nil)
+    app_email = System.get_setting_value("app_email", "voile@curatorian.id")
+
+    app_instagram_url =
+      System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
+
+    app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
     session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}/scan"
 
     """
@@ -1767,9 +1845,9 @@ defmodule VoileWeb.EmailComponent.Template do
             This is an automated message from the Library System.</p>
             <p>Mohon tidak membalas email ini. | Please do not reply to this email.</p>
             <div class="footer-links">
-              <a href="mailto:perpustakaan@unpad.ac.id">📧 Email</a>
-              <a href="https://instagram.com/kandagaunpad">📱 Instagram</a>
-              <a href="https://wa.me/6282315798979">💬 WhatsApp</a>
+              <a href="mailto:#{app_email}">📧 Email</a>
+              <a href=#{app_instagram_url}>📱 Instagram</a>
+              <a href="https://wa.me/#{app_contact_number}">💬 WhatsApp</a>
             </div>
           </div>
         </div>

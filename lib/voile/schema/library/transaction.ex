@@ -143,8 +143,11 @@ defmodule Voile.Schema.Library.Transaction do
 
   defp local_today(tz \\ "UTC") do
     DateTime.utc_now()
-    |> DateTime.shift_zone!(tz)
-    |> DateTime.to_date()
+    |> DateTime.shift_zone(tz)
+    |> case do
+      {:ok, shifted} -> DateTime.to_date(shifted)
+      _ -> Date.utc_today()
+    end
   end
 
   @doc """
