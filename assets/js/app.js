@@ -21,22 +21,22 @@
 import "phoenix_html";
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix";
-import { LiveSocket } from "phoenix_live_view";
 import { hooks as colocatedHooks } from "phoenix-colocated/voile";
-import { ItemSearch } from "./hooks/item_search_hook";
-import { SearchDropdown } from "./hooks/search_dropdown_hook";
-import { SearchPanel } from "./hooks/search_panel_hook";
+import { LiveSocket } from "phoenix_live_view";
 import { TurnstileHook } from "phoenix_turnstile";
-import { EbookReader } from "./hooks/ebook_reader_hook";
-import { BarcodeScanner } from "./hooks/barcode_scanner";
 import topbar from "../vendor/topbar";
-import DragDrop from "./hooks/sortable";
+import { BarcodeScanner } from "./hooks/barcode_scanner";
 import DragUpload from "./hooks/draggable_area";
-import position_panel from "./hooks/position_panel";
+import { EbookReader } from "./hooks/ebook_reader_hook";
+import { ItemSearch } from "./hooks/item_search_hook";
 import MobileNav from "./hooks/mobile_nav";
-import SearchFocus from "./hooks/search_focus";
-import SearchResultsLoading from "./hooks/search_results_loading";
 import PasswordToggle from "./hooks/password_toggle";
+import position_panel from "./hooks/position_panel";
+import { SearchDropdown } from "./hooks/search_dropdown_hook";
+import SearchFocus from "./hooks/search_focus";
+import { SearchPanel } from "./hooks/search_panel_hook";
+import SearchResultsLoading from "./hooks/search_results_loading";
+import DragDrop from "./hooks/sortable";
 
 // LocaleSwitcher Hook for current path and locale link rewriting
 const LocaleSwitcher = {
@@ -64,10 +64,14 @@ const LocaleSwitcher = {
 
     const base = normalizePath(resolvedPath);
 
-    const links = [...this.el.querySelectorAll("a[data-locale], a[href*='locale="]")];
+    const links = [
+      ...this.el.querySelectorAll("a[data-locale], a[href*='locale=']"),
+    ];
 
     links.forEach((link) => {
-      const locale = link.dataset.locale || new URL(link.href, window.location.origin).searchParams.get("locale");
+      const locale =
+        link.dataset.locale ||
+        new URL(link.href, window.location.origin).searchParams.get("locale");
       if (!locale) return;
 
       link.setAttribute("href", `${base}?locale=${encodeURIComponent(locale)}`);

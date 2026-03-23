@@ -449,7 +449,7 @@ defmodule VoileWeb.CoreComponents do
           name={@name}
           class={[
             @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
+            if(@errors != [], do: [@error_class || "textarea-error"], else: [])
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -474,7 +474,7 @@ defmodule VoileWeb.CoreComponents do
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
             @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            if(@errors != [], do: [@error_class || "input-error"], else: [])
           ]}
           {@rest}
         />
