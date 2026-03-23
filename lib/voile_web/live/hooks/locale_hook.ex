@@ -14,8 +14,8 @@ defmodule VoileWeb.Live.Hooks.LocaleHook do
     # Get locale from session (set by the Locale plug)
     locale = session["locale"] || Gettext.get_locale(VoileWeb.Gettext)
 
-    # Set the locale for this LiveView process
-    Gettext.put_locale(VoileWeb.Gettext, locale)
+    # Set the locale for this LiveView process and ensure application locale sync
+    VoileWeb.Utils.Locale.put_locale(locale)
 
     {:cont, assign(socket, locale: locale)}
   end

@@ -827,10 +827,22 @@ defmodule VoileWeb.CoreComponents do
   """
   attr :class, :string, default: ""
   attr :current_path, :string, default: "/"
+  attr :hook, :string, default: "LocaleSwitcher"
 
   def locale_switcher(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:current_path, fn -> "/" end)
+      |> assign_new(:hook, fn -> "LocaleSwitcher" end)
+      |> assign(:current_locale, VoileWeb.Utils.Locale.get_locale())
+
     ~H"""
-    <div class={["relative inline-block", @class]} id="locale-switcher">
+    <div
+      id="locale-switcher"
+      data-current-path={@current_path}
+      phx-hook={@hook}
+      class={["relative inline-block", @class]}
+    >
       <button
         type="button"
         phx-click={
@@ -845,8 +857,8 @@ defmodule VoileWeb.CoreComponents do
       >
         <.icon name="hero-language" class="h-5 w-5" />
         <span class="hidden sm:inline">
-          {VoileWeb.Utils.Locale.locale_flag(VoileWeb.Utils.Locale.get_locale())} {VoileWeb.Utils.Locale.locale_name(
-            VoileWeb.Utils.Locale.get_locale()
+          {VoileWeb.Utils.Locale.locale_flag(@current_locale)} {VoileWeb.Utils.Locale.locale_name(
+            @current_locale
           )}
         </span>
         <.icon name="hero-chevron-down" class="h-4 w-4" />
@@ -864,12 +876,13 @@ defmodule VoileWeb.CoreComponents do
         <div class="py-1" role="menu" aria-orientation="vertical">
           <a
             :for={locale <- VoileWeb.Utils.Locale.all_locales()}
-            href={"#{@current_path}?locale=#{locale.code}"}
-            class={[
-              "flex items-center gap-3 px-4 py-2 text-sm hover:bg-base-200 transition-colors",
-              VoileWeb.Utils.Locale.get_locale() == locale.code &&
-                "bg-base-200 font-semibold"
-            ]}
+            href={VoileWeb.CoreComponents.locale_query_path(@current_path, locale.code)}
+            data-locale={locale.code}
+            class={
+              [
+                "flex items-center gap-3 px-4 py-2 text-sm hover:bg-base-200 transition-colors"
+              ] ++ if(@current_locale == locale.code, do: ["bg-base-200 font-semibold"], else: [])
+            }
             role="menuitem"
           >
             <span class="text-lg">{locale.flag}</span> <span>{locale.name}</span>
@@ -878,6 +891,25 @@ defmodule VoileWeb.CoreComponents do
       </div>
     </div>
     """
+  end
+
+  def locale_query_path(path, locale_code) when is_binary(locale_code) do
+    sanitized_path =
+      (path || "")
+      |> String.trim()
+      |> case do
+        "" -> "/"
+        p -> p
+      end
+      |> String.split("?")
+      |> hd()
+      |> then(fn p ->
+        if is_binary(p) and String.starts_with?(p, "/live"), do: "/", else: p
+      end)
+
+    sanitized_path = if sanitized_path == "", do: "/", else: sanitized_path
+
+    "#{sanitized_path}?locale=#{URI.encode(locale_code)}"
   end
 
   @doc """

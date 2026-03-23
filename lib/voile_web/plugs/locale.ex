@@ -29,8 +29,8 @@ defmodule VoileWeb.Plugs.Locale do
     # Ensure the locale is supported
     locale = if locale in @supported_locales, do: locale, else: @default_locale
 
-    # Set the locale for Gettext
-    Gettext.put_locale(VoileWeb.Gettext, locale)
+    # Set the locale for Gettext and any host app locale backend
+    VoileWeb.Utils.Locale.put_locale(locale)
 
     # Store locale in session for persistence
     conn

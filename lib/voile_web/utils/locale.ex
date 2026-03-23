@@ -28,9 +28,15 @@ defmodule VoileWeb.Utils.Locale do
   """
   def put_locale(locale) when locale in @supported_locales do
     Gettext.put_locale(VoileWeb.Gettext, locale)
+
+    if Code.ensure_loaded?(AtriumWeb.Gettext) do
+      Gettext.put_locale(AtriumWeb.Gettext, locale)
+    end
+
+    :ok
   end
 
-  def put_locale(_locale), do: Gettext.put_locale(VoileWeb.Gettext, @default_locale)
+  def put_locale(_locale), do: put_locale(@default_locale)
 
   @doc """
   Returns locale display name

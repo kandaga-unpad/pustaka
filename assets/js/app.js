@@ -38,6 +38,44 @@ import SearchFocus from "./hooks/search_focus";
 import SearchResultsLoading from "./hooks/search_results_loading";
 import PasswordToggle from "./hooks/password_toggle";
 
+// LocaleSwitcher Hook for current path and locale link rewriting
+const LocaleSwitcher = {
+  mounted() {
+    this.syncLocaleLinks();
+  },
+  updated() {
+    this.syncLocaleLinks();
+  },
+  syncLocaleLinks() {
+    const injectedPath = this.el.dataset.currentPath || "/";
+    const windowPath = window.location.pathname || "/";
+    const resolvedPath =
+      windowPath && !windowPath.startsWith("/live")
+        ? windowPath
+        : injectedPath || "/";
+
+    const normalizePath = (path) => {
+      const p = (path || "/").split("?")[0] || "/";
+      if (p.startsWith("/live")) {
+        return "/";
+      }
+      return p === "" ? "/" : p;
+    };
+
+    const base = normalizePath(resolvedPath);
+
+    const links = [...this.el.querySelectorAll("a[data-locale], a[href*='locale="]")];
+
+    links.forEach((link) => {
+      const locale = link.dataset.locale || new URL(link.href, window.location.origin).searchParams.get("locale");
+      if (!locale) return;
+
+      link.setAttribute("href", `${base}?locale=${encodeURIComponent(locale)}`);
+      link.dataset.locale = locale;
+    });
+  },
+};
+
 // Notification Sound Hook for reservation notifications
 const NotificationSound = {
   mounted() {
@@ -324,6 +362,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     SearchFocus,
     SearchResultsLoading,
     NotificationSound,
+    LocaleSwitcher,
     BarcodeScanner,
     CheckInStorage,
     IdentifierInput,
