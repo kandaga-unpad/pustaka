@@ -15,7 +15,7 @@ defmodule Voile.Schema.Accounts.UserRoleAssignment do
     field :expires_at, :utc_datetime
   end
 
-  @valid_scope_types ~w(global collection item)
+  @valid_scope_types ~w(global node collection item)
   @valid_glam_types ~w(Gallery Library Archive Museum)
 
   @doc false
