@@ -27,6 +27,7 @@ defmodule VoileWeb.PluginRouterLive do
         |> assign(:plugin_path, path)
         |> assign(:current_path, "/manage/plugins/#{plugin_id}#{path}")
         |> assign(:page_title, record.name)
+        |> assign(:plugin_auth, build_plugin_auth(socket))
 
       {:ok, socket}
     else
@@ -53,6 +54,7 @@ defmodule VoileWeb.PluginRouterLive do
           <.plugin_settings_sidebar
             current_path={@current_path}
             current_plugin_id={@plugin_record.plugin_id}
+            is_super_admin={@plugin_auth.is_super_admin}
           />
         </div>
 
@@ -62,7 +64,10 @@ defmodule VoileWeb.PluginRouterLive do
             session: %{
               "plugin_id" => @plugin_record.plugin_id,
               "plugin_path" => @plugin_path,
-              "action" => to_string(@plugin_action)
+              "action" => to_string(@plugin_action),
+              "is_super_admin" => @plugin_auth.is_super_admin,
+              "is_node_admin" => @plugin_auth.is_node_admin,
+              "user_node_id" => @plugin_auth.user_node_id
             }
           )}
         </div>
@@ -119,5 +124,19 @@ defmodule VoileWeb.PluginRouterLive do
       # Allow root route "/" to match empty path
       route_parts == [] and request_parts == []
     end
+  end
+
+  defp build_plugin_auth(socket) do
+    is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
+    # is_node_admin? also calls Repo.preload but roles are already loaded from the above call
+    is_node_admin = not is_super_admin and VoileWeb.Auth.Authorization.is_node_admin?(socket)
+
+    user_node_id =
+      case socket.assigns[:current_scope] do
+        %{user: %{node_id: node_id}} -> node_id
+        _ -> nil
+      end
+
+    %{is_super_admin: is_super_admin, is_node_admin: is_node_admin, user_node_id: user_node_id}
   end
 end

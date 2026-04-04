@@ -32,6 +32,10 @@ defmodule VoileWeb.VoileDashboardComponents do
         url: "/manage/members"
       },
       %{
+        name: "Plugins",
+        url: "/manage/plugins"
+      },
+      %{
         name: "Settings",
         url: "/manage/settings"
       }
@@ -423,6 +427,25 @@ defmodule VoileWeb.VoileDashboardComponents do
               {gettext("Stock Opname")}
             </span>
           </.link>
+          <.link
+            navigate="/manage/plugins"
+            phx-click={
+              JS.hide(to: "#dashboard-mobile-menu-panel")
+              |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
+            }
+            class={[
+              "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
+              @active_menu |> String.starts_with?("/manage/plugins") &&
+                "border-indigo-600 bg-indigo-600/10 dark:bg-indigo-600/20",
+              !(@active_menu |> String.starts_with?("/manage/plugins")) &&
+                "border-gray-200 dark:border-gray-700 active:border-indigo-600"
+            ]}
+          >
+            <.icon name="hero-puzzle-piece" class="h-8 w-8 mb-2 text-indigo-600" />
+            <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
+              {gettext("Plugins")}
+            </span>
+          </.link>
         </div>
         <%!-- Action Buttons --%>
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -768,7 +791,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         icon: "hero-bell"
       },
       %{label: "Visitor Statistics", path: "/manage/visitor/statistics", icon: "hero-chart-bar"},
-      %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"}
+      %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"},
+      %{label: "Plugins", path: "/manage/plugins", icon: "hero-puzzle-piece"}
     ],
     doc: """
     List of menu items. Each item should be a map with:
@@ -786,12 +810,7 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.link navigate="/manage/settings/">
           <h3 class="text-lg font-semibold mb-4">Settings</h3>
         </.link>
-        <% menu_items =
-          if has_admin_role?(@current_user) do
-            @menu_items ++ [%{label: "Plugins", path: "/manage/plugins", icon: "hero-puzzle-piece"}]
-          else
-            @menu_items
-          end %>
+        <% menu_items = @menu_items %>
         <ul class="space-y-4 text-sm">
           <%= for item <- menu_items do %>
             <li>
@@ -925,6 +944,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   """
   attr :current_path, :string, default: nil
   attr :current_plugin_id, :string, default: nil
+  attr :is_super_admin, :boolean, default: false
 
   def plugin_settings_sidebar(assigns) do
     plugins =
@@ -957,14 +977,18 @@ defmodule VoileWeb.VoileDashboardComponents do
             []
           end
 
-        # Always append a Settings link
-        settings_entry = %{
-          path: "/settings",
-          label: "Settings",
-          icon: "hero-cog-6-tooth"
-        }
+        # Only append Settings link for super admins
+        if assigns.is_super_admin do
+          settings_entry = %{
+            path: "/settings",
+            label: "Settings",
+            icon: "hero-cog-6-tooth"
+          }
 
-        nav_entries ++ [settings_entry]
+          nav_entries ++ [settings_entry]
+        else
+          nav_entries
+        end
       else
         []
       end
@@ -982,22 +1006,24 @@ defmodule VoileWeb.VoileDashboardComponents do
           <h3 class="text-lg font-semibold mb-4">{gettext("Plugins")}</h3>
         </.link>
         <ul class="space-y-1 text-sm">
-          <li>
-            <.link
-              navigate="/manage/plugins"
-              class={[
-                "rounded-lg flex items-center gap-2",
-                if(@current_path == "/manage/plugins",
-                  do:
-                    "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
-                  else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
-                )
-              ]}
-            >
-              <.icon name="hero-puzzle-piece" class="w-4 h-4" />
-              {gettext("Manage Plugins")}
-            </.link>
-          </li>
+          <%= if @is_super_admin do %>
+            <li>
+              <.link
+                navigate="/manage/plugins"
+                class={[
+                  "rounded-lg flex items-center gap-2",
+                  if(@current_path == "/manage/plugins",
+                    do:
+                      "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
+                    else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                  )
+                ]}
+              >
+                <.icon name="hero-puzzle-piece" class="w-4 h-4" />
+                {gettext("Manage Plugins")}
+              </.link>
+            </li>
+          <% end %>
         </ul>
 
         <%= if @sidebar_plugins != [] do %>
@@ -1114,19 +1140,21 @@ defmodule VoileWeb.VoileDashboardComponents do
           </div>
 
           <ul class="space-y-1 text-sm">
-            <li>
-              <.link
-                navigate="/manage/plugins"
-                phx-click={
-                  JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
-                  |> JS.hide(to: "#plugin-settings-mobile-sidebar")
-                }
-                class="rounded-lg flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
-              >
-                <.icon name="hero-puzzle-piece" class="w-4 h-4" />
-                {gettext("Manage Plugins")}
-              </.link>
-            </li>
+            <%= if @is_super_admin do %>
+              <li>
+                <.link
+                  navigate="/manage/plugins"
+                  phx-click={
+                    JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+                    |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+                  }
+                  class="rounded-lg flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                >
+                  <.icon name="hero-puzzle-piece" class="w-4 h-4" />
+                  {gettext("Manage Plugins")}
+                </.link>
+              </li>
+            <% end %>
           </ul>
 
           <%= if @sidebar_plugins != [] do %>

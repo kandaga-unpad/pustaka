@@ -4,6 +4,10 @@ defmodule VoileWeb.Visitor.CheckOut do
   alias Voile.Schema.System
   alias Voile.Schema.Master
   alias VoileWeb.Components.VirtualKeyboard
+  alias VoileLockerLuggage.Lockers
+  alias Voile.Plugins
+
+  @plugin_id "locker_luggage"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -187,6 +191,21 @@ defmodule VoileWeb.Visitor.CheckOut do
     else
       case process_check_out(identifier, location.id, node_id, ip_address, user_agent) do
         {:ok, visitor_name} ->
+          if locker_luggage_installed?() do
+            case Lockers.get_active_session_for_visitor(node_id, identifier) do
+              nil ->
+                :noop
+
+              _session ->
+                _ =
+                  Lockers.release_locker_for_visitor(node_id, identifier,
+                    release_method: "visitor_self",
+                    released_by: "visitor_checkout",
+                    notes: "Auto-released on visitor checkout"
+                  )
+            end
+          end
+
           socket =
             socket
             |> assign(:show_success_modal, true)
@@ -342,6 +361,17 @@ defmodule VoileWeb.Visitor.CheckOut do
   end
 
   defp get_ip_address(_), do: nil
+
+  defp locker_luggage_installed? do
+    case Plugins.get_plugin_by_plugin_id(@plugin_id) do
+      %{} = plugin_record when plugin_record.status in [:installed, :active] ->
+        Code.ensure_loaded?(VoileLockerLuggage.Lockers) and
+          function_exported?(VoileLockerLuggage.Lockers, :get_active_session_for_visitor, 2)
+
+      _ ->
+        false
+    end
+  end
 
   # Process check-out logic
   defp process_check_out(identifier, location_id, node_id, ip_address, user_agent) do
@@ -583,7 +613,7 @@ defmodule VoileWeb.Visitor.CheckOut do
               <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
             </button>
           </div>
-          
+
     <!-- Two Column Layout -->
           <div class="flex flex-col lg:flex-row gap-6">
             <!-- Check-out Form -->
@@ -636,7 +666,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </button>
               </form>
             </div>
-            
+
     <!-- Survey Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
@@ -767,7 +797,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                   {gettext("Submit Feedback")}
                 </button>
               </form>
-              
+
     <!-- Thank You Note -->
               <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex items-start gap-3">
@@ -804,7 +834,7 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         <% end %>
       </div>
-      
+
     <!-- Check-Out Success Modal -->
       <%= if @show_success_modal do %>
         <div
@@ -818,7 +848,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 <.icon name="hero-check-circle" class="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            
+
     <!-- Goodbye Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -841,7 +871,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </p>
               </div>
             </div>
-            
+
     <!-- Close Button -->
             <button
               type="button"
@@ -853,7 +883,7 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Survey Success Modal -->
       <%= if @show_survey_success do %>
         <div
@@ -867,7 +897,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 <.icon name="hero-heart" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            
+
     <!-- Thank You Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -884,7 +914,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </p>
               </div>
             </div>
-            
+
     <!-- Close Button -->
             <button
               type="button"
@@ -896,7 +926,7 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         </div>
       <% end %>
-      
+
     <!-- Footer -->
       <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
         <div class="max-w-7xl mx-auto px-4 py-3">
@@ -924,7 +954,7 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </span>
               </div>
             </div>
-            
+
     <!-- Software Info -->
             <div class="flex items-center gap-3 text-center md:text-right">
               <div class="text-xs text-gray-600 dark:text-gray-400">

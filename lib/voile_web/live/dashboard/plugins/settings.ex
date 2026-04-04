@@ -11,24 +11,31 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
 
   @impl true
   def mount(%{"plugin_id" => plugin_id}, _session, socket) do
-    case Plugins.get_plugin_by_plugin_id(plugin_id) do
-      nil ->
-        {:ok,
-         socket
-         |> put_flash(:error, gettext("Plugin not found."))
-         |> push_navigate(to: ~p"/manage/plugins")}
+    unless VoileWeb.Auth.Authorization.is_super_admin?(socket) do
+      {:ok,
+       socket
+       |> put_flash(:error, gettext("Access denied. Super admin only."))
+       |> push_navigate(to: ~p"/manage/plugins/#{plugin_id}")}
+    else
+      case Plugins.get_plugin_by_plugin_id(plugin_id) do
+        nil ->
+          {:ok,
+           socket
+           |> put_flash(:error, gettext("Plugin not found."))
+           |> push_navigate(to: ~p"/manage/plugins")}
 
-      plugin ->
-        settings_schema = get_settings_schema(plugin.module)
-        form = build_form(settings_schema, plugin.settings || %{})
+        plugin ->
+          settings_schema = get_settings_schema(plugin.module)
+          form = build_form(settings_schema, plugin.settings || %{})
 
-        {:ok,
-         socket
-         |> assign(:plugin, plugin)
-         |> assign(:settings_schema, settings_schema)
-         |> assign(:form, form)
-         |> assign(:current_path, "/manage/plugins/#{plugin_id}/settings")
-         |> assign(:page_title, gettext("%{name} Settings", name: plugin.name))}
+          {:ok,
+           socket
+           |> assign(:plugin, plugin)
+           |> assign(:settings_schema, settings_schema)
+           |> assign(:form, form)
+           |> assign(:current_path, "/manage/plugins/#{plugin_id}/settings")
+           |> assign(:page_title, gettext("%{name} Settings", name: plugin.name))}
+      end
     end
   end
 
@@ -70,6 +77,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
           <.plugin_settings_sidebar
             current_path={@current_path}
             current_plugin_id={@plugin.plugin_id}
+            is_super_admin={true}
           />
         </div>
 
