@@ -70,4 +70,4 @@ You are free to use, modify, and distribute this software, including for
 commercial and SaaS purposes, provided that you retain the copyright and
 license notices.
 
-See the [LICENSE](./LICENSE) file for full details.
+See the [LICENSE](https://github.com/curatorian/voile/blob/main/LICENSE) file for full details.
