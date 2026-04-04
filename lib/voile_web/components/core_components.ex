@@ -562,7 +562,7 @@ defmodule VoileWeb.CoreComponents do
       |> assign(:row_id, assigns.row_id || fn {id, _item} -> id end)
       |> assign(:phx_update, "stream")
 
-    table(assigns)
+    do_table(assigns)
   end
 
   def table(assigns) do
@@ -571,6 +571,10 @@ defmodule VoileWeb.CoreComponents do
       |> assign_new(:row_id, fn -> assigns.row_id end)
       |> assign_new(:phx_update, fn -> nil end)
 
+    do_table(assigns)
+  end
+
+  defp do_table(assigns) do
     ~H"""
     <table class="table table-zebra">
       <thead>

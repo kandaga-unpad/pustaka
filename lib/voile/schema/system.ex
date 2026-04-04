@@ -210,9 +210,19 @@ defmodule Voile.Schema.System do
 
   """
   def create_setting(attrs \\ %{}) do
-    %Setting{}
-    |> Setting.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Setting{}
+      |> Setting.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, %Setting{setting_name: name} = created} ->
+        :persistent_term.erase({__MODULE__, :setting_cache, name})
+        {:ok, created}
+
+      other ->
+        other
+    end
   end
 
   @doc """
@@ -228,9 +238,19 @@ defmodule Voile.Schema.System do
 
   """
   def update_setting(%Setting{} = setting, attrs) do
-    setting
-    |> Setting.changeset(attrs)
-    |> Repo.update()
+    result =
+      setting
+      |> Setting.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, %Setting{setting_name: name} = updated} ->
+        :persistent_term.erase({__MODULE__, :setting_cache, name})
+        {:ok, updated}
+
+      other ->
+        other
+    end
   end
 
   @doc """
@@ -288,9 +308,24 @@ defmodule Voile.Schema.System do
 
   """
   def get_setting_value(name, default \\ nil) do
-    case get_setting_by_name(name) do
-      %Setting{setting_value: value} -> value
-      nil -> default
+    key = {__MODULE__, :setting_cache, name}
+
+    case :persistent_term.get(key, :not_cached) do
+      :not_cached ->
+        raw =
+          case get_setting_by_name(name) do
+            %Setting{setting_value: value} -> value
+            nil -> nil
+          end
+
+        :persistent_term.put(key, raw)
+        if is_nil(raw), do: default, else: raw
+
+      nil ->
+        default
+
+      value ->
+        value
     end
   end
 

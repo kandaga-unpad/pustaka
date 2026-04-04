@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.1.1] - 2026-04-04
+
+### Fixed
+
+- **Critical: RAM exhaustion on pages using LiveStream tables** — `table/1` in
+  `core_components.ex` had an infinite recursion bug introduced in v0.1.0. The
+  `LiveStream`-detecting clause called `table(assigns)` after enriching assigns,
+  but `assigns.rows` was still a `%LiveStream{}`, so the same clause re-matched
+  forever. Each recursive call allocated a new assigns map, exhausting heap memory
+  and crashing the process. Fixed by extracting rendering into a private
+  `do_table/1` that both public clauses delegate to. Affected pages:
+  `/manage/master/locations` and `/manage/master/member_types`.
+- **Performance: settings DB queries on every render** — `get_setting_value/2`
+  was issuing a `Repo.get_by` on every call with no caching. Since settings are
+  read on every page render (app name, logo, colours) but almost never change,
+  results are now cached in `:persistent_term`. Cache is invalidated on
+  `create_setting/1` and `update_setting/2`.
+- **Performance: nav bar double DB call** — The `nav_bar` component was calling
+  `get_setting_value("app_logo_url")` twice per render (once in the `if` guard,
+  once in the `src` attribute). Reduced to a single call via a temporary assign.
 
 ---
 
@@ -76,5 +95,6 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
-[Unreleased]: https://github.com/your-org/voile/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/your-org/voile/releases/tag/v0.1.0
+[Unreleased]: https://github.com/curatorian/voile/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/curatorian/voile/releases/tag/v0.1.0

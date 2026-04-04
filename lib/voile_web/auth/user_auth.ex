@@ -480,7 +480,8 @@ defmodule VoileWeb.UserAuth do
   @doc "Returns the path to redirect to after log in."
   # the user was already logged in, redirect to settings
   def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: user}}})
-      when not is_nil(user), do: signed_in_path(user)
+      when not is_nil(user),
+      do: signed_in_path(user)
 
   def signed_in_path(%Scope{user: user}) when not is_nil(user), do: signed_in_path(user)
 

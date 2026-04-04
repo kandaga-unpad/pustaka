@@ -40,13 +40,16 @@ defmodule VoileWeb.VoileDashboardComponents do
   attr :current_path, :string, default: "/manage"
 
   def nav_bar(assigns) do
+    assigns =
+      assign(assigns, :_logo_url, Voile.Schema.System.get_setting_value("app_logo_url", nil))
+
     ~H"""
     <div class="w-full bg-white dark:bg-gray-700 flex items-center my-5 p-5 rounded-lg gap-6">
       <div class="nav-bar-logo flex-shrink-0">
         <.link patch="/manage#">
-          <%= if Voile.Schema.System.get_setting_value("app_logo_url", nil) do %>
+          <%= if @_logo_url do %>
             <img
-              src={Voile.Schema.System.get_setting_value("app_logo_url", nil)}
+              src={@_logo_url}
               class="h-full w-16 object-cover"
               alt="App Logo"
             />
@@ -646,7 +649,8 @@ defmodule VoileWeb.VoileDashboardComponents do
   defp get_creator_name(%{mst_creator: %{creator_name: name}}) when not is_nil(name), do: name
 
   defp get_creator_name(%{collection: %{mst_creator: %{creator_name: name}}})
-       when not is_nil(name), do: name
+       when not is_nil(name),
+       do: name
 
   defp get_creator_name(_), do: nil
 

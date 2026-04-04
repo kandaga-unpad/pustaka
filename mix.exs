@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -139,11 +139,11 @@ defmodule Voile.MixProject do
       {:tzdata, "~> 1.1"},
       {:xml_builder, "~> 2.2"},
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       # Local plugins — path deps for dev monorepo only.
       # These are NOT included when publishing Voile to Hex.
       # Plugins depend on Voile, not the other way around.
-      # {:voile_locker_luggage, path: "plugins/voile_locker_luggage", only: [:dev, :test]}
+      {:voile_locker_luggage, path: "../voile_plugin/voile_locker_luggage", only: [:dev, :test]}
     ]
   end
 
