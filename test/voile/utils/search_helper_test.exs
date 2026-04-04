@@ -39,7 +39,9 @@ defmodule Voile.Utils.SearchHelperTest do
     end
 
     test "excludes empty string filter values" do
-      filters = SearchHelper.build_filters_from_params(%{"status" => "", "availability" => "available"})
+      filters =
+        SearchHelper.build_filters_from_params(%{"status" => "", "availability" => "available"})
+
       assert filters == %{availability: "available"}
       refute Map.has_key?(filters, :status)
     end

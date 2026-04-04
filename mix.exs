@@ -1,18 +1,27 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+  @source_url "https://github.com/curatorian/voile"
+
   def project do
     [
       app: :voile,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.18",
-      license: "Apache-2.0",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers() ++ [:phoenix_swagger],
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      # Hex package metadata
+      description: description(),
+      package: package(),
+      docs: docs(),
+      name: "Voile",
+      source_url: @source_url,
+      homepage_url: @source_url
     ]
   end
 
@@ -29,6 +38,51 @@ defmodule Voile.MixProject do
   def cli do
     [
       preferred_envs: [precommit: :test]
+    ]
+  end
+
+  defp description do
+    "Voile — open-source GLAM (Gallery, Library, Archive, Museum) management system built with Phoenix."
+  end
+
+  defp package do
+    [
+      name: "voile",
+      licenses: ["Apache-2.0"],
+      links: %{
+        "GitHub" => @source_url,
+        "Documentation" => "https://hexdocs.pm/voile"
+      },
+      maintainers: ["Chrisna Adhi Pranoto"],
+      files: ~w(
+        lib
+        priv/gettext
+        priv/repo/migrations
+        priv/static/assets
+        priv/static/css
+        priv/static/images
+        priv/static/sfx
+        priv/static/xsl
+        priv/static/favicon.ico
+        priv/static/robots.txt
+        priv/static/swagger.json
+        priv/templates
+        assets
+        config
+        mix.exs
+        README.md
+        LICENSE
+        CHANGELOG.md
+      )
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      extras: ["README.md", "CHANGELOG.md"]
     ]
   end
 
@@ -60,7 +114,8 @@ defmodule Voile.MixProject do
        sparse: "optimized",
        app: false,
        compile: false,
-       depth: 1},
+       depth: 1,
+       only: [:dev, :test]},
       {:html_sanitize_ex, "~> 1.4"},
       {:jason, "~> 1.2"},
       {:lazy_html, ">= 0.1.8", only: :test},
@@ -82,7 +137,13 @@ defmodule Voile.MixProject do
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:tzdata, "~> 1.1"},
-      {:xml_builder, "~> 2.2"}
+      {:xml_builder, "~> 2.2"},
+      {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+      # Local plugins — path deps for dev monorepo only.
+      # These are NOT included when publishing Voile to Hex.
+      # Plugins depend on Voile, not the other way around.
+      # {:voile_locker_luggage, path: "plugins/voile_locker_luggage", only: [:dev, :test]}
     ]
   end
 

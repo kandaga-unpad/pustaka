@@ -19,10 +19,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
          |> push_navigate(to: ~p"/manage/plugins")}
 
       plugin ->
-        # Get the plugin module to read settings_schema
         settings_schema = get_settings_schema(plugin.module)
-
-        # Build form from current settings
         form = build_form(settings_schema, plugin.settings || %{})
 
         {:ok,
@@ -30,6 +27,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
          |> assign(:plugin, plugin)
          |> assign(:settings_schema, settings_schema)
          |> assign(:form, form)
+         |> assign(:current_path, "/manage/plugins/#{plugin_id}/settings")
          |> assign(:page_title, gettext("%{name} Settings", name: plugin.name))}
     end
   end
@@ -44,7 +42,6 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
   def handle_event("save", %{"settings" => params}, socket) do
     plugin = socket.assigns.plugin
 
-    # Validate and convert types
     case validate_and_convert(socket.assigns.settings_schema, params) do
       {:ok, converted_settings} ->
         case Plugins.put_plugin_settings(plugin.plugin_id, converted_settings) do
@@ -68,106 +65,126 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
   def render(assigns) do
     ~H"""
     <section class="space-y-6 p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            {@plugin.name} {gettext("Settings")}
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">
-            {gettext("Configure plugin behavior and options")}
-          </p>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="w-full md:w-auto md:max-w-64">
+          <.plugin_settings_sidebar
+            current_path={@current_path}
+            current_plugin_id={@plugin.plugin_id}
+          />
         </div>
-        <.link
-          navigate={~p"/manage/plugins"}
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-        >
-          {gettext("Back to Plugins")}
-        </.link>
-      </div>
 
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <%= if @settings_schema == [] do %>
-          <div class="text-center py-8">
-            <div class="text-gray-400 dark:text-gray-500 mb-4">
-              <.icon name="hero-cog-6-tooth" class="w-12 h-12 mx-auto" />
+        <div class="space-y-6 flex-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                {@plugin.name} {gettext("Settings")}
+              </h1>
+              <p class="text-gray-600 dark:text-gray-400 mt-1">
+                {gettext("Configure plugin behavior and options")}
+              </p>
             </div>
-            <p class="text-gray-500 dark:text-gray-400">
-              {gettext("This plugin has no configurable settings.")}
-            </p>
+            <.link
+              navigate={~p"/manage/plugins"}
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+            >
+              {gettext("Back to Plugins")}
+            </.link>
           </div>
-        <% else %>
-          <.form for={@form} phx-change="validate" phx-submit="save" id="plugin-settings-form">
-            <div class="space-y-6">
-              <%= for field <- @settings_schema do %>
-                <div class="space-y-2">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {field.label}
-                    <%= if Map.get(field, :required) do %>
-                      <span class="text-red-500">*</span>
-                    <% end %>
-                  </label>
 
-                  <%= case field.type do %>
-                    <% :string -> %>
-                      <.input
-                        type="text"
-                        name={"settings[#{field.key}]"}
-                        value={get_form_value(@form, field.key)}
-                        class="w-full"
-                      />
-                    <% :integer -> %>
-                      <.input
-                        type="number"
-                        name={"settings[#{field.key}]"}
-                        value={get_form_value(@form, field.key)}
-                        class="w-full"
-                      />
-                    <% :boolean -> %>
-                      <label class="flex items-center gap-2">
-                        <.input
-                          type="checkbox"
-                          name={"settings[#{field.key}]"}
-                          checked={get_form_value(@form, field.key) == true}
-                        />
-                        <span class="text-sm text-gray-600 dark:text-gray-400">
-                          {gettext("Enabled")}
-                        </span>
-                      </label>
-                    <% :select -> %>
-                      <.input
-                        type="select"
-                        name={"settings[#{field.key}]"}
-                        options={Map.get(field, :options, [])}
-                        value={get_form_value(@form, field.key)}
-                        class="w-full"
-                      />
-                  <% end %>
-
-                  <%= if Map.get(field, :secret) do %>
-                    <p class="text-xs text-amber-600 dark:text-amber-400">
-                      {gettext("This field contains sensitive data and will be stored securely.")}
-                    </p>
-                  <% end %>
-
-                  <%= if @form.errors[field.key] do %>
-                    <p class="text-sm text-red-600 dark:text-red-400">
-                      {@form.errors[field.key]}
-                    </p>
-                  <% end %>
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <%= if @settings_schema == [] do %>
+              <div class="text-center py-8">
+                <div class="text-gray-400 dark:text-gray-500 mb-4">
+                  <.icon name="hero-cog-6-tooth" class="w-12 h-12 mx-auto" />
                 </div>
-              <% end %>
-
-              <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  type="submit"
-                  class="px-6 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700"
-                >
-                  {gettext("Save Settings")}
-                </button>
+                <p class="text-gray-500 dark:text-gray-400">
+                  {gettext("This plugin has no configurable settings.")}
+                </p>
               </div>
-            </div>
-          </.form>
-        <% end %>
+            <% else %>
+              <.form
+                for={to_form(%{}, as: :settings)}
+                phx-change="validate"
+                phx-submit="save"
+                id="plugin-settings-form"
+              >
+                <div class="space-y-6">
+                  <%= for field <- @settings_schema do %>
+                    <div class="space-y-1">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {field.label}
+                        <%= if Map.get(field, :required) do %>
+                          <span class="text-red-500">*</span>
+                        <% end %>
+                      </label>
+
+                      <%= if Map.get(field, :description) do %>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          {field.description}
+                        </p>
+                      <% end %>
+
+                      <%= case field.type do %>
+                        <% :string -> %>
+                          <.input
+                            type={if Map.get(field, :secret), do: "password", else: "text"}
+                            name={"settings[#{field.key}]"}
+                            value={get_form_value(@form, field.key)}
+                          />
+                        <% :integer -> %>
+                          <.input
+                            type="number"
+                            name={"settings[#{field.key}]"}
+                            value={get_form_value(@form, field.key)}
+                          />
+                        <% :boolean -> %>
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <.input
+                              type="checkbox"
+                              name={"settings[#{field.key}]"}
+                              checked={get_form_value(@form, field.key) == true}
+                            />
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                              {gettext("Enabled")}
+                            </span>
+                          </label>
+                        <% :select -> %>
+                          <.input
+                            type="select"
+                            name={"settings[#{field.key}]"}
+                            options={Map.get(field, :options, [])}
+                            value={get_form_value(@form, field.key)}
+                          />
+                      <% end %>
+
+                      <%= if Map.get(field, :secret) do %>
+                        <p class="text-xs text-amber-600 dark:text-amber-400">
+                          <.icon name="hero-lock-closed" class="w-3 h-3 inline" />
+                          {gettext("Sensitive — stored securely.")}
+                        </p>
+                      <% end %>
+
+                      <%= if @form.errors[field.key] do %>
+                        <p class="text-sm text-red-600 dark:text-red-400">
+                          {@form.errors[field.key]}
+                        </p>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      type="submit"
+                      class="px-6 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700"
+                    >
+                      {gettext("Save Settings")}
+                    </button>
+                  </div>
+                </div>
+              </.form>
+            <% end %>
+          </div>
+        </div>
       </div>
     </section>
     """
@@ -207,7 +224,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
       schema
       |> Enum.map(fn field ->
         key = field.key
-        value = Map.get(params, to_string(key), Map.get(params, field.key))
+        value = Map.get(params, to_string(key))
         {key, value}
       end)
       |> Map.new()
@@ -217,9 +234,9 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
 
   defp validate_and_convert(schema, params) do
     errors =
-      schema
-      |> Enum.reduce(%{}, fn field, acc ->
-        raw_value = Map.get(params, to_string(key = field.key)) || Map.get(params, field.key)
+      Enum.reduce(schema, %{}, fn field, acc ->
+        key = field.key
+        raw_value = Map.get(params, to_string(key))
 
         case validate_field(field, raw_value) do
           {:ok, _} -> acc
@@ -231,9 +248,9 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
       {:error, errors}
     else
       converted =
-        schema
-        |> Enum.reduce(%{}, fn field, acc ->
-          raw_value = Map.get(params, to_string(key = field.key)) || Map.get(params, field.key)
+        Enum.reduce(schema, %{}, fn field, acc ->
+          key = field.key
+          raw_value = Map.get(params, to_string(key))
 
           case convert_field(field, raw_value) do
             {:ok, value} -> Map.put(acc, key, value)

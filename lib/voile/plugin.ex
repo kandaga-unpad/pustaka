@@ -72,6 +72,21 @@ defmodule Voile.Plugin do
           optional(:options) => [{String.t(), String.t()}]
         }
 
+  @typedoc """
+  One entry in a plugin's navigation menu.
+
+  - `:path` — relative path appended to `/manage/plugins/:plugin_id`, e.g. `"/"` or `"/lockers"`
+  - `:label` — human-readable menu label shown in the sidebar
+  - `:icon` — hero-icon name, e.g. `"hero-archive-box"`
+  - `:description` — optional short description shown as tooltip or subtext
+  """
+  @type nav_entry :: %{
+          required(:path) => String.t(),
+          required(:label) => String.t(),
+          required(:icon) => String.t(),
+          optional(:description) => String.t()
+        }
+
   # ── Callbacks ────────────────────────────────────────────────────────────────
 
   @doc """
@@ -166,6 +181,27 @@ defmodule Voile.Plugin do
       end
   """
   @callback settings_schema() :: [setting_field()]
+
+  @doc """
+  Returns a list of navigation entries shown in the plugin sidebar.
+  Used by the admin dashboard to render a per-plugin menu so admins
+  can navigate between all pages the plugin provides.
+
+  Each entry's `:path` is appended to `/manage/plugins/:plugin_id`.
+  A "Settings" link is always appended automatically — do not include it here.
+
+  Example:
+
+      def nav do
+        [
+          %{path: "/",        label: "Overview",     icon: "hero-home"},
+          %{path: "/lockers", label: "Lockers",      icon: "hero-archive-box"},
+          %{path: "/sessions",label: "Sessions",     icon: "hero-clock"},
+          %{path: "/nodes",   label: "Node Config",  icon: "hero-server"}
+        ]
+      end
+  """
+  @callback nav() :: [nav_entry()]
 
   # ── Helper ───────────────────────────────────────────────────────────────────
 

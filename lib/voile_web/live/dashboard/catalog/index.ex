@@ -21,6 +21,63 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
     Enum.at(@node_colors, idx)
   end
 
+  defp collection_status_class("published"),
+    do: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+
+  defp collection_status_class("pending"),
+    do: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
+
+  defp collection_status_class("draft"),
+    do: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+
+  defp collection_status_class("archived"),
+    do: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+
+  defp collection_status_class(_),
+    do: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+
+  defp item_availability_class("available"),
+    do: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+
+  defp item_availability_class("loaned"),
+    do: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+
+  defp item_availability_class("reserved"),
+    do: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300"
+
+  defp item_availability_class("missing"),
+    do: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+
+  defp item_availability_class("in_processing"),
+    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+
+  defp item_availability_class("maintenance"),
+    do: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300"
+
+  defp item_availability_class("conservation"),
+    do: "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300"
+
+  defp item_availability_class("exhibition"),
+    do: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300"
+
+  defp item_availability_class("restricted"),
+    do: "bg-red-200 text-red-900 dark:bg-red-900/60 dark:text-red-200"
+
+  defp item_availability_class("in_transit"),
+    do: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300"
+
+  defp item_availability_class("quarantine"),
+    do: "bg-orange-200 text-orange-900 dark:bg-orange-900/60 dark:text-orange-200"
+
+  defp item_availability_class("reference_only"),
+    do: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
+
+  defp item_availability_class("non_circulating"),
+    do: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+
+  defp item_availability_class(_),
+    do: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+
   def render(assigns) do
     ~H"""
     <section class="flex flex-col gap-4">
@@ -94,6 +151,24 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     {gettext("collections across nodes")}
                   </div>
                 </div>
+                <%!-- Collection status breakdown --%>
+                <%= if !is_nil(@collection_status_counts) do %>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <%= for {status, cnt} <- [
+                      {"published", Map.get(@collection_status_counts, "published", 0)},
+                      {"pending", Map.get(@collection_status_counts, "pending", 0)},
+                      {"draft", Map.get(@collection_status_counts, "draft", 0)},
+                      {"archived", Map.get(@collection_status_counts, "archived", 0)}
+                    ], cnt > 0 do %>
+                      <span class={[
+                        "px-2 py-0.5 rounded text-xs font-medium",
+                        collection_status_class(status)
+                      ]}>
+                        {String.capitalize(status)}: {cnt}
+                      </span>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
             </div>
 
@@ -159,6 +234,22 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     {gettext("items across nodes")}
                   </div>
                 </div>
+                <%!-- Item availability breakdown --%>
+                <%= if !is_nil(@item_availability_counts) do %>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <%= for {avail, cnt} <- Enum.sort(@item_availability_counts), cnt > 0 do %>
+                      <span class={[
+                        "px-2 py-0.5 rounded text-xs font-medium",
+                        item_availability_class(avail)
+                      ]}>
+                        {avail
+                        |> String.split("_")
+                        |> Enum.map(&String.capitalize/1)
+                        |> Enum.join(" ")}: {cnt}
+                      </span>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
@@ -202,120 +293,158 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <h4 class="text-sm font-medium text-white truncate">{node.name}</h4>
                   </div>
 
-                  <div class="p-4 grid grid-cols-2 gap-3 bg-white dark:bg-gray-600">
-                    <div class="flex items-center gap-3">
-                      <div class="p-2 rounded-md bg-gray-100 dark:bg-gray-900">
-                        <!-- GLAM / collection icon: classical building with columns -->
-                        <svg
-                          class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                        >
-                          <path d="M3 10l9-6 9 6" stroke-linecap="round" stroke-linejoin="round" />
-                          <path
-                            d="M5 10v6M9 10v6M13 10v6M17 10v6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          /> <path d="M3 18h18" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                      </div>
-
-                      <div>
-                        <div class="text-xs text-gray-500 dark:text-gray-300">
-                          {gettext("Collections")}
+                  <div class="p-4 space-y-3 bg-white dark:bg-gray-600">
+                    <%!-- Collections stat --%>
+                    <div>
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <div class="p-1.5 rounded-md bg-gray-100 dark:bg-gray-900">
+                            <svg
+                              class="h-4 w-4 text-gray-600 dark:text-gray-300"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                            >
+                              <path d="M3 10l9-6 9 6" stroke-linecap="round" stroke-linejoin="round" />
+                              <path
+                                d="M5 10v6M9 10v6M13 10v6M17 10v6"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              /> <path d="M3 18h18" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                          </div>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-300">
+                            {gettext("Collections")}
+                          </span>
                         </div>
-
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_collections) do %>
-                            <span class="inline-flex items-center gap-2">
-                              <svg
-                                class="animate-spin h-4 w-4 text-gray-600 dark:text-gray-300"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
+                            <svg
+                              class="animate-spin h-4 w-4 text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                class="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                stroke-width="4"
                               >
-                                <circle
-                                  class="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  stroke-width="4"
-                                >
-                                </circle>
-
-                                <path
-                                  class="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                >
-                                </path>
-                              </svg>
-                              <span class="text-sm">{gettext("Loading")}</span>
-                            </span>
+                              </circle>
+                              <path
+                                class="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                              >
+                              </path>
+                            </svg>
                           <% else %>
                             {node.count_collections}
                           <% end %>
                         </div>
                       </div>
+                      <%= if !is_nil(node.collection_status_counts) do %>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                          <%= for {status, cnt} <- [
+                            {"published", Map.get(node.collection_status_counts, "published", 0)},
+                            {"pending", Map.get(node.collection_status_counts, "pending", 0)},
+                            {"draft", Map.get(node.collection_status_counts, "draft", 0)},
+                            {"archived", Map.get(node.collection_status_counts, "archived", 0)}
+                          ], cnt > 0 do %>
+                            <span class={[
+                              "px-1.5 py-0.5 rounded text-xs font-medium",
+                              collection_status_class(status)
+                            ]}>
+                              {String.capitalize(status)}: {cnt}
+                            </span>
+                          <% end %>
+                        </div>
+                      <% end %>
                     </div>
-
-                    <div class="flex items-center gap-3">
-                      <div class="p-2 rounded-md bg-gray-100 dark:bg-gray-900">
-                        <!-- gallery / item icon: framed photo with mountain and sun -->
-                        <svg
-                          class="h-5 w-5 text-gray-600 dark:text-gray-300"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                        >
-                          <rect x="3" y="4" width="18" height="16" rx="2" ry="2" class="fill-none" />
-                          <path d="M7 15l3-4 4 5 3-4" stroke-linecap="round" stroke-linejoin="round" />
-                          <circle cx="17" cy="8" r="1.5" />
-                        </svg>
-                      </div>
-
-                      <div>
-                        <div class="text-xs text-gray-500 dark:text-gray-300">{gettext("Items")}</div>
-
+                    <div class="border-t border-gray-100 dark:border-gray-500"></div>
+                    <%!-- Items stat --%>
+                    <div>
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <div class="p-1.5 rounded-md bg-gray-100 dark:bg-gray-900">
+                            <svg
+                              class="h-4 w-4 text-gray-600 dark:text-gray-300"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                            >
+                              <rect
+                                x="3"
+                                y="4"
+                                width="18"
+                                height="16"
+                                rx="2"
+                                ry="2"
+                                class="fill-none"
+                              />
+                              <path
+                                d="M7 15l3-4 4 5 3-4"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                              <circle cx="17" cy="8" r="1.5" />
+                            </svg>
+                          </div>
+                          <span class="text-xs font-medium text-gray-500 dark:text-gray-300">
+                            {gettext("Items")}
+                          </span>
+                        </div>
                         <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                           <%= if is_nil(node.count_items) do %>
-                            <span class="inline-flex items-center gap-2">
-                              <svg
-                                class="animate-spin h-4 w-4 text-gray-600 dark:text-gray-300"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
+                            <svg
+                              class="animate-spin h-4 w-4 text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                class="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                stroke-width="4"
                               >
-                                <circle
-                                  class="opacity-25"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  stroke-width="4"
-                                >
-                                </circle>
-
-                                <path
-                                  class="opacity-75"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                >
-                                </path>
-                              </svg>
-                              <span class="text-sm">{gettext("Loading")}</span>
-                            </span>
+                              </circle>
+                              <path
+                                class="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                              >
+                              </path>
+                            </svg>
                           <% else %>
                             {node.count_items}
                           <% end %>
                         </div>
                       </div>
+                      <%= if !is_nil(node.item_availability_counts) do %>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                          <%= for {avail, cnt} <- Enum.sort(node.item_availability_counts), cnt > 0 do %>
+                            <span class={[
+                              "px-1.5 py-0.5 rounded text-xs font-medium",
+                              item_availability_class(avail)
+                            ]}>
+                              {avail
+                              |> String.split("_")
+                              |> Enum.map(&String.capitalize/1)
+                              |> Enum.join(" ")}: {cnt}
+                            </span>
+                          <% end %>
+                        </div>
+                      <% end %>
                     </div>
                   </div>
                 </div>
@@ -334,6 +463,8 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       socket
       |> assign(:count_collections, nil)
       |> assign(:count_items, nil)
+      |> assign(:collection_status_counts, nil)
+      |> assign(:item_availability_counts, nil)
       |> assign(:count_all_nodes, [])
       |> assign(:page_title, gettext("Catalog Dashboard"))
 
@@ -346,6 +477,8 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
   def handle_info(:load_counts, socket) do
     count_collections = Catalog.count_collections()
     count_items = Catalog.count_items()
+    collection_status_counts = Catalog.count_collections_by_status()
+    item_availability_counts = Catalog.count_items_by_availability()
     get_nodes = Voile.Schema.System.list_nodes()
 
     # Prepare nodes with deterministic color and nil counts initially,
@@ -359,7 +492,9 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
           name: node.name,
           color: color,
           count_collections: nil,
-          count_items: nil
+          count_items: nil,
+          collection_status_counts: nil,
+          item_availability_counts: nil
         }
       end)
 
@@ -370,14 +505,19 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
     # Fetch counts for nodes and update entries (synchronously here; can be async later)
     count_all_nodes =
       Enum.map(count_all_nodes, fn node ->
-        Map.put(node, :count_collections, Catalog.count_collections(node.id))
+        node
+        |> Map.put(:count_collections, Catalog.count_collections(node.id))
         |> Map.put(:count_items, Catalog.count_items(node.id))
+        |> Map.put(:collection_status_counts, Catalog.count_collections_by_status(node.id))
+        |> Map.put(:item_availability_counts, Catalog.count_items_by_availability(node.id))
       end)
 
     socket =
       socket
       |> assign(:count_collections, count_collections)
       |> assign(:count_items, count_items)
+      |> assign(:collection_status_counts, collection_status_counts)
+      |> assign(:item_availability_counts, item_availability_counts)
       |> assign(:count_all_nodes, count_all_nodes)
 
     {:noreply, socket}

@@ -16,10 +16,10 @@ defmodule Voile.PluginManager do
 
   ## Usage
 
-      Voile.PluginManager.install(VoileLockerLuggage)
-      Voile.PluginManager.activate(VoileLockerLuggage)
-      Voile.PluginManager.deactivate(VoileLockerLuggage)
-      Voile.PluginManager.uninstall(VoileLockerLuggage, remove_data: true)
+      Voile.PluginManager.install("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.activate("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.deactivate("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.uninstall("Elixir.VoileLockerLuggage", remove_data: true)
   """
 
   use GenServer
@@ -58,21 +58,85 @@ defmodule Voile.PluginManager do
     |> Enum.map(fn {module, _} -> module end)
   end
 
+  @doc """
+  Returns plugin modules that are loaded in the VM but not yet installed.
+
+  Scans all started OTP applications, derives the likely root module name by
+  camelising the app atom (e.g. `:voile_locker_luggage` → `VoileLockerLuggage`),
+  tries to load it, and keeps those that implement the Voile.Plugin contract.
+  Filters out modules already recorded in the database.
+  """
+  def discover_available do
+    installed =
+      try do
+        Plugins.list_plugins() |> Enum.map(& &1.module) |> MapSet.new()
+      rescue
+        _ -> MapSet.new()
+      end
+
+    Application.loaded_applications()
+    |> Enum.flat_map(fn {app, _desc, _vsn} ->
+      module = app_to_module(app)
+      module_str = module && Atom.to_string(module)
+
+      if Code.ensure_loaded?(module) and plugin_module?(module) and
+           module_str not in installed do
+        meta = module.metadata()
+
+        [
+          %{
+            module: module_str,
+            name: meta.name,
+            version: meta.version,
+            description: Map.get(meta, :description, ""),
+            author: Map.get(meta, :author, "")
+          }
+        ]
+      else
+        []
+      end
+    end)
+    |> Enum.sort_by(& &1.name)
+  end
+
+  # Derives the conventional root module for an OTP app atom.
+  # e.g. :voile_locker_luggage -> VoileLockerLuggage  (i.e. :"Elixir.VoileLockerLuggage")
+  defp app_to_module(app) do
+    camelized =
+      app
+      |> Atom.to_string()
+      |> Macro.camelize()
+
+    Module.concat([camelized])
+  rescue
+    _ -> nil
+  end
+
+  defp plugin_module?(nil), do: false
+
+  defp plugin_module?(module) do
+    function_exported?(module, :metadata, 0) and
+      function_exported?(module, :on_install, 0) and
+      function_exported?(module, :routes, 0)
+  rescue
+    _ -> false
+  end
+
   # ── Public API — Writes (go through GenServer) ───────────────────────────────
 
   @doc "Install a plugin for the first time (runs migrations)."
-  def install(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:install, module}, 60_000)
+  def install(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:install, module_str}, 60_000)
   end
 
   @doc "Activate an installed plugin (registers hooks)."
-  def activate(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:activate, module}, 30_000)
+  def activate(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:activate, module_str}, 30_000)
   end
 
   @doc "Deactivate a plugin (removes hooks, keeps data)."
-  def deactivate(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:deactivate, module})
+  def deactivate(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:deactivate, module_str})
   end
 
   @doc """
@@ -82,16 +146,16 @@ defmodule Voile.PluginManager do
   - `remove_data: true` — calls on_uninstall/0 which drops tables.
     Default is `false` (keeps data, just marks as uninstalled).
   """
-  def uninstall(module, opts \\ []) when is_atom(module) do
-    GenServer.call(__MODULE__, {:uninstall, module, opts}, 60_000)
+  def uninstall(module_str, opts \\ []) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:uninstall, module_str, opts}, 60_000)
   end
 
   @doc """
   Update a plugin to a new version.
   Runs on_update/2 with old and new version strings.
   """
-  def update(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:update, module}, 60_000)
+  def update(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:update, module_str}, 60_000)
   end
 
   # ── GenServer ────────────────────────────────────────────────────────────────
@@ -166,14 +230,16 @@ defmodule Voile.PluginManager do
   # ── Install ──────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:install, module}, _from, state) do
+  def handle_call({:install, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module),
          :ok <- check_not_installed(module),
          :ok <- safe_callback(module, :on_install, []) do
       meta = module.metadata()
 
       Plugins.upsert_plugin(%{
-        module: inspect(module),
+        module: Atom.to_string(module),
         plugin_id: meta.id,
         name: meta.name,
         version: meta.version,
@@ -193,7 +259,7 @@ defmodule Voile.PluginManager do
           meta = module.metadata()
 
           Plugins.upsert_plugin(%{
-            module: inspect(module),
+            module: Atom.to_string(module),
             plugin_id: meta.id,
             name: meta.name,
             version: meta.version,
@@ -215,7 +281,9 @@ defmodule Voile.PluginManager do
   # ── Activate ─────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:activate, module}, _from, state) do
+  def handle_call({:activate, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module),
          :ok <- check_installed_or_inactive(module),
          :ok <- safe_callback(module, :on_activate, []) do
@@ -237,7 +305,9 @@ defmodule Voile.PluginManager do
   # ── Deactivate ───────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:deactivate, module}, _from, state) do
+  def handle_call({:deactivate, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- check_active(module),
          :ok <- safe_callback(module, :on_deactivate, []) do
       Hooks.unregister_all(module)
@@ -256,7 +326,8 @@ defmodule Voile.PluginManager do
   # ── Uninstall ────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:uninstall, module, opts}, _from, state) do
+  def handle_call({:uninstall, module_str, opts}, _from, state) do
+    module = String.to_existing_atom(module_str)
     remove_data = Keyword.get(opts, :remove_data, false)
 
     # Deactivate hooks first
@@ -287,7 +358,9 @@ defmodule Voile.PluginManager do
   # ── Update ───────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:update, module}, _from, state) do
+  def handle_call({:update, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module) do
       meta = module.metadata()
       record = Plugins.get_plugin_by_plugin_id(meta.id)
@@ -301,7 +374,7 @@ defmodule Voile.PluginManager do
           :ok ->
             Plugins.upsert_plugin(%{
               plugin_id: meta.id,
-              module: inspect(module),
+              module: Atom.to_string(module),
               name: meta.name,
               version: new_version,
               status: if(status(module) == :active, do: :active, else: :installed)

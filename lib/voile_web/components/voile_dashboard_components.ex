@@ -4,9 +4,8 @@ defmodule VoileWeb.VoileDashboardComponents do
   use Gettext, backend: VoileWeb.Gettext
 
   alias Phoenix.LiveView.JS
-  alias VoileWeb.Layouts
 
-  import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1]
+  import VoileWeb.CoreComponents, only: [icon: 1, modal: 1, button: 1, theme_toggle: 1]
 
   @doc """
   Navigation Bar Component for GLAM (Gallery, Library, Archive, Museum)
@@ -75,7 +74,7 @@ defmodule VoileWeb.VoileDashboardComponents do
       </div>
       <%!-- Desktop Actions --%>
       <div class="hidden lg:flex w-full justify-end gap-3">
-        <Layouts.theme_toggle />
+        <.theme_toggle />
         <.link
           href="/users/log_out"
           method="delete"
@@ -439,7 +438,7 @@ defmodule VoileWeb.VoileDashboardComponents do
               </span>
             </.link>
             <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700">
-              <Layouts.theme_toggle />
+              <.theme_toggle />
             </div>
 
             <.link
@@ -783,8 +782,14 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.link navigate="/manage/settings/">
           <h3 class="text-lg font-semibold mb-4">Settings</h3>
         </.link>
+        <% menu_items =
+          if has_admin_role?(@current_user) do
+            @menu_items ++ [%{label: "Plugins", path: "/manage/plugins", icon: "hero-puzzle-piece"}]
+          else
+            @menu_items
+          end %>
         <ul class="space-y-4 text-sm">
-          <%= for item <- @menu_items do %>
+          <%= for item <- menu_items do %>
             <li>
               <.link
                 navigate={item.path}
@@ -895,6 +900,291 @@ defmodule VoileWeb.VoileDashboardComponents do
               </li>
             <% end %>
           </ul>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a sidebar for plugin pages (settings and plugin routes).
+
+  Lists all installed/active plugins from the database. When `current_plugin_id`
+  is given, also shows that plugin's `nav/0` entries so admins can navigate
+  between all pages the plugin provides.
+
+  A "Settings" link is always appended automatically to the plugin nav.
+
+  ## Examples
+
+      <.plugin_settings_sidebar current_path={@current_path} current_plugin_id="locker_luggage" />
+  """
+  attr :current_path, :string, default: nil
+  attr :current_plugin_id, :string, default: nil
+
+  def plugin_settings_sidebar(assigns) do
+    plugins =
+      try do
+        Voile.Plugins.list_plugins()
+        |> Enum.filter(&(&1.status in [:active, :installed, :inactive]))
+      rescue
+        _ -> []
+      end
+
+    # Build nav for the currently selected plugin
+    plugin_nav =
+      if assigns.current_plugin_id do
+        plugin_record = Enum.find(plugins, &(&1.plugin_id == assigns.current_plugin_id))
+
+        nav_entries =
+          if plugin_record do
+            try do
+              module = String.to_existing_atom(plugin_record.module)
+
+              if function_exported?(module, :nav, 0) do
+                module.nav()
+              else
+                []
+              end
+            rescue
+              _ -> []
+            end
+          else
+            []
+          end
+
+        # Always append a Settings link
+        settings_entry = %{
+          path: "/settings",
+          label: "Settings",
+          icon: "hero-cog-6-tooth"
+        }
+
+        nav_entries ++ [settings_entry]
+      else
+        []
+      end
+
+    assigns =
+      assigns
+      |> assign(:sidebar_plugins, plugins)
+      |> assign(:plugin_nav, plugin_nav)
+
+    ~H"""
+    <%!-- desktop sidebar --%>
+    <div class="hidden lg:block">
+      <.side_bar_dashboard>
+        <.link navigate="/manage/plugins">
+          <h3 class="text-lg font-semibold mb-4">{gettext("Plugins")}</h3>
+        </.link>
+        <ul class="space-y-1 text-sm">
+          <li>
+            <.link
+              navigate="/manage/plugins"
+              class={[
+                "rounded-lg flex items-center gap-2",
+                if(@current_path == "/manage/plugins",
+                  do:
+                    "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
+                  else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                )
+              ]}
+            >
+              <.icon name="hero-puzzle-piece" class="w-4 h-4" />
+              {gettext("Manage Plugins")}
+            </.link>
+          </li>
+        </ul>
+
+        <%= if @sidebar_plugins != [] do %>
+          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+              {gettext("Installed Plugins")}
+            </p>
+            <ul class="space-y-1 text-sm">
+              <%= for plugin <- @sidebar_plugins do %>
+                <li>
+                  <.link
+                    navigate={"/manage/plugins/#{plugin.plugin_id}"}
+                    class={[
+                      "rounded-lg flex items-center gap-2",
+                      if(@current_plugin_id == plugin.plugin_id,
+                        do:
+                          "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg hover:bg-voile-primary/30",
+                        else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                      )
+                    ]}
+                  >
+                    <.icon name="hero-puzzle-piece" class="w-4 h-4 flex-shrink-0" />
+                    <span class="truncate">{plugin.name}</span>
+                    <span class={[
+                      "ml-auto text-xs px-1.5 py-0.5 rounded-full flex-shrink-0",
+                      plugin.status == :active &&
+                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                      plugin.status == :installed &&
+                        "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                      plugin.status == :inactive &&
+                        "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                    ]}>
+                      {String.upcase(to_string(plugin.status))}
+                    </span>
+                  </.link>
+
+                  <%!-- Show plugin nav entries when this plugin is active in the sidebar --%>
+                  <%= if @current_plugin_id == plugin.plugin_id and @plugin_nav != [] do %>
+                    <ul class="mt-1 ml-4 space-y-0.5 border-l border-gray-200 dark:border-gray-600 pl-3">
+                      <%= for entry <- @plugin_nav do %>
+                        <li>
+                          <.link
+                            navigate={"/manage/plugins/#{plugin.plugin_id}#{entry.path}"}
+                            class={[
+                              "rounded flex items-center gap-2 py-1.5 px-2 text-xs",
+                              if(@current_path == "/manage/plugins/#{plugin.plugin_id}#{entry.path}",
+                                do: "text-voile-primary font-semibold bg-voile-primary/10",
+                                else:
+                                  "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                              )
+                            ]}
+                          >
+                            <.icon name={entry.icon} class="w-3.5 h-3.5 flex-shrink-0" />
+                            {entry.label}
+                          </.link>
+                        </li>
+                      <% end %>
+                    </ul>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </.side_bar_dashboard>
+    </div>
+
+    <%!-- mobile toggle and drawer --%>
+    <div class="lg:hidden w-full flex items-center justify-end px-4 py-2">
+      <button
+        type="button"
+        phx-click={
+          JS.show(to: "#plugin-settings-mobile-sidebar-backdrop")
+          |> JS.show(
+            to: "#plugin-settings-mobile-sidebar",
+            transition:
+              {"transition-transform ease-out duration-200", "-translate-x-full", "translate-x-0"}
+          )
+        }
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-1 border-gray-300 dark:border-gray-600"
+        aria-label="Open plugin settings menu"
+      >
+        <span class="text-sm text-voile-primary font-medium">{gettext("Menu")}</span>
+        <.icon name="hero-puzzle-piece" class="w-6 h-6 text-voile-primary" />
+      </button>
+
+      <div
+        id="plugin-settings-mobile-sidebar-backdrop"
+        class="hidden fixed inset-0 bg-black/50 z-40"
+        phx-click={
+          JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+          |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+        }
+      />
+
+      <div
+        id="plugin-settings-mobile-sidebar"
+        class="hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-700 z-50 transform -translate-x-full transition-transform"
+      >
+        <div class="p-5 h-full flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">{gettext("Plugins")}</h3>
+            <button
+              type="button"
+              phx-click={
+                JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+                |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+              }
+              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <.icon name="hero-x-mark" class="w-5 h-5" />
+            </button>
+          </div>
+
+          <ul class="space-y-1 text-sm">
+            <li>
+              <.link
+                navigate="/manage/plugins"
+                phx-click={
+                  JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+                  |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+                }
+                class="rounded-lg flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+              >
+                <.icon name="hero-puzzle-piece" class="w-4 h-4" />
+                {gettext("Manage Plugins")}
+              </.link>
+            </li>
+          </ul>
+
+          <%= if @sidebar_plugins != [] do %>
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex-1 overflow-y-auto">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+                {gettext("Installed Plugins")}
+              </p>
+              <ul class="space-y-1 text-sm">
+                <%= for plugin <- @sidebar_plugins do %>
+                  <li>
+                    <.link
+                      navigate={"/manage/plugins/#{plugin.plugin_id}"}
+                      phx-click={
+                        JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+                        |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+                      }
+                      class={[
+                        "rounded-lg flex items-center gap-2",
+                        if(@current_plugin_id == plugin.plugin_id,
+                          do: "bg-voile-primary/10 text-voile-primary font-semibold p-2 rounded-lg",
+                          else: "hover:bg-gray-100 dark:hover:bg-voile-primary/10 p-2"
+                        )
+                      ]}
+                    >
+                      <.icon name="hero-puzzle-piece" class="w-4 h-4 flex-shrink-0" />
+                      <span class="truncate">{plugin.name}</span>
+                    </.link>
+
+                    <%!-- Mobile plugin nav entries --%>
+                    <%= if @current_plugin_id == plugin.plugin_id and @plugin_nav != [] do %>
+                      <ul class="mt-1 ml-4 space-y-0.5 border-l border-gray-200 dark:border-gray-600 pl-3">
+                        <%= for entry <- @plugin_nav do %>
+                          <li>
+                            <.link
+                              navigate={"/manage/plugins/#{plugin.plugin_id}#{entry.path}"}
+                              phx-click={
+                                JS.hide(to: "#plugin-settings-mobile-sidebar-backdrop")
+                                |> JS.hide(to: "#plugin-settings-mobile-sidebar")
+                              }
+                              class={[
+                                "rounded flex items-center gap-2 py-1.5 px-2 text-xs",
+                                if(
+                                  @current_path ==
+                                    "/manage/plugins/#{plugin.plugin_id}#{entry.path}",
+                                  do: "text-voile-primary font-semibold bg-voile-primary/10",
+                                  else:
+                                    "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                                )
+                              ]}
+                            >
+                              <.icon name={entry.icon} class="w-3.5 h-3.5 flex-shrink-0" />
+                              {entry.label}
+                            </.link>
+                          </li>
+                        <% end %>
+                      </ul>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>

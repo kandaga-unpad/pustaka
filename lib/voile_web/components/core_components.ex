@@ -542,7 +542,7 @@ defmodule VoileWeb.CoreComponents do
       </.table>
   """
   attr :id, :string, required: true
-  attr :rows, :list, required: true
+  attr :rows, :any, required: true
   attr :row_id, :any, default: nil, doc: "the function for generating the row id"
   attr :row_click, :any, default: nil, doc: "the function for handling phx-click on each row"
 
@@ -556,11 +556,20 @@ defmodule VoileWeb.CoreComponents do
 
   slot :action, doc: "the slot for showing user actions in the last table column"
 
+  def table(%{rows: %Phoenix.LiveView.LiveStream{}} = assigns) do
+    assigns =
+      assigns
+      |> assign(:row_id, assigns.row_id || fn {id, _item} -> id end)
+      |> assign(:phx_update, "stream")
+
+    table(assigns)
+  end
+
   def table(assigns) do
     assigns =
-      with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
-        assign(assigns, row_id: assigns.row_id || fn {id, _item} -> id end)
-      end
+      assigns
+      |> assign_new(:row_id, fn -> assigns.row_id end)
+      |> assign_new(:phx_update, fn -> nil end)
 
     ~H"""
     <table class="table table-zebra">
@@ -572,7 +581,7 @@ defmodule VoileWeb.CoreComponents do
         </tr>
       </thead>
 
-      <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
+      <tbody id={@id} phx-update={@phx_update}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
             :for={col <- @col}
@@ -1088,5 +1097,42 @@ defmodule VoileWeb.CoreComponents do
   # Helper function
   defp format_date(datetime) do
     Calendar.strftime(datetime, "%b %d, %Y")
+  end
+
+  @doc """
+  Provides dark vs light theme toggle based on themes defined in app.css.
+
+  See <head> in root.html.heex which applies the theme before page load.
+  """
+  def theme_toggle(assigns) do
+    ~H"""
+    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
+      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0
+        [[data-theme-pref=light]_&]:left-1/3
+        [[data-theme-pref=dark]_&]:left-2/3
+        transition-[left]" />
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="system"
+      >
+        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+      </button>
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="light"
+      >
+        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+      </button>
+      <button
+        class="flex p-2 cursor-pointer w-1/3"
+        phx-click={JS.dispatch("phx:set-theme")}
+        data-phx-theme="dark"
+      >
+        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+      </button>
+    </div>
+    """
   end
 end

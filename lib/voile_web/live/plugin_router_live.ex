@@ -25,6 +25,7 @@ defmodule VoileWeb.PluginRouterLive do
         |> assign(:plugin_live_view, live_view)
         |> assign(:plugin_action, action)
         |> assign(:plugin_path, path)
+        |> assign(:current_path, "/manage/plugins/#{plugin_id}#{path}")
         |> assign(:page_title, record.name)
 
       {:ok, socket}
@@ -46,16 +47,27 @@ defmodule VoileWeb.PluginRouterLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id="plugin-container">
-      {live_render(@socket, @plugin_live_view,
-        id: "plugin-#{@plugin_record.plugin_id}",
-        session: %{
-          "plugin_id" => @plugin_record.plugin_id,
-          "plugin_path" => @plugin_path,
-          "action" => to_string(@plugin_action)
-        }
-      )}
-    </div>
+    <section class="space-y-6 p-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="w-full md:w-auto md:max-w-64">
+          <.plugin_settings_sidebar
+            current_path={@current_path}
+            current_plugin_id={@plugin_record.plugin_id}
+          />
+        </div>
+
+        <div class="flex-1 min-w-0">
+          {live_render(@socket, @plugin_live_view,
+            id: "plugin-#{@plugin_record.plugin_id}",
+            session: %{
+              "plugin_id" => @plugin_record.plugin_id,
+              "plugin_path" => @plugin_path,
+              "action" => to_string(@plugin_action)
+            }
+          )}
+        </div>
+      </div>
+    </section>
     """
   end
 

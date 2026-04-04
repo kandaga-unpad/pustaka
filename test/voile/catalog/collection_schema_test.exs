@@ -188,6 +188,7 @@ defmodule Voile.Schema.Catalog.CollectionSchemaTest do
           })
 
         errors = errors_on(changeset)
+
         refute Map.has_key?(errors, :access_level),
                "Expected no access_level error for: #{access_level}"
       end)

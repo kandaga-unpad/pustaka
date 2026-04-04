@@ -96,7 +96,7 @@ archives, public libraries) have unique needs that don't belong in the core:
 │  │              Voile.Plugin (Behaviour)                 │        │
 │  │  metadata/0  on_install/0  on_activate/0             │        │
 │  │  on_deactivate/0  on_uninstall/0  on_update/2        │        │
-│  │  hooks/0  routes/0  settings_schema/0                │        │
+│  │  hooks/0  routes/0  nav/0  settings_schema/0          │        │
 │  └──────────────────────────────────────────────────────┘        │
 │                                                                  │
 │  ┌────────────────────┐   ┌────────────────────────────┐         │
@@ -133,14 +133,17 @@ archives, public libraries) have unique needs that don't belong in the core:
 
 **Key design decisions vs. the original plan:**
 
-| Decision | Original Plan | This Version | Why |
-|----------|--------------|-------------|-----|
-| Hook storage | GenServer state | `:persistent_term` | Zero-cost reads; hooks fire on every save/query |
-| Plugin registry | GenServer state | ETS table | Concurrent reads; no bottleneck on `active?/1` |
-| Repo proxy | `Voile.Plugin.Repo` macro | Plugins use `Voile.Repo` directly | Always complete, zero maintenance |
-| Plugin routes | Compile-time `use` macro in router | Dynamic catch-all `/:plugin_id/*path` | No recompile needed for plugin install |
-| Update flow | Reuse `on_install/0` | Dedicated `on_update/2` callback | Prevents conflating install with update |
-| Migration safety | No collision detection | Version collision validation | Prevents silent migration skipping |
+| Decision         | Original Plan                              | This Version                                                     | Why                                                                                                                                       |
+| ---------------- | ------------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook storage     | GenServer state                            | `:persistent_term`                                               | Zero-cost reads; hooks fire on every save/query                                                                                           |
+| Plugin registry  | GenServer state                            | ETS table                                                        | Concurrent reads; no bottleneck on `active?/1`                                                                                            |
+| Repo proxy       | `Voile.Plugin.Repo` macro                  | Plugins use `Voile.Repo` directly                                | Always complete, zero maintenance                                                                                                         |
+| Plugin routes    | Compile-time `use` macro in router         | Dynamic catch-all `/:plugin_id/*path`                            | No recompile needed for plugin install                                                                                                    |
+| Update flow      | Reuse `on_install/0`                       | Dedicated `on_update/2` callback                                 | Prevents conflating install with update                                                                                                   |
+| Migration safety | No collision detection                     | Version collision validation                                     | Prevents silent migration skipping                                                                                                        |
+| Public API type  | `install(module)` accepts atom             | `install(module_str)` accepts string                             | Plugins are path deps compiled before host; atom table has a finite limit; `String.to_existing_atom` resolves safely inside the GenServer |
+| DB module column | `inspect(module)` → `"VoileLockerLuggage"` | `Atom.to_string(module)` → `"Elixir.VoileLockerLuggage"`         | Only the full-prefixed form round-trips with `String.to_existing_atom`                                                                    |
+| Plugin discovery | Manual                                     | `discover_available/0` scans `Application.loaded_applications()` | Admin UI shows "not yet installed" plugins automatically                                                                                  |
 
 ---
 
@@ -153,12 +156,12 @@ There is no second database, no schema separation, no dynamic connection strings
 
 **Rules for plugin table naming:**
 
-| Rule | Example |
-|------|---------|
-| Prefix all tables with `plugin_` | `plugin_locker_luggage_lockers` |
-| Use the plugin's `id` as the next segment | `plugin_isbn_lookup_cache` |
-| Use a meaningful suffix for the entity | `plugin_exhibit_scheduler_rotations` |
-| Never reuse core Voile table names | users, collections, items are off-limits |
+| Rule                                      | Example                                  |
+| ----------------------------------------- | ---------------------------------------- |
+| Prefix all tables with `plugin_`          | `plugin_locker_luggage_lockers`          |
+| Use the plugin's `id` as the next segment | `plugin_isbn_lookup_cache`               |
+| Use a meaningful suffix for the entity    | `plugin_exhibit_scheduler_rotations`     |
+| Never reuse core Voile table names        | users, collections, items are off-limits |
 
 ### 3.2 Plugin Migrations
 
@@ -248,12 +251,28 @@ defmodule Voile.Plugin do
   that implements this behaviour and ships its own migrations, schemas,
   contexts, and optionally LiveView UI.
 
+  ## Compile-time constraint
+
+  Plugins are added as `path:` dependencies and are compiled **before** the
+  Voile host app. This means a plugin module CANNOT reference host-app modules
+  at compile time. Specifically:
+
+  - Do NOT add `@behaviour Voile.Plugin` (causes undefined module warning)
+  - Do NOT add `@impl true` annotations (requires `@behaviour` to be meaningful)
+  - Do NOT use `VoileWeb`, `~p` sigils, `<.icon>`, or `<.input>` in plugin LiveViews
+  - Plugin LiveViews must use `use Phoenix.LiveView` directly and plain HTML
+  - Add `@compile {:no_warn_undefined, [Voile.Plugin, Voile.Repo, ...]}` to silence
+    runtime-only reference warnings
+
+  The behaviour contract is still enforced dynamically at runtime via
+  `function_exported?/3` checks in `Voile.Plugin.plugin?/1`.
+
   ## Minimal Example
 
       defmodule VoileLockerLuggage do
-        @behaviour Voile.Plugin
+        # Note: NO @behaviour or @impl true — see compile-time constraint above
+        @compile {:no_warn_undefined, [Voile.Plugin, Voile.Hooks]}
 
-        @impl true
         def metadata do
           %{
             id: "locker_luggage",
@@ -265,21 +284,14 @@ defmodule Voile.Plugin do
           }
         end
 
-        @impl true
         def on_install,    do: VoileLockerLuggage.Migrator.run()
-        @impl true
         def on_activate,   do: :ok
-        @impl true
         def on_deactivate, do: :ok
-        @impl true
         def on_uninstall,  do: VoileLockerLuggage.Migrator.rollback()
-        @impl true
         def on_update(_old, _new), do: VoileLockerLuggage.Migrator.run()
-        @impl true
         def hooks,           do: []
-        @impl true
         def routes,          do: []
-        @impl true
+        def nav,             do: []
         def settings_schema, do: []
       end
   """
@@ -408,6 +420,42 @@ defmodule Voile.Plugin do
       end
   """
   @callback settings_schema() :: [setting_field()]
+
+  @typedoc """
+  One entry in a plugin's navigation menu.
+
+  - `:path` — relative path appended to `/manage/plugins/:plugin_id`, e.g. `"/"` or `"/lockers"`
+  - `:label` — human-readable menu label shown in the sidebar
+  - `:icon` — hero-icon name, e.g. `"hero-archive-box"`
+  - `:description` — optional short description
+  """
+  @type nav_entry :: %{
+          required(:path) => String.t(),
+          required(:label) => String.t(),
+          required(:icon) => String.t(),
+          optional(:description) => String.t()
+        }
+
+  @doc """
+  Returns navigation entries shown in the plugin sidebar.
+
+  The admin dashboard uses these to render a per-plugin menu so admins can
+  navigate between all pages the plugin provides without going back to the
+  plugin index. Each entry's `:path` is appended to `/manage/plugins/:plugin_id`.
+  A "Settings" link is always appended automatically — do not include it here.
+
+  Example:
+
+      def nav do
+        [
+          %{path: "/",         label: "Overview",    icon: "hero-home"},
+          %{path: "/lockers",  label: "Lockers",     icon: "hero-archive-box"},
+          %{path: "/sessions", label: "Sessions",    icon: "hero-clock"},
+          %{path: "/nodes",    label: "Node Config", icon: "hero-server"}
+        ]
+      end
+  """
+  @callback nav() :: [nav_entry()]
 
   # ── Helper ─────────────────────────────────────────────────────────────────
 
@@ -780,10 +828,16 @@ defmodule Voile.PluginManager do
 
   ## Usage
 
-      Voile.PluginManager.install(VoileLockerLuggage)
-      Voile.PluginManager.activate(VoileLockerLuggage)
-      Voile.PluginManager.deactivate(VoileLockerLuggage)
-      Voile.PluginManager.uninstall(VoileLockerLuggage, remove_data: true)
+      Voile.PluginManager.install("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.activate("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.deactivate("Elixir.VoileLockerLuggage")
+      Voile.PluginManager.uninstall("Elixir.VoileLockerLuggage", remove_data: true)
+
+  All public write functions accept a **string** module name (the value returned by
+  `Atom.to_string(ModuleName)`, e.g. `"Elixir.VoileLockerLuggage"`). This avoids
+  creating new atoms from untrusted input and prevents BEAM atom table exhaustion.
+  Atom resolution happens inside `handle_call` using `String.to_existing_atom/1`,
+  which is safe because it raises rather than creates if the module isn't loaded.
   """
 
   use GenServer
@@ -822,21 +876,93 @@ defmodule Voile.PluginManager do
     |> Enum.map(fn {module, _} -> module end)
   end
 
+  # ── Public API — Discovery ─────────────────────────────────────────────────
+
+  @doc """
+  Returns metadata maps for plugin modules that are loaded in the VM but
+  not yet installed in the database.
+
+  Scans `Application.loaded_applications()`, derives the conventional root
+  module name by camelising the app atom (e.g. `:voile_locker_luggage` →
+  `VoileLockerLuggage`), checks it implements the plugin contract, and
+  excludes modules already recorded in the DB.
+
+  Returns a list of plain maps:
+
+      [
+        %{
+          module: "Elixir.VoileLockerLuggage",
+          name: "Locker & Luggage",
+          version: "1.0.0",
+          description: "...",
+          author: "..."
+        }
+      ]
+
+  Plugin metadata is eagerly fetched here so callers (e.g. templates) never
+  need to call module functions on user-supplied input.
+  """
+  def discover_available do
+    installed =
+      try do
+        Plugins.list_plugins() |> Enum.map(& &1.module) |> MapSet.new()
+      rescue
+        _ -> MapSet.new()
+      end
+
+    Application.loaded_applications()
+    |> Enum.flat_map(fn {app, _desc, _vsn} ->
+      module = app_to_module(app)
+      module_str = module && Atom.to_string(module)
+
+      if Code.ensure_loaded?(module) and plugin_module?(module) and
+           module_str not in installed do
+        meta = module.metadata()
+
+        [%{
+          module: module_str,
+          name: meta.name,
+          version: meta.version,
+          description: Map.get(meta, :description, ""),
+          author: Map.get(meta, :author, "")
+        }]
+      else
+        []
+      end
+    end)
+    |> Enum.sort_by(& &1.name)
+  end
+
+  defp app_to_module(app) do
+    Module.concat([app |> Atom.to_string() |> Macro.camelize()])
+  rescue
+    _ -> nil
+  end
+
+  defp plugin_module?(nil), do: false
+  defp plugin_module?(module) do
+    function_exported?(module, :metadata, 0) and
+      function_exported?(module, :on_install, 0) and
+      function_exported?(module, :routes, 0)
+  rescue
+    _ -> false
+  end
+
   # ── Public API — Writes (go through GenServer) ─────────────────────────────
 
   @doc "Install a plugin for the first time (runs migrations)."
-  def install(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:install, module}, 60_000)
+  def install(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:install, module_str}, 60_000)
   end
 
   @doc "Activate an installed plugin (registers hooks)."
-  def activate(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:activate, module}, 30_000)
+  def activate(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:activate, module_str}, 30_000)
   end
 
   @doc "Deactivate a plugin (removes hooks, keeps data)."
-  def deactivate(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:deactivate, module})
+  def deactivate(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:deactivate, module_str})
   end
 
   @doc """
@@ -846,16 +972,16 @@ defmodule Voile.PluginManager do
   - `remove_data: true` — calls on_uninstall/0 which drops tables.
     Default is `false` (keeps data, just marks as uninstalled).
   """
-  def uninstall(module, opts \\ []) when is_atom(module) do
-    GenServer.call(__MODULE__, {:uninstall, module, opts}, 60_000)
+  def uninstall(module_str, opts \\ []) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:uninstall, module_str, opts}, 60_000)
   end
 
   @doc """
   Update a plugin to a new version.
   Runs on_update/2 with old and new version strings.
   """
-  def update(module) when is_atom(module) do
-    GenServer.call(__MODULE__, {:update, module}, 60_000)
+  def update(module_str) when is_binary(module_str) do
+    GenServer.call(__MODULE__, {:update, module_str}, 60_000)
   end
 
   # ── GenServer ──────────────────────────────────────────────────────────────
@@ -910,8 +1036,19 @@ defmodule Voile.PluginManager do
 
   # ── Install ────────────────────────────────────────────────────────────────
 
+  # String → atom conversion happens here, inside the GenServer, using
+  # String.to_existing_atom/1. This is safe: it raises ArgumentError rather
+  # than creating a new atom if the module is not already loaded.
+  #
+  # The `module` column in the DB stores Atom.to_string(module) which gives
+  # the full Elixir-prefixed atom string ("Elixir.VoileLockerLuggage"),
+  # NOT inspect(module) (which would give "VoileLockerLuggage" without the
+  # prefix and cannot be round-tripped with String.to_existing_atom).
+
   @impl true
-  def handle_call({:install, module}, _from, state) do
+  def handle_call({:install, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module),
          :ok <- check_not_installed(module),
          :ok <- safe_callback(module, :on_install, []) do
@@ -919,7 +1056,7 @@ defmodule Voile.PluginManager do
       meta = module.metadata()
 
       Plugins.upsert_plugin(%{
-        module: inspect(module),
+        module: Atom.to_string(module),
         plugin_id: meta.id,
         name: meta.name,
         version: meta.version,
@@ -938,7 +1075,7 @@ defmodule Voile.PluginManager do
         try do
           meta = module.metadata()
           Plugins.upsert_plugin(%{
-            module: inspect(module),
+            module: Atom.to_string(module),
             plugin_id: meta.id,
             name: meta.name,
             version: meta.version,
@@ -958,7 +1095,9 @@ defmodule Voile.PluginManager do
   # ── Activate ───────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:activate, module}, _from, state) do
+  def handle_call({:activate, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module),
          :ok <- check_installed_or_inactive(module),
          :ok <- safe_callback(module, :on_activate, []) do
@@ -980,7 +1119,9 @@ defmodule Voile.PluginManager do
   # ── Deactivate ─────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:deactivate, module}, _from, state) do
+  def handle_call({:deactivate, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- check_active(module),
          :ok <- safe_callback(module, :on_deactivate, []) do
 
@@ -1000,7 +1141,8 @@ defmodule Voile.PluginManager do
   # ── Uninstall ──────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:uninstall, module, opts}, _from, state) do
+  def handle_call({:uninstall, module_str, opts}, _from, state) do
+    module = String.to_existing_atom(module_str)
     remove_data = Keyword.get(opts, :remove_data, false)
 
     # Deactivate hooks first
@@ -1026,7 +1168,9 @@ defmodule Voile.PluginManager do
   # ── Update ─────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_call({:update, module}, _from, state) do
+  def handle_call({:update, module_str}, _from, state) do
+    module = String.to_existing_atom(module_str)
+
     with :ok <- validate_plugin(module) do
       meta = module.metadata()
       record = Plugins.get_plugin_by_plugin_id(meta.id)
@@ -1040,7 +1184,7 @@ defmodule Voile.PluginManager do
           :ok ->
             Plugins.upsert_plugin(%{
               plugin_id: meta.id,
-              module: inspect(module),
+              module: Atom.to_string(module),
               name: meta.name,
               version: new_version,
               status: if(status(module) == :active, do: :active, else: :installed)
@@ -1576,9 +1720,9 @@ end
 ```
 
 !!! note
-    The `live_render/3` approach is one option. An alternative is to use the plugin's
-    LiveView module directly in mount and delegate all callbacks. The `live_render` approach
-    is simpler but nests LiveViews. Choose based on how much isolation you want.
+The `live_render/3` approach is one option. An alternative is to use the plugin's
+LiveView module directly in mount and delegate all callbacks. The `live_render` approach
+is simpler but nests LiveViews. Choose based on how much isolation you want.
 
 ---
 
@@ -1651,6 +1795,7 @@ end
 ```
 
 This adds:
+
 - `/manage/plugins` — plugin management admin page
 - `/manage/plugins/:id/settings` — per-plugin settings form
 - `/manage/plugins/:id/*` — dynamic plugin-owned routes
@@ -1917,18 +2062,18 @@ end
 
 ### 9.4 Hooks
 
-| Hook Name | Type | Payload / Initial Value | Plugin Can... |
-|-----------|------|------------------------|---------------|
-| `:dashboard_widgets` | Filter | `[widget_map]` | Append widget maps |
-| `:admin_nav_items` | Filter | `[nav_item_map]` | Append nav links |
-| `:collection_before_save` | Filter | `attrs :: map` | Modify attrs before insert |
-| `:collection_after_save` | Action | `%Collection{}` | React to new collections |
-| `:item_after_create` | Action | `%Item{}` | React to new items |
-| `:visitor_checked_in` | Action | `%{visitor_id, node_id, name}` | React to visitor events |
-| `:visitor_session_ended` | Action | `%{visitor_id}` | React to checkout |
-| `:search_results` | Filter | `[result]` | Modify search results |
-| `:circulation_checkout` | Action | `%Transaction{}` | React to checkouts |
-| `:admin_sidebar_menu` | Filter | `[menu_item]` | Add sidebar sections |
+| Hook Name                 | Type   | Payload / Initial Value        | Plugin Can...              |
+| ------------------------- | ------ | ------------------------------ | -------------------------- |
+| `:dashboard_widgets`      | Filter | `[widget_map]`                 | Append widget maps         |
+| `:admin_nav_items`        | Filter | `[nav_item_map]`               | Append nav links           |
+| `:collection_before_save` | Filter | `attrs :: map`                 | Modify attrs before insert |
+| `:collection_after_save`  | Action | `%Collection{}`                | React to new collections   |
+| `:item_after_create`      | Action | `%Item{}`                      | React to new items         |
+| `:visitor_checked_in`     | Action | `%{visitor_id, node_id, name}` | React to visitor events    |
+| `:visitor_session_ended`  | Action | `%{visitor_id}`                | React to checkout          |
+| `:search_results`         | Filter | `[result]`                     | Modify search results      |
+| `:circulation_checkout`   | Action | `%Transaction{}`               | React to checkouts         |
+| `:admin_sidebar_menu`     | Filter | `[menu_item]`                  | Add sidebar sections       |
 
 ### 9.5 Plugin Settings
 
@@ -2036,17 +2181,17 @@ Voile.PluginManager.install(VoileLockerLuggage)
 
 ## 11. Naming Conventions & Rules
 
-| Item | Convention | Example |
-|------|-----------|---------|
-| OTP app name | `:voile_` prefix | `:voile_locker_luggage` |
-| Main module | `Voile` prefix recommended | `VoileLockerLuggage` |
-| Plugin `id` | lowercase snake_case, never change | `"locker_luggage"` |
-| Table names | `plugin_<id>_<entity>` | `plugin_locker_luggage_lockers` |
-| Migration module | `<Module>.Migrations.<Name>` | `VoileLockerLuggage.Migrations.CreateLockers` |
-| Hook names | lowercase snake_case atoms | `:dashboard_widgets` |
-| Settings keys | lowercase snake_case atoms | `:max_lockers` |
-| Migrator module | `<Module>.Migrator` | `VoileLockerLuggage.Migrator` |
-| Route URL prefix | `/manage/plugins/<id>` | `/manage/plugins/locker_luggage` |
+| Item             | Convention                         | Example                                       |
+| ---------------- | ---------------------------------- | --------------------------------------------- |
+| OTP app name     | `:voile_` prefix                   | `:voile_locker_luggage`                       |
+| Main module      | `Voile` prefix recommended         | `VoileLockerLuggage`                          |
+| Plugin `id`      | lowercase snake_case, never change | `"locker_luggage"`                            |
+| Table names      | `plugin_<id>_<entity>`             | `plugin_locker_luggage_lockers`               |
+| Migration module | `<Module>.Migrations.<Name>`       | `VoileLockerLuggage.Migrations.CreateLockers` |
+| Hook names       | lowercase snake_case atoms         | `:dashboard_widgets`                          |
+| Settings keys    | lowercase snake_case atoms         | `:max_lockers`                                |
+| Migrator module  | `<Module>.Migrator`                | `VoileLockerLuggage.Migrator`                 |
+| Route URL prefix | `/manage/plugins/<id>`             | `/manage/plugins/locker_luggage`              |
 
 ### Golden Rules
 
@@ -2131,16 +2276,16 @@ end
 
 ## 13. Implementation Phases
 
-| Phase | Description | Files to Create/Modify |
-|-------|-------------|----------------------|
-| **Phase 0: Prep** | Refactor dashboard to extract widget rendering into components | `dashboard_live.ex` |
-| **Phase 1: Hooks** | Build `Voile.Hooks` with persistent_term. Wire into 2-3 core hook points (dashboard_widgets, admin_nav, collection_before_save) | `lib/voile/hooks.ex`, `dashboard_live.ex`, `catalog.ex` |
-| **Phase 2: Plugin Behaviour** | Create `Voile.Plugin` behaviour and `Voile.Plugin.Migrator` macro | `lib/voile/plugin.ex`, `lib/voile/plugin/migrator.ex` |
-| **Phase 3: Plugin Manager** | Build `Voile.PluginManager` with ETS, `PluginRecord` schema, `Plugins` context, DB migration | `lib/voile/plugin_manager.ex`, `lib/voile/plugin_record.ex`, `lib/voile/plugins.ex`, migration file |
-| **Phase 4: Wiring** | Add to Application supervisor, add plugin routes to router, build plugin admin page | `application.ex`, `router.ex`, `Dashboard.Plugins.Index`, `PluginRouterLive` |
-| **Phase 5: Settings UI** | Build plugin settings LiveView | `Dashboard.Plugins.Settings` |
-| **Phase 6: First Plugin** | Build `voile_locker_luggage` as a separate OTP app to validate the full lifecycle | Separate repo/app |
-| **Phase 7: Documentation** | Write plugin developer guide, create template repository | `docs/features/plugins/`, template repo |
+| Phase                         | Description                                                                                                                     | Files to Create/Modify                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Phase 0: Prep**             | Refactor dashboard to extract widget rendering into components                                                                  | `dashboard_live.ex`                                                                                 |
+| **Phase 1: Hooks**            | Build `Voile.Hooks` with persistent_term. Wire into 2-3 core hook points (dashboard_widgets, admin_nav, collection_before_save) | `lib/voile/hooks.ex`, `dashboard_live.ex`, `catalog.ex`                                             |
+| **Phase 2: Plugin Behaviour** | Create `Voile.Plugin` behaviour and `Voile.Plugin.Migrator` macro                                                               | `lib/voile/plugin.ex`, `lib/voile/plugin/migrator.ex`                                               |
+| **Phase 3: Plugin Manager**   | Build `Voile.PluginManager` with ETS, `PluginRecord` schema, `Plugins` context, DB migration                                    | `lib/voile/plugin_manager.ex`, `lib/voile/plugin_record.ex`, `lib/voile/plugins.ex`, migration file |
+| **Phase 4: Wiring**           | Add to Application supervisor, add plugin routes to router, build plugin admin page                                             | `application.ex`, `router.ex`, `Dashboard.Plugins.Index`, `PluginRouterLive`                        |
+| **Phase 5: Settings UI**      | Build plugin settings LiveView                                                                                                  | `Dashboard.Plugins.Settings`                                                                        |
+| **Phase 6: First Plugin**     | Build `voile_locker_luggage` as a separate OTP app to validate the full lifecycle                                               | Separate repo/app                                                                                   |
+| **Phase 7: Documentation**    | Write plugin developer guide, create template repository                                                                        | `docs/features/plugins/`, template repo                                                             |
 
 ---
 

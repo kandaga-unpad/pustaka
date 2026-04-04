@@ -276,8 +276,8 @@ defmodule Voile.Schema.StockOpname do
 
       case result do
         {:ok, %{assignments: assignments, set_initializing: updated_session}} ->
-          # Spawn background task to initialize items
-          Task.start(fn ->
+          # Spawn supervised background task to initialize items
+          Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
             initialize_session_items_async(updated_session)
           end)
 
@@ -1085,46 +1085,67 @@ defmodule Voile.Schema.StockOpname do
         has_changes: map_size(changes || %{}) > 0
       }
 
-      require Logger
-      Logger.debug("Check item attrs: #{inspect(attrs)}")
-      Logger.debug("Changes map: #{inspect(changes)}")
-      Logger.debug("Notes: #{inspect(notes)}")
-
       opname_item
       |> Item.changeset(attrs)
     end)
-    |> Ecto.Multi.run(:update_counters, fn repo, %{update_item: updated_item} ->
-      # Update session counters
+    |> Ecto.Multi.run(:update_counters, fn repo,
+                                           %{lock_item: old_item, update_item: updated_item} ->
       session = repo.get!(Session, session.id)
 
-      new_checked_count =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.check_status == "checked"
-        )
-        |> repo.aggregate(:count, :id)
+      old_status = old_item.check_status
+      old_has_changes = old_item.has_changes
+      new_status = updated_item.check_status
+      new_has_changes = updated_item.has_changes
 
-      # Count missing items based on check_status
-      new_missing_count =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.check_status == "missing"
-        )
-        |> repo.aggregate(:count, :id)
+      checked_delta =
+        cond do
+          old_status != "checked" and new_status == "checked" -> 1
+          old_status == "checked" and new_status != "checked" -> -1
+          true -> 0
+        end
 
-      new_changes_count =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.has_changes == true
-        )
-        |> repo.aggregate(:count, :id)
+      changes_delta =
+        cond do
+          !old_has_changes and new_has_changes -> 1
+          old_has_changes and !new_has_changes -> -1
+          true -> 0
+        end
 
-      session
-      |> Ecto.Changeset.change(%{
-        checked_items: new_checked_count,
-        missing_items: new_missing_count,
-        items_with_changes: new_changes_count
-      })
-      |> repo.update()
+      missing_delta =
+        cond do
+          old_status != "missing" and new_status == "missing" -> 1
+          old_status == "missing" and new_status != "missing" -> -1
+          true -> 0
+        end
 
-      # Update librarian's checked count
+      session_changes = %{}
+
+      session_changes =
+        if checked_delta != 0,
+          do: Map.put(session_changes, :checked_items, session.checked_items + checked_delta),
+          else: session_changes
+
+      session_changes =
+        if changes_delta != 0,
+          do:
+            Map.put(
+              session_changes,
+              :items_with_changes,
+              session.items_with_changes + changes_delta
+            ),
+          else: session_changes
+
+      session_changes =
+        if missing_delta != 0,
+          do: Map.put(session_changes, :missing_items, session.missing_items + missing_delta),
+          else: session_changes
+
+      if map_size(session_changes) > 0 do
+        session
+        |> Ecto.Changeset.change(session_changes)
+        |> repo.update()
+      end
+
       assignment = repo.get_by(LibrarianAssignment, session_id: session.id, user_id: user.id)
 
       if assignment do
@@ -1157,8 +1178,8 @@ defmodule Voile.Schema.StockOpname do
   Get session statistics.
   """
   def get_session_statistics(%Session{} = session) do
-    session = Repo.preload(session, :items, force: true)
-
+    # All counter fields are maintained directly on the session struct —
+    # no need to load the items association.
     %{
       total_items: session.total_items,
       checked_items: session.checked_items,
@@ -1509,19 +1530,37 @@ defmodule Voile.Schema.StockOpname do
       # Phase 2 — background: run the heavy bulk updates without blocking the
       # caller. Voile.TaskSupervisor is started in application.ex.
       Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
-        result = do_apply_session_changes(applying_session, admin_user, now)
+        try do
+          result = do_apply_session_changes(applying_session, admin_user, now)
 
-        case result do
-          {:ok, approved_session} ->
-            Phoenix.PubSub.broadcast(
-              Voile.PubSub,
-              session_topic(approved_session.id),
-              {:session_approved, approved_session}
-            )
+          case result do
+            {:ok, approved_session} ->
+              Phoenix.PubSub.broadcast(
+                Voile.PubSub,
+                session_topic(approved_session.id),
+                {:session_approved, approved_session}
+              )
 
-          {:error, reason} ->
+            {:error, reason} ->
+              Logger.error(
+                "approve_session background task failed for session #{session.id}: #{inspect(reason)}"
+              )
+
+              # Roll the session back to pending_review so the admin can retry.
+              session
+              |> Ecto.Changeset.change(%{status: "pending_review"})
+              |> Repo.update()
+
+              Phoenix.PubSub.broadcast(
+                Voile.PubSub,
+                session_topic(session.id),
+                {:session_approval_failed, reason}
+              )
+          end
+        rescue
+          e ->
             Logger.error(
-              "approve_session background task failed for session #{session.id}: #{inspect(reason)}"
+              "approve_session raised for session #{session.id}: #{Exception.message(e)}"
             )
 
             # Roll the session back to pending_review so the admin can retry.
@@ -1532,7 +1571,7 @@ defmodule Voile.Schema.StockOpname do
             Phoenix.PubSub.broadcast(
               Voile.PubSub,
               session_topic(session.id),
-              {:session_approval_failed, reason}
+              {:session_approval_failed, Exception.message(e)}
             )
         end
       end)
@@ -1608,50 +1647,38 @@ defmodule Voile.Schema.StockOpname do
              {:ok, {unchecked_count, explicit_missing_count}}
            end)
            |> Repo.transaction() do
-      # Step 3: apply per-field JSONB changes for all "checked" items that had
-      # differences recorded by a librarian.
-      #
-      # We fetch the full list of changed items first (one SELECT), then process
-      # them in chunks of 1000 concurrently using Task.async_stream. Each task
-      # gets its own Repo connection from the pool so the BEAM schedulers and
-      # the DB connection pool are both used efficiently.
-      #
-      # max_concurrency is capped at 4 — this is intentionally conservative so
-      # we don't flood the DB connection pool (default: 10) and starve other
-      # requests running in parallel on the same node.
-      items_with_changes =
-        from(oi in Item,
-          where: oi.session_id == ^session.id,
-          where: oi.has_changes == true,
-          where: oi.check_status == "checked",
-          where: not is_nil(oi.changes),
-          select: %{item_id: oi.item_id, changes: oi.changes}
+      # Step 3: stream items with changes and process in chunks sequentially.
+      # Repo.stream opens a server-side cursor (DECLARE CURSOR) so memory stays
+      # constant regardless of session size — safe for 100k+ item sessions.
+      # All UPDATE statements run on the same connection/transaction as the
+      # cursor, so a failure automatically rolls back all partial changes.
+      stream_result =
+        Repo.transaction(
+          fn ->
+            from(oi in Item,
+              where: oi.session_id == ^session.id,
+              where: oi.has_changes == true,
+              where: oi.check_status == "checked",
+              where: not is_nil(oi.changes),
+              select: %{item_id: oi.item_id, changes: oi.changes}
+            )
+            |> Repo.stream(max_rows: 1000)
+            |> Stream.chunk_every(1000)
+            |> Enum.each(&apply_item_changes_chunk(&1, admin_id_bin, now))
+          end,
+          timeout: :infinity
         )
-        |> Repo.all()
 
-      chunk_results =
-        items_with_changes
-        |> Enum.chunk_every(1000)
-        |> Task.async_stream(
-          &apply_item_changes_chunk(&1, admin_id_bin, now),
-          timeout: :infinity,
-          max_concurrency: 4
-        )
-        |> Enum.to_list()
+      case stream_result do
+        {:ok, _} ->
+          # All changes applied — stamp the session as fully approved.
+          session
+          |> Ecto.Changeset.change(%{status: "approved", approved_at: now})
+          |> Repo.update()
 
-      # Raise on any task failure so the caller can roll back and notify.
-      Enum.each(chunk_results, fn
-        {:ok, _count} -> :ok
-        {:exit, reason} -> raise "Chunk processing failed: #{inspect(reason)}"
-      end)
-
-      # All changes applied — stamp the session as fully approved.
-      session
-      |> Ecto.Changeset.change(%{
-        status: "approved",
-        approved_at: now
-      })
-      |> Repo.update()
+        {:error, reason} ->
+          {:error, reason}
+      end
     end
   end
 

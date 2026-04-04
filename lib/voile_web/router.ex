@@ -459,6 +459,7 @@ defmodule VoileWeb.Router do
         scope "/plugins" do
           live "/", Dashboard.Plugins.Index, :index
           live "/:plugin_id/settings", Dashboard.Plugins.Settings, :settings
+          live "/:plugin_id", PluginRouterLive, :index
           live "/:plugin_id/*path", PluginRouterLive, :index
         end
       end

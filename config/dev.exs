@@ -97,7 +97,8 @@ config :voile, VoileWeb.Endpoint,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/voile_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+      ~r"lib/voile_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$",
+      ~r"plugins/.*/lib/.*\.(ex|heex)$"
     ]
   ]
 

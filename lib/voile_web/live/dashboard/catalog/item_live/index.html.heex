@@ -3,7 +3,25 @@
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
       <div class="flex items-center gap-3">
         <.back navigate="/manage/catalog">{gettext("Kembali")}</.back>
+      </div>
 
+      <div class="flex items-center gap-3">
+        <.link
+          navigate={~p"/manage/catalog/labels"}
+          class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+        >
+          <.icon name="hero-printer" class="w-5 h-5" /> {gettext("Print Labels")}
+        </.link>
+        <%= if can?(@current_scope.user, "items.create") do %>
+          <.link patch={~p"/manage/catalog/items/new"}>
+            <.button>{gettext("New Item")}</.button>
+          </.link>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+      <div class="flex items-center gap-3">
         <%= if @search && @search != "" do %>
           <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
             <span class="text-sm text-gray-600">{gettext("Results")}</span>
@@ -36,12 +54,6 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <.link
-          navigate={~p"/manage/catalog/labels"}
-          class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-        >
-          <.icon name="hero-printer" class="w-5 h-5" /> {gettext("Print Labels")}
-        </.link>
         <.form
           for={%{}}
           as={:search}
@@ -51,13 +63,13 @@
           phx-hook="SearchFocus"
           id="search-form"
         >
-          <div class="relative">
+          <div class="relative w-full min-w-[420px]">
             <input
               type="text"
               name="q"
               value={@search || ""}
               placeholder={gettext("Search items...")}
-              class="pl-10 pr-9 py-2 rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              class="w-full pl-10 pr-9 py-2 rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               phx-debounce="200"
             />
             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -108,12 +120,6 @@
             </div>
           </div>
         </.form>
-
-        <%= if can?(@current_scope.user, "items.create") do %>
-          <.link patch={~p"/manage/catalog/items/new"}>
-            <.button>{gettext("New Item")}</.button>
-          </.link>
-        <% end %>
       </div>
     </div>
 

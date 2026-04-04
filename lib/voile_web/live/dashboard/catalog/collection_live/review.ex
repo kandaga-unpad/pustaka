@@ -44,7 +44,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
       socket =
         socket
-        |> stream(:collections, collections)
+        |> assign(:collections, collections)
         |> assign(:page, page)
         |> assign(:total_pages, total_pages)
         |> assign(:total_count, total_count)
@@ -153,7 +153,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
     socket =
       socket
-      |> stream(:collections, collections, reset: true)
+      |> assign(:collections, collections)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
       |> assign(:total_count, total_count)
@@ -191,7 +191,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
     socket =
       socket
-      |> stream(:collections, collections, reset: true)
+      |> assign(:collections, collections)
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
       |> assign(:total_count, total_count)
@@ -235,8 +235,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   # Batch selection event handlers
   @impl true
   def handle_event("toggle_selection", %{"collection_id" => id}, socket) do
-    # ID comes in as string from phx-value; convert to integer to match Ecto schema IDs
-    id = String.to_integer(id)
     selected_ids = socket.assigns.selected_collection_ids
 
     updated_ids =
@@ -317,7 +315,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
     socket =
       socket
-      |> stream(:collections, refreshed_collections, reset: true)
+      |> assign(:collections, refreshed_collections)
       |> assign(:total_pages, total_pages)
       |> assign(:total_count, total_count)
       |> assign(:collections_empty?, refreshed_collections == [])
@@ -384,7 +382,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
 
       socket =
         socket
-        |> stream(:collections, refreshed_collections, reset: true)
+        |> assign(:collections, refreshed_collections)
         |> assign(:total_pages, total_pages)
         |> assign(:total_count, total_count)
         |> assign(:collections_empty?, refreshed_collections == [])
@@ -565,7 +563,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
             socket =
               socket
               |> put_flash(:info, "Collection approved and published successfully")
-              |> stream(:collections, collections, reset: true)
+              |> assign(:collections, collections)
               |> assign(:total_pages, total_pages)
               |> assign(:total_count, total_count)
               |> assign(:collections_empty?, collections == [])
@@ -637,7 +635,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
           socket =
             socket
             |> put_flash(:info, "Collection rejected and sent back to draft")
-            |> stream(:collections, collections, reset: true)
+            |> assign(:collections, collections)
             |> assign(:total_pages, total_pages)
             |> assign(:total_count, total_count)
             |> assign(:collections_empty?, collections == [])

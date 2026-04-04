@@ -940,14 +940,19 @@
                 <input
                   type="checkbox"
                   phx-click={
-                    if @selected_collection_ids == [], do: "select_all", else: "select_none"
+                    if @current_page_collection_ids -- @selected_collection_ids == [],
+                      do: "select_none",
+                      else: "select_all"
                   }
-                  checked={@selected_collection_ids != []}
+                  checked={
+                    @current_page_collection_ids != [] and
+                      @current_page_collection_ids -- @selected_collection_ids == []
+                  }
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   title={
-                    if @selected_collection_ids == [],
-                      do: gettext("Select all on page"),
-                      else: gettext("Clear selection")
+                    if @current_page_collection_ids -- @selected_collection_ids == [],
+                      do: gettext("Clear selection"),
+                      else: gettext("Select all on page")
                   }
                 />
               </th>
@@ -991,12 +996,11 @@
 
           <tbody
             id="collections"
-            phx-update="stream"
             class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
           >
             <tr
-              :for={{id, collection} <- @streams.collections}
-              id={id}
+              :for={collection <- @collections}
+              id={"collection-#{collection.id}"}
               class={[
                 "hover:bg-gray-50 dark:hover:bg-gray-700",
                 Enum.member?(@selected_collection_ids, collection.id) &&

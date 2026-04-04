@@ -1740,6 +1740,38 @@ defmodule Voile.Schema.Catalog do
     |> Repo.aggregate(:count, :id)
   end
 
+  def count_collections_by_status() do
+    from(c in Collection, group_by: c.status, select: {c.status, count(c.id)})
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  def count_collections_by_status(unit_id) when is_integer(unit_id) do
+    from(c in Collection,
+      where: c.unit_id == ^unit_id,
+      group_by: c.status,
+      select: {c.status, count(c.id)}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  def count_items_by_availability() do
+    from(i in Item, group_by: i.availability, select: {i.availability, count(i.id)})
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  def count_items_by_availability(unit_id) when is_integer(unit_id) do
+    from(i in Item,
+      where: i.unit_id == ^unit_id,
+      group_by: i.availability,
+      select: {i.availability, count(i.id)}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
   def count_items_by_collection(collection_id) do
     from(i in Item, where: i.collection_id == ^collection_id)
     |> Repo.aggregate(:count, :id)

@@ -49,6 +49,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:app_website, app_website)
       |> assign(:gender, nil)
       |> assign(:study_program, nil)
+      |> assign(:check_in_panels, [])
 
     {:ok, socket}
   end
@@ -269,30 +270,32 @@ defmodule VoileWeb.Visitor.CheckIn do
 
       case System.create_visitor_log(attrs) do
         {:ok, visitor_log} ->
+          visitor_name = visitor_log.visitor_name || identifier
+
           socket =
             socket
             |> assign(:show_success_modal, true)
-            |> assign(:visitor_name, visitor_log.visitor_name || identifier)
+            |> assign(:visitor_name, visitor_name)
             |> assign(:visitor_identifier, "")
             |> assign(:visit_purpose, "")
             |> assign(:error_message, nil)
             |> assign(:gender, gender)
             |> assign(:study_program, study_program)
 
-          # Auto-close modal after 4 seconds
-          Process.send_after(self(), :close_modal, 1000)
+          # Let active plugins inject post-check-in panels (e.g. locker offer).
+          # If no plugin is registered this is a no-op and auto_close_ms stays 1000.
+          hook_payload = %{
+            panels: [],
+            auto_close_ms: 1_000,
+            node_id: node_id,
+            visitor_log: visitor_log,
+            visitor_name: visitor_name
+          }
 
-          {:noreply, socket}
+          hook_result = Voile.Hooks.run_filter(:visitor_check_in_panels, hook_payload)
+          socket = assign(socket, :check_in_panels, hook_result.panels)
 
-          socket
-          |> assign(:show_success_modal, true)
-          |> assign(:visitor_name, visitor_log.visitor_name || identifier)
-          |> assign(:visitor_identifier, "")
-          |> assign(:visit_purpose, "")
-          |> assign(:error_message, nil)
-
-          # Auto-close modal after 4 seconds
-          Process.send_after(self(), :close_modal, 1000)
+          Process.send_after(self(), :close_modal, hook_result.auto_close_ms)
 
           {:noreply, socket}
 
@@ -396,6 +399,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:gender, nil)
       |> assign(:study_program, nil)
       |> assign(:error_message, nil)
+      |> assign(:check_in_panels, [])
       |> push_event("focus_identifier", %{})
 
     {:noreply, socket}
@@ -413,6 +417,7 @@ defmodule VoileWeb.Visitor.CheckIn do
       |> assign(:gender, nil)
       |> assign(:study_program, nil)
       |> assign(:error_message, nil)
+      |> assign(:check_in_panels, [])
       |> push_event("focus_identifier", %{})
 
     {:noreply, socket}
@@ -1045,6 +1050,15 @@ defmodule VoileWeb.Visitor.CheckIn do
                   {gettext("Have a productive visit! 📚")}
                 </p>
               </div>
+
+              <%!-- Plugin extension panels injected via :visitor_check_in_panels hook --%>
+              <%= for {panel_mod, panel_assigns} <- @check_in_panels do %>
+                <.live_component
+                  module={panel_mod}
+                  id={Map.get(panel_assigns, :id, "checkin-panel")}
+                  {panel_assigns}
+                />
+              <% end %>
             </div>
             
     <!-- Close Button -->

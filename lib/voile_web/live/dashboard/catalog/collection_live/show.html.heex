@@ -301,6 +301,11 @@
                     <p class="col-span-2">: {status_badge(item.status)}</p>
                   </div>
 
+                  <div class="grid grid-cols-3">
+                    <p>{gettext("Barcode")}</p>
+                    <p class="col-span-2">: {item.barcode || "-"}</p>
+                  </div>
+
                   <%= if item.node do %>
                     <div class="grid grid-cols-3">
                       <p>{gettext("Node")}</p>

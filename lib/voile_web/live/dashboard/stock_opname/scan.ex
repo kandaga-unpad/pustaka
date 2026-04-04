@@ -412,7 +412,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       :for={
                         field <-
                           Enum.filter(@current_item.collection.collection_fields, fn f ->
-                            f.name not in ["creator", "author", "dcterms:creator"]
+                            f.name not in ["creator", "author", "dcterms:creator"] and
+                              f.id not in Map.get(@collection_field_edits, :deleted_fields, [])
                           end)
                       }
                       class="bg-white dark:bg-gray-700/50 rounded p-2"
@@ -437,6 +438,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                           type="button"
                           phx-click="remove_collection_field"
                           phx-value-field-id={field.id}
+                          phx-throttle="500"
                           class="text-red-600 hover:text-red-700 dark:text-red-400 mt-5"
                           title="Remove field"
                         >
@@ -708,7 +710,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                   {if opname_item.item, do: opname_item.item.item_code, else: "N/A"}
                 </p>
 
-                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                <p
+                  class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-2xl truncate"
+                  title={if opname_item.collection, do: opname_item.collection.title, else: "N/A"}
+                >
                   {if opname_item.collection, do: opname_item.collection.title, else: "N/A"}
                 </p>
               </div>

@@ -289,6 +289,13 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
   end
 
   @impl true
+  def handle_event("noop", _params, socket) do
+    # The search form is phx-submit="noop" to avoid full page reload on Enter.
+    # This event is intentionally a no-op to keep LiveView stable.
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("filter_change", params, socket) do
     # Extract params - form uses as={:filter} but params come as nested map
     filter_params = params["filter"] || params

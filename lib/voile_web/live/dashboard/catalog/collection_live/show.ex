@@ -236,7 +236,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Show do
     "available" => "bg-green-100 text-green-800",
     "loaned" => "bg-blue-100 text-blue-800",
     "reserved" => "bg-yellow-100 text-yellow-800",
-    "maintenance" => "bg-gray-100 text-gray-800"
+    "maintenance" => "bg-gray-100 text-gray-800",
+    "missing" => "bg-red-100 text-red-800"
   }
 
   defp badge(assigns) do
