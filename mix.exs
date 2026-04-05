@@ -15,59 +15,12 @@ defmodule Voile.MixProject do
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers() ++ [:phoenix_swagger],
       listeners: [Phoenix.CodeReloader],
-      # Hex package metadata
-      description: description(),
-      package: package(),
-      docs: docs(),
       name: "Voile",
       description: description(),
       package: package(),
       docs: docs(),
       source_url: @source_url,
       homepage_url: @source_url
-    ]
-  end
-
-  defp description do
-    "Voile — a GLAM (Gallery, Library, Archive, Museum) management system built on Phoenix."
-  end
-
-  defp package do
-    [
-      licenses: ["MIT"],
-      links: %{"GitHub" => @source_url},
-      maintainers: ["Curatorian"],
-      files: ~w(lib priv/gettext priv/repo priv/templates
-           priv/static/images priv/static/sfx priv/static/xsl
-           priv/static/favicon.ico priv/static/robots.txt
-           priv/static/oai-demo.html priv/static/oai-viewer.html
-           priv/static/swagger.json
-           assets config mix.exs README.md LICENSE CHANGELOG.md)
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_ref: "v#{@version}",
-      source_url: @source_url,
-      extras: ["README.md", "CHANGELOG.md"]
-    ]
-  end
-
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
-  def application do
-    [
-      mod: {Voile.Application, []},
-      extra_applications: [:logger, :runtime_tools, :esbuild, :tailwind]
-    ]
-  end
-
-  def cli do
-    [
-      preferred_envs: [precommit: :test]
     ]
   end
 
@@ -113,6 +66,22 @@ defmodule Voile.MixProject do
       source_ref: "v#{@version}",
       source_url: @source_url,
       extras: ["README.md", "CHANGELOG.md"]
+    ]
+  end
+
+  # Configuration for the OTP application.
+  #
+  # Type `mix help compile.app` for more information.
+  def application do
+    [
+      mod: {Voile.Application, []},
+      extra_applications: [:logger, :runtime_tools, :esbuild, :tailwind]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [precommit: :test]
     ]
   end
 
