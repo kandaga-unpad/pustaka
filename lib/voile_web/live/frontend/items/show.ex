@@ -9,6 +9,7 @@ defmodule VoileWeb.Frontend.Items.Show do
   alias Voile.Repo
   alias Voile.Task.Catalog.Items
   alias Voile.Schema.Library.Circulation
+  alias Voile.Schema.System, as: AppSystem
 
   on_mount {VoileWeb.UserAuth, :mount_current_scope}
 
@@ -20,7 +21,9 @@ defmodule VoileWeb.Frontend.Items.Show do
      |> assign(:loading, false)
      |> assign(:related_items, [])
      |> assign(:show_reservation_form, false)
-     |> assign(:reservation_loading, false)}
+     |> assign(:reservation_loading, false)
+     |> assign(:app_contact_number, AppSystem.get_setting_value("app_contact_number", ""))
+     |> assign(:app_email, AppSystem.get_setting_value("app_email", ""))}
   end
 
   @impl true
@@ -602,20 +605,35 @@ defmodule VoileWeb.Frontend.Items.Show do
                       </p>
 
                       <div class="space-y-2 text-sm">
-                        <div class="flex items-center">
-                          <.icon
-                            name="hero-phone-solid"
-                            class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                          /> <span class="text-gray-900 dark:text-white">(+62) 815-7371-0645</span>
-                        </div>
+                        <%= if @app_contact_number != "" do %>
+                          <div class="flex items-center">
+                            <.icon
+                              name="hero-phone-solid"
+                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
+                            />
+                            <a
+                              href={@app_contact_number}
+                              class="text-gray-900 dark:text-white hover:underline"
+                            >
+                              {@app_contact_number}
+                            </a>
+                          </div>
+                        <% end %>
 
-                        <div class="flex items-center">
-                          <.icon
-                            name="hero-envelope-solid"
-                            class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
-                          />
-                          <span class="text-gray-900 dark:text-white">perpustakaan@unpad.ac.id</span>
-                        </div>
+                        <%= if @app_email != "" do %>
+                          <div class="flex items-center">
+                            <.icon
+                              name="hero-envelope-solid"
+                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
+                            />
+                            <a
+                              href={"mailto:#{@app_email}"}
+                              class="text-gray-900 dark:text-white hover:underline"
+                            >
+                              {@app_email}
+                            </a>
+                          </div>
+                        <% end %>
                       </div>
                     </div>
                   </div>

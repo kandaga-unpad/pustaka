@@ -52,6 +52,13 @@ COPY assets assets
 COPY rel rel
 COPY scripts scripts
 
+# Fetch heroicons SVGs for Tailwind (dev-only dep, fetched separately for prod builds)
+ARG HEROICONS_TAG=v2.2.0
+RUN mkdir -p deps/heroicons \
+  && git clone --depth=1 --branch ${HEROICONS_TAG} https://github.com/tailwindlabs/heroicons.git /tmp/heroicons \
+  && cp -r /tmp/heroicons/optimized deps/heroicons/ \
+  && rm -rf /tmp/heroicons
+
 # compile and build assets and release
 RUN mix do compile
 RUN mix assets.deploy
