@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -114,8 +114,7 @@ defmodule Voile.MixProject do
        sparse: "optimized",
        app: false,
        compile: false,
-       depth: 1,
-       only: [:dev, :test]},
+       depth: 1},
       {:html_sanitize_ex, "~> 1.4"},
       {:jason, "~> 1.2"},
       {:lazy_html, ">= 0.1.8", only: :test},
