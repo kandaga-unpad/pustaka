@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.7] - 2026-04-05
+
+### Added
+
+- **Contact & Social settings** — Added `app_email`, `app_instagram_url`, and
+  `app_contact_number` settings (IDs 22–24) to the System Settings dashboard
+  (`SettingLive`). These are used in email templates and public-facing contact
+  information. Settings are editable via a new "Contact & Social Settings" form
+  card on the settings overview page.
+- **Dynamic contact info on item detail page** — The "Need Help?" sidebar on
+  `/items/:id` now reads `app_contact_number` and `app_email` from the settings
+  store instead of the previously hardcoded values. Each entry is a clickable
+  link (WhatsApp/tel for contact number, `mailto:` for email) and only renders
+  if the setting is configured.
+
+### Fixed
+
+- **`mix hex.build` hard-fail on heroicons** — Newer Hex versions reject packages
+  with non-Hex dependencies. Restored `only: :dev` on the heroicons GitHub dep so
+  it is excluded from the published package. Added a `files:` whitelist to
+  `package/0` to also exclude `priv/static/uploads/` and compiled asset bundles,
+  keeping the tarball well under the 128 MB limit.
+- **Production container builds with `heroicons: only: :dev`** — Since heroicons
+  is now dev-only, `mix deps.get --only prod` no longer fetches it. The
+  `Containerfile` now has a dedicated `git clone --depth=1` step that fetches
+  only the `optimized/` SVG tree before `mix assets.deploy`, replicating what
+  `mix deps.get` previously did. The same fix is applied to `pustaka/Containerfile`.
+
+---
+
 ## [0.1.6] - 2026-04-05
 
 ### Revert
@@ -152,6 +182,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.7]: https://github.com/curatorian/voile/compare/v0.1.6...v0.1.7
 [0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/curatorian/voile/releases/tag/v0.1.0
