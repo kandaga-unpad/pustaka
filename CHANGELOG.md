@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5] - 2026-04-05
+
+### Fixed
+
+- Revert the deps and Containerfile changes from v0.1.4 that were meant for `pustaka` but accidentally got merged into `voile`. The `heroicons` dependency is only needed in `pustaka` for asset compilation, not in `voile`, and the extra `mix deps.get` command is also only needed in `pustaka`. These changes have been re-applied to the correct repo (`pustaka`) in a separate commit.
+
+---
+
 ## [0.1.4] - 2026-04-05
 
 ### Fixed
