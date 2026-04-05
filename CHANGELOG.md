@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2026-04-05
+
+### Revert
+
+- Revert publishing Voile to Hex.pm. Planning to only use tags for releases and publishing only in Github.
+
+---
+
 ## [0.1.5] - 2026-04-05
 
 ### Fixed

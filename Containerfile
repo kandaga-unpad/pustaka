@@ -38,13 +38,11 @@ ENV MIX_ENV="prod"
 # copy only mix.exs and mix.lock first for better layer caching
 COPY mix.exs mix.lock ./
 
-# copy config needed for deps (including runtime.exs for releases)
+# copy config needed for deps
 COPY config/config.exs config/${MIX_ENV}.exs config/runtime.exs config/
 
 # install mix dependencies and compile them
 RUN mix deps.get --only $MIX_ENV
-# also fetch dev-only deps needed for asset compilation (e.g. heroicons SVG files)
-RUN MIX_ENV=dev mix deps.get
 RUN mix deps.compile
 
 # copy the app source

@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.5"
+  @version "0.1.6"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -15,10 +15,6 @@ defmodule Voile.MixProject do
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers() ++ [:phoenix_swagger],
       listeners: [Phoenix.CodeReloader],
-      # Hex package metadata
-      description: description(),
-      package: package(),
-      docs: docs(),
       name: "Voile",
       source_url: @source_url,
       homepage_url: @source_url
@@ -38,51 +34,6 @@ defmodule Voile.MixProject do
   def cli do
     [
       preferred_envs: [precommit: :test]
-    ]
-  end
-
-  defp description do
-    "Voile — open-source GLAM (Gallery, Library, Archive, Museum) management system built with Phoenix."
-  end
-
-  defp package do
-    [
-      name: "voile",
-      licenses: ["Apache-2.0"],
-      links: %{
-        "GitHub" => @source_url,
-        "Documentation" => "https://hexdocs.pm/voile"
-      },
-      maintainers: ["Chrisna Adhi Pranoto"],
-      files: ~w(
-        lib
-        priv/gettext
-        priv/repo/migrations
-        priv/static/assets
-        priv/static/css
-        priv/static/images
-        priv/static/sfx
-        priv/static/xsl
-        priv/static/favicon.ico
-        priv/static/robots.txt
-        priv/static/swagger.json
-        priv/templates
-        assets
-        config
-        mix.exs
-        README.md
-        LICENSE
-        CHANGELOG.md
-      )
-    ]
-  end
-
-  defp docs do
-    [
-      main: "readme",
-      source_ref: "v#{@version}",
-      source_url: @source_url,
-      extras: ["README.md", "CHANGELOG.md"]
     ]
   end
 
@@ -139,9 +90,7 @@ defmodule Voile.MixProject do
       {:xml_builder, "~> 2.2"},
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      # Local plugins — path deps for dev monorepo only.
-      # These are NOT included when publishing Voile to Hex.
-      # Plugins depend on Voile, not the other way around.
+      # Local plugins — path deps for dev/test only.
       {:voile_locker_luggage, path: "../voile_plugin/voile_locker_luggage", only: [:dev, :test]}
     ]
   end
