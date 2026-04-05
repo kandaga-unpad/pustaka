@@ -1,0 +1,30 @@
+# Pustaka fork — merge strategy overrides
+# Files marked `merge=ours` will always keep the pustaka version
+# when merging from upstream (voile). Never overwritten automatically.
+#
+# Usage: git fetch upstream && git merge upstream/main
+# Conflicts on these files are auto-resolved in our favour.
+#
+# NOTE: git config --local merge.ours.driver true must be set
+# on each machine that merges upstream. It is already set on this repo.
+
+# Deployment & container config — fully pustaka-specific
+Containerfile             merge=ours
+Containerfile.dev         merge=ours
+.env                      merge=ours
+.env.example              merge=ours
+.env.prod.example         merge=ours
+
+# Runtime and production secrets config
+config/prod.exs           merge=ours
+config/runtime.exs        merge=ours
+
+# Deployment scripts — pustaka-specific CI/CD
+scripts/deploy.sh         merge=ours
+scripts/deploy_background.sh merge=ours
+scripts/update_full.sh    merge=ours
+scripts/update_simple.sh  merge=ours
+scripts/manage.sh         merge=ours
+
+# mix.exs is intentionally NOT locked here — you want to see upstream dep
+# changes and apply them manually. Resolve conflicts by hand when merging.

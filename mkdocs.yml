@@ -44,21 +44,21 @@ theme:
 
 # Plugins
 plugins:
-    - search
-    - mermaid2
-    # Exclude plugin — prevents listed files/globs from being copied into `site/`.
-    # Paths are relative to the `docs/` directory.
-    - exclude:
-            files:
-                # Example: exclude a single page from the build (remove or edit as needed)
-                #- features/transfers/flow-diagrams.md
-            glob:
-                # Example: exclude any draft files named `draft-*.md` anywhere under `docs/`
-                - '**/draft-*.md'
-                # Example: exclude any file inside a docs-hidden folder
-                - '**/docs-hidden/**'
-                # Exclude the integrations/payments docs (hide and omit from site/)
-                - 'integrations/payments/**'
+  - search
+  - mermaid2
+  # Exclude plugin — prevents listed files/globs from being copied into `site/`.
+  # Paths are relative to the `docs/` directory.
+  - exclude:
+      files:
+        # Example: exclude a single page from the build (remove or edit as needed)
+        #- features/transfers/flow-diagrams.md
+      glob:
+        # Example: exclude any draft files named `draft-*.md` anywhere under `docs/`
+        - "**/draft-*.md"
+        # Example: exclude any file inside a docs-hidden folder
+        - "**/docs-hidden/**"
+        # Exclude the integrations/payments docs (hide and omit from site/)
+        - "integrations/payments/**"
 
 # Extensions
 markdown_extensions:
@@ -165,8 +165,8 @@ nav:
           - Email Queue: integrations/email/email-queue.md
           - Production Setup: integrations/email/production-setup.md
     #   - Payments:
-        #   - Xendit Integration: integrations/payments/xendit-integration.md
-        #   - Xendit Quickstart: integrations/payments/xendit-quickstart.md
+    #   - Xendit Integration: integrations/payments/xendit-integration.md
+    #   - Xendit Quickstart: integrations/payments/xendit-quickstart.md
   - Internationalization:
       - i18n Guide: internationalization/i18n-guide.md
       - Dashboard i18n: internationalization/dashboard-i18n.md

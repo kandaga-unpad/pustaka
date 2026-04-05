@@ -140,10 +140,8 @@ defmodule Voile.MixProject do
       {:xml_builder, "~> 2.2"},
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      # Local plugins — path deps for dev monorepo only.
-      # These are NOT included when publishing Voile to Hex.
-      # Plugins depend on Voile, not the other way around.
-      {:voile_locker_luggage, path: "../voile_plugin/voile_locker_luggage", only: [:dev, :test]}
+      # Plugins — use Hex version for production builds.
+      {:voile_locker_luggage, "~> 0.1.0"}
     ]
   end
 
