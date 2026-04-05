@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.6"
+  @version "0.1.7"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -20,8 +20,38 @@ defmodule Voile.MixProject do
       package: package(),
       docs: docs(),
       name: "Voile",
+      description: description(),
+      package: package(),
+      docs: docs(),
       source_url: @source_url,
       homepage_url: @source_url
+    ]
+  end
+
+  defp description do
+    "Voile — a GLAM (Gallery, Library, Archive, Museum) management system built on Phoenix."
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url},
+      maintainers: ["Curatorian"],
+      files: ~w(lib priv/gettext priv/repo priv/templates
+           priv/static/images priv/static/sfx priv/static/xsl
+           priv/static/favicon.ico priv/static/robots.txt
+           priv/static/oai-demo.html priv/static/oai-viewer.html
+           priv/static/swagger.json
+           assets config mix.exs README.md LICENSE CHANGELOG.md)
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      extras: ["README.md", "CHANGELOG.md"]
     ]
   end
 
