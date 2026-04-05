@@ -239,7 +239,7 @@ defmodule Client.Storage.S3 do
       algorithm = "AWS4-HMAC-SHA256"
 
       credential_scope = "#{date_stamp}/#{region}/#{service}/aws4_request"
-      credential = URI.encode_www_form("#{access_key}/#{credential_scope}")
+      credential = "#{access_key}/#{credential_scope}"
 
       endpoint_full = get_s3_public_url()
 
