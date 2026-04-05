@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-04-05
+
+### Fixed
+
+- Small fix in mix dependency for heroicons
+
+---
+
 ## [0.1.3] - 2026-04-05
 
 ### Fixed
