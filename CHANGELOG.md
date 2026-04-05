@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2026-04-05
+
+### Fixed
+
+- Default Seeds, Visitor Display and other stuffs that should be in the `pustaka` repo, not `voile`, have been moved to the correct repo. This was causing confusion and merge conflicts since `voile` is the core engine and `pustaka` is the GLAM-specific implementation.
+
+---
+
 ## [0.1.2] - 2026-04-05
 
 ### Added
