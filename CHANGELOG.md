@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-04-05
+
+### Added
+
+- Auto-release active locker sessions on visitor checkout when the
+  `locker_luggage` plugin is installed and the visitor has an active locker
+  session.
+
+### Fixed
+
+- Guarded plugin settings access to super admins and made the plugin settings
+  sidebar render correctly when the current plugin is loaded.
+- Prevent duplicate hook registrations in `Voile.Hooks` when the same handler
+  and owner are registered multiple times.
+
+### Changed
+
+- Added `Plugins` to the main dashboard and mobile sidebar navigation.
+- Plugin routing now forwards auth state into nested plugin LiveViews so plugin
+  pages render correctly for current user roles.
+- `visitor_identifier` is now included in `:visitor_check_in_panels` hook payloads
+  for better plugin integration.
+
+---
+
 ## [0.1.1] - 2026-04-04
 
 ### Fixed
@@ -95,6 +120,6 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
-[Unreleased]: https://github.com/curatorian/voile/compare/v0.1.1...HEAD
+[0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/curatorian/voile/releases/tag/v0.1.0

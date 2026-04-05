@@ -133,11 +133,18 @@ defmodule Voile.Hooks do
     }
 
     current = get_handlers(hook_name)
-    updated = Enum.sort_by([entry | current], & &1.priority)
-    :persistent_term.put({__MODULE__, hook_name}, updated)
 
-    new_state = %{state | known_hooks: MapSet.put(state.known_hooks, hook_name)}
-    {:reply, :ok, new_state}
+    if Enum.any?(current, fn %{handler: existing_handler, owner: existing_owner} ->
+         existing_handler == handler and existing_owner == entry.owner
+       end) do
+      {:reply, :ok, state}
+    else
+      updated = Enum.sort_by([entry | current], & &1.priority)
+      :persistent_term.put({__MODULE__, hook_name}, updated)
+
+      new_state = %{state | known_hooks: MapSet.put(state.known_hooks, hook_name)}
+      {:reply, :ok, new_state}
+    end
   end
 
   @impl true
