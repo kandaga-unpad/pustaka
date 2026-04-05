@@ -11,6 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 alias Voile.Schema.Metadata
+alias Voile.Schema.System
 
 # Populate the Vocabulary
 vocab = [
@@ -201,8 +202,6 @@ IO.puts(
 ## These defaults will be upserted into the `settings` table so the
 ## application picks up a sensible identity and runtime theme on first run.
 
-alias Voile.Schema.System
-
 IO.puts("Seeding default application profile and theme...")
 
 # App identity
@@ -225,7 +224,7 @@ System.upsert_setting("storage_adapter", "local")
 
 # Theme colors (Patchouli-inspired)
 # Primary: deep violet — good for primary buttons, icons, and strong accents
-System.upsert_setting("app_main_color", "#6B21A8")
+System.upsert_setting("app_main_color", "#C166FF")
 # Secondary: soft lavender for accents and highlights
 System.upsert_setting("app_secondary_color", "#A78BFA")
 # Surface: very light violet for surfaces (panels, cards)
