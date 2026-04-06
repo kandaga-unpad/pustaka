@@ -94,10 +94,18 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
   end
 
   defp detect_file_type(url) do
-    cond do
-      String.ends_with?(url, ".pdf") -> "pdf"
-      String.ends_with?(url, ".epub") -> "epub"
-      true -> "unknown"
+    url
+    |> String.trim()
+    |> URI.parse()
+    |> Map.get(:path, "")
+    |> String.downcase()
+    |> case do
+      path ->
+        cond do
+          String.ends_with?(path, ".pdf") -> "pdf"
+          String.ends_with?(path, ".epub") -> "epub"
+          true -> "unknown"
+        end
     end
   end
 

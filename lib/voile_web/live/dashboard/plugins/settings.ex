@@ -27,6 +27,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
         plugin ->
           settings_schema = get_settings_schema(plugin.module)
           form = build_form(settings_schema, plugin.settings || %{})
+          is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
 
           {:ok,
            socket
@@ -34,7 +35,8 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
            |> assign(:settings_schema, settings_schema)
            |> assign(:form, form)
            |> assign(:current_path, "/manage/plugins/#{plugin_id}/settings")
-           |> assign(:page_title, gettext("%{name} Settings", name: plugin.name))}
+           |> assign(:page_title, gettext("%{name} Settings", name: plugin.name))
+           |> assign(:is_super_admin, is_super_admin)}
       end
     end
   end
@@ -77,7 +79,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
           <.plugin_settings_sidebar
             current_path={@current_path}
             current_plugin_id={@plugin.plugin_id}
-            is_super_admin={true}
+            is_super_admin={@is_super_admin}
           />
         </div>
 

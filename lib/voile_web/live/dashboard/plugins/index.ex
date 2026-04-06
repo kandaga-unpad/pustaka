@@ -14,15 +14,24 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    plugins = Plugins.list_plugins()
-    available = Voile.PluginManager.discover_available()
+    if VoileWeb.Auth.Authorization.is_super_admin?(socket) do
+      plugins = Plugins.list_plugins()
+      available = Voile.PluginManager.discover_available()
+      is_super_admin = true
 
-    {:ok,
-     socket
-     |> assign(:plugins, plugins)
-     |> assign(:available_plugins, available)
-     |> assign(:page_title, gettext("Plugin Management"))
-     |> assign(:current_path, "/manage/plugins")}
+      {:ok,
+       socket
+       |> assign(:plugins, plugins)
+       |> assign(:available_plugins, available)
+       |> assign(:page_title, gettext("Plugin Management"))
+       |> assign(:current_path, "/manage/plugins")
+       |> assign(:is_super_admin, is_super_admin)}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, gettext("Access denied. Super admin only."))
+       |> push_navigate(to: ~p"/manage/plugins")}
+    end
   end
 
   @impl true
@@ -144,9 +153,9 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
     <section class="space-y-6 p-6">
       <div class="flex flex-col md:flex-row gap-4">
         <div class="w-full md:w-auto md:max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
+          <.plugin_settings_sidebar
             current_path={@current_path}
+            is_super_admin={@is_super_admin}
           />
         </div>
 

@@ -150,20 +150,49 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
               </div>
             </div>
 
+            <div class="md:col-span-2">
+              <div class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                      {gettext("Contact & Social Settings")}
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {gettext("Used in email templates and public contact pages.")}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                  <.input
+                    name="app_contact_email"
+                    type="email"
+                    label={gettext("Contact Email")}
+                    value={System.get_setting_value("app_contact_email", "")}
+                  />
+
+                  <.input
+                    name="app_contact_number"
+                    label={gettext("Contact Number / WhatsApp URL")}
+                    value={System.get_setting_value("app_contact_number", "")}
+                    placeholder="https://wa.me/628..."
+                  />
+
+                  <.input
+                    name="app_instagram_url"
+                    label={gettext("Instagram URL")}
+                    value={System.get_setting_value("app_instagram_url", "")}
+                    placeholder="https://instagram.com/youraccount"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div>
               <.input
                 name="app_name"
                 label={gettext("Application Name")}
                 value={System.get_setting_value("app_name", "")}
-              />
-            </div>
-
-            <div>
-              <.input
-                name="app_contact_email"
-                type="email"
-                label={gettext("Contact Email")}
-                value={System.get_setting_value("app_contact_email", "")}
               />
             </div>
 
@@ -297,6 +326,8 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       "app_secondary_color",
       "app_website",
       "app_contact_email",
+      "app_contact_number",
+      "app_instagram_url",
       "app_address",
       "storage_adapter",
       "default_node_id"

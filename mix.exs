@@ -30,7 +30,7 @@ defmodule Voile.MixProject do
 
   defp package do
     [
-      licenses: ["MIT"],
+      licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url},
       maintainers: ["Curatorian"],
       files: ~w(lib priv/gettext priv/repo priv/templates
