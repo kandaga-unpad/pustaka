@@ -1032,7 +1032,7 @@ defmodule VoileWeb.EmailComponent.Template do
       System.get_setting_value("app_instagram_url", "https://instagram.com/curatorian_id")
 
     app_contact_number = System.get_setting_value("app_contact_number", "081234567890")
-    session_url = VoileWeb.Endpoint.url() <> "/manage/stock_opname/#{session.id}"
+    session_url = VoileWeb.Endpoint.url() <> "/manage/catalog/stock_opname/#{session.id}"
 
     """
     <!DOCTYPE html>

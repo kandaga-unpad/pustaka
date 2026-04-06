@@ -1,8 +1,6 @@
 defmodule VoileWeb.Dashboard.Settings.SettingLive do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Schema.System, as: AppSystem
-
   defp format_uptime(seconds) do
     days = div(seconds, 86400)
     hours = div(rem(seconds, 86400), 3600)
@@ -35,17 +33,10 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
       # Gather system information
       system_info = get_system_info()
 
-      contact_settings = %{
-        app_email: AppSystem.get_setting_value("app_email", ""),
-        app_instagram_url: AppSystem.get_setting_value("app_instagram_url", ""),
-        app_contact_number: AppSystem.get_setting_value("app_contact_number", "")
-      }
-
       socket =
         socket
         |> assign(:current_user, current_user)
         |> assign(:system_info, system_info)
-        |> assign(:contact_settings, contact_settings)
 
       {:ok, socket}
     end
@@ -300,67 +291,7 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
           </div>
         </div>
         <!-- Contact & Social Settings -->
-        <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
-          <div class="flex items-start gap-3 mb-4">
-            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <.icon name="hero-envelope" class="w-5 h-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div class="flex-1">
-              <h5 class="font-semibold text-gray-900 dark:text-white mb-1">
-                {gettext("Contact & Social Settings")}
-              </h5>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {gettext("Used in email templates and public contact information.")}
-              </p>
-
-              <.form for={%{}} id="contact-settings-form" phx-submit="save_contact_settings">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <.input
-                      name="app_email"
-                      type="email"
-                      label={gettext("Email Address")}
-                      value={@contact_settings.app_email}
-                      placeholder="library@example.com"
-                    />
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {gettext("Displayed in email footers and contact pages.")}
-                    </p>
-                  </div>
-
-                  <div>
-                    <.input
-                      name="app_contact_number"
-                      label={gettext("Contact Number / WhatsApp URL")}
-                      value={@contact_settings.app_contact_number}
-                      placeholder="https://wa.me/628..."
-                    />
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {gettext("Use a WhatsApp link (https://wa.me/...) or plain number.")}
-                    </p>
-                  </div>
-
-                  <div class="md:col-span-2">
-                    <.input
-                      name="app_instagram_url"
-                      label={gettext("Instagram URL")}
-                      value={@contact_settings.app_instagram_url}
-                      placeholder="https://instagram.com/youraccount"
-                    />
-                  </div>
-                </div>
-
-                <div class="mt-4">
-                  <button type="submit" class="btn btn-primary">
-                    {gettext("Save Contact Settings")}
-                  </button>
-                </div>
-              </.form>
-            </div>
-          </div>
-        </div>
-        
-    <!-- Runtime Details -->
+        <!-- Runtime Details -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
             <div class="flex items-start gap-3">
@@ -445,33 +376,5 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
       </div>
     </div>
     """
-  end
-
-  def handle_event("save_contact_settings", params, socket) do
-    keys = ["app_email", "app_instagram_url", "app_contact_number"]
-
-    results =
-      Enum.map(keys, fn key ->
-        {key, AppSystem.upsert_setting(key, Map.get(params, key, ""))}
-      end)
-
-    failures = Enum.filter(results, fn {_k, result} -> match?({:error, _}, result) end)
-
-    socket =
-      if failures == [] do
-        contact_settings = %{
-          app_email: AppSystem.get_setting_value("app_email", ""),
-          app_instagram_url: AppSystem.get_setting_value("app_instagram_url", ""),
-          app_contact_number: AppSystem.get_setting_value("app_contact_number", "")
-        }
-
-        socket
-        |> assign(:contact_settings, contact_settings)
-        |> put_flash(:info, gettext("Contact settings saved successfully."))
-      else
-        put_flash(socket, :error, gettext("Failed to save some settings. Please try again."))
-      end
-
-    {:noreply, socket}
   end
 end

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.8] - 2026-04-06
+
+### Added
+
+- **Member identifier display** — The member management table now shows an
+  `Identifier` column beside `Member Type` for faster lookup.
+- **Identifier-aware search** — The members search input now matches identifier
+  values in addition to name, email, and username.
+
+### Fixed
+
+- **Barcode label rendering** — Label printing now encodes the full stored
+  barcode value instead of truncating it.
+- **Barcode readability** — Increased the barcode value font size and weight on
+  labels to make long barcode strings easier for librarians to read.
+
+---
+
 ## [0.1.7] - 2026-04-05
 
 ### Added

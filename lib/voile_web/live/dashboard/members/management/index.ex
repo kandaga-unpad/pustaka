@@ -330,7 +330,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   <.input
                     name="query"
                     value={@search_query}
-                    placeholder={gettext("Search by name, email, or username...")}
+                    placeholder={gettext("Search by name, email, username, or identifier...")}
                     phx-debounce="300"
                   />
                 </div>
@@ -416,7 +416,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
               <:col :let={member} label={gettext("Member Type")}>
                 {member.user_type && member.user_type.name}
               </:col>
-
+              <:col :let={member} label={gettext("Identifier")}>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {display_identifier(member)}
+                </span>
+              </:col>
               <:col :let={member} label={gettext("Status")}>
                 <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{status_badge_class(member)}"}>
                   {member_status(member)}
@@ -596,7 +600,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           where:
             ilike(u.fullname, ^search_term) or
               ilike(u.email, ^search_term) or
-              ilike(u.username, ^search_term)
+              ilike(u.username, ^search_term) or
+              ilike(fragment("CAST(? AS TEXT)", u.identifier), ^search_term)
         )
       else
         query
@@ -666,6 +671,15 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     end
   end
 
+  defp display_identifier(member) do
+    case member.identifier do
+      %Decimal{} = decimal -> Decimal.to_string(decimal)
+      identifier when is_integer(identifier) -> Integer.to_string(identifier)
+      identifier when is_binary(identifier) -> identifier
+      _ -> "-"
+    end
+  end
+
   defp build_count_query(socket) do
     base_query = from(u in User)
 
@@ -680,7 +694,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           where:
             ilike(u.fullname, ^search_term) or
               ilike(u.email, ^search_term) or
-              ilike(u.username, ^search_term)
+              ilike(u.username, ^search_term) or
+              ilike(fragment("CAST(? AS TEXT)", u.identifier), ^search_term)
         )
       else
         query
