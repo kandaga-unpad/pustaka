@@ -1,5 +1,6 @@
 defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   use VoileWeb, :live_view_dashboard
+  require Logger
 
   alias Voile.Schema.StockOpname
   alias VoileWeb.Auth.StockOpnameAuthorization
@@ -20,6 +21,33 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
         <p class="text-gray-600 dark:text-gray-400 mt-1">
           {@session.title} - {@session.session_code}
         </p>
+      </div>
+      <%!-- Applying in-progress banner --%>
+      <div
+        :if={@applying?}
+        class="mb-6 rounded-lg bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-700 p-4"
+      >
+        <div class="flex items-center gap-3">
+          <.icon
+            name="hero-arrow-path"
+            class="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-spin"
+          />
+          <div class="flex-1">
+            <p class="font-semibold text-indigo-800 dark:text-indigo-300">
+              Applying changes in the background…
+            </p>
+            <p class="text-sm text-indigo-700 dark:text-indigo-400 mt-0.5">
+              This page will refresh automatically when done. If this message persists for more than a minute, you can force-reset the session.
+            </p>
+          </div>
+          <button
+            phx-click="force_reset_session"
+            data-confirm="Reset this session back to pending review? Only do this if the approval process appears permanently stuck."
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 text-indigo-800 dark:text-indigo-200 font-medium rounded-lg transition-colors"
+          >
+            <.icon name="hero-arrow-uturn-left" class="w-4 h-4" /> Force Reset
+          </button>
+        </div>
       </div>
       <%!-- Summary Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -541,12 +569,18 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   end
 
   def handle_event("approve", %{"approved_notes" => notes}, socket) do
-    case StockOpname.approve_session(
-           socket.assigns.session,
-           socket.assigns.current_user,
-           notes
-         ) do
+    session = socket.assigns.session
+    user = socket.assigns.current_user
+
+    Logger.info(
+      "[StockOpname.Review] approve requested: session_id=#{session.id} " <>
+        "session_code=#{session.session_code} by user_id=#{user.id} (#{user.email})"
+    )
+
+    case StockOpname.approve_session(session, user, notes) do
       {:ok, applying_session} ->
+        Logger.info("[StockOpname.Review] session marked as applying: session_id=#{session.id}")
+
         # approve_session/3 returns immediately once the session is marked
         # "applying". The heavy bulk updates run in the background. We stay on
         # the page and wait for the {:session_approved, _} PubSub message.
@@ -558,7 +592,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
         {:noreply, socket}
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error(
+          "[StockOpname.Review] approve_session failed: session_id=#{session.id} " <>
+            "reason=#{inspect(reason)}"
+        )
+
         {:noreply, put_flash(socket, :error, "Failed to approve session")}
     end
   end
@@ -567,12 +606,17 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
     if String.trim(notes) == "" do
       {:noreply, put_flash(socket, :error, "Revision notes are required")}
     else
-      case StockOpname.request_session_revision(
-             socket.assigns.session,
-             socket.assigns.current_user,
-             notes
-           ) do
+      session = socket.assigns.session
+      user = socket.assigns.current_user
+
+      Logger.info(
+        "[StockOpname.Review] revision requested: session_id=#{session.id} by user_id=#{user.id}"
+      )
+
+      case StockOpname.request_session_revision(session, user, notes) do
         {:ok, _session} ->
+          Logger.info("[StockOpname.Review] revision request saved: session_id=#{session.id}")
+
           socket =
             socket
             |> put_flash(:info, "Revision requested. Librarians have been notified.")
@@ -580,7 +624,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
           {:noreply, socket}
 
-        {:error, _} ->
+        {:error, reason} ->
+          Logger.error(
+            "[StockOpname.Review] request_revision failed: session_id=#{session.id} " <>
+              "reason=#{inspect(reason)}"
+          )
+
           {:noreply, put_flash(socket, :error, "Failed to request revision")}
       end
     end
@@ -609,8 +658,48 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
     end
   end
 
+  def handle_event("force_reset_session", _params, socket) do
+    session = socket.assigns.session
+    user = socket.assigns.current_user
+
+    Logger.warning(
+      "[StockOpname.Review] force_reset_session triggered: session_id=#{session.id} " <>
+        "by user_id=#{user.id} (#{user.email}) — session was stuck in 'applying'"
+    )
+
+    case StockOpname.reset_applying_session(session, user) do
+      {:ok, reset_session} ->
+        Logger.info(
+          "[StockOpname.Review] session force-reset to pending_review: session_id=#{session.id}"
+        )
+
+        socket =
+          socket
+          |> assign(:session, reset_session)
+          |> assign(:applying?, false)
+          |> put_flash(
+            :info,
+            "Session reset to pending review. You may now approve it again."
+          )
+
+        {:noreply, socket}
+
+      {:error, reason} ->
+        Logger.error(
+          "[StockOpname.Review] force_reset_session failed: session_id=#{session.id} " <>
+            "reason=#{inspect(reason)}"
+        )
+
+        {:noreply, put_flash(socket, :error, "Failed to reset session")}
+    end
+  end
+
   # Background approval completed successfully.
   def handle_info({:session_approved, approved_session}, socket) do
+    Logger.info(
+      "[StockOpname.Review] received :session_approved PubSub: session_id=#{approved_session.id}"
+    )
+
     socket =
       socket
       |> assign(:session, approved_session)
@@ -622,7 +711,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   end
 
   # Background approval failed — session was rolled back to pending_review.
-  def handle_info({:session_approval_failed, _reason}, socket) do
+  def handle_info({:session_approval_failed, reason}, socket) do
+    Logger.error(
+      "[StockOpname.Review] received :session_approval_failed PubSub: " <>
+        "session_id=#{socket.assigns.session.id} reason=#{inspect(reason)}"
+    )
+
     # Reload the session so the UI reflects the rolled-back pending_review state.
     session = StockOpname.get_session_without_items!(socket.assigns.session.id)
 

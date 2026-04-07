@@ -351,9 +351,16 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-xs sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
                     /> <%!-- Creator Suggestions Dropdown --%>
                     <div
-                      :if={@creator_suggestions != []}
+                      :if={@creator_input not in [nil, ""] and (@creator_suggestions != [] or @creator_suggestions_done)}
                       class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     >
+                      <%!-- No results message --%>
+                      <div
+                        :if={@creator_suggestions == []}
+                        class="px-3 py-2 text-xs sm:text-sm text-gray-400 dark:text-gray-500 italic"
+                      >
+                        No creators found for "{@creator_input}"
+                      </div>
                       <button
                         :for={creator <- @creator_suggestions}
                         type="button"
@@ -365,7 +372,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       </button>
                       <%!-- Load More Button --%>
                       <div
-                        :if={not @creator_suggestions_done}
+                        :if={not @creator_suggestions_done and @creator_suggestions != []}
                         class="border-t border-gray-200 dark:border-gray-600"
                       >
                         <button
@@ -374,6 +381,18 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                           class="w-full text-left px-3 py-2 text-xs sm:text-sm text-blue-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 dark:text-blue-400"
                         >
                           Load More...
+                        </button>
+                      </div>
+                      <%!-- Create Author Button --%>
+                      <div class="border-t border-gray-200 dark:border-gray-600">
+                        <button
+                          type="button"
+                          phx-click="create_new_creator"
+                          phx-value-creator={@creator_input}
+                          class="w-full text-left px-3 py-2 text-xs sm:text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:text-amber-400 font-medium"
+                        >
+                          <.icon name="hero-plus-circle" class="w-4 h-4 inline mr-1" />
+                          Create "{@creator_input}" Author
                         </button>
                       </div>
                     </div>
@@ -1255,6 +1274,34 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
      |> assign(:creator_suggestions_offset, 0)
      |> assign(:creator_suggestions_done, false)
      |> assign(:updated_values, updated_values)}
+  end
+
+  def handle_event("create_new_creator", %{"creator" => creator_name}, socket) do
+    trimmed = String.trim(creator_name)
+
+    if trimmed == "" do
+      {:noreply, put_flash(socket, :error, "Author name cannot be empty")}
+    else
+      case Voile.Schema.Master.get_or_create_creator(%{creator_name: trimmed}) do
+        {:ok, creator} ->
+          updated_values =
+            socket.assigns.updated_values
+            |> Map.put(:creator_id, creator.id)
+            |> Map.put(:collection_author, creator.creator_name)
+
+          {:noreply,
+           socket
+           |> assign(:creator_input, creator.creator_name)
+           |> assign(:creator_suggestions, [])
+           |> assign(:creator_suggestions_offset, 0)
+           |> assign(:creator_suggestions_done, false)
+           |> assign(:updated_values, updated_values)
+           |> put_flash(:info, "Author \"#{creator.creator_name}\" created and selected.")}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Failed to create author")}
+      end
+    end
   end
 
   def handle_event("update_collection_field", params, socket) do
