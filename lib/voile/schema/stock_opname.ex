@@ -1529,12 +1529,26 @@ defmodule Voile.Schema.StockOpname do
            |> Repo.update() do
       # Phase 2 — background: run the heavy bulk updates without blocking the
       # caller. Voile.TaskSupervisor is started in application.ex.
+      Logger.info(
+        "[StockOpname] approve_session: spawning background task " <>
+          "session_id=#{session.id} session_code=#{session.session_code} " <>
+          "total_items=#{session.total_items} items_with_changes=#{session.items_with_changes} " <>
+          "missing_items=#{session.missing_items} approved_by=#{admin_user.id}"
+      )
+
       Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
+        Logger.info("[StockOpname] background approval task started: session_id=#{session.id}")
+
         try do
           result = do_apply_session_changes(applying_session, admin_user, now)
 
           case result do
             {:ok, approved_session} ->
+              Logger.info(
+                "[StockOpname] background approval task completed successfully: " <>
+                  "session_id=#{session.id} status=approved"
+              )
+
               Phoenix.PubSub.broadcast(
                 Voile.PubSub,
                 session_topic(approved_session.id),
@@ -1543,13 +1557,25 @@ defmodule Voile.Schema.StockOpname do
 
             {:error, reason} ->
               Logger.error(
-                "approve_session background task failed for session #{session.id}: #{inspect(reason)}"
+                "[StockOpname] approve_session background task failed: " <>
+                  "session_id=#{session.id} reason=#{inspect(reason)}"
               )
 
               # Roll the session back to pending_review so the admin can retry.
-              session
-              |> Ecto.Changeset.change(%{status: "pending_review"})
-              |> Repo.update()
+              case session
+                   |> Ecto.Changeset.change(%{status: "pending_review"})
+                   |> Repo.update() do
+                {:ok, _} ->
+                  Logger.info(
+                    "[StockOpname] session rolled back to pending_review: session_id=#{session.id}"
+                  )
+
+                {:error, rollback_err} ->
+                  Logger.error(
+                    "[StockOpname] CRITICAL — failed to roll back session after approval failure: " <>
+                      "session_id=#{session.id} rollback_error=#{inspect(rollback_err)}"
+                  )
+              end
 
               Phoenix.PubSub.broadcast(
                 Voile.PubSub,
@@ -1559,14 +1585,27 @@ defmodule Voile.Schema.StockOpname do
           end
         rescue
           e ->
+            stacktrace = __STACKTRACE__
+
             Logger.error(
-              "approve_session raised for session #{session.id}: #{Exception.message(e)}"
+              "[StockOpname] approve_session raised exception: " <>
+                "session_id=#{session.id} exception=#{Exception.message(e)} " <>
+                "stacktrace=#{Exception.format_stacktrace(stacktrace)}"
             )
 
             # Roll the session back to pending_review so the admin can retry.
-            session
-            |> Ecto.Changeset.change(%{status: "pending_review"})
-            |> Repo.update()
+            case session |> Ecto.Changeset.change(%{status: "pending_review"}) |> Repo.update() do
+              {:ok, _} ->
+                Logger.info(
+                  "[StockOpname] session rolled back to pending_review after exception: session_id=#{session.id}"
+                )
+
+              {:error, rollback_err} ->
+                Logger.error(
+                  "[StockOpname] CRITICAL — failed to roll back session after exception: " <>
+                    "session_id=#{session.id} rollback_error=#{inspect(rollback_err)}"
+                )
+            end
 
             Phoenix.PubSub.broadcast(
               Voile.PubSub,
@@ -1581,6 +1620,26 @@ defmodule Voile.Schema.StockOpname do
   end
 
   def approve_session(%Session{}, _admin_user, _notes) do
+    {:error, :invalid_status}
+  end
+
+  @doc """
+  Reset a session stuck in the "applying" state back to "pending_review".
+
+  Use this when the background approval task crashed without completing the
+  rollback (e.g. a server restart during a long-running bulk update). The
+  session will be returned to "pending_review" so the admin can retry approval.
+  """
+  def reset_applying_session(%Session{status: "applying"} = session, admin_user) do
+    session
+    |> Ecto.Changeset.change(%{
+      status: "pending_review",
+      updated_by_id: admin_user.id
+    })
+    |> Repo.update()
+  end
+
+  def reset_applying_session(%Session{}, _admin_user) do
     {:error, :invalid_status}
   end
 
@@ -1604,10 +1663,15 @@ defmodule Voile.Schema.StockOpname do
   defp do_apply_session_changes(%Session{} = session, admin_user, now) do
     admin_id_bin = Ecto.UUID.dump!(admin_user.id)
 
+    Logger.info(
+      "[StockOpname] do_apply_session_changes: step 1+2 — marking missing items: " <>
+        "session_id=#{session.id}"
+    )
+
     # Step 1 & 2: mark pending/explicitly-missing items as missing in catalog.
     # These two bulk UPDATE statements are fast (index scans) and run in a
     # single transaction to stay atomic.
-    with {:ok, _} <-
+    with {:ok, {unchecked_count, explicit_missing_count}} <-
            Ecto.Multi.new()
            |> Ecto.Multi.run(:apply_missing, fn repo, _changes ->
              # Step 1: items in-scope but never scanned by any librarian.
@@ -1647,6 +1711,18 @@ defmodule Voile.Schema.StockOpname do
              {:ok, {unchecked_count, explicit_missing_count}}
            end)
            |> Repo.transaction() do
+      Logger.info(
+        "[StockOpname] do_apply_session_changes: step 1+2 done — " <>
+          "unchecked_marked_missing=#{unchecked_count} " <>
+          "explicit_missing_marked=#{explicit_missing_count} " <>
+          "session_id=#{session.id}"
+      )
+
+      Logger.info(
+        "[StockOpname] do_apply_session_changes: step 3 — streaming items with changes: " <>
+          "session_id=#{session.id}"
+      )
+
       # Step 3: stream items with changes and process in chunks sequentially.
       # Repo.stream opens a server-side cursor (DECLARE CURSOR) so memory stays
       # constant regardless of session size — safe for 100k+ item sessions.
@@ -1664,21 +1740,47 @@ defmodule Voile.Schema.StockOpname do
             )
             |> Repo.stream(max_rows: 1000)
             |> Stream.chunk_every(1000)
-            |> Enum.each(&apply_item_changes_chunk(&1, admin_id_bin, now))
+            |> Stream.with_index(1)
+            |> Enum.each(fn {chunk, idx} ->
+              Logger.debug(
+                "[StockOpname] applying changes chunk ##{idx} (#{length(chunk)} items): " <>
+                  "session_id=#{session.id}"
+              )
+
+              apply_item_changes_chunk(chunk, admin_id_bin, now)
+            end)
           end,
           timeout: :infinity
         )
 
       case stream_result do
         {:ok, _} ->
+          Logger.info(
+            "[StockOpname] do_apply_session_changes: step 3 done — all change chunks applied: " <>
+              "session_id=#{session.id} — stamping approved"
+          )
+
           # All changes applied — stamp the session as fully approved.
           session
           |> Ecto.Changeset.change(%{status: "approved", approved_at: now})
           |> Repo.update()
 
         {:error, reason} ->
+          Logger.error(
+            "[StockOpname] do_apply_session_changes: step 3 transaction failed: " <>
+              "session_id=#{session.id} reason=#{inspect(reason)}"
+          )
+
           {:error, reason}
       end
+    else
+      {:error, reason} ->
+        Logger.error(
+          "[StockOpname] do_apply_session_changes: step 1+2 transaction failed: " <>
+            "session_id=#{session.id} reason=#{inspect(reason)}"
+        )
+
+        {:error, reason}
     end
   end
 

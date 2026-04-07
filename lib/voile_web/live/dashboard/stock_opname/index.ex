@@ -253,6 +253,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
                 >
                   <.icon name="hero-clipboard-document-check" class="w-4 h-4" /> Review & Approve
                 </.link>
+                <.link
+                  :if={@can_create and session.status == "applying"}
+                  navigate={~p"/manage/catalog/stock_opname/#{session.id}/review"}
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40 transition-all duration-200"
+                >
+                  <.icon name="hero-arrow-path" class="w-4 h-4" /> Check Status
+                </.link>
                 <button
                   :if={@can_create and session.status == "draft"}
                   phx-click="start_session"
@@ -356,6 +363,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
       |> load_sessions()
 
     {:ok, socket}
+  end
+
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("filter", params, socket) do
@@ -502,6 +513,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
         "initializing" ->
           "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 animate-pulse"
 
+        "applying" ->
+          "bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 border-indigo-300 animate-pulse"
+
         "in_progress" ->
           "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300"
 
@@ -528,6 +542,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
       case assigns.status do
         "draft" -> "Draft"
         "initializing" -> "Initializing..."
+        "applying" -> "Applying Changes…"
         "in_progress" -> "In Progress"
         "completed" -> "Completed"
         "pending_review" -> "Pending Review"
