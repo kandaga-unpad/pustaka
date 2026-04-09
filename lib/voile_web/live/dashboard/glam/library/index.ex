@@ -287,6 +287,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
             </div>
           </.link>
+          <.link
+            navigate="/manage/glam/library/requisitions"
+            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
+          >
+            <div class="flex items-center justify-center gap-4 w-full h-full">
+              <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <.icon
+                  name="hero-clipboard-document-list"
+                  class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                />
+              </div>
+
+              <div>
+                <h5 class="font-semibold text-gray-900 dark:text-white">
+                  {gettext("Requisitions")}
+                </h5>
+
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {gettext("Manage book and resource acquisition requests")}
+                </p>
+              </div>
+            </div>
+          </.link>
         </div>
       </div>
     </div>

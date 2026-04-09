@@ -351,7 +351,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-xs sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-200 touch-manipulation"
                     /> <%!-- Creator Suggestions Dropdown --%>
                     <div
-                      :if={@creator_input not in [nil, ""] and (@creator_suggestions != [] or @creator_suggestions_done)}
+                      :if={
+                        @creator_input not in [nil, ""] and
+                          (@creator_suggestions != [] or @creator_suggestions_done)
+                      }
                       class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     >
                       <%!-- No results message --%>

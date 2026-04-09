@@ -152,6 +152,8 @@ defmodule VoileWeb.Router do
       # Frontend member routes that require authentication
       live "/atrium", Frontend.Atrium.Index, :index
       live "/atrium/fine_detail/:id", Frontend.Atrium.FineDetail.Show, :show
+      live "/atrium/requisitions", Frontend.Atrium.Requisition.Index, :index
+      live "/atrium/requisitions/new", Frontend.Atrium.Requisition.New, :new
     end
   end
 
@@ -294,6 +296,11 @@ defmodule VoileWeb.Router do
             scope "/ledger" do
               live "/", Dashboard.Glam.Library.Ledger.Index, :index
               live "/transact/:id", Dashboard.Glam.Library.Ledger.Transact, :transact
+            end
+
+            scope "/requisitions" do
+              live "/", Dashboard.Glam.Library.Requisition.Index, :index
+              live "/:id", Dashboard.Glam.Library.Requisition.Show, :show
             end
           end
 

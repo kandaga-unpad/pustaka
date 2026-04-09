@@ -14,24 +14,17 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if VoileWeb.Auth.Authorization.is_super_admin?(socket) do
-      plugins = Plugins.list_plugins()
-      available = Voile.PluginManager.discover_available()
-      is_super_admin = true
+    plugins = Plugins.list_plugins()
+    available = Voile.PluginManager.discover_available()
+    is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(socket)
 
-      {:ok,
-       socket
-       |> assign(:plugins, plugins)
-       |> assign(:available_plugins, available)
-       |> assign(:page_title, gettext("Plugin Management"))
-       |> assign(:current_path, "/manage/plugins")
-       |> assign(:is_super_admin, is_super_admin)}
-    else
-      {:ok,
-       socket
-       |> put_flash(:error, gettext("Access denied. Super admin only."))
-       |> push_navigate(to: ~p"/manage/plugins")}
-    end
+    {:ok,
+     socket
+     |> assign(:plugins, plugins)
+     |> assign(:available_plugins, available)
+     |> assign(:page_title, gettext("Plugin Management"))
+     |> assign(:current_path, "/manage/plugins")
+     |> assign(:is_super_admin, is_super_admin)}
   end
 
   @impl true
@@ -265,13 +258,15 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                         >
                           {gettext("Settings")}
                         </.link>
-                        <button
-                          phx-click="deactivate"
-                          phx-value-module={plugin.module}
-                          class="px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50"
-                        >
-                          {gettext("Deactivate")}
-                        </button>
+                        <%= if @is_super_admin do %>
+                          <button
+                            phx-click="deactivate"
+                            phx-value-module={plugin.module}
+                            class="px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50"
+                          >
+                            {gettext("Deactivate")}
+                          </button>
+                        <% end %>
                       <% end %>
 
                       <%= if plugin.status == :installed do %>
