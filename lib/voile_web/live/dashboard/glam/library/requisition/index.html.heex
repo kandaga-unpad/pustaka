@@ -1,0 +1,280 @@
+<div class="px-4 py-6">
+  <.breadcrumb items={[
+    %{label: "Manage", path: ~p"/manage"},
+    %{label: "GLAM", path: ~p"/manage/glam"},
+    %{label: "Library", path: ~p"/manage/glam/library"},
+    %{label: "Requisitions", path: nil}
+  ]} />
+
+  <div class="sm:flex sm:items-center sm:justify-between my-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Library Requisitions</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        Manage member requests: purchases, interlibrary loans, digitization, and reference queries
+      </p>
+    </div>
+  </div>
+
+  <%!-- Filters --%>
+  <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <.form :let={f} for={%{}} phx-change="filter">
+        <div class="flex flex-wrap items-center gap-4">
+          <.input
+            field={f[:status]}
+            type="select"
+            label="Status"
+            options={[
+              {"All Status", "all"},
+              {"Submitted", "submitted"},
+              {"Reviewing", "reviewing"},
+              {"Approved", "approved"},
+              {"Rejected", "rejected"},
+              {"Fulfilled", "fulfilled"},
+              {"Cancelled", "cancelled"}
+            ]}
+            value={@filter_status}
+          />
+          <.input
+            field={f[:type]}
+            type="select"
+            label="Type"
+            options={[
+              {"All Types", "all"},
+              {"Purchase Request", "purchase_request"},
+              {"Interlibrary Loan", "interlibrary_loan"},
+              {"Digitization Request", "digitization_request"},
+              {"Reference Question", "reference_question"}
+            ]}
+            value={@filter_type}
+          />
+          <%= if @is_super_admin do %>
+            <.form :let={f2} for={%{}} phx-change="select_node">
+              <.input
+                field={f2[:node_id]}
+                type="select"
+                label="Unit"
+                options={
+                  [{"All Units", "all"}] ++
+                    Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+              />
+            </.form>
+          <% end %>
+        </div>
+      </.form>
+    </div>
+  </div>
+
+  <%!-- Requisitions Table --%>
+  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+    <.table id="requisitions" rows={@streams.requisitions}>
+      <:col :let={{_id, req}} label="Title">
+        <div>
+          <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{req.title}</div>
+          <%= if req.author do %>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{req.author}</div>
+          <% end %>
+        </div>
+      </:col>
+
+      <:col :let={{_id, req}} label="Type">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_type_badge_class(req.request_type)}"}>
+          {req.request_type |> String.replace("_", " ") |> String.capitalize()}
+        </span>
+      </:col>
+
+      <:col :let={{_id, req}} label="Status">
+        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_status_badge_class(req.status)}"}>
+          {String.capitalize(req.status)}
+        </span>
+      </:col>
+
+      <:col :let={{_id, req}} label="Priority">
+        <span class={"text-sm font-medium #{priority_text_class(req.priority)}"}>
+          {String.capitalize(req.priority || "normal")}
+          <%= if req.priority in ["high", "urgent"] do %>
+            <.icon name="hero-exclamation-triangle" class="w-3 h-3 inline ml-1" />
+          <% end %>
+        </span>
+      </:col>
+
+      <:col :let={{_id, req}} label="Requested By">
+        <div class="text-sm text-gray-900 dark:text-gray-100">
+          {if req.requested_by, do: req.requested_by.fullname, else: "-"}
+        </div>
+        <div class="text-xs text-gray-500">{format_date(req.request_date)}</div>
+      </:col>
+
+      <:col :let={{_id, req}} label="Due Date">
+        <div class="text-sm text-gray-900 dark:text-gray-100">
+          {format_date(req.due_date)}
+        </div>
+        <%= if req.due_date && Date.compare(req.due_date, Date.utc_today()) == :lt && req.status not in ["fulfilled", "cancelled", "rejected"] do %>
+          <div class="text-xs text-red-600 font-medium">Overdue</div>
+        <% end %>
+      </:col>
+
+      <:action :let={{_id, req}}>
+        <div class="flex gap-2 flex-wrap">
+          <%= if req.status == "submitted" do %>
+            <button
+              phx-click="update_status"
+              phx-value-id={req.id}
+              phx-value-status="reviewing"
+              class="text-xs text-yellow-600 hover:text-yellow-800 font-medium"
+            >
+              Review
+            </button>
+          <% end %>
+          <%= if req.status == "reviewing" do %>
+            <button
+              phx-click="open_action_modal"
+              phx-value-req_id={req.id}
+              phx-value-action="approve"
+              class="text-xs text-green-600 hover:text-green-800 font-medium"
+            >
+              Approve
+            </button>
+            <button
+              phx-click="open_action_modal"
+              phx-value-req_id={req.id}
+              phx-value-action="reject"
+              class="text-xs text-red-600 hover:text-red-800 font-medium"
+            >
+              Reject
+            </button>
+          <% end %>
+          <%= if req.status == "approved" do %>
+            <button
+              phx-click="open_action_modal"
+              phx-value-req_id={req.id}
+              phx-value-action="fulfill"
+              class="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Fulfill
+            </button>
+          <% end %>
+          <.link
+            navigate={~p"/manage/glam/library/requisitions/#{req.id}"}
+            class="text-xs text-voile-primary hover:text-voile-primary/80 font-medium"
+          >
+            View
+          </.link>
+          <%= if req.status in ["submitted", "reviewing"] do %>
+            <button
+              phx-click="delete"
+              phx-value-id={req.id}
+              class="text-xs text-red-600 hover:text-red-800 font-medium"
+              data-confirm="Delete this requisition? This cannot be undone."
+            >
+              Delete
+            </button>
+          <% end %>
+        </div>
+      </:action>
+    </.table>
+
+    <%!-- Pagination --%>
+    <%= if @total_pages > 1 do %>
+      <div class="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Page {@page} of {@total_pages}
+        </div>
+        <div class="flex gap-2">
+          <%= if @page > 1 do %>
+            <button
+              phx-click="paginate"
+              phx-value-page={@page - 1}
+              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            >
+              Previous
+            </button>
+          <% end %>
+          <%= if @page < @total_pages do %>
+            <button
+              phx-click="paginate"
+              phx-value-page={@page + 1}
+              class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            >
+              Next
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%!-- Staff Notes Action Modal --%>
+<%= if @action_modal do %>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+        <%= case @action_modal.action do %>
+          <% "approve" -> %>
+            Approve Requisition
+          <% "reject" -> %>
+            Reject Requisition
+          <% "fulfill" -> %>
+            Mark as Fulfilled
+        <% end %>
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <%= case @action_modal.action do %>
+          <% "approve" -> %>
+            Add any notes for the patron before approving.
+          <% "reject" -> %>
+            Provide a reason for rejection.
+          <% "fulfill" -> %>
+            Add fulfillment details such as where it was sourced, shelf location, or acquisition info.
+        <% end %>
+      </p>
+      <.form for={%{}} phx-submit="confirm_status_action" id="action-modal-form">
+        <.input
+          type="textarea"
+          name="staff_notes"
+          label="Staff Notes"
+          value={@action_modal.staff_notes}
+          placeholder={
+            case @action_modal.action do
+              "approve" -> "Notes for the patron (optional)..."
+              "reject" -> "Reason for rejection..."
+              _ -> "e.g. Purchased ISBN 978-..., available at Shelf B-12..."
+            end
+          }
+          rows="4"
+        />
+        <div class="flex justify-end gap-3 mt-4">
+          <button
+            type="button"
+            phx-click="close_action_modal"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class={[
+              "px-4 py-2 text-sm font-medium text-white rounded-lg",
+              if(@action_modal.action == "reject",
+                do: "bg-red-600 hover:bg-red-700",
+                else: "bg-green-600 hover:bg-green-700"
+              )
+            ]}
+          >
+            <%= case @action_modal.action do %>
+              <% "approve" -> %>
+                Approve
+              <% "reject" -> %>
+                Reject
+              <% "fulfill" -> %>
+                Mark as Fulfilled
+            <% end %>
+          </button>
+        </div>
+      </.form>
+    </div>
+  </div>
+<% end %>

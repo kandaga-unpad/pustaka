@@ -750,6 +750,30 @@ defmodule Voile.Schema.Library.Circulation do
     {requisitions, total_pages, total_count}
   end
 
+  def list_member_requisitions_paginated(member_id, page \\ 1, per_page \\ 10) do
+    offset = (page - 1) * per_page
+
+    query =
+      from r in Requisition,
+        where: r.requested_by_id == ^member_id,
+        preload: [:requested_by, :assigned_to, :unit],
+        order_by: [desc: r.inserted_at, desc: r.id],
+        offset: ^offset,
+        limit: ^per_page
+
+    requisitions = Repo.all(query)
+
+    total_count =
+      Repo.aggregate(
+        from(r in Requisition, where: r.requested_by_id == ^member_id),
+        :count,
+        :id
+      )
+
+    total_pages = max(div(total_count + per_page - 1, per_page), 1)
+    {requisitions, total_pages, total_count}
+  end
+
   def get_requisition!(id) do
     Requisition
     |> Repo.get!(id)

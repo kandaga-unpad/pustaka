@@ -1,0 +1,279 @@
+<div class="px-4 py-6">
+  <.breadcrumb items={[
+    %{label: "Manage", path: ~p"/manage"},
+    %{label: "GLAM", path: ~p"/manage/glam"},
+    %{label: "Library", path: ~p"/manage/glam/library"},
+    %{label: "Requisitions", path: ~p"/manage/glam/library/requisitions"},
+    %{label: @requisition.title, path: nil}
+  ]} />
+
+  <%!-- Header --%>
+  <div class="sm:flex sm:items-center sm:justify-between my-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Requisition Details</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        ID: <span class="font-mono text-xs">{@requisition.id}</span>
+      </p>
+    </div>
+
+    <div class="mt-4 sm:mt-0 flex flex-wrap gap-2">
+      <%= if @requisition.status == "submitted" do %>
+        <button
+          phx-click="set_reviewing"
+          phx-value-id={@requisition.id}
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+        >
+          <.icon name="hero-eye" class="w-4 h-4 mr-2" /> Start Review
+        </button>
+      <% end %>
+      <%= if @requisition.status == "reviewing" do %>
+        <button
+          phx-click="approve"
+          phx-value-id={@requisition.id}
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700"
+          data-confirm="Approve this requisition?"
+        >
+          <.icon name="hero-check" class="w-4 h-4 mr-2" /> Approve
+        </button>
+        <button
+          phx-click="reject"
+          phx-value-id={@requisition.id}
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700"
+          data-confirm="Reject this requisition?"
+        >
+          <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Reject
+        </button>
+      <% end %>
+      <%= if @requisition.status == "approved" do %>
+        <button
+          phx-click="fulfill"
+          phx-value-id={@requisition.id}
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
+          data-confirm="Mark as fulfilled?"
+        >
+          <.icon name="hero-check-circle" class="w-4 h-4 mr-2" /> Mark Fulfilled
+        </button>
+      <% end %>
+      <%= if @requisition.status in ["submitted", "reviewing", "approved"] do %>
+        <button
+          phx-click="cancel"
+          phx-value-id={@requisition.id}
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+          data-confirm="Cancel this requisition?"
+        >
+          <.icon name="hero-x-circle" class="w-4 h-4 mr-2" /> Cancel
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <%!-- Main Details --%>
+    <div class="lg:col-span-2 space-y-6">
+      <%!-- Book / Resource Info --%>
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Resource Information
+          </h3>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Title</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{@requisition.title}</dd>
+          </div>
+          <%= if @requisition.author do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Author</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{@requisition.author}</dd>
+            </div>
+          <% end %>
+          <%= if @requisition.publisher do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Publisher</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {@requisition.publisher}
+              </dd>
+            </div>
+          <% end %>
+          <%= if @requisition.publication_year do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Publication Year
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {@requisition.publication_year}
+              </dd>
+            </div>
+          <% end %>
+          <%= if @requisition.isbn do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ISBN</dt>
+              <dd class="mt-1 font-mono text-sm text-gray-900 dark:text-gray-100">
+                {@requisition.isbn}
+              </dd>
+            </div>
+          <% end %>
+          <%= if @requisition.estimated_cost do %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Estimated Cost</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                Rp {Decimal.to_string(@requisition.estimated_cost)}
+              </dd>
+            </div>
+          <% end %>
+        </div>
+        <%= if @requisition.description do %>
+          <div class="px-6 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              {@requisition.description}
+            </dd>
+          </div>
+        <% end %>
+        <%= if @requisition.justification do %>
+          <div class="px-6 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Justification</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              {@requisition.justification}
+            </dd>
+          </div>
+        <% end %>
+      </div>
+
+      <%!-- Staff Notes --%>
+      <%= if @requisition.staff_notes do %>
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Staff Notes</h3>
+          </div>
+          <div class="px-6 py-4">
+            <p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              {@requisition.staff_notes}
+            </p>
+          </div>
+        </div>
+      <% end %>
+
+      <%!-- Patron Notes --%>
+      <%= if @requisition.notes do %>
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Patron Notes</h3>
+          </div>
+          <div class="px-6 py-4">
+            <p class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              {@requisition.notes}
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%!-- Sidebar --%>
+    <div class="space-y-6">
+      <%!-- Status Card --%>
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Status</h3>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              Request Type
+            </dt>
+            <dd class="mt-1">
+              <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_type_badge_class(@requisition.request_type)}"}>
+                {@requisition.request_type |> String.replace("_", " ") |> String.capitalize()}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</dt>
+            <dd class="mt-1">
+              <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{requisition_status_badge_class(@requisition.status)}"}>
+                {String.capitalize(@requisition.status)}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              Priority
+            </dt>
+            <dd class={"mt-1 text-sm font-medium #{priority_text_class(@requisition.priority)}"}>
+              {String.capitalize(@requisition.priority || "normal")}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              Request Date
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {format_datetime(@requisition.request_date)}
+            </dd>
+          </div>
+          <%= if @requisition.due_date do %>
+            <div>
+              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                Due Date
+              </dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {format_date(@requisition.due_date)}
+                <%= if Date.compare(@requisition.due_date, Date.utc_today()) == :lt && @requisition.status not in ["fulfilled", "cancelled", "rejected"] do %>
+                  <span class="text-xs text-red-600 ml-1">Overdue</span>
+                <% end %>
+              </dd>
+            </div>
+          <% end %>
+          <%= if @requisition.fulfilled_date do %>
+            <div>
+              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                Fulfilled Date
+              </dt>
+              <dd class="mt-1 text-sm text-green-600 dark:text-green-400">
+                {format_datetime(@requisition.fulfilled_date)}
+              </dd>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%!-- People --%>
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">People</h3>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              Requested By
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {if @requisition.requested_by,
+                do: @requisition.requested_by.fullname,
+                else: "Unknown"}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              Assigned To
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+              {if @requisition.assigned_to,
+                do: @requisition.assigned_to.fullname,
+                else: "Unassigned"}
+            </dd>
+          </div>
+          <%= if @requisition.unit do %>
+            <div>
+              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Unit</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                {@requisition.unit.name}
+              </dd>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

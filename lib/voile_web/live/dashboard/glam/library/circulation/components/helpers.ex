@@ -40,27 +40,44 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Helpers do
   @doc """
   Returns CSS classes for requisition type badges.
   """
-  def requisition_type_badge_class("purchase_request"), do: "bg-voile-info text-voile-primary"
-  def requisition_type_badge_class("interlibrary_loan"), do: "bg-voile-success text-voile-success"
+  def requisition_type_badge_class("purchase_request"),
+    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+
+  def requisition_type_badge_class("interlibrary_loan"),
+    do: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
 
   def requisition_type_badge_class("digitization_request"),
-    do: "bg-voile-accent text-voile-primary"
+    do: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
 
   def requisition_type_badge_class("reference_question"),
-    do: "bg-voile-warning text-voile-warning"
+    do: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
 
-  def requisition_type_badge_class(_), do: "bg-voile-neutral text-voile-dark"
+  def requisition_type_badge_class(_),
+    do: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
 
   @doc """
   Returns CSS classes for requisition status badges.
   """
-  def requisition_status_badge_class("submitted"), do: "bg-voile-info text-voile-primary"
-  def requisition_status_badge_class("reviewing"), do: "bg-voile-warning text-voile-warning"
-  def requisition_status_badge_class("approved"), do: "bg-voile-success text-voile-success"
-  def requisition_status_badge_class("rejected"), do: "bg-voile-error text-voile-error"
-  def requisition_status_badge_class("fulfilled"), do: "bg-voile-accent text-voile-primary"
-  def requisition_status_badge_class("cancelled"), do: "bg-voile-neutral text-voile-dark"
-  def requisition_status_badge_class(_), do: "bg-voile-neutral text-voile-dark"
+  def requisition_status_badge_class("submitted"),
+    do: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+
+  def requisition_status_badge_class("reviewing"),
+    do: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300"
+
+  def requisition_status_badge_class("approved"),
+    do: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+
+  def requisition_status_badge_class("rejected"),
+    do: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+
+  def requisition_status_badge_class("fulfilled"),
+    do: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
+
+  def requisition_status_badge_class("cancelled"),
+    do: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+
+  def requisition_status_badge_class(_),
+    do: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
 
   @doc """
   Returns CSS classes for fine type badges.

@@ -1,0 +1,163 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="min-h-screen bg-gradient-to-br from-voile-light to-gray-50 dark:from-gray-900 dark:to-voile-dark py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <%!-- Back Button --%>
+      <button
+        phx-click="go_back"
+        class="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      >
+        <.icon name="hero-arrow-left" class="w-5 h-5" /> {gettext("Back to My Requests")}
+      </button>
+
+      <%!-- Page Header --%>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-8 text-white">
+          <h1 class="text-2xl font-bold mb-1">{gettext("Submit a Library Request")}</h1>
+          <p class="text-indigo-100 text-sm">
+            {gettext(
+              "Request a purchase, interlibrary loan, digitization, or reference assistance."
+            )}
+          </p>
+        </div>
+
+        <div class="p-6">
+          <.form
+            for={@form}
+            id="requisition-form"
+            phx-change="validate"
+            phx-submit="submit"
+            class="space-y-6"
+          >
+            <%!-- Request Type --%>
+            <.input
+              field={@form[:request_type]}
+              type="select"
+              label={gettext("Request Type")}
+              options={[
+                {gettext("Purchase Request"), "purchase_request"},
+                {gettext("Interlibrary Loan"), "interlibrary_loan"},
+                {gettext("Digitization Request"), "digitization_request"},
+                {gettext("Reference Question"), "reference_question"}
+              ]}
+              required
+            />
+
+            <%!-- Unit / Node --%>
+            <.input
+              field={@form[:unit_id]}
+              type="select"
+              label={gettext("Request To (Unit / Branch)")}
+              options={
+                [{gettext("-- Select a unit --"), ""}] ++
+                  Enum.map(@nodes, fn n -> {n.name, n.id} end)
+              }
+              required
+            />
+
+            <%!-- Title (required) --%>
+            <.input
+              field={@form[:title]}
+              type="text"
+              label={gettext("Title")}
+              placeholder={gettext("Book title, article title, or subject")}
+              required
+            />
+
+            <%!-- Author --%>
+            <.input
+              field={@form[:author]}
+              type="text"
+              label={gettext("Author / Creator")}
+              placeholder={gettext("Author name (optional)")}
+            />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <%!-- Publisher --%>
+              <.input
+                field={@form[:publisher]}
+                type="text"
+                label={gettext("Publisher")}
+                placeholder={gettext("Publisher name (optional)")}
+              />
+
+              <%!-- Publication Year --%>
+              <.input
+                field={@form[:publication_year]}
+                type="number"
+                label={gettext("Publication Year")}
+                placeholder={gettext("e.g. 2024")}
+                min="1000"
+                max="2100"
+              />
+            </div>
+
+            <%!-- ISBN --%>
+            <.input
+              field={@form[:isbn]}
+              type="text"
+              label={gettext("ISBN")}
+              placeholder={gettext("10 or 13 digit ISBN (optional)")}
+            />
+
+            <%!-- Priority --%>
+            <.input
+              field={@form[:priority]}
+              type="select"
+              label={gettext("Priority")}
+              options={[
+                {gettext("Low"), "low"},
+                {gettext("Normal"), "normal"},
+                {gettext("High"), "high"},
+                {gettext("Urgent"), "urgent"}
+              ]}
+            />
+
+            <%!-- Description --%>
+            <.input
+              field={@form[:description]}
+              type="textarea"
+              label={gettext("Description")}
+              placeholder={gettext("Describe what you need and how it will be used")}
+              rows="3"
+            />
+
+            <%!-- Justification --%>
+            <.input
+              field={@form[:justification]}
+              type="textarea"
+              label={gettext("Justification")}
+              placeholder={gettext("Why is this resource needed? (optional)")}
+              rows="2"
+            />
+
+            <%!-- Notes --%>
+            <.input
+              field={@form[:notes]}
+              type="textarea"
+              label={gettext("Additional Notes")}
+              placeholder={gettext("Any other relevant information (optional)")}
+              rows="2"
+            />
+
+            <%!-- Cloudflare Turnstile CAPTCHA --%>
+            <div class="pt-2">
+              <Turnstile.widget theme="auto" />
+            </div>
+
+            <%!-- Submit --%>
+            <div class="pt-2">
+              <button
+                type="submit"
+                disabled={@submitting}
+                class="w-full flex justify-center items-center gap-2 px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <.icon name="hero-paper-airplane" class="w-5 h-5" />
+                {gettext("Submit Request")}
+              </button>
+            </div>
+          </.form>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
