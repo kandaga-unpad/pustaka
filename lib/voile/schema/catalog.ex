@@ -1492,6 +1492,8 @@ defmodule Voile.Schema.Catalog do
       where:
         ilike(i.item_code, ^like) or
           ilike(i.inventory_code, ^like) or
+          ilike(i.barcode, ^like) or
+          ilike(i.legacy_item_code, ^like) or
           ilike(i.location, ^like) or
           exists(
             from c in Collection,
