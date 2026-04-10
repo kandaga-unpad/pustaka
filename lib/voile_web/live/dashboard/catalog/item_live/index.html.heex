@@ -63,12 +63,12 @@
           phx-hook="SearchFocus"
           id="search-form"
         >
-          <div class="relative w-full min-w-[420px]">
+          <div class="relative w-full md:min-w-[640px]">
             <input
               type="text"
               name="q"
               value={@search || ""}
-              placeholder={gettext("Search items...")}
+              placeholder={gettext("Search items, barcode, or legacy code...")}
               class="w-full pl-10 pr-9 py-2 rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               phx-debounce="200"
             />
