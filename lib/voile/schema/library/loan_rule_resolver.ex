@@ -47,13 +47,20 @@ defmodule Voile.Schema.Library.LoanRuleResolver do
 
   def resolve_rules(%Node{override_loan_rules: true} = node, _member_type) do
     %{
-      max_items: node.max_items || @system_defaults.max_items,
-      max_days: node.max_days || @system_defaults.max_days,
-      max_renewals: node.max_renewals || @system_defaults.max_renewals,
-      max_reserves: node.max_reserves || @system_defaults.max_reserves,
-      max_concurrent_loans: node.max_concurrent_loans || @system_defaults.max_concurrent_loans,
-      fine_per_day: node.fine_per_day || @system_defaults.fine_per_day,
-      max_fine: node.max_fine || @system_defaults.max_fine,
+      max_items: if(is_nil(node.max_items), do: @system_defaults.max_items, else: node.max_items),
+      max_days: if(is_nil(node.max_days), do: @system_defaults.max_days, else: node.max_days),
+      max_renewals:
+        if(is_nil(node.max_renewals), do: @system_defaults.max_renewals, else: node.max_renewals),
+      max_reserves:
+        if(is_nil(node.max_reserves), do: @system_defaults.max_reserves, else: node.max_reserves),
+      max_concurrent_loans:
+        if(is_nil(node.max_concurrent_loans),
+          do: @system_defaults.max_concurrent_loans,
+          else: node.max_concurrent_loans
+        ),
+      fine_per_day:
+        if(is_nil(node.fine_per_day), do: @system_defaults.fine_per_day, else: node.fine_per_day),
+      max_fine: if(is_nil(node.max_fine), do: @system_defaults.max_fine, else: node.max_fine),
       can_reserve:
         if(is_nil(node.can_reserve), do: @system_defaults.can_reserve, else: node.can_reserve),
       can_renew: if(is_nil(node.can_renew), do: @system_defaults.can_renew, else: node.can_renew),
@@ -66,14 +73,41 @@ defmodule Voile.Schema.Library.LoanRuleResolver do
 
   def resolve_rules(_node, %MemberType{} = member_type) do
     %{
-      max_items: member_type.max_items || @system_defaults.max_items,
-      max_days: member_type.max_days || @system_defaults.max_days,
-      max_renewals: member_type.max_renewals || @system_defaults.max_renewals,
-      max_reserves: member_type.max_reserves || @system_defaults.max_reserves,
+      max_items:
+        if(is_nil(member_type.max_items),
+          do: @system_defaults.max_items,
+          else: member_type.max_items
+        ),
+      max_days:
+        if(is_nil(member_type.max_days),
+          do: @system_defaults.max_days,
+          else: member_type.max_days
+        ),
+      max_renewals:
+        if(is_nil(member_type.max_renewals),
+          do: @system_defaults.max_renewals,
+          else: member_type.max_renewals
+        ),
+      max_reserves:
+        if(is_nil(member_type.max_reserves),
+          do: @system_defaults.max_reserves,
+          else: member_type.max_reserves
+        ),
       max_concurrent_loans:
-        member_type.max_concurrent_loans || @system_defaults.max_concurrent_loans,
-      fine_per_day: member_type.fine_per_day || @system_defaults.fine_per_day,
-      max_fine: member_type.max_fine || @system_defaults.max_fine,
+        if(is_nil(member_type.max_concurrent_loans),
+          do: @system_defaults.max_concurrent_loans,
+          else: member_type.max_concurrent_loans
+        ),
+      fine_per_day:
+        if(is_nil(member_type.fine_per_day),
+          do: @system_defaults.fine_per_day,
+          else: member_type.fine_per_day
+        ),
+      max_fine:
+        if(is_nil(member_type.max_fine),
+          do: @system_defaults.max_fine,
+          else: member_type.max_fine
+        ),
       can_reserve: member_type.can_reserve,
       can_renew: member_type.can_renew,
       currency: member_type.currency || @system_defaults.currency,

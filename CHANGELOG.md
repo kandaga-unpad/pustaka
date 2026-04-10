@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.10] - 2026-04-10
+
+### Fixed
+
+- **Critical: Missing fine_per_day causes infinite fine calculation** — If a member type's `fine_per_day` is not set (nil) or set to zero, the system was previously treating it as a zero daily fine, which caused the total fine amount to also be zero regardless of how many days overdue. This could lead to confusion and incorrect fine waivers. The fix is to treat nil or zero `fine_per_day` as a default of 1000 (currency units) per day, ensuring that overdue items accrue fines properly even if the member type configuration is incomplete. This change affects both the fine calculation logic in `Voile.Library.Circulation` and the member type defaults when fetching member type details.
+
+---
+
 ## [0.1.9] - 2026-04-10
 
 ### Added
