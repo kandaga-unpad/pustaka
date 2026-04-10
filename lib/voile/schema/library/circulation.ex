@@ -1437,7 +1437,13 @@ defmodule Voile.Schema.Library.Circulation do
 
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
-      daily_fine = member_type.fine_per_day || Decimal.new("1.00")
+
+      daily_fine =
+        if is_nil(member_type.fine_per_day) or
+             Decimal.equal?(member_type.fine_per_day, Decimal.new("0")),
+           do: Decimal.new("1000"),
+           else: member_type.fine_per_day
+
       fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
 
       # Apply max fine limit if configured
@@ -2477,6 +2483,12 @@ defmodule Voile.Schema.Library.Circulation do
           mt
           | max_concurrent_loans:
               if(mt.max_concurrent_loans in [nil, 0], do: 5, else: mt.max_concurrent_loans),
+            max_days: if(mt.max_days in [nil, 0], do: 7, else: mt.max_days),
+            fine_per_day:
+              if(is_nil(mt.fine_per_day) or Decimal.equal?(mt.fine_per_day, Decimal.new("0")),
+                do: Decimal.new("1000"),
+                else: mt.fine_per_day
+              ),
             can_renew: if(is_nil(mt.can_renew), do: true, else: mt.can_renew),
             max_fine: if(is_nil(mt.max_fine), do: Decimal.new("100000"), else: mt.max_fine)
         }
@@ -2523,6 +2535,12 @@ defmodule Voile.Schema.Library.Circulation do
           mt
           | max_concurrent_loans:
               if(mt.max_concurrent_loans in [nil, 0], do: 5, else: mt.max_concurrent_loans),
+            max_days: if(mt.max_days in [nil, 0], do: 7, else: mt.max_days),
+            fine_per_day:
+              if(is_nil(mt.fine_per_day) or Decimal.equal?(mt.fine_per_day, Decimal.new("0")),
+                do: Decimal.new("1000"),
+                else: mt.fine_per_day
+              ),
             can_renew: if(is_nil(mt.can_renew), do: true, else: mt.can_renew),
             max_fine: if(is_nil(mt.max_fine), do: Decimal.new("100000"), else: mt.max_fine)
         }
@@ -2875,7 +2893,13 @@ defmodule Voile.Schema.Library.Circulation do
 
     if Transaction.overdue?(transaction) do
       days_overdue = Transaction.calculate_days_overdue(transaction, skip_holidays)
-      daily_fine = member_type.fine_per_day || Decimal.new("1.00")
+
+      daily_fine =
+        if is_nil(member_type.fine_per_day) or
+             Decimal.equal?(member_type.fine_per_day, Decimal.new("0")),
+           do: Decimal.new("1000"),
+           else: member_type.fine_per_day
+
       fine_amount = Decimal.mult(Decimal.new(days_overdue), daily_fine)
 
       # Apply max fine limit if configured
