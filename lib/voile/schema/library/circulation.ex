@@ -2999,14 +2999,12 @@ defmodule Voile.Schema.Library.Circulation do
   # Member Type Policy Calculations
   defp calculate_due_date_for_member_type(%MemberType{} = member_type, node) do
     rules = LoanRuleResolver.resolve_rules(node, member_type)
-    loan_days = rules.max_days
-    DateTime.add(DateTime.utc_now(), loan_days * 24 * 60 * 60, :second)
+    DateTime.add(DateTime.utc_now(), rules.max_days * 24 * 60 * 60, :second)
   end
 
   defp calculate_renewal_due_date(current_due_date, %MemberType{} = member_type, node \\ nil) do
     rules = LoanRuleResolver.resolve_rules(node, member_type)
-    loan_days = rules.max_days
-    DateTime.add(current_due_date, loan_days * 24 * 60 * 60, :second)
+    DateTime.add(current_due_date, rules.max_days * 24 * 60 * 60, :second)
   end
 
   defp calculate_reservation_expiry do

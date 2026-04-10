@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.9] - 2026-04-10
+
+### Added
+
+- **Requisition workflow** — Added library requisition pages in the frontend and dashboard, including new circulation schema support and requisition helpers.
+
+### Fixed
+
+- **Plugin access control** — Fixed plugin access and dashboard routing so plugin pages now respect the correct authorization rules.
+- **Node-scoped circulation actions** — Librarians can no longer Return, Extend, Waive, or Pay items and fines that belong to a different node. In the **Current Loans** tab, the Return and Extend buttons are now replaced with a read-only "Loaned from {Node}" badge when the item's node does not match the librarian's node. In the **Fines** tab, the Waive and Pay buttons are similarly replaced with a "Managed by {Node}" badge for fines originating from another node. Super admins bypass this restriction and always see all action buttons.
+
+---
+
 ## [0.1.8] - 2026-04-06
 
 ### Added
