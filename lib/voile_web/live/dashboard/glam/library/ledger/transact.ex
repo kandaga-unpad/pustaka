@@ -31,6 +31,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     case load_member_data(member_id) do
       {:ok, member} ->
         librarian_id = socket.assigns.current_scope.user.id
+        librarian_node_id = socket.assigns.current_scope.user.node_id
+        is_super_admin = Authorization.is_super_admin?(socket)
 
         socket =
           socket
@@ -38,6 +40,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           |> assign(:member, member)
           |> assign(:member_id, member_id)
           |> assign(:librarian_id, librarian_id)
+          |> assign(:librarian_node_id, librarian_node_id)
+          |> assign(:is_super_admin, is_super_admin)
           |> assign(:active_tab, "loan")
           |> assign(:temp_loans, [])
           |> assign(:temp_reservations, [])
@@ -755,10 +759,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
   defp load_current_loans(member_id) do
     Circulation.list_member_active_transactions(member_id)
+    |> Repo.preload(item: :node)
   end
 
   defp load_unpaid_fines(member_id) do
     Circulation.list_member_unpaid_fines(member_id)
+    |> Repo.preload(item: :node, transaction: :node)
   end
 
   defp calculate_total_unpaid_fines(member_id) do
@@ -1272,21 +1278,31 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={transaction <- @current_loans}>
-                <td class="px-6 py-4 flex gap-2">
-                  <button
-                    phx-click="show_return_modal"
-                    phx-value-transaction_id={transaction.id}
-                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                  >
-                    {gettext("Return")}
-                  </button>
-                  <button
-                    phx-click="show_extend_modal"
-                    phx-value-transaction_id={transaction.id}
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                  >
-                    {gettext("Extend")}
-                  </button>
+                <td class="px-6 py-4">
+                  <%= if @is_super_admin || transaction.item.unit_id == @librarian_node_id do %>
+                    <div class="flex gap-2">
+                      <button
+                        phx-click="show_return_modal"
+                        phx-value-transaction_id={transaction.id}
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                      >
+                        {gettext("Return")}
+                      </button>
+                      <button
+                        phx-click="show_extend_modal"
+                        phx-value-transaction_id={transaction.id}
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                      >
+                        {gettext("Extend")}
+                      </button>
+                    </div>
+                  <% else %>
+                    <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
+                      <.icon name="hero-building-library" class="w-4 h-4" />
+                      {gettext("Loaned from")} {(transaction.item.node && transaction.item.node.name) ||
+                        gettext("another node")}
+                    </span>
+                  <% end %>
                 </td>
 
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
@@ -1459,23 +1475,37 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={fine <- @unpaid_fines}>
-                  <td class="px-6 py-4 flex gap-2">
-                    <button
-                      phx-click="show_waive_fine_modal"
-                      phx-value-fine_id={fine.id}
-                      class="text-orange-600 hover:text-orange-900"
-                      title={gettext("Waive")}
-                    >
-                      <.icon name="hero-x-circle" class="w-5 h-5" />
-                    </button>
-                    <button
-                      phx-click="show_pay_fine_modal"
-                      phx-value-fine_id={fine.id}
-                      class="text-green-600 hover:text-green-900"
-                      title={gettext("Pay")}
-                    >
-                      <.icon name="hero-currency-dollar" class="w-5 h-5" />
-                    </button>
+                  <% fine_node_id =
+                    (fine.item && fine.item.unit_id) || (fine.transaction && fine.transaction.unit_id) %>
+                  <% fine_node_name =
+                    (fine.item && fine.item.node && fine.item.node.name) ||
+                      (fine.transaction && fine.transaction.node && fine.transaction.node.name) %>
+                  <td class="px-6 py-4">
+                    <%= if @is_super_admin || is_nil(fine_node_id) || fine_node_id == @librarian_node_id do %>
+                      <div class="flex gap-2">
+                        <button
+                          phx-click="show_waive_fine_modal"
+                          phx-value-fine_id={fine.id}
+                          class="text-orange-600 hover:text-orange-900"
+                          title={gettext("Waive")}
+                        >
+                          <.icon name="hero-x-circle" class="w-5 h-5" />
+                        </button>
+                        <button
+                          phx-click="show_pay_fine_modal"
+                          phx-value-fine_id={fine.id}
+                          class="text-green-600 hover:text-green-900"
+                          title={gettext("Pay")}
+                        >
+                          <.icon name="hero-currency-dollar" class="w-5 h-5" />
+                        </button>
+                      </div>
+                    <% else %>
+                      <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
+                        <.icon name="hero-building-library" class="w-4 h-4" />
+                        {gettext("Managed by")} {fine_node_name || gettext("another node")}
+                      </span>
+                    <% end %>
                   </td>
 
                   <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">

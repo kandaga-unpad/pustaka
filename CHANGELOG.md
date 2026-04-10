@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.9] - 2026-04-09
+
+### Added
+
+- **Requisition workflow** — Added library requisition pages in the frontend and dashboard, including new circulation schema support and requisition helpers.
+
+### Fixed
+
+- **Plugin access control** — Fixed plugin access and dashboard routing so plugin pages now respect the correct authorization rules.
+
+---
+
 ## [0.1.8] - 2026-04-06
 
 ### Added
