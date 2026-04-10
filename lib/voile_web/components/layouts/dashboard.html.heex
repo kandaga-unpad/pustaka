@@ -26,7 +26,14 @@
               <% end %>
             </div>
 
-            <p>Hello, {@current_scope.user.username}!</p>
+            <div>
+              <p class="font-semibold">Hello, {@current_scope.user.username}!</p>
+              <p class="text-sm text-gray-200">
+                {gettext("Node:")} {VoileWeb.Frontend.Atrium.AtriumHelper.node_name(
+                  @current_scope.user
+                )}
+              </p>
+            </div>
           </div>
         <% else %>
           <div>
