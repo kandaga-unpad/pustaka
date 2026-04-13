@@ -21,10 +21,17 @@ defmodule Voile.Application do
 
   @impl true
   def start(_type, _args) do
+    # Setup OpenTelemetry instrumentation
+    :ok = OpentelemetryBandit.setup()
+    :ok = OpentelemetryPhoenix.setup(adapter: :bandit)
+    :ok = OpentelemetryEcto.setup([:voile, :repo])
+    :ok = OpentelemetryLoggerMetadata.setup()
+
     # Build children list conditionally based on configuration
     base_children = [
       VoileWeb.Telemetry,
       Voile.Repo,
+      Voile.PromEx,
       {DNSCluster, query: Application.get_env(:voile, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Voile.PubSub},
       # Hammer 7.x rate limiter with ETS backend

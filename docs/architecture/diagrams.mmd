@@ -6,6 +6,20 @@ flowchart LR
     Atrium[Atrium Patron Portal] -->|"HTTP / WS"| Endpoint
   end
 
+  %% GLAM Domains
+  subgraph GLAM[GLAM Domains]
+    direction LR
+    Gallery[Gallery] -->|uses shared catalog| SharedCatalog[Shared Catalog & Metadata Core]
+    Library[Library] -->|uses shared catalog| SharedCatalog
+    Archive[Archive] -->|uses shared catalog| SharedCatalog
+    Museum[Museum] -->|uses shared catalog| SharedCatalog
+  end
+
+  SharedCatalog --> Collections[Collections]
+  Collections --> Items[Items]
+  Collections --> CollectionFields[CollectionFields]
+  CollectionFields --> Items
+
   %% Phoenix App
   subgraph WebLayer[Phoenix App]
     direction TB

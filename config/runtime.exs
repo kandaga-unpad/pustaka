@@ -223,4 +223,42 @@ if config_env() == :prod do
   # Admin email is read from database setting 'app_contact_email'
   config :voile,
     oai_pmh_repository_id: System.get_env("OAI_REPOSITORY_ID") || host
+
+  # Voile Monitoring
+  # At the bottom of runtime.exs, OUTSIDE the prod block
+  if System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT") do
+    config :opentelemetry_exporter,
+      otlp_protocol: :http_protobuf,
+      otlp_endpoint: System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT"),
+      otlp_headers: [
+        {"Authorization",
+         "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH", ""))},
+        {"organization", System.get_env("VOILE_OPENOBSERVE_ORG", "default")}
+      ]
+
+    config :opentelemetry, :processors,
+      otel_batch_processor: %{exporter: {:opentelemetry_exporter, %{}}}
+  else
+    config :opentelemetry, :processors,
+      otel_batch_processor: %{exporter: {:otel_exporter_pid, self()}}
+
+    config :opentelemetry, traces_exporter: :none
+  end
+
+  if System.get_env("VOILE_OPENOBSERVE_METRICS_URL") do
+    config :voile, Voile.PromEx,
+      manual_metrics_configuration: [
+        %{
+          module: PromEx.MetricWriters.Push,
+          name: "OpenObserve",
+          url: System.get_env("VOILE_OPENOBSERVE_METRICS_URL"),
+          headers: [
+            {"Authorization",
+             "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH", ""))},
+            {"organization", System.get_env("VOILE_OPENOBSERVE_ORG", "default")}
+          ],
+          metric_groups: [:phoenix, :ecto, :beam, :application]
+        }
+      ]
+  end
 end
