@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.13] - 2026-04-13
+
+### Fixed
+
+- **OpenTelemetry and PromEx config moved out of compile-time** — The OpenTelemetry exporter and PromEx metrics push configuration blocks were incorrectly placed in `config/config.exs`, which is evaluated at compile time. Since these blocks read from `System.get_env`, the env vars were not available during compilation in release builds, causing the configuration to silently fall back to no-op defaults regardless of what was set at runtime. Both blocks have been removed from `config.exs` and consolidated into `config/runtime.exs`. `config.exs` now only holds a static base PromEx config with `manual_metrics_configuration: []`.
+- **OpenTelemetry and PromEx monitoring no longer prod-only** — The observability configuration block in `config/runtime.exs` was previously nested inside the `if config_env() == :prod do` guard, meaning OpenTelemetry traces and PromEx metrics push would never activate in development even when the relevant env vars were set. The monitoring blocks are now placed outside the prod guard so they apply in all environments when `VOILE_OTEL_EXPORTER_ENDPOINT` or `VOILE_OPENOBSERVE_METRICS_URL` are configured.
+
+---
+
 ## [0.1.12] - 2026-04-13
 
 ### Fixed
@@ -244,6 +253,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.13]: https://github.com/curatorian/voile/compare/v0.1.12...v0.1.13
 [0.1.7]: https://github.com/curatorian/voile/compare/v0.1.6...v0.1.7
 [0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
