@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.12"
+  @version "0.1.13"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -139,8 +139,9 @@ defmodule Voile.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:tzdata, "~> 1.1"},
       {:xml_builder, "~> 2.2"},
-      # Local plugins — path deps for dev/test only.
-      {:voile_locker_luggage, path: "../voile_plugin/voile_locker_luggage", only: [:dev, :test]},
+
+      # Voile Plugin
+      {:voile_locker_luggage, "~> 0.1.0"},
 
       # OpenTelemetry for Monitoring
       {:opentelemetry, "~> 1.7"},
