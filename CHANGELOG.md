@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.12] - 2026-04-13
+
+### Fixed
+
+- **Google Analytics layout fix** — Corrected `lib/voile_web/components/layouts/root.html.heex` to use `Elixir.System.get_env/1` for `VOILE_GOOGLE_ANALYTICS_ID`, avoiding the local `System` alias conflict.
+
+---
+
+## [0.1.11] - 2026-04-13
+
+### Added
+
+- **OpenTelemetry support** — Added optional trace export configuration for OpenTelemetry via `VOILE_OTEL_EXPORTER_ENDPOINT`.
+- **OpenObserve integration** — Added optional PromEx metrics push and OpenObserve-specific configuration for observability.
+- **Google Analytics support** — Added optional Google Analytics tracking integration via `VOILE_GOOGLE_ANALYTICS_ID`.
+- **Observability documentation** — Added new docs under `docs/integrations/observability` describing OpenObserve setup, supported environment variables, and future monitoring tool plans.
+
+### Changed
+
+- Updated architecture documentation to reflect Voile as a full GLAM platform with Gallery, Library, Archive, and Museum domains.
+
+---
+
 ## [0.1.10] - 2026-04-10
 
 ### Fixed

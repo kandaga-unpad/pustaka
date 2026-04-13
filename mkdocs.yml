@@ -164,6 +164,9 @@ nav:
           - Gmail API Complete: integrations/email/gmail-api-complete.md
           - Email Queue: integrations/email/email-queue.md
           - Production Setup: integrations/email/production-setup.md
+      - Observability:
+          - Overview: integrations/observability/index.md
+          - OpenObserve: integrations/observability/openobserve.md
     #   - Payments:
     #   - Xendit Integration: integrations/payments/xendit-integration.md
     #   - Xendit Quickstart: integrations/payments/xendit-quickstart.md

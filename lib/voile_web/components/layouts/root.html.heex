@@ -59,6 +59,16 @@
     </script>
     <Turnstile.script />
 
+    <%= if ga_id = Elixir.System.get_env("VOILE_GOOGLE_ANALYTICS_ID") do %>
+      <script async src={"https://www.googletagmanager.com/gtag/js?id=#{ga_id}"}></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= ga_id %>');
+      </script>
+    <% end %>
+
     <script>
       (() => {
         const setTheme = (theme) => {

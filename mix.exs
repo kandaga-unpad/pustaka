@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.10"
+  @version "0.1.12"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -75,7 +75,7 @@ defmodule Voile.MixProject do
   def application do
     [
       mod: {Voile.Application, []},
-      extra_applications: [:logger, :runtime_tools, :esbuild, :tailwind]
+      extra_applications: [:logger, :runtime_tools, :esbuild, :tailwind, :opentelemetry]
     ]
   end
 
@@ -98,9 +98,11 @@ defmodule Voile.MixProject do
       {:aws, "~> 1.0.10"},
       {:bandit, "~> 1.10"},
       {:barlix, "~> 0.6.0"},
+      {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto_sql, "~> 3.13"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:ex_json_schema, "~> 0.11.2"},
       {:finch, "~> 0.21"},
       {:floki, ">= 0.30.0", only: :test},
@@ -137,10 +139,24 @@ defmodule Voile.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:tzdata, "~> 1.1"},
       {:xml_builder, "~> 2.2"},
-      {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      # Plugins — use Hex version for production builds.
-      {:voile_locker_luggage, "~> 0.1.0"}
+      # Local plugins — path deps for dev/test only.
+      {:voile_locker_luggage, path: "../voile_plugin/voile_locker_luggage", only: [:dev, :test]},
+
+      # OpenTelemetry for Monitoring
+      {:opentelemetry, "~> 1.7"},
+      {:opentelemetry_api, "~> 1.5"},
+      {:opentelemetry_exporter, "~> 1.10"},
+      # Instrumentation for Phoenix, Ecto, Bandit, etc.
+      {:opentelemetry_phoenix, "~> 2.0"},
+      {:opentelemetry_ecto, "~> 1.2"},
+      {:opentelemetry_bandit, "~> 0.3.0"},
+      # Metrics
+      {:prom_ex, "~> 1.11"},
+      # Structured logging
+      {:logger_json, "~> 7.0"},
+      # Helper libraries
+      {:opentelemetry_logger_metadata, "~> 0.2.0"},
+      {:opentelemetry_telemetry, "~> 1.1"}
     ]
   end
 

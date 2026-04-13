@@ -2,27 +2,51 @@
 
 ## System Architecture
 
+Voile is designed as a GLAM platform for Galleries, Libraries, Archives, and Museums. The core architecture is built around a shared catalog and metadata model, with GLAM-aware resource classes, role-based access, and multi-node support.
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     VOILE LIBRARY SYSTEM                        │
-│                   Phoenix LiveView Application                   │
+│               VOILE GLAM MANAGEMENT PLATFORM                    │
+│          Phoenix LiveView + Ecto + Plugin Extension             │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                 ┌───────────────┴───────────────┐
                 │                               │
-        ┌───────▼────────┐             ┌───────▼────────┐
-        │  CATALOG       │             │  CIRCULATION   │
-        │  SYSTEM        │             │  SYSTEM        │
-        └───────┬────────┘             └───────┬────────┘
+        ┌───────▼────────┐             ┌────────▼────────┐
+        │   GALLERY      │             │   LIBRARY       │
+        │   DOMAIN       │             │   DOMAIN        │
+        └───────┬────────┘             └────────┬────────┘
                 │                               │
-        ┌───────▼───────────┐           ┌──────▼──────────┐
-        │ - Collections     │           │ - Transactions  │
-        │ - Items           │           │ - Reservations  │
-        │ - Metadata        │           │ - Requisitions  │
-        │ - Attachments     │           │ - Fines         │
-        └───────────────────┘           │ - History       │
-                                        └─────────────────┘
+        ┌───────▼───────────┐           ┌───────▼──────────┐
+        │   ARCHIVE         │           │   MUSEUM         │
+        │   DOMAIN          │           │   DOMAIN         │
+        └───────┬───────────┘           └───────┬──────────┘
+                │                               │
+                └───────────────┬───────────────┘
+                                │
+                     ┌──────────▼───────────┐
+                     │  Shared Catalog &    │
+                     │  Metadata Core       │
+                     └──────────┬───────────┘
+                                │
+                ┌───────────────┴───────────────┐
+                │                               │
+        ┌───────▼────────────┐         ┌────────▼────────────┐
+        │  Collections       │         │  Items              │
+        └───────┬────────────┘         └────────┬────────────┘
+                │                            │
+        ┌───────▼────────────┐               │
+        │  CollectionFields  │<──────────────┘
+        └────────────────────┘
 ```
+
+Collections are the primary GLAM resource containers in Voile. Each collection belongs to a `ResourceClass` with a `glam_type` (Gallery, Library, Archive, or Museum) and may include shared content, attachments, and child items.
+
+Items are the collection-specific units that inherit catalog metadata from their parent collection. `collection_fields` are flexible metadata entries attached to a collection, used to store custom field values such as call numbers, provenance details, or domain-specific properties that can be mapped into exports and GLAM workflows.
+
+The GLAM model is enforced through `ResourceClass.glam_type`, institution-scoped `node_id`, and curated roles such as `librarian`, `archivist`, `gallery_curator`, and `museum_curator`.
+
+`Voile.GLAM.CollectionHelper` and `VoileWeb.Auth.GLAMAuthorization` implement the access rules that keep collections and metadata filtered by GLAM type.
 
 ## Module Family Structure
 
@@ -285,7 +309,7 @@ Step 2: Manage Collections
     │
     └─> Tree View (Toggle)
         └─> See hierarchy
-    
+
 Step 3: Manage Items
     │
     ├─> List View (/manage/catalog/items)
@@ -490,8 +514,8 @@ lib/voile/
 
 ---
 
-**Architecture Type:** Modular Monolith with LiveView  
-**Pattern:** MVC with LiveView  
-**Database:** PostgreSQL with Ecto  
-**Frontend:** Server-rendered with LiveView  
-**Real-time:** WebSocket via Phoenix Channels  
+**Architecture Type:** Modular Monolith with LiveView
+**Pattern:** MVC with LiveView
+**Database:** PostgreSQL with Ecto
+**Frontend:** Server-rendered with LiveView
+**Real-time:** WebSocket via Phoenix Channels

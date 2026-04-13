@@ -176,9 +176,16 @@ config :tailwind,
   ]
 
 # Configures Elixir's Logger
+
+# Default
+# config :logger, :console,
+#   format: "$time $metadata[$level] $message\n",
+#   metadata: [:request_id]
+
+# For structured logging with LoggerJSON
 config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  format: {LoggerJSON, :format},
+  metadata: :all
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -197,6 +204,60 @@ config :voile, :phoenix_swagger,
 
 # Configure Swagger to use Jason
 config :phoenix_swagger, json_library: Jason
+
+# Configure Opentelemetry — optional, only if endpoint is set
+if System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT") do
+  config :opentelemetry_exporter,
+    otlp_protocol: :http_protobuf,
+    otlp_endpoint: System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT"),
+    otlp_headers: [
+      {"Authorization",
+       "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH") || "")},
+      {"organization", System.get_env("VOILE_OPENOBSERVE_ORG") || "default"}
+    ]
+
+  config :opentelemetry, :processors,
+    otel_batch_processor: %{exporter: {:opentelemetry_exporter, %{}}}
+else
+  config :opentelemetry, :processors,
+    otel_batch_processor: %{exporter: {:otel_exporter_pid, self()}}
+
+  config :opentelemetry, traces_exporter: :none
+end
+
+# Configure PromEx — metrics push is also optional
+prom_ex_base =
+  [
+    disabled: false,
+    metrics_server: :disabled,
+    metrics_polling: [
+      Voile.PromEx,
+      PromEx.Plugins.Application,
+      PromEx.Plugins.Beam
+    ]
+  ]
+
+prom_ex_config =
+  if System.get_env("VOILE_OPENOBSERVE_METRICS_URL") do
+    Keyword.put(prom_ex_base, :manual_metrics_configuration, [
+      %{
+        module: PromEx.MetricWriters.Push,
+        name: "OpenObserve",
+        url: System.get_env("VOILE_OPENOBSERVE_METRICS_URL"),
+        headers: [
+          {"Authorization",
+           "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH") || "")},
+          {"organization", System.get_env("VOILE_OPENOBSERVE_ORG") || "default"}
+        ],
+        metric_groups: [:phoenix, :ecto, :beam, :application]
+      }
+    ])
+  else
+    # No metrics push — PromEx still runs locally, just doesn't push anywhere
+    Keyword.put(prom_ex_base, :manual_metrics_configuration, [])
+  end
+
+config :voile, Voile.PromEx, prom_ex_config
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
