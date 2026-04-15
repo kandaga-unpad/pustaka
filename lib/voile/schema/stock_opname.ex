@@ -1671,7 +1671,7 @@ defmodule Voile.Schema.StockOpname do
     # Step 1 & 2: mark pending/explicitly-missing items as missing in catalog.
     # These two bulk UPDATE statements are fast (index scans) and run in a
     # single transaction to stay atomic.
-    with {:ok, {unchecked_count, explicit_missing_count}} <-
+    with {:ok, %{apply_missing: {unchecked_count, explicit_missing_count}}} <-
            Ecto.Multi.new()
            |> Ecto.Multi.run(:apply_missing, fn repo, _changes ->
              # Step 1: items in-scope but never scanned by any librarian.
@@ -1760,6 +1760,15 @@ defmodule Voile.Schema.StockOpname do
               "session_id=#{session.id} — stamping approved"
           )
 
+          # Step 4: Archive collections whose every item is now missing.
+          {archived_count, _} = archive_fully_missing_collections(session, admin_user, now)
+
+          Logger.info(
+            "[StockOpname] do_apply_session_changes: step 4 done — " <>
+              "archived #{archived_count} collection(s) with all items missing: " <>
+              "session_id=#{session.id}"
+          )
+
           # All changes applied — stamp the session as fully approved.
           session
           |> Ecto.Changeset.change(%{status: "approved", approved_at: now})
@@ -1782,6 +1791,46 @@ defmodule Voile.Schema.StockOpname do
 
         {:error, reason}
     end
+  end
+
+  # Archives collections that are in scope of the session and whose every
+  # catalog item now has availability = 'missing'.  Runs as a single bulk
+  # UPDATE so it is efficient even for large sessions.
+  defp archive_fully_missing_collections(%Session{} = session, admin_user, now) do
+    # All distinct collection IDs touched by this session's opname items.
+    session_collection_ids =
+      from(oi in Item,
+        join: i in CatalogItem,
+        on: i.id == oi.item_id,
+        where: oi.session_id == ^session.id,
+        select: i.collection_id,
+        distinct: true
+      )
+
+    # Collections (from the session scope) that still have at least one
+    # non-missing item — these must NOT be archived.
+    collections_with_available_items =
+      from(i in CatalogItem,
+        where: i.collection_id in subquery(session_collection_ids),
+        where: i.availability != "missing",
+        select: i.collection_id,
+        distinct: true
+      )
+
+    # Bulk-archive the remainder: in-scope, not already archived, no
+    # available items remaining.
+    from(c in Collection,
+      where: c.id in subquery(session_collection_ids),
+      where: c.status != "archived",
+      where: c.id not in subquery(collections_with_available_items)
+    )
+    |> Repo.update_all(
+      set: [
+        status: "archived",
+        updated_by_id: admin_user.id,
+        updated_at: now
+      ]
+    )
   end
 
   # Applies all recorded field changes for one chunk of up to 1000 items.
