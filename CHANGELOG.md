@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.14] - 2026-04-15
+
+### Added
+
+- **Combined Import & Export page** — Replaced the old collection import page with a unified Import & Export LiveView at `/manage/catalog/collections/import`. The new page provides a three-step import flow (Upload → Preview → Done) and a sidebar export panel, both scoped per-node.
+- **Simplified CSV format for import/export** — Collections can now be imported and exported using a flat, human-readable CSV format (18 columns: `title`, `description`, `thumbnail`, `collection_type`, `access_level`, `status`, `creator_name`, `resource_class`, `language`, `publisher`, `date_published`, `isbn`, `subject`, `location`, `condition`, `availability`, `total_items`, `metadata`). `creator_name` is resolved or created automatically; `resource_class` is matched by label string.
+- **Per-node import and export** — Both import and export can be scoped to a specific library branch. The selected node is used to set `unit_id` and generate the `collection_code` on imported records.
+- **RBAC node scoping on import/export** — `super_admin` users see a full node dropdown and can select any branch. Staff and admin users have their node fixed to their own `user.node_id` (read-only display, no dropdown). The node cannot be changed server-side by non-super-admins even via crafted events.
+- **Downloadable sample CSV** — A sample import file is available at `/sample_collection_import.csv` and linked from the CSV format guide on the import page.
+- **In-file duplicate merging** — During CSV parse/preview, rows with the same `title` + `creator_name` (case-insensitive) are automatically merged into a single row with their `total_items` summed. The preview header shows an amber "N duplicates merged" badge when merging occurred.
+- **DB duplicate detection** — Before inserting each imported collection, the importer checks the database for an existing collection matching `title` + `creator_id` + `type_id` + `collection_type` + `node`. Matching records are skipped (not re-inserted). The Done screen reports separate counts for imported, skipped, and failed rows.
+- **Collection show: enriched metadata** — The frontend collection detail page now displays `collection_code` (monospace badge), `resource_class.label`, and last-updated date in the metadata grid. A new "Bibliographic Details" section renders all `collection_fields` (sorted by `sort_order`) between the header and parent/children cards. A "Catalog Reference" sidebar card shows the code, resource type, and creator link.
+- **Collection card: code and resource class badges** — `collection_card` component now renders the `collection_code` as a monospace badge and `resource_class.label` as an indigo badge alongside the existing status badge.
+- **Item show: collection cover** — The item detail page now uses the parent collection's `thumbnail` as the cover image (with a gradient fallback when nil). Also added `barcode` field (with QR code icon) and `last_inventory_date` field (with clipboard icon), both conditional on having a value.
+
+### Fixed
+
+- **Search: double-space and Unicode query handling** — Collection and item search now normalises queries before building ILIKE patterns: collapses multiple spaces, converts Unicode curly quotes to straight quotes, and converts en/em dashes to hyphens. Titles are also matched with a word-split `%word%word%` pattern so multi-word queries like `Everyman's Encyclopaedia Volume 1 A - Barter` return results regardless of internal spacing.
+- **Search: dead JOIN removal** — Removed unused `CollectionField` and `ItemFieldValue` LEFT JOINs from advanced query builders in `search.ex`, eliminating unnecessary table scans. Also removed `:collection_fields` and `:items` from `search_collections` preloads and fixed the `paginate_results` count query to use `exclude(:order_by)`.
+
+---
+
 ## [0.1.13] - 2026-04-13
 
 ### Fixed
@@ -253,6 +275,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.14]: https://github.com/curatorian/voile/compare/v0.1.13...v0.1.14
 [0.1.13]: https://github.com/curatorian/voile/compare/v0.1.12...v0.1.13
 [0.1.7]: https://github.com/curatorian/voile/compare/v0.1.6...v0.1.7
 [0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
