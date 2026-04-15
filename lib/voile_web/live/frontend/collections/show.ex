@@ -171,8 +171,39 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             {@collection.description}
                           </p>
                         <% end %>
-                        <!-- Metadata Grid -->
+                        <%!-- Metadata Grid --%>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                          <%!-- Collection Code --%>
+                          <%= if @collection.collection_code do %>
+                            <div class="flex items-center">
+                              <.icon
+                                name="hero-hashtag"
+                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
+                              />
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Code:")}
+                              </span>
+                              <span class="font-mono text-xs font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+                                {@collection.collection_code}
+                              </span>
+                            </div>
+                          <% end %>
+                          <%!-- Resource Type --%>
+                          <%= if @collection.resource_class do %>
+                            <div class="flex items-center">
+                              <.icon
+                                name="hero-squares-2x2"
+                                class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
+                              />
+                              <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                {gettext("Resource Type:")}
+                              </span>
+                              <span class="font-medium text-gray-900 dark:text-white">
+                                {@collection.resource_class.label}
+                              </span>
+                            </div>
+                          <% end %>
+                          <%!-- Creator --%>
                           <%= if @collection.mst_creator do %>
                             <div class="flex items-center">
                               <.icon
@@ -187,7 +218,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          <%!-- Collection Type --%>
                           <%= if @collection.collection_type do %>
                             <div class="flex items-center">
                               <.icon
@@ -202,7 +233,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          <%!-- Total Items --%>
                           <div class="flex items-center">
                             <.icon
                               name="hero-document-duplicate-solid"
@@ -215,7 +246,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {length(@collection.items || [])}
                             </span>
                           </div>
-
+                          <%!-- Location --%>
                           <%= if @collection.node do %>
                             <div class="flex items-center">
                               <.icon
@@ -230,7 +261,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               </span>
                             </div>
                           <% end %>
-
+                          <%!-- Date Added --%>
                           <div class="flex items-center">
                             <.icon
                               name="hero-calendar-solid"
@@ -243,7 +274,20 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
                             </span>
                           </div>
-
+                          <%!-- Last Updated --%>
+                          <div class="flex items-center">
+                            <.icon
+                              name="hero-arrow-path"
+                              class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"
+                            />
+                            <span class="text-gray-500 dark:text-gray-400 mr-2">
+                              {gettext("Updated:")}
+                            </span>
+                            <span class="font-medium text-gray-900 dark:text-white">
+                              {Calendar.strftime(@collection.updated_at, "%B %d, %Y")}
+                            </span>
+                          </div>
+                          <%!-- Access Level --%>
                           <div class="flex items-center">
                             <.icon
                               name="hero-eye-solid"
@@ -260,8 +304,31 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       </div>
                     </div>
                   </div>
-                  
-    <!-- Parent and Children Collections Section -->
+                  <%!-- Bibliographic Details from collection_fields --%>
+                  <%= if @collection.collection_fields != [] do %>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
+                      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <.icon name="hero-list-bullet" class="w-5 h-5 mr-2" />
+                        {gettext("Bibliographic Details")}
+                      </h2>
+
+                      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                        <%= for field <- Enum.sort_by(@collection.collection_fields, & &1.sort_order) do %>
+                          <%= if field.value && field.value != "" do %>
+                            <div>
+                              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                {field.label}
+                              </dt>
+                              <dd class="text-gray-900 dark:text-white break-words">
+                                {field.value}
+                              </dd>
+                            </div>
+                          <% end %>
+                        <% end %>
+                      </dl>
+                    </div>
+                  <% end %>
+                  <!-- Parent and Children Collections Section -->
                   <%= if @collection.parent || length(@collection.children || []) > 0 do %>
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6 mb-6">
                       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -436,6 +503,58 @@ defmodule VoileWeb.Frontend.Collections.Show do
                 <!-- Sidebar -->
                 <div class="mt-8 lg:mt-0 lg:col-span-4">
                   <div class="sticky top-8 space-y-6">
+                    <%!-- Catalog Reference --%>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
+                      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                        <.icon name="hero-identification" class="w-5 h-5 mr-2" />
+                        {gettext("Catalog Reference")}
+                      </h3>
+
+                      <dl class="space-y-3 text-sm">
+                        <%= if @collection.collection_code do %>
+                          <div>
+                            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              {gettext("Collection Code")}
+                            </dt>
+                            <dd class="font-mono font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-600 inline-block">
+                              {@collection.collection_code}
+                            </dd>
+                          </div>
+                        <% end %>
+
+                        <%= if @collection.resource_class do %>
+                          <div>
+                            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              {gettext("Resource Type")}
+                            </dt>
+                            <dd class="text-gray-900 dark:text-white">
+                              {@collection.resource_class.label}
+                              <%= if @collection.resource_class.glam_type do %>
+                                <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">
+                                  ({@collection.resource_class.glam_type})
+                                </span>
+                              <% end %>
+                            </dd>
+                          </div>
+                        <% end %>
+
+                        <%= if @collection.mst_creator do %>
+                          <div>
+                            <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                              {gettext("Creator")}
+                            </dt>
+                            <dd>
+                              <.link
+                                navigate={~p"/collections?q=#{@collection.mst_creator.creator_name}"}
+                                class="text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                {@collection.mst_creator.creator_name}
+                              </.link>
+                            </dd>
+                          </div>
+                        <% end %>
+                      </dl>
+                    </div>
                     <!-- Quick Actions -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark p-6">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">

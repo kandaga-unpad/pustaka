@@ -490,6 +490,15 @@ defmodule VoileWeb.VoileComponents do
         <% end %>
         <!-- Metadata -->
         <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+          <%= if @collection.collection_code do %>
+            <div class="flex items-center gap-1">
+              <.icon name="hero-hashtag" class="w-3 h-3" />
+              <span class="font-mono bg-gray-100 dark:bg-gray-600 px-1.5 py-0.5 rounded text-gray-700 dark:text-gray-200">
+                {@collection.collection_code}
+              </span>
+            </div>
+          <% end %>
+
           <%= if @collection.mst_creator do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-user" class="w-3 h-3" />
@@ -520,10 +529,19 @@ defmodule VoileWeb.VoileComponents do
         </div>
       </div>
       <!-- Status Badge -->
-      <div class="mt-4 flex justify-between items-center">
+      <div class="mt-4 flex flex-wrap items-center gap-2">
         <span class={"px-2 py-1 text-xs rounded-full #{status_badge_class(@collection.status)}"}>
           {String.capitalize(@collection.status || "Unknown")}
         </span>
+
+        <%= if @collection.resource_class do %>
+          <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+            {@collection.resource_class.label}
+          </span>
+        <% end %>
+      </div>
+
+      <div class="mt-2 flex justify-end">
         <.link
           navigate={"/collections/#{@collection.id}"}
           class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"

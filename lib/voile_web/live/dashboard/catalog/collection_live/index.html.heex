@@ -5,7 +5,19 @@
     <div class="flex flex-col gap-3 sm:gap-4 mb-4">
       <div class="flex flex-col w-full sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex w-full flex-wrap items-center gap-2 sm:gap-3">
-          <.header>{gettext("Listing Collections")}</.header>
+          <div>
+            <.header>{gettext("Listing Collections")}</.header>
+            <div class="-mt-5">
+              <.link>
+                <.button
+                  class="neutral-btn bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
+                  navigate={~p"/manage/catalog/collections/import"}
+                >
+                  Import / Export
+                </.button>
+              </.link>
+            </div>
+          </div>
 
           <%= if @search && @search != "" do %>
             <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
