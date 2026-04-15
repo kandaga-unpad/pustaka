@@ -194,7 +194,7 @@ defmodule VoileWeb.Router do
                  Dashboard.Catalog.CollectionLive.Index,
                  :add_item_to_collection
 
-            live "/import", Dashboard.Catalog.CollectionLive.Import, :import
+            live "/import", Dashboard.Catalog.CollectionLive.ImportExport, :import
             live "/review", Dashboard.Catalog.CollectionLive.Review, :index
             live "/review/:id", Dashboard.Catalog.CollectionLive.Review, :review
             live "/submitted", Dashboard.Catalog.CollectionLive.Submitted, :index

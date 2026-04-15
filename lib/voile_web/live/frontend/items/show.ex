@@ -225,14 +225,27 @@ defmodule VoileWeb.Frontend.Items.Show do
                     <div class="flex flex-col">
                       <!-- Item Visual -->
                       <div class="w-full flex flex-col sm:flex-row gap-6">
-                        <div class="w-full h-72 sm:w-128 bg-gradient-to-br from-voile-info to-voile-primary dark:from-voile-primary dark:to-voile-dark rounded-lg flex items-center justify-center">
-                          <div class="text-center">
-                            <.icon
-                              name="hero-document-solid"
-                              class="w-16 h-16 mx-auto text-white mb-2"
+                        <!-- Cover from collection thumbnail -->
+                        <div class="w-full sm:w-48 flex-shrink-0">
+                          <%= if @item.collection && @item.collection.thumbnail && @item.collection.thumbnail != "" do %>
+                            <img
+                              src={@item.collection.thumbnail}
+                              alt={@item.collection.title}
+                              class="w-full h-72 object-cover rounded-lg shadow-md"
                             />
-                            <div class="text-sm font-medium text-white p-3">{@item.item_code}</div>
-                          </div>
+                          <% else %>
+                            <div class="w-full h-72 bg-gradient-to-br from-voile-info to-voile-primary dark:from-voile-primary dark:to-voile-dark rounded-lg flex items-center justify-center shadow-md">
+                              <div class="text-center">
+                                <.icon
+                                  name="hero-document-solid"
+                                  class="w-16 h-16 mx-auto text-white mb-2"
+                                />
+                                <div class="text-sm font-medium text-white p-3">
+                                  {@item.item_code}
+                                </div>
+                              </div>
+                            </div>
+                          <% end %>
                         </div>
 
                         <div class="flex items-start justify-between">
@@ -293,6 +306,26 @@ defmodule VoileWeb.Frontend.Items.Show do
                               </span>
                             </div>
                           </div>
+
+                          <%= if @item.barcode do %>
+                            <div class="flex items-center">
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-qr-code-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  {gettext("Barcode:")}
+                                </span>
+                                <span class="font-mono font-medium text-gray-900 dark:text-white">
+                                  {@item.barcode}
+                                </span>
+                              </div>
+                            </div>
+                          <% end %>
 
                           <%= if @item.inventory_code do %>
                             <div class="flex items-center">
@@ -406,6 +439,26 @@ defmodule VoileWeb.Frontend.Items.Show do
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
                                   {Calendar.strftime(@item.last_circulated, "%B %d, %Y")}
+                                </span>
+                              </div>
+                            </div>
+                          <% end %>
+
+                          <%= if @item.last_inventory_date do %>
+                            <div class="flex items-center">
+                              <div class="flex items-center">
+                                <.icon
+                                  name="hero-clipboard-document-check-solid"
+                                  class="w-6 h-6 mr-2 text-gray-400 dark:text-gray-500"
+                                />
+                              </div>
+
+                              <div class="flex flex-col">
+                                <span class="text-gray-500 dark:text-gray-400 mr-2">
+                                  {gettext("Last Inventory:")}
+                                </span>
+                                <span class="font-medium text-gray-900 dark:text-white">
+                                  {Calendar.strftime(@item.last_inventory_date, "%B %d, %Y")}
                                 </span>
                               </div>
                             </div>

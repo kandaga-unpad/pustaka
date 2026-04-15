@@ -75,6 +75,7 @@ npm-debug.log
 /scripts/csv_data/**/temp*.csv
 /scripts/csv_data/**/test*.csv
 *.csv
+!/priv/static/sample_collection_import.csv
 
 # Language Server
 .elixir_ls/

@@ -6,7 +6,7 @@ defmodule Voile.Schema.Search do
 
   import Ecto.Query, warn: false
   alias Voile.Repo
-  alias Voile.Schema.Catalog.{Collection, Item, CollectionField, ItemFieldValue}
+  alias Voile.Schema.Catalog.{Collection, Item}
   alias Voile.Schema.Master.Creator
 
   @doc """
@@ -33,9 +33,7 @@ defmodule Voile.Schema.Search do
       :resource_class,
       :resource_template,
       :mst_creator,
-      :node,
-      :collection_fields,
-      :items
+      :node
     ])
   end
 
@@ -135,51 +133,49 @@ defmodule Voile.Schema.Search do
   # Private functions for building queries
 
   defp build_collection_search_query(query_string, filters) do
-    search_term = "%#{String.trim(query_string)}%"
+    {like, title_like} = build_search_patterns(query_string)
 
+    # creator join is 1:1 (collection.creator_id FK) — no distinct needed
     base_query =
       from c in Collection,
-        as: :collection,
         left_join: creator in Creator,
         on: c.creator_id == creator.id,
         where:
-          ilike(c.title, ^search_term) or
-            ilike(c.description, ^search_term) or
-            ilike(creator.creator_name, ^search_term),
-        distinct: c.id
+          ilike(c.title, ^title_like) or
+            ilike(c.description, ^like) or
+            ilike(c.collection_code, ^like) or
+            ilike(creator.creator_name, ^like)
 
     apply_collection_filters(base_query, filters)
   end
 
   defp build_item_search_query(query_string, filters) do
-    search_term = "%#{String.trim(query_string)}%"
+    {like, title_like} = build_search_patterns(query_string)
 
     base_query =
       from i in Item,
-        as: :item,
         left_join: c in Collection,
         on: i.collection_id == c.id,
         left_join: creator in Creator,
         on: c.creator_id == creator.id,
         where:
-          ilike(c.title, ^search_term) or
-            ilike(c.description, ^search_term) or
-            ilike(creator.creator_name, ^search_term) or
-            ilike(i.item_code, ^search_term) or
-            ilike(i.inventory_code, ^search_term) or
-            ilike(i.location, ^search_term)
+          ilike(c.title, ^title_like) or
+            ilike(c.description, ^like) or
+            ilike(creator.creator_name, ^like) or
+            ilike(i.item_code, ^like) or
+            ilike(i.inventory_code, ^like) or
+            ilike(i.location, ^like)
 
     apply_item_filters(base_query, filters)
   end
 
   defp build_advanced_collection_query(search_params) do
+    # CollectionField join removed — cf was never used in any where clause
+    # and the 1:many join caused row duplication requiring expensive distinct
     base_query =
       from c in Collection,
         left_join: creator in Creator,
-        on: c.creator_id == creator.id,
-        left_join: cf in CollectionField,
-        on: c.id == cf.collection_id,
-        distinct: c.id
+        on: c.creator_id == creator.id
 
     query =
       Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
@@ -200,20 +196,15 @@ defmodule Voile.Schema.Search do
   end
 
   defp build_advanced_item_query(search_params) do
+    # ItemFieldValue join removed — ifv was never used in any where clause
+    # and the 1:many join caused row duplication requiring expensive distinct.
+    # Preloads are handled by paginate_results, not in the base query.
     base_query =
       from i in Item,
         left_join: c in Collection,
         on: i.collection_id == c.id,
         left_join: creator in Creator,
-        on: c.creator_id == creator.id,
-        left_join: ifv in ItemFieldValue,
-        on: i.id == ifv.item_id,
-        distinct: i.id,
-        preload: [
-          :collection,
-          :node,
-          :attachments
-        ]
+        on: c.creator_id == creator.id
 
     query =
       Enum.reduce(search_params, base_query, fn {field, value}, acc_query ->
@@ -233,6 +224,33 @@ defmodule Voile.Schema.Search do
       end)
 
     query
+  end
+
+  # Normalize a search string and return {like, title_like} patterns.
+  # - `like`       — plain %term% for exact-spacing columns (all have trigram indexes).
+  # - `title_like` — splits words with % so double-spaced stored titles still match.
+  # Also converts common Unicode punctuation (curly quotes, en/em dashes) to their
+  # ASCII equivalents, which is common in titles imported from MARC/OAI-PMH sources.
+  defp build_search_patterns(search) do
+    normalized =
+      search
+      |> String.trim()
+      |> String.replace(~r/\s+/, " ")
+      |> String.replace("\u2019", "'")
+      |> String.replace("\u2018", "'")
+      |> String.replace("\u201C", "\"")
+      |> String.replace("\u201D", "\"")
+      |> String.replace("\u2013", "-")
+      |> String.replace("\u2014", "-")
+
+    like = "%#{normalized}%"
+
+    title_like =
+      "%" <>
+        (normalized |> String.split(" ", trim: true) |> Enum.join("%")) <>
+        "%"
+
+    {like, title_like}
   end
 
   defp apply_collection_filters(query, filters) do
@@ -269,6 +287,7 @@ defmodule Voile.Schema.Search do
       query
       |> exclude(:preload)
       |> exclude(:distinct)
+      |> exclude(:order_by)
       |> select([_], count())
       |> Repo.one()
 

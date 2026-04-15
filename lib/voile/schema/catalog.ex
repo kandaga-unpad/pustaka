@@ -130,15 +130,16 @@ defmodule Voile.Schema.Catalog do
       |> limit(^per_page)
       |> offset(^offset)
 
-    # Only preload necessary associations for list view (not items)
+    # Only preload necessary associations for the list table view.
+    # :items is intentionally excluded — the list table never renders item counts.
+    # The search modal uses search_collections_all_nodes/1 which preloads items separately.
     collections =
       Repo.all(query)
       |> Repo.preload([
         :resource_class,
         :mst_creator,
         :node,
-        :created_by,
-        :items
+        :created_by
       ])
 
     # Count query without preloads for better performance
@@ -160,7 +161,7 @@ defmodule Voile.Schema.Catalog do
   defp maybe_search_collections(query, nil), do: query
 
   defp maybe_search_collections(query, search) when is_binary(search) and search != "" do
-    like = "%#{search}%"
+    {like, title_like} = build_search_patterns(search)
 
     from c in query,
       as: :collection,
@@ -168,12 +169,9 @@ defmodule Voile.Schema.Catalog do
       left_join: node in assoc(c, :node),
       left_join: rc in assoc(c, :resource_class),
       where:
-        ilike(c.title, ^like) or
+        ilike(c.title, ^title_like) or
           ilike(c.description, ^like) or
-          ilike(c.collection_type, ^like) or
           ilike(c.collection_code, ^like) or
-          ilike(c.status, ^like) or
-          ilike(c.access_level, ^like) or
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
           ilike(rc.label, ^like)
@@ -185,25 +183,58 @@ defmodule Voile.Schema.Catalog do
 
   defp maybe_search_collections_for_count(query, search)
        when is_binary(search) and search != "" do
-    like = "%#{search}%"
+    {like, title_like} = build_search_patterns(search)
 
     from c in query,
       left_join: creator in assoc(c, :mst_creator),
       left_join: node in assoc(c, :node),
       left_join: rc in assoc(c, :resource_class),
       where:
-        ilike(c.title, ^like) or
+        ilike(c.title, ^title_like) or
           ilike(c.description, ^like) or
-          ilike(c.collection_type, ^like) or
           ilike(c.collection_code, ^like) or
-          ilike(c.status, ^like) or
-          ilike(c.access_level, ^like) or
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
           ilike(rc.label, ^like)
   end
 
   defp maybe_search_collections_for_count(query, _), do: query
+
+  # Normalize a search string: collapse whitespace and convert common Unicode
+  # punctuation to their ASCII equivalents (curly quotes, en/em dashes, etc.).
+  # This handles titles imported from MARC/OAI-PMH sources which often contain
+  # typographic characters that differ from what users type at a keyboard.
+  defp normalize_search(search) do
+    search
+    |> String.trim()
+    |> String.replace(~r/\s+/, " ")
+    # Curly / smart apostrophes → ASCII apostrophe
+    |> String.replace("\u2019", "'")
+    |> String.replace("\u2018", "'")
+    # Curly double quotes → ASCII quote
+    |> String.replace("\u201C", "\"")
+    |> String.replace("\u201D", "\"")
+    # En dash / em dash → hyphen-minus
+    |> String.replace("\u2013", "-")
+    |> String.replace("\u2014", "-")
+  end
+
+  # Returns {like, title_like} where:
+  # - `like` is a plain %term% pattern for exact-spacing columns.
+  # - `title_like` splits words with % wildcards so any run of whitespace
+  #   between words in the stored title still matches. This keeps the query
+  #   on the Elixir side (no DB-side functions) so indexes remain usable.
+  defp build_search_patterns(search) do
+    normalized = normalize_search(search)
+    like = "%#{normalized}%"
+
+    title_like =
+      "%" <>
+        (normalized |> String.split(" ", trim: true) |> Enum.join("%")) <>
+        "%"
+
+    {like, title_like}
+  end
 
   defp apply_collection_filters(query, filters) do
     query

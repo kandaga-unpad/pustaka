@@ -223,7 +223,6 @@ if config_env() == :prod do
   # Admin email is read from database setting 'app_contact_email'
   config :voile,
     oai_pmh_repository_id: System.get_env("OAI_REPOSITORY_ID") || host
-
 end
 
 # Voile Monitoring — runs in all environments (dev + prod)
@@ -232,8 +231,7 @@ if System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT") do
     otlp_protocol: :http_protobuf,
     otlp_endpoint: System.get_env("VOILE_OTEL_EXPORTER_ENDPOINT"),
     otlp_headers: [
-      {"Authorization",
-       "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH", ""))},
+      {"Authorization", "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH", ""))},
       {"organization", System.get_env("VOILE_OPENOBSERVE_ORG", "default")}
     ]
 
