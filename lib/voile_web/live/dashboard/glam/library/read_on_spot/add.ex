@@ -39,6 +39,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       |> assign(:selected_node_id, default_node_id)
       |> assign(:locations, locations)
       |> assign(:selected_location_id, nil)
+      |> assign(:selected_location_name, nil)
       |> assign(:scanner_mode, "manual")
       |> assign(:search_term, "")
       |> assign(:found_items, [])
@@ -152,7 +153,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       </div>
       <%!-- Scanner Interface --%>
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-5">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between mb-2">
           <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
             Barcode Scanner
           </h2>
@@ -168,6 +169,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
             <% end %>
           </button>
         </div>
+        <%= if @selected_location_name do %>
+          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 mb-3">
+            <.icon name="hero-map-pin" class="w-3.5 h-3.5 shrink-0" /> Recording at:
+            <strong>{@selected_location_name}</strong>
+          </p>
+        <% else %>
+          <p class="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1 mb-3">
+            <.icon name="hero-information-circle" class="w-3.5 h-3.5 shrink-0" />
+            No room selected — select a room above before scanning.
+          </p>
+        <% end %>
         <%!-- Camera Mode --%>
         <%= if @scanner_mode == "camera" do %>
           <div
@@ -295,10 +307,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       <% end %>
       <%!-- Scan Summary --%>
       <div class="flex items-center justify-between mb-3">
-        <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium">
-          <.icon name="hero-check-circle" class="w-4 h-4 mr-1.5" />
-          {@scan_count} recorded this session
-        </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium">
+            <.icon name="hero-check-circle" class="w-4 h-4 mr-1.5" />
+            {@scan_count} recorded this session
+          </span>
+          <%= if @selected_location_name do %>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm font-medium">
+              <.icon name="hero-map-pin" class="w-4 h-4 mr-1.5" />
+              {@selected_location_name}
+            </span>
+          <% end %>
+        </div>
         <.link
           navigate={~p"/manage/glam/library/read_on_spot"}
           class="text-sm text-blue-600 hover:underline"
@@ -359,6 +379,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       |> assign(:selected_node_id, node_id)
       |> assign(:locations, locations)
       |> assign(:selected_location_id, nil)
+      |> assign(:selected_location_name, nil)
       |> assign(:found_items, [])
       |> assign(:scan_error, nil)
 
@@ -368,7 +389,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
   @impl true
   def handle_event("select_location", %{"location_id" => location_id}, socket) do
     location_id = if location_id == "", do: nil, else: String.to_integer(location_id)
-    {:noreply, assign(socket, :selected_location_id, location_id)}
+
+    location_name =
+      if location_id do
+        case Enum.find(socket.assigns.locations, fn l -> l.id == location_id end) do
+          nil -> nil
+          loc -> loc.location_name
+        end
+      else
+        nil
+      end
+
+    {:noreply,
+     socket
+     |> assign(:selected_location_id, location_id)
+     |> assign(:selected_location_name, location_name)}
   end
 
   @impl true
