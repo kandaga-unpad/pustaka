@@ -38,7 +38,9 @@ defmodule Voile.Schema.Library.Feats do
     term = String.trim(term)
 
     from(i in Item,
-      where: i.barcode == ^term or i.item_code == ^term or i.inventory_code == ^term,
+      where:
+        i.barcode == ^term or i.item_code == ^term or i.inventory_code == ^term or
+          i.legacy_item_code == ^term,
       preload: [:collection, :item_location, :node]
     )
     |> Repo.all()
