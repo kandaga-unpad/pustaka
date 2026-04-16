@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.17] - 2026-04-16
+
+### Fixed
+
+- Fixed location_id is not recapped to db
+
 ## [0.1.16] - 2026-04-16
 
 ### Fixed
