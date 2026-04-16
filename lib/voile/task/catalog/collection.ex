@@ -36,6 +36,7 @@ defmodule Voile.Task.Catalog.Collection do
         :resource_class,
         :mst_creator,
         :node,
+        :collection_fields,
         items: [:node]
       ])
 

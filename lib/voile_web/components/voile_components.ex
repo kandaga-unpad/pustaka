@@ -490,11 +490,11 @@ defmodule VoileWeb.VoileComponents do
         <% end %>
         <!-- Metadata -->
         <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
-          <%= if @collection.collection_code do %>
+          <%= if call_number_or_classification(@collection) do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-hashtag" class="w-3 h-3" />
               <span class="font-mono bg-gray-100 dark:bg-gray-600 px-1.5 py-0.5 rounded text-gray-700 dark:text-gray-200">
-                {@collection.collection_code}
+                {call_number_or_classification(@collection)}
               </span>
             </div>
           <% end %>
@@ -1247,6 +1247,27 @@ defmodule VoileWeb.VoileComponents do
 
   def condition_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+
+  defp call_number_or_classification(collection) do
+    get_collection_field_value(collection, ["callNumber", "CallNumber", "noPanggil", "no_panggil"]) ||
+      get_collection_field_value(collection, ["classification", "Classification"])
+  end
+
+  defp get_collection_field_value(collection, names) do
+    collection.collection_fields
+    |> case do
+      %Ecto.Association.NotLoaded{} -> []
+      nil -> []
+      fields -> fields
+    end
+    |> Enum.find_value(nil, fn field ->
+      if field.name in names && field.value && field.value != "" do
+        field.value
+      else
+        nil
+      end
+    end)
+  end
 
   def build_page_url(
         page,

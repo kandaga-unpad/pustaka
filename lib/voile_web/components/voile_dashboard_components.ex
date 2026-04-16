@@ -790,7 +790,6 @@ defmodule VoileWeb.VoileDashboardComponents do
         path: "/manage/settings/reservation_notifications",
         icon: "hero-bell"
       },
-      %{label: "Visitor Statistics", path: "/manage/visitor/statistics", icon: "hero-chart-bar"},
       %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"},
       %{label: "Plugins", path: "/manage/plugins", icon: "hero-puzzle-piece"}
     ],
@@ -1482,46 +1481,60 @@ defmodule VoileWeb.VoileDashboardComponents do
 
   def glam_navigation_cards(assigns) do
     ~H"""
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <.glam_type_card
+          type="gallery"
+          title="Gallery"
+          description="Visual arts & exhibitions"
+          icon="hero-photo"
+          color="pink"
+          count={@glam_stats.gallery.count}
+          percentage={@glam_stats.gallery.percentage}
+          link="/manage/glam/gallery"
+        />
+        <.glam_type_card
+          type="library"
+          title="Library"
+          description="Books & publications"
+          icon="hero-book-open"
+          color="blue"
+          count={@glam_stats.library.count}
+          percentage={@glam_stats.library.percentage}
+          link="/manage/glam/library"
+        />
+        <.glam_type_card
+          type="archive"
+          title="Archive"
+          description="Historical documents"
+          icon="hero-archive-box"
+          color="amber"
+          count={@glam_stats.archive.count}
+          percentage={@glam_stats.archive.percentage}
+          link="/manage/glam/archive"
+        />
+        <.glam_type_card
+          type="museum"
+          title="Museum"
+          description="Artifacts & objects"
+          icon="hero-building-library"
+          color="purple"
+          count={@glam_stats.museum.count}
+          percentage={@glam_stats.museum.percentage}
+          link="/manage/glam/museum"
+        />
+      </div>
+
       <.glam_type_card
-        type="gallery"
-        title="Gallery"
-        description="Visual arts & exhibitions"
-        icon="hero-photo"
-        color="pink"
-        count={@glam_stats.gallery.count}
-        percentage={@glam_stats.gallery.percentage}
-        link="/manage/glam/gallery"
-      />
-      <.glam_type_card
-        type="library"
-        title="Library"
-        description="Books & publications"
-        icon="hero-book-open"
-        color="blue"
-        count={@glam_stats.library.count}
-        percentage={@glam_stats.library.percentage}
-        link="/manage/glam/library"
-      />
-      <.glam_type_card
-        type="archive"
-        title="Archive"
-        description="Historical documents"
-        icon="hero-archive-box"
-        color="amber"
-        count={@glam_stats.archive.count}
-        percentage={@glam_stats.archive.percentage}
-        link="/manage/glam/archive"
-      />
-      <.glam_type_card
-        type="museum"
-        title="Museum"
-        description="Artifacts & objects"
-        icon="hero-building-library"
-        color="purple"
-        count={@glam_stats.museum.count}
-        percentage={@glam_stats.museum.percentage}
-        link="/manage/glam/museum"
+        type="visitor_statistics"
+        title="Visitor Statistics"
+        description="Visitor traffic, surveys & trends"
+        icon="hero-chart-bar"
+        color="emerald"
+        count={@glam_stats.total_nodes}
+        percentage={0}
+        subtitle="statistics"
+        link="/manage/visitor/statistics"
       />
     </div>
     """
@@ -1537,6 +1550,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   attr :color, :string, required: true
   attr :count, :integer, required: true
   attr :percentage, :integer, default: 0
+  attr :subtitle, :string, default: "collections"
   attr :link, :string, required: true
 
   def glam_type_card(assigns) do
@@ -1544,7 +1558,7 @@ defmodule VoileWeb.VoileDashboardComponents do
     <.link
       navigate={@link}
       class={[
-        "group relative overflow-hidden rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1",
+        "block w-full group relative overflow-hidden rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1",
         get_glam_card_gradient(@color)
       ]}
     >
@@ -1557,7 +1571,7 @@ defmodule VoileWeb.VoileDashboardComponents do
           <div class="text-right">
             <div class="text-3xl font-bold text-white">{@count}</div>
 
-            <div class="text-xs text-white/80">collections</div>
+            <div class="text-xs text-white/80">{@subtitle}</div>
           </div>
         </div>
 

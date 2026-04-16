@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.18] - 2026-04-16
+
+### Added
+
+- **Bulk member import** — Added a new CSV import page for members at `/manage/members/management/import` with a guided upload flow and sample CSV download.
+- **Member CSV export** — Added an export button on the member management page that exports filtered member results to CSV.
+- **Sample member import template** — Added a downloadable sample CSV file for member import so users can see the required header structure and example data.
+- **Import validation alignment** — Added tests and import mapping coverage to ensure imported member rows are converted into the same attribute shape used by `Accounts.register_user/1`.
+
 ## [0.1.17] - 2026-04-16
-
-### Fixed
-
-- Fixed location_id is not recapped to db
-
-## [0.1.16] - 2026-04-16
 
 ### Fixed
 

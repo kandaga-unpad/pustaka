@@ -12,6 +12,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   import VoileWeb.Dashboard.Members.Management.Component
 
   @per_page 20
+  @member_export_headers ~w(
+    fullname email username identifier member_type node registration_date expiry_date
+    user_image groups address phone_number birth_date birth_place gender organization
+    department position manually_suspended suspension_reason
+  )
 
   @impl true
   def mount(params, _session, socket) do
@@ -193,6 +198,25 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     end
   end
 
+  @impl true
+  def handle_event("export_members", _params, socket) do
+    csv_content = build_members_export_csv(socket)
+
+    filename =
+      if socket.assigns.selected_node_id && socket.assigns.selected_node_id != "" do
+        "members_export_node_#{socket.assigns.selected_node_id}.csv"
+      else
+        "members_export_all.csv"
+      end
+
+    {:noreply,
+     push_event(socket, "download", %{
+       filename: filename,
+       content: csv_content,
+       mime_type: "text/csv"
+     })}
+  end
+
   # Image upload event handlers
   def handle_event("switch_image_tab", %{"tab" => tab}, socket) do
     {:noreply, assign(socket, :tab, tab)}
@@ -311,11 +335,30 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
             </div>
 
             <%= if can?(@current_scope.user, "users.create") do %>
-              <.link patch={~p"/manage/members/management/new"}>
-                <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-                  <.icon name="hero-plus" class="w-6 h-6 mr-3" /> {gettext("Add New Member")}
+              <div class="flex flex-wrap items-center gap-3">
+                <.link
+                  patch={~p"/manage/members/management/import"}
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <.icon name="hero-arrow-up-tray" class="w-5 h-5" />
+                  {gettext("Import CSV")}
+                </.link>
+
+                <.button
+                  phx-click="export_members"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  type="button"
+                >
+                  <.icon name="hero-arrow-down-tray" class="w-5 h-5" />
+                  {gettext("Export CSV")}
                 </.button>
-              </.link>
+
+                <.link patch={~p"/manage/members/management/new"}>
+                  <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                    <.icon name="hero-plus" class="w-6 h-6 mr-3" /> {gettext("Add New Member")}
+                  </.button>
+                </.link>
+              </div>
             <% end %>
           </div>
         </div>
@@ -657,6 +700,49 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     |> assign(:nodes, nodes)
     |> assign(:available_roles, available_roles)
   end
+
+  defp build_members_export_csv(socket) do
+    rows = Repo.all(build_members_query(socket))
+
+    header_row = @member_export_headers
+    data_rows = Enum.map(rows, &member_to_csv_row/1)
+
+    ([header_row] ++ data_rows)
+    |> NimbleCSV.RFC4180.dump_to_iodata()
+    |> IO.iodata_to_binary()
+  end
+
+  defp member_to_csv_row(member) do
+    [
+      member.fullname || "",
+      member.email || "",
+      member.username || "",
+      display_identifier(member),
+      (member.user_type && member.user_type.name) || "",
+      (member.node && member.node.name) || "",
+      date_to_string(member.registration_date),
+      date_to_string(member.expiry_date),
+      member.user_image || "",
+      Enum.join(member.groups || [], ","),
+      member.address || "",
+      member.phone_number || "",
+      date_to_string(member.birth_date),
+      member.birth_place || "",
+      member.gender || "",
+      member.organization || "",
+      member.department || "",
+      member.position || "",
+      bool_to_string(member.manually_suspended),
+      member.suspension_reason || ""
+    ]
+  end
+
+  defp date_to_string(%Date{} = date), do: Date.to_iso8601(date)
+  defp date_to_string(_), do: ""
+
+  defp bool_to_string(true), do: "true"
+  defp bool_to_string(false), do: "false"
+  defp bool_to_string(_), do: ""
 
   defp member_status(member) do
     cond do

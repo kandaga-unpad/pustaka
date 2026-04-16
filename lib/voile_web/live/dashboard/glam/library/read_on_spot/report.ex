@@ -255,7 +255,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 <td class="px-4 py-3 text-right">
                   <.link
                     navigate={detail_path(row, @report_type)}
-                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 opacity-0 group-hover:opacity-100 transition"
+                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition"
                   >
                     Detail <.icon name="hero-arrow-right" class="w-3 h-3" />
                   </.link>

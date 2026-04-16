@@ -311,7 +311,7 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
       </div>
 
       <div class="mb-4">
-        <.back navigate="/manage/settings">{gettext("Back to Settings")}</.back>
+        <.back navigate="/manage/glam">{gettext("Back to GLAM")}</.back>
       </div>
       
     <!-- Quick Links -->
