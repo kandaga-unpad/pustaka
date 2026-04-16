@@ -327,6 +327,7 @@ defmodule VoileWeb.Router do
           scope "/management" do
             live "/", Dashboard.Members.Management.Index, :index
             live "/new", Dashboard.Members.Management.Index, :new
+            live "/import", Dashboard.Members.Management.ImportExport, :import
 
             scope "/roles" do
               live "/", Users.Role.ManageLive, :index

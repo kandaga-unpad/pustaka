@@ -37,6 +37,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       |> assign(:current_user, current_user)
       |> assign(:nodes, nodes)
       |> assign(:selected_node_id, default_node_id)
+      |> assign(:selected_node_name, find_node_name(nodes, default_node_id))
       |> assign(:locations, locations)
       |> assign(:selected_location_id, nil)
       |> assign(:selected_location_name, nil)
@@ -58,7 +59,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" phx-track-static>
     </script>
 
-    <div class="container mx-auto px-2 sm:px-4 py-4 max-w-4xl">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 py-4 max-w-4xl">
       <%!-- Header --%>
       <div class="mb-6">
         <.breadcrumb items={[
@@ -80,18 +81,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
           Scanning Context
         </h2>
-        <div class={[
-          "grid gap-4",
-          if(@is_super_admin, do: "grid-cols-1 sm:grid-cols-2", else: "grid-cols-1 sm:grid-cols-2")
-        ]}>
+        <form
+          id="context-form"
+          phx-change="select_node"
+          class={[
+            "grid gap-4",
+            if(@is_super_admin, do: "grid-cols-1 sm:grid-cols-2", else: "grid-cols-1 sm:grid-cols-2")
+          ]}
+        >
           <%= if @is_super_admin do %>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
                 Node / Branch
               </label>
               <select
                 id="node-select"
-                phx-change="select_node"
                 name="node_id"
                 class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               >
@@ -108,12 +112,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
             </div>
           <% end %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
               Room / Location <span class="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <select
               id="location-select"
-              phx-change="select_location"
               name="location_id"
               class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               disabled={@locations == []}
@@ -135,20 +138,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
               <p class="text-xs text-yellow-500 mt-1">No active locations for this node.</p>
             <% end %>
           </div>
-          <div class={if(@is_super_admin, do: "sm:col-span-2 sm:max-w-xs", else: "")}>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Time Read
-              <span class="text-gray-400 font-normal text-xs">(optional — defaults to now)</span>
-            </label>
-            <input
-              id="read-at-input"
-              type="datetime-local"
-              name="read_at"
-              value={@read_at_input}
-              phx-change="update_read_at"
-              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+        </form>
+        <div class={if(@is_super_admin, do: "sm:col-span-2 sm:max-w-xs", else: "")}>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
+            Time Read
+            <span class="text-gray-400 font-normal text-xs">(optional — defaults to now)</span>
+          </label>
+          <input
+            id="read-at-input"
+            type="datetime-local"
+            name="read_at"
+            value={@read_at_input}
+            phx-change="update_read_at"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+          />
         </div>
       </div>
       <%!-- Scanner Interface --%>
@@ -312,6 +315,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
             <.icon name="hero-check-circle" class="w-4 h-4 mr-1.5" />
             {@scan_count} recorded this session
           </span>
+          <%= if @selected_node_name do %>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200 text-sm font-medium">
+              <.icon name="hero-building-office" class="w-4 h-4 mr-1.5" />
+              {@selected_node_name}
+            </span>
+          <% end %>
           <%= if @selected_location_name do %>
             <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm font-medium">
               <.icon name="hero-map-pin" class="w-4 h-4 mr-1.5" />
@@ -364,8 +373,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
   end
 
   @impl true
-  def handle_event("select_node", %{"node_id" => node_id}, socket) do
+  def handle_event("select_node", %{"node_id" => node_id} = params, socket) do
     node_id = if node_id == "", do: nil, else: String.to_integer(node_id)
+
+    location_id =
+      if params["location_id"] in [nil, ""],
+        do: nil,
+        else: String.to_integer(params["location_id"])
 
     locations =
       if node_id do
@@ -374,12 +388,36 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         []
       end
 
+    selected_node_name =
+      if node_id do
+        case Enum.find(socket.assigns.nodes, fn n -> n.id == node_id end) do
+          nil -> nil
+          node -> node.name
+        end
+      else
+        nil
+      end
+
+    {selected_location_id, selected_location_name} =
+      cond do
+        location_id != nil && Enum.any?(locations, fn l -> l.id == location_id end) ->
+          location = Enum.find(locations, fn l -> l.id == location_id end)
+          {location.id, location.location_name}
+
+        true ->
+          case locations do
+            [single_location] -> {single_location.id, single_location.location_name}
+            _ -> {nil, nil}
+          end
+      end
+
     socket =
       socket
       |> assign(:selected_node_id, node_id)
+      |> assign(:selected_node_name, selected_node_name)
       |> assign(:locations, locations)
-      |> assign(:selected_location_id, nil)
-      |> assign(:selected_location_name, nil)
+      |> assign(:selected_location_id, selected_location_id)
+      |> assign(:selected_location_name, selected_location_name)
       |> assign(:found_items, [])
       |> assign(:scan_error, nil)
 
@@ -500,65 +538,87 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
     location_id = socket.assigns.selected_location_id
     recorded_by_id = socket.assigns.current_user.id
 
-    read_at =
-      case socket.assigns.read_at_input do
-        "" ->
-          nil
+    if node_id == nil do
+      assign(socket,
+        found_items: [],
+        scan_error: "Please select a node before recording the item."
+      )
+    else
+      read_at =
+        case socket.assigns.read_at_input do
+          "" ->
+            nil
 
-        value ->
-          case NaiveDateTime.from_iso8601(value <> ":00") do
-            {:ok, ndt} -> DateTime.from_naive!(ndt, "Etc/UTC")
-            _ -> nil
-          end
-      end
+          value ->
+            case NaiveDateTime.from_iso8601(value <> ":00") do
+              {:ok, ndt} -> DateTime.from_naive!(ndt, "Etc/UTC")
+              _ -> nil
+            end
+        end
 
-    attrs =
-      %{
-        item_id: item_id,
-        node_id: node_id,
-        recorded_by_id: recorded_by_id
-      }
-      |> maybe_put(:location_id, location_id)
-      |> maybe_put(:read_at, read_at)
-
-    case Feats.record_read_on_spot(attrs) do
-      {:ok, _record} ->
-        item = Enum.find(socket.assigns.found_items, fn i -> to_string(i.id) == item_id end)
-        location = Enum.find(socket.assigns.locations, fn l -> l.id == location_id end)
-
-        recorded_at_label =
-          cond do
-            read_at != nil ->
-              Calendar.strftime(FormatIndonesiaTime.shift_to_jakarta(read_at), "%d/%m %H:%M")
-
-            true ->
-              Calendar.strftime(
-                FormatIndonesiaTime.shift_to_jakarta(DateTime.utc_now()),
-                "%H:%M:%S"
-              )
-          end
-
-        stream_item = %{
-          id: "rec-#{System.unique_integer([:positive])}",
-          title: if(item && item.collection, do: item.collection.title, else: "Unknown"),
-          item_code: if(item, do: item.item_code, else: "—"),
-          location_name: if(location, do: location.location_name, else: nil),
-          recorded_at: recorded_at_label
+      attrs =
+        %{
+          item_id: item_id,
+          node_id: node_id,
+          recorded_by_id: recorded_by_id
         }
+        |> maybe_put(:location_id, location_id)
+        |> maybe_put(:read_at, read_at)
 
-        socket
-        |> stream_insert(:scanned_records, stream_item, at: 0)
-        |> assign(:found_items, [])
-        |> assign(:scan_error, nil)
-        |> assign(:scan_count, socket.assigns.scan_count + 1)
-        |> put_flash(:info, "Item recorded successfully.")
+      case Feats.record_read_on_spot(attrs) do
+        {:ok, _record} ->
+          item = Enum.find(socket.assigns.found_items, fn i -> to_string(i.id) == item_id end)
+          location = Enum.find(socket.assigns.locations, fn l -> l.id == location_id end)
 
-      {:error, changeset} ->
-        errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
+          recorded_at_label =
+            cond do
+              read_at != nil ->
+                Calendar.strftime(FormatIndonesiaTime.shift_to_jakarta(read_at), "%d/%m %H:%M")
 
-        socket
-        |> assign(:found_items, [])
-        |> assign(:scan_error, "Failed to record item: #{inspect(errors)}")
+              true ->
+                Calendar.strftime(
+                  FormatIndonesiaTime.shift_to_jakarta(DateTime.utc_now()),
+                  "%H:%M:%S"
+                )
+            end
+
+          stream_item = %{
+            id: "rec-#{System.unique_integer([:positive])}",
+            title: if(item && item.collection, do: item.collection.title, else: "Unknown"),
+            item_code: if(item, do: item.item_code, else: "—"),
+            location_name: if(location, do: location.location_name, else: nil),
+            recorded_at: recorded_at_label
+          }
+
+          socket
+          |> stream_insert(:scanned_records, stream_item, at: 0)
+          |> assign(:found_items, [])
+          |> assign(:scan_error, nil)
+          |> assign(:selected_node_id, node_id)
+          |> assign(:selected_location_id, location_id)
+          |> assign(
+            :selected_location_name,
+            if(location, do: location.location_name, else: socket.assigns.selected_location_name)
+          )
+          |> assign(:scan_count, socket.assigns.scan_count + 1)
+          |> put_flash(:info, "Item recorded successfully.")
+
+        {:error, changeset} ->
+          errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
+
+          socket
+          |> assign(:found_items, [])
+          |> assign(:scan_error, "Failed to record item: #{inspect(errors)}")
+      end
+    end
+  end
+
+  defp find_node_name(_nodes, nil), do: nil
+
+  defp find_node_name(nodes, node_id) do
+    case Enum.find(nodes, fn node -> node.id == node_id end) do
+      nil -> nil
+      node -> node.name
     end
   end
 
