@@ -1210,4 +1210,44 @@ defmodule Voile.Schema.System do
       }
     }
   end
+
+  @doc """
+  Returns visitor totals grouped by node for a given year.
+  """
+  def get_visitor_statistics_by_node_year(year, opts \\ []) do
+    from_date = Date.new!(year, 1, 1) |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+    to_date = Date.new!(year, 12, 31) |> DateTime.new!(~T[23:59:59], "Etc/UTC")
+    node_id = opts[:node_id]
+    location_id = opts[:location_id]
+
+    visitors_query =
+      from l in VisitorLog,
+        where: l.check_in_time >= ^from_date and l.check_in_time <= ^to_date
+
+    visitors_query =
+      if node_id,
+        do: where(visitors_query, [l], l.node_id == ^node_id),
+        else: visitors_query
+
+    visitors_query =
+      if location_id,
+        do: where(visitors_query, [l], l.location_id == ^location_id),
+        else: visitors_query
+
+    visitors_query
+    |> join(:inner, [l], n in Node, on: l.node_id == n.id)
+    |> group_by([l, n], [
+      l.node_id,
+      n.name,
+      fragment("date_part('month', ?)::int", l.check_in_time)
+    ])
+    |> select([l, n], %{
+      node_id: l.node_id,
+      node_name: n.name,
+      month: fragment("date_part('month', ?)::int", l.check_in_time),
+      count: count(l.id)
+    })
+    |> order_by([l, n], [n.name, fragment("date_part('month', ?)::int", l.check_in_time)])
+    |> Repo.all()
+  end
 end

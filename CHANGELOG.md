@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.15] - 2026-04-16
+
+### Added
+
+- **Read On Spot module** — New library feature for recording in-library reading activity without a formal checkout. Visitors scan item barcodes at a reading station and the event is logged under the library's Read On Spot records.
+  - **Scan page** (`/manage/glam/library/read_on_spot/scan`) — Camera-based barcode scanner (with Start/Stop/Switch controls) and manual barcode entry. Records the reading event against the scanned item, node, location, and optionally the logged-in user.
+  - **Index page** (`/manage/glam/library/read_on_spot`) — Overview showing today's count, this month's count, and a live stream of the most recent scanned records with Jakarta-localised timestamps.
+  - **Report page** (`/manage/glam/library/read_on_spot/report`) — Aggregated daily and monthly report table with node and location filters, paginated (25 rows per page), and clickable rows.
+  - **Report Detail page** (`/manage/glam/library/read_on_spot/report/detail`) — Drill-down list of all items scanned on a specific day or month. Shows title, author (from `mst_creator`), barcode, location, and scan time. Supports pagination (20 rows per page) and is accessible by clicking any report row.
+- **`Feats` context** (`Voile.Schema.Library.Feats`) — All Read On Spot business logic including `list_read_on_spots/1`, `count_today/1`, `count_this_month/1`, `daily_report/2`, `monthly_report/2`, and `report_detail/1`. All date comparisons use `COALESCE(read_at, inserted_at)` so records with a nil `read_at` are handled correctly. Location joins use `LEFT JOIN` to include records with no assigned location.
+- **`ReadOnSpot` schema** — New Ecto schema and migration (`add_read_on_spot_in_library_module`) with fields: `item_id`, `node_id`, `location_id`, `recorded_by_id`, `read_at`, `notes`.
+- **Visitor Statistics by Location page** (`/manage/visitor/statistics/node`) — New LiveView showing a monthly visitor totals matrix (rows = locations/nodes, columns = Jan–Dec) for a selected year. Accessible from the Visitor Statistics quick links panel.
+- **Visitor Statistics quick links** — Added "Statistics by Location" as a third quick link card on the Visitor Statistics page alongside the existing Visitor Logs and Survey Feedback links.
+
+### Fixed
+
+- **Visitor survey timestamps** — `survey.inserted_at` is now shifted to Asia/Jakarta before formatting in the survey logs table, consistent with other date displays in the app.
+- **Jakarta timezone on Read On Spot dates** — All datetime displays across the Read On Spot pages (`add.ex`, `index.ex`, `report_detail.ex`) are wrapped with `FormatIndonesiaTime.shift_to_jakarta/1` before `Calendar.strftime`.
+
+---
+
 ## [0.1.14] - 2026-04-15
 
 ### Added
@@ -275,9 +296,14 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
-[0.1.14]: https://github.com/curatorian/voile/compare/v0.1.13...v0.1.14
-[0.1.13]: https://github.com/curatorian/voile/compare/v0.1.12...v0.1.13
-[0.1.7]: https://github.com/curatorian/voile/compare/v0.1.6...v0.1.7
-[0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/curatorian/voile/releases/tag/v0.1.0
+# <<<<<<< HEAD
+
+[0.1.15]: https://github.com/curatorian/voile/compare/v0.1.14...v0.1.15
+
+> > > > > > > upstream/main
+> > > > > > > [0.1.14]: https://github.com/curatorian/voile/compare/v0.1.13...v0.1.14
+> > > > > > > [0.1.13]: https://github.com/curatorian/voile/compare/v0.1.12...v0.1.13
+> > > > > > > [0.1.7]: https://github.com/curatorian/voile/compare/v0.1.6...v0.1.7
+> > > > > > > [0.1.2]: https://github.com/curatorian/voile/compare/v0.1.1...v0.1.2
+> > > > > > > [0.1.1]: https://github.com/curatorian/voile/compare/v0.1.0...v0.1.1
+> > > > > > > [0.1.0]: https://github.com/curatorian/voile/releases/tag/v0.1.0

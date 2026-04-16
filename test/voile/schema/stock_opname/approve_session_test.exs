@@ -18,12 +18,12 @@ defmodule Voile.Schema.StockOpname.ApproveSessionTest do
     # sandbox owner without hitting ownership errors.
     allow_sandbox(self())
 
-    admin = admin_user_fixture()
     node = node_fixture()
     rc = resource_class_fixture()
+    admin = admin_user_fixture(%{"node_id" => node.id})
     collection = collection_fixture(node, rc, admin)
 
-    %{admin: admin, node: node, collection: collection}
+    %{admin: admin, node: node, rc: rc, collection: collection}
   end
 
   # ---------------------------------------------------------------------------
@@ -404,6 +404,134 @@ defmodule Voile.Schema.StockOpname.ApproveSessionTest do
 
       assert {:error, :invalid_status} =
                StockOpname.approve_session(draft_session, admin, "notes")
+    end
+  end
+
+  # ===========================================================================
+  # Step 4 — archive collections whose every item is missing
+  # ===========================================================================
+
+  describe "approve_session/3 — archive fully-missing collections" do
+    test "archives a collection when all its items are missing after approval", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      item1 = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      item2 = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      session = pending_review_session_fixture(node, admin, [item1, item2])
+      # Both items never scanned — will be marked missing in step 1
+      opname_item_fixture(session, item1)
+      opname_item_fixture(session, item2)
+
+      approve_and_reload(session, admin, [item1, item2])
+
+      assert reload_collection(collection).status == "archived"
+    end
+
+    test "does not archive a collection that still has a non-missing item", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      missing_item = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      ok_item = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      session = pending_review_session_fixture(node, admin, [missing_item, ok_item])
+
+      opname_item_fixture(session, missing_item)
+      # ok_item is checked with no changes — availability stays "available"
+      opname_item_checked_fixture(session, ok_item, %{}, admin)
+
+      approve_and_reload(session, admin, [missing_item, ok_item])
+
+      assert reload_collection(collection).status == "published"
+    end
+
+    test "does not re-archive a collection that is already archived", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      # Manually set the collection to archived before the session runs
+      Voile.Repo.update!(Ecto.Changeset.change(collection, status: "archived"))
+
+      item = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      session = pending_review_session_fixture(node, admin, [item])
+      opname_item_fixture(session, item)
+
+      approve_and_reload(session, admin, [item])
+
+      # Still archived — not raised from archived or toggled
+      assert reload_collection(collection).status == "archived"
+    end
+
+    test "archives only the collection with all items missing, leaves the other intact", %{
+      admin: admin,
+      node: node,
+      rc: rc
+    } do
+      collection_all_missing = collection_fixture(node, rc, admin)
+      collection_partial = collection_fixture(node, rc, admin)
+
+      # collection_all_missing: both items are never scanned → will be marked missing
+      m1 = catalog_item_fixture(collection_all_missing, node, admin)
+      m2 = catalog_item_fixture(collection_all_missing, node, admin)
+
+      # collection_partial: one missing, one confirmed ok
+      p_missing = catalog_item_fixture(collection_partial, node, admin)
+      p_ok = catalog_item_fixture(collection_partial, node, admin, %{availability: "available"})
+
+      all_items = [m1, m2, p_missing, p_ok]
+      session = pending_review_session_fixture(node, admin, all_items)
+
+      opname_item_fixture(session, m1)
+      opname_item_fixture(session, m2)
+      opname_item_fixture(session, p_missing)
+      opname_item_checked_fixture(session, p_ok, %{}, admin)
+
+      approve_and_reload(session, admin, all_items)
+
+      assert reload_collection(collection_all_missing).status == "archived"
+      assert reload_collection(collection_partial).status == "published"
+    end
+
+    test "a checked item with availability set to available keeps the collection published", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      item1 = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      item2 = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      session = pending_review_session_fixture(node, admin, [item1, item2])
+
+      # item1 never scanned → missing
+      opname_item_fixture(session, item1)
+      # item2 checked and explicitly set to available
+      opname_item_checked_fixture(session, item2, %{"availability" => "available"}, admin)
+
+      approve_and_reload(session, admin, [item1, item2])
+
+      assert reload_collection(collection).status == "published"
+    end
+
+    test "items outside session scope are not counted when deciding to archive", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      # item_in_session is missing after approval
+      item_in = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      # item_outside is available but NOT part of this session
+      _item_out = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+
+      # Only item_in is in the session
+      session = pending_review_session_fixture(node, admin, [item_in])
+      opname_item_fixture(session, item_in)
+
+      approve_and_reload(session, admin, [item_in])
+
+      # item_out is still available → collection must NOT be archived
+      assert reload_collection(collection).status == "published"
     end
   end
 end

@@ -101,6 +101,7 @@ defmodule Voile.StockOpnameFixtures do
     collection =
       Repo.insert!(%Collection{
         title: Map.get(attrs, :title, "Test Collection #{n}"),
+        collection_code: Map.get(attrs, :collection_code, "COL-#{n}"),
         description: Map.get(attrs, :description, "A test collection"),
         status: Map.get(attrs, :status, "published"),
         access_level: Map.get(attrs, :access_level, "public"),
@@ -317,6 +318,18 @@ defmodule Voile.StockOpnameFixtures do
     )
     |> Repo.all()
     |> Map.new(&{&1.id, &1})
+  end
+
+  @doc """
+  Reload a `Collection` status from the database.
+  Returns a map with `:id` and `:status` keys.
+  """
+  def reload_collection(%Collection{id: id}) do
+    from(c in Collection,
+      where: c.id == ^id,
+      select: %{id: c.id, status: c.status}
+    )
+    |> Repo.one!()
   end
 
   # ---------------------------------------------------------------------------

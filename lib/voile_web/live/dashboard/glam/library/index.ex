@@ -243,26 +243,29 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
             </div>
           </.link>
-          <div class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow">
-            <div class="w-full flex flex-col items-center gap-4">
-              <button phx-click="show_quick_checkout" class="w-full btn btn-success p-5 rounded-lg">
-                <span class="flex items-center gap-2">
-                  <.icon
-                    name="hero-arrow-right-circle"
-                    class="w-6 h-6"
-                  /> <span>{gettext("Quick Checkout")}</span>
-                </span>
-              </button>
-              <button phx-click="show_quick_return" class="w-full btn btn-warning p-5 rounded-lg">
-                <span class="flex items-center gap-2">
-                  <.icon
-                    name="hero-arrow-left-circle"
-                    class="w-6 h-6"
-                  /> <span>{gettext("Quick Return")}</span>
-                </span>
-              </button>
+          <.link
+            navigate="/manage/glam/library/read_on_spot"
+            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
+          >
+            <div class="flex items-center justify-center gap-4 w-full h-full">
+              <div class="p-3 rounded-lg bg-teal-100 dark:bg-teal-900/30">
+                <.icon
+                  name="hero-eye"
+                  class="w-6 h-6 text-teal-600 dark:text-teal-400"
+                />
+              </div>
+
+              <div>
+                <h5 class="font-semibold text-gray-900 dark:text-white">
+                  {gettext("Read On Spot")}
+                </h5>
+
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {gettext("Track items read or used in-library")}
+                </p>
+              </div>
             </div>
-          </div>
+          </.link>
 
           <.link
             navigate="/manage/glam/library/circulation/loan_reminders"
@@ -310,6 +313,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
               </div>
             </div>
           </.link>
+        </div>
+        <%!-- Quick Actions (full width) --%>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <button phx-click="show_quick_checkout" class="w-full btn btn-success p-5 rounded-lg">
+            <span class="flex items-center justify-center gap-2">
+              <.icon name="hero-arrow-right-circle" class="w-6 h-6" />
+              <span>{gettext("Quick Checkout")}</span>
+            </span>
+          </button>
+          <button phx-click="show_quick_return" class="w-full btn btn-warning p-5 rounded-lg">
+            <span class="flex items-center justify-center gap-2">
+              <.icon name="hero-arrow-left-circle" class="w-6 h-6" />
+              <span>{gettext("Quick Return")}</span>
+            </span>
+          </button>
         </div>
       </div>
     </div>
