@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.14"
+  @version "0.1.15"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -25,7 +25,7 @@ defmodule Voile.MixProject do
   end
 
   defp description do
-    "Voile — open-source GLAM (Gallery, Library, Archive, Museum) management system built with Phoenix."
+    "Voile — a GLAM (Gallery, Library, Archive, Museum) management system built on Phoenix."
   end
 
   defp package do
