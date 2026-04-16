@@ -359,6 +359,26 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
               </p>
             </div>
           </.link>
+
+          <.link
+            navigate="/manage/visitor/statistics/node"
+            class="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+          >
+            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg mr-4">
+              <.icon
+                name="hero-building-library"
+                class="w-6 h-6 text-green-600 dark:text-green-400"
+              />
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {gettext("Statistics by Location")}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {gettext("Monthly visitor totals by location")}
+              </p>
+            </div>
+          </.link>
         </div>
       </div>
       

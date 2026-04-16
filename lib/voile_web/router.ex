@@ -177,6 +177,7 @@ defmodule VoileWeb.Router do
         # Visitor statistics (staff/admin)
         scope "/visitor" do
           live "/statistics", Dashboard.Visitor.Statistics, :index
+          live "/statistics/node", Dashboard.Visitor.StatisticsNode, :index
           live "/logs", Dashboard.Visitor.Logs, :index
           live "/surveys", Dashboard.Visitor.Surveys, :index
         end
@@ -301,6 +302,13 @@ defmodule VoileWeb.Router do
             scope "/requisitions" do
               live "/", Dashboard.Glam.Library.Requisition.Index, :index
               live "/:id", Dashboard.Glam.Library.Requisition.Show, :show
+            end
+
+            scope "/read_on_spot" do
+              live "/", Dashboard.Glam.Library.ReadOnSpotLive.Index, :index
+              live "/scan", Dashboard.Glam.Library.ReadOnSpotLive.Add, :add
+              live "/report", Dashboard.Glam.Library.ReadOnSpotLive.Report, :report
+              live "/report/detail", Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail, :detail
             end
           end
 

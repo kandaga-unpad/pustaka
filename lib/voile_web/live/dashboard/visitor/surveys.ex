@@ -4,6 +4,7 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
   alias Voile.Schema.System
   alias Voile.Schema.Master
   alias VoileWeb.Auth.Authorization
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @per_page 50
 
@@ -537,7 +538,10 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={survey <- @surveys} class="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {Calendar.strftime(survey.inserted_at, "%Y-%m-%d %H:%M")}
+                    {Calendar.strftime(
+                      FormatIndonesiaTime.shift_to_jakarta(survey.inserted_at),
+                      "%Y-%m-%d %H:%M WIB"
+                    )}
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm">
                     <span class={[
