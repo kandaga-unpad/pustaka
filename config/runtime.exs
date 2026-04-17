@@ -37,7 +37,11 @@ if config_env() == :prod do
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6,
     # Set timezone to Indonesia (GMT+7) for production
-    parameters: [timezone: "Asia/Jakarta"]
+    parameters: [timezone: "Asia/Jakarta"],
+    # Increase timeouts for batch operations (stock opname approval etc.)
+    queue_target: 5_000,
+    queue_interval: 5_000,
+    timeout: 60_000
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

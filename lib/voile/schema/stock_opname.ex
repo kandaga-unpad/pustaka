@@ -1417,45 +1417,29 @@ defmodule Voile.Schema.StockOpname do
   Flags unscanned items as missing within the session scope.
   Only Super Admin can complete sessions.
   """
+  @complete_flag_batch_size 5_000
+
   @dialyzer {:nowarn_function, complete_session: 2}
   def complete_session(
         %Session{status: "in_progress"} = session,
         admin_user
       ) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.run(:flag_missing, fn repo, _changes ->
-      # Flag unscanned items as missing
-      {count, _} =
-        from(oi in Item,
-          where: oi.session_id == ^session.id and oi.check_status == "pending"
-        )
-        |> repo.update_all(
-          set: [
-            check_status: "missing",
-            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
-          ]
-        )
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      {:ok, count}
-    end)
-    |> Ecto.Multi.run(:update_session, fn repo, %{flag_missing: missing_count} ->
-      # Reload session to get current counters
-      current_session = repo.get!(Session, session.id)
+    # Batch-flag pending items as missing using cursor-based pagination
+    missing_count = batch_flag_pending_as_missing(session.id, now)
 
-      current_session
-      |> Ecto.Changeset.change(%{
-        status: "pending_review",
-        completed_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        updated_by_id: admin_user.id,
-        missing_items: current_session.missing_items + missing_count
-      })
-      |> repo.update()
-    end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{update_session: session}} -> {:ok, session}
-      {:error, _step, error, _changes} -> {:error, error}
-    end
+    # Update session status after all batches complete
+    current_session = Repo.get!(Session, session.id)
+
+    current_session
+    |> Ecto.Changeset.change(%{
+      status: "pending_review",
+      completed_at: now,
+      updated_by_id: admin_user.id,
+      missing_items: current_session.missing_items + missing_count
+    })
+    |> Repo.update()
   end
 
   def complete_session(%Session{}, _admin_user) do
@@ -1658,106 +1642,51 @@ defmodule Voile.Schema.StockOpname do
 
   # ---------------------------------------------------------------------------
   # Private: the actual bulk-update work, called from the background task.
+  #
+  # All steps are processed in small batches (each its own short transaction)
+  # to avoid holding a single DB connection for minutes and hitting Postgrex
+  # checkout timeouts on large sessions (100k+ items).
+  #
+  # Each batch is idempotent — safe to re-apply on retry after a partial
+  # failure.  Progress is broadcast via PubSub so the LiveView can show
+  # real-time feedback.
   # ---------------------------------------------------------------------------
+
+  @mark_missing_batch_size 5_000
+  @apply_changes_batch_size 1_000
 
   defp do_apply_session_changes(%Session{} = session, admin_user, now) do
     admin_id_bin = Ecto.UUID.dump!(admin_user.id)
+    session_id = session.id
 
     Logger.info(
-      "[StockOpname] do_apply_session_changes: step 1+2 — marking missing items: " <>
-        "session_id=#{session.id}"
+      "[StockOpname] do_apply_session_changes: step 1+2 — marking missing items (batched): " <>
+        "session_id=#{session_id}"
     )
 
     # Step 1 & 2: mark pending/explicitly-missing items as missing in catalog.
-    # These two bulk UPDATE statements are fast (index scans) and run in a
-    # single transaction to stay atomic.
-    with {:ok, %{apply_missing: {unchecked_count, explicit_missing_count}}} <-
-           Ecto.Multi.new()
-           |> Ecto.Multi.run(:apply_missing, fn repo, _changes ->
-             # Step 1: items in-scope but never scanned by any librarian.
-             {unchecked_count, _} =
-               from(i in CatalogItem,
-                 join: oi in Item,
-                 on: oi.item_id == i.id,
-                 where: oi.session_id == ^session.id,
-                 where: oi.check_status == "pending"
-               )
-               |> repo.update_all(
-                 set: [
-                   availability: "missing",
-                   updated_by_id: admin_user.id,
-                   updated_at: now
-                 ]
-               )
-
-             # Step 2: items a librarian explicitly flagged as missing during
-             # the scan (check_status == "missing"). These may have no `changes`
-             # JSONB entry so they must be handled separately from Step 3.
-             {explicit_missing_count, _} =
-               from(i in CatalogItem,
-                 join: oi in Item,
-                 on: oi.item_id == i.id,
-                 where: oi.session_id == ^session.id,
-                 where: oi.check_status == "missing"
-               )
-               |> repo.update_all(
-                 set: [
-                   availability: "missing",
-                   updated_by_id: admin_user.id,
-                   updated_at: now
-                 ]
-               )
-
-             {:ok, {unchecked_count, explicit_missing_count}}
-           end)
-           |> Repo.transaction() do
+    # Each batch updates up to @mark_missing_batch_size rows in its own short
+    # transaction so we never hold a connection longer than a few seconds.
+    with :ok <- batch_mark_missing(session_id, "pending", admin_user.id, now),
+         :ok <- batch_mark_missing(session_id, "missing", admin_user.id, now) do
       Logger.info(
-        "[StockOpname] do_apply_session_changes: step 1+2 done — " <>
-          "unchecked_marked_missing=#{unchecked_count} " <>
-          "explicit_missing_marked=#{explicit_missing_count} " <>
-          "session_id=#{session.id}"
+        "[StockOpname] do_apply_session_changes: step 1+2 done: session_id=#{session_id}"
       )
 
       Logger.info(
-        "[StockOpname] do_apply_session_changes: step 3 — streaming items with changes: " <>
-          "session_id=#{session.id}"
+        "[StockOpname] do_apply_session_changes: step 3 — applying item changes (batched): " <>
+          "session_id=#{session_id}"
       )
 
-      # Step 3: stream items with changes and process in chunks sequentially.
-      # Repo.stream opens a server-side cursor (DECLARE CURSOR) so memory stays
-      # constant regardless of session size — safe for 100k+ item sessions.
-      # All UPDATE statements run on the same connection/transaction as the
-      # cursor, so a failure automatically rolls back all partial changes.
-      stream_result =
-        Repo.transaction(
-          fn ->
-            from(oi in Item,
-              where: oi.session_id == ^session.id,
-              where: oi.has_changes == true,
-              where: oi.check_status == "checked",
-              where: not is_nil(oi.changes),
-              select: %{item_id: oi.item_id, changes: oi.changes}
-            )
-            |> Repo.stream(max_rows: 1000)
-            |> Stream.chunk_every(1000)
-            |> Stream.with_index(1)
-            |> Enum.each(fn {chunk, idx} ->
-              Logger.debug(
-                "[StockOpname] applying changes chunk ##{idx} (#{length(chunk)} items): " <>
-                  "session_id=#{session.id}"
-              )
-
-              apply_item_changes_chunk(chunk, admin_id_bin, now)
-            end)
-          end,
-          timeout: :infinity
-        )
-
-      case stream_result do
-        {:ok, _} ->
+      # Step 3: apply field-level changes in paginated batches.  Each page is
+      # fetched with LIMIT/OFFSET (read from the immutable stock_opname_items
+      # table) and the resulting UPDATEs run outside a wrapping transaction so
+      # no single connection is held open for the full duration.
+      case batch_apply_item_changes(session_id, admin_id_bin, now) do
+        :ok ->
           Logger.info(
-            "[StockOpname] do_apply_session_changes: step 3 done — all change chunks applied: " <>
-              "session_id=#{session.id} — stamping approved"
+            "[StockOpname] do_apply_session_changes: step 3 done — all change batches applied: " <>
+              "session_id=#{session_id} — running step 4"
           )
 
           # Step 4: Archive collections whose every item is now missing.
@@ -1766,7 +1695,7 @@ defmodule Voile.Schema.StockOpname do
           Logger.info(
             "[StockOpname] do_apply_session_changes: step 4 done — " <>
               "archived #{archived_count} collection(s) with all items missing: " <>
-              "session_id=#{session.id}"
+              "session_id=#{session_id}"
           )
 
           # All changes applied — stamp the session as fully approved.
@@ -1776,8 +1705,8 @@ defmodule Voile.Schema.StockOpname do
 
         {:error, reason} ->
           Logger.error(
-            "[StockOpname] do_apply_session_changes: step 3 transaction failed: " <>
-              "session_id=#{session.id} reason=#{inspect(reason)}"
+            "[StockOpname] do_apply_session_changes: step 3 batch_apply failed: " <>
+              "session_id=#{session_id} reason=#{inspect(reason)}"
           )
 
           {:error, reason}
@@ -1785,12 +1714,268 @@ defmodule Voile.Schema.StockOpname do
     else
       {:error, reason} ->
         Logger.error(
-          "[StockOpname] do_apply_session_changes: step 1+2 transaction failed: " <>
-            "session_id=#{session.id} reason=#{inspect(reason)}"
+          "[StockOpname] do_apply_session_changes: step 1+2 batch_mark_missing failed: " <>
+            "session_id=#{session_id} reason=#{inspect(reason)}"
         )
 
         {:error, reason}
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Batched flag for complete_session: marks pending → missing in batches
+  # Uses cursor-based pagination (WHERE id > last_id) to avoid OFFSET degradation.
+  # ---------------------------------------------------------------------------
+  defp batch_flag_pending_as_missing(session_id, now) do
+    batch_flag_pending_as_missing(session_id, now, nil, 0)
+  end
+
+  defp batch_flag_pending_as_missing(session_id, now, last_id, total_flagged) do
+    query =
+      from(oi in Item,
+        where: oi.session_id == ^session_id,
+        where: oi.check_status == "pending",
+        order_by: [asc: oi.id],
+        limit: ^@complete_flag_batch_size,
+        select: oi.id
+      )
+
+    query =
+      if last_id do
+        from(oi in query, where: oi.id > ^last_id)
+      else
+        query
+      end
+
+    ids = Repo.all(query)
+
+    if ids == [] do
+      total_flagged
+    else
+      {count, _} =
+        from(oi in Item, where: oi.id in ^ids)
+        |> Repo.update_all(
+          set: [
+            check_status: "missing",
+            updated_at: now
+          ]
+        )
+
+      new_last_id = List.last(ids)
+      batch_flag_pending_as_missing(session_id, now, new_last_id, total_flagged + count)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Batched missing-item marker (Steps 1 & 2)
+  #
+  # Paginates through stock_opname_items with the given check_status, fetches
+  # their item_ids in pages, and bulk-updates the catalog items table.  Each
+  # page is its own implicit transaction (update_all outside Repo.transaction).
+  # ---------------------------------------------------------------------------
+  defp batch_mark_missing(session_id, check_status, admin_user_id, now) do
+    total =
+      Repo.one(
+        from(oi in Item,
+          where: oi.session_id == ^session_id,
+          where: oi.check_status == ^check_status,
+          select: count()
+        )
+      )
+
+    Logger.info(
+      "[StockOpname] batch_mark_missing(#{check_status}): #{total} items (cursor-based): " <>
+        "session_id=#{session_id}"
+    )
+
+    broadcast_progress(session_id, %{
+      step: "mark_missing_#{check_status}",
+      processed: 0,
+      total: total
+    })
+
+    result = do_batch_mark_missing(session_id, check_status, admin_user_id, now, nil, 0, total)
+
+    case result do
+      {count, :ok} ->
+        Logger.info(
+          "[StockOpname] batch_mark_missing(#{check_status}) done: #{count} items updated: " <>
+            "session_id=#{session_id}"
+        )
+
+        :ok
+
+      {_, {:error, _} = err} ->
+        err
+    end
+  end
+
+  defp do_batch_mark_missing(
+         session_id,
+         check_status,
+         admin_user_id,
+         now,
+         last_item_id,
+         processed,
+         total
+       ) do
+    query =
+      from(oi in Item,
+        where: oi.session_id == ^session_id,
+        where: oi.check_status == ^check_status,
+        select: oi.item_id,
+        order_by: [asc: oi.item_id],
+        limit: ^@mark_missing_batch_size
+      )
+
+    query =
+      if last_item_id do
+        from(oi in query, where: oi.item_id > ^last_item_id)
+      else
+        query
+      end
+
+    item_ids = Repo.all(query)
+
+    if item_ids == [] do
+      {processed, :ok}
+    else
+      {updated, _} =
+        from(i in CatalogItem, where: i.id in ^item_ids)
+        |> Repo.update_all(
+          set: [
+            availability: "missing",
+            updated_by_id: admin_user_id,
+            updated_at: now
+          ]
+        )
+
+      new_processed = processed + updated
+
+      broadcast_progress(session_id, %{
+        step: "mark_missing_#{check_status}",
+        processed: new_processed,
+        total: total
+      })
+
+      new_last_id = List.last(item_ids)
+
+      do_batch_mark_missing(
+        session_id,
+        check_status,
+        admin_user_id,
+        now,
+        new_last_id,
+        new_processed,
+        total
+      )
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Batched item-change applicator (Step 3)
+  #
+  # Paginates through stock_opname_items with has_changes == true, fetching
+  # chunks of @apply_changes_batch_size.  Each chunk's UPDATEs (via
+  # apply_item_changes_chunk/3) run as individual queries — no wrapping
+  # transaction so the connection is released after each batch.
+  # ---------------------------------------------------------------------------
+  defp batch_apply_item_changes(session_id, admin_id_bin, now) do
+    total =
+      Repo.one(
+        from(oi in Item,
+          where: oi.session_id == ^session_id,
+          where: oi.has_changes == true,
+          where: oi.check_status == "checked",
+          where: not is_nil(oi.changes),
+          select: count()
+        )
+      )
+
+    Logger.info(
+      "[StockOpname] batch_apply_item_changes: #{total} items (cursor-based): " <>
+        "session_id=#{session_id}"
+    )
+
+    broadcast_progress(session_id, %{
+      step: "apply_changes",
+      processed: 0,
+      total: total
+    })
+
+    result = do_batch_apply_item_changes(session_id, admin_id_bin, now, nil, 0, total)
+
+    case result do
+      {count, :ok} ->
+        Logger.info(
+          "[StockOpname] batch_apply_item_changes done: #{count} items processed: " <>
+            "session_id=#{session_id}"
+        )
+
+        :ok
+
+      {_, {:error, _} = err} ->
+        err
+    end
+  end
+
+  defp do_batch_apply_item_changes(session_id, admin_id_bin, now, last_item_id, processed, total) do
+    query =
+      from(oi in Item,
+        where: oi.session_id == ^session_id,
+        where: oi.has_changes == true,
+        where: oi.check_status == "checked",
+        where: not is_nil(oi.changes),
+        select: %{item_id: oi.item_id, changes: oi.changes},
+        order_by: [asc: oi.item_id],
+        limit: ^@apply_changes_batch_size
+      )
+
+    query =
+      if last_item_id do
+        from(oi in query, where: oi.item_id > ^last_item_id)
+      else
+        query
+      end
+
+    chunk = Repo.all(query)
+
+    if chunk == [] do
+      {processed, :ok}
+    else
+      Logger.debug(
+        "[StockOpname] applying changes batch (#{length(chunk)} items): " <>
+          "session_id=#{session_id}"
+      )
+
+      apply_item_changes_chunk(chunk, admin_id_bin, now)
+      new_processed = processed + length(chunk)
+
+      broadcast_progress(session_id, %{
+        step: "apply_changes",
+        processed: new_processed,
+        total: total
+      })
+
+      new_last_id = List.last(chunk).item_id
+
+      do_batch_apply_item_changes(
+        session_id,
+        admin_id_bin,
+        now,
+        new_last_id,
+        new_processed,
+        total
+      )
+    end
+  end
+
+  defp broadcast_progress(session_id, progress) do
+    Phoenix.PubSub.broadcast(
+      Voile.PubSub,
+      session_topic(session_id),
+      {:session_apply_progress, progress}
+    )
   end
 
   # Archives collections that are in scope of the session and whose every
@@ -1921,20 +2106,48 @@ defmodule Voile.Schema.StockOpname do
 
   @doc """
   Request revision on a session (send back to librarians).
+
+  Resets the session to `"in_progress"` and resets all librarian assignments
+  back to `"in_progress"` so they can re-scan items. Also clears
+  `completed_at` since the session is no longer complete.
   """
   def request_session_revision(
         %Session{status: "pending_review"} = session,
         admin_user,
         notes
       ) do
-    session
-    |> Ecto.Changeset.change(%{
-      status: "in_progress",
-      reviewed_by_id: admin_user.id,
-      review_notes: notes,
-      updated_by_id: admin_user.id
-    })
-    |> Repo.update()
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:session, fn _changes ->
+      session
+      |> Ecto.Changeset.change(%{
+        status: "in_progress",
+        completed_at: nil,
+        reviewed_by_id: admin_user.id,
+        review_notes: notes,
+        updated_by_id: admin_user.id
+      })
+    end)
+    |> Ecto.Multi.run(:reset_librarian_work_status, fn repo, _changes ->
+      {count, _} =
+        from(la in LibrarianAssignment,
+          where: la.session_id == ^session.id,
+          where: la.work_status == "completed"
+        )
+        |> repo.update_all(
+          set: [
+            work_status: "in_progress",
+            completed_at: nil,
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          ]
+        )
+
+      {:ok, count}
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{session: session}} -> {:ok, session}
+      {:error, _step, error, _changes} -> {:error, error}
+    end
   end
 
   def request_session_revision(%Session{}, _admin_user, _notes) do
