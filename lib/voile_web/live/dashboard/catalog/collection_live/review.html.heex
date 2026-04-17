@@ -364,19 +364,33 @@
                         autocomplete="off"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                       />
-                      <%= if @creator_results != [] do %>
+                      <%= if @creator_results != [] or String.trim(@creator_query || "") != "" do %>
                         <div class="absolute z-20 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-52 overflow-y-auto">
-                          <%= for creator <- @creator_results do %>
+                          <%= if @creator_results != [] do %>
+                            <%= for creator <- @creator_results do %>
+                              <button
+                                type="button"
+                                phx-click="pick_creator"
+                                phx-value-id={creator.id}
+                                phx-value-name={creator.creator_name}
+                                class="w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                              >
+                                {creator.creator_name}
+                              </button>
+                            <% end %>
+                          <% end %>
+
+                          <div class="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
                             <button
                               type="button"
-                              phx-click="pick_creator"
-                              phx-value-id={creator.id}
-                              phx-value-name={creator.creator_name}
-                              class="w-full text-left px-3 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                              phx-click="create_new_creator"
+                              phx-value-creator={@creator_query}
+                              class="w-full text-left text-sm text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 font-medium"
                             >
-                              {creator.creator_name}
+                              <.icon name="hero-plus-circle" class="h-4 w-4 mr-2 inline" />
+                              {gettext("Create \"%{creator}\"", creator: @creator_query)}
                             </button>
-                          <% end %>
+                          </div>
                         </div>
                       <% end %>
                     </div>

@@ -509,6 +509,31 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   end
 
   @impl true
+  def handle_event("create_new_creator", %{"creator" => creator_name}, socket) do
+    trimmed = String.trim(creator_name)
+
+    if trimmed == "" do
+      {:noreply, put_flash(socket, :error, "Creator name cannot be empty")}
+    else
+      case Master.get_or_create_creator(%{creator_name: trimmed}) do
+        {:ok, creator} ->
+          review_edits = Map.put(socket.assigns.review_edits, "creator_id", to_string(creator.id))
+
+          {:noreply,
+           socket
+           |> assign(:review_edits, review_edits)
+           |> assign(:creator_selected_name, creator.creator_name)
+           |> assign(:creator_query, "")
+           |> assign(:creator_results, [])
+           |> put_flash(:info, "Creator \"#{creator.creator_name}\" created and selected.")}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Failed to create creator")}
+      end
+    end
+  end
+
+  @impl true
   def handle_event("approve_collection", %{"id" => id}, socket) do
     collection = Catalog.get_collection!(id)
     reviewer = socket.assigns.current_scope.user
