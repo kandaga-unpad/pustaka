@@ -16,10 +16,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
   import Ecto.Query, warn: false
 
   alias Voile.Repo
+  alias Voile.Schema.Catalog
   alias Voile.Schema.Catalog.Collection
   alias Voile.Schema.Master.Creator
   alias Voile.Schema.Metadata.{Property, ResourceClass}
   alias Voile.Schema.System.Node
+  alias Voile.Utils.ItemHelper
 
   alias VoileWeb.Auth.Authorization
 
@@ -139,7 +141,15 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
     rows = socket.assigns.parsed_rows
     user = socket.assigns.current_scope.user
 
-    node = Repo.get(Node, socket.assigns.import_node_id)
+    # Enforce node scoping: non-super-admins can only import to their own node
+    import_node_id =
+      if socket.assigns.is_super_admin do
+        socket.assigns.import_node_id
+      else
+        user.node_id
+      end
+
+    node = Repo.get(Node, import_node_id)
     properties = load_properties_map()
     rc_map = load_resource_class_map()
 
@@ -173,7 +183,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
   @impl true
   def handle_event("export_csv", _params, socket) do
-    node_id = socket.assigns.export_node_id
+    # Enforce node scoping: non-super-admins can only export their own node
+    node_id =
+      if socket.assigns.is_super_admin do
+        socket.assigns.export_node_id
+      else
+        to_string(socket.assigns.current_scope.user.node_id)
+      end
+
+    socket = assign(socket, :export_loading, true)
+
     csv_content = build_export_csv(node_id)
 
     filename =
@@ -183,7 +202,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
       end
 
     {:noreply,
-     push_event(socket, "download", %{
+     socket
+     |> assign(:export_loading, false)
+     |> push_event("download", %{
        filename: filename,
        content: csv_content,
        mime_type: "text/csv"
@@ -511,9 +532,14 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
               <button
                 phx-click="export_csv"
-                class="w-full inline-flex justify-center items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                disabled={@export_loading}
+                class="w-full inline-flex justify-center items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-wait"
               >
-                <.icon name="hero-arrow-down-tray" class="size-4" /> Download CSV
+                <%= if @export_loading do %>
+                  <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Exporting…
+                <% else %>
+                  <.icon name="hero-arrow-down-tray" class="size-4" /> Download CSV
+                <% end %>
               </button>
             </div>
           </div>
@@ -720,6 +746,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
           |> Repo.insert()
           |> case do
             {:ok, col} ->
+              # Create items based on total_items from the CSV row
+              total = parse_total_items(row["total_items"])
+              create_items_for_imported_collection(col, total, node, resource_class, user)
               {:ok, col}
 
             {:error, changeset} ->
@@ -736,6 +765,56 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
       end
     end
   end
+
+  # Creates N items for an imported collection, mirroring the form's add_item_data logic.
+  defp create_items_for_imported_collection(collection, total, node, resource_class, user)
+       when total > 0 do
+    unit_abbr = (node && node.abbr) || "UNK"
+    type_local_name = (resource_class && resource_class.local_name) || "UNK"
+    node_id = node && node.id
+    time_identifier = to_string(:os.system_time(:millisecond))
+
+    for idx <- 1..total do
+      item_code =
+        ItemHelper.generate_item_code(
+          unit_abbr,
+          type_local_name,
+          collection.id,
+          time_identifier,
+          to_string(idx)
+        )
+
+      inventory_code =
+        ItemHelper.generate_inventory_code(
+          unit_abbr,
+          type_local_name,
+          collection.id,
+          to_string(idx)
+        )
+
+      barcode = ItemHelper.generate_barcode_from_item_code(item_code)
+
+      Catalog.create_item(
+        %{
+          item_code: item_code,
+          inventory_code: inventory_code,
+          barcode: barcode,
+          location: "",
+          status: "active",
+          condition: "good",
+          availability: "in_processing",
+          unit_id: node_id,
+          collection_id: collection.id,
+          item_location_id: node_id,
+          created_by_id: user.id
+        },
+        user.id
+      )
+    end
+  end
+
+  defp create_items_for_imported_collection(_collection, _total, _node, _resource_class, _user),
+    do: :ok
 
   defp build_collection_fields(row, properties) do
     @field_columns

@@ -36,9 +36,23 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
             <p class="font-semibold text-indigo-800 dark:text-indigo-300">
               Applying changes in the background…
             </p>
-            <p class="text-sm text-indigo-700 dark:text-indigo-400 mt-0.5">
-              This page will refresh automatically when done. If this message persists for more than a minute, you can force-reset the session.
+            <p :if={@apply_progress} class="text-sm text-indigo-700 dark:text-indigo-400 mt-0.5">
+              {progress_label(@apply_progress)} — {progress_pct(@apply_progress)}% ({@apply_progress.processed}/{@apply_progress.total})
             </p>
+            <p :if={!@apply_progress} class="text-sm text-indigo-700 dark:text-indigo-400 mt-0.5">
+              Starting up…
+            </p>
+            <%!-- Progress bar --%>
+            <div
+              :if={@apply_progress}
+              class="mt-2 w-full bg-indigo-200 dark:bg-indigo-800 rounded-full h-2"
+            >
+              <div
+                class="bg-indigo-600 dark:bg-indigo-400 h-2 rounded-full transition-all duration-300"
+                style={"width: #{progress_pct(@apply_progress)}%"}
+              >
+              </div>
+            </div>
           </div>
           <button
             phx-click="force_reset_session"
@@ -540,6 +554,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
           |> assign(:revision_form, to_form(%{}))
           |> assign(:reject_form, to_form(%{}))
           |> assign(:applying?, session.status == "applying")
+          |> assign(:apply_progress, nil)
 
         {:ok, socket}
       end
@@ -619,7 +634,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
 
           socket =
             socket
-            |> put_flash(:info, "Revision requested. Librarians have been notified.")
+            |> put_flash(
+              :info,
+              "Revision requested. Librarians can view the notes on the session page."
+            )
             |> redirect(to: ~p"/manage/catalog/stock_opname")
 
           {:noreply, socket}
@@ -704,10 +722,16 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
       socket
       |> assign(:session, approved_session)
       |> assign(:applying?, false)
+      |> assign(:apply_progress, nil)
       |> put_flash(:info, "Session approved! All changes have been applied.")
       |> redirect(to: ~p"/manage/catalog/stock_opname")
 
     {:noreply, socket}
+  end
+
+  # Real-time progress updates from the batched background task.
+  def handle_info({:session_apply_progress, progress}, socket) do
+    {:noreply, assign(socket, :apply_progress, progress)}
   end
 
   # Background approval failed — session was rolled back to pending_review.
@@ -724,6 +748,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
       socket
       |> assign(:session, session)
       |> assign(:applying?, false)
+      |> assign(:apply_progress, nil)
       |> put_flash(
         :error,
         "Approval failed while applying changes. The session has been reset to pending review — please try again."
@@ -751,6 +776,21 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
   end
 
   defp format_datetime(datetime), do: Calendar.strftime(datetime, "%B %d, %Y %I:%M %p")
+
+  defp progress_label(%{step: step}) do
+    case step do
+      "mark_missing_pending" -> "Marking unchecked items as missing"
+      "mark_missing_missing" -> "Marking flagged items as missing"
+      "apply_changes" -> "Applying item changes"
+      _ -> "Processing"
+    end
+  end
+
+  defp progress_pct(%{total: 0}), do: 100
+
+  defp progress_pct(%{processed: processed, total: total}) do
+    min(round(processed / total * 100), 100)
+  end
 
   defp pagination_controls(assigns) do
     ~H"""

@@ -5,7 +5,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Library.{Circulation, Transaction}
   alias Voile.Schema.Catalog.{Item, Collection}
-  alias Voile.Schema.Catalog
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
@@ -730,7 +729,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
   end
 
   defp find_item_by_code(item_code, use_legacy_code) do
-    # If using legacy code, query by legacy_item_code
+    item_code = String.trim(item_code || "")
+
     if use_legacy_code do
       Item
       |> where([i], i.legacy_item_code == ^item_code)
@@ -739,21 +739,24 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       |> limit(1)
       |> Repo.one()
     else
-      # Use the new barcode finder that supports both full item_code and shortened barcode
-      case Catalog.find_item_by_barcode(item_code) do
-        nil ->
-          nil
+      query =
+        Item
+        |> where(
+          [i],
+          i.barcode == ^item_code or i.item_code == ^item_code or i.inventory_code == ^item_code
+        )
 
-        item ->
-          # Preload if not already loaded, and check availability
-          item = Repo.preload(item, [:collection, :node])
+      query =
+        case Integer.parse(item_code) do
+          {id, ""} -> from(i in query, or_where: i.id == ^id)
+          _ -> query
+        end
 
-          if item.status == "active" and item.availability == "available" do
-            item
-          else
-            nil
-          end
-      end
+      query
+      |> where([i], i.status == "active" and i.availability == "available")
+      |> preload([:collection, :node])
+      |> limit(1)
+      |> Repo.one()
     end
   end
 

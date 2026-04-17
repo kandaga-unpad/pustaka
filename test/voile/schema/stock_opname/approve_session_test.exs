@@ -42,15 +42,32 @@ defmodule Voile.Schema.StockOpname.ApproveSessionTest do
     StockOpname.subscribe_session(session.id)
     {:ok, _applying} = StockOpname.approve_session(session, admin, "test approval")
 
-    # Wait up to 5 seconds for the background task to finish.
+    # Wait up to 10 seconds for the background task to finish.
+    # The batched implementation broadcasts progress messages before the final
+    # :session_approved/:session_approval_failed — we must drain them.
+    wait_for_approval(10_000)
+
+    reload_catalog_items(catalog_items)
+  end
+
+  defp wait_for_approval(timeout) do
     receive do
       {:session_approved, _approved_session} -> :ok
       {:session_approval_failed, reason} -> flunk("Approval failed: #{inspect(reason)}")
+      {:session_apply_progress, _progress} -> wait_for_approval(timeout)
     after
-      5_000 -> flunk("Timed out waiting for background approval to complete")
+      timeout -> flunk("Timed out waiting for background approval to complete")
     end
+  end
 
-    reload_catalog_items(catalog_items)
+  defp collect_approval_messages(timeout, acc \\ []) do
+    receive do
+      {:session_approved, _} = msg -> Enum.reverse([msg | acc])
+      {:session_approval_failed, reason} -> flunk("Approval failed: #{inspect(reason)}")
+      {:session_apply_progress, _} = msg -> collect_approval_messages(timeout, [msg | acc])
+    after
+      timeout -> flunk("Timed out waiting for background approval to complete")
+    end
   end
 
   # ===========================================================================
@@ -532,6 +549,96 @@ defmodule Voile.Schema.StockOpname.ApproveSessionTest do
 
       # item_out is still available → collection must NOT be archived
       assert reload_collection(collection).status == "published"
+    end
+  end
+
+  # ===========================================================================
+  # Batched processing — progress messages and multi-batch coverage
+  # ===========================================================================
+
+  describe "approve_session/3 — batched processing" do
+    test "broadcasts progress messages during approval", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      item = catalog_item_fixture(collection, node, admin, %{availability: "available"})
+      session = pending_review_session_fixture(node, admin, [item])
+      opname_item_fixture(session, item)
+
+      StockOpname.subscribe_session(session.id)
+      {:ok, _applying} = StockOpname.approve_session(session, admin, "test approval")
+
+      # Collect all messages until approval completes
+      messages = collect_approval_messages(10_000)
+
+      # We should have received at least one progress message
+      progress_messages =
+        Enum.filter(messages, fn
+          {:session_apply_progress, _} -> true
+          _ -> false
+        end)
+
+      assert length(progress_messages) > 0
+
+      # The final message should be :session_approved
+      assert {:session_approved, _} = List.last(messages)
+    end
+
+    test "handles a batch of items exceeding a single batch size", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      # Create enough items to span multiple batched updates
+      # Using 15 items — they'll all be "pending" (never scanned) so the
+      # batch_mark_missing path gets exercised.
+      items =
+        for _ <- 1..15 do
+          catalog_item_fixture(collection, node, admin, %{availability: "available"})
+        end
+
+      session = pending_review_session_fixture(node, admin, items)
+      for item <- items, do: opname_item_fixture(session, item)
+
+      reloaded = approve_and_reload(session, admin, items)
+
+      for item <- items do
+        assert reloaded[item.id].availability == "missing"
+      end
+    end
+
+    test "handles mixed batch of checked items with changes across batches", %{
+      admin: admin,
+      node: node,
+      collection: collection
+    } do
+      # Create items with field changes — exercises the batch_apply_item_changes path
+      items =
+        for i <- 1..10 do
+          catalog_item_fixture(collection, node, admin, %{
+            condition: "good",
+            location: "Shelf #{i}"
+          })
+        end
+
+      session = pending_review_session_fixture(node, admin, items)
+
+      for item <- items do
+        opname_item_checked_fixture(
+          session,
+          item,
+          %{"condition" => "poor", "location" => "Archive"},
+          admin
+        )
+      end
+
+      reloaded = approve_and_reload(session, admin, items)
+
+      for item <- items do
+        assert reloaded[item.id].condition == "poor"
+        assert reloaded[item.id].location == "Archive"
+      end
     end
   end
 end

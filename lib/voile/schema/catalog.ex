@@ -2646,29 +2646,33 @@ defmodule Voile.Schema.Catalog do
   """
   def find_item_by_barcode(code) when is_binary(code) do
     code = String.trim(code)
+    item_id = parse_item_id(code)
 
-    # Try direct barcode lookup first (for items imported with barcode field)
-    item =
-      Repo.one(
-        from i in Item,
-          where: i.barcode == ^code,
-          preload: [:collection, :node]
-      )
+    query =
+      from i in Item,
+        where:
+          i.barcode == ^code or i.item_code == ^code or i.inventory_code == ^code or
+            i.legacy_item_code == ^code,
+        preload: [:collection, :node]
 
-    # Fallback to item_code lookup for backward compatibility
-    # (items that were created before barcode field was added)
-    if item do
-      item
-    else
-      Repo.one(
-        from i in Item,
-          where: i.item_code == ^code,
-          preload: [:collection, :node]
-      )
-    end
+    query =
+      if item_id do
+        from i in query, or_where: i.id == ^item_id
+      else
+        query
+      end
+
+    Repo.one(query)
   end
 
   def find_item_by_barcode(_), do: nil
+
+  defp parse_item_id(code) when is_binary(code) do
+    case Integer.parse(code) do
+      {id, ""} -> id
+      _ -> nil
+    end
+  end
 
   ## Transfer Requests
 

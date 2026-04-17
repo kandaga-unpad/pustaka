@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.19] - 2026-04-17
+
+### Added
+
+- **Collection import now creates items** — CSV import creates N item records per collection based on the `total_items` column (with duplicate row sums). Items are auto-generated with `item_code`, `inventory_code`, and `barcode` via `ItemHelper`, matching the manual "Add Item Data" form behaviour. Defaults: `status: "active"`, `condition: "good"`, `availability: "in_processing"`.
+- **Stock opname: batched approval processing** — Rewrote `do_apply_session_changes` to process `batch_mark_missing` and `batch_apply_item_changes` in small cursor-based batches instead of a single giant transaction. Prevents Postgrex checkout timeouts on large sessions (100k+ items).
+- **Stock opname: real-time approval progress bar** — The review page now shows a live progress bar with step labels and percentage during background approval via PubSub broadcasts.
+- **Stock opname: batched `complete_session`** — `complete_session` now flags pending items as missing in batches of 5,000 using cursor-based pagination instead of a single `update_all`.
+- **Stock opname: review notes and rejection banners** — The session show page now displays an amber "Revision Requested" banner when `review_notes` is present (in_progress status) and a red "Session Rejected" banner when `rejection_reason` is present (rejected status).
+- **Stock opname: 10 new tests for reject/revision workflows** — Added tests for `reject_session`, `request_session_revision` (reset librarian work_status, clear completed_at), and additional batched processing tests (progress messages, multi-batch coverage, mixed checked items).
+
+### Fixed
+
+- **Critical: Stock opname approval timeout on large sessions** — Sessions with ~196k items crashed with Postgrex timeout because the entire approval ran in a single long transaction. Now uses cursor-based pagination (`WHERE id > last_id ORDER BY id LIMIT batch_size`) instead of OFFSET-based queries, avoiding O(n²) degradation.
+- **Stock opname: revision not resetting librarian assignments** — `request_session_revision` now uses `Ecto.Multi` with `update_all` to reset all librarian `work_status` to `"assigned"` and clear `completed_at`, so librarians can resume work after a revision request.
+- **Stock opname: misleading revision flash message** — Changed flash from "Librarians have been notified" to "Librarians can view the notes on the session page" since there is no push notification.
+- **Collection import/export: RBAC node scoping enforced server-side** — `export_csv` and `confirm_import` handlers now force the user's own `node_id` for non-super-admin users, preventing crafted events from accessing other nodes' data.
+- **Collection export: no loading feedback** — Export button now shows a spinner with "Exporting…" text and disabled state while generating the CSV.
+- **Item lookup: broadened barcode/code matching** — `find_item_by_barcode` in `Catalog` and `find_item_by_code` in `Transact` now search across `barcode`, `item_code`, `inventory_code`, `legacy_item_code`, and numeric `id` in a single query instead of sequential fallbacks.
+- **Production DB timeouts for batch operations** — Added `queue_target: 5_000`, `queue_interval: 5_000`, and `timeout: 60_000` to production Repo config in `runtime.exs` to accommodate large batch operations.
+
 ## [0.1.18] - 2026-04-16
 
 ### Added
@@ -311,6 +332,8 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.19]: https://github.com/curatorian/voile/compare/v0.1.18...v0.1.19
+[0.1.18]: https://github.com/curatorian/voile/compare/v0.1.15...v0.1.18
 [0.1.15]: https://github.com/curatorian/voile/compare/v0.1.14...v0.1.15
 [0.1.14]: https://github.com/curatorian/voile/compare/v0.1.13...v0.1.14
 [0.1.13]: https://github.com/curatorian/voile/compare/v0.1.12...v0.1.13
