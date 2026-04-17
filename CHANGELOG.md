@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.20] - 2026-04-17
+
+### Added
+
+- **Collection review: create new creator from review modal** — Reviewers can now type a creator name in the collection review metadata editor and click a dedicated `Create` button to create and select a new `mst_creator` without leaving the review flow.
+
 ## [0.1.19] - 2026-04-17
 
 ### Added
