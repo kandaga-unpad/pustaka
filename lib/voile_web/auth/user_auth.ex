@@ -239,6 +239,9 @@ defmodule VoileWeb.UserAuth do
     * `{:require_permission, "permission.name", scope: {:collection, :id}}` -
       Requires authentication and a scoped permission.
 
+    * `:require_authenticated_verified_member_organization_or_verified_staff_user` -
+      Requires a logged in user who is administrator, staff, or a verified member type (organization or verified individual).
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -393,6 +396,72 @@ defmodule VoileWeb.UserAuth do
             |> Phoenix.LiveView.put_flash(
               :error,
               "You must be an Admin or Staff to access this page."
+            )
+            |> maybe_store_return_to()
+            |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+          {:halt, socket}
+      end
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You must be logged in to access this page.")
+        |> maybe_store_return_to()
+        |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(
+        :require_authenticated_verified_member_organization_or_verified_staff_user,
+        _params,
+        session,
+        socket
+      ) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      user = socket.assigns.current_scope.user
+
+      case user.user_type do
+        %{slug: slug} when slug in ["administrator", "staff"] ->
+          {:cont, socket}
+
+        %{slug: slug} when slug in ["member_organization", "member_verified", "member_paid"] ->
+          if user.authenticated_at && is_struct(user.authenticated_at, DateTime) do
+            {:cont, socket}
+          else
+            socket =
+              socket
+              |> Phoenix.LiveView.put_flash(
+                :error,
+                "You must be verified to access this page."
+              )
+              |> maybe_store_return_to()
+              |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+            {:halt, socket}
+          end
+
+        nil ->
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              "You must have a valid member type to access this page."
+            )
+            |> maybe_store_return_to()
+            |> Phoenix.LiveView.redirect(to: ~p"/login")
+
+          {:halt, socket}
+
+        _ ->
+          socket =
+            socket
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              "You must be an Admin, Staff, or verified member to access this page."
             )
             |> maybe_store_return_to()
             |> Phoenix.LiveView.redirect(to: ~p"/login")

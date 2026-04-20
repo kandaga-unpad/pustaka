@@ -20,6 +20,7 @@ defmodule VoileWeb.SearchController do
     query = Map.get(params, "q", "")
     search_type = Map.get(params, "type", "universal")
     glam_type = Map.get(params, "glam_type", "quick")
+    media_type = Map.get(params, "media_type", "all")
     page = Map.get(params, "page", "1") |> String.to_integer()
     per_page = get_per_page_for_search_type(search_type)
 
@@ -39,6 +40,7 @@ defmodule VoileWeb.SearchController do
       "q" => query,
       "glam_type" => glam_type,
       "type" => search_type,
+      "media_type" => media_type,
       "page" => Integer.to_string(page),
       "per_page" => Integer.to_string(per_page),
       "status" => "published"
@@ -110,6 +112,7 @@ defmodule VoileWeb.SearchController do
       query: query,
       search_type: search_type,
       glam_type: glam_type,
+      media_type: media_type,
       page: page
     })
   end

@@ -54,6 +54,22 @@
               Collections
             </option>
           </select>
+
+          <select
+            name="media_type"
+            class="px-4 py-2 border border-voile-muted dark:border-voile-dark rounded-md focus:ring-2 focus:ring-voile-primary focus:border-transparent bg-white dark:bg-voile-dark text-gray-900 dark:text-white"
+          >
+            <option value="all" selected={@media_type == "all"}>
+              All Media
+            </option>
+            <option value="digital" selected={@media_type == "digital"}>
+              Digital Only
+            </option>
+            <option value="physical" selected={@media_type == "physical"}>
+              Physical Only
+            </option>
+          </select>
+
           <button
             type="submit"
             class="px-6 py-2 bg-voile-primary text-white rounded-md hover:bg-voile-dark transition-colors"
@@ -513,7 +529,7 @@
           </div>
         <% end %>
         <!-- No Results -->
-        <%= if (@search_type == "universal" and @results.total_results == 0) or 
+        <%= if (@search_type == "universal" and @results.total_results == 0) or
               (@search_type != "universal" and @results.total_results == 0) do %>
           <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-8 text-center">
             <svg
@@ -567,7 +583,7 @@
       searchInput.addEventListener('input', function(e) {
         clearTimeout(debounceTimer);
         const query = e.target.value.trim();
-        
+
         if (query.length < 2) {
           suggestionsDiv.classList.add('hidden');
           return;
@@ -592,8 +608,8 @@
         }
 
         const suggestionsHTML = suggestions.map(suggestion => `
-          <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer suggestion-item" 
-               data-title="${suggestion.title}" 
+          <div class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer suggestion-item"
+               data-title="${suggestion.title}"
                data-type="${suggestion.type}">
             <div class="flex items-center justify-between">
               <span class="text-gray-900 dark:text-white">${suggestion.title}</span>

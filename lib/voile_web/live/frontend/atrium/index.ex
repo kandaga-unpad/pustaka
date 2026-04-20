@@ -7,6 +7,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   alias Client.Storage
   alias VoileWeb.Frontend.Atrium.AtriumHelper
   alias Voile.Notifications.LoanReminderNotifier
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def mount(_params, _session, socket) do
@@ -309,7 +310,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
           # Format the new due date for user-friendly display
           new_due_date =
             if updated_transaction.due_date do
-              Calendar.strftime(updated_transaction.due_date, "%B %d, %Y")
+              FormatIndonesiaTime.format_full_indonesian_date(updated_transaction.due_date)
             else
               "N/A"
             end
@@ -687,7 +688,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     } = data
 
     message =
-      "📚 Reminder: \"#{collection_title}\" (#{item_code}) is due in #{days_until_due} day(s) on #{Calendar.strftime(due_date, "%B %d, %Y")}"
+      "📚 Reminder: \"#{collection_title}\" (#{item_code}) is due in #{days_until_due} day(s) on #{FormatIndonesiaTime.format_full_indonesian_date(due_date)}"
 
     # Add to reminders list and show badge
     reminders = [data | socket.assigns.loan_reminders]
@@ -709,7 +710,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     } = data
 
     message =
-      "⚠️ Overdue: \"#{collection_title}\" (#{item_code}) was due on #{Calendar.strftime(due_date, "%B %d, %Y")} and is now #{days_overdue} day(s) overdue!"
+      "⚠️ Overdue: \"#{collection_title}\" (#{item_code}) was due on #{FormatIndonesiaTime.format_full_indonesian_date(due_date)} and is now #{days_overdue} day(s) overdue!"
 
     # Add to reminders list and show badge
     reminders = [data | socket.assigns.loan_reminders]
@@ -731,7 +732,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     } = data
 
     message =
-      "📬 Library Notice: Please remember to return \"#{collection_title}\" (#{item_code}) by #{Calendar.strftime(due_date, "%B %d, %Y")} (#{days_until_due} day(s) remaining)"
+      "📬 Library Notice: Please remember to return \"#{collection_title}\" (#{item_code}) by #{FormatIndonesiaTime.format_full_indonesian_date(due_date)} (#{days_until_due} day(s) remaining)"
 
     # Add to reminders list and show badge
     reminders = [data | socket.assigns.loan_reminders]
@@ -1477,9 +1478,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                           <.icon
                                             name="hero-calendar"
                                             class="w-3 h-3 inline mr-1"
-                                          /> {gettext("Due:")} {Calendar.strftime(
-                                            tx.due_date,
-                                            "%b %d, %Y"
+                                          /> {gettext("Due:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                            tx.due_date
                                           )}
                                         </span>
                                     <% end %>
@@ -1491,9 +1491,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </span>
                                     <%= if tx.transaction_date do %>
                                       <span class="text-voile-muted">
-                                        {gettext("Borrowed:")} {Calendar.strftime(
-                                          tx.transaction_date,
-                                          "%b %d"
+                                        {gettext("Borrowed:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                          tx.transaction_date
                                         )}
                                       </span>
                                     <% end %>
@@ -1740,7 +1739,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                     </span>
                                     <%= if f.fine_date do %>
                                       <span>
-                                        {gettext("Date:")} {Calendar.strftime(f.fine_date, "%Y-%m-%d")}
+                                        {gettext("Date:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                          f.fine_date
+                                        )}
                                       </span>
                                     <% end %>
                                   </div>
@@ -1901,9 +1902,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                   </span>
                                   <%= if fine.payment_date do %>
                                     <span>
-                                      {gettext("Paid:")} {Calendar.strftime(
-                                        fine.payment_date,
-                                        "%Y-%m-%d"
+                                      {gettext("Paid:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                        fine.payment_date
                                       )}
                                     </span>
                                   <% end %>
@@ -2020,18 +2020,16 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                                 <div class="flex items-center gap-4 text-xs text-voile-muted">
                                   <%= if tx.transaction_date do %>
                                     <span>
-                                      {gettext("Borrowed:")} {Calendar.strftime(
-                                        tx.transaction_date,
-                                        "%Y-%m-%d"
+                                      {gettext("Borrowed:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                        tx.transaction_date
                                       )}
                                     </span>
                                   <% end %>
 
                                   <%= if tx.return_date do %>
                                     <span>
-                                      {gettext("Returned:")} {Calendar.strftime(
-                                        tx.return_date,
-                                        "%Y-%m-%d"
+                                      {gettext("Returned:")} {FormatIndonesiaTime.format_full_indonesian_date(
+                                        tx.return_date
                                       )}
                                     </span>
                                   <% end %>
@@ -2253,7 +2251,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               </div>
 
               <div class="text-lg font-semibold text-red-700 dark:text-red-300">
-                {Calendar.strftime(current_due, "%b %d, %Y")}
+                {FormatIndonesiaTime.format_full_indonesian_date(current_due)}
               </div>
 
               <div class="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -2271,7 +2269,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               </div>
 
               <div class="text-lg font-semibold text-green-700 dark:text-green-300">
-                {Calendar.strftime(new_due, "%b %d, %Y")}
+                {FormatIndonesiaTime.format_full_indonesian_date(new_due)}
               </div>
 
               <div class="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -2289,7 +2287,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
               <div>
                 <span class="text-blue-600 dark:text-blue-400">{gettext("Transaction Date:")}</span>
                 <div class="font-medium text-blue-900 dark:text-blue-100">
-                  {Calendar.strftime(tx.transaction_date, "%b %d, %Y")}
+                  {FormatIndonesiaTime.format_full_indonesian_date(tx.transaction_date)}
                 </div>
               </div>
 

@@ -3365,7 +3365,8 @@ defmodule Voile.Schema.Library.Circulation do
   # Private payment helper functions
 
   defp get_fine_for_payment(fine_id) do
-    case Repo.get(Fine, fine_id) |> Repo.preload([:member, :transaction, item: [:collection]]) do
+    case Repo.get(Fine, fine_id)
+         |> Repo.preload([:member, :transaction, item: [:collection, :node]]) do
       nil -> {:error, :fine_not_found}
       %Fine{fine_status: status} when status in ["paid", "waived"] -> {:error, :fine_already_paid}
       fine -> {:ok, fine}
@@ -3381,8 +3382,13 @@ defmodule Voile.Schema.Library.Circulation do
 
   defp create_payment_record(fine, member, processed_by_id, _opts) do
     timestamp = System.system_time(:millisecond)
-    random = :crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)
-    external_id = "fine_#{fine.id}_#{timestamp}_#{random}"
+
+    node_identifier =
+      fine.item && fine.item.node &&
+        (fine.item.node.abbr || fine.item.node.name)
+
+    external_id =
+      "fine_#{sanitize_external_id_segment(node_identifier || "unknown")}_#{fine.id}_#{timestamp}"
 
     # Determine amount to pay (use balance if partial payment exists)
     amount_to_pay = fine.balance || fine.amount
@@ -3422,6 +3428,19 @@ defmodule Voile.Schema.Library.Circulation do
 
     "#{base}#{detail}"
   end
+
+  defp sanitize_external_id_segment(value) when is_binary(value) do
+    value
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9_-]+/u, "_")
+    |> String.trim("_")
+    |> case do
+      "" -> "unknown"
+      sanitized -> sanitized
+    end
+  end
+
+  defp sanitize_external_id_segment(_), do: "unknown"
 
   defp create_xendit_payment_link(payment, fine, member, opts) do
     # Build app URLs for redirects
@@ -3584,7 +3603,8 @@ defmodule Voile.Schema.Library.Circulation do
 
   def count_active_transactions(node_id) when is_integer(node_id) do
     Transaction
-    |> where([t], t.status == "active" and (t.unit_id == ^node_id or is_nil(t.unit_id)))
+    |> join(:inner, [t], i in assoc(t, :item))
+    |> where([t, i], t.status == "active" and i.unit_id == ^node_id)
     |> Repo.aggregate(:count, :id)
   end
 
@@ -3647,8 +3667,8 @@ defmodule Voile.Schema.Library.Circulation do
 
     query =
       from(f in base_query,
-        join: m in assoc(f, :member),
-        where: m.node_id == ^node_id
+        join: i in assoc(f, :item),
+        where: i.unit_id == ^node_id
       )
 
     sum_balance = Repo.one(from(f in query, select: sum(f.balance))) || Decimal.new(0)

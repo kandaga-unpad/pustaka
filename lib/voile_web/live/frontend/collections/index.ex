@@ -26,6 +26,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
      |> assign(:filter_unit_id, "all")
      |> assign(:filter_status, "published")
      |> assign(:filter_glam_type, "all")
+     |> assign(:filter_media_type, "all")
      |> assign(:glam_type_options, glam_type_options)
      |> assign(:nodes, nodes)
      |> stream_configure(:collections, dom_id: &"collection-#{&1.id}")}
@@ -38,6 +39,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
     filter_unit_id = Map.get(params, "unit_id", "all")
     filter_status = Map.get(params, "status", "published")
     filter_glam_type = Map.get(params, "glam_type", "all")
+    filter_media_type = Map.get(params, "media_type", "all")
 
     socket =
       socket
@@ -46,11 +48,13 @@ defmodule VoileWeb.Frontend.Collections.Index do
       |> assign(:filter_unit_id, filter_unit_id)
       |> assign(:filter_status, filter_status)
       |> assign(:filter_glam_type, filter_glam_type)
+      |> assign(:filter_media_type, filter_media_type)
       |> assign(:loading, true)
 
     send(
       self(),
-      {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type}
+      {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type,
+       filter_media_type}
     )
 
     {:noreply, socket}
@@ -58,7 +62,8 @@ defmodule VoileWeb.Frontend.Collections.Index do
 
   @impl true
   def handle_info(
-        {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type},
+        {:load_collections, page, search_query, filter_unit_id, filter_status, filter_glam_type,
+         filter_media_type},
         socket
       ) do
     {collections, total_pages, total_count_filtered} =
@@ -67,7 +72,8 @@ defmodule VoileWeb.Frontend.Collections.Index do
         search_query,
         filter_unit_id,
         filter_status,
-        filter_glam_type
+        filter_glam_type,
+        filter_media_type
       )
 
     {:noreply,
@@ -92,6 +98,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "unit_id" => unit_id,
       "status" => status,
       "glam_type" => glam_type,
+      "media_type" => socket.assigns.filter_media_type,
       "page" => "1"
     }
 
@@ -105,6 +112,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "unit_id" => unit_id,
       "status" => socket.assigns.filter_status,
       "glam_type" => socket.assigns.filter_glam_type,
+      "media_type" => socket.assigns.filter_media_type,
       "page" => "1"
     }
 
@@ -118,6 +126,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "unit_id" => socket.assigns.filter_unit_id,
       "status" => status,
       "glam_type" => socket.assigns.filter_glam_type,
+      "media_type" => socket.assigns.filter_media_type,
       "page" => "1"
     }
 
@@ -131,6 +140,20 @@ defmodule VoileWeb.Frontend.Collections.Index do
       "unit_id" => socket.assigns.filter_unit_id,
       "status" => socket.assigns.filter_status,
       "glam_type" => glam_type,
+      "media_type" => socket.assigns.filter_media_type,
+      "page" => "1"
+    }
+
+    {:noreply, push_patch(socket, to: ~p"/collections?#{params}")}
+  end
+
+  def handle_event("filter_media_type", %{"media_type" => media_type}, socket) do
+    params = %{
+      "q" => socket.assigns.search_query,
+      "unit_id" => socket.assigns.filter_unit_id,
+      "status" => socket.assigns.filter_status,
+      "glam_type" => socket.assigns.filter_glam_type,
+      "media_type" => media_type,
       "page" => "1"
     }
 
@@ -193,6 +216,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                   <input type="hidden" name="unit_id" value={@filter_unit_id} />
                   <input type="hidden" name="status" value={@filter_status} />
                   <input type="hidden" name="glam_type" value={@filter_glam_type} />
+                  <input type="hidden" name="media_type" value={@filter_media_type} />
                   <input
                     type="text"
                     name="q"
@@ -254,6 +278,24 @@ defmodule VoileWeb.Frontend.Collections.Index do
                         {String.capitalize(opt)}
                       </option>
                     <% end %>
+                  </select>
+                </form>
+              </div>
+              <div class="sm:w-48">
+                <form phx-change="filter_media_type">
+                  <select
+                    name="media_type"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all" selected={@filter_media_type == "all"}>
+                      {gettext("All Media")}
+                    </option>
+                    <option value="digital" selected={@filter_media_type == "digital"}>
+                      {gettext("Digital Only")}
+                    </option>
+                    <option value="physical" selected={@filter_media_type == "physical"}>
+                      {gettext("Physical Only")}
+                    </option>
                   </select>
                 </form>
               </div>

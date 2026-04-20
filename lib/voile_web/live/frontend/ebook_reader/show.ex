@@ -11,7 +11,8 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
   use VoileWeb, :live_view
 
   # Require logged-in users with Admin/Staff member types to access the reader
-  on_mount {VoileWeb.UserAuth, :require_authenticated_and_verified_staff_user}
+  on_mount {VoileWeb.UserAuth,
+            :require_authenticated_verified_member_organization_or_verified_staff_user}
 
   alias Voile.Schema.Catalog
 
