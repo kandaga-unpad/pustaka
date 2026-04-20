@@ -10,6 +10,7 @@ defmodule VoileWeb.Frontend.Items.Show do
   alias Voile.Task.Catalog.Items
   alias Voile.Schema.Library.Circulation
   alias Voile.Schema.System, as: AppSystem
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   on_mount {VoileWeb.UserAuth, :mount_current_scope}
 
@@ -418,7 +419,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                                   {gettext("Acquired:")}
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
-                                  {Calendar.strftime(@item.acquisition_date, "%B %d, %Y")}
+                                  {FormatIndonesiaTime.format_full_indonesian_date(
+                                    @item.acquisition_date
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -438,7 +441,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                                   {gettext("Last Circulated:")}
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
-                                  {Calendar.strftime(@item.last_circulated, "%B %d, %Y")}
+                                  {FormatIndonesiaTime.format_full_indonesian_date(
+                                    @item.last_circulated
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -458,7 +463,9 @@ defmodule VoileWeb.Frontend.Items.Show do
                                   {gettext("Last Inventory:")}
                                 </span>
                                 <span class="font-medium text-gray-900 dark:text-white">
-                                  {Calendar.strftime(@item.last_inventory_date, "%B %d, %Y")}
+                                  {FormatIndonesiaTime.format_full_indonesian_date(
+                                    @item.last_inventory_date
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -477,7 +484,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                                 {gettext("Added:")}
                               </span>
                               <span class="font-medium text-gray-900 dark:text-white">
-                                {Calendar.strftime(@item.inserted_at, "%B %d, %Y")}
+                                {FormatIndonesiaTime.format_full_indonesian_date(@item.inserted_at)}
                               </span>
                             </div>
                           </div>

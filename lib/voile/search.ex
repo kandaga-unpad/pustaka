@@ -106,6 +106,7 @@ defmodule Voile.Search.Collections do
     resource_template_filter = Map.get(params, "resource_template", "")
     node_name_filter = Map.get(params, "node_name", "")
     node_abbr_filter = Map.get(params, "node_abbr", "")
+    media_type_filter = Map.get(params, "media_type", "")
     created_by_filter = Map.get(params, "created_by", "")
     updated_by_filter = Map.get(params, "updated_by", "")
     sort_order_min_filter = Map.get(params, "sort_order_min", "")
@@ -140,6 +141,7 @@ defmodule Voile.Search.Collections do
       |> filter_by_creator_affiliation(creator_affiliation_filter)
       |> filter_by_creator_contact(creator_contact_filter)
       |> filter_by_resource_template(resource_template_filter)
+      |> filter_by_media_type(media_type_filter)
       |> filter_by_node_name(node_name_filter)
       |> filter_by_node_abbr(node_abbr_filter)
       |> filter_by_created_by(created_by_filter)
@@ -356,6 +358,31 @@ defmodule Voile.Search.Collections do
       query,
       [c, _rc, _creator, _node, template],
       ilike(template.label, ^"%#{template_label}%")
+    )
+  end
+
+  defp filter_by_media_type(query, ""), do: query
+  defp filter_by_media_type(query, "all"), do: query
+
+  defp filter_by_media_type(query, "digital") do
+    where(
+      query,
+      [c],
+      fragment(
+        "EXISTS (SELECT 1 FROM attachments WHERE attachable_type = 'collection' AND attachable_id = ? AND is_primary = TRUE)",
+        c.id
+      )
+    )
+  end
+
+  defp filter_by_media_type(query, "physical") do
+    where(
+      query,
+      [c],
+      fragment(
+        "NOT EXISTS (SELECT 1 FROM attachments WHERE attachable_type = 'collection' AND attachable_id = ? AND is_primary = TRUE)",
+        c.id
+      )
     )
   end
 

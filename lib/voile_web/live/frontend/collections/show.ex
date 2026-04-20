@@ -8,6 +8,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
 
   alias Voile.Schema.Catalog
   alias Voile.Task.Catalog.Collection
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def mount(_params, _session, socket) do
@@ -271,7 +272,9 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {gettext("Added:")}
                             </span>
                             <span class="font-medium text-gray-900 dark:text-white">
-                              {Calendar.strftime(@collection.inserted_at, "%B %d, %Y")}
+                              {FormatIndonesiaTime.format_full_indonesian_date(
+                                @collection.inserted_at
+                              )}
                             </span>
                           </div>
                           <%!-- Last Updated --%>
@@ -284,7 +287,7 @@ defmodule VoileWeb.Frontend.Collections.Show do
                               {gettext("Updated:")}
                             </span>
                             <span class="font-medium text-gray-900 dark:text-white">
-                              {Calendar.strftime(@collection.updated_at, "%B %d, %Y")}
+                              {FormatIndonesiaTime.format_full_indonesian_date(@collection.updated_at)}
                             </span>
                           </div>
                           <%!-- Access Level --%>

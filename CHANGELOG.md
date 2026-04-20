@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.21] - 2026-04-20
+
+### Added
+
+- **Digital/physical collection filtering** — Public search and frontend collection browsing now support a `Media Type` filter, allowing users to narrow collections to `Digital Only`, `Physical Only`, or `All Media`.
+
+### Changed
+
+- **Collection search and browse query handling** — Updated search query builders to filter by primary collection attachments for digital/physical collection classification.
+- **Date/time display formatting** — Frontend collection and loan date rendering now shifts UTC dates to Asia/Jakarta (WIB/GMT+7) before formatting.
+
 ## [0.1.20] - 2026-04-17
 
 ### Added
