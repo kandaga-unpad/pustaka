@@ -5,6 +5,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Library.{Circulation, Transaction}
   alias Voile.Schema.Catalog.{Item, Collection}
+  alias Voile.Schema.Search
   alias VoileWeb.Auth.Authorization
 
   import Ecto.Query
@@ -498,36 +499,88 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               "fine_type" => "processing"
             })
         })
+        |> assign(:fine_item_search_query, "")
+        |> assign(:fine_item_search_results, [])
+        |> assign(:selected_fine_item, nil)
 
       {:noreply, socket}
     end
   end
 
   def handle_event("create_fine", params, socket) do
-    fine_attrs = %{
-      member_id: socket.assigns.member_id,
-      fine_type: params["fine_type"],
-      description: params["description"],
-      amount: params["amount"],
-      fine_date: DateTime.utc_now(),
-      fine_status: "pending",
-      processed_by_id: socket.assigns.librarian_id
-    }
+    item_id = params["item_id"]
 
-    case Circulation.create_fine(fine_attrs) do
-      {:ok, _fine} ->
-        socket =
-          socket
-          |> assign(:unpaid_fines, load_unpaid_fines(socket.assigns.member_id))
-          |> assign(:total_unpaid_fines, calculate_total_unpaid_fines(socket.assigns.member_id))
-          |> assign(:show_modal, nil)
-          |> put_flash(:info, "Fine created successfully")
+    if item_id in [nil, ""] do
+      {:noreply, put_flash(socket, :error, "Please select an item for the fine")}
+    else
+      fine_attrs = %{
+        member_id: socket.assigns.member_id,
+        item_id: item_id,
+        fine_type: params["fine_type"],
+        description: params["description"],
+        amount: params["amount"],
+        fine_date: DateTime.utc_now(),
+        fine_status: "pending",
+        processed_by_id: socket.assigns.librarian_id
+      }
 
-        {:noreply, socket}
+      case Circulation.create_fine(fine_attrs) do
+        {:ok, _fine} ->
+          socket =
+            socket
+            |> assign(:unpaid_fines, load_unpaid_fines(socket.assigns.member_id))
+            |> assign(:total_unpaid_fines, calculate_total_unpaid_fines(socket.assigns.member_id))
+            |> assign(:show_modal, nil)
+            |> put_flash(:info, "Fine created successfully")
 
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to create fine")}
+          {:noreply, socket}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Failed to create fine")}
+      end
     end
+  end
+
+  def handle_event("search_fine_item", %{"fine_item_query" => query}, socket) do
+    results =
+      if query && String.trim(query) != "" do
+        Search.search_items(query, %{
+          page: 1,
+          per_page: 5,
+          filters: %{status: "active"}
+        }).results
+      else
+        []
+      end
+
+    {:noreply,
+     socket
+     |> assign(:fine_item_search_query, query)
+     |> assign(:fine_item_search_results, results)}
+  end
+
+  def handle_event("select_fine_item", %{"item_id" => item_id}, socket) do
+    case Repo.get(Item, item_id) do
+      nil ->
+        {:noreply, put_flash(socket, :error, "Item not found")}
+
+      item ->
+        item = Repo.preload(item, [:collection, :node])
+
+        {:noreply,
+         socket
+         |> assign(:selected_fine_item, item)
+         |> assign(:fine_item_search_results, [])
+         |> assign(:fine_item_search_query, item.item_code)}
+    end
+  end
+
+  def handle_event("clear_selected_fine_item", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:selected_fine_item, nil)
+     |> assign(:fine_item_search_query, "")
+     |> assign(:fine_item_search_results, [])}
   end
 
   def handle_event("show_waive_fine_modal", %{"fine_id" => fine_id}, socket) do
@@ -1737,7 +1790,88 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <div>
             <h3 class="text-lg font-semibold mb-4">{gettext("Add New Fine")}</h3>
 
+            <form phx-change="search_fine_item" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">{gettext("Search Item")}</label>
+                <input
+                  type="text"
+                  name="fine_item_query"
+                  value={@fine_item_search_query || ""}
+                  phx-debounce="300"
+                  class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder={gettext("Search by item code, title, inventory code, or location...")}
+                />
+              </div>
+
+              <%= if @selected_fine_item do %>
+                <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-700 dark:bg-indigo-900/20 p-3">
+                  <div class="flex items-start justify-between gap-4">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {gettext("Selected Item")}
+                      </p>
+                      <p class="text-sm text-gray-700 dark:text-gray-300">
+                        {[@selected_fine_item.item_code, @selected_fine_item.inventory_code]
+                        |> Enum.reject(&is_nil/1)
+                        |> Enum.join(" / ")}
+                      </p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {if @selected_fine_item.collection,
+                          do: @selected_fine_item.collection.title,
+                          else: gettext("No title")}
+                      </p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {if @selected_fine_item.node,
+                          do: @selected_fine_item.node.name,
+                          else: gettext("No node")}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      phx-click="clear_selected_fine_item"
+                      class="text-sm text-red-600 hover:text-red-800 dark:text-red-400"
+                    >
+                      {gettext("Clear")}
+                    </button>
+                  </div>
+                </div>
+              <% end %>
+
+              <%= if !@selected_fine_item && @fine_item_search_results && @fine_item_search_results != [] do %>
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 space-y-2">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {gettext("Choose an item")}
+                  </p>
+                  <div class="space-y-2">
+                    <%= for item <- @fine_item_search_results do %>
+                      <button
+                        type="button"
+                        phx-click="select_fine_item"
+                        phx-value-item_id={item.id}
+                        class="w-full text-left rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 hover:border-indigo-400 hover:bg-indigo-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-indigo-500 dark:hover:bg-indigo-950"
+                      >
+                        <div class="font-medium">{item.item_code || item.inventory_code}</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">
+                          {item.collection && item.collection.title}
+                        </div>
+                        <div class="text-gray-500 dark:text-gray-500 text-xs">
+                          {item.location}
+                        </div>
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </form>
+
             <form phx-submit="create_fine" class="space-y-4">
+              <input
+                type="hidden"
+                name="item_id"
+                value={(@selected_fine_item && @selected_fine_item.id) || ""}
+              />
+
               <div>
                 <label class="block text-sm font-medium mb-1">{gettext("Fine Type")}</label>
                 <select

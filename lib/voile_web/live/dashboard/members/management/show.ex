@@ -480,8 +480,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
       <%!-- Member Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div class="flex-shrink-0 h-16 w-16">
               <%= if @member.user_image do %>
                 <img
@@ -504,7 +504,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <span class={"inline-flex px-3 py-1 text-sm font-semibold rounded-full #{status_badge_class(@member)}"}>
               {member_status(@member)}
             </span>
@@ -527,9 +527,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             <%= if can?(@current_scope.user, "users.update") do %>
               <.link
                 patch={~p"/manage/members/management/#{@member.id}/edit"}
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
               >
-                <.icon name="hero-pencil" class="w-4 h-4 mr-2" /> {gettext("Edit")}
+                <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit")}
               </.link>
             <% end %>
           </div>
@@ -539,7 +539,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       <%!-- Tabs --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
         <div class="border-b border-gray-200 dark:border-gray-600">
-          <nav class="flex text-[8px]">
+          <nav class="flex flex-wrap gap-2 text-sm">
             <.tab_button
               active={@active_tab == "overview"}
               phx-click="change_tab"
@@ -654,7 +654,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
         id="suspend-modal"
       >
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-700">
+        <div class="relative top-20 mx-auto w-full max-w-lg p-5 border shadow-lg rounded-md bg-white dark:bg-gray-700">
           <div class="mt-3">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
               {gettext("Suspend Member")}
