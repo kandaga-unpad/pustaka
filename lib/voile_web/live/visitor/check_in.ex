@@ -288,6 +288,8 @@ defmodule VoileWeb.Visitor.CheckIn do
             panels: [],
             auto_close_ms: 1_000,
             node_id: node_id,
+            location_id:
+              socket.assigns[:selected_location] && socket.assigns.selected_location.id,
             visitor_log: visitor_log,
             visitor_name: visitor_name,
             visitor_identifier: identifier
