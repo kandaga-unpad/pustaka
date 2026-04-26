@@ -3,16 +3,19 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
   use Gettext, backend: VoileWeb.Gettext
 
   alias Voile.Clearance
+  alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def mount(%{"uuid" => uuid}, _session, socket) do
     letter = Clearance.get_letter(uuid)
     settings = Clearance.get_settings()
+    app_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", nil)
 
     socket =
       socket
       |> assign(:letter, letter)
       |> assign(:settings, settings)
+      |> assign(:app_logo_url, app_logo_url)
 
     {:ok, socket}
   end
@@ -20,6 +23,14 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
   @impl true
   def render(assigns) do
     ~H"""
+    <div class="print:hidden px-6 py-3 bg-gray-50 border-b border-gray-200">
+      <button
+        onclick="history.back()"
+        class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+      >
+        <.icon name="hero-arrow-left" class="w-4 h-4" /> Kembali
+      </button>
+    </div>
     <%= if is_nil(@letter) do %>
       <div class="min-h-screen flex items-center justify-center">
         <div class="text-center">
@@ -63,25 +74,45 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
       <%!-- Letter body — A4-style --%>
       <div class="max-w-[794px] mx-auto my-6 print:my-0 bg-white shadow-md print:shadow-none border border-gray-200 print:border-0 p-12 print:p-10 font-serif text-gray-900">
         <%!-- Letterhead --%>
-        <div class="border-b-2 border-gray-800 pb-4 mb-6">
-          <div class="text-center">
-            <p class="text-lg font-bold uppercase tracking-wide">
-              {@settings["institution_name"]}
-            </p>
-            <%= if @settings["institution_subtitle"] && @settings["institution_subtitle"] != "" do %>
-              <p class="text-sm font-semibold uppercase mt-0.5">
-                {@settings["institution_subtitle"]}
+        <div class="pb-3 mb-6" style="border-bottom: 4px double #1f2937;">
+          <div class="flex items-center gap-5">
+            <div class="shrink-0">
+              <img
+                src={@app_logo_url || "/images/v.png"}
+                alt="Logo"
+                class="h-20 w-auto object-contain"
+              />
+            </div>
+            <div class="flex-1 text-center">
+              <%= if @settings["institution_subtitle"] && @settings["institution_subtitle"] != "" do %>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  {@settings["institution_subtitle"]}
+                </p>
+              <% end %>
+              <p class="text-lg font-bold uppercase tracking-wide mt-0.5">
+                {@settings["institution_name"]}
               </p>
-            <% end %>
-            <%= if @settings["institution_address"] && @settings["institution_address"] != "" do %>
-              <p class="text-xs mt-1">{@settings["institution_address"]}</p>
-            <% end %>
-            <%= if @settings["institution_phone"] && @settings["institution_phone"] != "" do %>
-              <p class="text-xs">Telp. {@settings["institution_phone"]}</p>
-            <% end %>
-            <%= if @settings["institution_email"] && @settings["institution_email"] != "" do %>
-              <p class="text-xs">{@settings["institution_email"]}</p>
-            <% end %>
+              <%= if @settings["institution_address"] && @settings["institution_address"] != "" do %>
+                <p class="text-xs mt-1 text-gray-700">{@settings["institution_address"]}</p>
+              <% end %>
+              <% contact_parts =
+                Enum.reject(
+                  [
+                    if(@settings["institution_phone"] && @settings["institution_phone"] != "",
+                      do: "Telp. " <> @settings["institution_phone"],
+                      else: nil
+                    ),
+                    if(@settings["institution_email"] && @settings["institution_email"] != "",
+                      do: "E-mail : " <> @settings["institution_email"],
+                      else: nil
+                    )
+                  ],
+                  &is_nil/1
+                ) %>
+              <%= if contact_parts != [] do %>
+                <p class="text-xs text-gray-700">{Enum.join(contact_parts, " , ")}</p>
+              <% end %>
+            </div>
           </div>
         </div>
 
@@ -125,15 +156,13 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
         </table>
 
         <%!-- Body text --%>
-        <p class="text-sm leading-relaxed mb-5">
-          adalah benar telah <strong>bebas dari kewajiban kepada perpustakaan</strong>,
-          meliputi tidak ada peminjaman buku yang belum dikembalikan dan tidak ada
-          denda yang belum dibayarkan, sehingga yang bersangkutan dinyatakan <strong>BEBAS PERPUSTAKAAN</strong>.
-        </p>
+        <div class="text-sm leading-relaxed mb-5">
+          {Phoenix.HTML.raw(HtmlSanitizeEx.basic_html(@settings["body_text"] || ""))}
+        </div>
 
-        <p class="text-sm leading-relaxed mb-10">
-          Surat keterangan ini dibuat untuk dipergunakan sebagaimana mestinya.
-        </p>
+        <div class="text-sm leading-relaxed mb-10">
+          {Phoenix.HTML.raw(HtmlSanitizeEx.basic_html(@settings["closing_text"] || ""))}
+        </div>
 
         <%!-- City, date, signature --%>
         <div class="flex justify-end">
@@ -142,7 +171,7 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
               {if @settings["city"] && @settings["city"] != "",
                 do: @settings["city"] <> ", ",
                 else: ""}
-              {format_date(@letter.generated_at)}
+              {FormatIndonesiaTime.format_indonesian_date_specific(@letter.generated_at)}
             </p>
 
             <%= if @settings["signer_title"] && @settings["signer_title"] != "" do %>
@@ -168,27 +197,31 @@ defmodule VoileWeb.Frontend.Clearance.ShowLetter do
           </div>
         </div>
 
-        <%!-- UUID footer --%>
-        <div class="mt-10 pt-4 border-t border-gray-200 text-center">
-          <p class="text-xs text-gray-400">
-            ID Surat: {@letter.id}
-          </p>
-          <p class="text-xs text-gray-400 mt-0.5">
-            Verifikasi surat di: /atrium/clearance/verify
-          </p>
+        <%!-- UUID footer with QR code --%>
+        <div class="mt-10 pt-4 border-t border-gray-200">
+          <div class="grid items-start gap-4 sm:grid-cols-[auto_1fr]">
+            <div class="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-2">
+              <img
+                src={~p"/clearance/surat/#{@letter.id}/qrcode"}
+                alt="QR code"
+                class="h-14 w-14"
+              />
+            </div>
+
+            <div class="space-y-1 text-left text-xs text-gray-700">
+              <p>
+                <span class="font-semibold">ID Surat:</span>
+                {@letter.id}
+              </p>
+              <p class="break-all">
+                <span class="font-semibold">Verifikasi Surat di:</span>
+                {VoileWeb.Endpoint.url() <> "/atrium/clearance/verify"}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     <% end %>
     """
   end
-
-  defp format_date(%DateTime{} = dt) do
-    months =
-      ~w(Januari Februari Maret April Mei Juni Juli Agustus September Oktober November Desember)
-
-    month_name = Enum.at(months, dt.month - 1)
-    "#{dt.day} #{month_name} #{dt.year}"
-  end
-
-  defp format_date(_), do: ""
 end

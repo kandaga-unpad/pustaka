@@ -401,7 +401,9 @@ defmodule Voile.Schema.Library.RequisitionTest do
 
       assert {:ok, fulfilled_requisition} = Repo.update(changeset)
       assert fulfilled_requisition.status == "fulfilled"
-      assert fulfilled_requisition.fulfilled_date == fulfill_time
+
+      assert DateTime.to_unix(fulfilled_requisition.fulfilled_date, :second) ==
+               DateTime.to_unix(fulfill_time, :second)
     end
 
     test "manages requisition workflow" do

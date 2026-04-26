@@ -15,7 +15,7 @@ defmodule Voile.Schema.Library.Transaction do
     field :renewal_count, :integer, default: 0
     field :notes, :string
     field :status, :string
-    field :fine_amount, :decimal, default: 0.0
+    field :fine_amount, :decimal, default: Decimal.new("0")
     field :is_overdue, :boolean, default: false
 
     belongs_to :item, Item, type: :binary_id
@@ -120,7 +120,7 @@ defmodule Voile.Schema.Library.Transaction do
 
     case Date.compare(due_date_only, today) do
       :lt ->
-        Date.diff(today, Date.add(due_date_only, 1))
+        Date.diff(today, due_date_only)
 
       _ ->
         0

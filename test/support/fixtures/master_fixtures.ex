@@ -13,10 +13,10 @@ defmodule Voile.MasterFixtures do
       |> Enum.into(%{
         affiliation: "some affiliation",
         creator_contact: "some creator_contact",
-        creator_name: "some creator_name",
-        type: "some type"
+        creator_name: "some creator_name_#{System.unique_integer([:positive])}",
+        type: "Person"
       })
-      |> Voile.Schema.Master.get_or_create_creator()
+      |> Voile.Schema.Master.create_creator()
 
     creator
   end
@@ -44,14 +44,14 @@ defmodule Voile.MasterFixtures do
     {:ok, member_type} =
       attrs
       |> Enum.into(%{
-        enable_reserve: true,
-        loan_fine: 42,
-        loan_grace_period: 42,
-        loan_limit: 42,
-        loan_period: 42,
-        membership_period: 42,
-        name: "some name",
-        reloan_limit: 42
+        can_reserve: true,
+        fine_per_day: 42,
+        max_items: 42,
+        max_days: 42,
+        membership_period_days: 42,
+        name: "some name_#{System.unique_integer([:positive])}",
+        slug: "some-slug-#{System.unique_integer([:positive])}",
+        max_renewals: 42
       })
       |> Voile.Schema.Master.create_member_type()
 
@@ -62,12 +62,15 @@ defmodule Voile.MasterFixtures do
   Generate a locations.
   """
   def locations_fixture(attrs \\ %{}) do
+    node = Voile.SystemFixtures.node_fixture()
+
     {:ok, locations} =
       attrs
       |> Enum.into(%{
-        location_code: "some location_code",
+        location_code: "some location_code_#{System.unique_integer([:positive])}",
         location_name: "some location_name",
-        location_place: "some location_place"
+        location_place: "some location_place",
+        node_id: node.id
       })
       |> Voile.Schema.Master.create_locations()
 

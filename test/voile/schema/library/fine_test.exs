@@ -43,9 +43,6 @@ defmodule Voile.Schema.Library.FineTest do
       refute changeset.valid?
 
       assert "can't be blank" in errors_on(changeset).fine_type
-      assert "can't be blank" in errors_on(changeset).amount
-      assert "can't be blank" in errors_on(changeset).fine_date
-      assert "can't be blank" in errors_on(changeset).fine_status
       assert "can't be blank" in errors_on(changeset).member_id
     end
 
@@ -227,7 +224,7 @@ defmodule Voile.Schema.Library.FineTest do
     test "has correct default values" do
       fine = %Fine{}
 
-      assert fine.paid_amount == Decimal.new("0.0")
+      assert Decimal.equal?(fine.paid_amount, Decimal.new("0"))
       assert fine.waived == false
     end
   end

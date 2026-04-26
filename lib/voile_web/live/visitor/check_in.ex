@@ -825,6 +825,13 @@ defmodule VoileWeb.Visitor.CheckIn do
                   </select>
                 </div>
 
+                <button
+                  type="submit"
+                  class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold rounded-lg transition-colors shadow-lg"
+                >
+                  {gettext("Check In Now")}
+                </button>
+
                 <div class="mt-4">
                   <VirtualKeyboard.virtual_keyboard
                     target="visitor_identifier"

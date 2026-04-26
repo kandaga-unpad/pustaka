@@ -10,7 +10,7 @@ defmodule VoileWeb.UserSessionController do
 
   def create(conn, %{"_action" => "password_updated"} = params) do
     conn
-    |> put_session(:user_return_to, ~p"/manage/settings")
+    |> put_session(:user_return_to, ~p"/manage/settings/user_profile")
     |> create(params, "Password updated successfully!")
   end
 

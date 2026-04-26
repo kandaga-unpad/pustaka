@@ -838,6 +838,7 @@ defmodule VoileWeb.CoreComponents do
       <.locale_switcher class="my-custom-class" />
 
   """
+  attr :id, :string, default: "locale-switcher"
   attr :class, :string, default: ""
   attr :current_path, :string, default: "/"
   attr :hook, :string, default: "LocaleSwitcher"
@@ -848,10 +849,11 @@ defmodule VoileWeb.CoreComponents do
       |> assign_new(:current_path, fn -> "/" end)
       |> assign_new(:hook, fn -> "LocaleSwitcher" end)
       |> assign(:current_locale, VoileWeb.Utils.Locale.get_locale())
+      |> assign(:dropdown_id, "#{assigns.id}-dropdown")
 
     ~H"""
     <div
-      id="locale-switcher"
+      id={@id}
       data-current-path={@current_path}
       phx-hook={@hook}
       class={["relative inline-block", @class]}
@@ -860,7 +862,7 @@ defmodule VoileWeb.CoreComponents do
         type="button"
         phx-click={
           JS.toggle(
-            to: "#locale-dropdown",
+            to: "##{@dropdown_id}",
             in: "opacity-100 scale-100",
             out: "opacity-0 scale-95",
             display: "block"
@@ -877,10 +879,10 @@ defmodule VoileWeb.CoreComponents do
         <.icon name="hero-chevron-down" class="h-4 w-4" />
       </button>
       <div
-        id="locale-dropdown"
+        id={@dropdown_id}
         phx-click-away={
           JS.hide(
-            to: "#locale-dropdown",
+            to: "##{@dropdown_id}",
             transition: "opacity-0 scale-95"
           )
         }
@@ -1022,13 +1024,15 @@ defmodule VoileWeb.CoreComponents do
         "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-green-400",
       "blue" => "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-blue-400",
       "purple" =>
-        "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 border-purple-400"
+        "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 border-purple-400",
+      "teal" => "from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 border-teal-400"
     }
 
     button_classes = %{
       "green" => "bg-green-600 hover:bg-green-700 text-white border-green-500",
       "blue" => "bg-blue-600 hover:bg-blue-700 text-white border-blue-500",
-      "purple" => "bg-purple-600 hover:bg-purple-700 text-white border-purple-500"
+      "purple" => "bg-purple-600 hover:bg-purple-700 text-white border-purple-500",
+      "teal" => "bg-teal-600 hover:bg-teal-700 text-white border-teal-500"
     }
 
     assigns =

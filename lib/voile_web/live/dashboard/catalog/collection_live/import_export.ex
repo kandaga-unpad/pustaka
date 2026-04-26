@@ -43,49 +43,56 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
   @impl true
   def mount(_params, _session, socket) do
-    authorize!(socket, "collections.create")
+    if not Authorization.is_super_admin?(socket) do
+      {:ok,
+       socket
+       |> put_flash(:error, "Access denied. Super admin only.")
+       |> push_navigate(to: ~p"/manage/catalog/collections")}
+    else
+      authorize!(socket, "collections.create")
 
-    is_super_admin = Authorization.is_super_admin?(socket)
-    user = socket.assigns.current_scope.user
+      is_super_admin = true
+      user = socket.assigns.current_scope.user
 
-    nodes =
-      if is_super_admin do
-        Repo.all(from n in Node, order_by: n.name)
-      else
-        case user.node_id && Repo.get(Node, user.node_id) do
-          %Node{} = node -> [node]
-          _ -> []
+      nodes =
+        if is_super_admin do
+          Repo.all(from n in Node, order_by: n.name)
+        else
+          case user.node_id && Repo.get(Node, user.node_id) do
+            %Node{} = node -> [node]
+            _ -> []
+          end
         end
-      end
 
-    import_node_id =
-      if is_super_admin,
-        do: nodes |> List.first() |> then(&if(&1, do: &1.id, else: nil)),
-        else: user.node_id
+      import_node_id =
+        if is_super_admin,
+          do: nodes |> List.first() |> then(&if(&1, do: &1.id, else: nil)),
+          else: user.node_id
 
-    {:ok,
-     socket
-     |> assign(:page_title, "Import & Export Collections")
-     |> assign(:step, :upload)
-     |> assign(:parsed_rows, [])
-     |> assign(:row_count, 0)
-     |> assign(:parse_error, nil)
-     |> assign(:import_results, [])
-     |> assign(:import_errors, [])
-     |> assign(:dedup_count, 0)
-     |> assign(:skipped_count, 0)
-     |> assign(:nodes, nodes)
-     |> assign(:export_node_id, if(is_super_admin, do: "all", else: to_string(user.node_id)))
-     |> assign(:import_node_id, import_node_id)
-     |> assign(:is_super_admin, is_super_admin)
-     |> assign(:export_loading, false)
-     |> assign(:csv_headers, @csv_headers)
-     |> assign(:max_rows, @max_rows)
-     |> allow_upload(:csv_file,
-       accept: ~w(.csv text/csv),
-       max_entries: 1,
-       max_file_size: 5_000_000
-     )}
+      {:ok,
+       socket
+       |> assign(:page_title, "Import & Export Collections")
+       |> assign(:step, :upload)
+       |> assign(:parsed_rows, [])
+       |> assign(:row_count, 0)
+       |> assign(:parse_error, nil)
+       |> assign(:import_results, [])
+       |> assign(:import_errors, [])
+       |> assign(:dedup_count, 0)
+       |> assign(:skipped_count, 0)
+       |> assign(:nodes, nodes)
+       |> assign(:export_node_id, if(is_super_admin, do: "all", else: to_string(user.node_id)))
+       |> assign(:import_node_id, import_node_id)
+       |> assign(:is_super_admin, is_super_admin)
+       |> assign(:export_loading, false)
+       |> assign(:csv_headers, @csv_headers)
+       |> assign(:max_rows, @max_rows)
+       |> allow_upload(:csv_file,
+         accept: ~w(.csv text/csv),
+         max_entries: 1,
+         max_file_size: 5_000_000
+       )}
+    end
   end
 
   @impl true

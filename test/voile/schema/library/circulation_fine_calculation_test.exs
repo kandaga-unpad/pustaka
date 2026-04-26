@@ -3,8 +3,12 @@ defmodule Voile.Schema.Library.CirculationFineCalculationTest do
 
   alias Voile.Schema.Library.{Circulation, Transaction}
   alias Voile.Schema.Master.MemberType
-  alias Voile.Schema.Accounts.User
   alias Voile.Schema.Catalog.Item
+
+  import Voile.AccountsFixtures
+  import Voile.MasterFixtures
+  import Voile.MetadataFixtures
+  import Voile.SystemFixtures
 
   describe "fine calculation with skip_holidays option" do
     setup do
@@ -30,47 +34,55 @@ defmodule Voile.Schema.Library.CirculationFineCalculationTest do
         |> Repo.insert()
 
       # Create test member
-      {:ok, member} =
-        %User{}
-        |> User.changeset(%{
-          identifier: "TEST001",
+      member =
+        user_fixture(%{
+          identifier: Decimal.new("1001"),
           fullname: "Test Member",
           email: "test@example.com",
-          user_role_id: 2,
-          user_type_id: member_type.id,
-          status: "active"
+          user_type_id: member_type.id
         })
-        |> Repo.insert()
 
       # Create test item
+      creator = creator_fixture()
+      node = node_fixture()
+      resource_class = resource_class_fixture()
+
       {:ok, collection} =
         Voile.Schema.Catalog.create_collection(%{
+          collection_code: "TEST-COLLECTION-#{System.unique_integer([:positive])}",
           title: "Test Book",
-          material_type: "book",
-          status: "active"
+          description: "Test book collection",
+          thumbnail: "test-thumbnail.jpg",
+          status: "draft",
+          access_level: "public",
+          creator_id: creator.id,
+          type_id: resource_class.id,
+          unit_id: node.id
         })
 
       {:ok, item} =
         %Item{}
         |> Item.changeset(%{
           item_code: "ITEM001",
+          inventory_code: "INV-ITEM001",
+          barcode: "BAR-ITEM001",
           collection_id: collection.id,
+          unit_id: node.id,
           availability: "available",
-          status: "active"
+          status: "active",
+          condition: "good",
+          location: "Test Branch"
         })
         |> Repo.insert()
 
       # Create librarian
-      {:ok, librarian} =
-        %User{}
-        |> User.changeset(%{
-          identifier: "LIB001",
+      librarian =
+        user_fixture(%{
+          identifier: Decimal.new("2001"),
           fullname: "Test Librarian",
           email: "librarian@example.com",
-          user_role_id: 1,
-          status: "active"
+          user_type_id: member_type.id
         })
-        |> Repo.insert()
 
       # Create an overdue transaction
       # Due 10 days ago

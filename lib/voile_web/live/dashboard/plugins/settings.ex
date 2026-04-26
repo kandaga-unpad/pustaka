@@ -152,7 +152,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
                             <.input
                               type="checkbox"
                               name={"settings[#{field.key}]"}
-                              checked={get_form_value(@form, field.key) == true}
+                              checked={get_form_value(@form, field.key) in [true, "true"]}
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">
                               {gettext("Enabled")}

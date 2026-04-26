@@ -11,7 +11,7 @@ defmodule Voile.Schema.Library.Fine do
   schema "lib_fines" do
     field :fine_type, :string
     field :amount, :decimal
-    field :paid_amount, :decimal, default: 0
+    field :paid_amount, :decimal, default: Decimal.new("0")
     field :balance, :decimal
     field :fine_date, :utc_datetime
     field :payment_date, :utc_datetime

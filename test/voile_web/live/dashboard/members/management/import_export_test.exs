@@ -12,9 +12,13 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExportTest do
   setup do
     node = SystemFixtures.node_fixture(name: "Main Library")
 
+    unique_suffix = System.unique_integer([:positive, :monotonic])
+
+    member_type_name = "Staff #{unique_suffix}"
+
     member_type =
       %MemberType{}
-      |> MemberType.changeset(%{name: "Staff", slug: "staff"})
+      |> MemberType.changeset(%{name: member_type_name, slug: "staff-#{unique_suffix}"})
       |> Repo.insert!()
 
     current_user =

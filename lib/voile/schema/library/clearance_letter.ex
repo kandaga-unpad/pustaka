@@ -9,6 +9,7 @@ defmodule Voile.Schema.Library.ClearanceLetter do
   schema "clearance_letters" do
     field :letter_number, :string
     field :sequence_number, :integer
+    field :identifier, :string
     field :member_snapshot, :map
     field :generated_at, :utc_datetime
     field :is_revoked, :boolean, default: false
@@ -27,6 +28,7 @@ defmodule Voile.Schema.Library.ClearanceLetter do
     |> cast(attrs, [
       :letter_number,
       :sequence_number,
+      :identifier,
       :member_id,
       :member_snapshot,
       :generated_at,
@@ -38,6 +40,7 @@ defmodule Voile.Schema.Library.ClearanceLetter do
     |> validate_required([
       :letter_number,
       :sequence_number,
+      :identifier,
       :member_id,
       :member_snapshot,
       :generated_at

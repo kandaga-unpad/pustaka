@@ -54,6 +54,11 @@ defmodule VoileWeb.Utils.FormatIndonesiaTime do
     "#{day_of_week}, #{datetime.day} #{month} #{datetime.year}"
   end
 
+  def format_indonesian_date_specific(%DateTime{} = datetime) do
+    month = get_month(datetime)
+    "#{datetime.day} #{month} #{datetime.year}"
+  end
+
   def format_full_indonesian_date(%NaiveDateTime{} = naive_datetime) do
     naive_datetime
     |> DateTime.from_naive!("Etc/UTC")

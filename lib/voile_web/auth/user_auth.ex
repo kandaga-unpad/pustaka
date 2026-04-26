@@ -495,15 +495,16 @@ defmodule VoileWeb.UserAuth do
   end
 
   defp mount_current_scope(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_scope, fn ->
-      {user, _} =
-        if user_token = session["user_token"] do
-          Accounts.get_user_by_session_token(user_token)
-        end || {nil, nil}
+    {user, _token_inserted_at} =
+      if user_token = session["user_token"] do
+        Accounts.get_user_by_session_token(user_token)
+      else
+        {nil, nil}
+      end
 
-      user = Voile.Repo.preload(user, [:roles, :user_type, :node])
+    user = Voile.Repo.preload(user, [:roles, :user_type, :node])
 
-      # Check if user is suspended
+    current_scope =
       if user && Accounts.is_manually_suspended?(user) do
         # Disconnect the socket
         reason = user.suspension_reason || "Your account has been suspended"
@@ -516,7 +517,8 @@ defmodule VoileWeb.UserAuth do
       else
         Scope.for_user(user)
       end
-    end)
+
+    Phoenix.Component.assign(socket, :current_scope, current_scope)
   end
 
   defp check_onboarding_hook(_params, url, socket) do

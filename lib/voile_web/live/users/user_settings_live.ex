@@ -119,7 +119,13 @@ defmodule VoileWeb.UserSettingsLive do
               <.input field={@profile_form[:fullname]} type="text" label={gettext("Full name")} />
               <.input field={@profile_form[:username]} type="text" label={gettext("Username")} />
             </div>
-            <.input field={@profile_form[:email]} type="email" label={gettext("Email")} disabled />
+            <.input
+              field={@profile_form[:email]}
+              type="email"
+              label={gettext("Email")}
+              disabled
+              id="profile_email"
+            />
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {gettext("Profile image")}
             </label>
@@ -282,7 +288,7 @@ defmodule VoileWeb.UserSettingsLive do
           put_flash(socket, :error, gettext("Email change link is invalid or it has expired."))
       end
 
-    {:ok, push_navigate(socket, to: ~p"/manage/settings")}
+    {:ok, push_navigate(socket, to: ~p"/manage/settings/user_profile")}
   end
 
   def mount(_params, _session, socket) do

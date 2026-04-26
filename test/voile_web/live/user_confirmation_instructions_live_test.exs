@@ -4,7 +4,7 @@ defmodule VoileWeb.UserConfirmationInstructionsLiveTest do
   import Phoenix.LiveViewTest
   import Voile.AccountsFixtures
 
-  alias Voile.Accounts
+  alias Voile.Schema.Accounts
   alias Voile.Repo
 
   setup do

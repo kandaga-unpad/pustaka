@@ -17,7 +17,7 @@ defmodule Voile.Schema.Metadata.Property do
 
     field :type_value, :string
 
-    belongs_to :owner, User
+    belongs_to :owner, User, type: :binary_id
     belongs_to :vocabulary, Vocabulary
 
     timestamps(type: :utc_datetime)

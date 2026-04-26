@@ -104,6 +104,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.AddItemLibrarianNodeTest do
       Catalog.create_collection(%{
         title: "Test Collection for Item Code Test",
         description: "A test collection",
+        thumbnail: "test-thumbnail.jpg",
         status: "published",
         access_level: "public",
         collection_code: collection_code,

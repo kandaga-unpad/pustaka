@@ -109,8 +109,10 @@ defmodule VoileWeb.UserRegistrationLive do
 
   def mount(_params, _session, socket) do
     # Redirect already authenticated users to appropriate page
-    if socket.assigns.current_scope && socket.assigns.current_scope.user do
-      user = socket.assigns.current_scope.user
+    current_scope = socket.assigns[:current_scope]
+
+    if is_map(current_scope) && current_scope.user do
+      user = current_scope.user
 
       redirect_path = determine_redirect_path(user)
       {:ok, push_navigate(socket, to: redirect_path)}

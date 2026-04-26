@@ -73,11 +73,13 @@ defmodule Voile.LibraryFixtures do
   end
 
   def valid_requisition_attributes(attrs \\ %{}) do
+    unique = System.unique_integer([:positive])
+
     Enum.into(attrs, %{
       request_date: DateTime.utc_now(),
       request_type: "purchase_request",
       status: "submitted",
-      title: "Test Book Title",
+      title: "Test Book Title #{unique}",
       author: "Test Author",
       description: "Test book description"
     })
@@ -161,11 +163,13 @@ defmodule Voile.LibraryFixtures do
 
   def overdue_transaction_fixture(attrs \\ %{}) do
     # Create a transaction that's already overdue
+    past_transaction_date = DateTime.add(DateTime.utc_now(), -21 * 24 * 60 * 60, :second)
     past_due_date = DateTime.add(DateTime.utc_now(), -5 * 24 * 60 * 60, :second)
 
     attrs =
       attrs
       |> valid_transaction_attributes()
+      |> Map.put(:transaction_date, past_transaction_date)
       |> Map.put(:due_date, past_due_date)
       |> Map.put(:is_overdue, true)
 
@@ -174,11 +178,13 @@ defmodule Voile.LibraryFixtures do
 
   def expired_reservation_fixture(attrs \\ %{}) do
     # Create a reservation that's already expired
+    past_reservation_date = DateTime.add(DateTime.utc_now(), -14 * 24 * 60 * 60, :second)
     past_expiry = DateTime.add(DateTime.utc_now(), -2 * 24 * 60 * 60, :second)
 
     attrs =
       attrs
       |> valid_reservation_attributes()
+      |> Map.put(:reservation_date, past_reservation_date)
       |> Map.put(:expiry_date, past_expiry)
       |> Map.put(:status, "pending")
 
@@ -208,7 +214,29 @@ defmodule Voile.LibraryFixtures do
   defp ensure_item do
     case Repo.all(from i in Item, limit: 1) do
       [item | _] ->
-        Repo.preload(item, [:collection])
+        item = Repo.preload(item, [:collection])
+
+        attrs = %{
+          item_code: item.item_code || "TEST-#{System.unique_integer([:positive])}",
+          inventory_code: item.inventory_code || "INV-#{System.unique_integer([:positive])}",
+          barcode: item.barcode || "BARCODE-#{System.unique_integer([:positive])}",
+          location: item.location || "Test Library - Shelf A1",
+          status: item.status || "active",
+          availability: item.availability || "available",
+          condition: item.condition || "good"
+        }
+
+        if attrs[:barcode] != item.barcode or attrs[:availability] != item.availability or
+             attrs[:status] != item.status or attrs[:condition] != item.condition or
+             attrs[:location] != item.location or attrs[:item_code] != item.item_code or
+             attrs[:inventory_code] != item.inventory_code do
+          item
+          |> Item.changeset(attrs)
+          |> Repo.update!()
+          |> Repo.preload([:collection])
+        else
+          item
+        end
 
       [] ->
         collection = ensure_collection()
@@ -218,6 +246,7 @@ defmodule Voile.LibraryFixtures do
           |> Item.changeset(%{
             item_code: "TEST-#{System.unique_integer()}",
             inventory_code: "INV-#{System.unique_integer()}",
+            barcode: "BARCODE-#{System.unique_integer()}",
             location: "Test Library - Shelf A1",
             status: "active",
             availability: "available",

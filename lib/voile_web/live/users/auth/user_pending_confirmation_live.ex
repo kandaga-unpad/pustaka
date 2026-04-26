@@ -114,9 +114,9 @@ defmodule VoileWeb.UserPendingConfirmationLive do
     email = params["email"]
 
     # `socket.assigns.current_scope` may be nil when this LiveView is mounted
-    # outside of the expected live_session. Use a safe check instead of
-    # calling Map.has_key?/2 directly on a potentially nil value.
-    is_user_logged_in = not is_nil(get_in(socket.assigns, [:current_scope, :user]))
+    # outside of the expected live_session.
+    current_scope = socket.assigns[:current_scope]
+    is_user_logged_in = current_scope && current_scope.user != nil
 
     if is_user_logged_in do
       {:ok,

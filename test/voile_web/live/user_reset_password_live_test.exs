@@ -4,7 +4,7 @@ defmodule VoileWeb.UserResetPasswordLiveTest do
   import Phoenix.LiveViewTest
   import Voile.AccountsFixtures
 
-  alias Voile.Accounts
+  alias Voile.Schema.Accounts
 
   setup do
     user = user_fixture()
@@ -61,7 +61,7 @@ defmodule VoileWeb.UserResetPasswordLiveTest do
           }
         )
         |> render_submit()
-        |> follow_redirect(conn, ~p"/users/log_in")
+        |> follow_redirect(conn, ~p"/login")
 
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
@@ -95,7 +95,7 @@ defmodule VoileWeb.UserResetPasswordLiveTest do
         lv
         |> element(~s|main a:fl-contains("Log in")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/users/log_in")
+        |> follow_redirect(conn, ~p"/login")
 
       assert conn.resp_body =~ "Log in"
     end
@@ -110,7 +110,7 @@ defmodule VoileWeb.UserResetPasswordLiveTest do
         lv
         |> element(~s|main a:fl-contains("Register")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/users/register")
+        |> follow_redirect(conn, ~p"/register")
 
       assert conn.resp_body =~ "Register"
     end

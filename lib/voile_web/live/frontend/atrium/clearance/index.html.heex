@@ -1,124 +1,320 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="max-w-2xl mx-auto px-4 py-8">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">
-        Surat Keterangan Bebas Perpustakaan
-      </h1>
-      <p class="text-gray-500 mt-1 text-sm">
-        Permohonan surat keterangan bebas pinjaman dan denda perpustakaan
-      </p>
-    </div>
-
-    <%= if @not_eligible_type do %>
-      <div class="rounded-lg border border-amber-200 bg-amber-50 p-5">
-        <div class="flex items-start gap-3">
-          <.icon name="hero-exclamation-triangle" class="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-          <div>
-            <p class="font-medium text-amber-800">Tidak dapat mengajukan surat</p>
-            <p class="text-sm text-amber-700 mt-1">
-              Tipe keanggotaan Anda tidak memenuhi syarat untuk menerima surat keterangan bebas perpustakaan.
-              Hubungi petugas perpustakaan untuk informasi lebih lanjut.
-            </p>
-          </div>
-        </div>
-      </div>
-    <% else %>
-      <%!-- Existing letter notice --%>
-      <%= if @existing_letter do %>
-        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 mb-6">
-          <div class="flex items-start gap-3">
-            <.icon name="hero-document-check" class="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-blue-800 text-sm">
-                Surat sudah pernah diterbitkan
+  <div class="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div class="space-y-6">
+        <section class="rounded-3xl border border-slate-800/80 bg-slate-950/95 p-8 shadow-xl shadow-slate-900/20 text-white">
+          <div class="space-y-4">
+            <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-200">
+              <.icon name="hero-document-text" class="w-4 h-4" /> {gettext(
+                "Surat Bebas Perpustakaan"
+              )}
+            </div>
+            <div class="space-y-3">
+              <h1 class="text-3xl font-semibold tracking-tight">
+                {gettext("Library Clearance Eligibility")}
+              </h1>
+              <p class="max-w-2xl text-slate-300 leading-7">
+                {gettext(
+                  "Check your eligibility to receive a library clearance letter. Review loan status, fines, and contact support if any obligations remain."
+                )}
               </p>
-              <p class="text-sm text-blue-700 mt-0.5">
-                Nomor: {@existing_letter.letter_number}
-              </p>
-              <.link
-                navigate={~p"/clearance/surat/#{@existing_letter.id}"}
-                class="inline-flex items-center gap-1 mt-2 text-sm font-medium text-blue-700 hover:text-blue-900"
-              >
-                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-                Lihat surat
-              </.link>
             </div>
           </div>
-        </div>
-      <% end %>
 
-      <%!-- Eligibility checklist --%>
-      <div class="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-        <div class="px-5 py-4">
-          <h2 class="font-semibold text-gray-800">Persyaratan</h2>
-          <p class="text-sm text-gray-500 mt-0.5">Semua persyaratan berikut harus terpenuhi</p>
-        </div>
-
-        <%= for check <- @eligibility.checks do %>
-          <div class="flex items-start gap-4 px-5 py-4">
-            <%= if check.passed do %>
-              <div class="shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                <.icon name="hero-check" class="w-4 h-4 text-green-600" />
-              </div>
-            <% else %>
-              <div class="shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center mt-0.5">
-                <.icon name="hero-x-mark" class="w-4 h-4 text-red-500" />
-              </div>
-            <% end %>
-            <div>
-              <p class={["text-sm font-medium", if(check.passed, do: "text-gray-800", else: "text-red-700")]}>
-                {check.label}
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-900/70 border border-white/10 p-5">
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-400">{gettext("Status")}</p>
+              <p class="mt-3 text-xl font-semibold text-white">
+                <%= if @eligibility && @eligibility.eligible do %>
+                  {gettext("Ready to Submit")}
+                <% else %>
+                  {gettext("Not Eligible")}
+                <% end %>
               </p>
-              <%= if check.detail do %>
-                <p class="text-xs text-red-600 mt-0.5">{check.detail}</p>
-              <% end %>
+            </div>
+            <div class="rounded-3xl bg-slate-900/70 border border-white/10 p-5">
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-400">
+                {gettext("Last Letter")}
+              </p>
+              <p class="mt-3 text-xl font-semibold text-white">
+                <%= if @existing_letter do %>
+                  {@existing_letter.letter_number}
+                <% else %>
+                  {gettext("None yet")}
+                <% end %>
+              </p>
             </div>
           </div>
-        <% end %>
-      </div>
+        </section>
 
-      <%!-- Error notice --%>
-      <%= if @error do %>
-        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {@error}
-        </div>
-      <% end %>
-
-      <%!-- Actions --%>
-      <div class="mt-6 flex items-center gap-3">
-        <%= if @eligibility.eligible do %>
-          <button
-            id="generate-letter-btn"
-            phx-click="generate_letter"
-            phx-disable-with="Membuat surat…"
-            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
-            <.icon name="hero-document-plus" class="w-4 h-4" />
-            <%= if @existing_letter do %>
-              Buat Surat Baru
-            <% else %>
-              Ajukan Surat
-            <% end %>
-          </button>
+        <%= if @not_eligible_type do %>
+          <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950 dark:border-amber-700/30 dark:bg-amber-950/20 dark:text-amber-200">
+            <div class="flex items-start gap-3">
+              <.icon name="hero-exclamation-triangle" class="w-5 h-5 text-amber-600" />
+              <div>
+                <p class="font-semibold">{gettext("Membership type is not eligible")}</p>
+                <p class="mt-2 text-sm leading-6">
+                  {gettext(
+                    "Your membership type cannot receive a library clearance letter. Contact the library for more information."
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
         <% else %>
-          <button
-            disabled
-            class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-400 cursor-not-allowed"
-          >
-            <.icon name="hero-document-plus" class="w-4 h-4" />
-            Ajukan Surat
-          </button>
-        <% end %>
+          <%= if @existing_letter do %>
+            <div class="rounded-3xl border border-blue-200 bg-blue-50 p-5 sm:p-6 mb-6 dark:border-blue-700/40 dark:bg-blue-950/20">
+              <div class="flex items-start gap-3">
+                <.icon name="hero-document-check" class="w-5 h-5 text-blue-600 shrink-0" />
+                <div class="min-w-0">
+                  <p class="font-semibold text-blue-800 dark:text-blue-200">
+                    {gettext("A letter has already been issued for this identifier")}
+                  </p>
+                  <p class="mt-1 text-sm text-blue-700 dark:text-blue-100">
+                    {gettext("Letter number: %{number}", number: @existing_letter.letter_number)}
+                  </p>
+                  <p class="mt-1 text-xs text-blue-700 dark:text-blue-100">
+                    {gettext("ID: %{id}", id: @existing_letter.id)}
+                  </p>
+                  <.link
+                    navigate={~p"/clearance/surat/#{@existing_letter.id}"}
+                    class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 dark:text-blue-200 dark:hover:text-white"
+                  >
+                    <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> {gettext(
+                      "View letter"
+                    )}
+                  </.link>
+                </div>
+              </div>
+            </div>
+          <% end %>
 
-        <button
-          id="refresh-eligibility-btn"
-          phx-click="refresh_eligibility"
-          class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <.icon name="hero-arrow-path" class="w-4 h-4" />
-          Perbarui Status
-        </button>
+          <%= if @existing_letters && length(@existing_letters) > 1 do %>
+            <div class="rounded-3xl border border-slate-200/70 bg-slate-50 p-5 mb-6 dark:border-slate-700 dark:bg-slate-900/80">
+              <p class="font-semibold text-slate-900 dark:text-slate-100">
+                {gettext("Other letters for this account")}
+              </p>
+              <div class="mt-4 space-y-3">
+                <%= for letter <- @existing_letters do %>
+                  <div class="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-950/80">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                          {letter.letter_number}
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                          {gettext("ID: %{id}", id: letter.id)}
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                          {gettext("Identifier: %{identifier}",
+                            identifier: letter.member_snapshot["identifier"] || "—"
+                          )}
+                        </p>
+                      </div>
+                      <.link
+                        navigate={~p"/clearance/surat/#{letter.id}"}
+                        class="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 hover:text-indigo-900 dark:text-indigo-300 dark:hover:text-white"
+                      >
+                        <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> {gettext(
+                          "View"
+                        )}
+                      </.link>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="rounded-3xl border border-slate-200/70 bg-white shadow-sm shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-200">
+            <div class="px-6 py-5 sm:px-8 sm:py-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
+                    {gettext("Eligibility")}
+                  </p>
+                  <h2 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+                    {gettext("Submission Requirements")}
+                  </h2>
+                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    {gettext(
+                      "All of the following requirements must be met before you can submit a library clearance letter."
+                    )}
+                  </p>
+                </div>
+                <div class={[
+                  "rounded-full whitespace-nowrap px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]",
+                  if(@eligibility && @eligibility.eligible,
+                    do:
+                      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200",
+                    else: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+                  )
+                ]}>
+                  <%= if @eligibility && @eligibility.eligible do %>
+                    {gettext("Eligible")}
+                  <% else %>
+                    {gettext("Not Eligible")}
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <div class="divide-y divide-slate-200/80 dark:divide-slate-700">
+              <div class="px-6 py-6 sm:px-8">
+                <div class="grid gap-4">
+                  <%= for check <- @eligibility.checks do %>
+                    <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+                      <div class="flex items-start gap-4">
+                        <div class={[
+                          "shrink-0 flex h-10 w-10 items-center justify-center rounded-2xl",
+                          if(check.passed,
+                            do: "bg-emerald-100 text-emerald-700",
+                            else: "bg-rose-100 text-rose-700"
+                          )
+                        ]}>
+                          <.icon
+                            name={if check.passed, do: "hero-check", else: "hero-x-mark"}
+                            class="w-5 h-5"
+                          />
+                        </div>
+                        <div class="min-w-0">
+                          <p class={[
+                            "text-sm font-semibold",
+                            if(check.passed,
+                              do: "text-slate-900 dark:text-white",
+                              else: "text-rose-700 dark:text-rose-200"
+                            )
+                          ]}>
+                            {check.label}
+                          </p>
+                          <%= if check.detail do %>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                              {check.detail}
+                            </p>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="px-6 py-6 sm:px-8">
+                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="space-y-3">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                      {gettext("Next Steps")}
+                    </p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
+                      {gettext(
+                        "Update your status once you have completed your obligations. If all requirements are met, you can submit the letter directly."
+                      )}
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      id="refresh-eligibility-btn"
+                      phx-click="refresh_eligibility"
+                      class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >
+                      <.icon name="hero-arrow-path" class="w-4 h-4" /> {gettext("Refresh Status")}
+                    </button>
+
+                    <%= if @existing_letter do %>
+                      <.link
+                        navigate={~p"/clearance/surat/#{@existing_letter.id}"}
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
+                      >
+                        <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+                        {gettext("View Your Letter")}
+                      </.link>
+                    <% else %>
+                      <button
+                        id="generate-letter-btn"
+                        phx-click="generate_letter"
+                        phx-disable-with={gettext("Generating letter…")}
+                        disabled={not @eligibility.eligible}
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700 disabled:opacity-60"
+                      >
+                        <.icon name="hero-document-plus" class="w-4 h-4" /> {gettext(
+                          "Submit Letter"
+                        )}
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <%= if @error do %>
+              <div class="px-6 pb-6 sm:px-8">
+                <div class="rounded-3xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-700/30 dark:bg-red-950/20 dark:text-red-200">
+                  {@error}
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
       </div>
-    <% end %>
+
+      <aside class="space-y-6">
+        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm p-6 dark:border-slate-700 dark:bg-slate-950/80">
+          <div class="flex items-start gap-3">
+            <div class="rounded-2xl bg-indigo-500/10 p-3 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
+              <.icon name="hero-support" class="w-5 h-5" />
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                {gettext("Need help?")}
+              </p>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                {gettext(
+                  "If you still have loans or fines, contact library services for guidance on resolving them."
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 space-y-4">
+            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/80">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                {gettext("Kontak Email")}
+              </p>
+              <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
+                {@institution_email || "-"}
+              </p>
+            </div>
+            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/80">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                {gettext("Kontak Telepon")}
+              </p>
+              <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
+                {@institution_phone || "-"}
+              </p>
+            </div>
+          </div>
+
+          <%= if @support_needed do %>
+            <div class="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700/30 dark:bg-amber-950/20 dark:text-amber-200">
+              <p class="font-semibold">{gettext("Outstanding obligations remain")}</p>
+              <p class="mt-2">
+                {gettext(
+                  "Resolve fines or returned items first. If you need help, contact library services above."
+                )}
+              </p>
+            </div>
+          <% else %>
+            <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
+              <p class="font-semibold">{gettext("Ready to submit")}</p>
+              <p class="mt-2">
+                {gettext(
+                  "You have no active fines or loans. Click Submit Letter to generate your library clearance letter."
+                )}
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </aside>
+    </div>
   </div>
 </Layouts.app>

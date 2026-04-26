@@ -41,6 +41,20 @@ defmodule Voile.Schema.Accounts do
     Repo.get_by(User, email: email) |> preload_user_assocs()
   end
 
+  def get_user_by_login(login) when is_binary(login) do
+    case String.trim(login) do
+      value when value == "" ->
+        nil
+
+      value ->
+        if String.contains?(value, "@") do
+          get_user_by_email(value)
+        else
+          get_user_by_identifier(value)
+        end
+    end
+  end
+
   # Assign a member type based on identifier heuristics:
   # - 12-digit numeric -> `member_verified`
   # - numeric and length >= 13 (likely generated unix-timestamp+rand) -> `public_verified`

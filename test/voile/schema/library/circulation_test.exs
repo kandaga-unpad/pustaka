@@ -49,7 +49,7 @@ defmodule Voile.Schema.Library.CirculationTest do
       circulation_history_fixture()
       circulation_history_fixture()
 
-      {results, total_pages} = Circulation.list_circulation_history_paginated(1, 2)
+      {results, total_pages, _total_count} = Circulation.list_circulation_history_paginated(1, 2)
 
       assert length(results) <= 2
       assert total_pages >= 1
@@ -132,7 +132,7 @@ defmodule Voile.Schema.Library.CirculationTest do
       fine_fixture()
       fine_fixture()
 
-      {results, total_pages} = Circulation.list_fines_paginated(1, 1)
+      {results, total_pages, _total_count} = Circulation.list_fines_paginated(1, 1)
 
       assert length(results) == 1
       assert total_pages >= 1
@@ -200,7 +200,7 @@ defmodule Voile.Schema.Library.CirculationTest do
       requisition_fixture()
       requisition_fixture()
 
-      {results, total_pages} = Circulation.list_requisitions_paginated(1, 1)
+      {results, total_pages, _total_count} = Circulation.list_requisitions_paginated(1, 1)
 
       assert length(results) == 1
       assert total_pages >= 1
@@ -280,7 +280,7 @@ defmodule Voile.Schema.Library.CirculationTest do
       reservation_fixture()
       reservation_fixture()
 
-      {results, total_pages} = Circulation.list_reservations_paginated(1, 1)
+      {results, total_pages, _total_count} = Circulation.list_reservations_paginated(1, 1)
 
       assert length(results) == 1
       assert total_pages >= 1
@@ -344,7 +344,7 @@ defmodule Voile.Schema.Library.CirculationTest do
       transaction_fixture()
       transaction_fixture()
 
-      {results, total_pages} = Circulation.list_transactions_paginated(1, 1)
+      {results, total_pages, _total_count} = Circulation.list_transactions_paginated(1, 1)
 
       assert length(results) == 1
       assert total_pages >= 1

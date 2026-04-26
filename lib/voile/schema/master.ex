@@ -122,6 +122,21 @@ defmodule Voile.Schema.Master do
   end
 
   @doc """
+  Creates a creator.
+
+  ## Examples
+
+      iex> create_creator(%{creator_name: "John Doe"})
+      {:ok, %Creator{}}
+
+  """
+  def create_creator(attrs \\ %{}) do
+    %Creator{}
+    |> Creator.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
   Updates a creator.
 
   ## Examples

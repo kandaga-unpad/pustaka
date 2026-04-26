@@ -24,6 +24,7 @@ defmodule Voile.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Voile.DataCase
+      import Voile.Factory
     end
   end
 

@@ -188,15 +188,20 @@ defmodule VoileWeb.UserLoginLive do
 
   def mount(_params, _session, socket) do
     # Redirect already authenticated users to appropriate page
-    if socket.assigns.current_scope && socket.assigns.current_scope.user do
-      user = socket.assigns.current_scope.user
+    current_scope = socket.assigns[:current_scope]
+
+    if is_map(current_scope) && current_scope.user do
+      user = current_scope.user
 
       redirect_path = determine_redirect_path(user)
       {:ok, push_navigate(socket, to: redirect_path)}
     else
       email =
         Phoenix.Flash.get(socket.assigns.flash, :email) ||
-          get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
+          case socket.assigns[:current_scope] do
+            %{user: %{email: email}} -> email
+            _ -> nil
+          end
 
       # Get app name for display
       app_name = Voile.Schema.System.get_setting_value("app_name", "Voile")

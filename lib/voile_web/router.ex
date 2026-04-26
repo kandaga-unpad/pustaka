@@ -73,6 +73,7 @@ defmodule VoileWeb.Router do
 
       # Public clearance letter routes (no auth required)
       live "/clearance/surat/:uuid", Frontend.Clearance.ShowLetter, :show
+      get "/clearance/surat/:uuid/qrcode", Frontend.ClearanceQrController, :show
       live "/atrium/clearance/verify", Frontend.Atrium.Clearance.Verify, :index
     end
   end
@@ -178,12 +179,6 @@ defmodule VoileWeb.Router do
       ] do
       scope "/manage" do
         live "/", DashboardLive, :index
-
-        # Clearance letter management
-        scope "/clearance" do
-          live "/", Dashboard.Clearance.Verify, :index
-          live "/settings", Dashboard.Clearance.Settings, :settings
-        end
 
         # Visitor statistics (staff/admin)
         scope "/visitor" do
@@ -358,6 +353,14 @@ defmodule VoileWeb.Router do
             live "/", Dashboard.Members.Reports.Index, :index
             live "/expiring", Dashboard.Members.Reports.Expiring, :index
             live "/overdue", Dashboard.Members.Reports.Overdue, :index
+          end
+
+          # Clearance letter management
+          scope "/clearance" do
+            live "/", Dashboard.Members.Clearance.Index, :index
+            live "/verify", Dashboard.Members.Clearance.Verify, :index
+            live "/settings", Dashboard.Members.Clearance.Settings, :settings
+            live "/:id", Dashboard.Members.Clearance.Show, :show
           end
         end
 
