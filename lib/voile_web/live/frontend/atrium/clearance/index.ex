@@ -8,6 +8,7 @@ defmodule VoileWeb.Frontend.Atrium.Clearance.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    clearance_enabled = Clearance.feature_enabled?()
     user = socket.assigns.current_scope.user
     # get_user already preloads user_type; additionally preload node for snapshot
     user = Accounts.get_user(user.id) |> Repo.preload(:node)
@@ -15,43 +16,69 @@ defmodule VoileWeb.Frontend.Atrium.Clearance.Index do
     eligible_slugs = Clearance.eligible_member_type_slugs()
     member_type_slug = user.user_type && user.user_type.slug
 
+    get_phone_info = Voile.Schema.System.get_setting_by_name("app_contact_number")
+    get_email_info = Voile.Schema.System.get_setting_by_name("app_contact_email")
+
+    institution_phone = get_phone_info && get_phone_info.setting_value
+    institution_email = get_email_info && get_email_info.setting_value
+
+    dbg(institution_phone: institution_phone, institution_email: institution_email)
+
     socket =
-      if member_type_slug not in eligible_slugs do
-        settings = Clearance.get_settings()
+      cond do
+        not clearance_enabled ->
+          socket
+          |> assign(:clearance_enabled, false)
+          |> assign(:not_eligible_type, false)
+          |> assign(:user, user)
+          |> assign(:eligibility, nil)
+          |> assign(:existing_letters, [])
+          |> assign(:existing_letter, nil)
+          |> assign(:generating, false)
+          |> assign(:error, nil)
+          |> assign(:institution_phone, institution_phone || "-")
+          |> assign(:institution_email, institution_email || "-")
+          |> assign(:support_needed, false)
 
-        socket
-        |> assign(:not_eligible_type, true)
-        |> assign(:user, user)
-        |> assign(:eligibility, nil)
-        |> assign(:existing_letters, [])
-        |> assign(:existing_letter, nil)
-        |> assign(:generating, false)
-        |> assign(:error, nil)
-        |> assign(:institution_phone, settings["institution_phone"])
-        |> assign(:institution_email, settings["institution_email"])
-        |> assign(:support_needed, false)
-      else
-        eligibility = Clearance.check_eligibility(user)
-        existing_letters = Clearance.get_member_letters(user.id)
-        existing_letter = Clearance.get_member_letter_by_identifier(user.id, user.identifier)
-        settings = Clearance.get_settings()
+        member_type_slug not in eligible_slugs ->
+          settings = Clearance.get_settings()
 
-        support_needed =
-          Enum.any?(eligibility.checks, fn check ->
-            check.key in [:unpaid_fines, :active_loans] and not check.passed
-          end)
+          socket
+          |> assign(:clearance_enabled, true)
+          |> assign(:not_eligible_type, true)
+          |> assign(:user, user)
+          |> assign(:eligibility, nil)
+          |> assign(:existing_letters, [])
+          |> assign(:existing_letter, nil)
+          |> assign(:generating, false)
+          |> assign(:error, nil)
+          |> assign(:institution_phone, institution_phone || settings["institution_phone"] || "-")
+          |> assign(:institution_email, institution_email || settings["institution_email"] || "-")
+          |> assign(:support_needed, false)
 
-        socket
-        |> assign(:not_eligible_type, false)
-        |> assign(:user, user)
-        |> assign(:eligibility, eligibility)
-        |> assign(:existing_letters, existing_letters)
-        |> assign(:existing_letter, existing_letter)
-        |> assign(:generating, false)
-        |> assign(:error, nil)
-        |> assign(:institution_phone, settings["institution_phone"])
-        |> assign(:institution_email, settings["institution_email"])
-        |> assign(:support_needed, support_needed)
+        true ->
+          eligibility = Clearance.check_eligibility(user)
+          existing_letters = Clearance.get_member_letters(user.id)
+          existing_letter = Clearance.get_member_letter_by_identifier(user.id, user.identifier)
+          settings = Clearance.get_settings()
+
+          support_needed =
+            Enum.any?(eligibility.checks, fn check ->
+              check.key in [:unpaid_fines, :active_loans] and not check.passed
+            end)
+
+          socket
+          |> assign(:clearance_enabled, true)
+          |> assign(:not_eligible_type, false)
+          |> assign(:user, user)
+          |> assign(:eligibility, eligibility)
+          |> assign(:existing_letters, existing_letters)
+          |> assign(:existing_letter, existing_letter)
+          |> assign(:generating, false)
+          |> assign(:error, nil)
+          |> assign(:institution_phone, institution_phone || settings["institution_phone"] || "-")
+          |> assign(:institution_email, institution_email || settings["institution_email"] || "-")
+          |> assign(:support_needed, support_needed)
       end
 
     {:ok, socket}
@@ -60,6 +87,9 @@ defmodule VoileWeb.Frontend.Atrium.Clearance.Index do
   @impl true
   def handle_event("generate_letter", _params, socket) do
     cond do
+      not socket.assigns.clearance_enabled ->
+        {:noreply, put_flash(socket, :error, gettext("Bebas Pustaka is not available yet."))}
+
       socket.assigns.not_eligible_type or not socket.assigns.eligibility.eligible ->
         {:noreply, socket}
 

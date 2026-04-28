@@ -24,7 +24,7 @@ msgstr "Tentang"
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:263
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1314
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1503
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:291
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:496
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:247
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:73
 #: lib/voile_web/live/frontend/items/show.ex:541
@@ -34,8 +34,8 @@ msgstr "Aksi"
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:795
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:480
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:184
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:181
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:294
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:182
 #: lib/voile_web/live/dashboard/members/management/index.ex:416
 #: lib/voile_web/live/dashboard/members/management/index.ex:785
 #: lib/voile_web/live/dashboard/members/management/show.ex:797
@@ -131,7 +131,7 @@ msgstr "Telusuri Koleksi"
 #: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:77
 #: lib/voile_web/live/dashboard/master/places_live/form_component.ex:19
 #: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:21
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:379
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:380
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:312
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:244
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:251
@@ -380,6 +380,7 @@ msgstr "Dasbor Master"
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:221
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:365
 #: lib/voile_web/live/dashboard/visitor/logs.ex:450
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:176
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:212
 #: lib/voile_web/live/users/permission/permission_manage_show_live.ex:66
 #: lib/voile_web/live/users/role/role_manage_live.ex:301
@@ -516,12 +517,13 @@ msgstr "Mulai membangun perpustakaan digital Anda"
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:351
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1527
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1715
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:288
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:493
 #: lib/voile_web/live/dashboard/members/management/index.ex:421
 #: lib/voile_web/live/dashboard/members/management/index.ex:491
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:244
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:64
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:411
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:25
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Status"
@@ -580,8 +582,9 @@ msgstr "Tanpa Judul"
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:432
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:264
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:321
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:329
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:534
 #: lib/voile_web/live/dashboard/members/management/index.ex:519
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:118
 #: lib/voile_web/live/users/role/role_manage_live.ex:332
 #, elixir-autogen, elixir-format
 msgid "View"
@@ -593,7 +596,7 @@ msgid "We can't find the internet"
 msgstr "Kami tidak dapat menemukan internet"
 
 ## Additional translations
-#: lib/voile_web/live/visitor/check_in.ex:1026
+#: lib/voile_web/live/visitor/check_in.ex:1033
 #, elixir-autogen, elixir-format
 msgid "Welcome, %{name}!"
 msgstr "Selamat datang, %{name}!"
@@ -879,7 +882,7 @@ msgstr "Pengiriman Pengingat Manual"
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:183
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:251
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:484
 #: lib/voile_web/live/dashboard/members/management/index.ex:443
 #: lib/voile_web/live/dashboard/members/management/show.ex:54
 #: lib/voile_web/live/dashboard/members/reports/expiring.ex:74
@@ -915,7 +918,7 @@ msgstr "Atrium"
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1139
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:504
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:359
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:367
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:572
 #: lib/voile_web/live/dashboard/members/management/index.ex:554
 #: lib/voile_web/live/dashboard/visitor/logs.ex:552
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:619
@@ -960,7 +963,7 @@ msgstr "Didukung oleh"
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1129
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:494
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:351
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:358
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:563
 #: lib/voile_web/live/dashboard/members/management/index.ex:543
 #: lib/voile_web/live/dashboard/visitor/logs.ex:519
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:586
@@ -1009,7 +1012,7 @@ msgstr "Diperpanjang"
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:63
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:489
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1404
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:240
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:350
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:186
 #: lib/voile_web/live/dashboard/visitor/logs.ex:398
 #, elixir-autogen, elixir-format, fuzzy
@@ -1362,7 +1365,7 @@ msgstr "Pinjaman Aktif"
 #: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:25
 #: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:20
 #: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:19
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:256
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:262
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:79
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:310
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:290
@@ -1629,8 +1632,8 @@ msgstr "Kata sandi saat ini"
 msgid "Date:"
 msgstr "Tanggal:"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:613
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:227
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:619
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:228
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:233
 #: lib/voile_web/live/frontend/atrium/index.ex:1203
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:203
@@ -1695,7 +1698,7 @@ msgstr "Jatuh Tempo:"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:323
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:954
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:269
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:275
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:64
 #: lib/voile_web/live/frontend/atrium/index.ex:1093
 #: lib/voile_web/live/users/auth/user_confirmation_instructions_live.ex:20
@@ -2901,8 +2904,8 @@ msgid "Female"
 msgstr "Perempuan"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:936
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:293
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:209
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:299
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:210
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:63
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:276
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:134
@@ -2912,7 +2915,7 @@ msgstr "Nama lengkap"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:308
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:945
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:218
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:219
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:225
 #: lib/voile_web/live/dashboard/members/management/index.ex:486
 #: lib/voile_web/live/dashboard/visitor/logs.ex:447
@@ -3527,10 +3530,10 @@ msgid "Search for an existing collection to add an item to, or create a new coll
 msgstr "Cari koleksi yang ada untuk menambah item, atau buat koleksi baru jika tidak ada yang sesuai."
 
 #: lib/voile_web/components/voile_dashboard_components.ex:248
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:169
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:195
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:211
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:97
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:201
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:217
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:98
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:137
 #: lib/voile_web/live/dashboard/plugins/index.ex:259
 #: lib/voile_web/live/dashboard/plugins/settings.ex:90
@@ -4101,8 +4104,8 @@ msgstr "Tidak ada thumbnail tersedia"
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:327
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:116
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:107
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:282
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:236
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:487
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:237
 #: lib/voile_web/live/dashboard/members/management/index.ex:395
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:86
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:359
@@ -4841,7 +4844,7 @@ msgstr "Semua Lokasi"
 #: lib/voile_web/live/dashboard/dashboard_live.ex:33
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:115
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:37
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:253
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:363
 #: lib/voile_web/live/dashboard/members/index.ex:81
 #: lib/voile_web/live/dashboard/members/management/index.ex:392
 #, elixir-autogen, elixir-format
@@ -5279,7 +5282,8 @@ msgstr "Saluran:"
 msgid "Check In"
 msgstr "Masuk"
 
-#: lib/voile_web/live/visitor/check_in.ex:839
+#: lib/voile_web/live/visitor/check_in.ex:832
+#: lib/voile_web/live/visitor/check_in.ex:846
 #, elixir-autogen, elixir-format
 msgid "Check In Now"
 msgstr "Masuk Sekarang"
@@ -5428,7 +5432,7 @@ msgstr "Koleksi tidak ditemukan"
 msgid "Comment"
 msgstr "Komentar"
 
-#: lib/voile_web/live/visitor/check_in.ex:953
+#: lib/voile_web/live/visitor/check_in.ex:960
 #: lib/voile_web/live/visitor/check_out.ex:802
 #, elixir-autogen, elixir-format
 msgid "Comments (Optional)"
@@ -5514,7 +5518,7 @@ msgstr "Informasi Kontak"
 msgid "Contact the library for more information about this item or to make special requests."
 msgstr "Hubungi perpustakaan untuk informasi lebih lanjut tentang item ini atau untuk membuat permintaan khusus."
 
-#: lib/voile_web/live/visitor/check_in.ex:1073
+#: lib/voile_web/live/visitor/check_in.ex:1080
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr "Lanjutkan"
@@ -5715,7 +5719,7 @@ msgstr "Peringatan Lokasi Unit Berbeda"
 msgid "Disable all %{resource} permissions"
 msgstr "Nonaktifkan semua izin %{resource}"
 
-#: lib/voile_web/live/visitor/check_in.ex:1116
+#: lib/voile_web/live/visitor/check_in.ex:1123
 #: lib/voile_web/live/visitor/check_out.ex:904
 #: lib/voile_web/live/visitor/check_out.ex:947
 #, elixir-autogen, elixir-format
@@ -5793,7 +5797,7 @@ msgstr "Email, Nama Pengguna, atau ID"
 msgid "Enable all %{resource} permissions"
 msgstr "Aktifkan semua izin %{resource}"
 
-#: lib/voile_web/live/visitor/check_in.ex:1042
+#: lib/voile_web/live/visitor/check_in.ex:1049
 #, elixir-autogen, elixir-format
 msgid "Enjoy your stay at"
 msgstr "Nikmati kunjungan Anda di"
@@ -5992,7 +5996,7 @@ msgstr "Gagal memilih berkas dari gudang aset"
 msgid "Failed to set primary attachment"
 msgstr "Gagal menjadikan lampiran utama"
 
-#: lib/voile_web/live/visitor/check_in.ex:848
+#: lib/voile_web/live/visitor/check_in.ex:855
 #: lib/voile_web/live/visitor/check_out.ex:697
 #, elixir-autogen, elixir-format
 msgid "Feedback"
@@ -6059,6 +6063,7 @@ msgid "Filters"
 msgstr "Filter"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:170
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:407
 #, elixir-autogen, elixir-format
 msgid "Find Member"
 msgstr "Cari Anggota"
@@ -6212,7 +6217,7 @@ msgstr "Kelompokkan berdasarkan Koleksi"
 msgid "Handle item reservations, queue management, and availability notifications."
 msgstr "Tangani reservasi item, manajemen antrean, dan notifikasi ketersediaan."
 
-#: lib/voile_web/live/visitor/check_in.ex:1053
+#: lib/voile_web/live/visitor/check_in.ex:1060
 #, elixir-autogen, elixir-format
 msgid "Have a productive visit! 📚"
 msgstr "Semoga kunjungan Anda produktif! 📚"
@@ -6599,9 +6604,9 @@ msgstr "Item Hilang"
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:141
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:906
 #: lib/voile_web/live/dashboard/glam/museum/index.ex:40
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:196
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:208
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:149
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:306
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:214
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:150
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:150
 #: lib/voile_web/live/dashboard/members/index.ex:94
 #: lib/voile_web/live/dashboard/members/management/index.ex:320
@@ -6740,7 +6745,7 @@ msgstr "ID Anggota:"
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:209
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:300
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:931
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:203
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:204
 #, elixir-autogen, elixir-format
 msgid "Member Information"
 msgstr "Informasi Anggota"
@@ -6785,9 +6790,9 @@ msgstr "Anggota memperpanjang pinjamannya"
 msgid "Member type not assigned - contact library"
 msgstr "Tipe anggota belum ditetapkan - hubungi perpustakaan"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:197
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:209
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:150
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:307
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:215
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:151
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:151
 #: lib/voile_web/live/dashboard/members/index.ex:95
 #: lib/voile_web/live/dashboard/members/management/index.ex:321
@@ -6915,7 +6920,7 @@ msgstr "Tanggal Jatuh Tempo Baru"
 msgid "New item unit:"
 msgstr "Unit item baru:"
 
-#: lib/voile_web/live/visitor/check_in.ex:984
+#: lib/voile_web/live/visitor/check_in.ex:991
 #, elixir-autogen, elixir-format
 msgid "New to our system?"
 msgstr "Baru di sistem kami?"
@@ -6945,7 +6950,7 @@ msgstr "Tidak ada Lokasi yang Ditetapkan"
 msgid "No Member Type"
 msgstr "Tidak ada Tipe Anggota"
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:250
+#: lib/voile_web/live/users/auth/user_login_live.ex:253
 #: lib/voile_web/live/users/auth/user_pending_confirmation_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "No account found with that email address."
@@ -7199,7 +7204,7 @@ msgstr "PNG, JPG, GIF hingga 10MB"
 msgid "Page %{page} of %{total_pages}"
 msgstr "Halaman %{page} dari %{total_pages}"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:554
 #: lib/voile_web/live/dashboard/members/management/index.ex:529
 #: lib/voile_web/live/dashboard/visitor/logs.ex:421
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:494
@@ -7347,7 +7352,7 @@ msgstr "Informasi Pribadi"
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:336
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:972
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:263
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:269
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:294
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone"
@@ -7363,7 +7368,7 @@ msgstr "Silakan melakukan check-out saat pergi untuk membantu kami menjaga catat
 msgid "Please check your inbox and click the confirmation link to activate your account."
 msgstr "Silakan periksa kotak masuk Anda dan klik tautan konfirmasi untuk mengaktifkan akun Anda."
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:253
+#: lib/voile_web/live/users/auth/user_login_live.ex:256
 #, elixir-autogen, elixir-format
 msgid "Please enter your email address."
 msgstr "Silakan masukkan alamat email Anda."
@@ -7383,7 +7388,7 @@ msgstr "Silakan verifikasi alamat email Anda untuk mengaktifkan akun Anda"
 msgid "Please verify your email to reserve items"
 msgstr "Silakan verifikasi email Anda untuk mereservasi item"
 
-#: lib/voile_web/live/visitor/check_in.ex:1152
+#: lib/voile_web/live/visitor/check_in.ex:1159
 #: lib/voile_web/live/visitor/check_out.ex:986
 #, elixir-autogen, elixir-format
 msgid "Powered by Voile"
@@ -7526,13 +7531,13 @@ msgstr "Tag RFID"
 msgid "RFID tag"
 msgstr "Tag RFID"
 
-#: lib/voile_web/live/visitor/check_in.ex:911
+#: lib/voile_web/live/visitor/check_in.ex:918
 #: lib/voile_web/live/visitor/check_out.ex:760
 #, elixir-autogen, elixir-format
 msgid "Rate our staff (Optional)"
 msgstr "Nilai staf kami (Opsional)"
 
-#: lib/voile_web/live/visitor/check_in.ex:871
+#: lib/voile_web/live/visitor/check_in.ex:878
 #: lib/voile_web/live/visitor/check_out.ex:720
 #, elixir-autogen, elixir-format
 msgid "Rate your experience"
@@ -7613,12 +7618,12 @@ msgstr "ID Catatan"
 msgid "Refresh Stats"
 msgstr "Segarkan Statistik"
 
-#: lib/voile_web/live/visitor/check_in.ex:994
+#: lib/voile_web/live/visitor/check_in.ex:1001
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Register Now"
 msgstr "Daftar Sekarang"
 
-#: lib/voile_web/live/visitor/check_in.ex:987
+#: lib/voile_web/live/visitor/check_in.ex:994
 #, elixir-autogen, elixir-format
 msgid "Register for a member account to access more features."
 msgstr "Daftar akun anggota untuk mengakses lebih banyak fitur."
@@ -8122,13 +8127,13 @@ msgstr "Tautan atur kata sandi tidak valid atau telah kedaluwarsa."
 msgid "Set your initial password"
 msgstr "Atur kata sandi awal Anda"
 
-#: lib/voile_web/live/visitor/check_in.ex:853
+#: lib/voile_web/live/visitor/check_in.ex:860
 #: lib/voile_web/live/visitor/check_out.ex:702
 #, elixir-autogen, elixir-format
 msgid "Share your experience"
 msgstr "Bagikan pengalaman Anda"
 
-#: lib/voile_web/live/visitor/check_in.ex:960
+#: lib/voile_web/live/visitor/check_in.ex:967
 #: lib/voile_web/live/visitor/check_out.ex:809
 #, elixir-autogen, elixir-format
 msgid "Share your thoughts..."
@@ -8245,7 +8250,7 @@ msgstr "Statistik"
 msgid "Statistics refreshed"
 msgstr "Statistik diperbarui"
 
-#: lib/voile_web/live/visitor/check_in.ex:971
+#: lib/voile_web/live/visitor/check_in.ex:978
 #: lib/voile_web/live/visitor/check_out.ex:820
 #, elixir-autogen, elixir-format
 msgid "Submit Feedback"
@@ -8325,7 +8330,7 @@ msgstr "Node Target"
 msgid "Temporary Reservations"
 msgstr "Reservasi Sementara"
 
-#: lib/voile_web/live/visitor/check_in.ex:1096
+#: lib/voile_web/live/visitor/check_in.ex:1103
 #: lib/voile_web/live/visitor/check_out.ex:927
 #, elixir-autogen, elixir-format
 msgid "Thank You for Your Feedback!"
@@ -8628,7 +8633,7 @@ msgstr "ID Tipe"
 msgid "Type identifier, name, or email..."
 msgstr "Ketik identifier, nama, atau email..."
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:244
+#: lib/voile_web/live/users/auth/user_login_live.ex:247
 #, elixir-autogen, elixir-format
 msgid "Unable to send email. Please try again."
 msgstr "Tidak dapat mengirim email. Silakan coba lagi."
@@ -8947,7 +8952,7 @@ msgstr "Dibebaskan"
 msgid "Warning:"
 msgstr "Peringatan:"
 
-#: lib/voile_web/live/visitor/check_in.ex:1105
+#: lib/voile_web/live/visitor/check_in.ex:1112
 #: lib/voile_web/live/visitor/check_out.ex:936
 #, elixir-autogen, elixir-format
 msgid "We appreciate you taking the time to help us improve! 💜"
@@ -8973,7 +8978,7 @@ msgstr "Kami akan mengirim tautan reset kata sandi ke kotak masuk Anda"
 msgid "We've sent a confirmation email to verify your account"
 msgstr "Kami telah mengirim email konfirmasi untuk memverifikasi akun Anda"
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:236
+#: lib/voile_web/live/users/auth/user_login_live.ex:239
 #, elixir-autogen, elixir-format
 msgid "We've sent a login link to %{email}. Please check your email."
 msgstr "Kami telah mengirim tautan login ke %{email}. Silakan periksa email Anda."
@@ -9045,7 +9050,7 @@ msgstr "Anda telah berhasil check-out dari"
 msgid "You must be logged in to make a reservation."
 msgstr "Anda harus masuk untuk membuat reservasi."
 
-#: lib/voile_web/live/visitor/check_in.ex:1100
+#: lib/voile_web/live/visitor/check_in.ex:1107
 #: lib/voile_web/live/visitor/check_out.ex:931
 #, elixir-autogen, elixir-format
 msgid "Your %{rating}-star rating has been recorded"
@@ -9153,7 +9158,7 @@ msgstr "dari"
 msgid "or drag and drop"
 msgstr "atau seret dan lepas"
 
-#: lib/voile_web/live/visitor/check_in.ex:1048
+#: lib/voile_web/live/visitor/check_in.ex:1055
 #: lib/voile_web/live/visitor/check_out.ex:888
 #, elixir-autogen, elixir-format
 msgid "our facility"
@@ -9179,16 +9184,16 @@ msgstr "peran"
 msgid "s"
 msgstr "s"
 
-#: lib/voile_web/live/visitor/check_in.ex:903
-#: lib/voile_web/live/visitor/check_in.ex:944
+#: lib/voile_web/live/visitor/check_in.ex:910
+#: lib/voile_web/live/visitor/check_in.ex:951
 #: lib/voile_web/live/visitor/check_out.ex:752
 #: lib/voile_web/live/visitor/check_out.ex:793
 #, elixir-autogen, elixir-format
 msgid "star"
 msgstr "bintang"
 
-#: lib/voile_web/live/visitor/check_in.ex:903
-#: lib/voile_web/live/visitor/check_in.ex:945
+#: lib/voile_web/live/visitor/check_in.ex:910
+#: lib/voile_web/live/visitor/check_in.ex:952
 #: lib/voile_web/live/visitor/check_out.ex:752
 #: lib/voile_web/live/visitor/check_out.ex:794
 #, elixir-autogen, elixir-format
@@ -10314,6 +10319,8 @@ msgstr "Judul Beranda"
 
 #: lib/voile_web/live/dashboard/plugins/index.ex:239
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:147
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:77
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:106
 #, elixir-autogen, elixir-format
 msgid "ID: %{id}"
 msgstr "ID: %{id}"
@@ -11112,8 +11119,8 @@ msgstr "Cabut"
 msgid "Revoke token"
 msgstr "Cabut token"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:180
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:176
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:290
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:177
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:101
 #, elixir-autogen, elixir-format
 msgid "Revoked"
@@ -11194,7 +11201,7 @@ msgstr "Simpan Tempat"
 msgid "Save Publisher"
 msgstr "Simpan Penerbit"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:417
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:423
 #: lib/voile_web/live/dashboard/plugins/settings.ex:190
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:297
 #, elixir-autogen, elixir-format, fuzzy
@@ -11456,7 +11463,7 @@ msgstr "Total Hari Libur"
 msgid "Total Loans"
 msgstr "Total Pinjaman"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:217
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:327
 #: lib/voile_web/live/dashboard/members/reports/expiring.ex:48
 #: lib/voile_web/live/dashboard/members/reports/overdue.ex:48
 #, elixir-autogen, elixir-format
@@ -11498,6 +11505,7 @@ msgstr "Token Tanpa Nama"
 msgid "Unsuspend"
 msgstr "Batalkan Penangguhan"
 
+#: lib/voile_web/live/dashboard/plugins/index.ex:298
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:395
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:310
 #, elixir-autogen, elixir-format, fuzzy
@@ -11718,7 +11726,7 @@ msgstr "Aktifkan"
 msgid "Add any notes about this batch approval..."
 msgstr "Tambahkan catatan mengenai persetujuan ini..."
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:321
+#: lib/voile_web/live/dashboard/plugins/index.ex:331
 #, elixir-autogen, elixir-format
 msgid "Add plugins to your mix.exs dependencies to get started."
 msgstr "Tambahkan plugin ke dependensi mix.exs Anda untuk memulai."
@@ -11734,7 +11742,7 @@ msgstr "Metadata Tambahan"
 msgid "Approve Selected"
 msgstr "Setujui yang Dipilih"
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:298
+#: lib/voile_web/live/dashboard/plugins/index.ex:308
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to uninstall this plugin? Data will be preserved."
 msgstr "Apakah Anda yakin ingin menghapus instalasi plugin ini? Data akan dipertahankan."
@@ -11827,7 +11835,7 @@ msgstr "Gagal mengaktifkan: %{reason}"
 msgid "Failed to deactivate: %{reason}"
 msgstr "Gagal menonaktifkan: %{reason}"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:67
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:73
 #: lib/voile_web/live/dashboard/plugins/settings.ex:64
 #, elixir-autogen, elixir-format
 msgid "Failed to save settings."
@@ -11884,7 +11892,7 @@ msgstr "Tidak ada buku eksternal ditemukan untuk \"{query}\""
 msgid "No locations available"
 msgstr "Tidak ada lokasi tersedia"
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:318
+#: lib/voile_web/live/dashboard/plugins/index.ex:328
 #, elixir-autogen, elixir-format
 msgid "No plugins installed"
 msgstr "Tidak ada plugin terpasang"
@@ -12036,7 +12044,7 @@ msgstr "Bidang ini wajib diisi"
 msgid "This plugin has no configurable settings."
 msgstr "Plugin ini tidak memiliki pengaturan yang dapat dikonfigurasi."
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:304
+#: lib/voile_web/live/dashboard/plugins/index.ex:314
 #, elixir-autogen, elixir-format
 msgid "Uninstall"
 msgstr "Hapus Instalasi"
@@ -12136,7 +12144,7 @@ msgstr "Ubah Metadata"
 msgid "Failed to install: %{reason}"
 msgstr "Gagal menginstal: %{reason}"
 
-#: lib/voile_web/live/visitor/check_in.ex:1031
+#: lib/voile_web/live/visitor/check_in.ex:1038
 #, elixir-autogen, elixir-format
 msgid "Gender: %{gender}"
 msgstr "Jenis Kelamin: %{gender}"
@@ -12195,7 +12203,7 @@ msgstr "Plugin berhasil diinstal."
 msgid "Plugins"
 msgstr "Plugin"
 
-#: lib/voile_web/live/visitor/check_in.ex:1037
+#: lib/voile_web/live/visitor/check_in.ex:1044
 #, elixir-autogen, elixir-format
 msgid "Program: %{program}"
 msgstr "Program: %{program}"
@@ -12511,7 +12519,7 @@ msgstr "mis. 2024"
 msgid "Accepted format: .csv"
 msgstr "Format yang diterima: .csv"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:451
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:457
 #, elixir-autogen, elixir-format
 msgid "Active signature"
 msgstr "Tanda tangan aktif"
@@ -12521,7 +12529,7 @@ msgstr "Tanda tangan aktif"
 msgid "All Media"
 msgstr "Semua Media"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:212
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:322
 #, elixir-autogen, elixir-format
 msgid "All clearance letters generated by the system"
 msgstr "Semua surat bebas pustaka yang dihasilkan oleh sistem"
@@ -12531,7 +12539,7 @@ msgstr "Semua surat bebas pustaka yang dihasilkan oleh sistem"
 msgid "Any Media Type"
 msgstr "Semua Jenis Media"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:368
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:369
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to revoke this letter?"
 msgstr "Apakah Anda yakin ingin mencabut surat ini?"
@@ -12566,7 +12574,7 @@ msgstr "Bebas Pustaka"
 msgid "Bibliographic Details"
 msgstr "Detail Bibliografi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:360
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:366
 #, elixir-autogen, elixir-format
 msgid "Body paragraph"
 msgstr "Paragraf isi"
@@ -12601,7 +12609,7 @@ msgstr "Referensi Katalog"
 msgid "Check Clearance"
 msgstr "Cek Bebas Pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:478
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:484
 #, elixir-autogen, elixir-format
 msgid "Choose File"
 msgstr "Pilih File"
@@ -12611,56 +12619,56 @@ msgstr "Pilih File"
 msgid "Choose an item"
 msgstr "Pilih item"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:276
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:282
 #, elixir-autogen, elixir-format
 msgid "City (for date line)"
 msgstr "Kota (untuk baris tanggal)"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:39
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:40
 #, elixir-autogen, elixir-format
 msgid "Clearance Letter Detail"
 msgstr "Detail Surat Bebas Pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:220
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:226
 #, elixir-autogen, elixir-format
 msgid "Clearance Letter Settings"
 msgstr "Pengaturan Surat Bebas Pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:28
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:198
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:209
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:210
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:151
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:30
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:308
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:319
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:216
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:152
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:152
 #: lib/voile_web/live/dashboard/members/index.ex:154
 #, elixir-autogen, elixir-format
 msgid "Clearance Letters"
 msgstr "Surat Bebas Pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:26
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:27
 #, elixir-autogen, elixir-format
 msgid "Clearance letter not found."
 msgstr "Surat bebas pustaka tidak ditemukan."
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:127
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:153
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:55
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:237
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:159
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:56
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:95
 #, elixir-autogen, elixir-format
 msgid "Clearance navigation"
 msgstr "Navigasi bebas pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:469
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:475
 #, elixir-autogen, elixir-format
 msgid "Click or drag a file here"
 msgstr "Klik atau seret file ke sini"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:367
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:373
 #, elixir-autogen, elixir-format
 msgid "Closing Text"
 msgstr "Teks Penutup"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:376
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:382
 #, elixir-autogen, elixir-format
 msgid "Closing sentence"
 msgstr "Kalimat penutup"
@@ -12670,7 +12678,7 @@ msgstr "Kalimat penutup"
 msgid "Code:"
 msgstr "Kode:"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:223
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:229
 #, elixir-autogen, elixir-format
 msgid "Configure institution details, signer, and letter number format."
 msgstr "Konfigurasikan detail institusi, penandatangan, dan format nomor surat."
@@ -12680,7 +12688,7 @@ msgstr "Konfigurasikan detail institusi, penandatangan, dan format nomor surat."
 msgid "Confirm Revocation"
 msgstr "Konfirmasi Pencabutan"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:372
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:373
 #, elixir-autogen, elixir-format
 msgid "Confirm Revoke"
 msgstr "Konfirmasi Cabut"
@@ -12690,12 +12698,12 @@ msgstr "Konfirmasi Cabut"
 msgid "Create \"%{creator}\""
 msgstr "Buat \"%{creator}\""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:246
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:247
 #, elixir-autogen, elixir-format
 msgid "Current Member"
 msgstr "Anggota Saat Ini"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:448
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:454
 #, elixir-autogen, elixir-format
 msgid "Current signature"
 msgstr "Tanda tangan saat ini"
@@ -12716,12 +12724,12 @@ msgstr "Unduh contoh CSV"
 msgid "Drop a CSV file here or click to browse"
 msgstr "Seret file CSV ke sini atau klik untuk mencari"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:299
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:305
 #, elixir-autogen, elixir-format
 msgid "Employee ID (NIP)"
 msgstr "NIP (Nomor Induk Pegawai)"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:360
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:361
 #, elixir-autogen, elixir-format
 msgid "Enter reason for revocation..."
 msgstr "Masukkan alasan pencabutan..."
@@ -12737,6 +12745,7 @@ msgid "Errors"
 msgstr "Kesalahan"
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:229
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:192
 #, elixir-autogen, elixir-format
 msgid "Faculty / Unit"
 msgstr "Fakultas / Unit"
@@ -12746,23 +12755,23 @@ msgstr "Fakultas / Unit"
 msgid "Failed imports: %{count}"
 msgstr "Impor gagal: %{count}"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:138
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:139
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:85
 #, elixir-autogen, elixir-format
 msgid "Failed to revoke the letter."
 msgstr "Gagal mencabut surat."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:139
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:145
 #, elixir-autogen, elixir-format
 msgid "Failed to upload signature."
 msgstr "Gagal mengunggah tanda tangan."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:683
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:724
 #, elixir-autogen, elixir-format
 msgid "File format not supported."
 msgstr "Format file tidak didukung."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:682
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:723
 #, elixir-autogen, elixir-format
 msgid "File is too large."
 msgstr "File terlalu besar."
@@ -12772,13 +12781,13 @@ msgstr "File terlalu besar."
 msgid "Generate and manage clearance letters for members."
 msgstr "Buat dan kelola surat bebas pustaka untuk anggota."
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:285
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:288
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:490
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:289
 #, elixir-autogen, elixir-format
 msgid "Generated At"
 msgstr "Dibuat Pada"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:166
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:167
 #, elixir-autogen, elixir-format
 msgid "Generated on %{date}"
 msgstr "Dibuat pada %{date}"
@@ -12804,18 +12813,18 @@ msgstr "Ringkasan impor"
 msgid "Import to Node"
 msgstr "Impor ke Node"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:239
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:245
 #, elixir-autogen, elixir-format
 msgid "Institution Information"
 msgstr "Informasi Institusi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:244
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:537
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:250
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:543
 #, elixir-autogen, elixir-format
 msgid "Institution Name"
 msgstr "Nama Institusi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:524
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:530
 #, elixir-autogen, elixir-format
 msgid "Institution logo"
 msgstr "Logo institusi"
@@ -12830,7 +12839,7 @@ msgstr "Format CSV tidak valid: %{message}"
 msgid "Issued At"
 msgstr "Diterbitkan Pada"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:472
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:478
 #, elixir-autogen, elixir-format
 msgid "JPG, JPEG, PNG, WEBP · max 5 MB"
 msgstr "JPG, JPEG, PNG, WEBP · maks 5 MB"
@@ -12840,12 +12849,12 @@ msgstr "JPG, JPEG, PNG, WEBP · maks 5 MB"
 msgid "Last Inventory:"
 msgstr "Inventaris Terakhir:"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:336
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:342
 #, elixir-autogen, elixir-format
 msgid "Last sequence number (migration start)"
 msgstr "Nomor urut terakhir (awal migrasi)"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:355
 #, elixir-autogen, elixir-format
 msgid "Letter Body Text"
 msgstr "Teks Isi Surat"
@@ -12855,47 +12864,42 @@ msgstr "Teks Isi Surat"
 msgid "Letter Detail"
 msgstr "Detail Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:264
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:265
 #, elixir-autogen, elixir-format
 msgid "Letter Details"
 msgstr "Detail Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:663
-#, elixir-autogen, elixir-format
-msgid "Letter ID: (generated on issue)"
-msgstr "ID Surat: (dibuat saat diterbitkan)"
-
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:276
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:270
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:481
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:271
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:217
 #, elixir-autogen, elixir-format
 msgid "Letter Number"
 msgstr "Nomor Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:307
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:313
 #, elixir-autogen, elixir-format
 msgid "Letter Numbering"
 msgstr "Penomoran Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:510
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:516
 #, elixir-autogen, elixir-format
 msgid "Letter Preview"
 msgstr "Pratinjau Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:297
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:298
 #, elixir-autogen, elixir-format
 msgid "Letter UUID"
 msgstr "UUID Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:135
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:136
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:80
 #, elixir-autogen, elixir-format
 msgid "Letter successfully revoked."
 msgstr "Surat berhasil dicabut."
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:141
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:167
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:69
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:251
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:173
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:70
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:109
 #, elixir-autogen, elixir-format
 msgid "Letters"
@@ -12921,12 +12925,12 @@ msgstr "Dikelola oleh"
 msgid "Media Type"
 msgstr "Jenis Media"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:597
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:603
 #, elixir-autogen, elixir-format
 msgid "Member Full Name"
 msgstr "Nama Lengkap Anggota"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:603
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:609
 #, elixir-autogen, elixir-format
 msgid "Member ID"
 msgstr "ID Anggota"
@@ -12936,7 +12940,7 @@ msgstr "ID Anggota"
 msgid "Member Services"
 msgstr "Layanan Anggota"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:383
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:389
 #, elixir-autogen, elixir-format
 msgid "Membership"
 msgstr "Keanggotaan"
@@ -12956,7 +12960,7 @@ msgstr "Total pengunjung bulanan per lokasi"
 msgid "Monthly visitor totals by location for the selected year."
 msgstr "Total pengunjung bulanan per lokasi untuk tahun yang dipilih."
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:545
 #, elixir-autogen, elixir-format
 msgid "No clearance letters found."
 msgstr "Tidak ada surat bebas pustaka yang ditemukan."
@@ -12971,7 +12975,7 @@ msgstr "Tidak ada surat dengan ID tersebut yang ditemukan dalam sistem."
 msgid "No node"
 msgstr "Tidak ada node"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:456
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:462
 #, elixir-autogen, elixir-format
 msgid "No signature uploaded yet."
 msgstr "Belum ada tanda tangan yang diunggah."
@@ -12986,7 +12990,7 @@ msgstr "Tidak ada judul"
 msgid "No visitor data found for the selected filters."
 msgstr "Tidak ada data pengunjung yang ditemukan untuk filter yang dipilih."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:608
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:614
 #, elixir-autogen, elixir-format
 msgid "Node / Faculty"
 msgstr "Node / Fakultas"
@@ -12996,12 +13000,12 @@ msgstr "Node / Fakultas"
 msgid "Not Verified"
 msgstr "Belum Terverifikasi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:312
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:318
 #, elixir-autogen, elixir-format
 msgid "Number Format"
 msgstr "Format Nomor"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:569
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:575
 #, elixir-autogen, elixir-format
 msgid "Number:"
 msgstr "Nomor:"
@@ -13017,7 +13021,7 @@ msgstr "Tempel ID surat (UUID)…"
 msgid "Physical Only"
 msgstr "Fisik Saja"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:122
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:123
 #, elixir-autogen, elixir-format
 msgid "Please provide a revocation reason."
 msgstr "Harap berikan alasan pencabutan."
@@ -13027,12 +13031,13 @@ msgstr "Harap berikan alasan pencabutan."
 msgid "Please select a CSV file first."
 msgstr "Silakan pilih file CSV terlebih dahulu."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:512
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:518
 #, elixir-autogen, elixir-format
 msgid "Preview — placeholder member data"
 msgstr "Pratinjau — data anggota contoh"
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:205
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:147
 #, elixir-autogen, elixir-format
 msgid "REVOKED"
 msgstr "DICABUT"
@@ -13042,8 +13047,9 @@ msgstr "DICABUT"
 msgid "Read On Spot"
 msgstr "Baca di Tempat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:336
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:337
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:247
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:222
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr "Alasan"
@@ -13058,7 +13064,7 @@ msgstr "Formulir Permintaan"
 msgid "Resource Type:"
 msgstr "Jenis Sumber Daya:"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:312
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:313
 #, elixir-autogen, elixir-format
 msgid "Revocation Details"
 msgstr "Detail Pencabutan"
@@ -13078,26 +13084,26 @@ msgstr "Pencabutan bersifat permanen dan tidak dapat dibatalkan. Berikan alasan 
 msgid "Revocation reason is required."
 msgstr "Alasan pencabutan wajib diisi."
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:348
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:389
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:390
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:272
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:305
 #, elixir-autogen, elixir-format
 msgid "Revoke Letter"
 msgstr "Cabut Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:318
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:319
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:242
 #, elixir-autogen, elixir-format
 msgid "Revoked At"
 msgstr "Dicabut Pada"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:327
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:328
 #, elixir-autogen, elixir-format
 msgid "Revoked By"
 msgstr "Dicabut Oleh"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:351
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:352
 #, elixir-autogen, elixir-format
 msgid "Revoking this letter will invalidate it. This action cannot be undone."
 msgstr "Mencabut surat ini akan membatalkannya. Tindakan ini tidak dapat dibatalkan."
@@ -13107,12 +13113,12 @@ msgstr "Mencabut surat ini akan membatalkannya. Tindakan ini tidak dapat dibatal
 msgid "Row %{row}"
 msgstr "Baris %{row}"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:424
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:430
 #, elixir-autogen, elixir-format
 msgid "Saved"
 msgstr "Tersimpan"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:414
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:420
 #, elixir-autogen, elixir-format
 msgid "Saving…"
 msgstr "Menyimpan…"
@@ -13137,7 +13143,7 @@ msgstr "Cari surat berdasarkan ID uniknya, lalu cabut jika diperlukan."
 msgid "Search by item code, title, inventory code, or location..."
 msgstr "Cari berdasarkan kode item, judul, kode inventaris, atau lokasi..."
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:232
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:342
 #, elixir-autogen, elixir-format
 msgid "Search by letter number or member name..."
 msgstr "Cari berdasarkan nomor surat atau nama anggota..."
@@ -13147,7 +13153,7 @@ msgstr "Cari berdasarkan nomor surat atau nama anggota..."
 msgid "Search items, barcode, or legacy code..."
 msgstr "Cari item, barcode, atau kode lama..."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:386
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:392
 #, elixir-autogen, elixir-format
 msgid "Select the member types eligible to request a clearance letter."
 msgstr "Pilih jenis anggota yang berhak mengajukan surat bebas pustaka."
@@ -13157,37 +13163,37 @@ msgstr "Pilih jenis anggota yang berhak mengajukan surat bebas pustaka."
 msgid "Selected Item"
 msgstr "Item Dipilih"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:280
 #, elixir-autogen, elixir-format
 msgid "Sequence Number"
 msgstr "Nomor Urut"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "Set this to the last number issued manually."
 msgstr "Atur ke nomor terakhir yang diterbitkan secara manual."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:643
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:649
 #, elixir-autogen, elixir-format
 msgid "Signature"
 msgstr "Tanda Tangan"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:435
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:441
 #, elixir-autogen, elixir-format
 msgid "Signature Image"
 msgstr "Gambar Tanda Tangan"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:136
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:142
 #, elixir-autogen, elixir-format
 msgid "Signature updated successfully."
 msgstr "Tanda tangan berhasil diperbarui."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:283
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:289
 #, elixir-autogen, elixir-format
 msgid "Signer"
 msgstr "Penandatangan"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:653
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:659
 #, elixir-autogen, elixir-format
 msgid "Signer Name"
 msgstr "Nama Penandatangan"
@@ -13202,7 +13208,7 @@ msgstr "Ukuran: %{size} byte"
 msgid "Statistics by Location"
 msgstr "Statistik per Lokasi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:250
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:256
 #, elixir-autogen, elixir-format
 msgid "Subtitle / Work Unit"
 msgstr "Jabatan / Unit Kerja"
@@ -13222,7 +13228,7 @@ msgstr "File CSV kosong."
 msgid "The CSV file must contain at least one data row."
 msgstr "File CSV harus memuat setidaknya satu baris data."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:370
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:376
 #, elixir-autogen, elixir-format
 msgid "The closing sentence at the end of the letter body. HTML tags are allowed."
 msgstr "Kalimat penutup di akhir isi surat. Tag HTML diperbolehkan."
@@ -13232,22 +13238,22 @@ msgstr "Kalimat penutup di akhir isi surat. Tag HTML diperbolehkan."
 msgid "The first row must contain headers and the file size must not exceed 10 MB."
 msgstr "Baris pertama harus berisi header dan ukuran file tidak boleh melebihi 10 MB."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:352
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:358
 #, elixir-autogen, elixir-format
 msgid "The main body paragraph of the clearance letter. HTML tags are allowed (e.g. <strong>, <em>, <br>)."
 msgstr "Paragraf isi utama surat bebas pustaka. Tag HTML diperbolehkan (mis. <strong>, <em>, <br>)."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "The next letter will use sequence number"
 msgstr "Surat berikutnya akan menggunakan nomor urut"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:287
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:293
 #, elixir-autogen, elixir-format
 msgid "Title / Position"
 msgstr "Jabatan / Posisi"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:684
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:725
 #, elixir-autogen, elixir-format
 msgid "Too many files."
 msgstr "Terlalu banyak file."
@@ -13277,17 +13283,18 @@ msgstr "Diperbarui:"
 msgid "Upload a CSV file to bulk-import member profiles. Password is optional; blank passwords will default to changeme123."
 msgstr "Unggah file CSV untuk mengimpor profil anggota secara massal. Kata sandi bersifat opsional; kata sandi kosong akan menggunakan nilai default changeme123."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:437
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:443
 #, elixir-autogen, elixir-format
 msgid "Upload a signature in JPG/PNG format. The file will be stored in the storage system and can be replaced at any time."
 msgstr "Unggah tanda tangan dalam format JPG/PNG. File akan disimpan dalam sistem penyimpanan dan dapat diganti kapan saja."
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:316
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:322
 #, elixir-autogen, elixir-format
 msgid "Use"
 msgstr "Gunakan"
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:209
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:151
 #, elixir-autogen, elixir-format
 msgid "VALID"
 msgstr "VALID"
@@ -13298,9 +13305,9 @@ msgstr "VALID"
 msgid "Verified"
 msgstr "Terverifikasi"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:155
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:181
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:83
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:265
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:187
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:84
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:123
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:153
 #, elixir-autogen, elixir-format
@@ -13312,7 +13319,7 @@ msgstr "Verifikasi"
 msgid "Verify & Revoke Clearance Letters"
 msgstr "Verifikasi & Cabut Surat Bebas Pustaka"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:665
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:684
 #, elixir-autogen, elixir-format
 msgid "Verify at:"
 msgstr "Verifikasi di:"
@@ -13322,12 +13329,12 @@ msgstr "Verifikasi di:"
 msgid "View Letter"
 msgstr "Lihat Surat"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:253
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:254
 #, elixir-autogen, elixir-format
 msgid "View Profile"
 msgstr "Lihat Profil"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:193
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:194
 #, elixir-autogen, elixir-format
 msgid "View Public Letter"
 msgstr "Lihat Surat Publik"
@@ -13337,7 +13344,7 @@ msgstr "Lihat Surat Publik"
 msgid "Year %{year}"
 msgstr "Tahun %{year}"
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:33
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:34
 #, elixir-autogen, elixir-format
 msgid "You do not have access to this clearance letter."
 msgstr "Anda tidak memiliki akses ke surat bebas pustaka ini."
@@ -13348,25 +13355,382 @@ msgstr "Anda tidak memiliki akses ke surat bebas pustaka ini."
 msgid "another node"
 msgstr "node lain"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:318
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:324
 #, elixir-autogen, elixir-format
 msgid "for the sequence number (no padding) and"
 msgstr "untuk nomor urut (tanpa padding) dan"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:320
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:326
 #, elixir-autogen, elixir-format
 msgid "for the year. Example:"
 msgstr "untuk tahun. Contoh:"
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "this value + 1"
 msgstr "nilai ini + 1"
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:315
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:230
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:239
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:330
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:520
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:231
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:240
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:331
 #, elixir-autogen, elixir-format
 msgid "—"
 msgstr "—"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:179
+#, elixir-autogen, elixir-format
+msgid "A clearance letter already exists for this identifier."
+msgstr "Surat bebas pustaka sudah ada untuk identifier ini."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:71
+#, elixir-autogen, elixir-format
+msgid "A letter has already been issued for this identifier"
+msgstr "Surat sudah diterbitkan untuk identifier ini"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:140
+#, elixir-autogen, elixir-format
+msgid "All of the following requirements must be met before you can submit a library clearance letter."
+msgstr "Semua persyaratan berikut harus dipenuhi sebelum Anda dapat mengajukan surat bebas pustaka."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:101
+#, elixir-autogen, elixir-format
+msgid "Check"
+msgstr "Periksa"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:15
+#, elixir-autogen, elixir-format
+msgid "Check your eligibility to receive a library clearance letter. Review loan status, fines, and contact support if any obligations remain."
+msgstr "Periksa kelayakan Anda untuk menerima surat bebas pustaka. Tinjau status pinjaman, denda, dan hubungi dukungan jika ada kewajiban yang tersisa."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Clearance Letter"
+msgstr "Surat Bebas Pustaka"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:384
+#, elixir-autogen, elixir-format
+msgid "Create Clearance Letter for Next Degree"
+msgstr "Buat Surat Bebas Pustaka untuk Gelar Selanjutnya"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:454
+#, elixir-autogen, elixir-format
+msgid "Create Letter"
+msgstr "Buat Surat"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:429
+#, elixir-autogen, elixir-format
+msgid "Current identifier: %{identifier}"
+msgstr "Identifier saat ini: %{identifier}"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:134
+#, elixir-autogen, elixir-format
+msgid "Eligibility"
+msgstr "Kelayakan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:154
+#, elixir-autogen, elixir-format
+msgid "Eligible"
+msgstr "Memenuhi syarat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:281
+#, elixir-autogen, elixir-format
+msgid "Email Contact"
+msgstr "Kontak Email"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:78
+#, elixir-autogen, elixir-format
+msgid "Enter Letter ID"
+msgstr "Masukkan ID Surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:93
+#, elixir-autogen, elixir-format
+msgid "Enter letter ID…"
+msgstr "Masukkan ID surat…"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:260
+#, elixir-autogen, elixir-format
+msgid "Enter the letter ID (UUID) shown on the clearance letter. The ID can be found at the bottom of the letter or in the QR code link."
+msgstr "Masukkan ID surat (UUID) yang tertera pada surat bebas pustaka. ID dapat ditemukan di bagian bawah surat atau tautan QR code."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:64
+#, elixir-autogen, elixir-format
+msgid "Enter the letter ID (UUID) to check the authenticity and status of the library clearance letter."
+msgstr "Masukkan ID surat (UUID) untuk memeriksa keaslian dan status surat bebas pustaka."
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:191
+#, elixir-autogen, elixir-format
+msgid "Failed to create letter: %{reason}"
+msgstr "Gagal membuat surat: %{reason}"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.ex:97
+#, elixir-autogen, elixir-format
+msgid "Failed to generate letter: %{reason}"
+msgstr "Gagal menghasilkan surat: %{reason}"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:235
+#, elixir-autogen, elixir-format
+msgid "Generating letter…"
+msgstr "Sedang membuat surat…"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:257
+#, elixir-autogen, elixir-format
+msgid "How to verify"
+msgstr "Cara memverifikasi"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:438
+#, elixir-autogen, elixir-format
+msgid "Identifier for new clearance letter"
+msgstr "Identifier untuk surat bebas pustaka baru"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:165
+#, elixir-autogen, elixir-format
+msgid "Identifier is required."
+msgstr "Identifier wajib diisi."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "Identifier: %{identifier}"
+msgstr "Identifier: %{identifier}"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:271
+#, elixir-autogen, elixir-format
+msgid "If you still have loans or fines, contact library services for guidance on resolving them."
+msgstr "Jika Anda masih memiliki pinjaman atau denda, hubungi layanan perpustakaan untuk panduan penyelesaiannya."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:168
+#, elixir-autogen, elixir-format
+msgid "Issued date"
+msgstr "Tanggal diterbitkan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:37
+#, elixir-autogen, elixir-format
+msgid "Last Letter"
+msgstr "Surat Terakhir"
+
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:680
+#, elixir-autogen, elixir-format
+msgid "Letter ID:"
+msgstr "ID Surat:"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:143
+#, elixir-autogen, elixir-format
+msgid "Letter details"
+msgstr "Detail surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:114
+#, elixir-autogen, elixir-format
+msgid "Letter not found"
+msgstr "Surat tidak ditemukan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:160
+#, elixir-autogen, elixir-format
+msgid "Letter number"
+msgstr "Nomor surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "Letter number: %{number}"
+msgstr "Nomor surat: %{number}"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:12
+#, elixir-autogen, elixir-format
+msgid "Library Clearance Eligibility"
+msgstr "Kelayakan Surat Bebas Pustaka"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:121
+#, elixir-autogen, elixir-format
+msgid "Member not found."
+msgstr "Anggota tidak ditemukan."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:55
+#, elixir-autogen, elixir-format
+msgid "Membership type is not eligible"
+msgstr "Jenis keanggotaan tidak memenuhi syarat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:268
+#, elixir-autogen, elixir-format
+msgid "Need help?"
+msgstr "Butuh bantuan?"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:206
+#, elixir-autogen, elixir-format
+msgid "Next Steps"
+msgstr "Langkah Selanjutnya"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "None yet"
+msgstr "Belum ada"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:31
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:156
+#, elixir-autogen, elixir-format
+msgid "Not Eligible"
+msgstr "Tidak Memenuhi Syarat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:95
+#, elixir-autogen, elixir-format
+msgid "Other letters for this account"
+msgstr "Surat lain untuk akun ini"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:299
+#, elixir-autogen, elixir-format
+msgid "Outstanding obligations remain"
+msgstr "Masih ada kewajiban yang tersisa"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:289
+#, elixir-autogen, elixir-format
+msgid "Phone Contact"
+msgstr "Kontak Telepon"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:112
+#, elixir-autogen, elixir-format
+msgid "Please enter an email or identifier."
+msgstr "Silakan masukkan email atau identifier."
+
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:673
+#, elixir-autogen, elixir-format
+msgid "Preview QR code"
+msgstr "Pratinjau QR code"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "Ready to Submit"
+msgstr "Siap Diajukan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:308
+#, elixir-autogen, elixir-format
+msgid "Ready to submit"
+msgstr "Siap diajukan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:220
+#, elixir-autogen, elixir-format
+msgid "Refresh Status"
+msgstr "Perbarui Status"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:301
+#, elixir-autogen, elixir-format
+msgid "Resolve fines or returned items first. If you need help, contact library services above."
+msgstr "Selesaikan terlebih dahulu denda atau pengembalian item. Jika perlu bantuan, hubungi layanan perpustakaan di atas."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:213
+#, elixir-autogen, elixir-format
+msgid "Revoked on"
+msgstr "Dicabut pada"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:75
+#, elixir-autogen, elixir-format
+msgid "Search Letter"
+msgstr "Cari Surat"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:399
+#, elixir-autogen, elixir-format
+msgid "Search by email or existing identifier"
+msgstr "Cari berdasarkan email atau identifier yang sudah ada"
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:158
+#, elixir-autogen, elixir-format
+msgid "Select a member before creating a letter."
+msgstr "Pilih anggota sebelum membuat surat."
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:387
+#, elixir-autogen, elixir-format
+msgid "Select an existing member and provide a new identifier for their next degree clearance letter."
+msgstr "Pilih anggota yang sudah ada dan berikan identifier baru untuk surat bebas pustaka gelar selanjutnya."
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:422
+#, elixir-autogen, elixir-format
+msgid "Selected Member"
+msgstr "Anggota Terpilih"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:278
+#, elixir-autogen, elixir-format
+msgid "Status REVOKED"
+msgstr "Status DICABUT"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:270
+#, elixir-autogen, elixir-format
+msgid "Status VALID"
+msgstr "Status VALID"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:184
+#, elixir-autogen, elixir-format
+msgid "Student / Employee ID"
+msgstr "ID Mahasiswa / Karyawan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:200
+#, elixir-autogen, elixir-format
+msgid "Study program"
+msgstr "Program studi"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:137
+#, elixir-autogen, elixir-format
+msgid "Submission Requirements"
+msgstr "Persyaratan Pengajuan"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:239
+#, elixir-autogen, elixir-format
+msgid "Submit Letter"
+msgstr "Ajukan Surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:81
+#, elixir-autogen, elixir-format
+msgid "The letter ID is a UUID, for example:"
+msgstr "ID surat adalah UUID, misalnya:"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:117
+#, elixir-autogen, elixir-format
+msgid "The letter ID is invalid or not registered in the system."
+msgstr "ID surat tidak valid atau tidak terdaftar di sistem."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:281
+#, elixir-autogen, elixir-format
+msgid "The letter has been revoked and is no longer valid. Contact the library for more information."
+msgstr "Surat telah dicabut dan tidak lagi valid. Hubungi perpustakaan untuk informasi lebih lanjut."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:273
+#, elixir-autogen, elixir-format
+msgid "The letter is still active and has not been revoked by the library."
+msgstr "Surat masih aktif dan belum dicabut oleh perpustakaan."
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:457
+#, elixir-autogen, elixir-format
+msgid "This will create a letter even if a previous degree letter exists."
+msgstr "Ini akan membuat surat meskipun surat gelar sebelumnya sudah ada."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:209
+#, elixir-autogen, elixir-format
+msgid "Update your status once you have completed your obligations. If all requirements are met, you can submit the letter directly."
+msgstr "Perbarui status Anda setelah Anda menyelesaikan kewajiban. Jika semua persyaratan terpenuhi, Anda dapat langsung mengajukan surat."
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:57
+#, elixir-autogen, elixir-format
+msgid "Verify Letter"
+msgstr "Verifikasi Surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:61
+#, elixir-autogen, elixir-format
+msgid "Verify Library Clearance Letter"
+msgstr "Verifikasi Surat Bebas Pustaka"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:229
+#, elixir-autogen, elixir-format
+msgid "View Your Letter"
+msgstr "Lihat Surat Anda"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:83
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:239
+#, elixir-autogen, elixir-format
+msgid "View letter"
+msgstr "Lihat surat"
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:310
+#, elixir-autogen, elixir-format
+msgid "You have no active fines or loans. Click Submit Letter to generate your library clearance letter."
+msgstr "Anda tidak memiliki denda atau pinjaman aktif. Klik Ajukan Surat untuk membuat surat bebas pustaka Anda."
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:57
+#, elixir-autogen, elixir-format
+msgid "Your membership type cannot receive a library clearance letter. Contact the library for more information."
+msgstr "Jenis keanggotaan Anda tidak dapat menerima surat bebas pustaka. Hubungi perpustakaan untuk informasi lebih lanjut."

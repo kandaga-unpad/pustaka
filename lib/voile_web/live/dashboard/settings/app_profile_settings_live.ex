@@ -184,6 +184,17 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                     value={System.get_setting_value("app_instagram_url", "")}
                     placeholder="https://instagram.com/youraccount"
                   />
+
+                  <.input
+                    type="select"
+                    name="clearance_feature_enabled"
+                    label={gettext("Clearance Feature")}
+                    options={[
+                      {gettext("Disabled"), "false"},
+                      {gettext("Enabled"), "true"}
+                    ]}
+                    value={System.get_setting_value("clearance_feature_enabled", "false")}
+                  />
                 </div>
               </div>
             </div>
@@ -328,6 +339,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       "app_contact_email",
       "app_contact_number",
       "app_instagram_url",
+      "clearance_feature_enabled",
       "app_address",
       "storage_adapter",
       "default_node_id"

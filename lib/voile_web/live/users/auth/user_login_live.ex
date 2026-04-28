@@ -162,7 +162,7 @@ defmodule VoileWeb.UserLoginLive do
                 <.button
                   type="button"
                   phx-click={show_modal("magic-link-modal")}
-                  class="gradient-btn flex items-center gap-2 text-xs text-white"
+                  class="gradient-btn flex items-center justify-center gap-2 text-xs text-white"
                 >
                   <.icon name="hero-link" class="size-4 opacity-75 hover:opacity-100" />
                   <span>{gettext("Login passwordless")}</span>

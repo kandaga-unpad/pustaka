@@ -23,7 +23,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:263
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1314
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1503
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:291
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:496
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:247
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:73
 #: lib/voile_web/live/frontend/items/show.ex:541
@@ -33,8 +33,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:795
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:480
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:184
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:181
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:294
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:182
 #: lib/voile_web/live/dashboard/members/management/index.ex:416
 #: lib/voile_web/live/dashboard/members/management/index.ex:785
 #: lib/voile_web/live/dashboard/members/management/show.ex:797
@@ -130,7 +130,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/master/member_type_live/form_component.ex:77
 #: lib/voile_web/live/dashboard/master/places_live/form_component.ex:19
 #: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:21
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:379
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:380
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:312
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:244
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:251
@@ -379,6 +379,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:221
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:365
 #: lib/voile_web/live/dashboard/visitor/logs.ex:450
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:176
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:212
 #: lib/voile_web/live/users/permission/permission_manage_show_live.ex:66
 #: lib/voile_web/live/users/role/role_manage_live.ex:301
@@ -515,12 +516,13 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:351
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1527
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1715
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:288
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:493
 #: lib/voile_web/live/dashboard/members/management/index.ex:421
 #: lib/voile_web/live/dashboard/members/management/index.ex:491
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:244
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:64
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:411
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:25
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Status"
@@ -579,8 +581,9 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:432
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:264
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:321
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:329
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:534
 #: lib/voile_web/live/dashboard/members/management/index.ex:519
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:118
 #: lib/voile_web/live/users/role/role_manage_live.ex:332
 #, elixir-autogen, elixir-format
 msgid "View"
@@ -592,7 +595,7 @@ msgid "We can't find the internet"
 msgstr ""
 
 ## Additional translations
-#: lib/voile_web/live/visitor/check_in.ex:1026
+#: lib/voile_web/live/visitor/check_in.ex:1033
 #, elixir-autogen, elixir-format
 msgid "Welcome, %{name}!"
 msgstr ""
@@ -878,7 +881,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:183
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:251
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:484
 #: lib/voile_web/live/dashboard/members/management/index.ex:443
 #: lib/voile_web/live/dashboard/members/management/show.ex:54
 #: lib/voile_web/live/dashboard/members/reports/expiring.ex:74
@@ -914,7 +917,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1139
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:504
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:359
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:367
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:572
 #: lib/voile_web/live/dashboard/members/management/index.ex:554
 #: lib/voile_web/live/dashboard/visitor/logs.ex:552
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:619
@@ -959,7 +962,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1129
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:494
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:351
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:358
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:563
 #: lib/voile_web/live/dashboard/members/management/index.ex:543
 #: lib/voile_web/live/dashboard/visitor/logs.ex:519
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:586
@@ -1008,7 +1011,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:63
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:489
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1404
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:240
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:350
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:186
 #: lib/voile_web/live/dashboard/visitor/logs.ex:398
 #, elixir-autogen, elixir-format, fuzzy
@@ -1361,7 +1364,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/master/publisher_live/form_component.ex:25
 #: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:20
 #: lib/voile_web/live/dashboard/master/publisher_live/show.html.heex:19
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:256
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:262
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:79
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:310
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:290
@@ -1628,8 +1631,8 @@ msgstr ""
 msgid "Date:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:613
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:227
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:619
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:228
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:233
 #: lib/voile_web/live/frontend/atrium/index.ex:1203
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:203
@@ -1694,7 +1697,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:323
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:954
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:269
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:275
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:64
 #: lib/voile_web/live/frontend/atrium/index.ex:1093
 #: lib/voile_web/live/users/auth/user_confirmation_instructions_live.ex:20
@@ -2900,8 +2903,8 @@ msgid "Female"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:936
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:293
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:209
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:299
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:210
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:63
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:276
 #: lib/voile_web/live/users/auth/user_onboarding_live.ex:134
@@ -2911,7 +2914,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:308
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:945
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:218
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:219
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:225
 #: lib/voile_web/live/dashboard/members/management/index.ex:486
 #: lib/voile_web/live/dashboard/visitor/logs.ex:447
@@ -3526,10 +3529,10 @@ msgid "Search for an existing collection to add an item to, or create a new coll
 msgstr ""
 
 #: lib/voile_web/components/voile_dashboard_components.ex:248
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:169
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:195
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:211
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:97
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:201
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:217
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:98
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:137
 #: lib/voile_web/live/dashboard/plugins/index.ex:259
 #: lib/voile_web/live/dashboard/plugins/settings.ex:90
@@ -4100,8 +4103,8 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:327
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:116
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:107
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:282
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:236
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:487
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:237
 #: lib/voile_web/live/dashboard/members/management/index.ex:395
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:86
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:359
@@ -4840,7 +4843,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/dashboard_live.ex:33
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:115
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:37
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:253
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:363
 #: lib/voile_web/live/dashboard/members/index.ex:81
 #: lib/voile_web/live/dashboard/members/management/index.ex:392
 #, elixir-autogen, elixir-format
@@ -5278,7 +5281,8 @@ msgstr ""
 msgid "Check In"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:839
+#: lib/voile_web/live/visitor/check_in.ex:832
+#: lib/voile_web/live/visitor/check_in.ex:846
 #, elixir-autogen, elixir-format
 msgid "Check In Now"
 msgstr ""
@@ -5427,7 +5431,7 @@ msgstr ""
 msgid "Comment"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:953
+#: lib/voile_web/live/visitor/check_in.ex:960
 #: lib/voile_web/live/visitor/check_out.ex:802
 #, elixir-autogen, elixir-format
 msgid "Comments (Optional)"
@@ -5513,7 +5517,7 @@ msgstr ""
 msgid "Contact the library for more information about this item or to make special requests."
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1073
+#: lib/voile_web/live/visitor/check_in.ex:1080
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr ""
@@ -5714,7 +5718,7 @@ msgstr ""
 msgid "Disable all %{resource} permissions"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1116
+#: lib/voile_web/live/visitor/check_in.ex:1123
 #: lib/voile_web/live/visitor/check_out.ex:904
 #: lib/voile_web/live/visitor/check_out.ex:947
 #, elixir-autogen, elixir-format
@@ -5792,7 +5796,7 @@ msgstr ""
 msgid "Enable all %{resource} permissions"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1042
+#: lib/voile_web/live/visitor/check_in.ex:1049
 #, elixir-autogen, elixir-format
 msgid "Enjoy your stay at"
 msgstr ""
@@ -5991,7 +5995,7 @@ msgstr ""
 msgid "Failed to set primary attachment"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:848
+#: lib/voile_web/live/visitor/check_in.ex:855
 #: lib/voile_web/live/visitor/check_out.ex:697
 #, elixir-autogen, elixir-format
 msgid "Feedback"
@@ -6058,6 +6062,7 @@ msgid "Filters"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:170
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:407
 #, elixir-autogen, elixir-format
 msgid "Find Member"
 msgstr ""
@@ -6211,7 +6216,7 @@ msgstr ""
 msgid "Handle item reservations, queue management, and availability notifications."
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1053
+#: lib/voile_web/live/visitor/check_in.ex:1060
 #, elixir-autogen, elixir-format
 msgid "Have a productive visit! 📚"
 msgstr ""
@@ -6598,9 +6603,9 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:141
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:906
 #: lib/voile_web/live/dashboard/glam/museum/index.ex:40
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:196
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:208
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:149
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:306
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:214
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:150
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:150
 #: lib/voile_web/live/dashboard/members/index.ex:94
 #: lib/voile_web/live/dashboard/members/management/index.ex:320
@@ -6739,7 +6744,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:209
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:300
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:931
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:203
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:204
 #, elixir-autogen, elixir-format
 msgid "Member Information"
 msgstr ""
@@ -6784,9 +6789,9 @@ msgstr ""
 msgid "Member type not assigned - contact library"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:197
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:209
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:150
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:307
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:215
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:151
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:151
 #: lib/voile_web/live/dashboard/members/index.ex:95
 #: lib/voile_web/live/dashboard/members/management/index.ex:321
@@ -6914,7 +6919,7 @@ msgstr ""
 msgid "New item unit:"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:984
+#: lib/voile_web/live/visitor/check_in.ex:991
 #, elixir-autogen, elixir-format
 msgid "New to our system?"
 msgstr ""
@@ -6944,7 +6949,7 @@ msgstr ""
 msgid "No Member Type"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:250
+#: lib/voile_web/live/users/auth/user_login_live.ex:253
 #: lib/voile_web/live/users/auth/user_pending_confirmation_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "No account found with that email address."
@@ -7198,7 +7203,7 @@ msgstr ""
 msgid "Page %{page} of %{total_pages}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:554
 #: lib/voile_web/live/dashboard/members/management/index.ex:529
 #: lib/voile_web/live/dashboard/visitor/logs.ex:421
 #: lib/voile_web/live/dashboard/visitor/surveys.ex:494
@@ -7346,7 +7351,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:336
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:972
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:263
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:269
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:294
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Phone"
@@ -7362,7 +7367,7 @@ msgstr ""
 msgid "Please check your inbox and click the confirmation link to activate your account."
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:253
+#: lib/voile_web/live/users/auth/user_login_live.ex:256
 #, elixir-autogen, elixir-format
 msgid "Please enter your email address."
 msgstr ""
@@ -7382,7 +7387,7 @@ msgstr ""
 msgid "Please verify your email to reserve items"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1152
+#: lib/voile_web/live/visitor/check_in.ex:1159
 #: lib/voile_web/live/visitor/check_out.ex:986
 #, elixir-autogen, elixir-format
 msgid "Powered by Voile"
@@ -7525,13 +7530,13 @@ msgstr ""
 msgid "RFID tag"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:911
+#: lib/voile_web/live/visitor/check_in.ex:918
 #: lib/voile_web/live/visitor/check_out.ex:760
 #, elixir-autogen, elixir-format
 msgid "Rate our staff (Optional)"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:871
+#: lib/voile_web/live/visitor/check_in.ex:878
 #: lib/voile_web/live/visitor/check_out.ex:720
 #, elixir-autogen, elixir-format
 msgid "Rate your experience"
@@ -7612,12 +7617,12 @@ msgstr ""
 msgid "Refresh Stats"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:994
+#: lib/voile_web/live/visitor/check_in.ex:1001
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Register Now"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:987
+#: lib/voile_web/live/visitor/check_in.ex:994
 #, elixir-autogen, elixir-format
 msgid "Register for a member account to access more features."
 msgstr ""
@@ -8121,13 +8126,13 @@ msgstr ""
 msgid "Set your initial password"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:853
+#: lib/voile_web/live/visitor/check_in.ex:860
 #: lib/voile_web/live/visitor/check_out.ex:702
 #, elixir-autogen, elixir-format
 msgid "Share your experience"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:960
+#: lib/voile_web/live/visitor/check_in.ex:967
 #: lib/voile_web/live/visitor/check_out.ex:809
 #, elixir-autogen, elixir-format
 msgid "Share your thoughts..."
@@ -8244,7 +8249,7 @@ msgstr ""
 msgid "Statistics refreshed"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:971
+#: lib/voile_web/live/visitor/check_in.ex:978
 #: lib/voile_web/live/visitor/check_out.ex:820
 #, elixir-autogen, elixir-format
 msgid "Submit Feedback"
@@ -8324,7 +8329,7 @@ msgstr ""
 msgid "Temporary Reservations"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1096
+#: lib/voile_web/live/visitor/check_in.ex:1103
 #: lib/voile_web/live/visitor/check_out.ex:927
 #, elixir-autogen, elixir-format
 msgid "Thank You for Your Feedback!"
@@ -8627,7 +8632,7 @@ msgstr ""
 msgid "Type identifier, name, or email..."
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:244
+#: lib/voile_web/live/users/auth/user_login_live.ex:247
 #, elixir-autogen, elixir-format
 msgid "Unable to send email. Please try again."
 msgstr ""
@@ -8946,7 +8951,7 @@ msgstr ""
 msgid "Warning:"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1105
+#: lib/voile_web/live/visitor/check_in.ex:1112
 #: lib/voile_web/live/visitor/check_out.ex:936
 #, elixir-autogen, elixir-format
 msgid "We appreciate you taking the time to help us improve! 💜"
@@ -8972,7 +8977,7 @@ msgstr ""
 msgid "We've sent a confirmation email to verify your account"
 msgstr ""
 
-#: lib/voile_web/live/users/auth/user_login_live.ex:236
+#: lib/voile_web/live/users/auth/user_login_live.ex:239
 #, elixir-autogen, elixir-format
 msgid "We've sent a login link to %{email}. Please check your email."
 msgstr ""
@@ -9044,7 +9049,7 @@ msgstr ""
 msgid "You must be logged in to make a reservation."
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1100
+#: lib/voile_web/live/visitor/check_in.ex:1107
 #: lib/voile_web/live/visitor/check_out.ex:931
 #, elixir-autogen, elixir-format
 msgid "Your %{rating}-star rating has been recorded"
@@ -9152,7 +9157,7 @@ msgstr ""
 msgid "or drag and drop"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1048
+#: lib/voile_web/live/visitor/check_in.ex:1055
 #: lib/voile_web/live/visitor/check_out.ex:888
 #, elixir-autogen, elixir-format
 msgid "our facility"
@@ -9178,16 +9183,16 @@ msgstr ""
 msgid "s"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:903
-#: lib/voile_web/live/visitor/check_in.ex:944
+#: lib/voile_web/live/visitor/check_in.ex:910
+#: lib/voile_web/live/visitor/check_in.ex:951
 #: lib/voile_web/live/visitor/check_out.ex:752
 #: lib/voile_web/live/visitor/check_out.ex:793
 #, elixir-autogen, elixir-format
 msgid "star"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:903
-#: lib/voile_web/live/visitor/check_in.ex:945
+#: lib/voile_web/live/visitor/check_in.ex:910
+#: lib/voile_web/live/visitor/check_in.ex:952
 #: lib/voile_web/live/visitor/check_out.ex:752
 #: lib/voile_web/live/visitor/check_out.ex:794
 #, elixir-autogen, elixir-format
@@ -10313,6 +10318,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/plugins/index.ex:239
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:147
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:77
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:106
 #, elixir-autogen, elixir-format
 msgid "ID: %{id}"
 msgstr ""
@@ -11111,8 +11118,8 @@ msgstr ""
 msgid "Revoke token"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:180
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:176
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:290
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:177
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:101
 #, elixir-autogen, elixir-format
 msgid "Revoked"
@@ -11193,7 +11200,7 @@ msgstr ""
 msgid "Save Publisher"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:417
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:423
 #: lib/voile_web/live/dashboard/plugins/settings.ex:190
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:297
 #, elixir-autogen, elixir-format, fuzzy
@@ -11455,7 +11462,7 @@ msgstr ""
 msgid "Total Loans"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:217
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:327
 #: lib/voile_web/live/dashboard/members/reports/expiring.ex:48
 #: lib/voile_web/live/dashboard/members/reports/overdue.ex:48
 #, elixir-autogen, elixir-format
@@ -11497,6 +11504,7 @@ msgstr ""
 msgid "Unsuspend"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/plugins/index.ex:298
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:395
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:310
 #, elixir-autogen, elixir-format, fuzzy
@@ -11717,7 +11725,7 @@ msgstr ""
 msgid "Add any notes about this batch approval..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:321
+#: lib/voile_web/live/dashboard/plugins/index.ex:331
 #, elixir-autogen, elixir-format
 msgid "Add plugins to your mix.exs dependencies to get started."
 msgstr ""
@@ -11733,7 +11741,7 @@ msgstr ""
 msgid "Approve Selected"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:298
+#: lib/voile_web/live/dashboard/plugins/index.ex:308
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to uninstall this plugin? Data will be preserved."
 msgstr ""
@@ -11826,7 +11834,7 @@ msgstr ""
 msgid "Failed to deactivate: %{reason}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:67
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:73
 #: lib/voile_web/live/dashboard/plugins/settings.ex:64
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to save settings."
@@ -11883,7 +11891,7 @@ msgstr ""
 msgid "No locations available"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:318
+#: lib/voile_web/live/dashboard/plugins/index.ex:328
 #, elixir-autogen, elixir-format
 msgid "No plugins installed"
 msgstr ""
@@ -12035,7 +12043,7 @@ msgstr ""
 msgid "This plugin has no configurable settings."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/plugins/index.ex:304
+#: lib/voile_web/live/dashboard/plugins/index.ex:314
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Uninstall"
 msgstr ""
@@ -12135,7 +12143,7 @@ msgstr ""
 msgid "Failed to install: %{reason}"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1031
+#: lib/voile_web/live/visitor/check_in.ex:1038
 #, elixir-autogen, elixir-format
 msgid "Gender: %{gender}"
 msgstr ""
@@ -12194,7 +12202,7 @@ msgstr ""
 msgid "Plugins"
 msgstr ""
 
-#: lib/voile_web/live/visitor/check_in.ex:1037
+#: lib/voile_web/live/visitor/check_in.ex:1044
 #, elixir-autogen, elixir-format
 msgid "Program: %{program}"
 msgstr ""
@@ -12510,7 +12518,7 @@ msgstr ""
 msgid "Accepted format: .csv"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:451
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:457
 #, elixir-autogen, elixir-format
 msgid "Active signature"
 msgstr ""
@@ -12520,7 +12528,7 @@ msgstr ""
 msgid "All Media"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:212
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:322
 #, elixir-autogen, elixir-format
 msgid "All clearance letters generated by the system"
 msgstr ""
@@ -12530,7 +12538,7 @@ msgstr ""
 msgid "Any Media Type"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:368
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:369
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to revoke this letter?"
 msgstr ""
@@ -12565,7 +12573,7 @@ msgstr ""
 msgid "Bibliographic Details"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:360
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:366
 #, elixir-autogen, elixir-format
 msgid "Body paragraph"
 msgstr ""
@@ -12600,7 +12608,7 @@ msgstr ""
 msgid "Check Clearance"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:478
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:484
 #, elixir-autogen, elixir-format
 msgid "Choose File"
 msgstr ""
@@ -12610,56 +12618,56 @@ msgstr ""
 msgid "Choose an item"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:276
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:282
 #, elixir-autogen, elixir-format
 msgid "City (for date line)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:39
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:40
 #, elixir-autogen, elixir-format
 msgid "Clearance Letter Detail"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:220
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:226
 #, elixir-autogen, elixir-format
 msgid "Clearance Letter Settings"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:28
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:198
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:209
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:210
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:151
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:30
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:308
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:319
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:216
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:152
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:152
 #: lib/voile_web/live/dashboard/members/index.ex:154
 #, elixir-autogen, elixir-format
 msgid "Clearance Letters"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:26
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:27
 #, elixir-autogen, elixir-format
 msgid "Clearance letter not found."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:127
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:153
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:55
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:237
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:159
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:56
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:95
 #, elixir-autogen, elixir-format
 msgid "Clearance navigation"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:469
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:475
 #, elixir-autogen, elixir-format
 msgid "Click or drag a file here"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:367
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:373
 #, elixir-autogen, elixir-format
 msgid "Closing Text"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:376
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:382
 #, elixir-autogen, elixir-format
 msgid "Closing sentence"
 msgstr ""
@@ -12669,7 +12677,7 @@ msgstr ""
 msgid "Code:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:223
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:229
 #, elixir-autogen, elixir-format
 msgid "Configure institution details, signer, and letter number format."
 msgstr ""
@@ -12679,7 +12687,7 @@ msgstr ""
 msgid "Confirm Revocation"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:372
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:373
 #, elixir-autogen, elixir-format
 msgid "Confirm Revoke"
 msgstr ""
@@ -12689,12 +12697,12 @@ msgstr ""
 msgid "Create \"%{creator}\""
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:246
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:247
 #, elixir-autogen, elixir-format
 msgid "Current Member"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:448
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:454
 #, elixir-autogen, elixir-format
 msgid "Current signature"
 msgstr ""
@@ -12715,12 +12723,12 @@ msgstr ""
 msgid "Drop a CSV file here or click to browse"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:299
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:305
 #, elixir-autogen, elixir-format
 msgid "Employee ID (NIP)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:360
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:361
 #, elixir-autogen, elixir-format
 msgid "Enter reason for revocation..."
 msgstr ""
@@ -12736,6 +12744,7 @@ msgid "Errors"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:229
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:192
 #, elixir-autogen, elixir-format
 msgid "Faculty / Unit"
 msgstr ""
@@ -12745,23 +12754,23 @@ msgstr ""
 msgid "Failed imports: %{count}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:138
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:139
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:85
 #, elixir-autogen, elixir-format
 msgid "Failed to revoke the letter."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:139
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:145
 #, elixir-autogen, elixir-format
 msgid "Failed to upload signature."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:683
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:724
 #, elixir-autogen, elixir-format
 msgid "File format not supported."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:682
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:723
 #, elixir-autogen, elixir-format
 msgid "File is too large."
 msgstr ""
@@ -12771,13 +12780,13 @@ msgstr ""
 msgid "Generate and manage clearance letters for members."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:285
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:288
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:490
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:289
 #, elixir-autogen, elixir-format
 msgid "Generated At"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:166
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:167
 #, elixir-autogen, elixir-format
 msgid "Generated on %{date}"
 msgstr ""
@@ -12803,18 +12812,18 @@ msgstr ""
 msgid "Import to Node"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:239
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:245
 #, elixir-autogen, elixir-format
 msgid "Institution Information"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:244
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:537
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:250
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:543
 #, elixir-autogen, elixir-format
 msgid "Institution Name"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:524
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:530
 #, elixir-autogen, elixir-format
 msgid "Institution logo"
 msgstr ""
@@ -12829,7 +12838,7 @@ msgstr ""
 msgid "Issued At"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:472
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:478
 #, elixir-autogen, elixir-format
 msgid "JPG, JPEG, PNG, WEBP · max 5 MB"
 msgstr ""
@@ -12839,12 +12848,12 @@ msgstr ""
 msgid "Last Inventory:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:336
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:342
 #, elixir-autogen, elixir-format
 msgid "Last sequence number (migration start)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:355
 #, elixir-autogen, elixir-format
 msgid "Letter Body Text"
 msgstr ""
@@ -12854,47 +12863,42 @@ msgstr ""
 msgid "Letter Detail"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:264
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:265
 #, elixir-autogen, elixir-format
 msgid "Letter Details"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:663
-#, elixir-autogen, elixir-format
-msgid "Letter ID: (generated on issue)"
-msgstr ""
-
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:276
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:270
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:481
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:271
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:217
 #, elixir-autogen, elixir-format
 msgid "Letter Number"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:307
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:313
 #, elixir-autogen, elixir-format
 msgid "Letter Numbering"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:510
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:516
 #, elixir-autogen, elixir-format
 msgid "Letter Preview"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:297
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:298
 #, elixir-autogen, elixir-format
 msgid "Letter UUID"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:135
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:136
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:80
 #, elixir-autogen, elixir-format
 msgid "Letter successfully revoked."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:141
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:167
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:69
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:251
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:173
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:70
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:109
 #, elixir-autogen, elixir-format
 msgid "Letters"
@@ -12920,12 +12924,12 @@ msgstr ""
 msgid "Media Type"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:597
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:603
 #, elixir-autogen, elixir-format
 msgid "Member Full Name"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:603
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:609
 #, elixir-autogen, elixir-format
 msgid "Member ID"
 msgstr ""
@@ -12935,7 +12939,7 @@ msgstr ""
 msgid "Member Services"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:383
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:389
 #, elixir-autogen, elixir-format
 msgid "Membership"
 msgstr ""
@@ -12955,7 +12959,7 @@ msgstr ""
 msgid "Monthly visitor totals by location for the selected year."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:545
 #, elixir-autogen, elixir-format
 msgid "No clearance letters found."
 msgstr ""
@@ -12970,7 +12974,7 @@ msgstr ""
 msgid "No node"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:456
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:462
 #, elixir-autogen, elixir-format
 msgid "No signature uploaded yet."
 msgstr ""
@@ -12985,7 +12989,7 @@ msgstr ""
 msgid "No visitor data found for the selected filters."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:608
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:614
 #, elixir-autogen, elixir-format
 msgid "Node / Faculty"
 msgstr ""
@@ -12995,12 +12999,12 @@ msgstr ""
 msgid "Not Verified"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:312
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:318
 #, elixir-autogen, elixir-format
 msgid "Number Format"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:569
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:575
 #, elixir-autogen, elixir-format
 msgid "Number:"
 msgstr ""
@@ -13016,7 +13020,7 @@ msgstr ""
 msgid "Physical Only"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:122
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:123
 #, elixir-autogen, elixir-format
 msgid "Please provide a revocation reason."
 msgstr ""
@@ -13026,12 +13030,13 @@ msgstr ""
 msgid "Please select a CSV file first."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:512
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:518
 #, elixir-autogen, elixir-format
 msgid "Preview — placeholder member data"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:205
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:147
 #, elixir-autogen, elixir-format
 msgid "REVOKED"
 msgstr ""
@@ -13041,8 +13046,9 @@ msgstr ""
 msgid "Read On Spot"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:336
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:337
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:247
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:222
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr ""
@@ -13057,7 +13063,7 @@ msgstr ""
 msgid "Resource Type:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:312
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:313
 #, elixir-autogen, elixir-format
 msgid "Revocation Details"
 msgstr ""
@@ -13077,26 +13083,26 @@ msgstr ""
 msgid "Revocation reason is required."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:348
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:389
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:349
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:390
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:272
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:305
 #, elixir-autogen, elixir-format
 msgid "Revoke Letter"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:318
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:319
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:242
 #, elixir-autogen, elixir-format
 msgid "Revoked At"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:327
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:328
 #, elixir-autogen, elixir-format
 msgid "Revoked By"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:351
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:352
 #, elixir-autogen, elixir-format
 msgid "Revoking this letter will invalidate it. This action cannot be undone."
 msgstr ""
@@ -13106,12 +13112,12 @@ msgstr ""
 msgid "Row %{row}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:424
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:430
 #, elixir-autogen, elixir-format
 msgid "Saved"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:414
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:420
 #, elixir-autogen, elixir-format
 msgid "Saving…"
 msgstr ""
@@ -13136,7 +13142,7 @@ msgstr ""
 msgid "Search by item code, title, inventory code, or location..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:232
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:342
 #, elixir-autogen, elixir-format
 msgid "Search by letter number or member name..."
 msgstr ""
@@ -13146,7 +13152,7 @@ msgstr ""
 msgid "Search items, barcode, or legacy code..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:386
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:392
 #, elixir-autogen, elixir-format
 msgid "Select the member types eligible to request a clearance letter."
 msgstr ""
@@ -13156,37 +13162,37 @@ msgstr ""
 msgid "Selected Item"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:279
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:280
 #, elixir-autogen, elixir-format
 msgid "Sequence Number"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "Set this to the last number issued manually."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:643
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:649
 #, elixir-autogen, elixir-format
 msgid "Signature"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:435
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:441
 #, elixir-autogen, elixir-format
 msgid "Signature Image"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:136
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:142
 #, elixir-autogen, elixir-format
 msgid "Signature updated successfully."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:283
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:289
 #, elixir-autogen, elixir-format
 msgid "Signer"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:653
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:659
 #, elixir-autogen, elixir-format
 msgid "Signer Name"
 msgstr ""
@@ -13201,7 +13207,7 @@ msgstr ""
 msgid "Statistics by Location"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:250
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:256
 #, elixir-autogen, elixir-format
 msgid "Subtitle / Work Unit"
 msgstr ""
@@ -13221,7 +13227,7 @@ msgstr ""
 msgid "The CSV file must contain at least one data row."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:370
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:376
 #, elixir-autogen, elixir-format
 msgid "The closing sentence at the end of the letter body. HTML tags are allowed."
 msgstr ""
@@ -13231,22 +13237,22 @@ msgstr ""
 msgid "The first row must contain headers and the file size must not exceed 10 MB."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:352
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:358
 #, elixir-autogen, elixir-format
 msgid "The main body paragraph of the clearance letter. HTML tags are allowed (e.g. <strong>, <em>, <br>)."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "The next letter will use sequence number"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:287
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:293
 #, elixir-autogen, elixir-format
 msgid "Title / Position"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:684
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:725
 #, elixir-autogen, elixir-format
 msgid "Too many files."
 msgstr ""
@@ -13276,17 +13282,18 @@ msgstr ""
 msgid "Upload a CSV file to bulk-import member profiles. Password is optional; blank passwords will default to changeme123."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:437
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:443
 #, elixir-autogen, elixir-format
 msgid "Upload a signature in JPG/PNG format. The file will be stored in the storage system and can be replaced at any time."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:316
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:322
 #, elixir-autogen, elixir-format
 msgid "Use"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:209
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:151
 #, elixir-autogen, elixir-format
 msgid "VALID"
 msgstr ""
@@ -13297,9 +13304,9 @@ msgstr ""
 msgid "Verified"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:155
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:181
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:83
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:265
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:187
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:84
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:123
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:153
 #, elixir-autogen, elixir-format
@@ -13311,7 +13318,7 @@ msgstr ""
 msgid "Verify & Revoke Clearance Letters"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:665
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:684
 #, elixir-autogen, elixir-format
 msgid "Verify at:"
 msgstr ""
@@ -13321,12 +13328,12 @@ msgstr ""
 msgid "View Letter"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:253
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:254
 #, elixir-autogen, elixir-format
 msgid "View Profile"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:193
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:194
 #, elixir-autogen, elixir-format
 msgid "View Public Letter"
 msgstr ""
@@ -13336,7 +13343,7 @@ msgstr ""
 msgid "Year %{year}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:33
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:34
 #, elixir-autogen, elixir-format
 msgid "You do not have access to this clearance letter."
 msgstr ""
@@ -13347,25 +13354,382 @@ msgstr ""
 msgid "another node"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:318
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:324
 #, elixir-autogen, elixir-format
 msgid "for the sequence number (no padding) and"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:320
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:326
 #, elixir-autogen, elixir-format
 msgid "for the year. Example:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/settings.ex:340
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:346
 #, elixir-autogen, elixir-format
 msgid "this value + 1"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/clearance/index.ex:315
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:230
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:239
-#: lib/voile_web/live/dashboard/members/clearance/show.ex:330
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:520
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:231
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:240
+#: lib/voile_web/live/dashboard/members/clearance/show.ex:331
 #, elixir-autogen, elixir-format
 msgid "—"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:179
+#, elixir-autogen, elixir-format
+msgid "A clearance letter already exists for this identifier."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:71
+#, elixir-autogen, elixir-format
+msgid "A letter has already been issued for this identifier"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:140
+#, elixir-autogen, elixir-format
+msgid "All of the following requirements must be met before you can submit a library clearance letter."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:101
+#, elixir-autogen, elixir-format
+msgid "Check"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:15
+#, elixir-autogen, elixir-format
+msgid "Check your eligibility to receive a library clearance letter. Review loan status, fines, and contact support if any obligations remain."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Clearance Letter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:384
+#, elixir-autogen, elixir-format
+msgid "Create Clearance Letter for Next Degree"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:454
+#, elixir-autogen, elixir-format
+msgid "Create Letter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:429
+#, elixir-autogen, elixir-format
+msgid "Current identifier: %{identifier}"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:134
+#, elixir-autogen, elixir-format
+msgid "Eligibility"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:154
+#, elixir-autogen, elixir-format
+msgid "Eligible"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:281
+#, elixir-autogen, elixir-format
+msgid "Email Contact"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:78
+#, elixir-autogen, elixir-format
+msgid "Enter Letter ID"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:93
+#, elixir-autogen, elixir-format
+msgid "Enter letter ID…"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:260
+#, elixir-autogen, elixir-format
+msgid "Enter the letter ID (UUID) shown on the clearance letter. The ID can be found at the bottom of the letter or in the QR code link."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:64
+#, elixir-autogen, elixir-format
+msgid "Enter the letter ID (UUID) to check the authenticity and status of the library clearance letter."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:191
+#, elixir-autogen, elixir-format
+msgid "Failed to create letter: %{reason}"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.ex:97
+#, elixir-autogen, elixir-format
+msgid "Failed to generate letter: %{reason}"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:235
+#, elixir-autogen, elixir-format
+msgid "Generating letter…"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:257
+#, elixir-autogen, elixir-format
+msgid "How to verify"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:438
+#, elixir-autogen, elixir-format
+msgid "Identifier for new clearance letter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:165
+#, elixir-autogen, elixir-format
+msgid "Identifier is required."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "Identifier: %{identifier}"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:271
+#, elixir-autogen, elixir-format
+msgid "If you still have loans or fines, contact library services for guidance on resolving them."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:168
+#, elixir-autogen, elixir-format
+msgid "Issued date"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:37
+#, elixir-autogen, elixir-format
+msgid "Last Letter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:680
+#, elixir-autogen, elixir-format
+msgid "Letter ID:"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:143
+#, elixir-autogen, elixir-format
+msgid "Letter details"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:114
+#, elixir-autogen, elixir-format
+msgid "Letter not found"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:160
+#, elixir-autogen, elixir-format
+msgid "Letter number"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "Letter number: %{number}"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:12
+#, elixir-autogen, elixir-format
+msgid "Library Clearance Eligibility"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:121
+#, elixir-autogen, elixir-format
+msgid "Member not found."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:55
+#, elixir-autogen, elixir-format
+msgid "Membership type is not eligible"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:268
+#, elixir-autogen, elixir-format
+msgid "Need help?"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:206
+#, elixir-autogen, elixir-format
+msgid "Next Steps"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "None yet"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:31
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:156
+#, elixir-autogen, elixir-format
+msgid "Not Eligible"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:95
+#, elixir-autogen, elixir-format
+msgid "Other letters for this account"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:299
+#, elixir-autogen, elixir-format
+msgid "Outstanding obligations remain"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:289
+#, elixir-autogen, elixir-format
+msgid "Phone Contact"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:112
+#, elixir-autogen, elixir-format
+msgid "Please enter an email or identifier."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/settings.ex:673
+#, elixir-autogen, elixir-format
+msgid "Preview QR code"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "Ready to Submit"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:308
+#, elixir-autogen, elixir-format
+msgid "Ready to submit"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:220
+#, elixir-autogen, elixir-format
+msgid "Refresh Status"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:301
+#, elixir-autogen, elixir-format
+msgid "Resolve fines or returned items first. If you need help, contact library services above."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:213
+#, elixir-autogen, elixir-format
+msgid "Revoked on"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:75
+#, elixir-autogen, elixir-format
+msgid "Search Letter"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:399
+#, elixir-autogen, elixir-format
+msgid "Search by email or existing identifier"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:158
+#, elixir-autogen, elixir-format
+msgid "Select a member before creating a letter."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:387
+#, elixir-autogen, elixir-format
+msgid "Select an existing member and provide a new identifier for their next degree clearance letter."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:422
+#, elixir-autogen, elixir-format
+msgid "Selected Member"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:278
+#, elixir-autogen, elixir-format
+msgid "Status REVOKED"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:270
+#, elixir-autogen, elixir-format
+msgid "Status VALID"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:184
+#, elixir-autogen, elixir-format
+msgid "Student / Employee ID"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:200
+#, elixir-autogen, elixir-format
+msgid "Study program"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:137
+#, elixir-autogen, elixir-format
+msgid "Submission Requirements"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:239
+#, elixir-autogen, elixir-format
+msgid "Submit Letter"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:81
+#, elixir-autogen, elixir-format
+msgid "The letter ID is a UUID, for example:"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:117
+#, elixir-autogen, elixir-format
+msgid "The letter ID is invalid or not registered in the system."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:281
+#, elixir-autogen, elixir-format
+msgid "The letter has been revoked and is no longer valid. Contact the library for more information."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:273
+#, elixir-autogen, elixir-format
+msgid "The letter is still active and has not been revoked by the library."
+msgstr ""
+
+#: lib/voile_web/live/dashboard/members/clearance/index.ex:457
+#, elixir-autogen, elixir-format
+msgid "This will create a letter even if a previous degree letter exists."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:209
+#, elixir-autogen, elixir-format
+msgid "Update your status once you have completed your obligations. If all requirements are met, you can submit the letter directly."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:57
+#, elixir-autogen, elixir-format
+msgid "Verify Letter"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:61
+#, elixir-autogen, elixir-format
+msgid "Verify Library Clearance Letter"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:229
+#, elixir-autogen, elixir-format
+msgid "View Your Letter"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:83
+#: lib/voile_web/live/frontend/atrium/clearance/verify.ex:239
+#, elixir-autogen, elixir-format
+msgid "View letter"
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:310
+#, elixir-autogen, elixir-format
+msgid "You have no active fines or loans. Click Submit Letter to generate your library clearance letter."
+msgstr ""
+
+#: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:57
+#, elixir-autogen, elixir-format
+msgid "Your membership type cannot receive a library clearance letter. Contact the library for more information."
 msgstr ""

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.23] - 2026-04-28
+
+### Added
+
+- Bumped release version to `0.1.23`.
+- New Translation - Added Indonesian translations for the clearance letter feature, including new keys for the letter body, closing text, and various UI elements on the clearance pages.
+
+
+### Fixed
+
+- Fixed PluginManager checking for status.
+- Fixed Update Full Script for deployment.
+
 ## [0.1.22] - 2026-04-25
 
 ### Added

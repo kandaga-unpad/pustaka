@@ -7,12 +7,15 @@ defmodule VoileWeb.Frontend.Atrium.Clearance.Verify do
 
   @impl true
   def mount(_params, _session, socket) do
+    clearance_enabled = Clearance.feature_enabled?()
+
     socket =
       socket
       |> assign(:uuid_input, "")
       |> assign(:letter, nil)
       |> assign(:not_found, false)
       |> assign(:loading, false)
+      |> assign(:clearance_disabled, not clearance_enabled)
 
     {:ok, socket}
   end

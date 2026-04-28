@@ -30,6 +30,7 @@ defmodule Voile.Clearance do
   @setting_eligible_member_types "clearance_eligible_member_types"
   @setting_body_text "clearance_body_text"
   @setting_closing_text "clearance_closing_text"
+  @setting_feature_enabled "clearance_feature_enabled"
 
   @default_body_text "adalah benar telah <strong>bebas dari kewajiban kepada perpustakaan</strong>, meliputi tidak ada peminjaman buku yang belum dikembalikan dan tidak ada denda yang belum dibayarkan, sehingga yang bersangkutan dinyatakan <strong>BEBAS PERPUSTAKAAN</strong>."
   @default_closing_text "Surat keterangan ini dibuat untuk dipergunakan sebagaimana mestinya."
@@ -502,8 +503,16 @@ defmodule Voile.Clearance do
       "eligible_member_types" =>
         System.get_setting_value(@setting_eligible_member_types, "member_verified"),
       "body_text" => System.get_setting_value(@setting_body_text, @default_body_text),
-      "closing_text" => System.get_setting_value(@setting_closing_text, @default_closing_text)
+      "closing_text" => System.get_setting_value(@setting_closing_text, @default_closing_text),
+      "feature_enabled" => System.get_setting_value(@setting_feature_enabled, "false") == "true"
     }
+  end
+
+  @doc """
+  Returns true when the clearance feature is enabled in system settings.
+  """
+  def feature_enabled? do
+    System.get_setting_value(@setting_feature_enabled, "false") == "true"
   end
 
   @doc """

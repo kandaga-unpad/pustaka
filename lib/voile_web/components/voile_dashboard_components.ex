@@ -390,22 +390,22 @@ defmodule VoileWeb.VoileDashboardComponents do
           <% end %>
 
           <.link
-            patch="/manage/transfers"
+            patch="/manage/members"
             phx-click={
               JS.hide(to: "#dashboard-mobile-menu-panel")
               |> JS.hide(to: "#dashboard-mobile-menu-backdrop")
             }
             class={[
               "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all active:scale-95",
-              @active_menu |> String.starts_with?("/manage/transfers") &&
+              @active_menu |> String.starts_with?("/manage/members") &&
                 "border-voile-accent bg-voile-accent/10 dark:bg-voile-accent/20",
-              !(@active_menu |> String.starts_with?("/manage/transfers")) &&
+              !(@active_menu |> String.starts_with?("/manage/members")) &&
                 "border-gray-200 dark:border-gray-700 active:border-voile-accent"
             ]}
           >
-            <.icon name="hero-arrow-path" class="h-8 w-8 mb-2 text-voile-accent" />
+            <.icon name="hero-user-group" class="h-8 w-8 mb-2 text-voile-accent" />
             <span class="text-sm font-medium text-center text-gray-900 dark:text-white">
-              {gettext("Transfers")}
+              {gettext("Members")}
             </span>
           </.link>
           <.link
