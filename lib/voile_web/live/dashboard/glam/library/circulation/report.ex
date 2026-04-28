@@ -240,7 +240,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             type="text"
             placeholder="Search by member name or item code..."
             value={@search_query}
-            class="w-full"
+            class="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 transition duration-150 focus:border-voile-primary focus:outline-none focus:ring-2 focus:ring-voile-primary/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
             label="Search Transactions"
           />
         </.form>
@@ -351,7 +351,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             type="text"
             placeholder="Search by member name or item..."
             value={@search_query}
-            class="w-full"
+            class="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 transition duration-150 focus:border-voile-primary focus:outline-none focus:ring-2 focus:ring-voile-primary/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
             label="Search Reservations"
           />
         </.form>
@@ -462,7 +462,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             type="text"
             placeholder="Search by member name..."
             value={@search_query}
-            class="w-full"
+            class="block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 transition duration-150 focus:border-voile-primary focus:outline-none focus:ring-2 focus:ring-voile-primary/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
             label="Search Fines"
           />
         </.form>

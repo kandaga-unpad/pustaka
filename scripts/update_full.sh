@@ -1,5 +1,5 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Get the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,12 +49,17 @@ print_step() {
 }
 
 echo -e "${GREEN}================================${NC}"
-echo -e "${GREEN}Voile Update Script${NC}"
+echo -e "${GREEN}Voile Full Update${NC}"
 echo -e "${GREEN}================================${NC}"
 
 # Check if pod exists
 if ! podman pod exists "$POD_NAME" 2>/dev/null; then
     print_error "Pod $POD_NAME does not exist. Run deploy-voile.sh first."
+    exit 1
+fi
+
+if [ ! -f "$ENV_FILE" ]; then
+    print_error "$ENV_FILE file not found. Ensure you are running from the project root."
     exit 1
 fi
 
@@ -86,8 +91,22 @@ print_step "3/7: Building new application image..."
 podman build -t voile:latest -f Containerfile .
 print_status "New image built successfully"
 
-# Step 4: Rename old container (keep it running as backup)
-print_step "4/7: Preparing for deployment..."
+# Step 4: Run migrations on the new image before switching containers
+print_step "4/7: Running migrations on the new image..."
+if ! podman run --rm \
+    --pod "$POD_NAME" \
+    --env-file "$ENV_FILE" \
+    -e DATABASE_HOST=localhost \
+    -e DATABASE_PORT=5432 \
+    voile:latest \
+    /app/bin/voile eval 'Voile.Release.migrate()'; then
+    print_error "Migrations failed on the new image! Aborting deployment."
+    exit 1
+fi
+print_status "Migrations completed successfully on the new image"
+
+# Step 5: Rename current container to backup
+print_step "5/7: Preparing for deployment..."
 if podman container exists "$OLD_APP_CONTAINER" 2>/dev/null; then
     print_warning "Removing previous backup container..."
     podman rm -f "$OLD_APP_CONTAINER"
@@ -98,8 +117,8 @@ if podman container exists "$APP_CONTAINER" 2>/dev/null; then
     podman rename "$APP_CONTAINER" "$OLD_APP_CONTAINER"
 fi
 
-# Step 5: Start new container
-print_step "5/7: Starting new application container..."
+# Step 6: Start new container
+print_step "6/7: Starting new application container..."
 podman run -d \
     --name "$APP_CONTAINER" \
     --pod "$POD_NAME" \
@@ -116,49 +135,33 @@ podman run -d \
 
 print_status "New container started"
 
-# Step 6: Wait for app to be ready and run migrations
-print_step "6/7: Waiting for application to start..."
-sleep 5
+wait_for_app() {
+    local elapsed=0
+    local timeout=30
 
-print_status "Running database migrations..."
-if podman exec "$APP_CONTAINER" /app/bin/voile eval 'Voile.Release.migrate()'; then
-    print_status "Migrations completed successfully"
-else
-    print_error "Migrations failed!"
-    print_warning "Rolling back to old container..."
+    while ! podman exec "$APP_CONTAINER" /app/bin/voile eval 'IO.puts("Health check OK")' > /dev/null 2>&1; do
+        if [ "$elapsed" -ge "$timeout" ]; then
+            return 1
+        fi
+        sleep 2
+        elapsed=$((elapsed + 2))
+    done
 
-    # Rollback
-    if podman container exists "$APP_CONTAINER" 2>/dev/null; then
-        podman stop "$APP_CONTAINER" 2>/dev/null || true
-        podman rm "$APP_CONTAINER" 2>/dev/null || true
-    else
-        print_status "No new container to stop/remove."
-    fi
+    return 0
+}
 
-    if podman container exists "$OLD_APP_CONTAINER" 2>/dev/null; then
-        podman rename "$OLD_APP_CONTAINER" "$APP_CONTAINER" 2>/dev/null || true
-        podman start "$APP_CONTAINER" 2>/dev/null || true
-        print_error "Update failed! Rolled back to previous version."
-    else
-        print_error "Old container $OLD_APP_CONTAINER not found — manual rollback required."
-    fi
-    exit 1
-fi
-
-# Step 7: Health check
 print_step "7/7: Performing health check..."
-sleep 3
 
-if podman exec "$APP_CONTAINER" /app/bin/voile eval 'IO.puts("Health check OK")' > /dev/null 2>&1; then
+if wait_for_app; then
     print_status "Health check passed!"
-    
+
     # Remove old container
     if podman container exists "$OLD_APP_CONTAINER" 2>/dev/null; then
         print_status "Removing old container..."
         podman stop "$OLD_APP_CONTAINER" 2>/dev/null || true
         podman rm "$OLD_APP_CONTAINER"
     fi
-    
+
     echo ""
     echo -e "${GREEN}================================${NC}"
     echo -e "${GREEN}Update completed successfully!${NC}"

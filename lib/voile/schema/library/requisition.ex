@@ -69,6 +69,7 @@ defmodule Voile.Schema.Library.Requisition do
       :requested_by_id
     ])
     |> unique_constraint(:title)
+    |> foreign_key_constraint(:requested_by_id)
     |> validate_inclusion(:request_type, @patron_request_type)
     |> validate_inclusion(:status, @patron_request_status)
     |> validate_inclusion(:priority, @priority)

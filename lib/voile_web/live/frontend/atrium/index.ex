@@ -2,6 +2,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   use VoileWeb, :live_view
   use Gettext, backend: VoileWeb.Gettext
 
+  alias Voile.Clearance
   alias Voile.Schema.Accounts
   alias Voile.Schema.Library.Circulation
   alias Client.Storage
@@ -77,7 +78,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         payment_processing: false,
         # Loan reminder notification assigns
         loan_reminders: [],
-        show_notification_badge: false
+        show_notification_badge: false,
+        clearance_enabled: Clearance.feature_enabled?()
       )
       |> allow_upload(:user_image,
         accept: ~w(.jpg .jpeg .png .webp),
@@ -1000,7 +1002,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   </div>
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4 flex flex-col gap-2">
                   <.button
                     type="button"
                     phx-click="select_tab"
@@ -1009,6 +1011,31 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                   >
                     {gettext("View Circulation")}
                   </.button>
+                  <.link
+                    navigate={~p"/atrium/requisitions/new"}
+                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 transition-colors"
+                  >
+                    <.icon name="hero-clipboard-document-list" class="w-4 h-4" />
+                    {gettext("Requisition Form")}
+                  </.link>
+                  <%= if @clearance_enabled do %>
+                    <.link
+                      navigate={~p"/atrium/clearance"}
+                      class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                    >
+                      <.icon name="hero-document-check" class="w-4 h-4" />
+                      {gettext("Bebas Pustaka")}
+                    </.link>
+                  <% else %>
+                    <button
+                      type="button"
+                      class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 text-slate-500 cursor-not-allowed"
+                      disabled
+                    >
+                      <.icon name="hero-document-check" class="w-4 h-4" />
+                      {gettext("Bebas Pustaka")}
+                    </button>
+                  <% end %>
                 </div>
               </div>
             </div>

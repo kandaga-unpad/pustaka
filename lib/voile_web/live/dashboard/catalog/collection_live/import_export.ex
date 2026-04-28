@@ -8,7 +8,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
   CSV format mirrors the Atrium simple format:
     title, description, thumbnail, collection_type, access_level, status,
     creator_name, resource_class, language, publisher, date_published,
-    isbn, subject, location, condition, availability, total_items, metadata
+    isbn, subject, location, condition, availability, total_items,
+    legacy_item_code, metadata
+
+  `legacy_item_code` may be a single value or a semicolon-separated list of
+  legacy codes when `total_items` is greater than 1.
   """
 
   use VoileWeb, :live_view_dashboard
@@ -28,7 +32,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
   @csv_headers ~w(
     title description thumbnail collection_type access_level status
     creator_name resource_class language publisher date_published
-    isbn subject location condition availability total_items metadata
+    isbn subject location condition availability total_items
+    legacy_item_code metadata
   )
 
   # Columns that map directly to a collection_field via property local_name
@@ -38,49 +43,56 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
   @impl true
   def mount(_params, _session, socket) do
-    authorize!(socket, "collections.create")
+    if not Authorization.is_super_admin?(socket) do
+      {:ok,
+       socket
+       |> put_flash(:error, "Access denied. Super admin only.")
+       |> push_navigate(to: ~p"/manage/catalog/collections")}
+    else
+      authorize!(socket, "collections.create")
 
-    is_super_admin = Authorization.is_super_admin?(socket)
-    user = socket.assigns.current_scope.user
+      is_super_admin = true
+      user = socket.assigns.current_scope.user
 
-    nodes =
-      if is_super_admin do
-        Repo.all(from n in Node, order_by: n.name)
-      else
-        case user.node_id && Repo.get(Node, user.node_id) do
-          %Node{} = node -> [node]
-          _ -> []
+      nodes =
+        if is_super_admin do
+          Repo.all(from n in Node, order_by: n.name)
+        else
+          case user.node_id && Repo.get(Node, user.node_id) do
+            %Node{} = node -> [node]
+            _ -> []
+          end
         end
-      end
 
-    import_node_id =
-      if is_super_admin,
-        do: nodes |> List.first() |> then(&if(&1, do: &1.id, else: nil)),
-        else: user.node_id
+      import_node_id =
+        if is_super_admin,
+          do: nodes |> List.first() |> then(&if(&1, do: &1.id, else: nil)),
+          else: user.node_id
 
-    {:ok,
-     socket
-     |> assign(:page_title, "Import & Export Collections")
-     |> assign(:step, :upload)
-     |> assign(:parsed_rows, [])
-     |> assign(:row_count, 0)
-     |> assign(:parse_error, nil)
-     |> assign(:import_results, [])
-     |> assign(:import_errors, [])
-     |> assign(:dedup_count, 0)
-     |> assign(:skipped_count, 0)
-     |> assign(:nodes, nodes)
-     |> assign(:export_node_id, if(is_super_admin, do: "all", else: to_string(user.node_id)))
-     |> assign(:import_node_id, import_node_id)
-     |> assign(:is_super_admin, is_super_admin)
-     |> assign(:export_loading, false)
-     |> assign(:csv_headers, @csv_headers)
-     |> assign(:max_rows, @max_rows)
-     |> allow_upload(:csv_file,
-       accept: ~w(.csv text/csv),
-       max_entries: 1,
-       max_file_size: 5_000_000
-     )}
+      {:ok,
+       socket
+       |> assign(:page_title, "Import & Export Collections")
+       |> assign(:step, :upload)
+       |> assign(:parsed_rows, [])
+       |> assign(:row_count, 0)
+       |> assign(:parse_error, nil)
+       |> assign(:import_results, [])
+       |> assign(:import_errors, [])
+       |> assign(:dedup_count, 0)
+       |> assign(:skipped_count, 0)
+       |> assign(:nodes, nodes)
+       |> assign(:export_node_id, if(is_super_admin, do: "all", else: to_string(user.node_id)))
+       |> assign(:import_node_id, import_node_id)
+       |> assign(:is_super_admin, is_super_admin)
+       |> assign(:export_loading, false)
+       |> assign(:csv_headers, @csv_headers)
+       |> assign(:max_rows, @max_rows)
+       |> allow_upload(:csv_file,
+         accept: ~w(.csv text/csv),
+         max_entries: 1,
+         max_file_size: 5_000_000
+       )}
+    end
   end
 
   @impl true
@@ -376,7 +388,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                       <th class="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         #
                       </th>
-                      <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items"] do %>
+                      <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items", "legacy_item_code"] do %>
                         <th class="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
                           {col}
                         </th>
@@ -387,7 +399,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                     <%= for {row, i} <- Enum.with_index(Enum.take(@parsed_rows, 5), 1) do %>
                       <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td class="px-3 py-2 font-mono text-gray-400">{i}</td>
-                        <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items"] do %>
+                        <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items", "legacy_item_code"] do %>
                           <td
                             class="px-3 py-2 max-w-[180px] truncate text-gray-900 dark:text-white"
                             title={row[col]}
@@ -581,6 +593,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
               <p>
                 <span class="font-medium">total_items:</span> integer (default 1)
               </p>
+              <p>
+                <span class="font-medium">legacy_item_code:</span>
+                optional single code or semicolon-separated list when total_items > 1
+              </p>
               <p phx-no-curly-interpolation>
                 <span class="font-medium">metadata:</span> optional JSON, e.g. {"source":"Archive"}
               </p>
@@ -748,7 +764,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
             {:ok, col} ->
               # Create items based on total_items from the CSV row
               total = parse_total_items(row["total_items"])
-              create_items_for_imported_collection(col, total, node, resource_class, user)
+              location = location_for_imported_items(row["location"], node)
+              legacy_item_codes = parse_legacy_item_codes(row["legacy_item_code"], total)
+
+              create_items_for_imported_collection(
+                col,
+                total,
+                node,
+                resource_class,
+                user,
+                legacy_item_codes,
+                location
+              )
+
               {:ok, col}
 
             {:error, changeset} ->
@@ -767,12 +795,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
   end
 
   # Creates N items for an imported collection, mirroring the form's add_item_data logic.
-  defp create_items_for_imported_collection(collection, total, node, resource_class, user)
+  defp create_items_for_imported_collection(
+         collection,
+         total,
+         node,
+         resource_class,
+         user,
+         legacy_item_codes,
+         location
+       )
        when total > 0 do
     unit_abbr = (node && node.abbr) || "UNK"
     type_local_name = (resource_class && resource_class.local_name) || "UNK"
     node_id = node && node.id
     time_identifier = to_string(:os.system_time(:millisecond))
+    legacy_item_codes = legacy_item_codes || []
+
+    location =
+      if(location in [nil, ""], do: (node && node.name) || "Imported item", else: location)
 
     for idx <- 1..total do
       item_code =
@@ -793,19 +833,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
         )
 
       barcode = ItemHelper.generate_barcode_from_item_code(item_code)
+      legacy_item_code = Enum.at(legacy_item_codes, idx - 1)
 
       Catalog.create_item(
         %{
           item_code: item_code,
           inventory_code: inventory_code,
           barcode: barcode,
-          location: "",
+          legacy_item_code: legacy_item_code,
+          location: location,
           status: "active",
           condition: "good",
-          availability: "in_processing",
+          availability: "available",
           unit_id: node_id,
           collection_id: collection.id,
-          item_location_id: node_id,
+          item_location_id: nil,
           created_by_id: user.id
         },
         user.id
@@ -813,8 +855,43 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
     end
   end
 
-  defp create_items_for_imported_collection(_collection, _total, _node, _resource_class, _user),
-    do: :ok
+  defp create_items_for_imported_collection(
+         _collection,
+         _total,
+         _node,
+         _resource_class,
+         _user,
+         _legacy_item_codes,
+         _location
+       ),
+       do: :ok
+
+  defp location_for_imported_items(raw_location, node) do
+    raw_location = trim(raw_location)
+
+    cond do
+      raw_location != "" -> raw_location
+      node && node.name -> node.name
+      true -> "Imported item"
+    end
+  end
+
+  defp parse_legacy_item_codes(nil, total), do: List.duplicate(nil, total)
+
+  defp parse_legacy_item_codes(raw_codes, total) when is_binary(raw_codes) do
+    codes =
+      raw_codes
+      |> String.trim()
+      |> String.split(~r/[;,]/)
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == ""))
+
+    cond do
+      length(codes) == total -> codes
+      length(codes) > total -> Enum.take(codes, total)
+      true -> codes ++ List.duplicate(nil, total - length(codes))
+    end
+  end
 
   defp build_collection_fields(row, properties) do
     @field_columns
@@ -922,11 +999,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
       "",
       "",
       to_string(length(c.items || [])),
+      legacy_item_code_for_collection(c),
       metadata
     ]
   end
 
   # ── Private: helpers ──────────────────────────────────────────────────────────
+
+  defp legacy_item_code_for_collection(c) do
+    c.items
+    |> Enum.map(& &1.legacy_item_code)
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join(";")
+  end
 
   defp find_existing_collection(title, creator_id, type_id, collection_type, node_id) do
     query =
@@ -969,7 +1054,26 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
       grouped
       |> Enum.map(fn {_key, [first | _rest] = group} ->
         total = Enum.reduce(group, 0, fn r, acc -> acc + parse_total_items(r["total_items"]) end)
-        Map.put(first, "total_items", to_string(total))
+
+        merged_legacy_codes =
+          group
+          |> Enum.flat_map(fn r ->
+            codes = trim(r["legacy_item_code"])
+
+            if codes == "" do
+              []
+            else
+              codes
+              |> String.split(~r/[;,]/)
+              |> Enum.map(&String.trim/1)
+              |> Enum.reject(&(&1 == ""))
+            end
+          end)
+          |> Enum.join(";")
+
+        first
+        |> Map.put("total_items", to_string(total))
+        |> Map.put("legacy_item_code", merged_legacy_codes)
       end)
 
     removed = length(rows) - length(deduped)

@@ -5,12 +5,16 @@ defmodule Voile.Schema.Library.ReservationTest do
   import Voile.LibraryFixtures
   import Voile.AccountsFixtures
 
-  @valid_attrs %{
-    reservation_date: DateTime.utc_now(),
-    expiry_date: DateTime.add(DateTime.utc_now(), 7 * 24 * 60 * 60, :second),
-    status: "pending",
-    priority: 1
-  }
+  defp valid_attrs do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    %{
+      reservation_date: now,
+      expiry_date: DateTime.add(now, 7 * 24 * 60 * 60, :second),
+      status: "pending",
+      priority: 1
+    }
+  end
 
   @invalid_attrs %{
     reservation_date: nil,
@@ -24,7 +28,7 @@ defmodule Voile.Schema.Library.ReservationTest do
       item = fine_fixture().item
 
       attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           item_id: item.id
         })
@@ -43,7 +47,7 @@ defmodule Voile.Schema.Library.ReservationTest do
     end
 
     test "changeset validates status inclusion" do
-      attrs = Map.merge(@valid_attrs, %{status: "invalid_status"})
+      attrs = Map.merge(valid_attrs(), %{status: "invalid_status"})
       changeset = Reservation.changeset(%Reservation{}, attrs)
 
       refute changeset.valid?
@@ -58,7 +62,7 @@ defmodule Voile.Schema.Library.ReservationTest do
         item = fine_fixture().item
 
         attrs =
-          Map.merge(@valid_attrs, %{
+          Map.merge(valid_attrs(), %{
             status: status,
             member_id: member.id,
             item_id: item.id
@@ -70,7 +74,7 @@ defmodule Voile.Schema.Library.ReservationTest do
     end
 
     test "changeset validates priority is greater than 0" do
-      attrs = Map.merge(@valid_attrs, %{priority: 0})
+      attrs = Map.merge(valid_attrs(), %{priority: 0})
       changeset = Reservation.changeset(%Reservation{}, attrs)
 
       refute changeset.valid?
@@ -82,7 +86,7 @@ defmodule Voile.Schema.Library.ReservationTest do
       collection = fine_fixture().item.collection
 
       attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           collection_id: collection.id,
           # No specific item
@@ -98,7 +102,7 @@ defmodule Voile.Schema.Library.ReservationTest do
       item = fine_fixture().item
 
       attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           item_id: item.id,
           # No collection
@@ -206,10 +210,12 @@ defmodule Voile.Schema.Library.ReservationTest do
 
   describe "database constraints" do
     test "enforces foreign key constraints" do
+      item = fine_fixture().item
+
       invalid_attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: Ecto.UUID.generate(),
-          item_id: Ecto.UUID.generate()
+          item_id: item.id
         })
 
       changeset = Reservation.changeset(%Reservation{}, invalid_attrs)
@@ -304,7 +310,10 @@ defmodule Voile.Schema.Library.ReservationTest do
 
       assert {:ok, cancelled_reservation} = Repo.update(changeset)
       assert cancelled_reservation.status == "cancelled"
-      assert cancelled_reservation.cancelled_date == cancel_time
+
+      assert DateTime.to_unix(cancelled_reservation.cancelled_date, :second) ==
+               DateTime.to_unix(cancel_time, :second)
+
       assert cancelled_reservation.cancellation_reason == "User requested cancellation"
     end
 
@@ -322,7 +331,9 @@ defmodule Voile.Schema.Library.ReservationTest do
 
       assert {:ok, picked_up_reservation} = Repo.update(changeset)
       assert picked_up_reservation.status == "picked_up"
-      assert picked_up_reservation.pickup_date == pickup_time
+
+      assert DateTime.to_unix(picked_up_reservation.pickup_date, :second) ==
+               DateTime.to_unix(pickup_time, :second)
     end
 
     test "manages reservation priorities" do
@@ -331,7 +342,7 @@ defmodule Voile.Schema.Library.ReservationTest do
 
       # High priority reservation
       high_priority_attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           item_id: item.id,
           priority: 5
@@ -339,7 +350,7 @@ defmodule Voile.Schema.Library.ReservationTest do
 
       # Low priority reservation
       low_priority_attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           item_id: item.id,
           priority: 1

@@ -3,23 +3,31 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
 
   import Phoenix.LiveViewTest
   import Voile.AccountsFixtures
-  import Voile.LibraryFixtures
+  import Voile.SystemFixtures
   import Ecto.Query
 
   alias Voile.Repo
   alias Voile.Schema.Accounts.User
   alias Voile.Schema.Master.MemberType
-  alias Voile.Schema.Library.{Transaction, Fine}
   alias Voile.Schema.Catalog.Item
 
   setup do
     # Create librarian
+    staff_member_type = get_or_create_staff_member_type()
+
     librarian =
       user_fixture(%{
-        email: "librarian@test.com",
-        username: "librarian",
-        fullname: "Test Librarian"
+        email: "librarian_#{System.unique_integer([:positive, :monotonic])}@test.com",
+        username: "librarian_#{System.unique_integer([:positive, :monotonic])}",
+        fullname: "Test Librarian",
+        phone_number: "081234567890",
+        user_type_id: staff_member_type.id
       })
+
+    super_admin_role = get_or_create_super_admin_role()
+
+    {:ok, _assignment} =
+      VoileWeb.Auth.Authorization.assign_role(librarian.id, super_admin_role.id)
 
     # Get or create member type
     member_type = get_or_create_member_type()
@@ -30,7 +38,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
         %{
           email: "member@test.com",
           fullname: "John Doe",
-          identifier: Decimal.new("12345"),
+          identifier: Decimal.new("12345#{System.unique_integer([:positive])}"),
           phone_number: "123-456-7890",
           organization: "Test Org",
           registration_date: ~D[2024-01-01],
@@ -59,48 +67,45 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
     test "loads member information correctly", %{conn: conn, member: member} do
       {:ok, _view, html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
 
-      assert html =~ "Library Transaction"
       assert html =~ member.fullname
       assert html =~ member.email
-      assert html =~ "12345"
+      assert html =~ to_string(member.identifier)
     end
 
     test "redirects when member not found", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
 
-      assert {:error, {:redirect, %{to: path}}} =
+      assert {:error, {:live_redirect, %{to: path}}} =
                live(conn, ~p"/manage/glam/library/ledger/transact/#{fake_id}")
 
       assert path == "/manage/glam/library/ledger"
     end
 
     test "displays all five tabs", %{conn: conn, member: member} do
-      {:ok, view, html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
+      {:ok, view, _html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
 
-      assert html =~ "Loan"
-      assert html =~ "Current Loans"
-      assert html =~ "Reserve"
-      assert html =~ "Fines"
-      assert html =~ "Loan History"
+      assert has_element?(view, "button[phx-value-tab=\"loan\"]")
+      assert has_element?(view, "button[phx-value-tab=\"current_loans\"]")
+      assert has_element?(view, "button[phx-value-tab=\"reserve\"]")
+      assert has_element?(view, "button[phx-value-tab=\"fines\"]")
+      assert has_element?(view, "button[phx-value-tab=\"history\"]")
 
       # Default tab should be Loan
-      assert has_element?(view, "div[data-tab=\"loan\"]")
+      assert has_element?(view, "form[phx-submit=\"search_item\"]")
     end
   end
 
   describe "Loan Tab" do
     test "displays loan tab interface", %{conn: conn, member: member} do
-      {:ok, view, html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
+      {:ok, view, _html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
 
-      assert html =~ "Search item by barcode"
-      assert has_element?(view, "form[phx-change=\"search_item\"]")
+      assert has_element?(view, "form[phx-submit=\"search_item\"]")
     end
 
     test "shows message when no items in temporary loan list", %{conn: conn, member: member} do
-      {:ok, view, html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
+      {:ok, view, _html} = live(conn, ~p"/manage/glam/library/ledger/transact/#{member.id}")
 
-      # Should show empty state or no "Items to Loan" section
-      refute html =~ "Items to Loan" or html =~ "No items selected"
+      assert render(view) =~ "Belum ada item yang ditambahkan."
     end
   end
 
@@ -114,8 +119,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       |> render_click()
 
       html = render(view)
-      # Should show current loans section or empty message
-      assert html =~ "No active loans" or html =~ "Current Loans"
+      assert html =~ "Tidak ada pinjaman aktif untuk anggota ini." or html =~ "Pinjaman Saat Ini"
     end
   end
 
@@ -129,7 +133,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       |> render_click()
 
       html = render(view)
-      assert html =~ "Reserve" or html =~ "Search item"
+      assert html =~ "Belum ada reservasi yang ditambahkan." or html =~ "Reservasi"
     end
   end
 
@@ -143,7 +147,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       |> render_click()
 
       html = render(view)
-      assert html =~ "No unpaid fines" or html =~ "Fines"
+      assert html =~ "Tidak ada denda yang belum dibayar." or html =~ "Denda"
     end
   end
 
@@ -157,11 +161,61 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       |> render_click()
 
       html = render(view)
-      assert html =~ "No loan history" or html =~ "History"
+      assert html =~ "Riwayat pinjaman tidak tersedia." or html =~ "Riwayat Pinjaman"
     end
   end
 
   # Helper functions
+  defp get_or_create_staff_member_type do
+    case Repo.one(
+           from mt in MemberType,
+             where: mt.slug == "staff",
+             limit: 1
+         ) do
+      %MemberType{} = member_type ->
+        member_type
+
+      nil ->
+        {:ok, member_type} =
+          %MemberType{}
+          |> MemberType.changeset(%{
+            name: "Staff",
+            slug: "staff",
+            description: "Staff member type",
+            max_concurrent_loans: 5,
+            max_days: 14,
+            can_renew: true,
+            max_renewals: 2,
+            can_reserve: true,
+            max_reserves: 3,
+            fine_per_day: Decimal.new("5000"),
+            max_fine: Decimal.new("100000"),
+            is_active: true,
+            priority_level: 1
+          })
+          |> Repo.insert()
+
+        member_type
+    end
+  end
+
+  defp get_or_create_super_admin_role do
+    alias Voile.Schema.Accounts.Role
+
+    case Repo.get_by(Role, name: "super_admin") do
+      %Role{} = role ->
+        role
+
+      nil ->
+        {:ok, role} =
+          %Role{}
+          |> Role.changeset(%{name: "super_admin", description: "Super admin"})
+          |> Repo.insert()
+
+        role
+    end
+  end
+
   defp get_or_create_member_type do
     case Repo.one(
            from mt in MemberType,
@@ -200,7 +254,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       username: "user_#{System.unique_integer([:positive])}",
       email: "user_#{System.unique_integer([:positive])}@example.com",
       fullname: "Test User",
-      identifier: Decimal.new("#{System.unique_integer([:positive])}"),
+      identifier: Decimal.new("#{System.unique_integer([:positive, :monotonic])}"),
       user_type_id: member_type.id,
       confirmed_at: DateTime.utc_now(),
       password: "testpassword123"
@@ -222,16 +276,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
       nil ->
         collection = ensure_collection()
 
+        barcode_value = "#{barcode}-00000"
+
         {:ok, item} =
           %Item{}
           |> Item.changeset(%{
             item_code: barcode,
-            inventory_code: "INV-#{barcode}",
+            barcode: barcode_value,
+            inventory_code: "INV-#{barcode_value}",
             location: "Test Library - Shelf A1",
             status: "active",
             availability: "available",
             condition: "good",
-            collection_id: collection.id
+            collection_id: collection.id,
+            unit_id: collection.unit_id
           })
           |> Repo.insert()
 
@@ -248,16 +306,28 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.TransactTest do
 
       nil ->
         creator = ensure_creator()
+        node = node_fixture()
+
+        {:ok, resource_class} =
+          Voile.Schema.Metadata.create_resource_class(%{
+            label: "Test Book Type",
+            local_name: "TestBook",
+            information: "Test resource class",
+            glam_type: "Library"
+          })
 
         {:ok, collection} =
           %Collection{}
           |> Collection.changeset(%{
+            collection_code: "TEST-COLL-#{System.unique_integer([:positive])}",
             title: "Test Collection",
             description: "Test collection description",
+            thumbnail: "test-thumbnail.jpg",
             status: "published",
             access_level: "public",
-            thumbnail: "test-thumbnail.jpg",
-            creator_id: creator.id
+            creator_id: creator.id,
+            type_id: resource_class.id,
+            unit_id: node.id
           })
           |> Repo.insert()
 

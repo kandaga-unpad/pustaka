@@ -12,7 +12,7 @@ defmodule Voile.MetadataTest do
 
     test "list_metadata_vocabularies/0 returns all metadata_vocabularies" do
       vocabulary = vocabulary_fixture()
-      assert Metadata.list_metadata_vocabularies() == [vocabulary]
+      assert Enum.any?(Metadata.list_metadata_vocabularies(), &(&1.id == vocabulary.id))
     end
 
     test "get_vocabulary!/1 returns the vocabulary with given id" do
@@ -77,15 +77,15 @@ defmodule Voile.MetadataTest do
   end
 
   describe "resource_class" do
-    alias Voile.Metadata.ResourceClass
+    alias Voile.Schema.Metadata.ResourceClass
 
     import Voile.MetadataFixtures
 
-    @invalid_attrs %{label: nil, local_name: nil, information: nil}
+    @invalid_attrs %{label: nil, local_name: nil, information: nil, glam_type: nil}
 
     test "list_resource_class/0 returns all resource_class" do
       resource_class = resource_class_fixture()
-      assert Metadata.list_resource_class() == [resource_class]
+      assert Enum.any?(Metadata.list_resource_class(), &(&1.id == resource_class.id))
     end
 
     test "get_resource_class!/1 returns the resource_class with given id" do
@@ -97,7 +97,8 @@ defmodule Voile.MetadataTest do
       valid_attrs = %{
         label: "some label",
         local_name: "some local_name",
-        information: "some information"
+        information: "some information",
+        glam_type: "Library"
       }
 
       assert {:ok, %ResourceClass{} = resource_class} =
@@ -151,7 +152,7 @@ defmodule Voile.MetadataTest do
   end
 
   describe "resource_template" do
-    alias Voile.Metadata.ResourceTemplate
+    alias Voile.Schema.Metadata.ResourceTemplate
 
     import Voile.MetadataFixtures
 
@@ -168,7 +169,14 @@ defmodule Voile.MetadataTest do
     end
 
     test "create_resource_template/1 with valid data creates a resource_template" do
-      valid_attrs = %{label: "some label"}
+      user = Voile.AccountsFixtures.user_fixture()
+      resource_class = resource_class_fixture()
+
+      valid_attrs = %{
+        label: "some label",
+        owner_id: user.id,
+        resource_class_id: resource_class.id
+      }
 
       assert {:ok, %ResourceTemplate{} = resource_template} =
                Metadata.create_resource_template(valid_attrs)
@@ -215,22 +223,24 @@ defmodule Voile.MetadataTest do
   end
 
   describe "resource_template_property" do
-    alias Voile.Metadata.ResourceTemplateProperty
+    alias Voile.Schema.Metadata.ResourceTemplateProperty
 
     import Voile.MetadataFixtures
+    import Voile.SchemaMetadataFixtures
 
     @invalid_attrs %{
       position: nil,
-      data_type: nil,
-      alternate_label: nil,
-      alternate_information: nil,
-      is_required: nil,
-      permission: nil
+      property_id: nil,
+      template_id: nil
     }
 
     test "list_resource_template_property/0 returns all resource_template_property" do
       resource_template_property = resource_template_property_fixture()
-      assert Metadata.list_resource_template_property() == [resource_template_property]
+
+      assert Enum.any?(
+               Metadata.list_resource_template_property(),
+               &(&1.id == resource_template_property.id)
+             )
     end
 
     test "get_resource_template_property!/1 returns the resource_template_property with given id" do
@@ -241,24 +251,22 @@ defmodule Voile.MetadataTest do
     end
 
     test "create_resource_template_property/1 with valid data creates a resource_template_property" do
+      property = property_fixture()
+      resource_template = resource_template_fixture()
+
       valid_attrs = %{
         position: 42,
-        data_type: ["option1", "option2"],
-        alternate_label: "some alternate_label",
-        alternate_information: "some alternate_information",
-        is_required: true,
-        permission: "some permission"
+        property_id: property.id,
+        template_id: resource_template.id,
+        override_label: "some alternate_label"
       }
 
       assert {:ok, %ResourceTemplateProperty{} = resource_template_property} =
                Metadata.create_resource_template_property(valid_attrs)
 
       assert resource_template_property.position == 42
-      assert resource_template_property.data_type == ["option1", "option2"]
-      assert resource_template_property.alternate_label == "some alternate_label"
-      assert resource_template_property.alternate_information == "some alternate_information"
-      assert resource_template_property.is_required == true
-      assert resource_template_property.permission == "some permission"
+      assert resource_template_property.override_label == "some alternate_label"
+      assert resource_template_property.property_id == property.id
     end
 
     test "create_resource_template_property/1 with invalid data returns error changeset" do
@@ -271,11 +279,7 @@ defmodule Voile.MetadataTest do
 
       update_attrs = %{
         position: 43,
-        data_type: ["option1"],
-        alternate_label: "some updated alternate_label",
-        alternate_information: "some updated alternate_information",
-        is_required: false,
-        permission: "some updated permission"
+        override_label: "some updated alternate_label"
       }
 
       assert {:ok, %ResourceTemplateProperty{} = resource_template_property} =
@@ -285,14 +289,7 @@ defmodule Voile.MetadataTest do
                )
 
       assert resource_template_property.position == 43
-      assert resource_template_property.data_type == ["option1"]
-      assert resource_template_property.alternate_label == "some updated alternate_label"
-
-      assert resource_template_property.alternate_information ==
-               "some updated alternate_information"
-
-      assert resource_template_property.is_required == false
-      assert resource_template_property.permission == "some updated permission"
+      assert resource_template_property.override_label == "some updated alternate_label"
     end
 
     test "update_resource_template_property/2 with invalid data returns error changeset" do

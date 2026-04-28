@@ -7,7 +7,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.IndexTest do
   describe "search debounce behavior" do
     test "live_search_collections sets timer and cancels previous one" do
       # start with empty socket
-      socket = %Socket{assigns: %{collection_search_timer: nil}}
+      socket = %Socket{assigns: %{__changed__: %{}, collection_search_timer: nil}}
 
       # first event creates a timer reference
       {:noreply, socket1} =

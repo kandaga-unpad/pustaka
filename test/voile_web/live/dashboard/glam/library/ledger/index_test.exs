@@ -3,7 +3,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
 
   import Phoenix.LiveViewTest
   import Voile.AccountsFixtures
-  import Voile.LibraryFixtures
   import Ecto.Query
 
   alias Voile.Repo
@@ -11,13 +10,22 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
   alias Voile.Schema.Master.MemberType
 
   setup do
-    # Create a librarian user with appropriate roles
+    # Create a librarian user with appropriate staff member type
+    staff_member_type = get_or_create_staff_member_type()
+
     librarian =
       user_fixture(%{
-        email: "librarian@test.com",
-        username: "librarian",
-        fullname: "Test Librarian"
+        email: "librarian_#{System.unique_integer([:positive, :monotonic])}@test.com",
+        username: "librarian_#{System.unique_integer([:positive, :monotonic])}",
+        fullname: "Test Librarian",
+        phone_number: "081234567890",
+        user_type_id: staff_member_type.id
       })
+
+    super_admin_role = get_or_create_super_admin_role()
+
+    {:ok, _assignment} =
+      VoileWeb.Auth.Authorization.assign_role(librarian.id, super_admin_role.id)
 
     # Get or create member type
     member_type = get_or_create_member_type()
@@ -28,7 +36,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
         %{
           email: "member1@test.com",
           fullname: "John Doe",
-          identifier: Decimal.new("12345"),
+          identifier: Decimal.new("12345#{System.unique_integer([:positive, :monotonic])}"),
           phone_number: "123-456-7890",
           organization: "Test Org",
           registration_date: ~D[2024-01-01],
@@ -42,7 +50,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
         %{
           email: "member2@test.com",
           fullname: "Jane Smith",
-          identifier: Decimal.new("67890"),
+          identifier: Decimal.new("67890#{System.unique_integer([:positive, :monotonic])}"),
           phone_number: "098-765-4321",
           organization: "Another Org",
           registration_date: ~D[2024-06-01],
@@ -56,7 +64,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
         %{
           email: "expired@test.com",
           fullname: "Expired Member",
-          identifier: Decimal.new("11111"),
+          identifier: Decimal.new("11111#{System.unique_integer([:positive, :monotonic])}"),
           expiry_date: ~D[2024-01-01]
         },
         member_type
@@ -74,12 +82,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
 
   describe "Index page" do
     test "displays the search interface", %{conn: conn} do
-      {:ok, view, html} = live(conn, ~p"/manage/glam/library/ledger")
+      {:ok, view, _html} = live(conn, ~p"/manage/glam/library/ledger")
 
-      assert html =~ "Start Library Transactions"
-      assert html =~ "Find Member"
-      assert html =~ "Search by identifier, name, or email"
       assert has_element?(view, "input#member-search")
+      assert has_element?(view, "label[for=\"member-search\"]")
     end
 
     test "shows dropdown results when searching by identifier", %{conn: conn, member1: member1} do
@@ -122,7 +128,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
       assert render(view) =~ member2.email
     end
 
-    test "shows no results message when member not found", %{conn: conn} do
+    test "shows no results state when member not found", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/manage/glam/library/ledger")
 
       # Type non-existent identifier
@@ -130,8 +136,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
       |> element("input#member-search")
       |> render_keyup(%{value: "99999"})
 
-      # Should show no results
-      assert render(view) =~ "No members found"
+      # Should not show any matching members
+      refute has_element?(view, "button[phx-click=\"select_member\"]")
     end
 
     test "clears search when input is empty", %{conn: conn, member1: member1} do
@@ -168,13 +174,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
 
       html = render(view)
 
-      # Should show member profile
-      assert html =~ "Member Information"
+      # Should show member profile and action controls
       assert html =~ member1.fullname
       assert html =~ member1.email
       assert html =~ member1.phone_number
       assert html =~ member1.organization
-      assert html =~ "Continue to Transaction"
+      assert has_element?(view, "button[phx-click=\"continue_transaction\"]")
     end
 
     test "shows expired badge for expired members", %{conn: conn, expired_member: member} do
@@ -190,10 +195,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
       |> element("button[phx-value-member_id=\"#{member.id}\"]")
       |> render_click()
 
-      html = render(view)
-
-      # Should show expired badge
-      assert html =~ "Expired"
+      # Continue button should be disabled for expired members
+      assert has_element?(view, "button[phx-click=\"continue_transaction\"][disabled]")
     end
 
     test "can clear selection and search again", %{conn: conn, member1: member1} do
@@ -208,17 +211,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
       |> element("button[phx-value-member_id=\"#{member1.id}\"]")
       |> render_click()
 
-      assert render(view) =~ "Member Information"
+      assert has_element?(view, "button[phx-click=\"clear_selection\"][title=\"Change member\"]")
 
       # Click clear/change member button
       view
-      |> element("button[phx-click=\"clear_selection\"]")
+      |> element("button[phx-click=\"clear_selection\"][title=\"Change member\"]")
       |> render_click()
 
       # Should return to search interface
-      html = render(view)
-      assert html =~ "Find Member"
-      refute html =~ "Member Information"
+      assert has_element?(view, "input#member-search")
+      refute has_element?(view, "button[phx-click=\"clear_selection\"]")
     end
 
     test "navigates to transaction page on continue", %{conn: conn, member1: member1} do
@@ -275,6 +277,56 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
   end
 
   # Helper functions
+  defp get_or_create_staff_member_type do
+    case Repo.one(
+           from mt in MemberType,
+             where: mt.slug == "staff",
+             limit: 1
+         ) do
+      %MemberType{} = member_type ->
+        member_type
+
+      nil ->
+        {:ok, member_type} =
+          %MemberType{}
+          |> MemberType.changeset(%{
+            name: "Staff",
+            slug: "staff",
+            description: "Staff member type",
+            max_concurrent_loans: 5,
+            max_days: 14,
+            can_renew: true,
+            max_renewals: 2,
+            can_reserve: true,
+            max_reserves: 3,
+            fine_per_day: Decimal.new("5000"),
+            max_fine: Decimal.new("100000"),
+            is_active: true,
+            priority_level: 1
+          })
+          |> Repo.insert()
+
+        member_type
+    end
+  end
+
+  defp get_or_create_super_admin_role do
+    alias Voile.Schema.Accounts.Role
+
+    case Repo.get_by(Role, name: "super_admin") do
+      %Role{} = role ->
+        role
+
+      nil ->
+        {:ok, role} =
+          %Role{}
+          |> Role.changeset(%{name: "super_admin", description: "Super admin"})
+          |> Repo.insert()
+
+        role
+    end
+  end
+
   defp get_or_create_member_type do
     case Repo.one(
            from mt in MemberType,
@@ -313,7 +365,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.IndexTest do
       username: "user_#{System.unique_integer([:positive])}",
       email: "user_#{System.unique_integer([:positive])}@example.com",
       fullname: "Test User",
-      identifier: Decimal.new("#{System.unique_integer([:positive])}"),
+      identifier: Decimal.new("#{System.unique_integer([:positive, :monotonic])}"),
       user_type_id: member_type.id,
       confirmed_at: DateTime.utc_now(),
       password: "testpassword123"

@@ -351,4 +351,38 @@ defmodule Voile.Utils.CollectionLogger do
     |> preload([:collection])
     |> Repo.all()
   end
+
+  @doc """
+  Returns the client IP address from a Plug.Conn.
+
+  This checks the `x-forwarded-for` header first and falls back to
+  `conn.remote_ip` when the header is missing.
+  """
+  @spec get_ip_address(Plug.Conn.t()) :: String.t() | nil
+  def get_ip_address(conn) do
+    case Plug.Conn.get_req_header(conn, "x-forwarded-for") do
+      [remote_ip | _] when is_binary(remote_ip) and remote_ip != "" ->
+        String.trim(remote_ip)
+
+      _ ->
+        format_remote_ip(conn.remote_ip)
+    end
+  end
+
+  @doc """
+  Returns the user agent string from a Plug.Conn.
+  """
+  @spec get_user_agent(Plug.Conn.t()) :: String.t() | nil
+  def get_user_agent(conn) do
+    Plug.Conn.get_req_header(conn, "user-agent")
+    |> List.first()
+  end
+
+  defp format_remote_ip(nil), do: nil
+
+  defp format_remote_ip(remote_ip) when is_tuple(remote_ip),
+    do: remote_ip |> :inet.ntoa() |> to_string()
+
+  defp format_remote_ip(remote_ip) when is_binary(remote_ip), do: remote_ip
+  defp format_remote_ip(_), do: nil
 end

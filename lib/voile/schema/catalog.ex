@@ -466,6 +466,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def create_collection(attrs \\ %{}, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     # Let plugins modify attrs before save
     enriched_attrs = Voile.Hooks.run_filter(:collection_before_save, attrs)
 
@@ -479,6 +481,8 @@ defmodule Voile.Schema.Catalog do
         # Let plugins react to the new collection
         Voile.Hooks.run_action(:collection_after_save, collection)
 
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(collection.id, user_id, "create",
             title: "Collection Created",
@@ -491,7 +495,10 @@ defmodule Voile.Schema.Catalog do
                 :description,
                 :collection_type
               ]),
-            entity_type: "collection"
+            entity_type: "collection",
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -521,6 +528,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def update_collection(%Collection{} = collection, attrs, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     old_values =
       Map.take(collection, [:title, :status, :access_level, :description, :collection_type])
 
@@ -531,6 +540,8 @@ defmodule Voile.Schema.Catalog do
 
     case result do
       {:ok, updated} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(updated.id, user_id, "update",
             title: "Collection Updated",
@@ -538,7 +549,10 @@ defmodule Voile.Schema.Catalog do
             old_values: old_values,
             new_values:
               Map.take(updated, [:title, :status, :access_level, :description, :collection_type]),
-            entity_type: "collection"
+            entity_type: "collection",
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -568,16 +582,22 @@ defmodule Voile.Schema.Catalog do
 
   """
   def delete_collection(%Collection{} = collection, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
     result = Repo.delete(collection)
 
     case result do
       {:ok, deleted} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(nil, user_id, "delete",
             title: "Collection Deleted",
             message: "Collection '#{deleted.title}' was deleted",
             old_values: Map.take(deleted, [:id, :title, :status, :access_level]),
-            entity_type: "collection"
+            entity_type: "collection",
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -813,6 +833,7 @@ defmodule Voile.Schema.Catalog do
 
   def approve_collection(%Collection{status: status} = collection, reviewer_user, notes)
       when status in ["pending", "draft"] do
+    start_time = System.monotonic_time(:millisecond)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     # Build attrs map
@@ -827,6 +848,8 @@ defmodule Voile.Schema.Catalog do
 
     case Repo.update(changeset) do
       {:ok, updated_collection} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         # Log the approval action with review notes
         metadata = if notes && notes != "", do: %{review_notes: notes}, else: %{}
 
@@ -836,7 +859,10 @@ defmodule Voile.Schema.Catalog do
             message: "Collection '#{collection.title}' was approved and published",
             old_values: %{status: collection.status, access_level: collection.access_level},
             new_values: %{status: "published", access_level: "public"},
-            metadata: metadata
+            metadata: metadata,
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -873,6 +899,7 @@ defmodule Voile.Schema.Catalog do
   """
   def reject_collection(%Collection{status: status} = collection, reviewer_user, reason)
       when status in ["pending", "draft"] do
+    start_time = System.monotonic_time(:millisecond)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     # Build attrs map
@@ -886,6 +913,8 @@ defmodule Voile.Schema.Catalog do
 
     case Repo.update(changeset) do
       {:ok, updated_collection} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         # Log the rejection action with review notes
         metadata = if reason && reason != "", do: %{review_notes: reason}, else: %{}
 
@@ -895,7 +924,10 @@ defmodule Voile.Schema.Catalog do
             message: "Collection '#{collection.title}' was rejected and sent back to draft",
             old_values: %{status: collection.status},
             new_values: %{status: "draft"},
-            metadata: metadata
+            metadata: metadata,
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -1610,6 +1642,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def create_item(attrs \\ %{}, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     # Let plugins modify attrs before save
     enriched_attrs = Voile.Hooks.run_filter(:item_before_save, attrs)
 
@@ -1622,6 +1656,8 @@ defmodule Voile.Schema.Catalog do
       {:ok, item} ->
         # Let plugins react to the new item
         Voile.Hooks.run_action(:item_after_create, item)
+
+        duration_ms = System.monotonic_time(:millisecond) - start_time
 
         Task.start(fn ->
           CollectionLogger.log_action(item.collection_id, user_id, "create",
@@ -1637,7 +1673,10 @@ defmodule Voile.Schema.Catalog do
                 :availability
               ]),
             entity_type: "item",
-            metadata: %{item_id: item.id}
+            metadata: %{item_id: item.id},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -1669,6 +1708,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def update_item(%Item{} = item, attrs, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     old_values =
       Map.take(item, [:item_code, :barcode, :status, :condition, :availability, :location])
 
@@ -1679,6 +1720,8 @@ defmodule Voile.Schema.Catalog do
 
     case result do
       {:ok, updated} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(updated.collection_id, user_id, "update",
             title: "Item Updated",
@@ -1694,7 +1737,10 @@ defmodule Voile.Schema.Catalog do
                 :location
               ]),
             entity_type: "item",
-            metadata: %{item_id: updated.id}
+            metadata: %{item_id: updated.id},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -1724,17 +1770,23 @@ defmodule Voile.Schema.Catalog do
 
   """
   def delete_item(%Item{} = item, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
     result = Repo.delete(item)
 
     case result do
       {:ok, deleted} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(deleted.collection_id, user_id, "delete",
             title: "Item Deleted",
             message: "Item '#{deleted.item_code}' was deleted from collection",
             old_values: Map.take(deleted, [:id, :item_code, :barcode, :status, :condition]),
             entity_type: "item",
-            metadata: %{item_id: deleted.id}
+            metadata: %{item_id: deleted.id},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -2040,6 +2092,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def create_collection_field(attrs \\ %{}, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     result =
       %CollectionField{}
       |> CollectionField.changeset(attrs)
@@ -2047,13 +2101,18 @@ defmodule Voile.Schema.Catalog do
 
     case result do
       {:ok, field} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(field.collection_id, user_id, "update",
             title: "Metadata Field Added",
             message: "Field '#{field.label}' (#{field.name}) was added to collection",
             new_values: Map.take(field, [:name, :label, :value, :value_lang, :sort_order]),
             entity_type: "collection_field",
-            metadata: %{field_id: field.id, field_name: field.name}
+            metadata: %{field_id: field.id, field_name: field.name},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -2085,6 +2144,8 @@ defmodule Voile.Schema.Catalog do
 
   """
   def update_collection_field(%CollectionField{} = collection_field, attrs, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
+
     old_values = Map.take(collection_field, [:name, :label, :value, :value_lang, :sort_order])
 
     result =
@@ -2094,6 +2155,8 @@ defmodule Voile.Schema.Catalog do
 
     case result do
       {:ok, updated} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(updated.collection_id, user_id, "update",
             title: "Metadata Field Updated",
@@ -2101,7 +2164,10 @@ defmodule Voile.Schema.Catalog do
             old_values: old_values,
             new_values: Map.take(updated, [:name, :label, :value, :value_lang, :sort_order]),
             entity_type: "collection_field",
-            metadata: %{field_id: updated.id, field_name: updated.name}
+            metadata: %{field_id: updated.id, field_name: updated.name},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 
@@ -2131,17 +2197,23 @@ defmodule Voile.Schema.Catalog do
 
   """
   def delete_collection_field(%CollectionField{} = collection_field, user_id \\ nil) do
+    start_time = System.monotonic_time(:millisecond)
     result = Repo.delete(collection_field)
 
     case result do
       {:ok, deleted} ->
+        duration_ms = System.monotonic_time(:millisecond) - start_time
+
         Task.start(fn ->
           CollectionLogger.log_action(deleted.collection_id, user_id, "update",
             title: "Metadata Field Removed",
             message: "Field '#{deleted.label}' (#{deleted.name}) was removed from collection",
             old_values: Map.take(deleted, [:id, :name, :label, :value, :value_lang]),
             entity_type: "collection_field",
-            metadata: %{field_id: deleted.id, field_name: deleted.name}
+            metadata: %{field_id: deleted.id, field_name: deleted.name},
+            ip_address: nil,
+            user_agent: nil,
+            duration_ms: duration_ms
           )
         end)
 

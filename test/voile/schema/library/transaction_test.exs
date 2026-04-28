@@ -5,12 +5,16 @@ defmodule Voile.Schema.Library.TransactionTest do
   import Voile.LibraryFixtures
   import Voile.AccountsFixtures
 
-  @valid_attrs %{
-    transaction_type: "loan",
-    transaction_date: DateTime.utc_now(),
-    due_date: DateTime.add(DateTime.utc_now(), 14 * 24 * 60 * 60, :second),
-    status: "active"
-  }
+  defp valid_attrs do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    %{
+      transaction_type: "loan",
+      transaction_date: now,
+      due_date: DateTime.add(now, 14 * 24 * 60 * 60, :second),
+      status: "active"
+    }
+  end
 
   @invalid_attrs %{
     transaction_type: nil,
@@ -27,7 +31,7 @@ defmodule Voile.Schema.Library.TransactionTest do
       librarian = user_fixture()
 
       attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: member.id,
           item_id: item.id,
           librarian_id: librarian.id
@@ -49,7 +53,7 @@ defmodule Voile.Schema.Library.TransactionTest do
     end
 
     test "changeset validates transaction_type inclusion" do
-      attrs = Map.merge(@valid_attrs, %{transaction_type: "invalid_type"})
+      attrs = Map.merge(valid_attrs(), %{transaction_type: "invalid_type"})
       changeset = Transaction.changeset(%Transaction{}, attrs)
 
       refute changeset.valid?
@@ -57,7 +61,7 @@ defmodule Voile.Schema.Library.TransactionTest do
     end
 
     test "changeset validates status inclusion" do
-      attrs = Map.merge(@valid_attrs, %{status: "invalid_status"})
+      attrs = Map.merge(valid_attrs(), %{status: "invalid_status"})
       changeset = Transaction.changeset(%Transaction{}, attrs)
 
       refute changeset.valid?
@@ -73,7 +77,7 @@ defmodule Voile.Schema.Library.TransactionTest do
         librarian = user_fixture()
 
         attrs =
-          Map.merge(@valid_attrs, %{
+          Map.merge(valid_attrs(), %{
             transaction_type: transaction_type,
             member_id: member.id,
             item_id: item.id,
@@ -94,7 +98,7 @@ defmodule Voile.Schema.Library.TransactionTest do
         librarian = user_fixture()
 
         attrs =
-          Map.merge(@valid_attrs, %{
+          Map.merge(valid_attrs(), %{
             status: status,
             member_id: member.id,
             item_id: item.id,
@@ -107,7 +111,7 @@ defmodule Voile.Schema.Library.TransactionTest do
     end
 
     test "changeset validates renewal_count is non-negative" do
-      attrs = Map.merge(@valid_attrs, %{renewal_count: -1})
+      attrs = Map.merge(valid_attrs(), %{renewal_count: -1})
       changeset = Transaction.changeset(%Transaction{}, attrs)
 
       refute changeset.valid?
@@ -115,7 +119,7 @@ defmodule Voile.Schema.Library.TransactionTest do
     end
 
     test "changeset validates fine_amount is non-negative" do
-      attrs = Map.merge(@valid_attrs, %{fine_amount: "-100"})
+      attrs = Map.merge(valid_attrs(), %{fine_amount: "-100"})
       changeset = Transaction.changeset(%Transaction{}, attrs)
 
       refute changeset.valid?
@@ -228,18 +232,20 @@ defmodule Voile.Schema.Library.TransactionTest do
       transaction = %Transaction{}
 
       assert transaction.renewal_count == 0
-      assert transaction.fine_amount == Decimal.new("0.0")
+      assert Decimal.equal?(transaction.fine_amount, Decimal.new("0"))
       assert transaction.is_overdue == false
     end
   end
 
   describe "database constraints" do
     test "enforces foreign key constraints" do
+      transaction = transaction_fixture()
+
       invalid_attrs =
-        Map.merge(@valid_attrs, %{
+        Map.merge(valid_attrs(), %{
           member_id: Ecto.UUID.generate(),
-          item_id: Ecto.UUID.generate(),
-          librarian_id: Ecto.UUID.generate()
+          item_id: transaction.item_id,
+          librarian_id: transaction.librarian_id
         })
 
       changeset = Transaction.changeset(%Transaction{}, invalid_attrs)
@@ -295,7 +301,9 @@ defmodule Voile.Schema.Library.TransactionTest do
 
       assert {:ok, updated_transaction} = Repo.update(changeset)
       assert updated_transaction.status == "returned"
-      assert updated_transaction.return_date == return_date
+
+      assert DateTime.to_unix(updated_transaction.return_date, :second) ==
+               DateTime.to_unix(return_date, :second)
     end
 
     test "tracks renewals correctly" do
@@ -312,7 +320,9 @@ defmodule Voile.Schema.Library.TransactionTest do
 
       assert {:ok, renewed_transaction} = Repo.update(changeset)
       assert renewed_transaction.renewal_count == 1
-      assert renewed_transaction.due_date == new_due_date
+
+      assert DateTime.to_unix(renewed_transaction.due_date, :second) ==
+               DateTime.to_unix(new_due_date, :second)
     end
   end
 end

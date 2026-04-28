@@ -30,7 +30,8 @@ defmodule Voile.MetadataFixtures do
       |> Enum.into(%{
         information: "some information",
         label: "some label",
-        local_name: "some local_name"
+        local_name: "some local_name",
+        glam_type: "Library"
       })
       |> Voile.Schema.Metadata.create_resource_class()
 
@@ -41,10 +42,15 @@ defmodule Voile.MetadataFixtures do
   Generate a resource_template.
   """
   def resource_template_fixture(attrs \\ %{}) do
+    user = Voile.AccountsFixtures.user_fixture()
+    resource_class = resource_class_fixture()
+
     {:ok, resource_template} =
       attrs
       |> Enum.into(%{
-        label: "some label"
+        label: "some label",
+        owner_id: user.id,
+        resource_class_id: resource_class.id
       })
       |> Voile.Schema.Metadata.create_resource_template()
 
@@ -55,15 +61,16 @@ defmodule Voile.MetadataFixtures do
   Generate a resource_template_property.
   """
   def resource_template_property_fixture(attrs \\ %{}) do
+    property = Voile.SchemaMetadataFixtures.property_fixture()
+    resource_template = resource_template_fixture()
+
     {:ok, resource_template_property} =
       attrs
       |> Enum.into(%{
-        alternate_information: "some alternate_information",
-        alternate_label: "some alternate_label",
-        data_type: ["option1", "option2"],
-        is_required: true,
-        permission: "some permission",
-        position: 42
+        position: 42,
+        property_id: property.id,
+        template_id: resource_template.id,
+        override_label: "some override_label"
       })
       |> Voile.Schema.Metadata.create_resource_template_property()
 

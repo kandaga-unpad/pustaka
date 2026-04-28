@@ -4,7 +4,7 @@ defmodule VoileWeb.UserForgotPasswordLiveTest do
   import Phoenix.LiveViewTest
   import Voile.AccountsFixtures
 
-  alias Voile.Accounts
+  alias Voile.Schema.Accounts
   alias Voile.Repo
 
   describe "Forgot password page" do
@@ -12,8 +12,8 @@ defmodule VoileWeb.UserForgotPasswordLiveTest do
       {:ok, lv, html} = live(conn, ~p"/users/reset_password")
 
       assert html =~ "Forgot your password?"
-      assert has_element?(lv, ~s|a[href="#{~p"/users/register"}"]|, "Register")
-      assert has_element?(lv, ~s|a[href="#{~p"/users/log_in"}"]|, "Log in")
+      assert has_element?(lv, ~s|a[href="#{~p"/register"}"]|, "Register")
+      assert has_element?(lv, ~s|a[href="#{~p"/login"}"]|, "Log in")
     end
 
     test "redirects if already logged in", %{conn: conn} do

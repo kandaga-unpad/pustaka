@@ -101,9 +101,9 @@ defmodule Voile.Plugins do
             set: [
               settings:
                 fragment(
-                  "COALESCE(?, '{}'::jsonb) || ?::jsonb",
+                  "COALESCE(?, '{}'::jsonb) || ?",
                   p.settings,
-                  ^Jason.encode!(%{to_string(key) => value})
+                  type(^%{to_string(key) => value}, :map)
                 )
             ]
           ]
@@ -131,9 +131,9 @@ defmodule Voile.Plugins do
             set: [
               settings:
                 fragment(
-                  "COALESCE(?, '{}'::jsonb) || ?::jsonb",
+                  "COALESCE(?, '{}'::jsonb) || ?",
                   p.settings,
-                  ^Jason.encode!(stringified)
+                  type(^stringified, :map)
                 )
             ]
           ]

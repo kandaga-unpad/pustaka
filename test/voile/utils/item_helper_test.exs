@@ -80,20 +80,20 @@ defmodule Voile.Utils.ItemHelperTest do
   end
 
   describe "generate_barcode_from_item_code/1" do
-    test "generates barcode using last UUID block + zero-padded seq for UUID-bearing code" do
-      # item_code ends with ...90373dfcd91a...-001
+    test "generates barcode using timestamp + last UUID block + zero-padded seq for UUID-bearing code" do
+      # item_code ends with ...90373dfcd91a...-1773899097433-001
       collection_uuid = "b371e6aa-3fb1-48cf-8439-90373dfcd91a"
-      item_code = "lib-book-#{collection_uuid}-999-001"
+      item_code = "lib-book-#{collection_uuid}-1773899097433-001"
 
       barcode = ItemHelper.generate_barcode_from_item_code(item_code)
 
-      assert barcode == "90373dfcd91a001"
+      assert barcode == "177389909743390373dfcd91a001"
     end
 
-    test "barcode is at most 20 characters" do
+    test "barcode is at most 30 characters" do
       item_code = "lib-book-b371e6aa-3fb1-48cf-8439-90373dfcd91a-9999999999-999"
       barcode = ItemHelper.generate_barcode_from_item_code(item_code)
-      assert String.length(barcode) <= 20
+      assert String.length(barcode) <= 30
     end
 
     test "returns empty string for nil input" do

@@ -155,7 +155,7 @@ defmodule VoileWeb.Layouts do
               </.button>
               <.locale_switcher current_path={@current_path} />
               <.theme_toggle />
-              <%= if @current_scope do %>
+              <%= if @current_scope && is_map(@current_scope) && @current_scope.user do %>
                 <div phx-hook="position_panel" id="user-info-panel" class="relative inline-block">
                   <div class="flex items-center justify-center gap-3">
                     <%= if has_dashboard_access?(@current_scope.user) do %>
@@ -349,7 +349,7 @@ defmodule VoileWeb.Layouts do
             <h4 class="text-white font-semibold mb-4">{gettext("For Users")}</h4>
 
             <ul class="space-y-2 text-sm">
-              <%= if @current_scope do %>
+              <%= if @current_scope && is_map(@current_scope) && @current_scope.user do %>
                 <%= if has_dashboard_access?(@current_scope.user) do %>
                   <li>
                     <.link navigate="/manage" class="hover:text-white transition-colors">
@@ -577,7 +577,7 @@ defmodule VoileWeb.Layouts do
             </ul>
 
             <div class="mt-6">
-              <%= if @current_scope do %>
+              <%= if @current_scope && is_map(@current_scope) && @current_scope.user do %>
                 <p class="text-sm mb-2">
                   {gettext("Signed in as %{name}", name: @current_scope.user.fullname)}
                 </p>
@@ -608,7 +608,7 @@ defmodule VoileWeb.Layouts do
         </div>
         <div class="p-4 border-t border-base-200 dark:border-gray-700 flex items-center justify-end gap-4">
           <.theme_toggle />
-          <.locale_switcher current_path={@mobile_nav_current_path} />
+          <.locale_switcher current_path={@mobile_nav_current_path} id="mobile-locale-switcher" />
         </div>
       </aside>
     </div>
@@ -689,6 +689,8 @@ defmodule VoileWeb.Layouts do
 
   # Helper function to check if user has dashboard access
   # Users with administrative roles (super_admin, admin, editor) or system permissions can access dashboard
+  defp has_dashboard_access?(nil), do: false
+
   defp has_dashboard_access?(user) do
     alias VoileWeb.Auth.Authorization
     alias Voile.Repo

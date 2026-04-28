@@ -75,6 +75,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
             <div class="grid grid-cols-3 gap-2">
               <button
                 type="button"
+                data-target={@target}
                 phx-click="keyboard_clear"
                 phx-value-target={@target}
                 class="px-6 py-4 bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-white font-bold text-lg rounded-lg transition-colors shadow-sm"
@@ -164,6 +165,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
               </button>
               <button
                 type="button"
+                data-target={@target}
                 phx-click="keyboard_input"
                 phx-value-key=" "
                 phx-value-target={@target}
@@ -173,6 +175,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
               </button>
               <button
                 type="button"
+                data-target={@target}
                 phx-click="keyboard_backspace"
                 phx-value-target={@target}
                 class="py-3 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold text-lg rounded-lg transition-colors shadow-sm"
@@ -191,7 +194,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
                 Voile - Visitor Management System
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Version 0.1.0
+                Version {to_string(Application.spec(:voile, :vsn) || "dev")}
               </p>
             </div>
 
@@ -232,10 +235,10 @@ defmodule VoileWeb.Components.VirtualKeyboard do
 
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4 text-center">
               <p class="text-xs text-gray-500 dark:text-gray-500">
-                Powered by Phoenix LiveView & Elixir
+                Powered by Voile
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                © 2024 Voile. All rights reserved.
+                © 2024 - {Date.utc_today().year} Voile. All rights reserved.
               </p>
             </div>
           </div>
@@ -255,6 +258,7 @@ defmodule VoileWeb.Components.VirtualKeyboard do
     ~H"""
     <button
       type="button"
+      data-target={@target}
       phx-click="keyboard_input"
       phx-value-key={@value}
       phx-value-target={@target}

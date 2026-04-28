@@ -8,12 +8,14 @@ defmodule Voile.SystemFixtures do
   Generate a node.
   """
   def node_fixture(attrs \\ %{}) do
+    unique = System.unique_integer([:positive])
+
     {:ok, node} =
       attrs
       |> Enum.into(%{
-        abbr: "some abbr",
+        abbr: "some-abbr-#{unique}",
         image: "some image",
-        name: "some name"
+        name: "some name #{unique}"
       })
       |> Voile.Schema.System.create_node()
 

@@ -144,6 +144,23 @@ defmodule VoileWeb.Dashboard.Members.Index do
           trend="0%"
         />
       </div>
+      <div>
+        <div class="my-5 border-t border-gray-300 dark:border-gray-600 pt-5">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            {gettext("Member Services")}
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <.member_nav_card
+              title={gettext("Clearance Letters")}
+              description={gettext("Generate and manage clearance letters for members.")}
+              action_text={gettext("Check Clearance")}
+              icon="document-check"
+              path="/manage/members/clearance"
+              color="teal"
+            />
+          </div>
+        </div>
+      </div>
 
       <%!-- Recent Activity --%>
       <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">

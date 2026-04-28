@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.23] - 2026-04-28
+
+### Added
+
+- Bumped release version to `0.1.23`.
+- New Translation - Added Indonesian translations for the clearance letter feature, including new keys for the letter body, closing text, and various UI elements on the clearance pages.
+
+
+### Fixed
+
+- Fixed PluginManager checking for status.
+- Fixed Update Full Script for deployment.
+
+## [0.1.22] - 2026-04-25
+
+### Added
+
+- **Clearance letter: paginated list with search and node scoping** — New `list_letters_paginated/3` with search on letter number, member name, and identifier; node-scoped for non-super-admin users.
+- **Clearance letter: full management UI** — New routes `/clearance/`, `/clearance/verify`, `/clearance/settings`, and `/clearance/:id` under `Dashboard.Members.Clearance.*` with index, verify, settings, and show views.
+- **Clearance letter: custom identifier and external department lookup** — Clearance generation now accepts a custom identifier and can resolve the member's department from an external visitor source API when configured.
+- **Clearance letter: customisable body and closing text** — Two new settings (`clearance_body_text`, `clearance_closing_text`) allow institutions to customise the letter body and closing paragraph.
+- **Clearance letter: institution logo on printed letter** — The public clearance letter now shows the `app_logo_url` image alongside institution name, subtitle, address, phone, and email.
+- **Master: `create_creator/1`** — New context function to create a `Creator` record directly.
+
+### Changed
+
+- **Clearance letter: redesigned letter header** — Header now uses a double-rule border and shows logo, subtitle, name, address, phone, and email in a structured layout.
+- **Clearance letter: reuse existing issued letter** — If a member already has an active clearance letter, the page now redirects to the existing letter instead of creating a duplicate.
+- **Fine calculation: off-by-one day fix** — Overdue day count no longer subtracts an extra day from the due date.
+- **Clearance letter number padding removed** — Letter sequence is no longer zero-padded to 4 digits.
+- **Translation** - Updated some Indonesian translations and added missing ones for the clearance letter.
+
+### Fixed
+
+- **JSONB settings corruption** — `plugins.ex` and `schema/system.ex` now use `type(^map, :map)` instead of `Jason.encode!` to prevent double-encoding of JSONB settings.
+- **`Scope.for_user/1` nil guard** — Returns an empty `%Scope{}` instead of `nil` when called with `nil`.
+- **`paid_amount` and `fine_amount` decimal defaults** — Use `Decimal.new("0")` instead of bare integers/floats to avoid type mismatches.
+- **`Requisition` foreign key constraint** — Added `foreign_key_constraint` on `requested_by_id`.
+
 ## [0.1.21] - 2026-04-20
 
 ### Added

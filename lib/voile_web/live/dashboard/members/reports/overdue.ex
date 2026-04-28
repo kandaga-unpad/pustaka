@@ -35,7 +35,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
 
       <%!-- Page Header --%>
       <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {gettext("Overdue Items")}

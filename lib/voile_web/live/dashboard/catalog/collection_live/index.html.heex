@@ -8,14 +8,16 @@
           <div>
             <.header>{gettext("Listing Collections")}</.header>
             <div class="-mt-5">
-              <.link>
-                <.button
-                  class="neutral-btn bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
-                  navigate={~p"/manage/catalog/collections/import"}
-                >
-                  Import / Export
-                </.button>
-              </.link>
+              <%= if Authorization.is_super_admin?(@current_scope.user) do %>
+                <.link>
+                  <.button
+                    class="neutral-btn bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
+                    navigate={~p"/manage/catalog/collections/import"}
+                  >
+                    Import / Export
+                  </.button>
+                </.link>
+              <% end %>
             </div>
           </div>
 

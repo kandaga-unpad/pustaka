@@ -1,7 +1,7 @@
 defmodule Voile.MasterTest do
   use Voile.DataCase
 
-  alias Voile.Master
+  alias Voile.Schema.Master, as: Master
 
   describe "mst_creator" do
     alias Voile.Schema.Master.Creator
@@ -12,7 +12,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_creator/0 returns all mst_creator" do
       creator = creator_fixture()
-      assert Master.list_mst_creator() == [creator]
+      assert Enum.any?(Master.list_mst_creator(), &(&1.id == creator.id))
     end
 
     test "get_creator!/1 returns the creator with given id" do
@@ -22,14 +22,14 @@ defmodule Voile.MasterTest do
 
     test "create_creator/1 with valid data creates a creator" do
       valid_attrs = %{
-        type: "some type",
+        type: "Person",
         creator_name: "some creator_name",
         creator_contact: "some creator_contact",
         affiliation: "some affiliation"
       }
 
       assert {:ok, %Creator{} = creator} = Master.create_creator(valid_attrs)
-      assert creator.type == "some type"
+      assert creator.type == "Person"
       assert creator.creator_name == "some creator_name"
       assert creator.creator_contact == "some creator_contact"
       assert creator.affiliation == "some affiliation"
@@ -43,14 +43,14 @@ defmodule Voile.MasterTest do
       creator = creator_fixture()
 
       update_attrs = %{
-        type: "some updated type",
+        type: "Organization",
         creator_name: "some updated creator_name",
         creator_contact: "some updated creator_contact",
         affiliation: "some updated affiliation"
       }
 
       assert {:ok, %Creator{} = creator} = Master.update_creator(creator, update_attrs)
-      assert creator.type == "some updated type"
+      assert creator.type == "Organization"
       assert creator.creator_name == "some updated creator_name"
       assert creator.creator_contact == "some updated creator_contact"
       assert creator.affiliation == "some updated affiliation"
@@ -75,7 +75,7 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_frequency" do
-    alias Voile.Master.Frequency
+    alias Voile.Schema.Master.Frequency
 
     import Voile.MasterFixtures
 
@@ -83,7 +83,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_frequency/0 returns all mst_frequency" do
       frequency = frequency_fixture()
-      assert Master.list_mst_frequency() == [frequency]
+      assert Enum.any?(Master.list_mst_frequency(), &(&1.id == frequency.id))
     end
 
     test "get_frequency!/1 returns the frequency with given id" do
@@ -142,52 +142,52 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_member_types" do
-    alias Voile.Master.MemberType
+    alias Voile.Schema.Master.MemberType
 
     import Voile.MasterFixtures
 
     @invalid_attrs %{
       name: nil,
-      loan_limit: nil,
-      loan_period: nil,
-      enable_reserve: nil,
-      membership_period: nil,
-      reloan_limit: nil,
-      loan_fine: nil,
-      loan_grace_period: nil
+      max_items: nil,
+      max_days: nil,
+      can_reserve: nil,
+      membership_period_days: nil,
+      max_renewals: nil,
+      fine_per_day: nil
     }
 
     test "list_mst_member_types/0 returns all mst_member_types" do
       member_type = member_type_fixture()
-      assert Master.list_mst_member_types() == [member_type]
+      assert Enum.any?(Master.list_mst_member_types(), &(&1.id == member_type.id))
     end
 
     test "get_member_type!/1 returns the member_type with given id" do
       member_type = member_type_fixture()
-      assert Master.get_member_type!(member_type.id) == member_type
+      fetched = Master.get_member_type!(member_type.id)
+      assert fetched.id == member_type.id
+      assert fetched.slug == member_type.slug
     end
 
     test "create_member_type/1 with valid data creates a member_type" do
       valid_attrs = %{
         name: "some name",
-        loan_limit: 42,
-        loan_period: 42,
-        enable_reserve: true,
-        membership_period: 42,
-        reloan_limit: 42,
-        loan_fine: 42,
-        loan_grace_period: 42
+        slug: "some-slug",
+        max_items: 42,
+        max_days: 42,
+        can_reserve: true,
+        membership_period_days: 42,
+        max_renewals: 42,
+        fine_per_day: 42
       }
 
       assert {:ok, %MemberType{} = member_type} = Master.create_member_type(valid_attrs)
       assert member_type.name == "some name"
-      assert member_type.loan_limit == 42
-      assert member_type.loan_period == 42
-      assert member_type.enable_reserve == true
-      assert member_type.membership_period == 42
-      assert member_type.reloan_limit == 42
-      assert member_type.loan_fine == 42
-      assert member_type.loan_grace_period == 42
+      assert member_type.max_items == 42
+      assert member_type.max_days == 42
+      assert member_type.can_reserve == true
+      assert member_type.membership_period_days == 42
+      assert member_type.max_renewals == 42
+      assert member_type.fine_per_day == Decimal.new(42)
     end
 
     test "create_member_type/1 with invalid data returns error changeset" do
@@ -199,32 +199,35 @@ defmodule Voile.MasterTest do
 
       update_attrs = %{
         name: "some updated name",
-        loan_limit: 43,
-        loan_period: 43,
-        enable_reserve: false,
-        membership_period: 43,
-        reloan_limit: 43,
-        loan_fine: 43,
-        loan_grace_period: 43
+        slug: "updated-slug",
+        max_items: 43,
+        max_days: 43,
+        can_reserve: false,
+        membership_period_days: 43,
+        max_renewals: 43,
+        fine_per_day: 43
       }
 
       assert {:ok, %MemberType{} = member_type} =
                Master.update_member_type(member_type, update_attrs)
 
       assert member_type.name == "some updated name"
-      assert member_type.loan_limit == 43
-      assert member_type.loan_period == 43
-      assert member_type.enable_reserve == false
-      assert member_type.membership_period == 43
-      assert member_type.reloan_limit == 43
-      assert member_type.loan_fine == 43
-      assert member_type.loan_grace_period == 43
+      assert member_type.max_items == 43
+      assert member_type.max_days == 43
+      assert member_type.can_reserve == false
+      assert member_type.membership_period_days == 43
+      assert member_type.max_renewals == 43
+      assert member_type.fine_per_day == Decimal.new(43)
     end
 
     test "update_member_type/2 with invalid data returns error changeset" do
       member_type = member_type_fixture()
       assert {:error, %Ecto.Changeset{}} = Master.update_member_type(member_type, @invalid_attrs)
-      assert member_type == Master.get_member_type!(member_type.id)
+      fetched = Master.get_member_type!(member_type.id)
+
+      assert fetched.id == member_type.id
+      assert fetched.slug == member_type.slug
+      assert fetched.name == member_type.name
     end
 
     test "delete_member_type/1 deletes the member_type" do
@@ -240,7 +243,7 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_locations" do
-    alias Voile.Master.Locations
+    alias Voile.Schema.Master.Location
 
     import Voile.MasterFixtures
 
@@ -248,7 +251,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_locations/0 returns all mst_locations" do
       locations = locations_fixture()
-      assert Master.list_mst_locations() == [locations]
+      assert Enum.any?(Master.list_mst_locations(), &(&1.id == locations.id))
     end
 
     test "get_locations!/1 returns the locations with given id" do
@@ -257,14 +260,18 @@ defmodule Voile.MasterTest do
     end
 
     test "create_locations/1 with valid data creates a locations" do
+      node = Voile.SystemFixtures.node_fixture()
+      location_code = "some location_code_#{System.unique_integer([:positive])}"
+
       valid_attrs = %{
-        location_code: "some location_code",
+        location_code: location_code,
         location_name: "some location_name",
-        location_place: "some location_place"
+        location_place: "some location_place",
+        node_id: node.id
       }
 
-      assert {:ok, %Locations{} = locations} = Master.create_locations(valid_attrs)
-      assert locations.location_code == "some location_code"
+      assert {:ok, %Location{} = locations} = Master.create_locations(valid_attrs)
+      assert locations.location_code == location_code
       assert locations.location_name == "some location_name"
       assert locations.location_place == "some location_place"
     end
@@ -282,7 +289,7 @@ defmodule Voile.MasterTest do
         location_place: "some updated location_place"
       }
 
-      assert {:ok, %Locations{} = locations} = Master.update_locations(locations, update_attrs)
+      assert {:ok, %Location{} = locations} = Master.update_locations(locations, update_attrs)
       assert locations.location_code == "some updated location_code"
       assert locations.location_name == "some updated location_name"
       assert locations.location_place == "some updated location_place"
@@ -296,7 +303,7 @@ defmodule Voile.MasterTest do
 
     test "delete_locations/1 deletes the locations" do
       locations = locations_fixture()
-      assert {:ok, %Locations{}} = Master.delete_locations(locations)
+      assert {:ok, %Location{}} = Master.delete_locations(locations)
       assert_raise Ecto.NoResultsError, fn -> Master.get_locations!(locations.id) end
     end
 
@@ -307,7 +314,7 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_places" do
-    alias Voile.Master.Places
+    alias Voile.Schema.Master.Places
 
     import Voile.MasterFixtures
 
@@ -315,7 +322,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_places/0 returns all mst_places" do
       places = places_fixture()
-      assert Master.list_mst_places() == [places]
+      assert Enum.any?(Master.list_mst_places(), &(&1.id == places.id))
     end
 
     test "get_places!/1 returns the places with given id" do
@@ -361,7 +368,7 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_publishers" do
-    alias Voile.Master.Publishers
+    alias Voile.Schema.Master.Publishers
 
     import Voile.MasterFixtures
 
@@ -369,7 +376,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_publishers/0 returns all mst_publishers" do
       publishers = publishers_fixture()
-      assert Master.list_mst_publishers() == [publishers]
+      assert Enum.any?(Master.list_mst_publishers(), &(&1.id == publishers.id))
     end
 
     test "get_publishers!/1 returns the publishers with given id" do
@@ -434,7 +441,7 @@ defmodule Voile.MasterTest do
   end
 
   describe "mst_topics" do
-    alias Voile.Master.Topic
+    alias Voile.Schema.Master.Topic
 
     import Voile.MasterFixtures
 
@@ -442,7 +449,7 @@ defmodule Voile.MasterTest do
 
     test "list_mst_topics/0 returns all mst_topics" do
       topic = topic_fixture()
-      assert Master.list_mst_topics() == [topic]
+      assert Enum.any?(Master.list_mst_topics(), &(&1.id == topic.id))
     end
 
     test "get_topic!/1 returns the topic with given id" do

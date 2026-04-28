@@ -288,6 +288,8 @@ defmodule VoileWeb.Visitor.CheckIn do
             panels: [],
             auto_close_ms: 1_000,
             node_id: node_id,
+            location_id:
+              socket.assigns[:selected_location] && socket.assigns.selected_location.id,
             visitor_log: visitor_log,
             visitor_name: visitor_name,
             visitor_identifier: identifier
@@ -822,6 +824,13 @@ defmodule VoileWeb.Visitor.CheckIn do
                     </option>
                   </select>
                 </div>
+
+                <button
+                  type="submit"
+                  class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold rounded-lg transition-colors shadow-lg"
+                >
+                  {gettext("Check In Now")}
+                </button>
 
                 <div class="mt-4">
                   <VirtualKeyboard.virtual_keyboard

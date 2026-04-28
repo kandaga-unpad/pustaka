@@ -132,6 +132,7 @@ defmodule Voile.MixProject do
       {:phoenix_swagger, "~> 0.8"},
       {:phoenix_turnstile, "~> 1.0"},
       {:postgrex, "~> 0.22"},
+      {:qr_code, "~> 3.2.0"},
       {:swoosh, "~> 1.21"},
       {:req, "~> 0.5"},
       {:tailwind, "~> 0.4", runtime: Mix.env() == :dev},

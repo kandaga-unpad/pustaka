@@ -8,14 +8,23 @@ defmodule Voile.CatalogFixtures do
   Generate a collection.
   """
   def collection_fixture(attrs \\ %{}) do
+    unique = System.unique_integer([:positive])
+    creator = Voile.MasterFixtures.creator_fixture()
+    resource_class = Voile.MetadataFixtures.resource_class_fixture()
+    node = Voile.SystemFixtures.node_fixture()
+
     {:ok, collection} =
       attrs
       |> Enum.into(%{
-        access_level: "some access_level",
+        access_level: "public",
+        collection_code: "some_collection_code_#{unique}",
+        creator_id: creator.id,
         description: "some description",
-        status: "some status",
+        status: "draft",
         thumbnail: "some thumbnail",
-        title: "some title"
+        title: "some title",
+        type_id: resource_class.id,
+        unit_id: node.id
       })
       |> Voile.Schema.Catalog.create_collection()
 
@@ -26,13 +35,21 @@ defmodule Voile.CatalogFixtures do
   Generate a item.
   """
   def item_fixture(attrs \\ %{}) do
+    unique = System.unique_integer([:positive])
+    node = Voile.SystemFixtures.node_fixture()
+    collection = collection_fixture()
+
     {:ok, item} =
       attrs
       |> Enum.into(%{
-        # provide a valid availability but allow tests to override or omit
-        item_code: "some item_code",
+        item_code: "some item_code_#{unique}",
+        inventory_code: "some inventory_code_#{unique}",
+        barcode: "some barcode_#{unique}",
         location: "some location",
-        status: "some status"
+        status: "active",
+        condition: "excellent",
+        unit_id: node.id,
+        collection_id: collection.id
       })
       |> Voile.Schema.Catalog.create_item()
 
@@ -43,14 +60,20 @@ defmodule Voile.CatalogFixtures do
   Generate a collection_field.
   """
   def collection_field_fixture(attrs \\ %{}) do
+    collection = collection_fixture()
+    property = Voile.SchemaMetadataFixtures.property_fixture()
+
     {:ok, collection_field} =
       attrs
       |> Enum.into(%{
-        field_type: "some field_type",
+        collection_id: collection.id,
+        property_id: property.id,
+        name: "some_name",
         label: "some label",
-        name: "some name",
-        required: true,
-        sort_order: 42
+        value: "some value",
+        value_lang: "en",
+        sort_order: 1,
+        type_value: "text"
       })
       |> Voile.Schema.Catalog.create_collection_field()
 
@@ -61,14 +84,22 @@ defmodule Voile.CatalogFixtures do
   Generate a item_field_value.
   """
   def item_field_value_fixture(attrs \\ %{}) do
-    {:ok, item_field_value} =
-      attrs
-      |> Enum.into(%{
-        locale: "some locale",
-        value: "some value"
-      })
-      |> Voile.Schema.Catalog.create_item_field_value()
+    attrs = Enum.into(attrs, %{locale: "some locale", value: "some value"})
 
+    attrs =
+      attrs
+      |> put_default(:item_id, fn -> item_fixture().id end)
+      |> put_default(:collection_field_id, fn -> collection_field_fixture().id end)
+
+    {:ok, item_field_value} = Voile.Schema.Catalog.create_item_field_value(attrs)
     item_field_value
+  end
+
+  defp put_default(attrs, key, default_fun) do
+    if Map.has_key?(attrs, key) or Map.has_key?(attrs, to_string(key)) do
+      attrs
+    else
+      Map.put(attrs, key, default_fun.())
+    end
   end
 end

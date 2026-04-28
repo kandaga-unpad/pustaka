@@ -166,6 +166,7 @@ const VirtualKeyboardTab = {
     // Initialize active tab state (default to "number")
     this.activeTab = "number";
     this.setupTabs();
+    this.setupKeyboardFocus();
   },
   updated() {
     // Restore active tab after LiveView updates
@@ -247,6 +248,24 @@ const VirtualKeyboardTab = {
       targetContent.classList.add("active");
     }
   },
+  setupKeyboardFocus() {
+    this.el.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-target]");
+
+      if (!button) {
+        return;
+      }
+
+      const target = button.dataset.target;
+      const input = document.getElementById(target);
+
+      if (input) {
+        input.focus();
+        const length = input.value.length;
+        input.setSelectionRange(length, length);
+      }
+    });
+  },
 };
 
 // Identifier Input Hook for auto-focus and barcode scanning
@@ -280,11 +299,6 @@ const IdentifierInput = {
         }
       }
     });
-  },
-  updated() {
-    // Ensure focus after updates and move cursor to end
-    this.el.focus();
-    this.moveCursorToEnd();
   },
   moveCursorToEnd() {
     // Move cursor to the end of the input

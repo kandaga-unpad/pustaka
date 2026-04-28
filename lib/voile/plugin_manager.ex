@@ -39,12 +39,17 @@ defmodule Voile.PluginManager do
     end
   end
 
-  @doc "Get the current status of a plugin."
+  @doc "Get the current status of a plugin. Accepts either an atom or a module string."
   def status(module) when is_atom(module) do
     case :ets.lookup(@ets_table, module) do
       [{^module, status}] -> status
       _ -> :unknown
     end
+  end
+
+  def status(module_str) when is_binary(module_str) do
+    module = String.to_existing_atom(module_str)
+    status(module)
   end
 
   @doc "List all known plugins and their states."

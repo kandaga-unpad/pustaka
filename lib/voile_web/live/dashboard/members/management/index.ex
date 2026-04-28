@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
   @per_page 20
   @member_export_headers ~w(
-    fullname email username identifier member_type node registration_date expiry_date
+    fullname email verified username identifier member_type node registration_date expiry_date
     user_image groups address phone_number birth_date birth_place gender organization
     department position manually_suspended suspension_reason
   )
@@ -335,10 +335,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
             </div>
 
             <%= if can?(@current_scope.user, "users.create") do %>
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <.link
                   patch={~p"/manage/members/management/import"}
-                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   <.icon name="hero-arrow-up-tray" class="w-5 h-5" />
                   {gettext("Import CSV")}
@@ -346,7 +346,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
                 <.button
                   phx-click="export_members"
-                  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
                   type="button"
                 >
                   <.icon name="hero-arrow-down-tray" class="w-5 h-5" />
@@ -354,8 +354,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 </.button>
 
                 <.link patch={~p"/manage/members/management/new"}>
-                  <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-6 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-                    <.icon name="hero-plus" class="w-6 h-6 mr-3" /> {gettext("Add New Member")}
+                  <.button class="bg-gradient-to-r from-voile-primary to-voile-primary/90 hover:from-voile-primary/90 hover:to-voile-primary text-white px-4 py-2 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                    <.icon name="hero-plus" class="w-5 h-5 mr-2" /> {gettext("Add New Member")}
                   </.button>
                 </.link>
               </div>
@@ -365,25 +365,26 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
         <%!-- Filters and Search --%>
         <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <div class="flex flex-col items-center justify-center lg:flex-row gap-4 mb-6">
+          <div class="space-y-4">
             <%!-- Search --%>
-            <div class="flex-1">
-              <.form for={%{}} phx-change="search" class="flex gap-2">
-                <div class="relative flex-1">
+            <div class="w-full">
+              <.form for={%{}} phx-change="search" class="flex w-full gap-2">
+                <div class="relative flex-1 min-w-0">
                   <.input
                     name="query"
                     value={@search_query}
                     placeholder={gettext("Search by name, email, username, or identifier...")}
                     phx-debounce="300"
+                    class="w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-voile-primary focus:ring-2 focus:ring-voile-primary/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-voile-primary"
                   />
                 </div>
               </.form>
             </div>
 
             <%!-- Filters --%>
-            <div class="flex gap-2 mb-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <%= if @is_super_admin do %>
-                <.form for={%{}} phx-change="filter_node" class="w-48">
+                <.form for={%{}} phx-change="filter_node" class="w-full sm:w-48">
                   <.input
                     name="node_id"
                     type="select"
@@ -396,7 +397,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 </.form>
               <% end %>
 
-              <.form for={%{}} phx-change="filter_member_type" class="w-48">
+              <.form for={%{}} phx-change="filter_member_type" class="w-full sm:w-48">
                 <.input
                   name="member_type_id"
                   type="select"
@@ -406,7 +407,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 />
               </.form>
 
-              <.form for={%{}} phx-change="filter_status" class="w-48">
+              <.form for={%{}} phx-change="filter_status" class="w-full sm:w-48">
                 <.input
                   name="status"
                   type="select"
@@ -442,16 +443,39 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
               <:col :let={member} label={gettext("Member")}>
                 <div class="flex items-center gap-3">
                   <div class="flex-shrink-0 h-10 w-10">
-                    <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
-                      <span class="text-sm font-medium text-gray-700">
-                        {String.first(member.fullname || "?")}
-                      </span>
-                    </div>
+                    <%= if member.user_image && member.user_image != "" do %>
+                      <img
+                        src={member.user_image}
+                        alt={member.fullname}
+                        class="h-10 w-10 rounded-full object-cover"
+                      />
+                    <% else %>
+                      <div class="h-10 w-10 rounded-full bg-voile-light flex items-center justify-center">
+                        <span class="text-sm font-medium text-gray-700">
+                          {String.first(member.fullname || "?")}
+                        </span>
+                      </div>
+                    <% end %>
                   </div>
-                  <div>
-                    <div class="font-medium text-gray-900 dark:text-white">{member.fullname}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">{member.email}</div>
-                    <div class="text-xs text-gray-400 dark:text-gray-500">{member.username}</div>
+                  <div class="min-w-0 max-w-[280px]">
+                    <div
+                      class="font-medium text-gray-900 dark:text-white truncate"
+                      title={member.fullname}
+                    >
+                      {truncate_text(member.fullname || "-", 32)}
+                    </div>
+                    <div
+                      class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                      title={member.email}
+                    >
+                      {truncate_text(member.email || "-", 40)}
+                    </div>
+                    <div
+                      class="text-xs text-gray-400 dark:text-gray-500 truncate"
+                      title={member.username}
+                    >
+                      {member.username}
+                    </div>
                   </div>
                 </div>
               </:col>
@@ -469,7 +493,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   {member_status(member)}
                 </span>
               </:col>
-
+              <:col :let={member} label={gettext("Verified")}>
+                <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{verified_badge_class(member)}"}>
+                  {verified_status(member)}
+                </span>
+              </:col>
               <:col :let={member} label={gettext("Registration Date")}>
                 {if member.registration_date,
                   do: Calendar.strftime(member.registration_date, "%b %d, %Y"),
@@ -716,6 +744,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     [
       member.fullname || "",
       member.email || "",
+      verified_status(member),
       member.username || "",
       display_identifier(member),
       (member.user_type && member.user_type.name) || "",
@@ -757,6 +786,18 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     end
   end
 
+  defp verified_status(member) do
+    if member.confirmed_at, do: gettext("Verified"), else: gettext("Not Verified")
+  end
+
+  defp verified_badge_class(member) do
+    if member.confirmed_at do
+      "bg-green-100 text-green-800"
+    else
+      "bg-gray-100 text-gray-800"
+    end
+  end
+
   defp display_identifier(member) do
     case member.identifier do
       %Decimal{} = decimal -> Decimal.to_string(decimal)
@@ -765,6 +806,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       _ -> "-"
     end
   end
+
+  defp truncate_text(text, max_length) when is_binary(text) and byte_size(text) > max_length do
+    text
+    |> String.slice(0, max_length)
+    |> Kernel.<>("...")
+  end
+
+  defp truncate_text(text, _max_length), do: text
 
   defp build_count_query(socket) do
     base_query = from(u in User)

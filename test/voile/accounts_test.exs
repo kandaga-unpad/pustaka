@@ -73,7 +73,7 @@ defmodule Voile.AccountsTest do
   describe "get_user!/1" do
     test "raises if id is invalid" do
       assert_raise Ecto.NoResultsError, fn ->
-        Accounts.get_user!(-1)
+        Accounts.get_user!(Ecto.UUID.generate())
       end
     end
 
@@ -134,6 +134,7 @@ defmodule Voile.AccountsTest do
 
       attrs =
         valid_user_attributes(email: email)
+        |> Enum.into(%{}, fn {k, v} -> {to_string(k), v} end)
         |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
 
       assert {:ok, %User{email: ^email}} = Accounts.register_user(attrs)
@@ -143,7 +144,7 @@ defmodule Voile.AccountsTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_registration(%User{})
-      assert changeset.required == [:password, :email]
+      assert changeset.required == [:username, :password, :email]
     end
 
     test "allows fields to be set" do
@@ -385,7 +386,7 @@ defmodule Voile.AccountsTest do
     end
 
     test "returns user by token", %{user: user, token: token} do
-      assert session_user = Accounts.get_user_by_session_token(token)
+      assert {session_user, _inserted_at} = Accounts.get_user_by_session_token(token)
       assert session_user.id == user.id
     end
 
@@ -556,17 +557,23 @@ defmodule Voile.AccountsTest do
     test "returns user auth data with roles for valid user_id" do
       node = Voile.SystemFixtures.node_fixture()
       user = user_fixture(%{node_id: node.id})
-      role = role_fixture(%{name: "staff"})
+      role_name = "staff_#{System.unique_integer([:positive])}"
+      role = role_fixture(%{name: role_name})
       user_role_assignment_fixture(%{user_id: user.id, role_id: role.id})
 
       assert {:ok, auth_data} = Accounts.get_user_with_roles(user.id)
       assert auth_data.user_id == user.id
       assert auth_data.node_id == node.id
-      assert Enum.any?(auth_data.roles, &(&1.name == "staff"))
+      assert Enum.any?(auth_data.roles, &(&1.name == role_name))
     end
 
     test "returns empty roles list when user has no roles assigned" do
-      user = user_fixture()
+      node = Voile.SystemFixtures.node_fixture()
+
+      user =
+        %User{}
+        |> User.registration_changeset(valid_user_attributes(%{node_id: node.id}))
+        |> Repo.insert!()
 
       assert {:ok, auth_data} = Accounts.get_user_with_roles(user.id)
       assert auth_data.roles == []
@@ -582,7 +589,8 @@ defmodule Voile.AccountsTest do
     test "returns full auth info for a valid session token" do
       node = Voile.SystemFixtures.node_fixture()
       user = user_fixture(%{node_id: node.id})
-      role = role_fixture(%{name: "admin"})
+      role_name = "admin_#{System.unique_integer([:positive])}"
+      role = role_fixture(%{name: role_name})
       user_role_assignment_fixture(%{user_id: user.id, role_id: role.id})
       token = Accounts.generate_user_session_token(user)
 
@@ -591,7 +599,7 @@ defmodule Voile.AccountsTest do
       assert auth_info.node_id == node.id
       assert is_binary(auth_info.node_name)
       assert is_binary(auth_info.node_abbr)
-      assert Enum.any?(auth_info.roles, &(&1.name == "admin"))
+      assert Enum.any?(auth_info.roles, &(&1.name == role_name))
     end
 
     test "returns :invalid_token for a garbage token" do
@@ -609,7 +617,11 @@ defmodule Voile.AccountsTest do
     end
 
     test "returns :node_not_found when user has no node_id" do
-      user = user_fixture()
+      user =
+        %User{}
+        |> User.registration_changeset(valid_user_attributes(%{node_id: nil}))
+        |> Repo.insert!()
+
       token = Accounts.generate_user_session_token(user)
 
       assert {:error, :node_not_found} = Accounts.get_user_session_auth(token)
