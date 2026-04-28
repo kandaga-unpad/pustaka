@@ -142,7 +142,7 @@ defmodule Voile.MixProject do
       {:xml_builder, "~> 2.2"},
 
       # Voile Plugin
-      {:voile_locker_luggage, "~> 0.1.0"},
+      {:voile_locker_luggage, "~> 0.2.2"},
 
       # OpenTelemetry for Monitoring
       {:opentelemetry, "~> 1.7"},
