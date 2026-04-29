@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.23"
+  @version "0.1.24"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
