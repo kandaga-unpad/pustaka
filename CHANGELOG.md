@@ -7,13 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.24] - 2026-04-29
+
+### Added
+
+- Member management: add a `Generate` button beside the identifier input on the new member form so staff can populate or regenerate member identifiers instantly.
+- Collection import: remove the hard row limit in preview and import the full deduplicated CSV set, with live progress updates and chunked background processing.
+- Circulation legacy item lookup: show a selection modal when multiple active items share the same legacy item code.
+
+### Fixed
+
+- Plugin management UI now only shows the `Update` button to super admins.
+- Legacy item selection modal now correctly routes to the different-node warning state and avoids unknown modal rendering.
+
 ## [0.1.23] - 2026-04-28
 
 ### Added
 
 - Bumped release version to `0.1.23`.
 - New Translation - Added Indonesian translations for the clearance letter feature, including new keys for the letter body, closing text, and various UI elements on the clearance pages.
-
 
 ### Fixed
 
@@ -388,6 +400,8 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.24]: https://github.com/curatorian/voile/compare/v0.1.23...v0.1.24
+[0.1.23]: https://github.com/curatorian/voile/compare/v0.1.22...v0.1.23
 [0.1.19]: https://github.com/curatorian/voile/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/curatorian/voile/compare/v0.1.15...v0.1.18
 [0.1.15]: https://github.com/curatorian/voile/compare/v0.1.14...v0.1.15

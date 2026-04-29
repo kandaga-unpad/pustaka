@@ -63,12 +63,26 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           <.input field={@form[:fullname]} type="text" label={gettext("Full Name")} required />
           <.input field={@form[:email]} type="email" label={gettext("Email")} required />
           <.input field={@form[:username]} type="text" label={gettext("Username")} required />
-          <.input
-            field={@form[:identifier]}
-            type="text"
-            label={gettext("Member Identifier")}
-            placeholder={gettext("Member ID or Student Number")}
-          />
+          <div>
+            <div class="flex items-center justify-center gap-2">
+              <div class="flex-1">
+                <.input
+                  field={@form[:identifier]}
+                  type="text"
+                  label={gettext("Member Identifier")}
+                  placeholder={gettext("Member ID or Student Number")}
+                />
+              </div>
+              <button
+                type="button"
+                phx-click="generate_identifier"
+                class="flex items-center gap-2 text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded p-3"
+              >
+                <.icon name="hero-arrow-path" class="w-4 h-4" />
+                {gettext("Generate")}
+              </button>
+            </div>
+          </div>
 
           <%= if @action == :new do %>
             <.input field={@form[:password]} type="password" label={gettext("Password")} required />

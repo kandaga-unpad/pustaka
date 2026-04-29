@@ -176,6 +176,15 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
      |> assign(form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
+  def handle_event("generate_identifier", _params, socket) do
+    generated_identifier = generate_member_identifier()
+    form_params = Map.put(socket.assigns.form.params || %{}, "identifier", generated_identifier)
+    changeset = User.changeset(socket.assigns.member, form_params)
+
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  end
+
   def handle_event("save", %{"user" => user_params}, socket) do
     save_member(socket, socket.assigns.live_action, user_params)
   end
@@ -713,6 +722,12 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
 
     # Order by creation date (newest first)
     from(u in query, order_by: [desc: u.inserted_at])
+  end
+
+  defp generate_member_identifier do
+    timestamp = System.system_time(:second)
+    random = :rand.uniform(9999) |> Integer.to_string() |> String.pad_leading(4, "0")
+    "#{timestamp}#{random}"
   end
 
   defp load_filters(socket) do
