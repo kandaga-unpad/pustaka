@@ -85,6 +85,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
        |> assign(:import_node_id, import_node_id)
        |> assign(:is_super_admin, is_super_admin)
        |> assign(:export_loading, false)
+       |> assign(:import_loading, false)
+       |> assign(:import_progress, 0)
+       |> assign(:import_total, 0)
+       |> assign(:pending_import_rows, [])
        |> assign(:csv_headers, @csv_headers)
        |> assign(:max_rows, @max_rows)
        |> allow_upload(:csv_file,
@@ -145,7 +149,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
      |> assign(:dedup_count, 0)
      |> assign(:skipped_count, 0)
      |> assign(:import_results, [])
-     |> assign(:import_errors, [])}
+     |> assign(:import_errors, [])
+     |> assign(:import_loading, false)
+     |> assign(:import_progress, 0)
+     |> assign(:import_total, 0)
+     |> assign(:pending_import_rows, [])}
   end
 
   @impl true
@@ -153,7 +161,6 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
     rows = socket.assigns.parsed_rows
     user = socket.assigns.current_scope.user
 
-    # Enforce node scoping: non-super-admins can only import to their own node
     import_node_id =
       if socket.assigns.is_super_admin do
         socket.assigns.import_node_id
@@ -165,21 +172,22 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
     properties = load_properties_map()
     rc_map = load_resource_class_map()
 
-    {results, errors, skipped} =
-      Enum.reduce(rows, {[], [], 0}, fn row, {ok_acc, err_acc, skip_acc} ->
-        case import_row(row, user, properties, rc_map, node) do
-          {:ok, col} -> {[col | ok_acc], err_acc, skip_acc}
-          {:skipped, _col} -> {ok_acc, err_acc, skip_acc + 1}
-          {:error, reason} -> {ok_acc, [reason | err_acc], skip_acc}
-        end
-      end)
+    socket =
+      socket
+      |> assign(:import_loading, true)
+      |> assign(:import_progress, 0)
+      |> assign(:import_total, length(rows))
+      |> assign(:import_results, [])
+      |> assign(:import_errors, [])
+      |> assign(:skipped_count, 0)
+      |> assign(:pending_import_rows, rows)
+      |> assign(:import_node, node)
+      |> assign(:import_properties, properties)
+      |> assign(:import_rc_map, rc_map)
 
-    {:noreply,
-     socket
-     |> assign(:step, :done)
-     |> assign(:import_results, Enum.reverse(results))
-     |> assign(:import_errors, Enum.reverse(errors))
-     |> assign(:skipped_count, skipped)}
+    Process.send_after(self(), :perform_import_chunk, 50)
+
+    {:noreply, socket}
   end
 
   # ── Export events ─────────────────────────────────────────────────────────────
@@ -221,6 +229,45 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
        content: csv_content,
        mime_type: "text/csv"
      })}
+  end
+
+  @impl true
+  def handle_info(:perform_import_chunk, socket) do
+    rows = socket.assigns.pending_import_rows || []
+    user = socket.assigns.current_scope.user
+    node = socket.assigns.import_node
+    properties = socket.assigns.import_properties
+    rc_map = socket.assigns.import_rc_map
+
+    {chunk, rest} = Enum.split(rows, 50)
+
+    {results_chunk, errors_chunk, skipped_chunk} =
+      Enum.reduce(chunk, {[], [], 0}, fn row, {ok_acc, err_acc, skip_acc} ->
+        case import_row(row, user, properties, rc_map, node) do
+          {:ok, col} -> {[col | ok_acc], err_acc, skip_acc}
+          {:skipped, _col} -> {ok_acc, err_acc, skip_acc + 1}
+          {:error, reason} -> {ok_acc, [reason | err_acc], skip_acc}
+        end
+      end)
+
+    socket =
+      socket
+      |> assign(:pending_import_rows, rest)
+      |> assign(:import_progress, socket.assigns.import_progress + length(chunk))
+      |> assign(:import_results, socket.assigns.import_results ++ Enum.reverse(results_chunk))
+      |> assign(:import_errors, socket.assigns.import_errors ++ Enum.reverse(errors_chunk))
+      |> assign(:skipped_count, socket.assigns.skipped_count + skipped_chunk)
+
+    if rest != [] do
+      Process.send_after(self(), :perform_import_chunk, 50)
+      {:noreply, socket}
+    else
+      {:noreply,
+       socket
+       |> assign(:import_loading, false)
+       |> assign(:step, :done)
+       |> assign(:pending_import_rows, [])}
+    end
   end
 
   # ── Render ────────────────────────────────────────────────────────────────────
@@ -366,7 +413,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 </h2>
                 <div class="flex items-center gap-3">
                   <span class="text-xs text-gray-500">
-                    {length(@parsed_rows)} / {@row_count} rows (max {@max_rows})
+                    {length(@parsed_rows)} deduplicated rows / {@row_count} total rows
                   </span>
                   <%= if @dedup_count > 0 do %>
                     <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
@@ -416,12 +463,17 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
               <div class="flex gap-3">
                 <button
                   phx-click="confirm_import"
-                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={@import_loading}
+                  class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <.icon name="hero-arrow-up-tray" class="size-4" />
-                  Import {length(@parsed_rows)} {if length(@parsed_rows) == 1,
-                    do: "Collection",
-                    else: "Collections"}
+                  <%= if @import_loading do %>
+                    <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Importing…
+                  <% else %>
+                    <.icon name="hero-arrow-up-tray" class="size-4" />
+                    Import {length(@parsed_rows)} {if length(@parsed_rows) == 1,
+                      do: "Collection",
+                      else: "Collections"}
+                  <% end %>
                 </button>
                 <button
                   phx-click="back_to_upload"
@@ -430,6 +482,20 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                   Back
                 </button>
               </div>
+
+              <%= if @import_loading do %>
+                <div class="space-y-2 pt-3">
+                  <div class="text-xs text-gray-500">
+                    Importing {@import_progress} / {@import_total} collections...
+                  </div>
+                  <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div
+                      class="h-full rounded-full bg-blue-600"
+                      style={"width: #{if(@import_total > 0, do: div(@import_progress * 100, @import_total), else: 0)}%"}
+                    />
+                  </div>
+                </div>
+              <% end %>
             </div>
           <% end %>
 
@@ -651,14 +717,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
         [headers | data_rows] ->
           parsed_all = Enum.map(data_rows, &(Enum.zip(headers, &1) |> Map.new()))
           row_count = length(parsed_all)
-          capped = Enum.take(parsed_all, @max_rows)
-          {deduped, dedup_count} = deduplicate_rows(capped)
+          {deduped, dedup_count} = deduplicate_rows(parsed_all)
 
-          parse_error =
-            if row_count > @max_rows,
-              do:
-                "Your CSV has #{row_count} rows; only the first #{@max_rows} will be imported. Split the file for the rest.",
-              else: nil
+          parse_error = nil
 
           {:noreply,
            socket

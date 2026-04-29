@@ -289,14 +289,16 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                         </button>
                       <% end %>
 
-                      <%= if plugin.status in [:active, :installed, :inactive, :error] do %>
-                        <button
-                          phx-click="update"
-                          phx-value-module={plugin.module}
-                          class="px-3 py-2 text-sm font-medium text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-900/30 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50"
-                        >
-                          {gettext("Update")}
-                        </button>
+                      <%= if @is_super_admin do %>
+                        <%= if plugin.status in [:active, :installed, :inactive, :error] do %>
+                          <button
+                            phx-click="update"
+                            phx-value-module={plugin.module}
+                            class="px-3 py-2 text-sm font-medium text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-900/30 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50"
+                          >
+                            {gettext("Update")}
+                          </button>
+                        <% end %>
                       <% end %>
 
                       <%= if plugin.status in [:installed, :inactive, :error] do %>

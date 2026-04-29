@@ -101,39 +101,35 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       if item_code == "" do
         {:noreply, put_flash(socket, :error, "Please enter an item code")}
       else
-        case find_item_by_code(item_code, socket.assigns.use_legacy_code) do
-          nil ->
-            code_type =
-              if socket.assigns.use_legacy_code, do: "legacy item code", else: "item code"
+        if socket.assigns.use_legacy_code do
+          items = find_items_by_legacy_code(item_code)
 
-            {:noreply,
-             put_flash(socket, :error, "Item not found with #{code_type}: #{item_code}")}
+          case items do
+            [] ->
+              {:noreply,
+               put_flash(socket, :error, "Item not found with legacy item code: #{item_code}")}
 
-          item ->
-            # Check if item is already in temp_loans
-            if Enum.any?(socket.assigns.temp_loans, fn loan -> loan.item.id == item.id end) do
-              {:noreply, put_flash(socket, :error, "Item already added to loan list")}
-            else
-              # Check if item is from different unit location
-              if socket.assigns.temp_loans != [] &&
-                   has_different_unit?(item, socket.assigns.temp_loans) do
-                # Show warning modal
-                socket =
-                  socket
-                  |> assign(:show_modal, "different_unit_warning")
-                  |> assign(:pending_item, item)
-                  |> assign(:modal_data, %{
-                    item: item,
-                    existing_units: get_existing_units(socket.assigns.temp_loans)
-                  })
+            [item] ->
+              socket = handle_item_selection(socket, item)
+              {:noreply, socket}
 
-                {:noreply, socket}
-              else
-                # Add to temporary loans directly
-                socket = add_item_to_temp_loans(socket, item)
-                {:noreply, socket}
-              end
-            end
+            items ->
+              socket =
+                socket
+                |> assign(:show_modal, "legacy_item_choice")
+                |> assign(:modal_data, %{items: items, item_code: item_code})
+
+              {:noreply, socket}
+          end
+        else
+          case find_item_by_code(item_code, false) do
+            nil ->
+              {:noreply, put_flash(socket, :error, "Item not found with item code: #{item_code}")}
+
+            item ->
+              socket = handle_item_selection(socket, item)
+              {:noreply, socket}
+          end
         end
       end
     end
@@ -173,6 +169,25 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
   end
 
   # Current Loans tab events
+  def handle_event("select_legacy_item", %{"item_id" => item_id}, socket) do
+    item =
+      Item
+      |> where([i], i.id == ^item_id)
+      |> preload([:node, collection: :mst_creator])
+      |> Repo.one()
+
+    socket =
+      if item do
+        socket
+        |> assign(:show_modal, nil)
+        |> handle_item_selection(item)
+      else
+        put_flash(socket, :error, "Selected item not found. Please try again.")
+      end
+
+    {:noreply, socket}
+  end
+
   def handle_event("show_return_modal", %{"transaction_id" => transaction_id}, socket) do
     unless Authorization.can?(socket, "circulation.return") do
       {:noreply, put_flash(socket, :error, "You don't have permission to return items")}
@@ -785,12 +800,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     item_code = String.trim(item_code || "")
 
     if use_legacy_code do
-      Item
-      |> where([i], i.legacy_item_code == ^item_code)
-      |> where([i], i.status == "active" and i.availability == "available")
-      |> preload([:collection, :node])
-      |> limit(1)
-      |> Repo.one()
+      item_code
+      |> find_items_by_legacy_code()
+      |> List.first()
     else
       query =
         Item
@@ -813,9 +825,38 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     end
   end
 
+  defp find_items_by_legacy_code(item_code) do
+    Item
+    |> where([i], i.legacy_item_code == ^item_code)
+    |> where([i], i.status == "active" and i.availability == "available")
+    |> preload([:node, collection: :mst_creator])
+    |> Repo.all()
+  end
+
   defp load_current_loans(member_id) do
     Circulation.list_member_active_transactions(member_id)
     |> Repo.preload(item: :node)
+  end
+
+  defp handle_item_selection(socket, item) do
+    if Enum.any?(socket.assigns.temp_loans, fn loan -> loan.item.id == item.id end) do
+      put_flash(socket, :error, "Item already added to loan list")
+    else
+      if socket.assigns.temp_loans != [] && has_different_unit?(item, socket.assigns.temp_loans) do
+        socket =
+          socket
+          |> assign(:show_modal, "different_unit_warning")
+          |> assign(:pending_item, item)
+          |> assign(:modal_data, %{
+            item: item,
+            existing_units: get_existing_units(socket.assigns.temp_loans)
+          })
+
+        socket
+      else
+        add_item_to_temp_loans(socket, item)
+      end
+    end
   end
 
   defp load_unpaid_fines(member_id) do
@@ -1921,6 +1962,76 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </div>
             </form>
           </div>
+        <% @show_modal == "legacy_item_choice" -> %>
+          <div>
+            <h3 class="text-lg font-semibold mb-4">Choose the matching item</h3>
+
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Multiple active items were found for this legacy item code. Please select the exact item to add to the loan.
+            </p>
+
+            <div class="space-y-3">
+              <div class="grid gap-4">
+                <div class="grid grid-cols-4 gap-4 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                  <div>{gettext("Thumbnail")}</div>
+                  <div>{gettext("Title")}</div>
+                  <div>{gettext("Creator")}</div>
+                  <div>{gettext("Item Node")}</div>
+                </div>
+                <%= for item <- @modal_data.items do %>
+                  <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
+                    <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
+                      <div class="h-16 w-16 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+                        <%= if item.collection.thumbnail && item.collection.thumbnail != "" do %>
+                          <img
+                            src={item.collection.thumbnail}
+                            alt={item.collection.title || "thumbnail"}
+                            class="h-full w-full object-cover"
+                          />
+                        <% else %>
+                          <div class="h-full w-full flex items-center justify-center text-gray-500 dark:text-gray-400 text-[10px] uppercase tracking-wider">
+                            No Image
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <div class="space-y-2">
+                        <div class="text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                          {item.collection.title}
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                          {(item.collection.mst_creator && item.collection.mst_creator.creator_name) ||
+                            "-"}
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                          {if item.node && item.node.name,
+                            do: item.node.name,
+                            else: to_string(item.unit_id)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3 flex justify-end">
+                      <.button
+                        type="button"
+                        phx-click="select_legacy_item"
+                        phx-value-item_id={item.id}
+                        class="text-sm px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                      >
+                        {gettext("Select")}
+                      </.button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="flex justify-end">
+                <.button type="button" phx-click="close_modal" class="cancel-btn">
+                  {gettext("Cancel")}
+                </.button>
+              </div>
+            </div>
+          </div>
         <% @show_modal == "waive_fine" -> %>
           <div>
             <h3 class="text-lg font-semibold mb-4">{gettext("Waive Fine")}</h3>
@@ -2079,7 +2190,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </div>
             </form>
           </div>
-        <% @show_modal == "different_unit_warning_temp" -> %>
+        <% @show_modal in ["different_unit_warning", "different_unit_warning_temp"] -> %>
           <div>
             <div class="flex items-center gap-3 mb-4">
               <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
