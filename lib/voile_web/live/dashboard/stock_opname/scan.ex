@@ -235,72 +235,200 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       </div>
       <%!-- Duplicate Items Modal --%>
       <.modal
+        :if={@duplicate_items != []}
         id="duplicate-items-modal"
-        show={@duplicate_items != []}
+        show={true}
         on_cancel={JS.push("dismiss_duplicate_modal")}
       >
-        <div class="flex items-center gap-3 mb-4">
-          <.icon name="hero-exclamation-circle" class="w-6 h-6 text-yellow-500 flex-shrink-0" />
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Multiple Items Found
-          </h3>
+        <div class="mb-5">
+          <div class="flex items-center gap-3 mb-1">
+            <.icon name="hero-exclamation-triangle" class="w-6 h-6 text-amber-500 flex-shrink-0" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+              Multiple Items Found
+            </h3>
+          </div>
+
+          <p class="text-sm text-gray-500 dark:text-gray-400 ml-9">
+            {@duplicate_items |> length()} items matched your search. Review the details and select the correct item, or mark duplicates for discard.
+          </p>
         </div>
 
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          The search matched {@duplicate_items |> length()} items. Select the one you want to check.
-        </p>
-
-        <div class="space-y-2 max-h-96 overflow-y-auto">
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
           <div
             :for={opname_item <- @duplicate_items}
-            class="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent rounded-lg"
+            class="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate">
+            <%!-- Card Header --%>
+            <div class="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-700/60 border-b border-gray-200 dark:border-gray-600">
+              <span class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[60%]">
+                {opname_item.item.item_code}
+              </span>
+
+              <div class="flex items-center gap-2">
+                <span class={[
+                  "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
+                  case opname_item.collection.status do
+                    "published" ->
+                      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+
+                    "draft" ->
+                      "bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
+
+                    "archived" ->
+                      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400"
+
+                    _ ->
+                      "bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                  end
+                ]}>
+                  {String.capitalize(opname_item.collection.status || "unknown")}
+                </span>
+                <.item_check_badge status={opname_item.check_status} />
+              </div>
+            </div>
+            <%!-- Card Body --%>
+            <div class="flex gap-3 p-4">
+              <%!-- Thumbnail --%>
+              <div class="flex-shrink-0">
+                <%= if opname_item.collection.thumbnail do %>
+                  <img
+                    src={opname_item.collection.thumbnail}
+                    alt="Cover"
+                    class="w-16 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                  />
+                <% else %>
+                  <div class="w-16 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <.icon name="hero-book-open" class="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                  </div>
+                <% end %>
+              </div>
+              <%!-- Main Info --%>
+              <div class="flex-1 min-w-0 space-y-1.5">
+                <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 leading-snug">
                   {opname_item.collection.title}
                 </p>
 
-                <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  <span>Code: {opname_item.item.item_code}</span>
-                  <span>Inventory: {opname_item.item.inventory_code}</span>
-                  <span :if={opname_item.item.barcode}>Barcode: {opname_item.item.barcode}</span>
-                  <span :if={opname_item.item.legacy_item_code}>
-                    Legacy: {opname_item.item.legacy_item_code}
-                  </span>
+                <div
+                  :if={opname_item.collection.mst_creator}
+                  class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400"
+                >
+                  <.icon name="hero-user" class="w-3.5 h-3.5 flex-shrink-0" />
+                  <span class="truncate">{opname_item.collection.mst_creator.creator_name}</span>
+                </div>
+
+                <p
+                  :if={
+                    opname_item.collection.description &&
+                      opname_item.collection.description != ""
+                  }
+                  class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed"
+                >
+                  {if String.length(opname_item.collection.description) > 50,
+                    do: String.slice(opname_item.collection.description, 0, 50) <> "\u2026",
+                    else: opname_item.collection.description}
+                </p>
+
+                <div
+                  :if={opname_item.item.node}
+                  class="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400"
+                >
+                  <.icon name="hero-building-library" class="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{opname_item.item.node.name}</span>
                 </div>
               </div>
-              <.item_check_badge status={opname_item.check_status} />
             </div>
+            <%!-- Codes + Location Row --%>
+            <div class="px-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+              <div class="flex items-center gap-1">
+                <span class="font-medium text-gray-600 dark:text-gray-300">Inv:</span>
+                <span class="font-mono truncate">{opname_item.item.inventory_code}</span>
+              </div>
 
-            <div class="flex gap-2">
+              <div :if={opname_item.item.barcode} class="flex items-center gap-1">
+                <span class="font-medium text-gray-600 dark:text-gray-300">Barcode:</span>
+                <span class="font-mono truncate">{opname_item.item.barcode}</span>
+              </div>
+
+              <div :if={opname_item.item.legacy_item_code} class="flex items-center gap-1">
+                <span class="font-medium text-gray-600 dark:text-gray-300">Legacy:</span>
+                <span class="font-mono">{opname_item.item.legacy_item_code}</span>
+              </div>
+
+              <div :if={opname_item.item.item_location} class="flex items-center gap-1.5">
+                <.icon name="hero-map-pin" class="w-3 h-3 flex-shrink-0" />
+                <span class="truncate">{opname_item.item.item_location.location_name}</span>
+              </div>
+
+              <div
+                :if={
+                  is_nil(opname_item.item.item_location) &&
+                    opname_item.item.location && opname_item.item.location != ""
+                }
+                class="flex items-center gap-1.5"
+              >
+                <.icon name="hero-map-pin" class="w-3 h-3 flex-shrink-0" />
+                <span class="truncate">{opname_item.item.location}</span>
+              </div>
+            </div>
+            <%!-- Actions --%>
+            <div class="flex gap-2 px-4 pb-4">
               <button
                 type="button"
                 phx-click="select_item"
                 phx-value-id={opname_item.id}
-                class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors touch-manipulation"
+                disabled={opname_item.check_status == "checked"}
+                class={[
+                  "flex-1 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors touch-manipulation flex items-center justify-center gap-1.5",
+                  if(opname_item.check_status == "checked",
+                    do:
+                      "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed",
+                    else:
+                      "bg-blue-600 hover:bg-green-700 active:bg-green-800 text-white cursor-pointer"
+                  )
+                ]}
               >
-                Check this item
+                <.icon name="hero-check-circle" class="w-4 h-4" />
+                {if opname_item.check_status == "checked",
+                  do: "Already Checked",
+                  else: "Check this item"}
               </button>
 
               <button
                 type="button"
                 phx-click="mark_item_discard"
                 phx-value-id={opname_item.id}
-                class="px-3 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors touch-manipulation"
-                title="Mark this item as discarded (duplicate). Applied on session approval."
+                disabled={opname_item.check_status in ["checked", "discarded"]}
+                class={[
+                  "px-3 py-2.5 text-sm font-medium rounded-lg transition-colors touch-manipulation flex items-center gap-1.5 border",
+                  if(opname_item.check_status in ["checked", "discarded"],
+                    do:
+                      "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-600 cursor-not-allowed",
+                    else:
+                      "bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 cursor-pointer"
+                  )
+                ]}
+                title={
+                  cond do
+                    opname_item.check_status == "discarded" -> "Already marked for discard"
+                    opname_item.check_status == "checked" -> "Item already checked"
+                    true -> "Mark as discarded (duplicate). Applied on session approval."
+                  end
+                }
               >
                 <.icon name="hero-trash" class="w-4 h-4" />
+                <span class="hidden sm:inline text-xs">
+                  {if opname_item.check_status == "discarded", do: "Discarded", else: "Discard"}
+                </span>
               </button>
             </div>
           </div>
         </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
           <button
             type="button"
             phx-click="dismiss_duplicate_modal"
-            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+            class="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 font-medium rounded-lg transition-colors text-sm"
           >
             Cancel
           </button>
@@ -1024,13 +1152,22 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
                 |> assign(:recent_items_count, socket.assigns.recent_items_count + 1)
               end
 
+            # Update the discarded item's check_status in the list so the modal stays open
+            # and the button reflects the new state
+            updated_duplicate_items =
+              Enum.map(socket.assigns.duplicate_items, fn item ->
+                if item.id == opname_item.id,
+                  do: %{item | check_status: "discarded"},
+                  else: item
+              end)
+
             socket =
               socket
               |> assign(:session, session)
               |> assign(:librarian_progress, librarian_progress)
               |> assign(:current_item, nil)
               |> assign(:search_term, "")
-              |> assign(:duplicate_items, [])
+              |> assign(:duplicate_items, updated_duplicate_items)
               |> put_flash(:info, "Item marked for discard. Will be applied on session approval.")
 
             {:noreply, socket}
