@@ -240,8 +240,28 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Review do
             <div :if={@items_with_changes_page.total_count > 0} class="space-y-3">
               <div
                 :for={item <- @items_with_changes_page.items}
-                class="p-4 border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg"
+                class={[
+                  "p-4 border rounded-lg",
+                  if(item.changes["status"] == "discarded",
+                    do: "border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20",
+                    else:
+                      "border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20"
+                  )
+                ]}
               >
+                <%!-- Discard banner --%>
+                <div
+                  :if={item.changes["status"] == "discarded"}
+                  class="flex items-center gap-2 mb-3 px-3 py-2 bg-red-100 dark:bg-red-900/40 rounded-lg"
+                >
+                  <.icon
+                    name="hero-trash"
+                    class="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0"
+                  />
+                  <span class="text-sm font-semibold text-red-700 dark:text-red-400">
+                    Marked for Discard — will be set to <em>discarded</em> status on approval
+                  </span>
+                </div>
                 <div class="flex justify-between items-start mb-3">
                   <div>
                     <p class="font-medium text-gray-900 dark:text-gray-100">

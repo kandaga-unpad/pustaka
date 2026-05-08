@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.25] - 2026-05-08
+
+### Added
+
+- **Stock opname: mark duplicate item for discard from scan modal** — When scanning an item code that matches multiple opname items (e.g. a shared legacy code), the duplicate-selection modal now shows a trash button beside each item. Clicking it records `status → discarded` on the opname item via `check_item_with_collection/6`. The status change is applied to the catalog item automatically when the session is approved, setting it to `discarded` (an existing valid status). No schema migration required.
+- **Stock opname: discard badge in review page** — Items in the "Items with Changes" tab that carry a `status → discarded` change are now highlighted with a red border and a prominent "Marked for Discard" banner so reviewers can clearly identify them before approving the session.
+- **Stock opname: mark-for-discard tests** — Added 4 tests covering: (1) `check_item_with_collection` records the discard change correctly, (2) session counters are incremented, (3) `approve_session` writes `discarded` status to the catalog item, (4) only the flagged item is discarded while other items in the session remain unaffected.
+
+### Fixed
+
+- **Critical: Stock opname duplicate scan crash** — Scanning a legacy item code that matched multiple opname items raised `KeyError: key :item_code not found in %Voile.Schema.StockOpname.Item{}`. The duplicate-items template was accessing fields directly on the opname item struct instead of traversing the preloaded associations (`opname_item.item.item_code`, `opname_item.collection.title`, etc.).
+- **Stock opname: duplicate items inline banner replaced with modal** — The inline yellow banner shown when multiple items matched a scan has been replaced with a proper `<.modal>` dialog, including a "Cancel" button and a `dismiss_duplicate_modal` event handler that clears the search term.
+
+---
+
 ## [0.1.24] - 2026-04-29
 
 ### Added
@@ -400,6 +415,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.25]: https://github.com/curatorian/voile/compare/v0.1.24...v0.1.25
 [0.1.24]: https://github.com/curatorian/voile/compare/v0.1.23...v0.1.24
 [0.1.23]: https://github.com/curatorian/voile/compare/v0.1.22...v0.1.23
 [0.1.19]: https://github.com/curatorian/voile/compare/v0.1.18...v0.1.19

@@ -233,46 +233,79 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           </p>
         </form>
       </div>
-      <%!-- Duplicate Results (if multiple items found) --%>
-      <div
-        :if={@duplicate_items != []}
-        class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-6 mb-4 sm:mb-6"
+      <%!-- Duplicate Items Modal --%>
+      <.modal
+        id="duplicate-items-modal"
+        show={@duplicate_items != []}
+        on_cancel={JS.push("dismiss_duplicate_modal")}
       >
-        <h3 class="text-base sm:text-lg font-semibold text-yellow-900 dark:text-yellow-300 mb-3 sm:mb-4">
-          Multiple Items - Select One
-        </h3>
+        <div class="flex items-center gap-3 mb-4">
+          <.icon name="hero-exclamation-circle" class="w-6 h-6 text-yellow-500 flex-shrink-0" />
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Multiple Items Found
+          </h3>
+        </div>
 
-        <div class="space-y-2 sm:space-y-3">
-          <button
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          The search matched {@duplicate_items |> length()} items. Select the one you want to check.
+        </p>
+
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+          <div
             :for={opname_item <- @duplicate_items}
-            type="button"
-            phx-click="select_item"
-            phx-value-id={opname_item.id}
-            class="w-full text-left p-3 sm:p-4 bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-600 hover:border-yellow-500 active:border-yellow-600 dark:hover:border-yellow-500 rounded-lg transition-colors touch-manipulation"
+            class="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 border-2 border-transparent rounded-lg"
           >
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-              <div class="flex-1">
-                <p class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">
-                  {opname_item.item_code}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate">
+                  {opname_item.collection.title}
                 </p>
 
-                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                  {opname_item.collection_title}
-                </p>
-
-                <div class="flex flex-wrap gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-500">
-                  <span>Inventory: {opname_item.inventory_code}</span>
-                  <span :if={opname_item.barcode}>Barcode: {opname_item.barcode}</span>
-                  <span :if={opname_item.legacy_item_code}>
-                    Legacy: {opname_item.legacy_item_code}
+                <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <span>Code: {opname_item.item.item_code}</span>
+                  <span>Inventory: {opname_item.item.inventory_code}</span>
+                  <span :if={opname_item.item.barcode}>Barcode: {opname_item.item.barcode}</span>
+                  <span :if={opname_item.item.legacy_item_code}>
+                    Legacy: {opname_item.item.legacy_item_code}
                   </span>
                 </div>
               </div>
               <.item_check_badge status={opname_item.check_status} />
             </div>
+
+            <div class="flex gap-2">
+              <button
+                type="button"
+                phx-click="select_item"
+                phx-value-id={opname_item.id}
+                class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors touch-manipulation"
+              >
+                Check this item
+              </button>
+
+              <button
+                type="button"
+                phx-click="mark_item_discard"
+                phx-value-id={opname_item.id}
+                class="px-3 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-400 text-sm font-medium rounded-lg transition-colors touch-manipulation"
+                title="Mark this item as discarded (duplicate). Applied on session approval."
+              >
+                <.icon name="hero-trash" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <button
+            type="button"
+            phx-click="dismiss_duplicate_modal"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+          >
+            Cancel
           </button>
         </div>
-      </div>
+      </.modal>
       <%!-- Current Item Detail Card --%>
       <div
         :if={@current_item}
@@ -923,7 +956,6 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
             socket
             |> assign(:duplicate_items, items)
             |> assign(:search_term, "")
-            |> put_flash(:info, "Multiple items found. Please select one.")
         end
 
       {:noreply, socket}
@@ -940,6 +972,73 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
       |> assign(:duplicate_items, [])
 
     {:noreply, socket}
+  end
+
+  def handle_event("dismiss_duplicate_modal", _params, socket) do
+    socket =
+      socket
+      |> assign(:duplicate_items, [])
+      |> assign(:search_term, "")
+
+    {:noreply, socket}
+  end
+
+  def handle_event("mark_item_discard", %{"id" => id}, socket) do
+    opname_item =
+      Enum.find(socket.assigns.duplicate_items, fn item -> item.id == id end)
+
+    case opname_item do
+      nil ->
+        {:noreply, put_flash(socket, :error, "Item not found")}
+
+      opname_item ->
+        case StockOpname.check_item_with_collection(
+               socket.assigns.session,
+               opname_item.id,
+               %{"status" => "discarded"},
+               %{},
+               nil,
+               socket.assigns.current_user
+             ) do
+          {:ok, checked_item} ->
+            session = StockOpname.get_session_without_items!(socket.assigns.session.id)
+
+            {:ok, librarian_progress} =
+              StockOpname.get_librarian_progress(session, socket.assigns.current_user)
+
+            socket =
+              if socket.assigns.recent_items_count >= 10 do
+                recent =
+                  StockOpname.list_recent_checked_items_by_user(
+                    session,
+                    socket.assigns.current_user,
+                    9
+                  )
+
+                socket
+                |> stream(:recent_items, [checked_item | recent], reset: true)
+                |> assign(:recent_items_count, 10)
+              else
+                socket
+                |> stream_insert(:recent_items, checked_item, at: 0)
+                |> assign(:recent_items_count, socket.assigns.recent_items_count + 1)
+              end
+
+            socket =
+              socket
+              |> assign(:session, session)
+              |> assign(:librarian_progress, librarian_progress)
+              |> assign(:current_item, nil)
+              |> assign(:search_term, "")
+              |> assign(:duplicate_items, [])
+              |> put_flash(:info, "Item marked for discard. Will be applied on session approval.")
+
+            {:noreply, socket}
+
+          {:error, _} ->
+            {:noreply, put_flash(socket, :error, "Failed to mark item for discard")}
+        end
+    end
   end
 
   def handle_event("update_field", params, socket) do
