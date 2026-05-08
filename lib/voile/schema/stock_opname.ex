@@ -723,7 +723,10 @@ defmodule Voile.Schema.StockOpname do
         i.barcode == ^search_term or
           i.legacy_item_code == ^search_term or
           i.item_code == ^search_term,
-      preload: [:item, :collection]
+      preload: [
+        collection: [:mst_creator, :node],
+        item: [:node, :item_location]
+      ]
     )
     |> Repo.all()
   end

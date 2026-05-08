@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.26] - 2026-05-08
+
+### Fixed
+
+- **Stock opname: duplicate modal stays open after discard** — Clicking "Discard" on an item in the duplicate-selection modal no longer closes the modal. The discarded item's button immediately switches to a disabled "Discarded" state so the librarian can continue selecting the correct item (or scan again) without re-triggering the search. The modal now only closes when the librarian clicks "Check this item" or the "Cancel" button.
+- **Stock opname: duplicate modal Cancel button color** — The Cancel button in the duplicate-selection modal footer was styled with an incorrect yellow Tailwind class (`bg-yellow-100`) and contained a typo (`dark:bg-y-700`). Corrected to neutral gray (`bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600`) so it is clearly readable on both light and dark backgrounds without conflicting with warning-colored elements.
+
+---
+
 ## [0.1.25] - 2026-05-08
 
 ### Added
@@ -415,6 +424,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.26]: https://github.com/curatorian/voile/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/curatorian/voile/compare/v0.1.24...v0.1.25
 [0.1.24]: https://github.com/curatorian/voile/compare/v0.1.23...v0.1.24
 [0.1.23]: https://github.com/curatorian/voile/compare/v0.1.22...v0.1.23
