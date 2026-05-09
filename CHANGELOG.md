@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.27] - 2026-05-09
+
+### Fixed
+
+- Explicitly configured `PromEx.Plugins.Ecto` with `repos: [Voile.Repo]` to prevent startup failure when the host environment does not expose the repo config.
+- Guarded optional `VoileLockerLuggage.Lockers` calls behind `Code.ensure_loaded?/1` and `function_exported?/3`, so the app no longer emits warnings or crashes when the locker plugin is not installed.
+
+---
+
 ## [0.1.26] - 2026-05-08
 
 ### Fixed
@@ -424,6 +433,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.27]: https://github.com/curatorian/voile/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/curatorian/voile/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/curatorian/voile/compare/v0.1.24...v0.1.25
 [0.1.24]: https://github.com/curatorian/voile/compare/v0.1.23...v0.1.24

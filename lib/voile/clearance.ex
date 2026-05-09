@@ -118,14 +118,21 @@ defmodule Voile.Clearance do
   end
 
   defp has_active_locker?(identifier) do
-    nodes = System.list_nodes()
+    module = Module.safe_concat(VoileLockerLuggage, Lockers)
 
-    Enum.any?(nodes, fn node ->
-      case VoileLockerLuggage.Lockers.get_active_session_for_visitor(node.id, identifier) do
-        nil -> false
-        _session -> true
-      end
-    end)
+    if Code.ensure_loaded?(module) and
+         function_exported?(module, :get_active_session_for_visitor, 2) do
+      nodes = System.list_nodes()
+
+      Enum.any?(nodes, fn node ->
+        case apply(module, :get_active_session_for_visitor, [node.id, identifier]) do
+          nil -> false
+          _session -> true
+        end
+      end)
+    else
+      false
+    end
   end
 
   # ---------------------------------------------------------------------------
