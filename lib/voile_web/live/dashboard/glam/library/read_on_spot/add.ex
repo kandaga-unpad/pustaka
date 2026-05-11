@@ -30,6 +30,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         []
       end
 
+    selected_node_name =
+      if is_super_admin do
+        find_node_name(nodes, default_node_id)
+      else
+        current_user.node && current_user.node.name
+      end
+
     socket =
       socket
       |> assign(:page_title, "Read On Spot — Scan Items")
@@ -37,7 +44,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       |> assign(:current_user, current_user)
       |> assign(:nodes, nodes)
       |> assign(:selected_node_id, default_node_id)
-      |> assign(:selected_node_name, find_node_name(nodes, default_node_id))
+      |> assign(:selected_node_name, selected_node_name)
       |> assign(:locations, locations)
       |> assign(:selected_location_id, nil)
       |> assign(:selected_location_name, nil)
@@ -373,8 +380,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
   end
 
   @impl true
-  def handle_event("select_node", %{"node_id" => node_id} = params, socket) do
-    node_id = if node_id == "", do: nil, else: String.to_integer(node_id)
+  def handle_event("select_node", params, socket) do
+    node_id =
+      case Map.fetch(params, "node_id") do
+        {:ok, ""} -> nil
+        {:ok, value} -> String.to_integer(value)
+        :error -> socket.assigns.selected_node_id
+      end
 
     location_id =
       if params["location_id"] in [nil, ""],

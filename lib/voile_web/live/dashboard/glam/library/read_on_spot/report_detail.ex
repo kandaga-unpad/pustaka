@@ -146,7 +146,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
                 "border-t border-gray-100 dark:border-gray-700",
                 if(rem(idx, 2) == 0,
                   do: "bg-white dark:bg-gray-800",
-                  else: "bg-gray-50 dark:bg-gray-750"
+                  else: "bg-gray-50 dark:bg-gray-700"
                 )
               ]}>
                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">

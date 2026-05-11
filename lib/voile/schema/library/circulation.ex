@@ -1591,7 +1591,12 @@ defmodule Voile.Schema.Library.Circulation do
   def list_member_active_transactions(member_id) do
     Transaction
     |> where([t], t.member_id == ^member_id and t.status == "active")
-    |> preload(member: [], librarian: [], item: [:collection], collection: [])
+    |> preload(
+      member: [],
+      librarian: [],
+      item: [:collection, :item_location, :node],
+      collection: []
+    )
     |> order_by([t], desc: t.transaction_date)
     |> Repo.all()
   end
@@ -1606,7 +1611,12 @@ defmodule Voile.Schema.Library.Circulation do
     query =
       from t in Transaction,
         where: t.member_id == ^member_id and t.status == "active",
-        preload: [member: [], librarian: [], item: [:collection], collection: []],
+        preload: [
+          member: [],
+          librarian: [],
+          item: [:collection, :item_location, :node],
+          collection: []
+        ],
         order_by: [desc: t.transaction_date],
         offset: ^offset,
         limit: ^per_page
@@ -1630,7 +1640,12 @@ defmodule Voile.Schema.Library.Circulation do
 
     Transaction
     |> where([t], t.status == "active" and t.due_date < ^now)
-    |> preload(member: [], librarian: [], item: [:collection], collection: [])
+    |> preload(
+      member: [],
+      librarian: [],
+      item: [:collection, :item_location, :node],
+      collection: []
+    )
     |> order_by([t], t.due_date)
     |> Repo.all()
   end

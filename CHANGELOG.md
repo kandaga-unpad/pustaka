@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.29] - 2026-05-11
+
+### Added
+
+- **Loan reminder: item location display** — Loan cards in the loan reminder page now show the item's location as `{Node} / {Location}` (or just the node or location name when only one is available) beneath the item code.
+- **Member management: RBAC role and member-type assignment guards** — Admins can no longer assign member types with a higher priority level than their own, nor assign roles equal to or above their own rank. The member type dropdown is filtered to only show types the assigning user is permitted to grant. Role checkboxes for disallowed roles are hidden in the create/edit form, and server-side validation rejects any attempt to bypass these restrictions.
+
+### Fixed
+
+- **Read On Spot: node name crash for non-super-admin** — Non-super-admin users were getting a `nil` selected node name because `find_node_name/2` was called with an empty `nodes` list (which is intentionally empty for non-admins). Fixed by reading directly from `current_user.node.name` for non-super-admin users.
+- **Read On Spot: `select_node` KeyError on missing param** — The `select_node` event handler now uses `Map.fetch/2` to safely fall back to the current node ID when the `node_id` key is absent from params, preventing a `KeyError` crash.
+- **Read On Spot: invalid Tailwind class `bg-gray-750`** — Replaced the non-existent `dark:bg-gray-750` class with `dark:bg-gray-700` in the report and report detail row striping.
+- **Collection review: created_by/updated_by audit trail** — The review table now displays "Created by" and "Updated by" labels alongside their respective user names and timestamps, giving reviewers a clearer audit trail.
+- **Circulation: enriched transaction preloads** — `list_member_active_transactions`, `list_paginated_member_active_transactions`, and `list_overdue_transactions` now preload `item_location` and `node` on transaction items so location-aware components (such as the loan reminder) can render without additional queries.
+
+---
+
 ## [0.1.28] - 2026-06-10
 
 ### Changed
@@ -439,6 +456,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.29]: https://github.com/curatorian/voile/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/curatorian/voile/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/curatorian/voile/compare/v0.1.25...v0.1.26

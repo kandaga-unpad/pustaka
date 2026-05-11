@@ -241,7 +241,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 "border-t border-gray-100 dark:border-gray-700 cursor-pointer group",
                 if(rem(idx, 2) == 0,
                   do: "bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20",
-                  else: "bg-gray-50 dark:bg-gray-750 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  else: "bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 )
               ]}>
                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">
