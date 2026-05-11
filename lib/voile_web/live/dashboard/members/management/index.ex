@@ -315,6 +315,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           member_types={@member_types}
           available_roles={@available_roles}
           selected_role_ids={@selected_role_ids}
+          disabled_role_ids={@disabled_role_ids}
           is_super_admin={@is_super_admin}
           tab={@tab}
           thumbnail_source={@thumbnail_source}
@@ -580,20 +581,51 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     # Extract role_ids from params
     role_ids = Map.get(user_params, "role_ids", [])
 
-    case Accounts.admin_update_user(socket.assigns.member, user_params) do
-      {:ok, user} ->
-        # Update role assignments
-        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+    unless can_assign_member_type?(socket.assigns.current_scope.user, user_params["user_type_id"]) do
+      changeset =
+        socket.assigns.member
+        |> User.changeset(user_params)
+        |> Ecto.Changeset.add_error(
+          :user_type_id,
+          gettext("You cannot assign a member type higher than your own.")
+        )
 
-        socket =
-          socket
-          |> put_flash(:info, gettext("Member updated successfully"))
-          |> push_patch(to: ~p"/manage/members/management")
+      {:noreply, assign(socket, form: to_form(changeset))}
+    else
+      disallowed =
+        disabled_role_ids(socket.assigns.current_scope.user, socket.assigns.available_roles)
 
-        {:noreply, socket}
+      normalized_role_ids = normalize_role_ids(role_ids)
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+      if Enum.any?(normalized_role_ids, &(&1 in disallowed)) do
+        changeset =
+          socket.assigns.member
+          |> User.changeset(user_params)
+
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           gettext("You cannot assign roles that are equal or higher than your own.")
+         )
+         |> assign(form: to_form(changeset))}
+      else
+        case Accounts.admin_update_user(socket.assigns.member, user_params) do
+          {:ok, user} ->
+            # Update role assignments
+            update_user_roles(user, normalized_role_ids, socket.assigns.current_scope.user.id)
+
+            socket =
+              socket
+              |> put_flash(:info, gettext("Member updated successfully"))
+              |> push_patch(to: ~p"/manage/members/management")
+
+            {:noreply, socket}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, form: to_form(changeset))}
+        end
+      end
     end
   end
 
@@ -610,20 +642,51 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
         Map.put(user_params, "node_id", socket.assigns.current_scope.user.node_id)
       end
 
-    case Accounts.register_user(user_params) do
-      {:ok, user} ->
-        # Assign roles to new user
-        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+    unless can_assign_member_type?(socket.assigns.current_scope.user, user_params["user_type_id"]) do
+      changeset =
+        socket.assigns.member
+        |> User.changeset(user_params)
+        |> Ecto.Changeset.add_error(
+          :user_type_id,
+          gettext("You cannot assign a member type higher than your own.")
+        )
 
-        socket =
-          socket
-          |> put_flash(:info, gettext("Member created successfully"))
-          |> push_patch(to: ~p"/manage/members/management")
+      {:noreply, assign(socket, form: to_form(changeset))}
+    else
+      disallowed =
+        disabled_role_ids(socket.assigns.current_scope.user, socket.assigns.available_roles)
 
-        {:noreply, socket}
+      normalized_role_ids = normalize_role_ids(role_ids)
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+      if Enum.any?(normalized_role_ids, &(&1 in disallowed)) do
+        changeset =
+          socket.assigns.member
+          |> User.changeset(user_params)
+
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           gettext("You cannot assign roles that are equal or higher than your own.")
+         )
+         |> assign(form: to_form(changeset))}
+      else
+        case Accounts.register_user(user_params) do
+          {:ok, user} ->
+            # Assign roles to new user
+            update_user_roles(user, normalized_role_ids, socket.assigns.current_scope.user.id)
+
+            socket =
+              socket
+              |> put_flash(:info, gettext("Member created successfully"))
+              |> push_patch(to: ~p"/manage/members/management")
+
+            {:noreply, socket}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, form: to_form(changeset))}
+        end
+      end
     end
   end
 
@@ -731,18 +794,135 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   end
 
   defp load_filters(socket) do
-    member_types = Repo.all(from(mt in MemberType, order_by: mt.name))
+    current_user = socket.assigns.current_scope.user
+
+    current_member_type_id =
+      Map.get(socket.assigns, :member, nil)
+      |> case do
+        %User{user_type_id: user_type_id} -> user_type_id
+        _ -> nil
+      end
+
+    member_types =
+      member_types_for_user(current_user, current_member_type_id)
 
     nodes =
       if socket.assigns.is_super_admin, do: Repo.all(from(n in Node, order_by: n.name)), else: []
 
     available_roles = VoileWeb.Auth.PermissionManager.list_roles()
+    disabled_role_ids = disabled_role_ids(current_user, available_roles)
 
     socket
     |> assign(:member_types, member_types)
     |> assign(:nodes, nodes)
     |> assign(:available_roles, available_roles)
+    |> assign(:disabled_role_ids, disabled_role_ids)
   end
+
+  defp member_types_for_user(user, current_member_type_id) do
+    if Authorization.is_super_admin?(user) do
+      Repo.all(from(mt in MemberType, order_by: mt.name))
+    else
+      current_priority = member_type_priority(user)
+
+      allowed_member_types =
+        if current_priority do
+          Repo.all(
+            from(mt in MemberType,
+              where: mt.priority_level <= ^current_priority,
+              order_by: mt.name
+            )
+          )
+        else
+          Repo.all(from(mt in MemberType, order_by: mt.name))
+        end
+
+      allowed_member_types =
+        if current_member_type_id &&
+             !Enum.any?(allowed_member_types, &(&1.id == current_member_type_id)) do
+          current_member_type = Repo.get(MemberType, current_member_type_id)
+          allowed_member_types ++ [current_member_type]
+        else
+          allowed_member_types
+        end
+
+      Enum.uniq_by(allowed_member_types, & &1.id)
+    end
+  end
+
+  defp member_type_priority(%User{user_type_id: nil}), do: nil
+
+  defp member_type_priority(%User{user_type_id: user_type_id}) do
+    case Repo.get(MemberType, user_type_id) do
+      %MemberType{priority_level: priority} when is_integer(priority) -> priority
+      _ -> nil
+    end
+  end
+
+  defp can_assign_member_type?(creator, member_type_id) when is_binary(member_type_id) do
+    can_assign_member_type?(creator, String.to_integer(member_type_id))
+  end
+
+  defp can_assign_member_type?(_creator, nil), do: true
+
+  defp can_assign_member_type?(creator, member_type_id) do
+    if Authorization.is_super_admin?(creator) do
+      true
+    else
+      case {member_type_priority(creator), Repo.get(MemberType, member_type_id)} do
+        {creator_priority, %MemberType{priority_level: target_priority}}
+        when is_integer(creator_priority) and is_integer(target_priority) ->
+          target_priority <= creator_priority
+
+        _ ->
+          true
+      end
+    end
+  end
+
+  defp normalize_role_ids(role_ids) do
+    role_ids
+    |> List.wrap()
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(fn
+      id when is_integer(id) -> id
+      id when is_binary(id) -> String.to_integer(id)
+    end)
+  end
+
+  defp disabled_role_ids(user, roles) do
+    if Authorization.is_super_admin?(user) do
+      []
+    else
+      max_rank = current_user_role_rank(user)
+
+      roles
+      |> Enum.filter(fn role -> role_rank(role) >= max_rank end)
+      |> Enum.map(& &1.id)
+    end
+  end
+
+  defp current_user_role_rank(user) do
+    user = Repo.preload(user, :roles)
+
+    user.roles
+    |> Enum.map(&role_rank/1)
+    |> Enum.max(fn -> 0 end)
+  end
+
+  defp role_rank(%{name: name}), do: role_rank(name)
+
+  defp role_rank(name) when is_binary(name) do
+    case String.downcase(name) do
+      "super_admin" -> 4
+      "admin" -> 3
+      "librarian" -> 2
+      "staff" -> 1
+      _ -> 0
+    end
+  end
+
+  defp role_rank(_), do: 0
 
   defp build_members_export_csv(socket) do
     rows = Repo.all(build_members_query(socket))

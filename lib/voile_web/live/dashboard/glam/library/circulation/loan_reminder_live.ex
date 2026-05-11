@@ -428,6 +428,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                             {gettext("Item Code")}: {loan.item.item_code}
                           </p>
 
+                          <%= if location_label = item_location_label(loan.item) do %>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              {location_label}
+                            </p>
+                          <% end %>
+
                           <div class="mt-2 flex items-center text-sm">
                             <.icon
                               name="hero-calendar"
@@ -629,4 +635,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
 
   defp get_collection_title(%{item: %{collection: %{title: title}}}), do: title
   defp get_collection_title(_), do: "Unknown Collection"
+
+  defp item_location_label(%{
+         item_location: %{location_name: location_name},
+         node: %{name: node_name}
+       })
+       when is_binary(location_name) and is_binary(node_name) do
+    "#{node_name} / #{location_name}"
+  end
+
+  defp item_location_label(%{item_location: %{location_name: location_name}})
+       when is_binary(location_name),
+       do: location_name
+
+  defp item_location_label(%{node: %{name: node_name}}) when is_binary(node_name),
+    do: node_name
+
+  defp item_location_label(_), do: nil
 end

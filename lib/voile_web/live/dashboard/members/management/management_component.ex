@@ -15,6 +15,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   attr :member_types, :list, default: []
   attr :available_roles, :list, default: []
   attr :selected_role_ids, :list, default: []
+  attr :disabled_role_ids, :list, default: []
   attr :is_super_admin, :boolean, default: false
   attr :tab, :string, default: "upload"
   attr :thumbnail_source, :string, default: nil
@@ -120,8 +121,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
               {gettext("Assign Roles")}
             </label>
             <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <%= for role <- @available_roles do %>
-                <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+              <%= for role <- Enum.reject(@available_roles, fn role -> role.id in (@disabled_role_ids || []) end) do %>
+                <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer rounded-lg">
                   <input
                     type="checkbox"
                     name="user[role_ids][]"

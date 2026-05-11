@@ -1075,15 +1075,25 @@
               </td>
 
               <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                <div>
+                <div class="text-xs">
                   <%= if collection.created_by do %>
-                    {collection.created_by.fullname}
+                    {gettext("Created by:")} {collection.created_by.fullname}
                   <% else %>
-                    -
+                    {gettext("Created by:")} -
                   <% end %>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {to_local_time(collection.inserted_at)}
+                </div>
+                <div class="text-xs">
+                  <%= if collection.updated_by do %>
+                    {gettext("Updated by:")} {collection.updated_by.fullname}
+                  <% else %>
+                    {gettext("Updated by:")} -
+                  <% end %>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {to_local_time(collection.updated_at)}
                 </div>
               </td>
 
