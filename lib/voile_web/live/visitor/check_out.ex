@@ -375,7 +375,7 @@ defmodule VoileWeb.Visitor.CheckOut do
 
     if Code.ensure_loaded?(module) and
          function_exported?(module, :get_active_session_for_visitor, 2) do
-      module.get_active_session_for_visitor(node_id, identifier)
+      apply(module, :get_active_session_for_visitor, [node_id, identifier])
     else
       nil
     end
@@ -386,11 +386,13 @@ defmodule VoileWeb.Visitor.CheckOut do
 
     if Code.ensure_loaded?(module) and
          function_exported?(module, :release_locker_for_visitor, 3) do
-      module.release_locker_for_visitor(node_id, identifier,
+      apply(module, :release_locker_for_visitor, [
+        node_id,
+        identifier,
         release_method: "visitor_self",
         released_by: "visitor_checkout",
         notes: "Auto-released on visitor checkout"
-      )
+      ])
     else
       :noop
     end

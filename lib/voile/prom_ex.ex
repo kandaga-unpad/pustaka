@@ -5,7 +5,7 @@ defmodule Voile.PromEx do
   def plugins do
     [
       {PromEx.Plugins.Phoenix, router: VoileWeb.Router},
-      PromEx.Plugins.Ecto,
+      {PromEx.Plugins.Ecto, repos: [Voile.Repo]},
       PromEx.Plugins.Application,
       PromEx.Plugins.Beam
     ]
