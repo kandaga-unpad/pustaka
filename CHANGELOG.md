@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.28] - 2026-06-10
+
+### Changed
+
+- Change the default collection sort listing to be sorted by 'updated_at' instead of 'inserted_at' to show the most recently updated collections first.
+
 ## [0.1.27] - 2026-05-09
 
 ### Fixed
@@ -433,6 +439,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/curatorian/voile/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/curatorian/voile/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/curatorian/voile/compare/v0.1.24...v0.1.25

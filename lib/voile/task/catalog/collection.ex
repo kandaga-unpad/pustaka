@@ -33,7 +33,7 @@ defmodule Voile.Task.Catalog.Collection do
       base_query
       |> limit(^per_page)
       |> offset(^pagination_offset)
-      |> order_by([c], desc: c.inserted_at, desc: c.id)
+      |> order_by([c], desc: c.updated_at, desc: c.id)
       |> preload([
         :resource_class,
         :mst_creator,
