@@ -16,6 +16,9 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
+# Structured JSON logging for production (OpenObserve / Google Cloud compatible)
+config :logger, :default_handler, formatter: {LoggerJSON.Formatters.GoogleCloud, metadata: :all}
+
 # Ensure email queue is enabled for production (do not use local mailbox)
 config :voile, disable_email_queue: false
 

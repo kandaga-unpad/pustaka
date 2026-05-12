@@ -339,12 +339,43 @@ defmodule Voile.Schema.System do
 
   """
   def upsert_setting(name, value) do
-    case get_setting_by_name(name) do
-      nil ->
-        create_setting(%{setting_name: name, setting_value: value})
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    do_upsert_setting(name, value, now, false)
+  end
 
-      setting ->
-        update_setting(setting, %{setting_value: value})
+  defp do_upsert_setting(name, value, now, retried?) do
+    result =
+      try do
+        %Setting{}
+        |> Setting.changeset(%{setting_name: name, setting_value: value})
+        |> Repo.insert(
+          on_conflict: [set: [setting_value: value, updated_at: now]],
+          conflict_target: :setting_name,
+          returning: true
+        )
+      rescue
+        Ecto.ConstraintError ->
+          if retried? do
+            {:error, :pk_sequence_error}
+          else
+            # PK sequence is out of sync with existing rows (common after seeding).
+            # Reset it and retry once — self-healing, no manual DB intervention needed.
+            Ecto.Adapters.SQL.query!(
+              Repo,
+              "SELECT setval('settings_id_seq', (SELECT MAX(id) FROM settings))"
+            )
+
+            do_upsert_setting(name, value, now, true)
+          end
+      end
+
+    case result do
+      {:ok, %Setting{setting_name: n} = setting} ->
+        :persistent_term.erase({__MODULE__, :setting_cache, n})
+        {:ok, setting}
+
+      error ->
+        error
     end
   end
 

@@ -169,14 +169,15 @@ defmodule VoileWeb.UserLoginLive do
                 </.button>
               </div>
               <div class="mt-4 text-center w-full">
-                <.button
-                  phx-click="paus_auth"
-                  class="disabled-btn bg-gray-400 w-full flex items-center justify-center gap-2 text-sm"
-                  disabled
-                >
-                  <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
-                  <span class="text-gray-300">{gettext("PAuS ID")}</span>
-                </.button>
+                <%= if @paus_sso_enabled do %>
+                  <.button
+                    phx-click="paus_auth"
+                    class="gradient-btn-outline w-full flex items-center justify-center gap-2 text-sm bg-white text-voile-primary hover:shadow-md"
+                  >
+                    <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
+                    <span>{gettext("Sign in with PAuS ID")}</span>
+                  </.button>
+                <% end %>
               </div>
             </div>
           </div>
@@ -206,6 +207,9 @@ defmodule VoileWeb.UserLoginLive do
       # Get app name for display
       app_name = Voile.Schema.System.get_setting_value("app_name", "Voile")
 
+      paus_sso_enabled =
+        Voile.Schema.System.get_setting_value("sso_paus_enabled", "false") == "true"
+
       form = to_form(%{"email" => email}, as: "user")
       magic_link_form = to_form(%{"email" => ""}, as: "magic_link")
 
@@ -213,7 +217,8 @@ defmodule VoileWeb.UserLoginLive do
        socket
        |> assign(form: form)
        |> assign(magic_link_form: magic_link_form)
-       |> assign(app_name: app_name),
+       |> assign(app_name: app_name)
+       |> assign(paus_sso_enabled: paus_sso_enabled),
        temporary_assigns: [form: form, magic_link_form: magic_link_form]}
     end
   end

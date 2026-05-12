@@ -245,19 +245,20 @@ else
   config :opentelemetry, traces_exporter: :none
 end
 
-if System.get_env("VOILE_OPENOBSERVE_METRICS_URL") do
-  config :voile, Voile.PromEx,
-    manual_metrics_configuration: [
-      %{
-        module: PromEx.MetricWriters.Push,
-        name: "OpenObserve",
-        url: System.get_env("VOILE_OPENOBSERVE_METRICS_URL"),
-        headers: [
-          {"Authorization",
-           "Basic " <> Base.encode64(System.get_env("VOILE_OPENOBSERVE_AUTH", ""))},
-          {"organization", System.get_env("VOILE_OPENOBSERVE_ORG", "default")}
-        ],
-        metric_groups: [:phoenix, :ecto, :beam, :application]
-      }
-    ]
+# Metrics are exposed at GET /metrics for local Phoenix dashboard and future scraping.
+
+# Log shipping to OpenObserve JSON ingest API
+# Set VOILE_OPENOBSERVE_LOGS_URL to enable, e.g.:
+#   https://host/api/org/default/_json
+if System.get_env("VOILE_OPENOBSERVE_LOGS_URL") do
+  [username, password] =
+    System.get_env("VOILE_OPENOBSERVE_AUTH", ":")
+    |> String.split(":", parts: 2)
+
+  config :voile, :open_observe_logs,
+    url: System.get_env("VOILE_OPENOBSERVE_LOGS_URL"),
+    username: username,
+    password: password,
+    batch_size: 100,
+    flush_interval: 5_000
 end

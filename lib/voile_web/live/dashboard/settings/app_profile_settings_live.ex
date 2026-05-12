@@ -195,6 +195,17 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                     ]}
                     value={System.get_setting_value("clearance_feature_enabled", "false")}
                   />
+
+                  <.input
+                    type="select"
+                    name="sso_paus_enabled"
+                    label={gettext("PAuS ID Single Sign-On (SSO)")}
+                    options={[
+                      {gettext("Disabled"), "false"},
+                      {gettext("Enabled"), "true"}
+                    ]}
+                    value={System.get_setting_value("sso_paus_enabled", "false")}
+                  />
                 </div>
               </div>
             </div>
@@ -340,6 +351,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
       "app_contact_number",
       "app_instagram_url",
       "clearance_feature_enabled",
+      "sso_paus_enabled",
       "app_address",
       "storage_adapter",
       "default_node_id"

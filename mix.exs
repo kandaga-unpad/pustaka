@@ -152,8 +152,6 @@ defmodule Voile.MixProject do
       {:opentelemetry_phoenix, "~> 2.0"},
       {:opentelemetry_ecto, "~> 1.2"},
       {:opentelemetry_bandit, "~> 0.3.0"},
-      # Metrics
-      {:prom_ex, "~> 1.11"},
       # Structured logging
       {:logger_json, "~> 7.0"},
       # Helper libraries

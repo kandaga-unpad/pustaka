@@ -283,6 +283,8 @@ defmodule Voile.Schema.Accounts do
         "user_#{:crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)}"
 
     # Build user attributes
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     user_attrs =
       %{
         email: attrs[:email],
@@ -290,13 +292,17 @@ defmodule Voile.Schema.Accounts do
         fullname: attrs[:name] || attrs[:fullname],
         password: random_password,
         user_image: attrs[:user_image] || attrs[:picture] || "/images/default_profile.png",
-        confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second),
-        last_login: DateTime.utc_now() |> DateTime.truncate(:second)
+        confirmed_at: attrs[:confirmed_at] || now,
+        last_login: attrs[:last_login] || now
       }
-      |> maybe_put(:identifier, attrs[:npm])
+      # :identifier accepts both the legacy :npm key and a direct :identifier key
+      |> maybe_put(:identifier, attrs[:identifier] || attrs[:npm])
       |> maybe_put(:groups, attrs[:groups])
       |> maybe_put(:user_type_id, attrs[:user_type_id])
       |> maybe_put(:node_id, attrs[:node_id])
+      |> maybe_put(:birth_date, attrs[:birth_date])
+      |> maybe_put(:gender, attrs[:gender])
+      |> maybe_put(:registration_date, attrs[:registration_date])
 
     %User{}
     |> User.registration_changeset(user_attrs)
