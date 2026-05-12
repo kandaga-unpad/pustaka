@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.29"
+  @version "0.1.30"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -133,8 +133,6 @@ defmodule Voile.MixProject do
       {:opentelemetry_phoenix, "~> 2.0"},
       {:opentelemetry_ecto, "~> 1.2"},
       {:opentelemetry_bandit, "~> 0.3.0"},
-      # Metrics
-      {:prom_ex, "~> 1.11"},
       # Structured logging
       {:logger_json, "~> 7.0"},
       # Helper libraries

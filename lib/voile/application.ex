@@ -21,7 +21,8 @@ defmodule Voile.Application do
 
   @impl true
   def start(_type, _args) do
-    # Setup OpenTelemetry instrumentation
+    # Setup OpenTelemetry instrumentation — these are no-ops when OTel is disabled
+    # (traces_exporter: :none), so they are safe to call unconditionally.
     :ok = OpentelemetryBandit.setup()
     :ok = OpentelemetryPhoenix.setup(adapter: :bandit)
     :ok = OpentelemetryEcto.setup([:voile, :repo])
@@ -31,7 +32,6 @@ defmodule Voile.Application do
     base_children = [
       VoileWeb.Telemetry,
       Voile.Repo,
-      Voile.PromEx,
       {DNSCluster, query: Application.get_env(:voile, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Voile.PubSub},
       # Hammer 7.x rate limiter with ETS backend
@@ -44,6 +44,13 @@ defmodule Voile.Application do
       Voile.Hooks,
       Voile.PluginManager
     ]
+
+    # Start OpenObserve log sender when configured
+    open_observe_log_children =
+      case Application.get_env(:voile, :open_observe_logs) do
+        nil -> []
+        opts -> [{Voile.Logger.OpenObserveSender, opts}]
+      end
 
     # Conditionally add email queue (disabled in dev if configured)
     email_queue_children =
@@ -62,6 +69,7 @@ defmodule Voile.Application do
 
     children =
       base_children ++
+        open_observe_log_children ++
         email_queue_children ++
         [
           # Start a worker by calling: Voile.Worker.start_link(arg)

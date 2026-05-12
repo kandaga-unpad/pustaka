@@ -7,7 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.29] - 2026-05-11
+## [0.1.30] - 2026-05-12
+
+### Added
+
+- **PAuS SSO: full user provisioning from PAuS API** — On first login, the PAuS callback now reads the `/api/accounts` response to extract `username`, `fullname`, `identifier` (NIP/NPM), `image_url`, `birth_date`, `gender`, `group_name`, and `faculty_name`. New users are created with all available fields populated, including `user_type_id` (resolved from `group_name` via `MemberType` slug) and `node_id` (resolved by matching `faculty_name` against node names for students, or falling back to the system default node for staff).
+- **PAuS SSO: `sso_paus_enabled` setting** — Added a new toggle in App Profile Settings to enable or disable the PAuS SSO button. When disabled, the button is hidden from the login page entirely.
+- **PAuS SSO: conditional login button** — The "Sign in with PAuS ID" button on the login page is now shown only when the `sso_paus_enabled` system setting is `"true"`, and is styled as an active button (previously always disabled/greyed out).
+- **OpenObserve log shipping** — Added `Voile.Logger.OpenObserveHandler` and `Voile.Logger.OpenObserveSender`, a batched OTP logger handler that ships structured log events to the OpenObserve JSON ingest API (`_json` endpoint) via Req. Activated automatically when `VOILE_OPENOBSERVE_LOGS_URL` is set. Batch size and flush interval are configurable.
+- **Structured JSON logging in production** — Production now uses `LoggerJSON.Formatters.GoogleCloud` via the OTP `:default_handler` API, producing structured JSON with `severity`, `time`, `logging.googleapis.com/sourceLocation`, `trace`, and `spanId` fields. Development retains the previous human-readable `$time [$level] $message` format.
+
+### Changed
+
+- **Removed PromEx** — `prom_ex` dependency, `Voile.PromEx` module, `/metrics` route, and all related configuration have been removed. Metrics push to OpenObserve via the broken `PromEx.MetricWriters.Push` (non-existent API) has been cleaned up. Metrics are no longer collected.
+- **OpenTelemetry config is fully optional** — All OpenTelemetry and OpenObserve configuration is now gated on environment variables (`VOILE_OTEL_EXPORTER_ENDPOINT`, `VOILE_OPENOBSERVE_LOGS_URL`). When neither is set, the app starts and runs with zero observability overhead and no crashes.
+
+### Fixed
+
+- **PAuS: `expires_in` type handling** — The token exchange now handles `expires_in` returned as a string (as the PAuS API does) by converting it with `String.to_integer/1` before arithmetic, preventing a `BadArithmeticError` crash.
+- **PAuS: correct user profile API endpoint** — Fixed the profile fetch URL from `/user/profile` to `/accounts`, matching the actual PAuS API contract.
+- **PAuS: Req auto-decoding compatibility** — All PAuS HTTP response bodies are now decoded through a `decode_body/1` helper that accepts both pre-decoded maps (Req auto-decodes `application/json`) and raw binary strings, eliminating `Jason.decode` errors on already-decoded responses.
+- **PAuS: onboarding bypass for SSO users** — Users authenticated via PAuS SSO (who have an `identifier` set) are no longer required to provide a `phone_number` during onboarding, since PAuS does not supply one. Only `fullname` is required for SSO users.
+- **Settings: `upsert_setting/2` PK sequence crash** — `upsert_setting` now uses `Repo.insert/2` with `on_conflict: [set: [...]]` instead of a read-then-write pattern, avoiding race conditions. An `Ecto.ConstraintError` rescue with a self-healing `setval` query handles out-of-sync PK sequences (common after seeding) and retries once automatically.
+- **Logger: FORMATTER CRASH from Bandit/Plug chardata messages** — Removed the legacy `config :logger, :console, format: {LoggerJSON, :format}` which caused `FORMATTER CRASH` errors when Bandit emitted Erlang chardata log events. Replaced with the correct LoggerJSON v7 OTP handler API (`config :logger, :default_handler, formatter: ...`).
+- **`create_user_from_oauth/1`: extended field support** — `create_user_from_oauth` now accepts and propagates `identifier`, `birth_date`, `gender`, `registration_date`, `confirmed_at`, and `last_login` from the attrs map, enabling PAuS (and future OAuth providers) to pass richer profile data on account creation.
 
 ### Added
 
@@ -456,6 +479,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.30]: https://github.com/curatorian/voile/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/curatorian/voile/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/curatorian/voile/compare/v0.1.26...v0.1.27

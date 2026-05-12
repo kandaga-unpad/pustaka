@@ -6,11 +6,17 @@ defmodule VoileWeb.UserAuthPaus do
 
   import Plug.Conn
   import Phoenix.Controller
+  import Ecto.Query, warn: false
+
+  require Logger
 
   # Import verified routes for ~p sigil
   use VoileWeb, :verified_routes
 
+  alias Voile.Repo
   alias Voile.Schema.Accounts
+  alias Voile.Schema.Master.MemberType
+  alias Voile.Schema.System.Node
 
   @user_scopes ["user.basic"]
 
@@ -203,11 +209,14 @@ defmodule VoileWeb.UserAuthPaus do
            receive_timeout: 30_000
          ) do
       {:ok, %Req.Response{status: 200, body: response_body}} ->
-        case Jason.decode(response_body) do
+        case decode_body(response_body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in} = token_data} ->
+            expires_in_int =
+              if is_binary(expires_in), do: String.to_integer(expires_in), else: expires_in
+
             token = %{
               access_token: access_token,
-              expires_at: :os.system_time(:second) + expires_in,
+              expires_at: :os.system_time(:second) + expires_in_int,
               refresh_token: Map.get(token_data, "refresh_token"),
               token_type: Map.get(token_data, "token_type", "Bearer")
             }
@@ -230,7 +239,7 @@ defmodule VoileWeb.UserAuthPaus do
   end
 
   defp fetch_user_profile(token) do
-    url = "#{@api_url}/user/profile?access_token=#{token.access_token}"
+    url = "#{@api_url}/accounts?access_token=#{token.access_token}"
 
     headers = [
       {"user-agent", "Voile PAuS Client/1.0"},
@@ -239,7 +248,7 @@ defmodule VoileWeb.UserAuthPaus do
 
     case Req.get(url, headers: headers, receive_timeout: 30_000) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        case Jason.decode(body) do
+        case decode_body(body) do
           {:ok, user_data} -> {:ok, user_data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
@@ -261,7 +270,7 @@ defmodule VoileWeb.UserAuthPaus do
 
     case Req.get(url, receive_timeout: 30_000) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        case Jason.decode(body) do
+        case decode_body(body) do
           {:ok, data} -> {:ok, data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
@@ -282,7 +291,7 @@ defmodule VoileWeb.UserAuthPaus do
 
     case Req.post(url, body: body, headers: headers, receive_timeout: 30_000) do
       {:ok, %Req.Response{status: 200, body: response_body}} ->
-        case Jason.decode(response_body) do
+        case decode_body(response_body) do
           {:ok, data} -> {:ok, data}
           {:error, reason} -> {:error, {:json_decode_error, reason}}
         end
@@ -296,44 +305,150 @@ defmodule VoileWeb.UserAuthPaus do
   end
 
   defp get_or_create_user_from_paus(paus_user) do
-    # Map PAuS user data to your User schema
-    # PAuS may return different field names, adjust based on actual response
-    email = paus_user["email"] || paus_user["user_email"]
-    name = paus_user["name"] || paus_user["full_name"] || paus_user["fullname"]
-    npm = paus_user["npm"] || paus_user["student_id"] || paus_user["identifier"]
-    picture = paus_user["picture"] || paus_user["user_image"] || paus_user["photo"]
+    # Top-level PAuS fields
+    email = paus_user["email"]
+    username = paus_user["username"]
+    image_url = paus_user["image_url"]
 
-    # Check if user exists or create new one
+    # PAuS returns a list of accounts — pick the first active one
+    accounts = paus_user["accounts"] || []
+    account = Enum.find(accounts, &(&1["is_active"] == true)) || List.first(accounts) || %{}
+
+    fullname = account["name"] || paus_user["name"]
+    identifier = account["number"]
+    group_name = account["group_name"]
+    faculty_name = account["faculty_name"]
+    unit_name = account["unit_name"]
+
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     case Accounts.get_user_by_email(email) do
       nil ->
-        # Create new user from PAuS data
         user_attrs = %{
           email: email,
-          name: name,
-          npm: npm,
-          picture: picture,
-          auth_provider: "paus"
+          username: username,
+          fullname: fullname,
+          identifier: identifier,
+          user_image: image_url,
+          user_type_id: resolve_paus_user_type(group_name),
+          node_id: resolve_paus_node(group_name, faculty_name, unit_name),
+          birth_date: parse_paus_date(account["birthdate"]),
+          gender: map_paus_gender(account["gender"]),
+          confirmed_at: now,
+          registration_date: Date.utc_today(),
+          last_login: now
         }
 
         case Accounts.create_user_from_oauth(user_attrs) do
           {:ok, user} ->
             user
 
-          {:error, _changeset} ->
-            # If creation fails, try to get by email again (race condition)
+          {:error, changeset} ->
+            Logger.error("[PAuS] Failed to create user: #{inspect(changeset.errors)}")
+            # Race-condition fallback
             Accounts.get_user_by_email(email)
         end
 
       user ->
-        # Update last login timestamp
-        {:ok, user} =
-          Accounts.update_user_login(user, %{
-            last_login: DateTime.utc_now() |> DateTime.truncate(:second)
-          })
-
-        user
+        {:ok, updated} = Accounts.update_user_login(user, %{last_login: now})
+        updated
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # PAuS field resolvers
+  # ---------------------------------------------------------------------------
+
+  # Maps PAuS group_name to the corresponding MemberType id via slug.
+  # "Mahasiswa" (student)  → member_verified
+  # "Staf"     (staff)     → member_organization
+  defp resolve_paus_user_type(group_name) do
+    slug =
+      case group_name do
+        "Mahasiswa" -> "member_verified"
+        "Staf" -> "member_organization"
+        _ -> nil
+      end
+
+    with s when is_binary(s) <- slug,
+         %{id: id} <- Repo.get_by(MemberType, slug: s) do
+      id
+    else
+      _ ->
+        Logger.warning("[PAuS] No MemberType found for group_name: #{inspect(group_name)}")
+        nil
+    end
+  end
+
+  # Staff always land on the default node (configured in system settings).
+  defp resolve_paus_node("Staf", _faculty, _unit), do: get_paus_default_node_id()
+
+  # Students: match faculty_name against node.name with a substring search.
+  # e.g. faculty_name "Ilmu Komunikasi" matches node.name "Fakultas Ilmu Komunikasi".
+  defp resolve_paus_node("Mahasiswa", faculty_name, _unit) when is_binary(faculty_name) do
+    node =
+      Repo.one(
+        from n in Node,
+          where: ilike(n.name, ^("%" <> faculty_name <> "%")),
+          limit: 1
+      )
+
+    case node do
+      %{id: id} ->
+        id
+
+      nil ->
+        Logger.debug("[PAuS] No node matched faculty '#{faculty_name}', using default")
+        get_paus_default_node_id()
+    end
+  end
+
+  defp resolve_paus_node(_group, _faculty, _unit), do: get_paus_default_node_id()
+
+  # Reads the default_node_id system setting and returns the matching Node id.
+  defp get_paus_default_node_id do
+    case Voile.Schema.System.get_setting_value("default_node_id", nil) do
+      nil ->
+        nil
+
+      value when is_binary(value) ->
+        case Integer.parse(value) do
+          {int_id, ""} ->
+            case Repo.get(Node, int_id) do
+              %{id: id} -> id
+              nil -> nil
+            end
+
+          _ ->
+            nil
+        end
+
+      int when is_integer(int) ->
+        case Repo.get(Node, int) do
+          %{id: id} -> id
+          nil -> nil
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  # Parses an ISO-8601 date string ("YYYY-MM-DD") into a Date struct.
+  defp parse_paus_date(nil), do: nil
+
+  defp parse_paus_date(date_str) when is_binary(date_str) do
+    case Date.from_iso8601(date_str) do
+      {:ok, date} -> date
+      _ -> nil
+    end
+  end
+
+  # Maps PAuS gender codes to display strings.
+  # "L" = Laki-laki (Male), "P" = Perempuan (Female)
+  defp map_paus_gender("L"), do: "male"
+  defp map_paus_gender("P"), do: "female"
+  defp map_paus_gender(_), do: nil
 
   defp mount_paus_user(session, socket) do
     Phoenix.Component.assign_new(socket, :paus_user, fn ->
@@ -343,6 +458,12 @@ defmodule VoileWeb.UserAuthPaus do
       end
     end)
   end
+
+  # Req automatically JSON-decodes responses when Content-Type is application/json,
+  # so the body arrives as a map. Fall back to Jason.decode/1 for plain binary bodies.
+  defp decode_body(body) when is_map(body), do: {:ok, body}
+  defp decode_body(body) when is_binary(body), do: Jason.decode(body)
+  defp decode_body(_), do: {:error, :invalid_body}
 
   defp generate_state do
     :crypto.strong_rand_bytes(32)

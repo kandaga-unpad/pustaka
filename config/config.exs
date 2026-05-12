@@ -176,16 +176,9 @@ config :tailwind,
   ]
 
 # Configures Elixir's Logger
-
-# Default
-# config :logger, :console,
-#   format: "$time $metadata[$level] $message\n",
-#   metadata: [:request_id]
-
-# For structured logging with LoggerJSON
-config :logger, :console,
-  format: {LoggerJSON, :format},
-  metadata: :all
+config :logger,
+  handle_otp_reports: true,
+  handle_sasl_reports: false
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -204,12 +197,6 @@ config :voile, :phoenix_swagger,
 
 # Configure Swagger to use Jason
 config :phoenix_swagger, json_library: Jason
-
-# Configure PromEx — base config only; metrics push is configured at runtime via runtime.exs
-config :voile, Voile.PromEx,
-  disabled: false,
-  metrics_server: :disabled,
-  manual_metrics_configuration: []
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

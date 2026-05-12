@@ -629,8 +629,16 @@ defmodule VoileWeb.UserAuth do
     if is_super_admin? do
       false
     else
-      # User needs onboarding if they lack basic profile information
-      is_nil(user.fullname) or is_nil(user.phone_number)
+      # Users who came via PAuS SSO always have an identifier (NIP/NPM) assigned.
+      # PAuS doesn't provide phone_number, so we only require fullname for them.
+      # Regular/Google users (no identifier) still require both fullname and phone_number.
+      has_identifier? = not is_nil(user.identifier)
+
+      if has_identifier? do
+        is_nil(user.fullname)
+      else
+        is_nil(user.fullname) or is_nil(user.phone_number)
+      end
     end
   end
 
