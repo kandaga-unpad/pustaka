@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.31] - 2026-05-12
+
+### Changed
+
+- **PAuS SSO: identifier-first email reconciliation** — On PAuS login, the system now looks up the user by `identifier` (NPM/NIP) before falling back to email. If a matching record is found whose stored email differs from the institution email returned by PAuS (e.g. an imported member still using a `@gmail.com` address), the email is silently updated to the institution email (`@mail.unpad.ac.id` / `@unpad.ac.id`) without requiring a confirmation link. If the identifier is absent or has no database match, the login falls back to email lookup; if neither matches, a new user is created with the institution email as usual. Email update conflicts (institution email already taken by a different account) are logged as warnings and do not block login.
+
+---
+
 ## [0.1.30] - 2026-05-12
 
 ### Added

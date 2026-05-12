@@ -322,36 +322,81 @@ defmodule VoileWeb.UserAuthPaus do
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    case Accounts.get_user_by_email(email) do
-      nil ->
-        user_attrs = %{
-          email: email,
-          username: username,
-          fullname: fullname,
-          identifier: identifier,
-          user_image: image_url,
-          user_type_id: resolve_paus_user_type(group_name),
-          node_id: resolve_paus_node(group_name, faculty_name, unit_name),
-          birth_date: parse_paus_date(account["birthdate"]),
-          gender: map_paus_gender(account["gender"]),
-          confirmed_at: now,
-          registration_date: Date.utc_today(),
-          last_login: now
-        }
+    # Step 1: identifier-first lookup — find any existing user record that
+    # shares the same institution identifier (NPM / NIP), regardless of
+    # which email they currently have in the database.
+    identifier_user =
+      if is_binary(identifier) and identifier != "" do
+        Accounts.get_user_by_identifier(identifier)
+      else
+        nil
+      end
 
-        case Accounts.create_user_from_oauth(user_attrs) do
-          {:ok, user} ->
-            user
+    case identifier_user do
+      %Accounts.User{} = existing ->
+        # User found by identifier. If the stored email is different from
+        # the institution email returned by PAuS, silently update it so
+        # imported gmail accounts get migrated to institution emails.
+        existing =
+          if existing.email != email do
+            Logger.info(
+              "[PAuS] Updating email for user #{existing.id} (identifier: #{identifier}): " <>
+                "#{existing.email} → #{email}"
+            )
 
-          {:error, changeset} ->
-            Logger.error("[PAuS] Failed to create user: #{inspect(changeset.errors)}")
-            # Race-condition fallback
-            Accounts.get_user_by_email(email)
-        end
+            case Accounts.update_user(existing, %{email: email}) do
+              {:ok, updated} ->
+                updated
 
-      user ->
-        {:ok, updated} = Accounts.update_user_login(user, %{last_login: now})
+              {:error, changeset} ->
+                Logger.warning(
+                  "[PAuS] Could not update email for user #{existing.id}: " <>
+                    "#{inspect(changeset.errors)} — proceeding with existing record"
+                )
+
+                existing
+            end
+          else
+            existing
+          end
+
+        {:ok, updated} = Accounts.update_user_login(existing, %{last_login: now})
         updated
+
+      nil ->
+        # No record matched the identifier; fall back to email lookup.
+        case Accounts.get_user_by_email(email) do
+          nil ->
+            # Brand-new user — create with institution email from PAuS.
+            user_attrs = %{
+              email: email,
+              username: username,
+              fullname: fullname,
+              identifier: identifier,
+              user_image: image_url,
+              user_type_id: resolve_paus_user_type(group_name),
+              node_id: resolve_paus_node(group_name, faculty_name, unit_name),
+              birth_date: parse_paus_date(account["birthdate"]),
+              gender: map_paus_gender(account["gender"]),
+              confirmed_at: now,
+              registration_date: Date.utc_today(),
+              last_login: now
+            }
+
+            case Accounts.create_user_from_oauth(user_attrs) do
+              {:ok, user} ->
+                user
+
+              {:error, changeset} ->
+                Logger.error("[PAuS] Failed to create user: #{inspect(changeset.errors)}")
+                # Race-condition fallback
+                Accounts.get_user_by_email(email)
+            end
+
+          user ->
+            {:ok, updated} = Accounts.update_user_login(user, %{last_login: now})
+            updated
+        end
     end
   end
 
