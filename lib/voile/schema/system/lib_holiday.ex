@@ -387,6 +387,28 @@ defmodule Voile.Schema.System.LibHoliday do
 
   def business_days_between(_, _, _), do: 0
 
+  @doc """
+  Adds N business days to a start date, skipping holidays and non-business days
+  for the given unit_id. Returns a `%Date{}`.
+  """
+  def business_days_add(%Date{} = start_date, 0, _unit_id), do: start_date
+
+  def business_days_add(%Date{} = start_date, days, unit_id)
+      when is_integer(days) and days > 0 do
+    Enum.reduce(1..days, start_date, fn _, acc ->
+      next = Date.add(acc, 1)
+      advance_past_holidays(next, unit_id)
+    end)
+  end
+
+  defp advance_past_holidays(%Date{} = date, unit_id) do
+    if is_holiday?(date, unit_id) do
+      advance_past_holidays(Date.add(date, 1), unit_id)
+    else
+      date
+    end
+  end
+
   ## Weekly Schedule Management Functions
 
   @doc """

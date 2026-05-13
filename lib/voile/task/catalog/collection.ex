@@ -20,11 +20,21 @@ defmodule Voile.Task.Catalog.Collection do
         filter_status,
         glam_type \\ "all",
         filter_media_type \\ "all",
-        per_page \\ 12
+        per_page \\ 12,
+        filter_year_from \\ "",
+        filter_year_to \\ ""
       ) do
     # Build base query with filtering for public access and member-visible collections
     base_query =
-      build_base_query(search_query, filter_unit_id, filter_status, glam_type, filter_media_type)
+      build_base_query(
+        search_query,
+        filter_unit_id,
+        filter_status,
+        glam_type,
+        filter_media_type,
+        filter_year_from,
+        filter_year_to
+      )
 
     # Apply pagination
     pagination_offset = (page - 1) * per_page
@@ -118,14 +128,79 @@ defmodule Voile.Task.Catalog.Collection do
 
   # Private functions
 
-  defp build_base_query(search_query, filter_unit_id, filter_status, glam_type, filter_media_type) do
+  defp build_base_query(
+         search_query,
+         filter_unit_id,
+         filter_status,
+         glam_type,
+         filter_media_type,
+         filter_year_from,
+         filter_year_to
+       ) do
     from(c in Collection)
     |> where([c], c.access_level == "public")
     |> filter_by_status(filter_status)
     |> filter_by_unit_id(filter_unit_id)
     |> filter_by_glam_type(glam_type)
     |> filter_by_media_type(filter_media_type)
+    |> filter_by_year_range(filter_year_from, filter_year_to)
     |> search_by_query(search_query)
+  end
+
+  defp filter_by_year_range(query, year_from, year_to) do
+    from_int = parse_year(year_from)
+    to_int = parse_year(year_to)
+    apply_year_filter(query, from_int, to_int)
+  end
+
+  defp parse_year(nil), do: nil
+  defp parse_year(""), do: nil
+
+  defp parse_year(str) when is_binary(str) do
+    case Integer.parse(str) do
+      {y, _} when y > 999 -> y
+      _ -> nil
+    end
+  end
+
+  defp apply_year_filter(query, nil, nil), do: query
+
+  defp apply_year_filter(query, from_int, nil) when is_integer(from_int) do
+    where(
+      query,
+      [c],
+      fragment(
+        "EXISTS (SELECT 1 FROM collection_fields WHERE collection_id = ? AND name = 'publishedYear' AND value ~ '^[0-9]{4}$' AND value::integer >= ?)",
+        c.id,
+        ^from_int
+      )
+    )
+  end
+
+  defp apply_year_filter(query, nil, to_int) when is_integer(to_int) do
+    where(
+      query,
+      [c],
+      fragment(
+        "EXISTS (SELECT 1 FROM collection_fields WHERE collection_id = ? AND name = 'publishedYear' AND value ~ '^[0-9]{4}$' AND value::integer <= ?)",
+        c.id,
+        ^to_int
+      )
+    )
+  end
+
+  defp apply_year_filter(query, from_int, to_int)
+       when is_integer(from_int) and is_integer(to_int) do
+    where(
+      query,
+      [c],
+      fragment(
+        "EXISTS (SELECT 1 FROM collection_fields WHERE collection_id = ? AND name = 'publishedYear' AND value ~ '^[0-9]{4}$' AND value::integer >= ? AND value::integer <= ?)",
+        c.id,
+        ^from_int,
+        ^to_int
+      )
+    )
   end
 
   defp filter_by_glam_type(query, "all"), do: query

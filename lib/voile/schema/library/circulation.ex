@@ -2719,7 +2719,7 @@ defmodule Voile.Schema.Library.Circulation do
          attrs,
          node
        ) do
-    due_date = calculate_due_date_for_member_type(member_type, node)
+    due_date = calculate_due_date_for_member_type(member_type, node, item.unit_id)
 
     transaction_attrs =
       Map.merge(attrs, %{
@@ -2884,7 +2884,8 @@ defmodule Voile.Schema.Library.Circulation do
          librarian_id,
          attrs
        ) do
-    new_due_date = calculate_renewal_due_date(transaction.due_date, member_type)
+    new_due_date =
+      calculate_renewal_due_date(transaction.due_date, member_type, transaction.unit_id)
 
     renewal_attrs =
       Map.merge(attrs, %{
@@ -3036,14 +3037,19 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   # Member Type Policy Calculations
-  defp calculate_due_date_for_member_type(%MemberType{} = member_type, node) do
+  # node: used only for loan rule overrides (override_loan_rules flag)
+  # unit_id: always the item's node — used for holiday skipping regardless of override_loan_rules
+  defp calculate_due_date_for_member_type(%MemberType{} = member_type, node, unit_id) do
     rules = LoanRuleResolver.resolve_rules(node, member_type)
-    DateTime.add(DateTime.utc_now(), rules.max_days * 24 * 60 * 60, :second)
+    due_date = LibHoliday.business_days_add(Date.utc_today(), rules.max_days, unit_id)
+    DateTime.new!(due_date, ~T[23:59:59], "Etc/UTC")
   end
 
-  defp calculate_renewal_due_date(current_due_date, %MemberType{} = member_type, node \\ nil) do
-    rules = LoanRuleResolver.resolve_rules(node, member_type)
-    DateTime.add(current_due_date, rules.max_days * 24 * 60 * 60, :second)
+  defp calculate_renewal_due_date(current_due_date, %MemberType{} = member_type, unit_id) do
+    rules = LoanRuleResolver.resolve_rules(nil, member_type)
+    start_date = DateTime.to_date(current_due_date)
+    due_date = LibHoliday.business_days_add(start_date, rules.max_days, unit_id)
+    DateTime.new!(due_date, ~T[23:59:59], "Etc/UTC")
   end
 
   defp calculate_reservation_expiry do

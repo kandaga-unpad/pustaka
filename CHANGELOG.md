@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.32] - 2026-05-13
+
+### Added
+
+- **Frontend collections: sidebar filter panel** — The collection browse page (`/collections`) has been redesigned with a persistent left-side filter panel containing all filter controls. The top bar now holds only the search input and page title, keeping browsing and filtering concerns visually separate.
+- **Frontend collections: publication year range filter** — Users can now narrow collections by publication year using a "From / To" input pair in the sidebar. The year is matched against the `publishedYear` collection field stored in `collection_fields`. Supports open-ended ranges (from only, to only, or both).
+- **Frontend collections: sidebar radio-button filters** — Node, Status, GLAM Type, and Media Type filters are now rendered as radio-button groups in the sidebar instead of dropdown selects, improving scannability and touch usability.
+- **Frontend collections: mobile filter toggle** — A "Filters" button appears on small screens to show/hide the sidebar panel, with an indicator badge when any filter is active.
+- **Frontend collections: active-filter indicator and clear-all button** — When any filter is active, a "Clear all" link appears in the sidebar header and a "Clear filters" shortcut appears in the results header on mobile.
+- **`frontend_pagination`: `filter_media_type`, `filter_year_from`, `filter_year_to` attrs** — The pagination component now forwards all active filter parameters (including the new year-range and media-type filters) through page links so filter state is preserved across pages.
+- **`build_page_url/7`: `extra_params` argument** — Accepts an optional extra params map merged into the pagination URL, enabling arbitrary filter keys without changing the function signature.
+- **`LibHoliday.business_days_add/3`** — New function that advances a `%Date{}` by N business days, skipping holidays and non-business days for a given `unit_id`. Used by loan and renewal due-date calculations so due dates land on the next open business day rather than on a holiday.
+- **Node Loan Rules: super-admin guard** — The "Add Node" and "Configure Rules" buttons on the nodes settings page are now hidden for non-super-admin users. The Node Loan Rules page (`/manage/settings/nodes/rules`) now redirects non-super-admins back to the nodes list with an "Access Denied" flash.
+- **Test fixtures: `ensure_node` and `ensure_resource_class`** — `AccountsFixtures.user_fixture/1` and `LibraryFixtures` collection fixture now automatically provision a `Node` (and `ResourceClass`) when none exists, preventing FK constraint failures in isolated test runs.
+
+### Changed
+
+- **Due-date calculation: holiday-aware** — `calculate_due_date_for_member_type/3` and `calculate_renewal_due_date/3` in `Circulation` now call `LibHoliday.business_days_add/3` instead of a plain `DateTime.add` so loan and renewal due dates skip over library holidays. The item's `unit_id` is passed separately from the override-rules `node`, ensuring holidays are always scoped to the item's home branch.
+- **Overdue calculation: holiday-aware per node** — `Transaction.days_overdue/1` now passes `unit_id` to `LibHoliday.business_days_between/3` so overdue day counts exclude holidays at the item's branch.
+
+### Fixed
+
+- **Year filter: integer overflow on non-year `publishedYear` values** — Some imported records store ISBN-like numbers (e.g. `9798150201`) in the `publishedYear` field. The previous `value ~ '^[0-9]+$'` regex matched any all-digit string, causing `value::integer` to overflow PostgreSQL's 32-bit integer type. Fixed by tightening the regex to `'^[0-9]{4}$'` (exactly four digits), so only valid 4-digit years are cast.
+- **`LibHolidays.create_holiday/1`: `schedule_type` default not applied** — `Map.put_new/3` was called with an atom key (`:schedule_type`) while the incoming attrs map used string keys, so the default was never set. Changed to `"schedule_type"` (string key) to match the changeset cast.
+- **`LibraryFixtures` collection fixture: missing required fields** — Collection fixture was missing `collection_code`, `type_id`, and `unit_id`, causing FK constraint errors in test runs that start with an empty database. Fixture now auto-generates a unique collection code and resolves or creates a `ResourceClass` and `Node`.
+
+---
+
 ## [0.1.31] - 2026-05-12
 
 ### Changed

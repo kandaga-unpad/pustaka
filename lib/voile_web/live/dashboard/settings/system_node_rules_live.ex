@@ -405,17 +405,27 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
   end
 
   def mount(_params, _session, socket) do
-    nodes = System.list_nodes()
+    user = socket.assigns.current_scope.user
 
-    socket =
-      socket
-      |> assign(:page_title, gettext("Node Loan Rules"))
-      |> assign(:nodes, nodes)
-      |> assign(:selected_node, nil)
-      |> assign(:form, to_form(%{}))
-      |> assign(:form_data, default_form_data())
+    if !VoileWeb.Auth.Authorization.is_super_admin?(user) do
+      {:ok,
+       socket
+       |> put_flash(:error, "Access Denied: Only super admins can access this page")
+       |> push_navigate(to: ~p"/manage/settings/nodes")}
+    else
+      nodes = System.list_nodes()
 
-    {:ok, socket}
+      socket =
+        socket
+        |> assign(:page_title, gettext("Node Loan Rules"))
+        |> assign(:nodes, nodes)
+        |> assign(:selected_node, nil)
+        |> assign(:form, to_form(%{}))
+        |> assign(:form_data, default_form_data())
+        |> assign(:current_path, "/manage/settings/nodes/rules")
+
+      {:ok, socket}
+    end
   end
 
   def handle_event("select_node", %{"node_id" => ""}, socket) do

@@ -94,7 +94,7 @@ defmodule Voile.Schema.System.LibHolidays do
   """
   def create_holiday(attrs \\ %{}) do
     # Ensure schedule_type defaults to "holiday"
-    attrs = Map.put_new(attrs, :schedule_type, "holiday")
+    attrs = Map.put_new(attrs, "schedule_type", "holiday")
 
     %LibHoliday{}
     |> LibHoliday.changeset(attrs)

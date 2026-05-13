@@ -25,12 +25,23 @@ defmodule Voile.AccountsFixtures do
   end
 
   def user_fixture(attrs \\ %{}) do
+    # Ensure a node exists so the users_node_id_fkey FK constraint is satisfied
+    node = ensure_node()
+
     {:ok, user} =
       attrs
       |> valid_user_attributes()
+      |> Map.put_new("node_id", node.id)
       |> Voile.Schema.Accounts.register_user()
 
     user
+  end
+
+  defp ensure_node do
+    case Repo.all(from n in Voile.Schema.System.Node, limit: 1) do
+      [node | _] -> node
+      [] -> Voile.SystemFixtures.node_fixture()
+    end
   end
 
   def user_scope_fixture do
