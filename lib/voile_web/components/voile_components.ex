@@ -797,6 +797,9 @@ defmodule VoileWeb.VoileComponents do
   # or "items"
   attr :type_page, :string, default: "collections"
   attr :filter_glam_type, :string, default: "all"
+  attr :filter_media_type, :string, default: "all"
+  attr :filter_year_from, :string, default: ""
+  attr :filter_year_to, :string, default: ""
   attr :socket, :map, default: nil
 
   def frontend_pagination(assigns) do
@@ -812,7 +815,12 @@ defmodule VoileWeb.VoileComponents do
                 @filter_unit_id,
                 @filter_status,
                 @type_page,
-                @filter_glam_type
+                @filter_glam_type,
+                %{
+                  "media_type" => @filter_media_type,
+                  "year_from" => @filter_year_from,
+                  "year_to" => @filter_year_to
+                }
               )
             }
             class="relative inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile hover:bg-voile-surface"
@@ -830,7 +838,12 @@ defmodule VoileWeb.VoileComponents do
                 @filter_unit_id,
                 @filter_status,
                 @type_page,
-                @filter_glam_type
+                @filter_glam_type,
+                %{
+                  "media_type" => @filter_media_type,
+                  "year_from" => @filter_year_from,
+                  "year_to" => @filter_year_to
+                }
               )
             }
             class="relative ml-3 inline-flex items-center rounded-md border border-voile-muted bg-white px-4 py-2 text-sm font-medium text-voile dark:bg-voile-neutral-dark dark:text-voile-surface dark:hover:bg-voile-surface-dark hover:bg-voile-surface"
@@ -858,7 +871,13 @@ defmodule VoileWeb.VoileComponents do
                     @search_query,
                     @filter_unit_id,
                     @filter_status,
-                    @type_page
+                    @type_page,
+                    @filter_glam_type,
+                    %{
+                      "media_type" => @filter_media_type,
+                      "year_from" => @filter_year_from,
+                      "year_to" => @filter_year_to
+                    }
                   )
                 }
                 class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
@@ -881,7 +900,12 @@ defmodule VoileWeb.VoileComponents do
                       @filter_unit_id,
                       @filter_status,
                       @type_page,
-                      @filter_glam_type
+                      @filter_glam_type,
+                      %{
+                        "media_type" => @filter_media_type,
+                        "year_from" => @filter_year_from,
+                        "year_to" => @filter_year_to
+                      }
                     )
                   }
                   class={[
@@ -908,7 +932,12 @@ defmodule VoileWeb.VoileComponents do
                     @filter_unit_id,
                     @filter_status,
                     @type_page,
-                    @filter_glam_type
+                    @filter_glam_type,
+                    %{
+                      "media_type" => @filter_media_type,
+                      "year_from" => @filter_year_from,
+                      "year_to" => @filter_year_to
+                    }
                   )
                 }
                 class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
@@ -1275,7 +1304,8 @@ defmodule VoileWeb.VoileComponents do
         filter_unit_id,
         filter_status,
         type_page,
-        filter_glam_type \\ nil
+        filter_glam_type \\ nil,
+        extra_params \\ %{}
       ) do
     params =
       %{
@@ -1285,6 +1315,7 @@ defmodule VoileWeb.VoileComponents do
         "glam_type" => filter_glam_type,
         "page" => page
       }
+      |> Map.merge(extra_params)
       |> Enum.reject(fn {_k, v} -> v == "" or v == "all" or is_nil(v) end)
       |> Enum.into(%{})
 

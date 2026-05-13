@@ -268,6 +268,8 @@ defmodule Voile.LibraryFixtures do
 
       [] ->
         creator = ensure_creator()
+        resource_class = ensure_resource_class()
+        node = ensure_node()
 
         {:ok, collection} =
           %Collection{}
@@ -277,11 +279,43 @@ defmodule Voile.LibraryFixtures do
             status: "published",
             access_level: "public",
             thumbnail: "test-thumbnail.jpg",
-            creator_id: creator.id
+            collection_code: "TEST-COLL-#{System.unique_integer([:positive])}",
+            creator_id: creator.id,
+            type_id: resource_class.id,
+            unit_id: node.id
           })
           |> Repo.insert()
 
         Repo.preload(collection, [:mst_creator])
+    end
+  end
+
+  defp ensure_node do
+    case Repo.all(from n in Voile.Schema.System.Node, limit: 1) do
+      [node | _] -> node
+      [] -> Voile.SystemFixtures.node_fixture()
+    end
+  end
+
+  defp ensure_resource_class do
+    alias Voile.Schema.Metadata.ResourceClass
+
+    case Repo.all(from r in ResourceClass, limit: 1) do
+      [rc | _] ->
+        rc
+
+      [] ->
+        {:ok, rc} =
+          %ResourceClass{}
+          |> ResourceClass.changeset(%{
+            label: "Test Resource Class",
+            local_name: "test_resource_class",
+            information: "Test resource class for fixtures",
+            glam_type: "Library"
+          })
+          |> Repo.insert()
+
+        rc
     end
   end
 

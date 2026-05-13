@@ -18,17 +18,19 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         </p>
       </div>
 
-      <div>
-        <.button phx-click="new_node" class="primary-btn">
-          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Node")}
-        </.button>
-        <.button
-          href={~p"/manage/settings/nodes/rules"}
-          class="warning-btn"
-        >
-          <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("Configure Rules")}
-        </.button>
-      </div>
+      <%= if @current_scope.user && VoileWeb.Auth.Authorization.is_super_admin?(@current_scope.user) do %>
+        <div>
+          <.button phx-click="new_node" class="primary-btn">
+            <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Node")}
+          </.button>
+          <.button
+            href={~p"/manage/settings/nodes/rules"}
+            class="warning-btn"
+          >
+            <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("Configure Rules")}
+          </.button>
+        </div>
+      <% end %>
     </div>
 
     <section class="flex flex-col md:flex-row gap-4">

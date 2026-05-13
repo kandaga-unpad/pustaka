@@ -92,7 +92,7 @@ defmodule Voile.Schema.Library.Transaction do
   Calculates days overdue using business days (excluding holidays and weekends).
   This is the default calculation that respects the library's holiday calendar.
   """
-  def days_overdue(%__MODULE__{due_date: due_date, return_date: nil}) do
+  def days_overdue(%__MODULE__{due_date: due_date, return_date: nil, unit_id: unit_id}) do
     due_date_only = local_date(due_date)
     today = local_today()
 
@@ -100,7 +100,7 @@ defmodule Voile.Schema.Library.Transaction do
       :lt ->
         alias Voile.Schema.System.LibHoliday
         start_day = Date.add(due_date_only, 1)
-        LibHoliday.business_days_between(start_day, today)
+        LibHoliday.business_days_between(start_day, today, unit_id)
 
       _ ->
         0
