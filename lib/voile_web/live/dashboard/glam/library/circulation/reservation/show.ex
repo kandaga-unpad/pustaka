@@ -51,13 +51,35 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Reservation.Show do
     reservation = Circulation.get_reservation!(id)
     current_user_id = socket.assigns.current_scope.user.id
 
-    case Circulation.fulfill_reservation(reservation, current_user_id) do
+    case Circulation.fulfill_reservation(id, current_user_id) do
       {:ok, _transaction} ->
         {:noreply,
          socket
          |> assign(show_fulfill_modal: false, pending_fulfill_id: nil)
          |> put_flash(:info, "Reservation fulfilled successfully.")
          |> push_navigate(to: ~p"/manage/glam/library/circulation/reservations/#{reservation.id}")}
+
+      {:error, reason} when is_binary(reason) ->
+        {:noreply, put_flash(socket, :error, "Cannot fulfill reservation: #{reason}")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+    end
+  end
+
+  @impl true
+  def handle_event("mark_available", %{"id" => id}, socket) do
+    current_user_id = socket.assigns.current_scope.user.id
+
+    case Circulation.mark_reservation_available(id, current_user_id) do
+      {:ok, reservation} ->
+        {:noreply,
+         socket
+         |> assign(:reservation, reservation)
+         |> put_flash(:info, "Reservation marked available for pickup.")}
+
+      {:error, reason} when is_binary(reason) ->
+        {:noreply, put_flash(socket, :error, "Failed to mark reservation available: #{reason}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :changeset, changeset)}

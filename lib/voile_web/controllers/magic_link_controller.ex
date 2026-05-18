@@ -7,9 +7,20 @@ defmodule VoileWeb.MagicLinkController do
   def login(conn, %{"token" => token}) do
     case Accounts.login_user_by_magic_link(token) do
       {:ok, {user, _expired_tokens}} ->
-        conn
-        |> put_flash(:info, "Welcome! You have been successfully logged in.")
-        |> UserAuth.log_in_user(user)
+        if Accounts.is_manually_suspended?(user) do
+          reason = user.suspension_reason || "Your account has been suspended"
+
+          conn
+          |> put_flash(
+            :error,
+            "Login failed: #{reason}. Please contact support for assistance."
+          )
+          |> redirect(to: ~p"/login")
+        else
+          conn
+          |> put_flash(:info, "Welcome! You have been successfully logged in.")
+          |> UserAuth.log_in_user(user)
+        end
 
       {:error, {:unconfirmed_with_password, reset_token, _user}} ->
         # If we detect an unconfirmed user who has a password, guide them to

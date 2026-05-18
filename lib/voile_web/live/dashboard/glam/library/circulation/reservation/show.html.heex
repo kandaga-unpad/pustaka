@@ -17,28 +17,53 @@
       </div>
 
       <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
-        <%= if @reservation.status == "pending" do %>
-          <button
-            phx-click="open_fulfill_modal"
-            phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success text-sm text-white font-medium rounded-md"
-          >
-            <.icon name="hero-check" class="w-4 h-4 mr-2" /> Fulfill Reservation
-          </button>
-          <button
-            phx-click="notify"
-            phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-sm text-white font-medium rounded-md"
-          >
-            <.icon name="hero-bell" class="w-4 h-4 mr-2" /> Send Notification
-          </button>
-          <button
-            phx-click="open_cancel_modal"
-            phx-value-id={@reservation.id}
-            class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm text-white font-medium rounded-md"
-          >
-            <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Cancel Reservation
-          </button>
+        <%= cond do %>
+          <% @reservation.status == "pending" -> %>
+            <button
+              phx-click="mark_available"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success-dark text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-book-open-solid" class="w-4 h-4 mr-2" /> Mark Available
+            </button>
+            <button
+              phx-click="notify"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-bell" class="w-4 h-4 mr-2" /> Send Notification
+            </button>
+            <button
+              phx-click="open_cancel_modal"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Cancel Reservation
+            </button>
+          <% @reservation.status == "available" -> %>
+            <button
+              phx-click="open_fulfill_modal"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-success hover:bg-voile-success-dark text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-check" class="w-4 h-4 mr-2" /> Fulfill Reservation
+            </button>
+            <button
+              phx-click="notify"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-primary hover:bg-voile-primary-dark text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-bell" class="w-4 h-4 mr-2" /> Send Notification
+            </button>
+            <button
+              phx-click="open_cancel_modal"
+              phx-value-id={@reservation.id}
+              class="inline-flex items-center px-4 py-2 bg-voile-error hover:bg-voile-error text-sm text-white font-medium rounded-md"
+            >
+              <.icon name="hero-x-mark" class="w-4 h-4 mr-2" /> Cancel Reservation
+            </button>
+          <% true -> %>
+            <%!-- No actions for picked_up, fulfilled, cancelled, expired --%>
         <% end %>
       </div>
     </div>
@@ -185,13 +210,15 @@
             </div>
           </div>
 
-          <%= if @reservation.notes do %>
-            <div class="pt-4 border-t border-voile-light">
-              <dt class="text-sm font-medium text-voile-muted">Notes</dt>
+          <div class="pt-4 border-t border-voile-light">
+            <dt class="text-sm font-medium text-voile-muted">Notes</dt>
 
-              <dd class="mt-1 text-sm text-voile">{@reservation.notes}</dd>
-            </div>
-          <% end %>
+            <dd class="mt-1 text-sm text-voile">
+              {if @reservation.notes && @reservation.notes != "",
+                do: @reservation.notes,
+                else: "-"}
+            </dd>
+          </div>
         </div>
       </div>
     </div>

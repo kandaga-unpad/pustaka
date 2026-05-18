@@ -91,13 +91,24 @@ defmodule VoileWeb.UserAuthPaus do
                 # Get or create user in your system
                 user_record = get_or_create_user_from_paus(paus_user)
 
-                conn
-                |> delete_session(:paus_oauth_state)
-                |> put_session(:paus_user_token, token)
-                |> put_session(:paus_user, paus_user)
-                |> VoileWeb.UserAuth.log_in_user(user_record)
-                |> put_flash(:info, "Welcome, #{paus_user["name"] || paus_user["email"]}!")
-                |> redirect(to: ~p"/")
+                # Block suspended users before creating a session
+                if Accounts.is_manually_suspended?(user_record) do
+                  reason = user_record.suspension_reason || "Your account has been suspended"
+
+                  conn
+                  |> put_flash(
+                    :error,
+                    "Login failed: #{reason}. Please contact support for assistance."
+                  )
+                  |> redirect(to: ~p"/login")
+                else
+                  conn
+                  |> delete_session(:paus_oauth_state)
+                  |> put_session(:paus_user_token, token)
+                  |> put_session(:paus_user, paus_user)
+                  |> put_flash(:info, "Welcome, #{paus_user["name"] || paus_user["email"]}!")
+                  |> VoileWeb.UserAuth.log_in_user(user_record)
+                end
 
               {:error, reason} ->
                 conn

@@ -105,7 +105,44 @@ defmodule Voile.Notifications.ReservationNotifier do
             {:reservation_notification, notification_data}
           )
 
-        {:ok, :realtime_only}
+        # Also send email as fallback in case the member is not currently online
+        case reservation.member do
+          %{email: email} when is_binary(email) and email != "" ->
+            import Swoosh.Email
+
+            item_desc =
+              cond do
+                get_collection_title(reservation) -> get_collection_title(reservation)
+                get_item_code(reservation) != "Unknown Item" -> get_item_code(reservation)
+                true -> "your reserved item"
+              end
+
+            html_body = """
+            <p>Hello #{get_member_name(reservation)},</p>
+            <p>Your reservation for <strong>#{item_desc}</strong> is now <strong>#{reservation.status}</strong> and ready for pickup.</p>
+            <p>Please visit the library to collect it before it expires.</p>
+            #{if reservation.notes && reservation.notes != "", do: "<p>Notes: #{reservation.notes}</p>", else: ""}
+            <p>If you have questions, please contact the library.</p>
+            """
+
+            text_body =
+              "Hello #{get_member_name(reservation)},\n\nYour reservation for #{item_desc} is now #{reservation.status} and ready for pickup.\n\nPlease visit the library to collect it before it expires.\n\nThank you."
+
+            email_msg =
+              new()
+              |> to(email)
+              |> from({"Voile", "hi@curatorian.id"})
+              |> subject("Your reservation is ready for pickup")
+              |> html_body(html_body)
+              |> text_body(text_body)
+
+            Voile.Mailer.deliver(email_msg)
+
+          _ ->
+            :ok
+        end
+
+        {:ok, :notified}
     end
   end
 

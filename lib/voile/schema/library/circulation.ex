@@ -1907,6 +1907,20 @@ defmodule Voile.Schema.Library.Circulation do
   end
 
   @doc """
+  Gets all reservations for a member across all statuses (pending, available,
+  fulfilled, cancelled, expired) — used for the member-facing atrium.
+  """
+  def list_all_member_reservations(nil), do: []
+
+  def list_all_member_reservations(member_id) do
+    Reservation
+    |> where([r], r.member_id == ^member_id)
+    |> preload([{:item, [:collection]}, :collection])
+    |> order_by([r], desc: r.reservation_date)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets expired reservations.
   """
   def list_expired_reservations do
