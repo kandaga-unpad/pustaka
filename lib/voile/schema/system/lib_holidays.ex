@@ -29,20 +29,22 @@ defmodule Voile.Schema.System.LibHolidays do
   Returns the list of all holidays.
   """
   def list_holidays(unit_id \\ nil) do
-    query =
-      LibHoliday
-      |> where([h], h.schedule_type == "holiday")
-
-    query =
-      if unit_id do
-        from(h in query, where: h.unit_id == ^unit_id)
-      else
-        query
-      end
-
-    query
+    LibHoliday
+    |> visible_holiday_scope(unit_id)
     |> order_by([h], desc: h.holiday_date)
     |> Repo.all()
+  end
+
+  defp visible_holiday_scope(query, nil) do
+    from(h in query, where: h.schedule_type == "holiday")
+  end
+
+  defp visible_holiday_scope(query, unit_id) do
+    from(h in query,
+      where:
+        h.schedule_type == "holiday" and
+          (h.unit_id == ^unit_id or is_nil(h.unit_id) or h.holiday_type == "public")
+    )
   end
 
   @doc """
@@ -58,24 +60,14 @@ defmodule Voile.Schema.System.LibHolidays do
         offset: ^offset,
         limit: ^per_page
 
-    query =
-      if unit_id do
-        from(h in query, where: h.unit_id == ^unit_id)
-      else
-        query
-      end
+    query = visible_holiday_scope(query, unit_id)
 
     holidays = Repo.all(query)
 
     total_count_query =
       from(h in LibHoliday, where: h.schedule_type == "holiday")
 
-    total_count_query =
-      if unit_id do
-        from(h in total_count_query, where: h.unit_id == ^unit_id)
-      else
-        total_count_query
-      end
+    total_count_query = visible_holiday_scope(total_count_query, unit_id)
 
     total_count = Repo.aggregate(total_count_query, :count, :id)
 
@@ -99,6 +91,7 @@ defmodule Voile.Schema.System.LibHolidays do
     %LibHoliday{}
     |> LibHoliday.changeset(attrs)
     |> Repo.insert()
+    |> clear_cache_after()
   end
 
   @doc """
@@ -108,6 +101,7 @@ defmodule Voile.Schema.System.LibHolidays do
     holiday
     |> LibHoliday.changeset(attrs)
     |> Repo.update()
+    |> clear_cache_after()
   end
 
   @doc """
@@ -115,7 +109,15 @@ defmodule Voile.Schema.System.LibHolidays do
   """
   def delete_holiday(%LibHoliday{} = holiday) do
     Repo.delete(holiday)
+    |> clear_cache_after()
   end
+
+  defp clear_cache_after({:ok, result}) do
+    LibHoliday.clear_cache()
+    {:ok, result}
+  end
+
+  defp clear_cache_after(error), do: error
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking holiday changes.
@@ -219,15 +221,11 @@ defmodule Voile.Schema.System.LibHolidays do
     base_query =
       from h in LibHoliday,
         where:
-          fragment("EXTRACT(year FROM ?)", h.holiday_date) == ^current_year and
-            h.schedule_type == "holiday"
+          h.is_active == true and h.schedule_type == "holiday" and
+            (fragment("EXTRACT(year FROM ?)", h.holiday_date) == ^current_year or
+               h.is_recurring == true)
 
-    base_query =
-      if unit_id do
-        from(h in base_query, where: h.unit_id == ^unit_id)
-      else
-        base_query
-      end
+    base_query = visible_holiday_scope(base_query, unit_id)
 
     query =
       from h in base_query,
@@ -302,6 +300,7 @@ defmodule Voile.Schema.System.LibHolidays do
     %LibHoliday{}
     |> LibHoliday.changeset(attrs)
     |> Repo.insert()
+    |> clear_cache_after()
   end
 
   @doc """
@@ -311,6 +310,7 @@ defmodule Voile.Schema.System.LibHolidays do
     schedule
     |> LibHoliday.changeset(attrs)
     |> Repo.update()
+    |> clear_cache_after()
   end
 
   @doc """
@@ -318,6 +318,7 @@ defmodule Voile.Schema.System.LibHolidays do
   """
   def delete_schedule(%LibHoliday{schedule_type: "schedule"} = schedule) do
     Repo.delete(schedule)
+    |> clear_cache_after()
   end
 
   @doc """

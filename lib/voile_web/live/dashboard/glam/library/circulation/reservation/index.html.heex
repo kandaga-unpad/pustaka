@@ -1,4 +1,4 @@
-<div class="px-4 py-6">
+<div class="px-4 py-6 max-w-7xl mx-auto">
   <.breadcrumb items={[
     %{label: "Manage", path: ~p"/manage"},
     %{label: "GLAM", path: ~p"/manage/glam"},
@@ -6,195 +6,272 @@
     %{label: "Circulation", path: ~p"/manage/glam/library/circulation"},
     %{label: "Reservations", path: nil}
   ]} />
-  <div class="sm:flex sm:items-center sm:justify-between my-16">
-    <.back navigate="/manage/glam/library/circulation">Back</.back>
+  <%!-- Page header --%>
+  <div class="mt-6 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <.back navigate="/manage/glam/library/circulation">Back</.back>
+        <div>
+          <h1 class="text-2xl font-bold">Library Reservations</h1>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            Manage item reservations and queue system
+          </p>
+        </div>
+      </div>
 
-    <div class="text-center">
-      <h1 class="text-2xl font-bold">Library Reservations</h1>
-
-      <p class="mt-2 text-sm text-gray-700">Manage item reservations and queue system</p>
-    </div>
-
-    <div class="mt-4 sm:mt-0 sm:flex sm:space-x-3">
       <.link
         navigate={~p"/manage/glam/library/circulation/reservations/new"}
-        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors"
       >
-        <.icon name="hero-plus" class="w-4 h-4 mr-2" /> New Reservation
+        <.icon name="hero-plus" class="w-4 h-4" /> New Reservation
       </.link>
     </div>
   </div>
-  <!-- Filters -->
-  <div class="bg-white dark:bg-gray-700 shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-voile-light">
-      <div class="sm:flex sm:items-center sm:justify-between">
-        <div class="flex space-x-4">
-          <.form :let={f} for={%{}} phx-change="filter" class="inline">
-            <.input
-              field={f[:status]}
-              type="select"
-              options={[
-                {"All Status", "all"},
-                {"Pending", "pending"},
-                {"Available", "available"},
-                {"Picked Up", "picked_up"},
-                {"Expired", "expired"},
-                {"Cancelled", "cancelled"}
-              ]}
-              value={@filter_status}
-              class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-              label=""
-            />
-          </.form>
+  <%!-- Stats + Filters card --%>
+  <div class="bg-white dark:bg-gray-800 shadow rounded-xl mb-6 overflow-hidden">
+    <%!-- Quick stats --%>
+    <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-voile-light border-b border-voile-light">
+      <div class="px-5 py-4 text-center">
+        <div class="text-2xl font-bold text-amber-500">-</div>
+        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Pending
+        </div>
+      </div>
 
-          <%= if @is_super_admin do %>
-            <.form :let={f} for={%{}} phx-change="select_node" class="inline">
-              <.input
-                field={f[:node_id]}
-                type="select"
-                options={
-                  [
-                    {"All Nodes", "all"}
-                  ] ++ Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
-                }
-                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
-                class="block w-40 text-sm border-voile-muted rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                label=""
-              />
-            </.form>
-          <% end %>
+      <div class="px-5 py-4 text-center">
+        <div class="text-2xl font-bold text-green-600">-</div>
+        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Available
+        </div>
+      </div>
+
+      <div class="px-5 py-4 text-center">
+        <div class="text-2xl font-bold text-blue-600">-</div>
+        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Picked Up
+        </div>
+      </div>
+
+      <div class="px-5 py-4 text-center">
+        <div class="text-2xl font-bold text-red-500">-</div>
+        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Expired
         </div>
       </div>
     </div>
-    <!-- Quick Stats -->
-    <div class="bg-white dark:bg-gray-700 px-6 py-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
-      <div class="text-center">
-        <div class="text-2xl font-semibold text-yellow-600">-</div>
+    <%!-- Filters row --%>
+    <div class="px-5 py-3 flex flex-wrap items-center gap-3">
+      <.form :let={f} for={%{}} phx-change="filter" class="contents">
+        <.input
+          field={f[:status]}
+          type="select"
+          options={[
+            {"All Status", "all"},
+            {"Pending", "pending"},
+            {"Available", "available"},
+            {"Picked Up", "picked_up"},
+            {"Expired", "expired"},
+            {"Cancelled", "cancelled"}
+          ]}
+          value={@filter_status}
+          label=""
+        />
+      </.form>
 
-        <div class="text-xs text-gray-500 uppercase">Pending</div>
-      </div>
-
-      <div class="text-center">
-        <div class="text-2xl font-semibold text-green-600">-</div>
-
-        <div class="text-xs text-gray-500 uppercase">Available</div>
-      </div>
-
-      <div class="text-center">
-        <div class="text-2xl font-semibold text-blue-600">-</div>
-
-        <div class="text-xs text-gray-500 uppercase">Picked Up</div>
-      </div>
-
-      <div class="text-center">
-        <div class="text-2xl font-semibold text-red-600">-</div>
-
-        <div class="text-xs text-gray-500 uppercase">Expired</div>
-      </div>
+      <%= if @is_super_admin do %>
+        <.form :let={f} for={%{}} phx-change="select_node" class="contents">
+          <.input
+            field={f[:node_id]}
+            type="select"
+            options={
+              [{"All Nodes", "all"}] ++
+                Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+            }
+            value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+            label=""
+          />
+        </.form>
+      <% end %>
     </div>
   </div>
-  <!-- Reservations Table -->
-  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
-    <.table id="reservations" rows={@streams.reservations}>
-      <:col :let={{_id, reservation}} label="Member">
-        <div class="flex items-center">
-          <div class="flex-shrink-0 h-10 w-10">
-            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span class="text-sm font-medium">
-                {if reservation.member,
-                  do: String.first(reservation.member.fullname || "?"),
-                  else: "?"}
-              </span>
+  <%!-- Reservation cards --%>
+  <div id="reservations" phx-update="stream" class="space-y-3">
+    <div class="hidden only:flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl shadow">
+      <.icon name="hero-bookmark" class="w-12 h-12 mb-3 opacity-40" />
+      <p class="text-sm font-medium">No reservations found</p>
+    </div>
+
+    <%= for {id, reservation} <- @streams.reservations do %>
+      <div
+        id={id}
+        class="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden border border-transparent hover:border-voile-light transition-colors"
+      >
+        <div class="px-5 py-4">
+          <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+            <%!-- Left: member avatar + info --%>
+            <div class="flex items-center gap-3 min-w-0 sm:w-52 shrink-0">
+              <div class="h-10 w-10 rounded-full bg-voile-primary/10 flex items-center justify-center shrink-0">
+                <span class="text-sm font-semibold text-voile-primary">
+                  {if reservation.member,
+                    do: String.first(reservation.member.fullname || "?"),
+                    else: "?"}
+                </span>
+              </div>
+
+              <div class="min-w-0">
+                <p
+                  class="text-sm font-semibold truncate"
+                  title={
+                    if reservation.member, do: reservation.member.fullname, else: "Unknown Member"
+                  }
+                >
+                  {if reservation.member, do: reservation.member.fullname, else: "Unknown Member"}
+                </p>
+
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {if reservation.member && reservation.member.identifier,
+                    do: Decimal.to_string(reservation.member.identifier),
+                    else: "-"}
+                </p>
+              </div>
+            </div>
+            <%!-- Middle: item + metadata grid --%>
+            <div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Item / Collection
+                </p>
+
+                <%= if reservation.item do %>
+                  <p
+                    class="text-sm font-semibold truncate"
+                    title={
+                      if reservation.item.collection,
+                        do: reservation.item.collection.title,
+                        else: "No collection"
+                    }
+                  >
+                    {if reservation.item.collection,
+                      do: reservation.item.collection.title,
+                      else: "No collection"}
+                  </p>
+
+                  <p
+                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    title={reservation.item.item_code}
+                  >
+                    {reservation.item.item_code}
+                  </p>
+                <% else %>
+                  <p class="text-sm font-semibold">Collection Reservation</p>
+
+                  <p
+                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    title={
+                      if reservation.collection,
+                        do: reservation.collection.title,
+                        else: "Unknown collection"
+                    }
+                  >
+                    {if reservation.collection,
+                      do: reservation.collection.title,
+                      else: "Unknown collection"}
+                  </p>
+                <% end %>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Status
+                </p>
+
+                <span class={"inline-flex px-2 py-0.5 text-xs font-semibold rounded-full #{reservation_status_badge_class(reservation.status)}"}>
+                  {String.capitalize(reservation.status)}
+                </span>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Priority
+                </p>
+
+                <div class="flex items-center gap-1 text-sm">
+                  {reservation.priority || 1}
+                  <%= if reservation.priority && reservation.priority > 1 do %>
+                    <.icon name="hero-exclamation-triangle" class="w-3.5 h-3.5 text-amber-500" />
+                  <% end %>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Reserved
+                </p>
+
+                <p class="text-xs">{format_datetime(reservation.reservation_date)}</p>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Expires
+                </p>
+
+                <p class="text-xs">
+                  {if reservation.expiry_date,
+                    do: format_datetime(reservation.expiry_date),
+                    else: "-"}
+                </p>
+
+                <%= if reservation.expiry_date &&
+                      DateTime.compare(reservation.expiry_date, DateTime.utc_now()) == :lt &&
+                      reservation.status in ["pending", "available"] do %>
+                  <p class="text-xs text-red-500 font-medium">Overdue</p>
+                <% end %>
+              </div>
+
+              <div>
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                  Notification
+                </p>
+
+                <%= if reservation.notification_sent do %>
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                    <.icon name="hero-check-circle" class="w-3.5 h-3.5" /> Sent
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <.icon name="hero-x-circle" class="w-3.5 h-3.5" /> Not Sent
+                  </span>
+                <% end %>
+              </div>
+
+              <%= if reservation.notes && reservation.notes != "" do %>
+                <div class="sm:col-span-2 lg:col-span-3">
+                  <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                    Notes
+                  </p>
+
+                  <p
+                    class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2"
+                    title={reservation.notes}
+                  >
+                    {reservation.notes}
+                  </p>
+                </div>
+              <% end %>
             </div>
           </div>
-
-          <div class="ml-4">
-            <div class="text-sm font-medium">
-              {if reservation.member, do: reservation.member.fullname, else: "Unknown Member"}
-            </div>
-
-            <div class="text-sm">ID: {reservation.member_id}</div>
-          </div>
         </div>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Item/Collection">
-        <div>
-          <%= if reservation.item do %>
-            <div class="text-sm font-medium">{reservation.item.item_code}</div>
-
-            <div class="text-sm">
-              {if reservation.item.collection,
-                do: reservation.item.collection.title,
-                else: "No collection"}
-            </div>
-          <% else %>
-            <div class="text-sm font-medium">Collection Reservation</div>
-
-            <div class="text-sm">
-              {if reservation.collection,
-                do: reservation.collection.title,
-                else: "Unknown collection"}
-            </div>
-          <% end %>
-        </div>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Status">
-        <span class={"inline-flex px-2 py-1 text-xs font-semibold rounded-full #{reservation_status_badge_class(reservation.status)}"}>
-          {String.capitalize(reservation.status)}
-        </span>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Priority">
-        <div class="flex items-center">
-          <span class="text-sm">{reservation.priority || 1}</span>
-          <%= if reservation.priority && reservation.priority > 1 do %>
-            <.icon name="hero-exclamation-triangle" class="w-4 h-4 ml-1 text-yellow-500" />
-          <% end %>
-        </div>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Reserved Date">
-        <div class="text-sm">{format_datetime(reservation.reservation_date)}</div>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Expiry Date">
-        <div class="text-sm">
-          {if reservation.expiry_date do
-            format_datetime(reservation.expiry_date)
-          else
-            "-"
-          end}
-        </div>
-
-        <%= if reservation.expiry_date && DateTime.compare(reservation.expiry_date, DateTime.utc_now()) == :lt && reservation.status in ["pending", "available"] do %>
-          <div class="text-xs text-red-500 font-medium">Expired</div>
-        <% end %>
-      </:col>
-
-      <:col :let={{_id, reservation}} label="Notification">
-        <%= if reservation.notification_sent do %>
-          <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-            <.icon name="hero-check" class="w-3 h-3 mr-1" /> Sent
-          </span>
-        <% else %>
-          <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-            <.icon name="hero-x-mark" class="w-3 h-3 mr-1" /> Not Sent
-          </span>
-        <% end %>
-      </:col>
-
-      <:action :let={{_id, reservation}}>
-        <div class="flex space-x-2">
+        <%!-- Actions footer --%>
+        <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-voile-light flex flex-wrap items-center gap-2">
           <%= if reservation.status == "pending" do %>
             <button
               phx-click="mark_available"
               phx-value-id={reservation.id}
-              class="text-green-600 hover:text-green-900 text-sm font-medium"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:hover:bg-green-900/60 transition-colors"
               title="Mark as available for pickup"
             >
-              Available
+              <.icon name="hero-check" class="w-3.5 h-3.5" /> Mark Available
             </button>
           <% end %>
 
@@ -202,10 +279,10 @@
             <button
               phx-click="fulfill_reservation"
               phx-value-id={reservation.id}
-              class="text-blue-600 hover:text-blue-900 text-sm font-medium"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60 transition-colors"
               data-confirm="Are you sure you want to fulfill this reservation and check out the item?"
             >
-              Fulfill
+              <.icon name="hero-arrow-right-circle" class="w-3.5 h-3.5" /> Fulfill
             </button>
           <% end %>
 
@@ -213,26 +290,26 @@
             <button
               phx-click="cancel_reservation"
               phx-value-id={reservation.id}
-              class="text-red-600 hover:text-red-900 text-sm font-medium"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60 transition-colors"
               data-confirm="Are you sure you want to cancel this reservation?"
             >
-              Cancel
+              <.icon name="hero-x-mark" class="w-3.5 h-3.5" /> Cancel
             </button>
           <% end %>
 
           <.link
             navigate={~p"/manage/glam/library/circulation/reservations/#{reservation.id}"}
-            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60 transition-colors ml-auto"
           >
-            View
+            <.icon name="hero-eye" class="w-3.5 h-3.5" /> View Details
           </.link>
         </div>
-      </:action>
-    </.table>
-    <!-- Pagination -->
-    <div class="bg-white dark:bg-gray-700 px-4 py-3 border-t border-voile-light sm:px-6">
-      <.pagination page={@page} total_pages={@total_pages} />
-    </div>
+      </div>
+    <% end %>
+  </div>
+  <%!-- Pagination --%>
+  <div class="mt-6">
+    <.pagination page={@page} total_pages={@total_pages} />
   </div>
 </div>
 <!-- New Reservation Modal -->

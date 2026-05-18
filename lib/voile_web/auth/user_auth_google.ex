@@ -67,11 +67,23 @@ defmodule VoileWeb.UserAuthGoogle do
         # Check if user needs onboarding
         needs_onboarding = needs_onboarding?(user_record, is_institutional)
 
-        conn
-        |> VoileWeb.UserAuth.log_in_user(user_record)
-        |> put_session(:google_user, user)
-        |> put_session(:google_user_token, token)
-        |> maybe_redirect_to_onboarding(needs_onboarding)
+        # Block suspended users before creating a session
+        if Voile.Schema.Accounts.is_manually_suspended?(user_record) do
+          reason = user_record.suspension_reason || "Your account has been suspended"
+
+          conn
+          |> Phoenix.Controller.put_flash(
+            :error,
+            "Login failed: #{reason}. Please contact support for assistance."
+          )
+          |> Phoenix.Controller.redirect(to: "/login")
+        else
+          conn
+          |> put_session(:google_user, user)
+          |> put_session(:google_user_token, token)
+          |> VoileWeb.UserAuth.log_in_user(user_record)
+          |> maybe_redirect_to_onboarding(needs_onboarding)
+        end
 
       {:error, error} ->
         IO.inspect(

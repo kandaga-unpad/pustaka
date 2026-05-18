@@ -23,6 +23,7 @@ defmodule VoileWeb.Frontend.Items.Show do
      |> assign(:related_items, [])
      |> assign(:show_reservation_form, false)
      |> assign(:reservation_loading, false)
+     |> assign(:reservation_form, to_form(%{"notes" => ""}, as: :reservation))
      |> assign(:app_contact_number, AppSystem.get_setting_value("app_contact_number", ""))
      |> assign(:app_email, AppSystem.get_setting_value("app_email", ""))}
   end
@@ -64,12 +65,20 @@ defmodule VoileWeb.Frontend.Items.Show do
 
   @impl true
   def handle_event("show_reservation_form", _params, socket) do
-    {:noreply, assign(socket, :show_reservation_form, true)}
+    {:noreply,
+     socket
+     |> assign(:show_reservation_form, true)
+     |> assign(:reservation_form, to_form(%{"notes" => ""}, as: :reservation))}
   end
 
   @impl true
   def handle_event("hide_reservation_form", _params, socket) do
     {:noreply, assign(socket, :show_reservation_form, false)}
+  end
+
+  @impl true
+  def handle_event("submit_reservation", %{"reservation" => %{"notes" => notes}}, socket) do
+    handle_event("submit_reservation", %{"notes" => notes}, socket)
   end
 
   @impl true
@@ -85,12 +94,13 @@ defmodule VoileWeb.Frontend.Items.Show do
           notes: String.trim(notes)
         }
 
-        case Circulation.create_reservation(current_user.id, item.id, reservation_attrs) do
+        case Circulation.create_reservation(current_user.id, item.id, nil, reservation_attrs) do
           {:ok, _reservation} ->
             {:noreply,
              socket
              |> assign(:show_reservation_form, false)
              |> assign(:reservation_loading, false)
+             |> assign(:reservation_form, to_form(%{notes: ""}, as: :reservation))
              |> put_flash(
                :info,
                gettext(
@@ -702,66 +712,109 @@ defmodule VoileWeb.Frontend.Items.Show do
             </div>
             <!-- Reservation Form Modal -->
             <%= if @show_reservation_form do %>
-              <div class="fixed inset-0 bg-gray-600/85 bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-                  <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      {gettext("Reserve Item")}
-                    </h3>
-
+              <div class="fixed inset-0 bg-gray-900/60 flex items-center justify-center p-4 z-50">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+                  <%!-- Modal header --%>
+                  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-2">
+                      <.icon
+                        name="hero-bookmark-solid"
+                        class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                      />
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        {gettext("Reserve Item")}
+                      </h3>
+                    </div>
                     <button
                       phx-click="hide_reservation_form"
-                      class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                      class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <.icon name="hero-x-mark-solid" class="w-5 h-5" />
                     </button>
                   </div>
-
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    {gettext("You are requesting to reserve:")} <strong>{@item.item_code}</strong>
-                  </p>
-
-                  <form phx-submit="submit_reservation" class="space-y-4">
-                    <div>
-                      <label
-                        for="reservation_notes"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                      >
-                        {gettext("Notes (optional)")}
-                      </label>
-                      <textarea
-                        id="reservation_notes"
-                        name="notes"
+                  <%!-- Item preview card --%>
+                  <div class="px-6 pt-5">
+                    <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                      <div class="w-16 h-22 shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm">
+                        <%= if @item.collection && @item.collection.thumbnail && @item.collection.thumbnail != "" do %>
+                          <img
+                            src={@item.collection.thumbnail}
+                            alt={@item.collection.title}
+                            class="w-full h-full object-cover"
+                          />
+                        <% else %>
+                          <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-600">
+                            <.icon name="hero-book-open-solid" class="w-7 h-7 text-white" />
+                          </div>
+                        <% end %>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p
+                          class="font-semibold text-gray-900 dark:text-white leading-snug"
+                          title={@item.collection && @item.collection.title}
+                        >
+                          {if @item.collection && @item.collection.title,
+                            do: @item.collection.title,
+                            else: @item.item_code}
+                        </p>
+                        <%= if @item.collection && @item.collection.mst_creator do %>
+                          <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            <.icon name="hero-user-solid" class="w-3.5 h-3.5 inline mr-1" />
+                            {@item.collection.mst_creator.creator_name}
+                          </p>
+                        <% end %>
+                        <%= if @item.collection && @item.collection.description && @item.collection.description != "" do %>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">
+                            {@item.collection.description}
+                          </p>
+                        <% end %>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5 font-mono">
+                          {@item.item_code}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <%!-- Form --%>
+                  <div class="px-6 pb-6 pt-4">
+                    <.form
+                      for={@reservation_form}
+                      id="reservation-form"
+                      phx-submit="submit_reservation"
+                      class="space-y-4"
+                    >
+                      <.input
+                        field={@reservation_form[:notes]}
+                        type="textarea"
+                        label={gettext("Notes (optional)")}
                         rows="3"
-                        class="block w-full border border-voile-muted dark:border-voile-dark rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                         placeholder={gettext("Any special requests or notes...")}
                         disabled={@reservation_loading}
-                      ></textarea>
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                      <button
-                        type="button"
-                        phx-click="hide_reservation_form"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg_gray-100 dark:bg-gray-600 border border-voile-muted dark:border-voile-dark rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        disabled={@reservation_loading}
-                      >
-                        {gettext("Cancel")}
-                      </button>
-                      <button
-                        type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={@reservation_loading}
-                      >
-                        <%= if @reservation_loading do %>
-                          <.icon name="hero-arrow-path" class="w-4 h-4 mr-2 animate-spin" />
-                          {gettext("Submitting...")}
-                        <% else %>
-                          {gettext("Submit Reservation")}
-                        <% end %>
-                      </button>
-                    </div>
-                  </form>
+                      />
+                      <div class="flex justify-end gap-3 pt-1">
+                        <button
+                          type="button"
+                          phx-click="hide_reservation_form"
+                          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                          disabled={@reservation_loading}
+                        >
+                          {gettext("Cancel")}
+                        </button>
+                        <button
+                          type="submit"
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={@reservation_loading}
+                        >
+                          <%= if @reservation_loading do %>
+                            <.icon name="hero-arrow-path" class="w-4 h-4 mr-2 animate-spin" />
+                            {gettext("Submitting...")}
+                          <% else %>
+                            <.icon name="hero-bookmark-solid" class="w-4 h-4 mr-2" />
+                            {gettext("Confirm Reservation")}
+                          <% end %>
+                        </button>
+                      </div>
+                    </.form>
+                  </div>
                 </div>
               </div>
             <% end %>

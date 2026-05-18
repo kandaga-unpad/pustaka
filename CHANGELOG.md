@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.33] - 2026-05-18
+
+### Added
+
+- **Member Atrium: Reservations tab** — The member self-service portal now includes a dedicated "Reservations" tab showing all reservations across all statuses (pending, available, fulfilled, picked up, cancelled, expired). Each card shows the collection thumbnail, title, item code, status badge, reservation date, and expiry date. Active reservations display a pickup-ready banner. The tab is refreshed on navigation and subscribes to real-time reservation notifications via PubSub.
+- **`Circulation.list_all_member_reservations/1`** — New context function (and top-level delegate in `Voile`) that fetches all reservations for a member ordered by reservation date descending, preloading `item.collection` and `collection`.
+- **Reservation notification: email fallback** — `ReservationNotifier.notify_member_reservation_available/1` now sends a pickup-ready email (HTML + plain-text) to the member in addition to the real-time PubSub push, ensuring members who are offline are also notified.
+- **Holiday management: RBAC action guards** — Edit, Enable/Disable, and Delete buttons on the holidays settings page are now hidden for entries the current user does not own. All three event handlers (`edit_holiday`, `toggle_holiday`, `delete_holiday`) enforce the same `can_modify_holiday?` check server-side, returning a 403-style flash for unauthorised attempts.
+- **Holiday management: Import Data page** — The "Setup Default Schedule" toolbar button has been replaced with an "Import Data" link navigating to the new `/manage/settings/holidays/import` route (`Dashboard.Settings.HolidayImportLive`).
+- **Admin reservation index: card layout** — The reservations list page has been redesigned with a card-based layout replacing the previous `<.table>` component. Each card shows member avatar, member identifier, item/collection title with item code, status badge, priority, reserved date, expiry date, notification status, and notes. Action buttons (Mark Available, Fulfill, Cancel, View) are styled as pill badges in the card footer.
+
+### Changed
+
+- **Admin reservation show: status-aware action buttons** — The action button block now uses `cond` keyed on reservation status. `"pending"` shows Mark Available + Send Notification + Cancel Reservation. `"available"` shows Fulfill Reservation + Send Notification + Cancel Reservation. Terminal statuses (`picked_up`, `fulfilled`, `cancelled`, `expired`) show no action buttons.
+- **Admin reservation show: `mark_available` event** — New `handle_event/3` clause calls `Circulation.mark_reservation_available/2` and updates the reservation assign in-place without a page navigate.
+- **Admin reservation show: notes field always visible** — The notes field is now always rendered (showing `"-"` when empty) rather than conditionally hidden.
+- **Frontend item show: reservation form redesign** — The Reserve Item modal now uses `<.form>` with `@reservation_form` assign (backed by `to_form/2`), displays an item preview card with cover image, title, creator, and description, and resets the form state on open/close. The submit button label changed to "Confirm Reservation".
+- **`create_reservation` call: explicit nil collection** — `Items.Show` now passes `nil` as the `collection_id` argument so the function signature matches `Circulation.create_reservation/4`.
+- **`LibHoliday`: recurring holiday support in `is_holiday?`** — The holiday check now matches recurring holidays by month and day across any year using a `EXTRACT(month)/EXTRACT(day)` fragment, replacing the previous exact-date-only lookup.
+- **`LibHoliday.get_holidays_in_range/2`: recurring holidays included** — Recurring holidays are now matched by month/day against every date in the requested range, so they appear in business-day calculations regardless of the year stored in `holiday_date`.
+- **`LibHolidays.list_holidays/1`: node-scoped visibility** — When called with a `unit_id`, the query now also returns public holidays and system-wide holidays (those with a nil unit), ensuring nodes see both their own and shared holidays.
+- **`LibHolidays`: cache invalidation on mutations** — `create_holiday/1`, `update_holiday/2`, `delete_holiday/1`, `create_schedule/1`, `update_schedule/2`, and `delete_schedule/1` now call `LibHoliday.clear_cache/0` after a successful write so the `is_holiday?` cache is immediately consistent.
+
+### Fixed
+
+- **`confirm_fulfill` crash on already-processed reservations** — `handle_event("confirm_fulfill")` now matches `{:error, reason} when is_binary(reason)` before the changeset clause, preventing a `CaseClauseError` when `Circulation.fulfill_reservation/2` returns `{:error, "Reservation is not available"}`.
+- **SSO suspension bypass — PAuS** — Suspended users could previously complete a PAuS SSO login because the suspension redirect was piped after `log_in_user` (whose `redirect/2` call was then overwritten). The suspension check now happens before any session is created; suspended users are redirected to `/login` with an error flash.
+- **SSO suspension bypass — Google** — Same fix applied to the Google OAuth callback.
+- **Magic link suspension flash** — Suspended users logging in via magic link no longer briefly see the "Welcome!" info flash alongside the suspension error. The handler now uses an explicit `if/else` to produce exactly one response.
+- **`LibHoliday` changeset: duplicate recurring holiday validation** — Added a `validate_recurring_holiday_conflicts/1` callback that queries existing active holidays matching the same month/day, type, and unit before inserting, preventing silent duplicate recurring entries that would distort business-day calculations.
+- **Duplicate Atrium reservations tab panel** — Removed a duplicate reservations tab panel that was inserted during a previous session, which caused the panel to render twice when the tab was active.
+- **`catalog/collection_live/import.ex` removed** — Deleted the old standalone collection import LiveView that was superseded by the unified Import & Export page in v0.1.14.
+
 ## [0.1.32] - 2026-05-13
 
 ### Added
@@ -515,6 +548,9 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.33]: https://github.com/curatorian/voile/compare/v0.1.32...v0.1.33
+[0.1.32]: https://github.com/curatorian/voile/compare/v0.1.31...v0.1.32
+[0.1.31]: https://github.com/curatorian/voile/compare/v0.1.30...v0.1.31
 [0.1.30]: https://github.com/curatorian/voile/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/curatorian/voile/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28

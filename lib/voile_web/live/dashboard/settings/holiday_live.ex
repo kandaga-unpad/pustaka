@@ -19,9 +19,12 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         <.button phx-click="new_holiday" class="primary-btn">
           <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Holiday")}
         </.button>
-        <.button phx-click="setup_default_schedule" class="warning-btn">
-          <.icon name="hero-calendar-days" class="w-4 h-4 mr-2" /> {gettext("Setup Default Schedule")}
-        </.button>
+        <.link
+          navigate={~p"/manage/settings/holidays/import"}
+          class="warning-btn inline-flex items-center"
+        >
+          <.icon name="hero-arrow-up-tray" class="w-4 h-4 mr-2" /> {gettext("Import Data")}
+        </.link>
       </div>
     </div>
 
@@ -292,32 +295,36 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
                         </td>
 
                         <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium space-x-2">
-                          <.button
-                            phx-click="edit_holiday"
-                            phx-value-id={holiday.id}
-                            class="primary-btn"
-                          >
-                            {gettext("Edit")}
-                          </.button>
-                          <.button
-                            phx-click="toggle_holiday"
-                            phx-value-id={holiday.id}
-                            class={
-                              if holiday.is_active,
-                                do: "warning-btn",
-                                else: "success-btn"
-                            }
-                          >
-                            {if holiday.is_active, do: gettext("Disable"), else: gettext("Enable")}
-                          </.button>
-                          <.button
-                            phx-click="delete_holiday"
-                            phx-value-id={holiday.id}
-                            data-confirm={gettext("Are you sure you want to delete this holiday?")}
-                            class="cancel-btn"
-                          >
-                            {gettext("Delete")}
-                          </.button>
+                          <%= if @is_super_admin or holiday.unit_id == @current_scope.user.node_id do %>
+                            <.button
+                              phx-click="edit_holiday"
+                              phx-value-id={holiday.id}
+                              class="primary-btn"
+                            >
+                              {gettext("Edit")}
+                            </.button>
+                            <.button
+                              phx-click="toggle_holiday"
+                              phx-value-id={holiday.id}
+                              class={
+                                if holiday.is_active,
+                                  do: "warning-btn",
+                                  else: "success-btn"
+                              }
+                            >
+                              {if holiday.is_active, do: gettext("Disable"), else: gettext("Enable")}
+                            </.button>
+                            <.button
+                              phx-click="delete_holiday"
+                              phx-value-id={holiday.id}
+                              data-confirm={gettext("Are you sure you want to delete this holiday?")}
+                              class="cancel-btn"
+                            >
+                              {gettext("Delete")}
+                            </.button>
+                          <% else %>
+                            <span class="text-xs text-gray-500">{gettext("Read-only")}</span>
+                          <% end %>
                         </td>
                       </tr>
                     <% end %>
@@ -467,13 +474,23 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
   def handle_event("edit_holiday", %{"id" => id}, socket) do
     holiday = LibHolidays.get_holiday!(id)
-    changeset = LibHolidays.change_holiday(holiday)
 
-    {:noreply,
-     socket
-     |> assign(:show_form, true)
-     |> assign(:form_holiday, holiday)
-     |> assign(:form, to_form(changeset))}
+    if can_modify_holiday?(
+         holiday,
+         socket.assigns.current_scope.user,
+         socket.assigns.is_super_admin
+       ) do
+      changeset = LibHolidays.change_holiday(holiday)
+
+      {:noreply,
+       socket
+       |> assign(:show_form, true)
+       |> assign(:form_holiday, holiday)
+       |> assign(:form, to_form(changeset))}
+    else
+      {:noreply,
+       put_flash(socket, :error, gettext("You are not authorized to edit this holiday."))}
+    end
   end
 
   def handle_event("save_holiday", %{"lib_holiday" => holiday_params}, socket) do
@@ -529,49 +546,60 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
     {:noreply, assign(socket, :show_form, false)}
   end
 
-  def handle_event("delete_holiday", %{"id" => id}, socket) do
-    holiday = LibHolidays.get_holiday!(id)
-    {:ok, _} = LibHolidays.delete_holiday(holiday)
-
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Holiday deleted successfully"))
-     |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
-     |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
-  end
-
   def handle_event("toggle_holiday", %{"id" => id}, socket) do
     holiday = LibHolidays.get_holiday!(id)
-    new_status = !holiday.is_active
 
-    case LibHolidays.update_holiday(holiday, %{is_active: new_status}) do
-      {:ok, _} ->
-        status_text = if new_status, do: "enabled", else: "disabled"
+    if can_modify_holiday?(
+         holiday,
+         socket.assigns.current_scope.user,
+         socket.assigns.is_super_admin
+       ) do
+      new_status = !holiday.is_active
 
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Holiday %{status} successfully", status: status_text))
-         |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
-         |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
+      case LibHolidays.update_holiday(holiday, %{is_active: new_status}) do
+        {:ok, _} ->
+          status_text = if new_status, do: "enabled", else: "disabled"
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, gettext("Failed to update holiday status"))}
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("Holiday %{status} successfully", status: status_text))
+           |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+           |> assign(
+             :holiday_stats,
+             LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id)
+           )}
+
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, gettext("Failed to update holiday status"))}
+      end
+    else
+      {:noreply,
+       put_flash(socket, :error, gettext("You are not authorized to update this holiday."))}
+    end
+  end
+
+  def handle_event("delete_holiday", %{"id" => id}, socket) do
+    holiday = LibHolidays.get_holiday!(id)
+
+    if can_modify_holiday?(
+         holiday,
+         socket.assigns.current_scope.user,
+         socket.assigns.is_super_admin
+       ) do
+      {:ok, _} = LibHolidays.delete_holiday(holiday)
+
+      {:noreply,
+       socket
+       |> put_flash(:info, gettext("Holiday deleted successfully"))
+       |> assign(:holidays, LibHolidays.list_holidays(socket.assigns.selected_unit_id))
+       |> assign(:holiday_stats, LibHolidays.get_holiday_stats(socket.assigns.selected_unit_id))}
+    else
+      {:noreply,
+       put_flash(socket, :error, gettext("You are not authorized to delete this holiday."))}
     end
   end
 
   # Weekly Schedule Management Events
-
-  def handle_event("setup_default_schedule", _params, socket) do
-    # prefer explicit param, fall back to currently selected unit
-    unit_id = socket.assigns.selected_unit_id
-
-    LibHolidays.setup_default_weekly_schedule(unit_id)
-
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Default weekly schedule set up (Monday-Friday business days)"))
-     |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
-  end
 
   def handle_event("toggle_day_schedule", %{"day" => day_str}, socket) do
     day_of_week = String.to_integer(day_str)
@@ -657,4 +685,10 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
        |> assign(:weekly_schedule, LibHolidays.get_weekly_schedule(unit_id))}
     end
   end
+
+  defp can_modify_holiday?(%LibHoliday{unit_id: nil}, _user, false), do: false
+  defp can_modify_holiday?(%LibHoliday{unit_id: _unit_id}, _user, true), do: true
+
+  defp can_modify_holiday?(%LibHoliday{unit_id: unit_id}, user, false),
+    do: unit_id == user.node_id
 end

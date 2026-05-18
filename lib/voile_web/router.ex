@@ -474,6 +474,7 @@ defmodule VoileWeb.Router do
 
           live "/user_profile", UserSettingsLive, :edit
           live "/confirm_email/:token", UserSettingsLive, :confirm_email
+          live "/holidays/import", Dashboard.Settings.HolidayImportLive, :index
           live "/holidays", Dashboard.Settings.HolidayLive, :index
           live "/nodes", Dashboard.Settings.SystemNodeLive, :index
           live "/nodes/rules", Dashboard.Settings.SystemNodeRulesLive, :index

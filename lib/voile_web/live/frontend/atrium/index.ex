@@ -8,17 +8,19 @@ defmodule VoileWeb.Frontend.Atrium.Index do
   alias Client.Storage
   alias VoileWeb.Frontend.Atrium.AtriumHelper
   alias Voile.Notifications.LoanReminderNotifier
+  alias Voile.Notifications.ReservationNotifier
   alias VoileWeb.Utils.FormatIndonesiaTime
 
   @impl true
   def mount(_params, _session, socket) do
-    tabs = [:circulation, :fines, :fine_history, :loan_history, :settings]
+    tabs = [:circulation, :reservations, :fines, :fine_history, :loan_history, :settings]
 
     user = socket.assigns.current_scope.user
 
-    # Subscribe to loan reminder notifications if connected
+    # Subscribe to loan reminder and reservation notifications if connected
     if connected?(socket) do
       LoanReminderNotifier.subscribe_to_member_notifications(user.id)
+      ReservationNotifier.subscribe_member(user.id)
     end
 
     # Profile changeset (biodata + user_image handled as URL field for now)
@@ -76,6 +78,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
         show_payment_modal: false,
         payment_link_data: nil,
         payment_processing: false,
+        # Reservations
+        reservations: Circulation.list_all_member_reservations(user.id),
         # Loan reminder notification assigns
         loan_reminders: [],
         show_notification_badge: false,
@@ -194,6 +198,7 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     tab_atom =
       case tab do
         "circulation" -> :circulation
+        "reservations" -> :reservations
         "fines" -> :fines
         "fine_history" -> :fine_history
         "loan_history" -> :loan_history
@@ -204,6 +209,9 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     # Load data when switching to history tabs
     socket =
       case tab_atom do
+        :reservations ->
+          assign(socket, reservations: Circulation.list_all_member_reservations(member.id))
+
         :loan_history ->
           {loan_history, loan_history_total_pages, _} =
             Circulation.list_member_transaction_history_paginated(member.id, 1, 10)
@@ -721,6 +729,24 @@ defmodule VoileWeb.Frontend.Atrium.Index do
      socket
      |> assign(loan_reminders: reminders, show_notification_badge: true)
      |> put_flash(:error, message)}
+  end
+
+  @impl true
+  def handle_info({:reservation_notification, data}, socket) do
+    item_desc =
+      cond do
+        data[:collection_title] -> "\"#{data[:collection_title]}\""
+        data[:item_code] -> data[:item_code]
+        true -> "your reserved item"
+      end
+
+    message =
+      "📬 Library Notice: #{item_desc} is now ready for pickup. Please collect it before it expires."
+
+    {:noreply,
+     socket
+     |> assign(show_notification_badge: true)
+     |> put_flash(:info, message)}
   end
 
   @impl true
@@ -1629,6 +1655,163 @@ defmodule VoileWeb.Frontend.Atrium.Index do
                           </ul>
                         <% end %>
                       </div>
+                    </div>
+                  </div>
+                <% end %>
+                <%!-- Reservations Tab --%>
+                <%= if @active_tab == :reservations do %>
+                  <div class="space-y-4">
+                    <div class="p-4 rounded-md border border-voile-light dark:border-voile-dark bg-white/60 dark:bg-gray-800/60">
+                      <h4 class="text-lg font-semibold mb-1">{gettext("My Reservations")}</h4>
+
+                      <p class="text-sm text-voile-muted mb-4">
+                        {gettext("Items you have reserved and their current status.")}
+                      </p>
+
+                      <%= if @reservations == [] do %>
+                        <div class="text-center py-12">
+                          <.icon
+                            name="hero-bookmark"
+                            class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4"
+                          />
+                          <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            {gettext("No Reservations")}
+                          </p>
+
+                          <p class="text-sm text-voile-muted mt-1">
+                            {gettext("You haven't reserved any items yet.")}
+                          </p>
+                        </div>
+                      <% else %>
+                        <ul class="space-y-3">
+                          <%= for r <- @reservations do %>
+                            <% title =
+                              cond do
+                                r.collection -> r.collection.title
+                                r.item && r.item.collection -> r.item.collection.title
+                                r.item -> r.item.item_code
+                                true -> gettext("Unknown item")
+                              end %>
+                            <% thumbnail =
+                              cond do
+                                r.collection && r.collection.thumbnail ->
+                                  r.collection.thumbnail
+
+                                r.item && r.item.collection && r.item.collection.thumbnail ->
+                                  r.item.collection.thumbnail
+
+                                true ->
+                                  nil
+                              end %>
+                            <% item_code = r.item && r.item.item_code %>
+                            <% {status_bg, status_label, status_icon} =
+                              case r.status do
+                                "pending" ->
+                                  {"bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200",
+                                   gettext("Pending"), "hero-clock"}
+
+                                "available" ->
+                                  {"bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200",
+                                   gettext("Ready for Pickup"), "hero-check-circle"}
+
+                                "fulfilled" ->
+                                  {"bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200",
+                                   gettext("Fulfilled"), "hero-archive-box-arrow-down"}
+
+                                "picked_up" ->
+                                  {"bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200",
+                                   gettext("Picked Up"), "hero-archive-box-arrow-down"}
+
+                                "cancelled" ->
+                                  {"bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200",
+                                   gettext("Cancelled"), "hero-x-circle"}
+
+                                "expired" ->
+                                  {"bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400",
+                                   gettext("Expired"), "hero-exclamation-circle"}
+
+                                other ->
+                                  {"bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400",
+                                   String.capitalize(other || ""), "hero-question-mark-circle"}
+                              end %>
+                            <li class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                              <div class="w-14 h-20 shrink-0 rounded overflow-hidden bg-voile-neutral flex items-center justify-center text-xs text-voile-muted">
+                                <%= if thumbnail do %>
+                                  <img
+                                    src={thumbnail}
+                                    class="w-full h-full object-cover"
+                                    alt={title}
+                                  />
+                                <% else %>
+                                  <.icon name="hero-bookmark" class="w-6 h-6" />
+                                <% end %>
+                              </div>
+
+                              <div class="flex-1 min-w-0 text-sm space-y-1.5">
+                                <div
+                                  class="font-medium text-gray-900 dark:text-gray-100 truncate"
+                                  title={title}
+                                >
+                                  {title}
+                                </div>
+
+                                <%= if item_code do %>
+                                  <div class="text-xs text-voile-muted">{item_code}</div>
+                                <% end %>
+
+                                <div class="flex flex-wrap gap-2 items-center">
+                                  <span class={[
+                                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                                    status_bg
+                                  ]}>
+                                    <.icon name={status_icon} class="w-3 h-3" />
+                                    {status_label}
+                                  </span>
+
+                                  <%= if r.reservation_date do %>
+                                    <span class="text-xs text-voile-muted">
+                                      <.icon
+                                        name="hero-calendar"
+                                        class="w-3 h-3 inline mr-0.5"
+                                      /> {gettext("Reserved:")}
+                                      {FormatIndonesiaTime.format_full_indonesian_date(
+                                        r.reservation_date
+                                      )}
+                                    </span>
+                                  <% end %>
+
+                                  <%= if r.expiry_date && r.status in ["pending", "available"] do %>
+                                    <span class="text-xs text-amber-600 dark:text-amber-400">
+                                      <.icon
+                                        name="hero-clock"
+                                        class="w-3 h-3 inline mr-0.5"
+                                      /> {gettext("Expires:")}
+                                      {FormatIndonesiaTime.format_full_indonesian_date(r.expiry_date)}
+                                    </span>
+                                  <% end %>
+                                </div>
+
+                                <%= if r.status == "available" do %>
+                                  <div class="mt-1 p-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-200">
+                                    <.icon
+                                      name="hero-bell-alert"
+                                      class="w-3.5 h-3.5 inline mr-1"
+                                    /> {gettext(
+                                      "Your item is ready! Please visit the library to pick it up."
+                                    )}
+                                  </div>
+                                <% end %>
+
+                                <%= if r.notes && r.notes != "" do %>
+                                  <div class="text-xs text-voile-muted italic">
+                                    {gettext("Note:")} {r.notes}
+                                  </div>
+                                <% end %>
+                              </div>
+                            </li>
+                          <% end %>
+                        </ul>
+                      <% end %>
                     </div>
                   </div>
                 <% end %>

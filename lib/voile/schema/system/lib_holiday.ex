@@ -1,6 +1,9 @@
 defmodule Voile.Schema.System.LibHoliday do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
+
+  alias Voile.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -116,6 +119,7 @@ defmodule Voile.Schema.System.LibHoliday do
       name: :lib_holidays_date_type_unit_unique_index,
       message: "Holiday already exists for this date, type, and unit"
     )
+    |> validate_recurring_holiday_conflicts()
     |> unique_constraint([:day_of_week, :holiday_type, :unit_id],
       name: :lib_holidays_dow_type_unit_unique_index,
       message: "Schedule already exists for this day, type, and unit"
@@ -150,6 +154,76 @@ defmodule Voile.Schema.System.LibHoliday do
       |> put_change(:holiday_date, nil)
       # Schedules are always recurring
       |> put_change(:is_recurring, true)
+    else
+      changeset
+    end
+  end
+
+  defp validate_recurring_holiday_conflicts(changeset) do
+    schedule_type = get_field(changeset, :schedule_type)
+
+    if schedule_type == "holiday" do
+      holiday_date = get_field(changeset, :holiday_date)
+      holiday_type = get_field(changeset, :holiday_type)
+      unit_id = get_field(changeset, :unit_id)
+      is_recurring = get_field(changeset, :is_recurring)
+      current_id = get_field(changeset, :id)
+
+      if holiday_date && holiday_type do
+        month = holiday_date.month
+        day = holiday_date.day
+
+        query =
+          if is_nil(unit_id) do
+            from h in __MODULE__,
+              where:
+                h.schedule_type == "holiday" and h.holiday_type == ^holiday_type and
+                  h.is_active == true and is_nil(h.unit_id) and
+                  fragment(
+                    "EXTRACT(month FROM ?) = ? AND EXTRACT(day FROM ?) = ?",
+                    h.holiday_date,
+                    ^month,
+                    h.holiday_date,
+                    ^day
+                  ) and
+                  (h.is_recurring == true or ^is_recurring == true or
+                     h.holiday_date == type(^holiday_date, :date))
+          else
+            from h in __MODULE__,
+              where:
+                h.schedule_type == "holiday" and h.holiday_type == ^holiday_type and
+                  h.is_active == true and
+                  (h.unit_id == type(^unit_id, :integer) or is_nil(h.unit_id)) and
+                  fragment(
+                    "EXTRACT(month FROM ?) = ? AND EXTRACT(day FROM ?) = ?",
+                    h.holiday_date,
+                    ^month,
+                    h.holiday_date,
+                    ^day
+                  ) and
+                  (h.is_recurring == true or ^is_recurring == true or
+                     h.holiday_date == type(^holiday_date, :date))
+          end
+
+        query =
+          if current_id do
+            from h in query, where: h.id != ^current_id
+          else
+            query
+          end
+
+        if Repo.exists?(query) do
+          add_error(
+            changeset,
+            :holiday_date,
+            "Recurring or duplicate holiday already exists for this date, type, and unit"
+          )
+        else
+          changeset
+        end
+      else
+        changeset
+      end
     else
       changeset
     end
@@ -256,42 +330,37 @@ defmodule Voile.Schema.System.LibHoliday do
       import Ecto.Query
       alias Voile.Repo
 
-      is_nil_unit = is_nil(unit_id)
+      month = date.month
+      day = date.day
 
-      if is_nil_unit do
-        query =
+      date_condition =
+        dynamic(
+          [h],
+          h.holiday_date == ^date or
+            (h.is_recurring == true and
+               fragment(
+                 "EXTRACT(month FROM ?) = ? AND EXTRACT(day FROM ?) = ?",
+                 h.holiday_date,
+                 ^month,
+                 h.holiday_date,
+                 ^day
+               ))
+        )
+
+      query =
+        if is_nil(unit_id) do
           from h in __MODULE__,
-            where:
-              h.schedule_type == "holiday" and
-                h.holiday_date == ^date and
-                h.is_active == true and
-                is_nil(h.unit_id)
-
-        Repo.exists?(query)
-      else
-        # Check unit-specific holiday first, then fall back to system-wide
-        unit_query =
-          from h in __MODULE__,
-            where:
-              h.schedule_type == "holiday" and
-                h.holiday_date == ^date and
-                h.is_active == true and
-                h.unit_id == type(^unit_id, :integer)
-
-        if Repo.exists?(unit_query) do
-          true
+            where: h.schedule_type == "holiday" and h.is_active == true and is_nil(h.unit_id),
+            where: ^date_condition
         else
-          system_query =
-            from h in __MODULE__,
-              where:
-                h.schedule_type == "holiday" and
-                  h.holiday_date == ^date and
-                  h.is_active == true and
-                  is_nil(h.unit_id)
-
-          Repo.exists?(system_query)
+          from h in __MODULE__,
+            where:
+              h.schedule_type == "holiday" and h.is_active == true and
+                (h.unit_id == type(^unit_id, :integer) or is_nil(h.unit_id)),
+            where: ^date_condition
         end
-      end
+
+      Repo.exists?(query)
     end)
   end
 
@@ -348,16 +417,39 @@ defmodule Voile.Schema.System.LibHoliday do
 
   @doc """
   Get all active holidays within a date range.
+  Recurring holidays are matched by month and day and may apply across years.
   """
   def get_holidays_in_range(start_date, end_date) do
     import Ecto.Query
     alias Voile.Repo
 
+    month_day_pairs =
+      Date.range(start_date, end_date)
+      |> Enum.map(fn date -> {date.month, date.day} end)
+      |> Enum.uniq()
+
+    recurring_condition =
+      Enum.reduce(month_day_pairs, false, fn {month, day}, dynamic_expr ->
+        dynamic(
+          [h],
+          ^dynamic_expr or
+            (h.is_recurring == true and
+               fragment(
+                 "EXTRACT(month FROM ?) = ? AND EXTRACT(day FROM ?) = ?",
+                 h.holiday_date,
+                 ^month,
+                 h.holiday_date,
+                 ^day
+               ))
+        )
+      end)
+
+    range_condition =
+      dynamic([h], h.holiday_date >= ^start_date and h.holiday_date <= ^end_date)
+
     from(h in __MODULE__,
-      where:
-        h.holiday_date >= ^start_date and
-          h.holiday_date <= ^end_date and
-          h.is_active == true,
+      where: h.is_active == true and h.schedule_type == "holiday",
+      where: ^dynamic([h], ^recurring_condition or ^range_condition),
       order_by: [asc: h.holiday_date]
     )
     |> Repo.all()

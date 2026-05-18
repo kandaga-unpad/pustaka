@@ -622,6 +622,7 @@ defmodule Voile do
     to: Voile.Schema.Library.Circulation
 
   defdelegate list_member_reservations(member_id), to: Voile.Schema.Library.Circulation
+  defdelegate list_all_member_reservations(member_id), to: Voile.Schema.Library.Circulation
   defdelegate list_expired_reservations(), to: Voile.Schema.Library.Circulation
 
   # Transactions
