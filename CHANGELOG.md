@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.34] - 2026-05-23
+
+### Changed
+
+- **Library circulation report: detailed statistics** — The circulation report overview now shows a detailed breakdown by status for transactions, reservations, and fines, including active/returned/overdue/lost/damaged/cancelled transactions, reservation statuses, and fine payment status with aggregated totals.
+- **Library circulation report: year/month filters** — Added dynamic year and month filters to the circulation report. Year selection is required before month selection, and when month is not selected the report shows aggregated data for the chosen year. The month selector is disabled until a year is chosen.
+- **Library circulation report: item node scoping** — The report remains scoped by item node_id so statistics are computed per node branch, not by the user's node.
+- **UI polish: dark/light mode select support** — Month/year select controls now use the default theme-aware select styling so they render correctly in both dark and light mode.
+
 ## [0.1.33] - 2026-05-18
 
 ### Added
@@ -548,6 +557,7 @@ management system built with Elixir and Phoenix LiveView.
 - Swagger / OpenAPI documentation (`/api/swagger`)
 - Phoenix LiveDashboard at `/dev/dashboard` (dev only)
 
+[0.1.34]: https://github.com/curatorian/voile/compare/v0.1.33...v0.1.34
 [0.1.33]: https://github.com/curatorian/voile/compare/v0.1.32...v0.1.33
 [0.1.32]: https://github.com/curatorian/voile/compare/v0.1.31...v0.1.32
 [0.1.31]: https://github.com/curatorian/voile/compare/v0.1.30...v0.1.31

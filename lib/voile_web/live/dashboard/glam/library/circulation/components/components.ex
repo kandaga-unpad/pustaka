@@ -998,4 +998,270 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
     </div>
     """
   end
+
+  @doc """
+  Renders a detailed breakdown of circulation statistics by status for
+  transactions, reservations, and fines.
+
+  ## Attributes
+
+    * `detailed_stats` - Map with `:transactions`, `:reservations`, and `:fines` sub-maps
+    * `loading` - Boolean flag to show loading spinners (default: false)
+  """
+  attr :detailed_stats, :map, required: true
+  attr :loading, :boolean, default: false
+
+  def detailed_circulation_stats(assigns) do
+    ~H"""
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <%!-- Transactions Breakdown --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+        <div class="flex items-center mb-4">
+          <.icon name="hero-book-open" class="w-5 h-5 text-blue-500 mr-2" />
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Transactions</h3>
+          <span class="ml-auto text-lg font-bold text-gray-700 dark:text-gray-200">
+            <%= if @loading || is_nil(@detailed_stats) do %>
+              <svg
+                class="animate-spin h-5 w-5 text-gray-400 inline-block"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                >
+                </circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                >
+                </path>
+              </svg>
+            <% else %>
+              {@detailed_stats.transactions.total}
+            <% end %>
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <%= if @loading || is_nil(@detailed_stats) do %>
+            <div class="animate-pulse space-y-2">
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+            </div>
+          <% else %>
+            <.stat_row
+              label="Active (On Loan)"
+              value={@detailed_stats.transactions.active}
+              color="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+            />
+            <.stat_row
+              label="Returned"
+              value={@detailed_stats.transactions.returned}
+              color="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            />
+            <.stat_row
+              label="Overdue"
+              value={@detailed_stats.transactions.overdue}
+              color="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+            />
+            <.stat_row
+              label="Lost"
+              value={@detailed_stats.transactions.lost}
+              color="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+            />
+            <.stat_row
+              label="Damaged"
+              value={@detailed_stats.transactions.damaged}
+              color="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+            />
+            <.stat_row
+              label="Cancelled"
+              value={@detailed_stats.transactions.canceled}
+              color="bg-gray-100 text-gray-600 dark:bg-gray-600/50 dark:text-gray-300"
+            />
+          <% end %>
+        </div>
+      </div>
+      <%!-- Reservations Breakdown --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+        <div class="flex items-center mb-4">
+          <.icon name="hero-bookmark" class="w-5 h-5 text-green-500 mr-2" />
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Reservations</h3>
+          <span class="ml-auto text-lg font-bold text-gray-700 dark:text-gray-200">
+            <%= if @loading || is_nil(@detailed_stats) do %>
+              <svg
+                class="animate-spin h-5 w-5 text-gray-400 inline-block"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                >
+                </circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                >
+                </path>
+              </svg>
+            <% else %>
+              {@detailed_stats.reservations.total}
+            <% end %>
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <%= if @loading || is_nil(@detailed_stats) do %>
+            <div class="animate-pulse space-y-2">
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+            </div>
+          <% else %>
+            <.stat_row
+              label="Pending"
+              value={@detailed_stats.reservations.pending}
+              color="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+            />
+            <.stat_row
+              label="Available for Pickup"
+              value={@detailed_stats.reservations.available}
+              color="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            />
+            <.stat_row
+              label="Picked Up"
+              value={@detailed_stats.reservations.picked_up}
+              color="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+            />
+            <.stat_row
+              label="Expired"
+              value={@detailed_stats.reservations.expired}
+              color="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+            />
+            <.stat_row
+              label="Cancelled"
+              value={@detailed_stats.reservations.cancelled}
+              color="bg-gray-100 text-gray-600 dark:bg-gray-600/50 dark:text-gray-300"
+            />
+          <% end %>
+        </div>
+      </div>
+      <%!-- Fines Breakdown --%>
+      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+        <div class="flex items-center mb-4">
+          <.icon name="hero-banknotes" class="w-5 h-5 text-red-500 mr-2" />
+          <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Fines</h3>
+          <span class="ml-auto text-lg font-bold text-gray-700 dark:text-gray-200">
+            <%= if @loading || is_nil(@detailed_stats) do %>
+              <svg
+                class="animate-spin h-5 w-5 text-gray-400 inline-block"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                >
+                </circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                >
+                </path>
+              </svg>
+            <% else %>
+              {@detailed_stats.fines.total}
+            <% end %>
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <%= if @loading || is_nil(@detailed_stats) do %>
+            <div class="animate-pulse space-y-2">
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+            </div>
+          <% else %>
+            <.stat_row
+              label="Unpaid"
+              value={@detailed_stats.fines.pending}
+              color="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+            />
+            <.stat_row
+              label="Partially Paid"
+              value={@detailed_stats.fines.partial_paid}
+              color="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+            />
+            <.stat_row
+              label="Paid"
+              value={@detailed_stats.fines.paid}
+              color="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            />
+            <.stat_row
+              label="Waived"
+              value={@detailed_stats.fines.waived}
+              color="bg-gray-100 text-gray-600 dark:bg-gray-600/50 dark:text-gray-300"
+            />
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-1">
+              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Total Billed</span>
+                <span class="font-medium text-gray-700 dark:text-gray-200">
+                  {format_idr(@detailed_stats.fines.total_amount)}
+                </span>
+              </div>
+
+              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Total Collected</span>
+                <span class="font-medium text-green-700 dark:text-green-300">
+                  {format_idr(@detailed_stats.fines.total_paid)}
+                </span>
+              </div>
+
+              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Outstanding Balance</span>
+                <span class="font-medium text-red-700 dark:text-red-300">
+                  {format_idr(@detailed_stats.fines.outstanding)}
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  # Private helper for a labeled stat row inside detailed_circulation_stats
+  defp stat_row(assigns) do
+    ~H"""
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-gray-600 dark:text-gray-400">{@label}</span>
+      <span class={"text-xs font-semibold px-2 py-0.5 rounded-full #{@color}"}>
+        {@value}
+      </span>
+    </div>
+    """
+  end
 end

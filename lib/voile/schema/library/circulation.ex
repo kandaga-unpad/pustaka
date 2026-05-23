@@ -3618,12 +3618,31 @@ defmodule Voile.Schema.Library.Circulation do
       iex> get_circulation_stats(nil)
       %{active_transactions: 100, overdue_count: 20, active_reservations: 50, outstanding_fines: 500000}
   """
-  def get_circulation_stats(node_id \\ nil) do
+  def get_circulation_stats(node_id \\ nil, opts \\ []) do
+    date_range = date_range_from_opts(opts)
+    base_t = transaction_base_query(node_id, date_range)
+    base_r = reservation_base_query(node_id, date_range)
+    base_f = fine_base_query(node_id, date_range)
+
+    outstanding =
+      base_f
+      |> where([f], f.fine_status in ["pending", "partial_paid"])
+      |> select([f], sum(f.balance))
+      |> Repo.one()
+      |> then(fn v -> v || Decimal.new(0) end)
+      |> Decimal.to_float()
+      |> trunc()
+
     %{
-      active_transactions: count_active_transactions(node_id),
-      overdue_count: count_overdue_transactions(node_id),
-      active_reservations: count_active_reservations(node_id),
-      outstanding_fines: sum_outstanding_fines(node_id)
+      active_transactions:
+        base_t |> where([t], t.status == "active") |> Repo.aggregate(:count, :id),
+      overdue_count:
+        base_t |> where([t], t.status == "overdue") |> Repo.aggregate(:count, :id),
+      active_reservations:
+        base_r
+        |> where([r], r.status in ["pending", "available"])
+        |> Repo.aggregate(:count, :id),
+      outstanding_fines: outstanding
     }
   end
 
@@ -3711,5 +3730,171 @@ defmodule Voile.Schema.Library.Circulation do
     sum_balance
     |> Decimal.to_float()
     |> trunc()
+  end
+
+  @doc """
+  Returns detailed per-status counts for transactions, reservations, and fines.
+  Optionally scoped by node_id. Accepts :year and :month opts to filter by period.
+  """
+  def get_detailed_circulation_stats(node_id \\ nil, opts \\ []) do
+    date_range = date_range_from_opts(opts)
+
+    %{
+      transactions: get_transaction_status_counts(transaction_base_query(node_id, date_range)),
+      reservations: get_reservation_status_counts(reservation_base_query(node_id, date_range)),
+      fines: get_fine_status_counts(fine_base_query(node_id, date_range))
+    }
+  end
+
+  # Builds a date range tuple from keyword opts: [year: integer, month: integer].
+  # Returns nil (no filter), or {start_dt, end_dt} for the selected period.
+  defp date_range_from_opts(opts) do
+    year = Keyword.get(opts, :year)
+    month = Keyword.get(opts, :month)
+
+    cond do
+      is_nil(year) ->
+        nil
+
+      is_nil(month) ->
+        start_dt = DateTime.new!(Date.new!(year, 1, 1), ~T[00:00:00], "Etc/UTC")
+        end_dt = DateTime.new!(Date.new!(year, 12, 31), ~T[23:59:59], "Etc/UTC")
+        {start_dt, end_dt}
+
+      true ->
+        last_day = Date.days_in_month(Date.new!(year, month, 1))
+        start_dt = DateTime.new!(Date.new!(year, month, 1), ~T[00:00:00], "Etc/UTC")
+        end_dt = DateTime.new!(Date.new!(year, month, last_day), ~T[23:59:59], "Etc/UTC")
+        {start_dt, end_dt}
+    end
+  end
+
+  # Composable base query builders scoped by node and optional date range.
+
+  defp transaction_base_query(node_id, date_range) do
+    query =
+      if node_id do
+        from t in Transaction,
+          join: i in assoc(t, :item),
+          where: i.unit_id == ^node_id
+      else
+        from t in Transaction
+      end
+
+    case date_range do
+      nil -> query
+      {s, e} -> from t in query, where: t.transaction_date >= ^s and t.transaction_date <= ^e
+    end
+  end
+
+  defp reservation_base_query(node_id, date_range) do
+    query =
+      if node_id do
+        from r in Reservation,
+          join: c in assoc(r, :collection),
+          where: c.unit_id == ^node_id or is_nil(c.unit_id)
+      else
+        from r in Reservation
+      end
+
+    case date_range do
+      nil -> query
+      {s, e} -> from r in query, where: r.reservation_date >= ^s and r.reservation_date <= ^e
+    end
+  end
+
+  defp fine_base_query(node_id, date_range) do
+    query =
+      if node_id do
+        from f in Fine,
+          join: i in assoc(f, :item),
+          where: i.unit_id == ^node_id
+      else
+        from f in Fine
+      end
+
+    case date_range do
+      nil -> query
+      {s, e} -> from f in query, where: f.inserted_at >= ^s and f.inserted_at <= ^e
+    end
+  end
+
+  defp get_transaction_status_counts(base_query) do
+    counts =
+      base_query
+      |> group_by([t], t.status)
+      |> select([t], {t.status, count(t.id)})
+      |> Repo.all()
+      |> Map.new()
+
+    total = counts |> Map.values() |> Enum.sum()
+
+    %{
+      active: Map.get(counts, "active", 0),
+      returned: Map.get(counts, "returned", 0),
+      overdue: Map.get(counts, "overdue", 0),
+      lost: Map.get(counts, "lost", 0),
+      damaged: Map.get(counts, "damaged", 0),
+      canceled: Map.get(counts, "canceled", 0),
+      total: total
+    }
+  end
+
+  defp get_reservation_status_counts(base_query) do
+    counts =
+      base_query
+      |> group_by([r], r.status)
+      |> select([r], {r.status, count(r.id)})
+      |> Repo.all()
+      |> Map.new()
+
+    total = counts |> Map.values() |> Enum.sum()
+
+    %{
+      pending: Map.get(counts, "pending", 0),
+      available: Map.get(counts, "available", 0),
+      picked_up: Map.get(counts, "picked_up", 0),
+      expired: Map.get(counts, "expired", 0),
+      cancelled: Map.get(counts, "cancelled", 0),
+      total: total
+    }
+  end
+
+  defp get_fine_status_counts(base_query) do
+    counts =
+      base_query
+      |> group_by([f], f.fine_status)
+      |> select([f], {f.fine_status, count(f.id)})
+      |> Repo.all()
+      |> Map.new()
+
+    totals =
+      Repo.one(
+        from f in base_query,
+          select: %{
+            total_amount: sum(f.amount),
+            total_paid: sum(f.paid_amount),
+            outstanding: sum(f.balance)
+          }
+      ) || %{total_amount: nil, total_paid: nil, outstanding: nil}
+
+    total = counts |> Map.values() |> Enum.sum()
+
+    %{
+      pending: Map.get(counts, "pending", 0),
+      partial_paid: Map.get(counts, "partial_paid", 0),
+      paid: Map.get(counts, "paid", 0),
+      waived: Map.get(counts, "waived", 0),
+      total: total,
+      total_amount: decimal_to_int(totals.total_amount),
+      total_paid: decimal_to_int(totals.total_paid),
+      outstanding: decimal_to_int(totals.outstanding)
+    }
+  end
+
+  defp decimal_to_int(nil), do: 0
+
+  defp decimal_to_int(%Decimal{} = d) do
+    d |> Decimal.to_float() |> trunc()
   end
 end
