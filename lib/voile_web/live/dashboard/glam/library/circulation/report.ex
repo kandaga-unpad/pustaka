@@ -100,6 +100,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             nodes={@nodes}
             selected_node_id={@selected_node_id}
             stats={@stats}
+            detailed_stats={@detailed_stats}
+            filter_year={@filter_year}
+            filter_month={@filter_month}
+            year_options={@year_options}
+            month_options={@month_options}
             recent_activities={@recent_activities}
           />
         <% "transactions" -> %>
@@ -131,26 +136,53 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
   # Overview Tab Component
   defp overview_tab(assigns) do
     ~H"""
-    <div>
-      <%= if @is_super_admin do %>
-        <div class="mb-6">
-          <.form :let={f} for={%{}} phx-change="select_node">
+    <div id="overview-tab">
+      <%!-- Filters Row --%>
+      <div class="mb-6 flex flex-wrap gap-4 items-end">
+        <%= if @is_super_admin do %>
+          <div class="w-48">
+            <.form :let={f} for={%{}} phx-change="select_node">
+              <.input
+                field={f[:node_id]}
+                type="select"
+                options={
+                  [{"All Nodes", "all"}] ++
+                    Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
+                }
+                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
+                label="Node"
+              />
+            </.form>
+          </div>
+        <% end %>
+        <div class="w-36">
+          <.form :let={f} for={%{}} phx-change="filter_year">
             <.input
-              field={f[:node_id]}
+              field={f[:year]}
               type="select"
-              options={
-                [{"All Nodes", "all"}] ++
-                  Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
-              }
-              value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
-              class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
-              label="Filter node"
+              options={@year_options}
+              value={if @filter_year, do: @filter_year, else: ""}
+              label="Year"
             />
           </.form>
         </div>
-      <% end %>
+        <div class="w-44">
+          <.form :let={f} for={%{}} phx-change="filter_month">
+            <.input
+              field={f[:month]}
+              type="select"
+              options={@month_options}
+              value={if @filter_month, do: @filter_month, else: ""}
+              label="Month"
+              disabled={is_nil(@filter_year)}
+            />
+          </.form>
+        </div>
+      </div>
       <%!-- Statistics Section --%>
       <.circulation_stats stats={@stats} />
+      <%!-- Detailed Statistics Breakdown --%>
+      <.detailed_circulation_stats detailed_stats={@detailed_stats} loading={is_nil(@detailed_stats)} />
       <%!-- Recent Activities Section --%>
       <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 mb-8">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
@@ -640,6 +672,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           active_reservations: nil,
           outstanding_fines: nil
         })
+        |> assign(:detailed_stats, nil)
+        |> assign(:filter_year, nil)
+        |> assign(:filter_month, nil)
+        |> assign(:year_options, year_options())
+        |> assign(:month_options, month_options())
         |> assign(:recent_activities, [])
         |> assign(:transactions, [])
         |> assign(:reservations, [])
@@ -695,11 +732,23 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
     stats = Voile.get_circulation_stats(node_id)
 
+    opts =
+      []
+      |> then(fn o ->
+        if y = socket.assigns.filter_year, do: Keyword.put(o, :year, y), else: o
+      end)
+      |> then(fn o ->
+        if m = socket.assigns.filter_month, do: Keyword.put(o, :month, m), else: o
+      end)
+
+    detailed_stats = Voile.get_detailed_circulation_stats(node_id, opts)
+
     {recent_activities, _, _} = Circulation.list_circulation_history_paginated(1, 10)
 
     {:noreply,
      socket
      |> assign(:stats, stats)
+     |> assign(:detailed_stats, detailed_stats)
      |> assign(:recent_activities, recent_activities || [])}
   end
 
@@ -792,6 +841,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
           active_reservations: nil,
           outstanding_fines: nil
         })
+        |> assign(:detailed_stats, nil)
         |> then(fn s ->
           send(self(), :load_stats)
           s
@@ -799,6 +849,47 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       else
         socket
       end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filter_year", %{"year" => year_str}, socket) do
+    filter_year =
+      case year_str do
+        "" -> nil
+        y -> String.to_integer(y)
+      end
+
+    socket =
+      socket
+      |> assign(:filter_year, filter_year)
+      |> assign(:filter_month, nil)
+      |> assign(:detailed_stats, nil)
+      |> then(fn s ->
+        send(self(), :load_stats)
+        s
+      end)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filter_month", %{"month" => month_str}, socket) do
+    filter_month =
+      case month_str do
+        "" -> nil
+        m -> String.to_integer(m)
+      end
+
+    socket =
+      socket
+      |> assign(:filter_month, filter_month)
+      |> assign(:detailed_stats, nil)
+      |> then(fn s ->
+        send(self(), :load_stats)
+        s
+      end)
 
     {:noreply, socket}
   end
@@ -901,4 +992,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
   defp activity_color("reservation"), do: "bg-purple-500"
   defp activity_color("fine_paid"), do: "bg-green-600"
   defp activity_color(_), do: "bg-gray-500"
+
+  defp year_options do
+    current_year = Date.utc_today().year
+    [{"All Years", ""} | Enum.map(current_year..2020//-1, fn y -> {to_string(y), y} end)]
+  end
+
+  defp month_options do
+    [
+      {"All Months", ""},
+      {"January", 1},
+      {"February", 2},
+      {"March", 3},
+      {"April", 4},
+      {"May", 5},
+      {"June", 6},
+      {"July", 7},
+      {"August", 8},
+      {"September", 9},
+      {"October", 10},
+      {"November", 11},
+      {"December", 12}
+    ]
+  end
 end
