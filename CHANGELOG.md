@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.35] - 2026-06-02
+
+### Fixed
+
+- **Visitor management: virtual keyboard input not appearing** — Clicking the virtual keyboard's number or letter keys sent events that were correctly processed server-side, but the updated value never appeared in the identifier input field. The root cause was that `IdentifierInput` keeps the field focused at all times, and Phoenix LiveView intentionally skips DOM-patching focused form inputs to avoid clobbering active user input. Fixed by adding `push_event("keyboard_update_value", %{value: new_value})` to the `keyboard_input`, `keyboard_backspace`, and `keyboard_clear` handlers (in both `CheckIn` and `CheckOut`) and handling that event in the `IdentifierInput` JS hook to set the value directly on the DOM element.
+
 ## [0.1.34] - 2026-05-23
 
 ### Changed

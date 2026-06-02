@@ -153,7 +153,10 @@ defmodule VoileWeb.Visitor.CheckOut do
     current_value = socket.assigns.visitor_identifier
     new_value = current_value <> key
 
-    {:noreply, assign(socket, :visitor_identifier, new_value)}
+    {:noreply,
+     socket
+     |> assign(:visitor_identifier, new_value)
+     |> push_event("keyboard_update_value", %{value: new_value})}
   end
 
   @impl true
@@ -161,12 +164,18 @@ defmodule VoileWeb.Visitor.CheckOut do
     current_value = socket.assigns.visitor_identifier
     new_value = String.slice(current_value, 0..-2//1)
 
-    {:noreply, assign(socket, :visitor_identifier, new_value)}
+    {:noreply,
+     socket
+     |> assign(:visitor_identifier, new_value)
+     |> push_event("keyboard_update_value", %{value: new_value})}
   end
 
   @impl true
   def handle_event("keyboard_clear", %{"target" => "visitor_identifier"}, socket) do
-    {:noreply, assign(socket, :visitor_identifier, "")}
+    {:noreply,
+     socket
+     |> assign(:visitor_identifier, "")
+     |> push_event("keyboard_update_value", %{value: ""})}
   end
 
   @impl true

@@ -281,6 +281,13 @@ const IdentifierInput = {
       this.moveCursorToEnd();
     });
 
+    // Virtual keyboard updates: LiveView skips patching focused inputs, so the
+    // server pushes the new value explicitly and we set it directly on the DOM.
+    this.handleEvent("keyboard_update_value", ({ value }) => {
+      this.el.value = value;
+      this.moveCursorToEnd();
+    });
+
     // Clear input on Enter key (for barcode scanners)
     this.el.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
