@@ -504,7 +504,7 @@ defmodule VoileWeb.Frontend.Collections.Index do
                       <span class="font-medium text-gray-900 dark:text-white">
                         {@total_count_filtered}
                       </span>
-                       {gettext("total")}
+                      {gettext("total")}
                     <% end %>
                   </p>
 

@@ -3636,8 +3636,7 @@ defmodule Voile.Schema.Library.Circulation do
     %{
       active_transactions:
         base_t |> where([t], t.status == "active") |> Repo.aggregate(:count, :id),
-      overdue_count:
-        base_t |> where([t], t.status == "overdue") |> Repo.aggregate(:count, :id),
+      overdue_count: base_t |> where([t], t.status == "overdue") |> Repo.aggregate(:count, :id),
       active_reservations:
         base_r
         |> where([r], r.status in ["pending", "available"])
@@ -3778,7 +3777,7 @@ defmodule Voile.Schema.Library.Circulation do
           join: i in assoc(t, :item),
           where: i.unit_id == ^node_id
       else
-        from t in Transaction
+        from(t in Transaction)
       end
 
     case date_range do
@@ -3794,7 +3793,7 @@ defmodule Voile.Schema.Library.Circulation do
           join: c in assoc(r, :collection),
           where: c.unit_id == ^node_id or is_nil(c.unit_id)
       else
-        from r in Reservation
+        from(r in Reservation)
       end
 
     case date_range do
@@ -3810,7 +3809,7 @@ defmodule Voile.Schema.Library.Circulation do
           join: i in assoc(f, :item),
           where: i.unit_id == ^node_id
       else
-        from f in Fine
+        from(f in Fine)
       end
 
     case date_range do
