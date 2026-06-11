@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.37] - 2026-06-11
+
+### Changed
+
+- **Member management: restrict sensitive fields for librarians** — When a librarian opens the "Edit Member" tab, the Node, Member Type, Registration Date, Expiry Date, and Assign Roles fields are hidden. Librarians can only edit basic profile fields (name, email, username, identifier, phone, birth date, address, organization, social media, groups, and profile picture). These fields remain visible and editable for users with the `users.update` permission (admins and super-admins).
+
 ## [0.1.36] - 2026-06-11
 
 ### Added

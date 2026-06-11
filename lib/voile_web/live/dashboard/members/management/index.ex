@@ -317,8 +317,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           selected_role_ids={@selected_role_ids}
           disabled_role_ids={@disabled_role_ids}
           is_super_admin={@is_super_admin}
+          is_admin={can?(@current_scope.user, "users.update")}
           tab={@tab}
-          thumbnail_source={@thumbnail_source}
           thumbnail_url_input={@thumbnail_url_input}
           asset_vault_files={@asset_vault_files}
           shown_images_count={@shown_images_count}
