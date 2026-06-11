@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.36] - 2026-06-11
+
+### Added
+
+- **Asset Vault: bulk file selection and actions** — Files in the Asset Vault can now be selected individually (checkbox toggle) or all at once. A bulk-action toolbar appears when files are selected, offering bulk delete and bulk move-to-folder.
+- **Asset Vault: move files between folders** — A new move modal lets users move one or more selected files to any folder in the tree. The folder tree is fully expanded and shown as a flat list for easy selection.
+- **Asset Vault: file preview panel** — Clicking a file now opens an inline preview panel showing the image, file metadata (name, type, size, date), and quick action buttons.
+- **Asset Vault: sortable file listing** — Files can be sorted by insertion date or name using a sort control in the toolbar. Sort direction toggles between ascending and descending.
+- **Asset Vault: storage stats** — The page header now shows total file count and storage usage loaded on mount.
+- **Asset Vault: folder tree sidebar** — Mount now builds a full hierarchical folder tree and flat folder list for navigation and move-modal use.
+- **Asset Vault: upload panel toggle** — The upload area is now hidden by default and revealed via a dedicated "Upload" button, reducing visual clutter on the main listing.
+- **`Authorization.is_librarian?/1`** — New helper following the same pattern as `is_node_admin?/1`, supporting `User`, `Socket`, `Conn`, and `nil` inputs.
+
+### Changed
+
+- **Member management: librarian can edit member info** — Users with the `librarian` role can now access the "Edit Member" tab on the member detail page. The "Extend Membership", "Change Password", and "Delete" tabs remain restricted to users with `users.update` permission or super-admin.
+- **Public search LiveView: full UI redesign** — `SearchLive` at `/search/live` has been redesigned with card-based result rows. Each collection card shows status, availability, and condition as colour-coded pill badges (`coll_status_badge`, `avail_badge`, `cond_badge`). The "no results" state uses an icon-centred empty-state block.
+- **Public search LiveView: route** — The `clear_search` event now redirects to `/search/live` (previously `/search`).
+- **Public search LiveView: universal fallback** — The `perform_search` handler now falls back to `universal_search` for any unrecognised `search_type` instead of only matching the literal `"universal"` string.
+- **Search HTML: GLAM-type tabs and browse sections** — The static search results page now renders a page title and description scoped to the active `glam_type`. GLAM-type quick-link cards (Library, Gallery, Archive, Museum) are shown when no query is active.
+- **Search HTML: media type filter** — An inline media type dropdown (All / Digital / Physical) has been added to the search bar for collection searches.
+- **Search HTML: filter pills and advanced search link** — Active filters are shown as pill badges beneath the search bar. An "Advanced Search →" link is always visible for navigation to `/search/advanced`.
+
 ## [0.1.35] - 2026-06-02
 
 ### Fixed

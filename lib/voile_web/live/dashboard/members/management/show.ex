@@ -30,6 +30,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
             user = socket.assigns.current_scope.user
             is_super_admin = Authorization.is_super_admin?(user)
+            is_librarian = Authorization.is_librarian?(user)
 
             socket =
               socket
@@ -37,6 +38,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               |> assign(:member, member)
               |> assign(:active_tab, "overview")
               |> assign(:is_super_admin, is_super_admin)
+              |> assign(:is_librarian, is_librarian)
               |> assign(:suspend_modal_visible, false)
               |> assign(
                 :suspend_form,
@@ -547,7 +549,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
             >
               {gettext("Overview")}
             </.tab_button>
-            <%= if can?(@current_scope.user, "users.update") do %>
+            <%= if can?(@current_scope.user, "users.update") or @is_librarian do %>
               <.tab_button
                 active={@active_tab == "edit"}
                 phx-click="change_tab"
@@ -812,15 +814,19 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
   defp allowed_tabs(socket) do
     user = socket.assigns.current_scope.user
     is_super_admin = socket.assigns.is_super_admin
+    is_librarian = socket.assigns.is_librarian
 
     base_tabs = ["overview", "activity", "loans", "fines"]
 
-    update_tabs =
-      if can?(user, "users.update"), do: ["edit", "extend", "change_password"], else: []
+    edit_tabs =
+      if can?(user, "users.update") or is_librarian, do: ["edit"], else: []
+
+    admin_update_tabs =
+      if can?(user, "users.update"), do: ["extend", "change_password"], else: []
 
     delete_tabs = if is_super_admin, do: ["delete"], else: []
 
-    base_tabs ++ update_tabs ++ delete_tabs
+    base_tabs ++ edit_tabs ++ admin_update_tabs ++ delete_tabs
   end
 
   defp prepare_user_params(params) do
