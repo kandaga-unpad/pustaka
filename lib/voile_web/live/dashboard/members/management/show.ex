@@ -623,6 +623,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 available_roles={@available_roles}
                 selected_role_ids={@selected_role_ids}
                 is_super_admin={@is_super_admin}
+                is_admin={can?(@current_scope.user, "users.update")}
                 tab={@tab}
                 thumbnail_source={@thumbnail_source}
                 thumbnail_url_input={@thumbnail_url_input}

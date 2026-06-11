@@ -17,6 +17,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   attr :selected_role_ids, :list, default: []
   attr :disabled_role_ids, :list, default: []
   attr :is_super_admin, :boolean, default: false
+  attr :is_admin, :boolean, default: false
   attr :tab, :string, default: "upload"
   attr :thumbnail_source, :string, default: nil
   attr :thumbnail_url_input, :string, default: ""
@@ -103,57 +104,65 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
             />
           <% end %>
 
-          <.input
-            field={@form[:user_type_id]}
-            type="select"
-            label={gettext("Member Type")}
-            options={Enum.map(@member_types, &{&1.name, &1.id})}
-            required
-          />
+          <%= if @is_admin do %>
+            <.input
+              field={@form[:user_type_id]}
+              type="select"
+              label={gettext("Member Type")}
+              options={Enum.map(@member_types, &{&1.name, &1.id})}
+              required
+            />
 
-          <.input field={@form[:registration_date]} type="date" label={gettext("Registration Date")} />
-          <.input field={@form[:expiry_date]} type="date" label={gettext("Expiry Date")} />
+            <.input
+              field={@form[:registration_date]}
+              type="date"
+              label={gettext("Registration Date")}
+            />
+            <.input field={@form[:expiry_date]} type="date" label={gettext("Expiry Date")} />
+          <% end %>
         </div>
 
-        <div class="grid grid-cols-1 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {gettext("Assign Roles")}
-            </label>
-            <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <%= for role <- Enum.reject(@available_roles, fn role -> role.id in (@disabled_role_ids || []) end) do %>
-                <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer rounded-lg">
-                  <input
-                    type="checkbox"
-                    name="user[role_ids][]"
-                    value={role.id}
-                    checked={role.id in (@selected_role_ids || [])}
-                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div class="flex-1">
-                    <div class="font-medium text-gray-900 dark:text-gray-100 capitalize">
-                      {role.name}
+        <%= if @is_admin do %>
+          <div class="grid grid-cols-1 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {gettext("Assign Roles")}
+              </label>
+              <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <%= for role <- Enum.reject(@available_roles, fn role -> role.id in (@disabled_role_ids || []) end) do %>
+                  <label class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer rounded-lg">
+                    <input
+                      type="checkbox"
+                      name="user[role_ids][]"
+                      value={role.id}
+                      checked={role.id in (@selected_role_ids || [])}
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                        {role.name}
+                      </div>
+
+                      <%= if role.description do %>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                      <% end %>
                     </div>
+                  </label>
+                <% end %>
+              </div>
 
-                    <%= if role.description do %>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
-                    <% end %>
-                  </div>
-                </label>
-              <% end %>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {gettext(
+                  "Users can have multiple roles. Role-specific permissions can be managed in the"
+                )}
+                <.link navigate="/manage/settings/roles" class="text-blue-600 hover:underline">
+                  {gettext("Role Management")}
+                </.link>
+                {gettext("page.")}
+              </p>
             </div>
-
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              {gettext(
-                "Users can have multiple roles. Role-specific permissions can be managed in the"
-              )}
-              <.link navigate="/manage/settings/roles" class="text-blue-600 hover:underline">
-                {gettext("Role Management")}
-              </.link>
-              {gettext("page.")}
-            </p>
           </div>
-        </div>
+        <% end %>
 
         <div class="mt-4">
           <label class="block text-sm font-medium text-gray-700 mb-2">{gettext("User Image")}</label>
