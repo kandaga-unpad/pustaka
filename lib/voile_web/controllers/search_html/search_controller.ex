@@ -21,7 +21,7 @@ defmodule VoileWeb.SearchController do
     search_type = Map.get(params, "type", "universal")
     glam_type = Map.get(params, "glam_type", "quick")
     media_type = Map.get(params, "media_type", "all")
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     per_page = get_per_page_for_search_type(search_type)
 
     # Record search analytics
@@ -124,7 +124,7 @@ defmodule VoileWeb.SearchController do
     _user_role = SearchHelper.get_user_role(conn)
     search_type = Map.get(params, "type", "both")
     glam_type = Map.get(params, "glam_type", "quick")
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     per_page = get_per_page_for_search_type(search_type)
 
     # Clean and sanitize search parameters - keep as strings to avoid atom exhaustion
@@ -269,7 +269,7 @@ defmodule VoileWeb.SearchController do
     _user_role = SearchHelper.get_user_role(conn)
     query = SearchHelper.sanitize_query(Map.get(params, "q", ""))
     search_type = Map.get(params, "type", "universal")
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
 
     # Record API search analytics
     current_user = conn.assigns[:current_user]
@@ -328,7 +328,7 @@ defmodule VoileWeb.SearchController do
   """
   def suggestions(conn, %{"q" => query} = params) when byte_size(query) >= 2 do
     glam_type = Map.get(params, "glam_type", "quick")
-    limit = Map.get(params, "limit", "8") |> String.to_integer()
+    limit = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 8)
 
     suggestions =
       if String.trim(query) != "" do

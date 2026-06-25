@@ -22,7 +22,7 @@ defmodule VoileWeb.Endpoint do
     store: :cookie,
     key: "_voile_key",
     signing_salt: "yYGzasTL",
-    same_site: "None",
+    same_site: "Lax",
     secure: true
   ]
 

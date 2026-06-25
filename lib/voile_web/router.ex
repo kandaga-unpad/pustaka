@@ -23,8 +23,10 @@ defmodule VoileWeb.Router do
 
   pipeline :api_authenticated do
     plug :accepts, ["json"]
-    plug VoileWeb.Plugs.APIAuthorization
+    # Rate limiter runs BEFORE auth so that failed-authentication attempts
+    # (e.g. token brute-force) are also throttled, not just successful ones.
     plug VoileWeb.Plugs.APIRateLimiter, limit: 100, scale_ms: 60_000, authenticated_limit: 1000
+    plug VoileWeb.Plugs.APIAuthorization
   end
 
   scope "/", VoileWeb do

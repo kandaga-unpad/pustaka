@@ -88,3 +88,7 @@ npm-debug.log
 # Plugins - ignore all plugin directories but keep README
 /plugins/*
 !/plugins/README.md
+
+# Mark some file in plans as ignored
+/plans/assesment-of-voile.md
+/plans/security-audit.md

@@ -39,7 +39,7 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
   end
 
   def index(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     glam_type = Map.get(params, "glam_type", "")
 
     {collection_types, total_pages} =
@@ -83,7 +83,7 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
   end
 
   def details(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     search_keyword = Map.get(params, "search", "")
 
     {collection_types, total_pages, _} =

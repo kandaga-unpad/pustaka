@@ -219,28 +219,41 @@ defmodule Voile.Schema.Accounts do
 
   @doc """
   Get a user by email or register it it's doesn't exist.
+
+  If the environment variable `VOILE_OAUTH_ALLOWED_DOMAINS` is set
+  (comma-separated, e.g. "unpad.ac.id,mail.unpad.ac.id"), only emails from
+  those domains are allowed to self-register via Google OAuth.  Existing users
+  always pass through regardless of domain.
   """
   def get_user_by_email_or_register(user) when is_map(user) do
     case Repo.get_by(User, email: user["email"]) do
       nil ->
-        # New user - create with Google data
-        pw = :crypto.strong_rand_bytes(30) |> Base.encode64(padding: false)
-        username = String.split(user["email"], "@") |> hd
-        profile_picture = user["picture"] || "/images/default_profile.png"
-        fullname = "#{user["given_name"]} #{user["family_name"]}"
+        if oauth_registration_allowed?(user["email"]) do
+          # New user - create with Google data
+          pw = :crypto.strong_rand_bytes(30) |> Base.encode64(padding: false)
+          username = String.split(user["email"], "@") |> hd
+          profile_picture = user["picture"] || "/images/default_profile.png"
+          fullname = "#{user["given_name"]} #{user["family_name"]}"
 
-        {:ok, user} =
-          register_user(%{
-            email: user["email"],
-            username: username,
-            fullname: fullname,
-            password: pw,
-            user_image: profile_picture,
-            confirmed_at:
-              if(user["email_verified"], do: DateTime.utc_now() |> DateTime.to_naive(), else: nil)
-          })
+          {:ok, user} =
+            register_user(%{
+              email: user["email"],
+              username: username,
+              fullname: fullname,
+              password: pw,
+              user_image: profile_picture,
+              confirmed_at:
+                if(user["email_verified"],
+                  do: DateTime.utc_now() |> DateTime.to_naive(),
+                  else: nil
+                )
+            })
 
-        user
+          user
+        else
+          # Domain not in allow-list — reject registration
+          {:error, :domain_not_allowed}
+        end
 
       existing_user ->
         # Existing user - update fullname if missing from Google data
@@ -255,6 +268,35 @@ defmodule Voile.Schema.Accounts do
         end
     end
   end
+
+  @doc """
+  Checks whether a Google OAuth email is allowed to self-register.
+
+  Returns `true` if:
+  - `VOILE_OAUTH_ALLOWED_DOMAINS` is not set (open registration), OR
+  - the email's domain matches one of the configured domains.
+
+  Existing users always pass through regardless of this check.
+  """
+  def oauth_registration_allowed?(email) when is_binary(email) do
+    case System.get_env("VOILE_OAUTH_ALLOWED_DOMAINS") do
+      nil ->
+        true
+
+      domains_str ->
+        domains =
+          domains_str
+          |> String.split(",", trim: true)
+          |> Enum.map(&String.trim/1)
+
+        case String.split(email, "@", parts: 2) do
+          [_, domain] -> String.downcase(domain) in Enum.map(domains, &String.downcase/1)
+          _ -> false
+        end
+    end
+  end
+
+  def oauth_registration_allowed?(_), do: false
 
   @doc """
   Creates a user from OAuth provider data (Google, PAuS, etc).

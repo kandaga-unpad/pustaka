@@ -87,8 +87,8 @@ defmodule Voile.Search.Collections do
         s -> s
       end
 
-    page = String.to_integer(Map.get(params, "page", "1"))
-    per_page = String.to_integer(Map.get(params, "per_page", "20"))
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "per_page"))
 
     # Handle advanced search parameters
     title_filter = Map.get(params, "title", "")
