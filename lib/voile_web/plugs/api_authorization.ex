@@ -55,10 +55,11 @@ defmodule VoileWeb.Plugs.APIAuthorization do
   end
 
   defp get_ip_address(conn) do
-    case get_req_header(conn, "x-forwarded-for") do
-      [ip | _] -> ip
-      [] -> conn.remote_ip |> :inet.ntoa() |> to_string()
-    end
+    # Use conn.remote_ip, which reflects the actual peer that connected to the
+    # server. Phoenix/Bandit already applies trusted-proxy handling, so this
+    # cannot be spoofed by a client-supplied X-Forwarded-For header. Trusting
+    # the raw header allowed bypassing API-token IP allow-lists.
+    conn.remote_ip |> :inet.ntoa() |> to_string()
   end
 
   defp unauthorized(conn, message \\ "Unauthorized access") do

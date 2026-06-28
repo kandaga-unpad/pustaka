@@ -130,7 +130,8 @@ defmodule Client.Xendit do
       iex> Client.Xendit.validate_webhook_signature(webhook_token, request_body)
       true
   """
-  def validate_webhook_signature(webhook_token, _request_body) do
+  def validate_webhook_signature(webhook_token, _request_body)
+      when is_binary(webhook_token) do
     # Xendit uses X-CALLBACK-TOKEN header for webhook validation
     # Compare the token from header with your configured webhook verification token
     configured_token = get_webhook_verification_token()
@@ -142,6 +143,8 @@ defmodule Client.Xendit do
       false
     end
   end
+
+  def validate_webhook_signature(_webhook_token, _request_body), do: false
 
   @doc """
   Parses a webhook payload and returns the event data.

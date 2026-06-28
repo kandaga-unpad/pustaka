@@ -15,7 +15,11 @@ defmodule VoileWeb.UserSettingsLive do
 
     <div class="flex gap-4">
       <div class="w-full max-w-64">
-        <.dashboard_settings_sidebar current_user={@current_scope.user} current_path={@current_path} />
+        <.dashboard_settings_sidebar
+          current_user={@current_scope.user}
+          current_path={@current_path}
+          is_super_admin={@is_super_admin}
+        />
       </div>
 
       <div class="w-full space-y-12 divide-y">
@@ -313,6 +317,7 @@ defmodule VoileWeb.UserSettingsLive do
       |> assign(:profile_form, to_form(profile_changeset))
       |> assign(:profile_image_preview, nil)
       |> assign(:current_path, "/manage/settings/user_profile")
+      |> assign(:is_super_admin, VoileWeb.Auth.Authorization.is_super_admin?(user))
       |> allow_upload(:user_image,
         accept: ~w(.jpg .jpeg .png .webp),
         max_entries: 1,

@@ -26,7 +26,7 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   def index(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
 
     {fines, total_pages, total_count} =
       Circulation.list_fines_paginated(page, 10)

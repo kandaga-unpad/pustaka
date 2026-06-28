@@ -78,14 +78,24 @@ defmodule Client.Storage.Local do
 
   @impl true
   def delete(file_url, _opts) do
-    # Convert URL path to filesystem path
-    file_path = Path.join(["priv/static", file_url])
+    # Normalize and confine to the upload root to prevent path traversal
+    # (e.g. a file_url containing "../../etc/important_file").
+    upload_root = Path.expand(@base_upload_path)
 
-    case File.rm(file_path) do
-      :ok -> {:ok, file_url}
-      # File doesn't exist, consider it deleted
-      {:error, :enoent} -> {:ok, file_url}
-      {:error, reason} -> {:error, "Failed to delete file: #{inspect(reason)}"}
+    file_path =
+      ["priv/static", file_url]
+      |> Path.join()
+      |> Path.expand()
+
+    if String.starts_with?(file_path, upload_root <> "/") do
+      case File.rm(file_path) do
+        :ok -> {:ok, file_url}
+        # File doesn't exist, consider it deleted
+        {:error, :enoent} -> {:ok, file_url}
+        {:error, reason} -> {:error, "Failed to delete file: #{inspect(reason)}"}
+      end
+    else
+      {:error, :invalid_path}
     end
   end
 

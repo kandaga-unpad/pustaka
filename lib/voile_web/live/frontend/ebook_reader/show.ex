@@ -34,28 +34,24 @@ defmodule VoileWeb.Frontend.EbookReader.Show do
   def handle_params(params, _uri, socket) do
     socket = assign(socket, :page_title, gettext("E-Book Reader"))
 
-    cond do
-      id = params["id"] ->
-        # Resolve attachment by id and use the download controller to stream it
-        case fetch_attachment_url(id) do
-          {:ok, download_path} ->
-            file_type = detect_file_type(download_path)
-            {:noreply, assign(socket, :file_url, download_path) |> assign(:file_type, file_type)}
+    # Only resolve files through attachment id, which enforces access control.
+    # Direct ?url= / ?file_url= params are rejected to prevent arbitrary URL
+    # injection and access-control bypass.
+    if id = params["id"] do
+      case fetch_attachment_url(id) do
+        {:ok, download_path} ->
+          file_type = detect_file_type(download_path)
+          {:noreply, assign(socket, :file_url, download_path) |> assign(:file_type, file_type)}
 
-          {:error, reason} ->
-            {:noreply,
-             socket
-             |> put_flash(:error, reason)
-             |> assign(:file_url, nil)
-             |> assign(:file_type, nil)}
-        end
-
-      url = params["url"] || params["file_url"] ->
-        file_type = detect_file_type(url)
-        {:noreply, assign(socket, :file_url, url) |> assign(:file_type, file_type)}
-
-      true ->
-        {:noreply, assign(socket, :file_url, nil) |> assign(:file_type, nil)}
+        {:error, reason} ->
+          {:noreply,
+           socket
+           |> put_flash(:error, reason)
+           |> assign(:file_url, nil)
+           |> assign(:file_type, nil)}
+      end
+    else
+      {:noreply, assign(socket, :file_url, nil) |> assign(:file_type, nil)}
     end
   end
 

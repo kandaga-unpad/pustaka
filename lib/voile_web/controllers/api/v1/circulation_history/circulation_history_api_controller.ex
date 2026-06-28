@@ -26,7 +26,7 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
   end
 
   def index(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
 
     {circulation_history, total_pages, total_count} =
       Circulation.list_circulation_history_paginated(page, 10)

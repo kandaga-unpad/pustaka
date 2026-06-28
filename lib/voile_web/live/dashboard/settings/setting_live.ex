@@ -37,6 +37,7 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
         socket
         |> assign(:current_user, current_user)
         |> assign(:system_info, system_info)
+        |> assign(:is_super_admin, VoileWeb.Auth.Authorization.is_super_admin?(current_user))
 
       {:ok, socket}
     end
@@ -116,7 +117,7 @@ defmodule VoileWeb.Dashboard.Settings.SettingLive do
 
     <div class="flex flex-col md:flex-row gap-4">
       <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar current_user={@current_user} />
+        <.dashboard_settings_sidebar current_user={@current_user} is_super_admin={@is_super_admin} />
       </div>
 
       <div class="w-full space-y-6">

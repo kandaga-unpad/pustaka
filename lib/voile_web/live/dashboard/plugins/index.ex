@@ -29,59 +29,71 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
 
   @impl true
   def handle_event("install", %{"module" => module_str}, socket) do
-    case Voile.PluginManager.install(module_str) do
-      :ok ->
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Plugin installed successfully."))
-         |> assign(:plugins, Plugins.list_plugins())
-         |> assign(:available_plugins, Voile.PluginManager.discover_available())}
+    if not socket.assigns[:is_super_admin] do
+      plugin_access_denied(socket)
+    else
+      case Voile.PluginManager.install(module_str) do
+        :ok ->
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("Plugin installed successfully."))
+           |> assign(:plugins, Plugins.list_plugins())
+           |> assign(:available_plugins, Voile.PluginManager.discover_available())}
 
-      {:error, reason} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Failed to install: %{reason}", reason: inspect(reason))
-         )}
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to install: %{reason}", reason: inspect(reason))
+           )}
+      end
     end
   end
 
   @impl true
   def handle_event("activate", %{"module" => module_str}, socket) do
-    case Voile.PluginManager.activate(module_str) do
-      :ok ->
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Plugin activated successfully."))
-         |> assign(:plugins, Plugins.list_plugins())}
+    if not socket.assigns[:is_super_admin] do
+      plugin_access_denied(socket)
+    else
+      case Voile.PluginManager.activate(module_str) do
+        :ok ->
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("Plugin activated successfully."))
+           |> assign(:plugins, Plugins.list_plugins())}
 
-      {:error, reason} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Failed to activate: %{reason}", reason: inspect(reason))
-         )}
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to activate: %{reason}", reason: inspect(reason))
+           )}
+      end
     end
   end
 
   @impl true
   def handle_event("deactivate", %{"module" => module_str}, socket) do
-    case Voile.PluginManager.deactivate(module_str) do
-      :ok ->
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Plugin deactivated successfully."))
-         |> assign(:plugins, Plugins.list_plugins())}
+    if not socket.assigns[:is_super_admin] do
+      plugin_access_denied(socket)
+    else
+      case Voile.PluginManager.deactivate(module_str) do
+        :ok ->
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("Plugin deactivated successfully."))
+           |> assign(:plugins, Plugins.list_plugins())}
 
-      {:error, reason} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Failed to deactivate: %{reason}", reason: inspect(reason))
-         )}
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to deactivate: %{reason}", reason: inspect(reason))
+           )}
+      end
     end
   end
 
@@ -91,53 +103,71 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
         %{"module" => module_str, "remove_data" => remove_data_str},
         socket
       ) do
-    remove_data = remove_data_str == "true"
+    if not socket.assigns[:is_super_admin] do
+      plugin_access_denied(socket)
+    else
+      remove_data = remove_data_str == "true"
 
-    case Voile.PluginManager.uninstall(module_str, remove_data: remove_data) do
-      :ok ->
-        message =
-          if remove_data do
-            gettext("Plugin uninstalled and data removed.")
-          else
-            gettext("Plugin uninstalled. Data preserved.")
-          end
+      case Voile.PluginManager.uninstall(module_str, remove_data: remove_data) do
+        :ok ->
+          message =
+            if remove_data do
+              gettext("Plugin uninstalled and data removed.")
+            else
+              gettext("Plugin uninstalled. Data preserved.")
+            end
 
-        {:noreply,
-         socket
-         |> put_flash(:info, message)
-         |> assign(:plugins, Plugins.list_plugins())
-         |> assign(:available_plugins, Voile.PluginManager.discover_available())}
+          {:noreply,
+           socket
+           |> put_flash(:info, message)
+           |> assign(:plugins, Plugins.list_plugins())
+           |> assign(:available_plugins, Voile.PluginManager.discover_available())}
 
-      {:error, reason} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Failed to uninstall: %{reason}", reason: inspect(reason))
-         )}
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to uninstall: %{reason}", reason: inspect(reason))
+           )}
+      end
     end
   end
 
   @impl true
   def handle_event("update", %{"module" => module_str}, socket) do
-    case Voile.PluginManager.update(module_str) do
-      :ok ->
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("Plugin updated successfully."))
-         |> assign(:plugins, Plugins.list_plugins())}
+    if not socket.assigns[:is_super_admin] do
+      plugin_access_denied(socket)
+    else
+      case Voile.PluginManager.update(module_str) do
+        :ok ->
+          {:noreply,
+           socket
+           |> put_flash(:info, gettext("Plugin updated successfully."))
+           |> assign(:plugins, Plugins.list_plugins())}
 
-      {:error, :same_version} ->
-        {:noreply, put_flash(socket, :info, gettext("Plugin is already at the latest version."))}
+        {:error, :same_version} ->
+          {:noreply,
+           put_flash(socket, :info, gettext("Plugin is already at the latest version."))}
 
-      {:error, reason} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           gettext("Failed to update: %{reason}", reason: inspect(reason))
-         )}
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             gettext("Failed to update: %{reason}", reason: inspect(reason))
+           )}
+      end
     end
+  end
+
+  defp plugin_access_denied(socket) do
+    {:noreply,
+     put_flash(
+       socket,
+       :error,
+       gettext("Super admin access required for plugin management.")
+     )}
   end
 
   @impl true

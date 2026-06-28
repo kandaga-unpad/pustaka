@@ -14,7 +14,7 @@ defmodule VoileWeb.ResourceClassController do
     }
 
   def index(conn, _params) do
-    page = Map.get(conn.params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(conn.params, "page"))
     search_keyword = Map.get(conn.params, "search", "")
     per_page = 10
 

@@ -12,6 +12,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
+          is_super_admin={@is_super_admin}
         />
       </div>
       <div class="p-6 w-full">
@@ -513,6 +514,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
      socket
      |> assign(:current_user, current_user)
      |> assign(:is_admin, is_admin)
+     |> assign(:is_super_admin, is_admin)
      |> assign(:api_tokens, api_tokens)
      |> assign(:show_modal, false)
      |> assign(:selected_token, nil)

@@ -82,10 +82,7 @@ config :voile,
     # Archives
     "application/zip",
     "application/x-rar-compressed",
-    "application/x-7z-compressed",
-    # Software
-    "application/octet-stream",
-    "application/x-executable"
+    "application/x-7z-compressed"
   ]
 
 config :voile,

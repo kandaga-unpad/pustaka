@@ -48,7 +48,7 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
   end
 
   def index(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     search_keyword = Map.get(params, "search", "")
 
     filters = %{

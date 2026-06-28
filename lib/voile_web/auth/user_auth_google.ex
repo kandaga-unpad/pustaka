@@ -1,5 +1,16 @@
 defmodule VoileWeb.UserAuthGoogle do
+  @moduledoc """
+  Google OAuth 2.0 login integration via Assent.
+
+  Assent's OAuth2 strategy generates and validates a CSRF `state` token
+  internally (stored in `session_params`).  This module enforces that
+  `session_params` must be present on callback — if the session cookie is
+  missing (e.g. a forged/forwarded callback URL), the request is rejected.
+  """
+
   import Plug.Conn
+
+  require Logger
 
   alias Assent.{Strategy.Google}
   alias Voile.Schema.Accounts.User
@@ -9,91 +20,111 @@ defmodule VoileWeb.UserAuthGoogle do
     case Application.get_env(:assent, :google, [])
          |> Google.authorize_url() do
       {:ok, %{url: url, session_params: session_params}} ->
-        # Session params (used for OAuth 2.0 and OIDC strategies) will be
-        # retrieved when user returns for the callback phase
-        conn = put_session(conn, :session_params, session_params)
-
-        # Redirect end-user to Github to authorize access to their account
+        # Session params carry the CSRF state; they are validated by Assent
+        # during callback to prevent login-CSRF / account-linking attacks.
         conn
+        |> put_session(:session_params, session_params)
         |> put_resp_header("location", url)
-        |> send_resp(302, "Successfully Redirected")
+        |> send_resp(302, "Redirecting to Google")
 
       {:error, error} ->
+        Logger.warning("Google authorize_url failed: #{inspect(error)}")
+
         conn
-        |> put_resp_content_type("text/plain")
-        |> send_resp(
-          500,
-          "Something went wrong on authorization! Here is the reason: #{inspect(error)}"
+        |> Phoenix.Controller.put_flash(
+          :error,
+          "Unable to connect to Google. Please try again."
         )
+        |> Phoenix.Controller.redirect(to: "/login")
     end
   end
 
   # /auth/google/callback
   def callback(conn) do
-    # End-user will return to the callback URL with params attached to the
-    # request. These must be passed on to the strategy. In this example we only
-    # expect GET query params, but the provider could also return the user with
-    # a POST request where the params is in the POST body.
     %{params: params} = fetch_query_params(conn)
-
-    # log incoming values for debugging in production
-    IO.inspect("Google callback hit, params=#{inspect(params)}")
-
-    # The session params (used for OAuth 2.0 and OIDC Strategies) stored in the
-    # request phase will be used in the callback phase
     session_params = get_session(conn, :session_params)
-    IO.inspect("session_params=#{inspect(session_params)}")
 
     if is_nil(session_params) do
-      IO.inspect(
-        "no session_params present on Google callback, likely the session cookie was not sent"
-      )
-    end
+      # No session_params means no prior authorize_url request was made in this
+      # session — the callback is either forged or forwarded.  Reject it to
+      # prevent login-CSRF attacks.
+      Logger.warning("Google callback rejected: missing session_params")
 
+      conn
+      |> Phoenix.Controller.put_flash(
+        :error,
+        "Authentication session expired. Please try again."
+      )
+      |> Phoenix.Controller.redirect(to: "/login")
+    else
+      do_callback(conn, params, session_params)
+    end
+  end
+
+  defp do_callback(conn, params, session_params) do
     case Application.get_env(:assent, :google, [])
-         # Session params should be added to the config so the strategi can use them
          |> Keyword.put(:session_params, session_params)
          |> Google.callback(params) do
       {:ok, %{user: user, token: token}} ->
-        # Authorization successful
+        # Clear the one-time session params so they can't be replayed.
+        conn = delete_session(conn, :session_params)
+
         email = user["email"]
         is_institutional = is_institutional_email?(email)
 
         user_record = Voile.Schema.Accounts.get_user_by_email_or_register(user)
 
-        # If institutional email and new user, assign verified member type
-        user_record = maybe_assign_verified_member(user_record, is_institutional)
+        case user_record do
+          {:error, :domain_not_allowed} ->
+            Logger.warning("Google registration rejected for domain: #{email}")
 
-        # Check if user needs onboarding
-        needs_onboarding = needs_onboarding?(user_record, is_institutional)
+            conn
+            |> Phoenix.Controller.put_flash(
+              :error,
+              "Registration is restricted to authorized email domains. Please contact an administrator."
+            )
+            |> Phoenix.Controller.redirect(to: "/login")
 
-        # Block suspended users before creating a session
-        if Voile.Schema.Accounts.is_manually_suspended?(user_record) do
-          reason = user_record.suspension_reason || "Your account has been suspended"
-
-          conn
-          |> Phoenix.Controller.put_flash(
-            :error,
-            "Login failed: #{reason}. Please contact support for assistance."
-          )
-          |> Phoenix.Controller.redirect(to: "/login")
-        else
-          conn
-          |> put_session(:google_user, user)
-          |> put_session(:google_user_token, token)
-          |> VoileWeb.UserAuth.log_in_user(user_record)
-          |> maybe_redirect_to_onboarding(needs_onboarding)
+          user_record ->
+            do_google_login(conn, user_record, user, token, is_institutional)
         end
 
       {:error, error} ->
-        IO.inspect(
-          "Google auth error: #{inspect(error)} session_params=#{inspect(session_params)}"
-        )
+        Logger.warning("Google callback failed: #{inspect(error)}")
 
-        # Authorization failed
         conn
-        |> put_resp_content_type("text/plain")
-        |> send_resp(500, inspect(error, pretty: true))
+        |> delete_session(:session_params)
+        |> Phoenix.Controller.put_flash(
+          :error,
+          "Google authentication failed. Please try again."
+        )
+        |> Phoenix.Controller.redirect(to: "/login")
+    end
+  end
+
+  defp do_google_login(conn, user_record, google_user, token, is_institutional) do
+    # If institutional email and new user, assign verified member type
+    user_record = maybe_assign_verified_member(user_record, is_institutional)
+
+    # Check if user needs onboarding
+    needs_onboarding = needs_onboarding?(user_record, is_institutional)
+
+    # Block suspended users before creating a session
+    if Voile.Schema.Accounts.is_manually_suspended?(user_record) do
+      reason = user_record.suspension_reason || "Your account has been suspended"
+
+      conn
+      |> Phoenix.Controller.put_flash(
+        :error,
+        "Login failed: #{reason}. Please contact support for assistance."
+      )
+      |> Phoenix.Controller.redirect(to: "/login")
+    else
+      conn
+      |> put_session(:google_user, google_user)
+      |> put_session(:google_user_token, token)
+      |> VoileWeb.UserAuth.log_in_user(user_record)
+      |> maybe_redirect_to_onboarding(needs_onboarding)
     end
   end
 

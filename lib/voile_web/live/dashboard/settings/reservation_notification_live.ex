@@ -2,12 +2,15 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
   use VoileWeb, :live_view_dashboard
 
   alias Voile.Schema.System
+  alias VoileWeb.Auth.Authorization
 
   @impl true
   def mount(_params, _session, socket) do
     handle_mount_errors do
       # Check permission for managing system settings
       authorize!(socket, "system.settings")
+
+      current_user = socket.assigns.current_scope.user
 
       # Load current settings
       enabled = System.get_setting_value("reservation_notifications_enabled", "true")
@@ -21,6 +24,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
         |> assign(:sound_enabled, sound_enabled == "true")
         |> assign(:desktop_enabled, desktop_enabled == "true")
         |> assign(:save_status, nil)
+        |> assign(:is_super_admin, Authorization.is_super_admin?(current_user))
 
       {:ok, socket}
     end
@@ -103,6 +107,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
+          is_super_admin={@is_super_admin}
         />
       </div>
 

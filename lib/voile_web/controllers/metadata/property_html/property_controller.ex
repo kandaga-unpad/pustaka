@@ -14,7 +14,7 @@ defmodule VoileWeb.PropertyController do
     }
 
   def index(conn, params) do
-    page = Map.get(params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     vocabulary_id = Map.get(params, "vocabulary_id", nil)
     per_page = 10
 

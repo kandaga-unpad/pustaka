@@ -28,6 +28,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
       current_user = socket.assigns.current_scope.user
 
+      socket =
+        socket
+        |> assign(:current_user, current_user)
+        |> assign(:is_super_admin, VoileWeb.Auth.Authorization.is_super_admin?(current_user))
+
       # Load nodes for default node selection
       nodes = System.list_nodes()
 
@@ -65,7 +70,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
     <div class="flex flex-col md:flex-row gap-4">
       <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar current_user={@current_user} />
+        <.dashboard_settings_sidebar current_user={@current_user} is_super_admin={@is_super_admin} />
       </div>
 
       <div class="w-full bg-white dark:bg-gray-700 p-4 rounded-lg">

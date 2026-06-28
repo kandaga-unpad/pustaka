@@ -250,11 +250,12 @@ defmodule VoileWeb.UserAuthPaus do
   end
 
   defp fetch_user_profile(token) do
-    url = "#{@api_url}/accounts?access_token=#{token.access_token}"
+    url = "#{@api_url}/accounts"
 
     headers = [
       {"user-agent", "Voile PAuS Client/1.0"},
-      {"accept", "application/json"}
+      {"accept", "application/json"},
+      {"authorization", "Bearer #{token.access_token}"}
     ]
 
     case Req.get(url, headers: headers, receive_timeout: 30_000) do
@@ -277,9 +278,10 @@ defmodule VoileWeb.UserAuthPaus do
 
   defp make_api_request(path, access_token, params) when map_size(params) == 0 do
     # GET request
-    url = "#{@api_url}#{path}?access_token=#{access_token}"
+    url = "#{@api_url}#{path}"
+    headers = [{"authorization", "Bearer #{access_token}"}]
 
-    case Req.get(url, receive_timeout: 30_000) do
+    case Req.get(url, headers: headers, receive_timeout: 30_000) do
       {:ok, %Req.Response{status: 200, body: body}} ->
         case decode_body(body) do
           {:ok, data} -> {:ok, data}
@@ -296,9 +298,13 @@ defmodule VoileWeb.UserAuthPaus do
 
   defp make_api_request(path, access_token, params) do
     # POST request
-    url = "#{@api_url}#{path}?access_token=#{access_token}"
+    url = "#{@api_url}#{path}"
     body = URI.encode_query(params)
-    headers = [{"content-type", "application/x-www-form-urlencoded"}]
+
+    headers = [
+      {"content-type", "application/x-www-form-urlencoded"},
+      {"authorization", "Bearer #{access_token}"}
+    ]
 
     case Req.post(url, body: body, headers: headers, receive_timeout: 30_000) do
       {:ok, %Req.Response{status: 200, body: response_body}} ->

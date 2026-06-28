@@ -38,6 +38,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
+          is_super_admin={@is_super_admin}
         />
       </div>
 
@@ -324,6 +325,9 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
       # Check permission for managing system settings
       authorize!(socket, "system.settings")
 
+      current_user = socket.assigns.current_scope.user
+      is_super_admin = VoileWeb.Auth.Authorization.is_super_admin?(current_user)
+
       nodes = System.list_nodes()
 
       socket =
@@ -333,6 +337,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         |> assign(:form_node, nil)
         |> assign(:image_preview, nil)
         |> assign(:current_path, "/manage/settings/nodes")
+        |> assign(:is_super_admin, is_super_admin)
         |> assign(:form, to_form(System.change_node(%Node{})))
         |> allow_upload(:node_image,
           accept: ~w(.jpg .jpeg .png .webp),

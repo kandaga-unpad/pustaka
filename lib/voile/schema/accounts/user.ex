@@ -25,7 +25,7 @@ defmodule Voile.Schema.Accounts.User do
     field :social_media, :map, type: :jsonb
     field :groups, {:array, :string}
     field :last_login, :utc_datetime
-    field :last_login_ip, :string
+    field :last_login_ip, :string, redact: true
 
     # Manual suspension fields
     field :manually_suspended, :boolean, default: false
@@ -34,11 +34,12 @@ defmodule Voile.Schema.Accounts.User do
     field :suspension_ends_at, :utc_datetime
     belongs_to :suspended_by, __MODULE__, type: :binary_id
 
-    # Profile fields (moved from UserProfile)
-    field :address, :string
-    field :phone_number, :string
-    field :birth_date, :date
-    field :birth_place, :string
+    # Profile fields (moved from UserProfile) — redacted to prevent accidental
+    # exposure in logs, IO.inspect, and debug output.
+    field :address, :string, redact: true
+    field :phone_number, :string, redact: true
+    field :birth_date, :date, redact: true
+    field :birth_place, :string, redact: true
     field :gender, :string
     field :registration_date, :date
     field :expiry_date, :date

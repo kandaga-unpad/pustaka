@@ -107,10 +107,10 @@ defmodule Voile.Schema.System.UserApiToken do
   end
 
   @doc """
-  Verifies a token
+  Verifies a token using constant-time comparison to prevent timing attacks.
   """
   def verify_token(hashed_token, plain_token) do
-    hash_token(plain_token) == hashed_token
+    Plug.Crypto.secure_compare(hash_token(plain_token), hashed_token)
   end
 
   @doc """

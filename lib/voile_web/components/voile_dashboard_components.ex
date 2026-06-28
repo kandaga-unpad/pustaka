@@ -777,6 +777,7 @@ defmodule VoileWeb.VoileDashboardComponents do
   """
   attr :current_user, :map, required: false
   attr :current_path, :string, default: nil
+  attr :is_super_admin, :boolean, default: false
 
   attr :menu_items, :list,
     default: [
@@ -790,7 +791,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         path: "/manage/settings/reservation_notifications",
         icon: "hero-bell"
       },
-      %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"}
+      %{label: "API Manager", path: "/manage/settings/api_manager", icon: "hero-code-bracket"},
+      %{label: "System Metrics", path: "/manage/settings/metrics", icon: "hero-chart-bar"}
     ],
     doc: """
     List of menu items. Each item should be a map with:
@@ -808,9 +810,8 @@ defmodule VoileWeb.VoileDashboardComponents do
         <.link navigate="/manage/settings/">
           <h3 class="text-lg font-semibold mb-4">Settings</h3>
         </.link>
-        <% menu_items = @menu_items %>
         <ul class="space-y-4 text-sm">
-          <%= for item <- menu_items do %>
+          <%= for item <- @menu_items do %>
             <li>
               <.link
                 navigate={item.path}

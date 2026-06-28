@@ -22,16 +22,17 @@ config :voile, Voile.Repo,
 # Configure MySQL/MariaDB source for SLiMS data migration
 # Works with both MySQL and MariaDB databases using the same configuration
 # Uncomment and configure to use database connection instead of CSV files
+# Credentials should be provided via environment variables — never hardcode real passwords.
 config :voile, :mysql_source,
-  hostname: "localhost",
+  hostname: System.get_env("VOILE_MYSQL_HOSTNAME") || "localhost",
   # Default port for MySQL/MariaDB
-  port: 3306,
+  port: String.to_integer(System.get_env("VOILE_MYSQL_PORT") || "3306"),
   # Database username
-  username: "root",
+  username: System.get_env("VOILE_MYSQL_USERNAME") || "root",
   # Database password
-  password: "",
+  password: System.get_env("VOILE_MYSQL_PASSWORD") || "",
   # SLiMS database name
-  database: "slims_gold"
+  database: System.get_env("VOILE_MYSQL_DATABASE") || "slims_gold"
 
 # Configure OAuth with Assent
 config :assent,
@@ -62,6 +63,8 @@ config :voile, VoileWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
+  # DEV ONLY — this value is safe for local development but must NEVER be
+  # reused in staging or production. Production uses VOILE_SECRET_KEY in runtime.exs.
   secret_key_base: "8yUfAjPlnRwlXp8kQaME2eoN8nXCApsGmofKKaAMoeKsThy5ZHE2XTKdE1fKjH9c",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:voile, ~w(--sourcemap=inline --watch)]},

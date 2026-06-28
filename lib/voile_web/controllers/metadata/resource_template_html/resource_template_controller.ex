@@ -9,7 +9,7 @@ defmodule VoileWeb.ResourceTemplateController do
     }
 
   def index(conn, _params) do
-    page = Map.get(conn.params, "page", "1") |> String.to_integer()
+    page = Voile.Utils.Pagination.parse_page(Map.get(conn.params, "page"))
     per_page = 10
 
     {resource_template_collection, total_pages, _} =
