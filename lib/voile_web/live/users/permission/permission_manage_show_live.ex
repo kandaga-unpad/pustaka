@@ -15,6 +15,10 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
       |> assign(permission: permission)
       |> assign(:page_title, gettext("Permission Details"))
       |> assign(current_path: "/manage/settings/permissions/#{id}")
+      |> assign(
+        :is_super_admin,
+        VoileWeb.Auth.Authorization.is_super_admin?(socket.assigns.current_scope.user)
+      )
       |> load_permission_roles()
 
     {:ok, socket}
@@ -34,6 +38,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
           <.dashboard_settings_sidebar
             current_user={@current_scope.user}
             current_path={@current_path}
+            is_super_admin={@is_super_admin}
           />
         </div>
 

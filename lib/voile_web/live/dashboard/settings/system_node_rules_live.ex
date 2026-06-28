@@ -11,6 +11,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
         <.dashboard_settings_sidebar
           current_user={@current_scope.user}
           current_path={@current_path}
+          is_super_admin={@is_super_admin}
         />
       </div>
 
@@ -423,6 +424,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeRulesLive do
         |> assign(:form, to_form(%{}))
         |> assign(:form_data, default_form_data())
         |> assign(:current_path, "/manage/settings/nodes/rules")
+        |> assign(:is_super_admin, true)
 
       {:ok, socket}
     end

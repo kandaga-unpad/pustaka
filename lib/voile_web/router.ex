@@ -50,6 +50,7 @@ defmodule VoileWeb.Router do
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.PresenceHook, :default},
         {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       # Search dashboard (admin only)
@@ -112,6 +113,7 @@ defmodule VoileWeb.Router do
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.PresenceHook, :default},
         {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       live "/register", UserRegistrationLive, :new
@@ -137,6 +139,7 @@ defmodule VoileWeb.Router do
       on_mount: [
         {VoileWeb.Live.Hooks.LocaleHook, :set_locale},
         {VoileWeb.UserAuth, :require_authenticated},
+        {VoileWeb.Live.PresenceHook, :default},
         {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       live "/users/onboarding", UserOnboardingLive, :edit
@@ -154,6 +157,7 @@ defmodule VoileWeb.Router do
         {VoileWeb.UserAuth, :require_onboarding_complete},
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.UserAuth, :mount_current_scope},
+        {VoileWeb.Live.PresenceHook, :default},
         {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       # Frontend member routes that require authentication
@@ -177,6 +181,7 @@ defmodule VoileWeb.Router do
         {VoileWeb.Utils.SaveRequestUri, :save_request_uri},
         {VoileWeb.Utils.SideBarMenuMaster, :master_menu},
         {VoileWeb.Live.Hooks.NotificationHook, :default},
+        {VoileWeb.Live.PresenceHook, :default},
         {VoileWeb.Live.Hooks.CurrentPath, :default}
       ] do
       scope "/manage" do
@@ -457,6 +462,8 @@ defmodule VoileWeb.Router do
           live "/user_dashboard", Users.Manage.Dashboard, :index
 
           live "/apps", Dashboard.Settings.AppProfileSettingsLive, :index
+
+          live "/metrics", Dashboard.Settings.MetricsLive, :index
 
           scope "/roles" do
             live "/", Users.Role.ManageLive, :index

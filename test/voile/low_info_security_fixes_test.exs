@@ -84,6 +84,7 @@ defmodule Voile.LowInfoSecurityFixesTest do
 
       # The super_admin guard must be enforced (once per handler = 5 occurrences)
       count = source |> String.split("is_super_admin") |> length() |> Kernel.-(1)
+
       assert count >= 5,
              "Expected at least 5 is_super_admin checks (one per privileged handler), got #{count}"
     end
