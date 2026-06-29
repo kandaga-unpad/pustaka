@@ -76,10 +76,6 @@ if config_env() == :prod do
       "https://#{host}",
       "https://#{host}."
     ],
-    # Force HTTPS in production: redirect any plain-HTTP request to HTTPS and
-    # send HSTS headers so browsers pin to TLS. `rewrite_on` trusts the
-    # X-Forwarded-Proto header set by the reverse proxy / load balancer.
-    force_ssl: [hsts: true, rewrite_on: [:x_forwarded_proto]],
     secret_key_base: secret_key_base
 
   # ## SSL Support

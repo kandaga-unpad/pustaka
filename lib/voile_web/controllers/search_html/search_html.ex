@@ -4,6 +4,7 @@ defmodule VoileWeb.SearchHTML do
   """
 
   use VoileWeb, :html
+  import VoileWeb.VoileComponents
 
   embed_templates "*"
 
