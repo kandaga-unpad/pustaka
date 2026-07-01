@@ -1724,9 +1724,9 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Scan do
           |> Enum.filter(fn prop ->
             # Exclude properties already in collection_fields and creator-related fields
             !Enum.any?(opname_item.collection.collection_fields, fn field ->
-              field.name == prop.name
+              field.name == prop.local_name
             end) and
-              prop.name not in ["creator", "author", "dcterms:creator"]
+              prop.local_name not in ["creator", "author", "dcterms:creator"]
           end)
         else
           []
