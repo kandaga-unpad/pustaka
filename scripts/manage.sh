@@ -63,6 +63,8 @@ print_help() {
     echo "  remote        - Open Elixir remote console"
     echo "  backup-db     - Backup database to /data/voile/backups"
     echo "  restore-db    - Restore database from backup"
+    echo "  rollback      - List available rollback images"
+    echo "  rollback-to   - Rollback to specific backup image"
     echo ""
 }
 
@@ -158,7 +160,7 @@ case "$1" in
     
     restore-db)
         BACKUP_DIR="/data/voile/backups"
-        
+
         if [ -z "$2" ]; then
             echo "Available backups:"
             ls -lh "$BACKUP_DIR"/*.sql 2>/dev/null || echo "No backups found"
@@ -166,28 +168,109 @@ case "$1" in
             echo "Usage: $0 restore-db <backup_file>"
             exit 1
         fi
-        
+
         BACKUP_FILE="$2"
-        
+
         if [ ! -f "$BACKUP_FILE" ]; then
             print_error "Backup file not found: $BACKUP_FILE"
             exit 1
         fi
-        
+
         echo -e "${YELLOW}WARNING: This will replace the current database!${NC}"
         echo -n "Are you sure? (yes/no): "
         read -r CONFIRM
-        
+
         if [ "$CONFIRM" != "yes" ]; then
             echo "Restore cancelled."
             exit 0
         fi
-        
+
         print_status "Restoring database from $BACKUP_FILE..."
         cat "$BACKUP_FILE" | podman exec -i "$DB_CONTAINER" psql -U "$DB_USER" "$DB_NAME"
         print_status "Restore completed"
         ;;
-    
+
+    rollback)
+        echo -e "${GREEN}Available rollback images:${NC}"
+        echo ""
+
+        # Find backup images
+        BACKUPS=$(podman images | grep -E 'voile.*backup-[0-9]{8}-[0-9]{6}' || true)
+
+        if [ -z "$BACKUPS" ]; then
+            echo "No backup images found."
+        else
+            echo "$BACKUPS" | awk '{print $1 " " $3 " " $4 " " $5}' | column -t
+            echo ""
+            echo "Usage: $0 rollback-to <image-name>"
+            echo "Example: $0 rollback-to voile:backup-20241229-143025"
+        fi
+
+        # Show voile:backup if it exists
+        if podman image exists "voile:backup" 2>/dev/null; then
+            echo ""
+            echo "Current backup available: voile:backup"
+            echo "Usage: $0 rollback-to voile:backup"
+        fi
+        ;;
+
+    rollback-to)
+        TARGET_IMAGE="$2"
+
+        if [ -z "$TARGET_IMAGE" ]; then
+            print_error "Please specify a backup image."
+            echo "Run '$0 rollback' to list available images."
+            exit 1
+        fi
+
+        if ! podman image exists "$TARGET_IMAGE" 2>/dev/null; then
+            print_error "Image $TARGET_IMAGE not found."
+            exit 1
+        fi
+
+        echo -e "${YELLOW}WARNING: This will rollback to $TARGET_IMAGE!${NC}"
+        echo -n "Are you sure? (yes/no): "
+        read -r CONFIRM
+
+        if [ "$CONFIRM" != "yes" ]; then
+            echo "Rollback cancelled."
+            exit 0
+        fi
+
+        print_status "Stopping current container..."
+        podman stop "$APP_CONTAINER" 2>/dev/null || true
+        podman rm "$APP_CONTAINER" 2>/dev/null || true
+
+        print_status "Tagging $TARGET_IMAGE as voile:latest..."
+        podman tag "$TARGET_IMAGE" voile:latest
+
+        print_status "Starting container with rollback image..."
+        podman run -d \
+            --name "$APP_CONTAINER" \
+            --pod "$POD_NAME" \
+            --restart unless-stopped \
+            --env-file "$ENV_FILE" \
+            -e PHX_SERVER=true \
+            -e DATABASE_HOST=localhost \
+            -e DATABASE_PORT=5432 \
+            -v /data/voile/uploads:/app/priv/static/uploads:Z \
+            -v /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z \
+            -v /data/voile/images:/app/priv/static/images:Z \
+            -v /data/voile/sfx:/app/priv/static/sfx:Z \
+            voile:latest
+
+        print_status "Waiting for container to start..."
+        sleep 5
+
+        if podman ps -q -f name="$APP_CONTAINER" -f status=running | grep -q .; then
+            print_status "Rollback successful! Container is running."
+            echo ""
+            echo "View logs: ./manage.sh logs"
+        else
+            print_error "Rollback failed! Check logs: podman logs $APP_CONTAINER"
+        fi
+        ;;
+
     *)
         print_help
         ;;

@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.41] - 2026-07-01
+
+### Fixed
+
+- **Stock Opname: barcode scanning crash** — Fixed `KeyError` when scanning items during stock opname. The code was attempting to access `prop.name` on `Metadata.Property` structs, but the schema uses `prop.local_name` instead. Updated property filtering logic to use the correct field name.
+
+## [0.1.40] - 2026-06-25
+
+### Changed
+
+- **Version bump** — Release version 0.1.40 with accumulated fixes and improvements.
+
+## [0.1.39] - 2026-06-25
+
+### Changed
+
+- **Version bump** — Release version 0.1.39 with accumulated fixes and improvements.
+
+## [0.1.38] - 2026-06-25
+
+### Security
+
+- **Security audit and comprehensive fixes** — Conducted thorough security audit and implemented multiple security enhancements:
+  - Added pagination helpers with input validation to prevent SQL injection
+  - Enhanced OAuth registration flow with proper error handling and security checks
+  - Improved API authorization with comprehensive permission validation
+  - Hardened attachment download controller against SSRF attacks
+  - Strengthened Xendit webhook validation and signature verification
+  - Added security configuration tests and validation
+  - Implemented comprehensive test coverage for security-critical paths
+  - Fixed potential vulnerabilities in Google OAuth flow
+  - Enhanced PAUS authentication security
+  - Improved plugin management security controls
+  - Secured ebook reader access controls
+  - Added rate limiting and input validation across API endpoints
+
+### Added
+
+- **Security test suites** — Added comprehensive test coverage for security fixes including:
+  - Low and medium severity security fixes tests
+  - OAuth registration security tests
+  - API authorization permission tests
+  - Attachment download SSRF prevention tests
+  - Xendit webhook validation tests
+  - Pagination utility tests
+  - Security configuration validation tests
+
 ## [0.1.37] - 2026-06-11
 
 ### Changed
