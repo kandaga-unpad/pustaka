@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.42] - 2026-07-01
+
+### Fixed
+
+- **OpenObserve logger: deprecated auth syntax** — Updated `Req` HTTP client authentication from deprecated `auth: {username, password}` syntax to the new `auth: {:basic, "username:password"}` format to eliminate deprecation warnings.
+- **Collection form: duplicate collection_fields IDs** — Fixed Ecto warning about duplicate primary keys in `:collection_fields` association. The issue occurred in the `delete_existing_field` function where both persisted DB fields and unsaved form fields could contain the same IDs, causing duplicates when concatenated. Now filters out unsaved fields that have IDs already present in the DB field list, ensuring each field ID appears only once.
+- **API/Search: glam_type enum case sensitivity** — Fixed PostgreSQL enum error when filtering by `glam_type`. The database enum values are capitalized (`Gallery`, `Library`, `Archive`, `Museum`) but API requests and search queries were sending lowercase values. Added automatic case normalization using `String.capitalize/1` in all glam_type filter functions across:
+  - `Voile.Schema.Catalog.filter_by_glam_type/2`
+  - `Voile.Search.Collections.search_collections_for_suggestions/2`
+  - `Voile.Search.Collections.filter_by_glam_type/2`
+  - `Voile.Search.Collections.filter_by_resource_glam_type/2`
+  - `Voile.GLAM.CollectionHelper.list_accessible_collections/3`
+  - `Voile.Task.Catalog.Collection.filter_by_glam_type/2`
+
 ## [0.1.41] - 2026-07-01
 
 ### Fixed

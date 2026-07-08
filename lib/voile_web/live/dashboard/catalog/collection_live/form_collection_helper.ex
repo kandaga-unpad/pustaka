@@ -456,8 +456,18 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
               end)
 
             # Merge: persisted DB fields first, then unsaved in-memory fields
+            # Ensure no duplicate IDs by keeping only unique fields
+            db_field_ids = Enum.map(db_field_params, & &1["id"]) |> MapSet.new()
+
+            # Only include unsaved fields that don't have IDs already in db_field_params
+            unique_unsaved_fields =
+              Enum.reject(unsaved_form_fields, fn field ->
+                field_id = field["id"] || field[:id]
+                field_id && MapSet.member?(db_field_ids, field_id)
+              end)
+
             field_params =
-              (db_field_params ++ unsaved_form_fields)
+              (db_field_params ++ unique_unsaved_fields)
               |> Enum.with_index()
               |> Enum.into(%{}, fn {v, idx} -> {to_string(idx), v} end)
 
