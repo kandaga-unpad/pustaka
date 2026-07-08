@@ -17,6 +17,7 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
     end
 
     response(200, "OK", Schema.ref(:CirculationHistoriesResponse))
@@ -27,13 +28,14 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
 
     {circulation_history, total_pages, total_count} =
-      Circulation.list_circulation_history_paginated(page, 10)
+      Circulation.list_circulation_history_paginated(page, per_page)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
+      page_size: per_page,
       total_pages: total_pages,
       total_count: total_count
     }
@@ -104,6 +106,8 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
   def create(conn, %{"circulation_history" => history_params}) do
     case Circulation.create_circulation_history(history_params) do
       {:ok, %CirculationHistory{} = history} ->
+        history = Circulation.get_circulation_history!(history.id)
+
         conn
         |> put_status(:created)
         |> render(:show, circulation_history: history)
@@ -153,10 +157,12 @@ defmodule VoileWeb.API.V1.CirculationHistory.CirculationHistoryApiController do
 
       %CirculationHistory{} = history ->
         case Circulation.update_circulation_history(history, history_params) do
-          {:ok, %CirculationHistory{} = updated_history} ->
+          {:ok, %CirculationHistory{}} ->
+            history = Circulation.get_circulation_history!(id)
+
             conn
             |> put_status(:ok)
-            |> render(:show, circulation_history: updated_history)
+            |> render(:show, circulation_history: history)
 
           {:error, changeset} ->
             conn

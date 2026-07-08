@@ -130,9 +130,9 @@ defmodule Voile.Schema.Catalog do
       |> limit(^per_page)
       |> offset(^offset)
 
-    # Only preload necessary associations for the list table view.
-    # :items is intentionally excluded — the list table never renders item counts.
-    # The search modal uses search_collections_all_nodes/1 which preloads items separately.
+    # Lightweight preloads for the list view. Full :items, :attachments, and
+    # :collection_fields (metadata) are intentionally excluded — the list only
+    # exposes counts for items/attachments; full data lives on the show endpoint.
     collections =
       Repo.all(query)
       |> Repo.preload([
@@ -141,6 +141,7 @@ defmodule Voile.Schema.Catalog do
         :node,
         :created_by
       ])
+      |> attach_collection_counts()
 
     # Count query without preloads for better performance
     count_query =
@@ -158,6 +159,44 @@ defmodule Voile.Schema.Catalog do
     {collections, total_pages, total_count}
   end
 
+  @doc """
+  Attaches `items_count` and `attachments_count` virtual fields to a list of
+  collections using two grouped count queries, avoiding loading full rows.
+  """
+  def attach_collection_counts([]), do: []
+
+  def attach_collection_counts(collections) do
+    collection_ids = Enum.map(collections, & &1.id)
+
+    items_counts =
+      from(i in Item,
+        where: i.collection_id in ^collection_ids,
+        group_by: i.collection_id,
+        select: {i.collection_id, count(i.id)}
+      )
+      |> Repo.all()
+      |> Map.new()
+
+    attachments_counts =
+      from(a in Attachment,
+        where:
+          a.attachable_type == "collection" and
+            a.attachable_id in ^collection_ids,
+        group_by: a.attachable_id,
+        select: {a.attachable_id, count(a.id)}
+      )
+      |> Repo.all()
+      |> Map.new()
+
+    Enum.map(collections, fn collection ->
+      %{
+        collection
+        | items_count: Map.get(items_counts, collection.id, 0),
+          attachments_count: Map.get(attachments_counts, collection.id, 0)
+      }
+    end)
+  end
+
   defp maybe_search_collections(query, nil), do: query
 
   defp maybe_search_collections(query, search) when is_binary(search) and search != "" do
@@ -166,8 +205,11 @@ defmodule Voile.Schema.Catalog do
     from c in query,
       as: :collection,
       left_join: creator in assoc(c, :mst_creator),
+      as: :mst_creator,
       left_join: node in assoc(c, :node),
+      as: :node,
       left_join: rc in assoc(c, :resource_class),
+      as: :resource_class,
       where:
         ilike(c.title, ^title_like) or
           ilike(c.description, ^like) or
@@ -187,8 +229,11 @@ defmodule Voile.Schema.Catalog do
 
     from c in query,
       left_join: creator in assoc(c, :mst_creator),
+      as: :mst_creator,
       left_join: node in assoc(c, :node),
+      as: :node,
       left_join: rc in assoc(c, :resource_class),
+      as: :resource_class,
       where:
         ilike(c.title, ^title_like) or
           ilike(c.description, ^like) or
@@ -266,9 +311,16 @@ defmodule Voile.Schema.Catalog do
     # Valid values: Gallery, Library, Archive, Museum
     normalized_glam_type = String.capitalize(glam_type)
 
-    from c in query,
-      join: rc in assoc(c, :resource_class),
-      where: rc.glam_type == ^normalized_glam_type
+    # Reuse an existing :resource_class binding (added by the search query)
+    # instead of joining the same association twice.
+    query =
+      if has_named_binding?(query, :resource_class) do
+        query
+      else
+        join(query, :inner, [c], rc in assoc(c, :resource_class), as: :resource_class)
+      end
+
+    where(query, [resource_class: rc], rc.glam_type == ^normalized_glam_type)
   end
 
   defp filter_by_node(query, nil), do: query
@@ -442,7 +494,27 @@ defmodule Voile.Schema.Catalog do
   def get_collection!(id) do
     Collection
     |> Repo.get!(id)
-    |> Repo.preload([
+    |> Repo.preload(collection_preloads())
+  end
+
+  @doc """
+  Fetches a single collection by id with all associations preloaded.
+
+  Returns `nil` if no record is found. Unlike `get_collection!/1`, this never
+  raises, making it suitable for controller actions that need to produce a
+  404 response.
+  """
+  def get_collection(id) do
+    Collection
+    |> Repo.get(id)
+    |> case do
+      nil -> nil
+      collection -> Repo.preload(collection, collection_preloads())
+    end
+  end
+
+  defp collection_preloads do
+    [
       :resource_class,
       :resource_template,
       :mst_creator,
@@ -454,7 +526,7 @@ defmodule Voile.Schema.Catalog do
       :children,
       items: [:node],
       collection_fields: [:metadata_properties]
-    ])
+    ]
   end
 
   @doc """
@@ -478,6 +550,8 @@ defmodule Voile.Schema.Catalog do
     result =
       %Collection{}
       |> Collection.changeset(enriched_attrs)
+      |> Ecto.Changeset.put_change(:created_by_id, user_id)
+      |> Ecto.Changeset.put_change(:updated_by_id, user_id)
       |> Repo.insert()
 
     case result do
@@ -540,6 +614,7 @@ defmodule Voile.Schema.Catalog do
     result =
       collection
       |> Collection.changeset(attrs)
+      |> Ecto.Changeset.put_change(:updated_by_id, user_id)
       |> Repo.update()
 
     case result do
@@ -1434,18 +1509,25 @@ defmodule Voile.Schema.Catalog do
   def get_item!(id) do
     Item
     |> Repo.get!(id)
-    |> Repo.preload([
-      :node,
-      :item_location,
-      collection: [:mst_creator, :node]
-    ])
+    |> Repo.preload(item_preloads())
   end
 
   def get_item(id) do
     case Repo.get(Item, id) do
       nil -> nil
-      item -> Repo.preload(item, [:node, :item_location, collection: [:mst_creator, :node]])
+      item -> Repo.preload(item, item_preloads())
     end
+  end
+
+  defp item_preloads do
+    [
+      :node,
+      :item_location,
+      :attachments,
+      :created_by,
+      :updated_by,
+      collection: [:mst_creator, :node]
+    ]
   end
 
   @doc """

@@ -814,12 +814,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
             unit_id: node && node.id,
             creator_id: creator_id,
             type_id: type_id,
-            created_by_id: user.id,
             collection_fields: collection_fields
           }
 
           %Collection{}
           |> Collection.changeset(attrs)
+          |> Ecto.Changeset.put_change(:created_by_id, user.id)
+          |> Ecto.Changeset.put_change(:updated_by_id, user.id)
           |> Repo.insert()
           |> case do
             {:ok, col} ->

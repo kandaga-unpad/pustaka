@@ -17,6 +17,7 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
       search(:query, :string, "Search keyword for filtering collections", required: false)
 
       status(:query, :string, "Filter by publication status",
@@ -49,6 +50,7 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
     search_keyword = Map.get(params, "search", "")
 
     filters = %{
@@ -59,11 +61,11 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
     }
 
     {collections, total_pages, total_count} =
-      Catalog.list_collections_paginated(page, 10, search_keyword, filters)
+      Catalog.list_collections_paginated(page, per_page, search_keyword, filters)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
+      page_size: per_page,
       total_pages: total_pages,
       total_count: total_count
     }
@@ -94,8 +96,18 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
   end
 
   def create(conn, %{"collection" => collection_params}) do
-    case Catalog.create_collection(collection_params) do
+    user_id = current_user_id(conn)
+
+    # Only :id is cast on the changeset (for the barcode-collision feature), so
+    # strip it to stop clients from choosing a UUID. Ownership/audit fields
+    # (created_by_id/updated_by_id) are not cast and are set programmatically by
+    # the context from the authenticated user.
+    collection_params = Map.drop(collection_params, ~w(id))
+
+    case Catalog.create_collection(collection_params, user_id) do
       {:ok, %Collection{} = collection} ->
+        collection = Catalog.get_collection!(collection.id)
+
         conn
         |> put_status(:created)
         |> render(:show, collection: collection)
@@ -130,7 +142,7 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Catalog.get_collection!(id) do
+    case Catalog.get_collection(id) do
       nil ->
         {:error, :not_found}
 
@@ -167,16 +179,24 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
   end
 
   def update(conn, %{"id" => id, "collection" => collection_params}) do
-    case Catalog.get_collection!(id) do
+    user_id = current_user_id(conn)
+
+    # Only :id is cast on the changeset, so strip it. updated_by_id is set
+    # programmatically by the context from the authenticated user.
+    collection_params = Map.drop(collection_params, ~w(id))
+
+    case Catalog.get_collection(id) do
       nil ->
         {:error, :not_found}
 
       %Collection{} = collection ->
-        case Catalog.update_collection(collection, collection_params) do
-          {:ok, %Collection{} = updated_collection} ->
+        case Catalog.update_collection(collection, collection_params, user_id) do
+          {:ok, %Collection{}} ->
+            collection = Catalog.get_collection!(id)
+
             conn
             |> put_status(:ok)
-            |> render(:show, collection: updated_collection)
+            |> render(:show, collection: collection)
 
           {:error, changeset} ->
             conn
@@ -210,12 +230,12 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case Catalog.get_collection!(id) do
+    case Catalog.get_collection(id) do
       nil ->
         {:error, :not_found}
 
       %Collection{} = collection ->
-        case Catalog.delete_collection(collection) do
+        case Catalog.delete_collection(collection, current_user_id(conn)) do
           {:ok, %Collection{}} ->
             conn
             |> send_resp(:no_content, "")
@@ -228,6 +248,10 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
         end
     end
   end
+
+  # Extracts the authenticated API user's id (set by APIAuthorization plug) so
+  # it can be attributed in audit logs. Falls back to nil if unavailable.
+  defp current_user_id(conn), do: conn.assigns[:current_user_id]
 
   def swagger_definitions do
     %{
@@ -386,14 +410,43 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
                 id: "ea3f5b2c-7d1b-4d2a-9f3e-5b27d1b4d2a9",
                 collection_code: "SF-001",
                 title: "Science Fiction Collection",
+                description: "A collection of classic science fiction novels.",
+                thumbnail: "https://example.com/thumbnails/sf-collection.jpg",
                 status: "published",
-                access_level: "public"
+                access_level: "public",
+                collection_type: "series",
+                sort_order: 1,
+                parent_id: nil,
+                type: %{
+                  id: 7,
+                  label: "Book",
+                  local_name: "book",
+                  information: "A book resource",
+                  glam_type: "Library"
+                },
+                creator: %{
+                  id: 42,
+                  type: "person",
+                  creator_name: "Isaac Asimov",
+                  affiliation: nil
+                },
+                unit: %{
+                  id: 5,
+                  name: "Main Library",
+                  abbr: "ML",
+                  description: "Central branch"
+                },
+                items_count: 12,
+                attachments_count: 3,
+                inserted_at: "2024-01-01T12:00:00Z",
+                updated_at: "2024-01-02T12:00:00Z"
               }
             ],
             pagination: %{
               page_number: 1,
-              page_size: 10,
-              total_pages: 5
+              page_size: 12,
+              total_pages: 5,
+              total_count: 58
             }
           })
         end,
@@ -406,12 +459,14 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiController do
             page_number(:integer, "Current page number", required: true)
             page_size(:integer, "Number of items per page", required: true)
             total_pages(:integer, "Total number of pages", required: true)
+            total_count(:integer, "Total number of items across all pages", required: true)
           end
 
           example(%{
             page_number: 1,
-            page_size: 10,
-            total_pages: 5
+            page_size: 12,
+            total_pages: 5,
+            total_count: 58
           })
         end,
       ErrorResponse:

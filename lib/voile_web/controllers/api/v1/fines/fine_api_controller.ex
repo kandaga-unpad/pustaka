@@ -17,6 +17,7 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
     end
 
     response(200, "OK", Schema.ref(:FinesResponse))
@@ -27,13 +28,14 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
 
     {fines, total_pages, total_count} =
-      Circulation.list_fines_paginated(page, 10)
+      Circulation.list_fines_paginated(page, per_page)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
+      page_size: per_page,
       total_pages: total_pages,
       total_count: total_count
     }
@@ -65,7 +67,7 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Circulation.get_fine!(id) do
+    case Circulation.get_fine(id) do
       nil ->
         {:error, :not_found}
 
@@ -99,6 +101,8 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   def create(conn, %{"fine" => fine_params}) do
     case Circulation.create_fine(fine_params) do
       {:ok, %Fine{} = fine} ->
+        fine = Circulation.get_fine!(fine.id)
+
         conn
         |> put_status(:created)
         |> render(:show, fine: fine)
@@ -137,16 +141,18 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   def update(conn, %{"id" => id, "fine" => fine_params}) do
-    case Circulation.get_fine!(id) do
+    case Circulation.get_fine(id) do
       nil ->
         {:error, :not_found}
 
       %Fine{} = fine ->
         case Circulation.update_fine(fine, fine_params) do
-          {:ok, %Fine{} = updated_fine} ->
+          {:ok, %Fine{}} ->
+            fine = Circulation.get_fine!(id)
+
             conn
             |> put_status(:ok)
-            |> render(:show, fine: updated_fine)
+            |> render(:show, fine: fine)
 
           {:error, changeset} ->
             conn
@@ -180,7 +186,7 @@ defmodule VoileWeb.API.V1.Fines.FineApiController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case Circulation.get_fine!(id) do
+    case Circulation.get_fine(id) do
       nil ->
         {:error, :not_found}
 
