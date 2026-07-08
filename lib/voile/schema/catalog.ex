@@ -262,9 +262,13 @@ defmodule Voile.Schema.Catalog do
   defp filter_by_glam_type(query, ""), do: query
 
   defp filter_by_glam_type(query, glam_type) when is_binary(glam_type) do
+    # Normalize glam_type to match enum case (capitalize first letter)
+    # Valid values: Gallery, Library, Archive, Museum
+    normalized_glam_type = String.capitalize(glam_type)
+
     from c in query,
       join: rc in assoc(c, :resource_class),
-      where: rc.glam_type == ^glam_type
+      where: rc.glam_type == ^normalized_glam_type
   end
 
   defp filter_by_node(query, nil), do: query

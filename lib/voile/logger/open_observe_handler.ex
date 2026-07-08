@@ -108,7 +108,7 @@ defmodule Voile.Logger.OpenObserveSender do
   defp flush_buffer(entries, opts) do
     Req.post(opts[:url],
       json: entries,
-      auth: {opts[:username], opts[:password]},
+      auth: {:basic, "#{opts[:username]}:#{opts[:password]}"},
       receive_timeout: 10_000
     )
   rescue

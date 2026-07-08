@@ -17,6 +17,11 @@ defmodule Voile.Search.Collections do
     limit = Keyword.get(opts, :limit, 10)
     glam_type = Keyword.get(opts, :glam_type, "quick")
 
+    # Normalize glam_type to match enum case (capitalize first letter)
+    # Valid values: Gallery, Library, Archive, Museum
+    normalized_glam_type =
+      if glam_type != "quick", do: String.capitalize(glam_type), else: glam_type
+
     base_query =
       from c in Collection,
         left_join: rc in assoc(c, :resource_class),
@@ -35,8 +40,8 @@ defmodule Voile.Search.Collections do
 
     # Filter by GLAM type if specified
     final_query =
-      if glam_type != "quick" do
-        search_query |> where([c, rc], rc.glam_type == ^glam_type)
+      if normalized_glam_type != "quick" do
+        search_query |> where([c, rc], rc.glam_type == ^normalized_glam_type)
       else
         search_query
       end
@@ -262,7 +267,9 @@ defmodule Voile.Search.Collections do
   defp filter_by_glam_type(query, "quick"), do: query
 
   defp filter_by_glam_type(query, glam_type) do
-    where(query, [c, rc], rc.glam_type == ^glam_type)
+    # Normalize glam_type to match enum case (capitalize first letter)
+    normalized_glam_type = String.capitalize(glam_type)
+    where(query, [c, rc], rc.glam_type == ^normalized_glam_type)
   end
 
   defp filter_by_search_query(query, ""), do: query
@@ -318,7 +325,9 @@ defmodule Voile.Search.Collections do
   defp filter_by_resource_glam_type(query, ""), do: query
 
   defp filter_by_resource_glam_type(query, resource_glam_type) do
-    where(query, [c, rc], rc.glam_type == ^resource_glam_type)
+    # Normalize glam_type to match enum case (capitalize first letter)
+    normalized_glam_type = String.capitalize(resource_glam_type)
+    where(query, [c, rc], rc.glam_type == ^normalized_glam_type)
   end
 
   defp filter_by_resource_class(query, ""), do: query

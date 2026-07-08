@@ -56,10 +56,13 @@ defmodule Voile.GLAM.CollectionHelper do
     # Apply additional GLAM type filter (for users with multiple GLAM types)
     query =
       if glam_type do
+        # Normalize glam_type to match enum case (capitalize first letter)
+        normalized_glam_type = String.capitalize(glam_type)
+
         from c in query,
           join: rc in ResourceClass,
           on: c.type_id == rc.id,
-          where: rc.glam_type == ^glam_type
+          where: rc.glam_type == ^normalized_glam_type
       else
         query
       end

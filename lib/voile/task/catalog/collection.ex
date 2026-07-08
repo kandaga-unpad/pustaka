@@ -208,13 +208,20 @@ defmodule Voile.Task.Catalog.Collection do
   defp filter_by_glam_type(query, ""), do: query
 
   defp filter_by_glam_type(query, glam_type) do
+    # Normalize glam_type to match enum case (capitalize first letter)
+    normalized_glam_type = String.capitalize(glam_type)
+
     # resource_class table is named `resource_class` and Collection.type_id stores
     # the resource_class id. Use a fragment subquery to avoid adding joins that
     # could shift binding positions for other query parts.
     where(
       query,
       [c],
-      fragment("(SELECT glam_type FROM resource_class WHERE id = ?) = ?", c.type_id, ^glam_type)
+      fragment(
+        "(SELECT glam_type FROM resource_class WHERE id = ?) = ?",
+        c.type_id,
+        ^normalized_glam_type
+      )
     )
   end
 
