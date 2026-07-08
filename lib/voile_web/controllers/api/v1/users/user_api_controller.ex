@@ -17,6 +17,7 @@ defmodule VoileWeb.API.V1.Users.UserApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
       node_id(:query, :string, "Filter by node ID", required: false)
       gender(:query, :string, "Filter by gender", required: false)
       manually_suspended(:query, :boolean, "Filter by manual suspension status", required: false)
@@ -31,6 +32,7 @@ defmodule VoileWeb.API.V1.Users.UserApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
 
     filters = %{}
 
@@ -54,11 +56,11 @@ defmodule VoileWeb.API.V1.Users.UserApiController do
         do: Map.put(filters, "organization", params["organization"]),
         else: filters
 
-    {users, total_pages, total_count} = Accounts.list_users_paginated(page, 10, filters)
+    {users, total_pages, total_count} = Accounts.list_users_paginated(page, per_page, filters)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
+      page_size: per_page,
       total_pages: total_pages,
       total_count: total_count
     }

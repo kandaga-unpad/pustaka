@@ -24,6 +24,7 @@ defmodule Voile do
               to: Voile.Schema.Catalog
 
   defdelegate get_collection!(id), to: Voile.Schema.Catalog
+  defdelegate get_collection(id), to: Voile.Schema.Catalog
   defdelegate create_collection(attrs \\ %{}), to: Voile.Schema.Catalog
   defdelegate create_collection(attrs, user_id), to: Voile.Schema.Catalog
   defdelegate update_collection(collection, attrs), to: Voile.Schema.Catalog

@@ -3,10 +3,14 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
 
   @doc """
   Render a list of collections.
+
+  The list view intentionally returns counts instead of full :items and
+  :attachments arrays to keep the payload small. Use the show endpoint for
+  the full item/attachment data.
   """
   def index(%{collections: collections, pagination: pagination}) do
     %{
-      data: for(collection <- collections, do: data(collection)),
+      data: for(collection <- collections, do: list_data(collection)),
       pagination: %{
         page_number: pagination.page_number,
         page_size: pagination.page_size,
@@ -17,14 +21,31 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
   end
 
   @doc """
-  Render a single collection.
+  Render a single collection with full associations (items, attachments, metadata).
   """
 
   def show(%{collection: collection}) do
     %{data: data(collection)}
   end
 
+  # Compact shape for list views — items/attachments are counts only and
+  # metadata is omitted (use the show endpoint for full details).
+  defp list_data(%Collection{} = collection) do
+    base_data(collection)
+    |> Map.put(:items_count, collection.items_count || 0)
+    |> Map.put(:attachments_count, collection.attachments_count || 0)
+  end
+
+  # Full shape for the show view — includes complete items and attachments.
   defp data(%Collection{} = collection) do
+    base_data(collection)
+    |> Map.put(:metadata, render_collection_fields(collection.collection_fields))
+    |> Map.put(:items, render_items(collection.items))
+    |> Map.put(:attachments, render_attachments(collection.attachments))
+  end
+
+  # Fields common to both list and show views.
+  defp base_data(%Collection{} = collection) do
     %{
       id: collection.id,
       collection_code: collection.collection_code,
@@ -39,9 +60,6 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
       type: render_resource_class(collection.resource_class),
       creator: render_creator(collection.mst_creator),
       unit: render_node(collection.node),
-      metadata: render_collection_fields(collection.collection_fields),
-      items: render_items(collection.items),
-      attachments: render_attachments(collection.attachments),
       inserted_at: collection.inserted_at,
       updated_at: collection.updated_at
     }
@@ -122,8 +140,6 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
   defp render_items(%Ecto.Association.NotLoaded{}), do: []
 
   defp render_items(items) when is_list(items) do
-    # For now, just return basic info to avoid deep nesting
-    # You can expand this if you need full item details
     Enum.map(items, fn item ->
       %{
         id: item.id,
@@ -144,7 +160,7 @@ defmodule VoileWeb.API.V1.Collections.CollectionApiJSON do
     Enum.map(attachments, fn attachment ->
       %{
         id: attachment.id,
-        filename: attachment.filename,
+        file_name: attachment.file_name,
         file_path: attachment.file_path,
         file_type: attachment.file_type,
         file_size: attachment.file_size,

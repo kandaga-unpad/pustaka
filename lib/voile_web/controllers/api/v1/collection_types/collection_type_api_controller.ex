@@ -24,6 +24,14 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
         default: 1
       )
 
+      limit(
+        :query,
+        :integer,
+        "Number of items per page, max 100 (only used when glam_type is provided)",
+        required: false,
+        default: 10
+      )
+
       glam_type(
         :query,
         :string,
@@ -40,19 +48,24 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
     glam_type = Map.get(params, "glam_type", "")
 
-    {collection_types, total_pages} =
+    {collection_types, total_pages, total_count} =
       if glam_type == "" do
-        {Metadata.list_glam_type_based_resource_classes(), 1}
+        {Metadata.list_glam_type_based_resource_classes(), 1, nil}
       else
-        Metadata.list_glam_type_based_resource_classes(glam_type, page, 10)
+        {items, total_pages, total_count} =
+          Metadata.list_glam_type_based_resource_classes(glam_type, page, per_page)
+
+        {items, total_pages, total_count}
       end
 
     pagination = %{
       page_number: page,
-      page_size: 10,
-      total_pages: total_pages
+      page_size: per_page,
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn
@@ -71,6 +84,8 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
 
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
+
       search(:query, :string, "Search keyword to filter resource classes by label or local name",
         required: false
       )
@@ -84,15 +99,17 @@ defmodule VoileWeb.API.V1.CollectionTypes.CollectionTypeApiController do
 
   def details(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
     search_keyword = Map.get(params, "search", "")
 
-    {collection_types, total_pages, _} =
-      Metadata.list_resource_classes_paginated(page, 10, search_keyword)
+    {collection_types, total_pages, total_count} =
+      Metadata.list_resource_classes_paginated(page, per_page, search_keyword)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
-      total_pages: total_pages
+      page_size: per_page,
+      total_pages: total_pages,
+      total_count: total_count
     }
 
     conn

@@ -17,6 +17,7 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
 
     parameters do
       page(:query, :integer, "Page number", required: false, default: 1)
+      limit(:query, :integer, "Number of items per page (max 100)", required: false, default: 10)
       search(:query, :string, "Search keyword for filtering items", required: false)
     end
 
@@ -28,14 +29,15 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
 
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = Voile.Utils.Pagination.parse_per_page(Map.get(params, "limit"), 10)
     search_keyword = Map.get(params, "search", "")
 
     {items, total_pages, total_count} =
-      Catalog.list_items_paginated(page, 10, search_keyword)
+      Catalog.list_items_paginated(page, per_page, search_keyword)
 
     pagination = %{
       page_number: page,
-      page_size: 10,
+      page_size: per_page,
       total_pages: total_pages,
       total_count: total_count
     }
@@ -66,8 +68,18 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
   end
 
   def create(conn, %{"item" => item_params}) do
-    case Catalog.create_item(item_params) do
+    user_id = current_user_id(conn)
+
+    item_params =
+      item_params
+      |> Map.drop(~w(id created_by_id updated_by_id))
+      |> Map.put("created_by_id", user_id)
+      |> Map.put("updated_by_id", user_id)
+
+    case Catalog.create_item(item_params, user_id) do
       {:ok, %Item{} = item} ->
+        item = Catalog.get_item!(item.id)
+
         conn
         |> put_status(:created)
         |> render(:show, item: item)
@@ -102,7 +114,7 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
   end
 
   def show(conn, %{"id" => id}) do
-    case Catalog.get_item!(id) do
+    case Catalog.get_item(id) do
       nil ->
         {:error, :not_found}
 
@@ -139,16 +151,25 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
   end
 
   def update(conn, %{"id" => id, "item" => item_params}) do
-    case Catalog.get_item!(id) do
+    user_id = current_user_id(conn)
+
+    item_params =
+      item_params
+      |> Map.drop(~w(id created_by_id updated_by_id))
+      |> Map.put("updated_by_id", user_id)
+
+    case Catalog.get_item(id) do
       nil ->
         {:error, :not_found}
 
       %Item{} = item ->
-        case Catalog.update_item(item, item_params) do
-          {:ok, %Item{} = updated_item} ->
+        case Catalog.update_item(item, item_params, user_id) do
+          {:ok, %Item{}} ->
+            item = Catalog.get_item!(id)
+
             conn
             |> put_status(:ok)
-            |> render(:show, item: updated_item)
+            |> render(:show, item: item)
 
           {:error, changeset} ->
             conn
@@ -182,12 +203,12 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
   end
 
   def delete(conn, %{"id" => id}) do
-    case Catalog.get_item!(id) do
+    case Catalog.get_item(id) do
       nil ->
         {:error, :not_found}
 
       %Item{} = item ->
-        case Catalog.delete_item(item) do
+        case Catalog.delete_item(item, current_user_id(conn)) do
           {:ok, %Item{}} ->
             conn
             |> send_resp(:no_content, "")
@@ -200,6 +221,10 @@ defmodule VoileWeb.API.V1.Items.ItemApiController do
         end
     end
   end
+
+  # Extracts the authenticated API user's id (set by APIAuthorization plug) so
+  # it can be attributed in audit logs. Falls back to nil if unavailable.
+  defp current_user_id(conn), do: conn.assigns[:current_user_id]
 
   def swagger_definitions do
     %{

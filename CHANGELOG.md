@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.43] - 2026-07-08
+
+### Security
+
+- **API: mass-assignment hardening (Collections)** — `created_by_id`/`updated_by_id` are no longer accepted via `Collection.changeset`'s `cast` list (per project convention). They are now set programmatically by `Catalog.create_collection/update_collection` from the authenticated user, and the Collections API controller strips client-supplied `id` values. A client can no longer forge the audit actor or choose a collection UUID through the API.
+
+### Fixed
+
+- **API: 404 dead-code across Collections, Items & Fines** — `show`/`update`/`delete` called the bang context getter (`get_*!`, which raises `Ecto.NoResultsError`) then pattern-matched on `nil`, making the `{:error, :not_found}` branch unreachable. A request for a missing ID returned a 500 instead of a 404. Switched to non-bang getters (`get_collection/1`, `get_item/1`, `get_fine/1`) so the FallbackController returns a proper 404.
+- **API: empty associations on create/update responses** — `create`/`update` rendered `:show` straight from the context result without preloading, so `type`, `creator`, `unit`, `metadata`, `items`, and `attachments` came back as `nil`/`[]`. The Collections, Items, Fines, and Circulation History endpoints now re-fetch via the bang getter after a successful write.
+- **API: Items `render_user` KeyError** — `item_api_json.ex` read `user.first_name`/`user.last_name`, but the `User` schema only has `fullname`. Every Items show/create/update that loaded `created_by` crashed with a runtime `KeyError`. Now uses `user.fullname`.
+- **API: attachment field-name bug** — `render_attachments` read `attachment.filename` (does not exist); corrected to `file_name` across the Collections and Items renderers for cross-endpoint consistency.
+- **API: audit logging blind spots** — The Collections and Items contexts accept an optional `user_id` for `CollectionLogger`, but the controllers dropped it, logging every API mutation with `user_id: nil`. Both controllers now forward the authenticated API user id.
+- **API: Collection types `index` MatchError** — The `glam_type` branch matched a 2-tuple, but `Metadata.list_glam_type_based_resource_classes/3` returns a 3-tuple, so `GET /v1/collection_types?glam_type=X` raised a `MatchError` (500). Now correctly unpacks the result and surfaces `total_count`.
+- **Catalog: `resource_class` double-join** — When `search` and `glam_type` filters were combined, the `resource_class` association was joined twice. The `glam_type` filter now reuses the search query's named binding via `has_named_binding?/2`.
+- **API: Fines show missing `payments`** — `get_fine!/1` did not preload `:payments` (rendered by the JSON), so the field was always `[]`. Added it to the preloads via a shared `fine_preloads/0` helper.
+
+### Changed
+
+- **API: Collections list payload** — The `index` view now returns `items_count`/`attachments_count` (computed via grouped count queries, no full rows loaded) instead of the full `items`/`attachments` arrays, and omits `metadata`; full item/attachment/metadata data is only on the `show` endpoint. Deduplicated the list/show JSON renderers through a shared `base_data/1`.
+- **API: `limit` parsed instead of hardcoded** — All paginated API endpoints (Collections, Items, Fines, Circulation History, Users, Collection Types `index`/`details`) now honor a `limit` query param via `Voile.Utils.Pagination.parse_per_page/2` (capped at 100) instead of hardcoding a page size of 10.
+- **API: shared `current_user_id`** — The `APIAuthorization` plug now assigns `:current_user_id` once, removing the per-controller `current_user_id/1` helpers.
+- **Swagger docs** — Refreshed the Collections `CollectionsResponse`/`Pagination` examples and added `limit` params to reflect the actual response shapes.
+
+### Added
+
+- **Context: non-bang getters** — Added `Catalog.get_collection/1` (already had `get_item/1`), and `Circulation.get_fine/1` to support proper 404 handling. Also added a `Voile.get_collection/1` delegate for symmetry.
+
 ## [0.1.42] - 2026-07-01
 
 ### Fixed

@@ -35,6 +35,7 @@ defmodule VoileWeb.Plugs.APIAuthorization do
         if scope_authorized?(api_token, required_scope) do
           conn
           |> assign(:current_user, user)
+          |> assign(:current_user_id, user.id)
           |> assign(:api_token, api_token)
         else
           forbidden(conn)

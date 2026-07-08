@@ -540,13 +540,31 @@ defmodule Voile.Schema.Library.Circulation do
   def get_fine!(id) do
     Fine
     |> Repo.get!(id)
-    |> Repo.preload([
+    |> Repo.preload(fine_preloads())
+  end
+
+  @doc """
+  Fetches a single fine by id with associations preloaded.
+
+  Returns `nil` if no record is found. Never raises, making it suitable for
+  controller actions that need to produce a 404 response.
+  """
+  def get_fine(id) do
+    case Repo.get(Fine, id) do
+      nil -> nil
+      fine -> Repo.preload(fine, fine_preloads())
+    end
+  end
+
+  defp fine_preloads do
+    [
       :member,
       :processed_by,
       :waived_by,
+      :payments,
       transaction: [:item],
       item: [:collection]
-    ])
+    ]
   end
 
   def get_total_fine_by_user(user_id) do

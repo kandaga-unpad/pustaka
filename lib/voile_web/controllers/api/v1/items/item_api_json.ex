@@ -93,8 +93,7 @@ defmodule VoileWeb.API.V1.Items.ItemApiJSON do
     %{
       id: user.id,
       email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name
+      fullname: user.fullname
     }
   end
 
@@ -105,7 +104,7 @@ defmodule VoileWeb.API.V1.Items.ItemApiJSON do
     Enum.map(attachments, fn attachment ->
       %{
         id: attachment.id,
-        filename: attachment.file_name,
+        file_name: attachment.file_name,
         original_name: attachment.original_name,
         file_path: attachment.file_path,
         file_size: attachment.file_size,
