@@ -1968,7 +1968,7 @@ defmodule Voile.Schema.Catalog do
       fn {unit_id, _status, _count} -> unit_id end,
       fn {_unit_id, status, count} -> {status, count} end
     )
-    |> Map.new(fn {_unit_id, pairs} -> Map.new(pairs) end)
+    |> Map.new(fn {unit_id, pairs} -> {unit_id, Map.new(pairs)} end)
   end
 
   @doc """
@@ -1985,7 +1985,7 @@ defmodule Voile.Schema.Catalog do
       fn {unit_id, _avail, _count} -> unit_id end,
       fn {_unit_id, avail, count} -> {avail, count} end
     )
-    |> Map.new(fn {_unit_id, pairs} -> Map.new(pairs) end)
+    |> Map.new(fn {unit_id, pairs} -> {unit_id, Map.new(pairs)} end)
   end
 
   def count_items_by_collection(collection_id) do

@@ -760,7 +760,6 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   defp load_stats do
     from(a in Attachment,
       where: a.attachable_type in ["asset_vault", "collection"] and a.attachable_type != "folder",
-      group_by: fragment("1"),
       select: %{
         total: count(a.id),
         images: count(a.id) |> filter(a.file_type == "image"),
