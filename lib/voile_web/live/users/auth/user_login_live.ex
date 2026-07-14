@@ -140,6 +140,7 @@ defmodule VoileWeb.UserLoginLive do
                   {gettext("Log in")}
                 </.button>
               </.form>
+
               <div class="my-6 flex items-center gap-3">
                 <hr class="flex-1 border-voile-muted animate-fade-in" />
                 <span class="text-sm text-voile-muted animate-fade-in">
@@ -147,7 +148,21 @@ defmodule VoileWeb.UserLoginLive do
                 </span>
                 <hr class="flex-1 border-voile-muted animate-fade-in" />
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              <%= if @paus_sso_enabled do %>
+                <.button
+                  phx-click="paus_auth"
+                  class="gradient-btn w-full flex items-center justify-center gap-3 py-3.5 text-base font-semibold shadow-lg ring-2 ring-voile-primary/30 hover:shadow-xl transition-shadow"
+                >
+                  <img src={~p"/images/unpad_img.svg"} class="inline h-6 w-6" alt="PAuS logo" />
+                  <span>{gettext("Sign in with PAuS ID")}</span>
+                  <span class="ml-1 text-[10px] font-bold uppercase tracking-wide bg-white/25 px-2 py-0.5 rounded-full">
+                    {gettext("Recommended")}
+                  </span>
+                </.button>
+              <% end %>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 <.button
                   phx-click="google_auth"
                   class="gradient-btn-outline flex items-center justify-center gap-2 text-xs bg-white text-voile-primary hover:shadow-md"
@@ -162,22 +177,11 @@ defmodule VoileWeb.UserLoginLive do
                 <.button
                   type="button"
                   phx-click={show_modal("magic-link-modal")}
-                  class="gradient-btn flex items-center justify-center gap-2 text-xs text-white"
+                  class="gradient-btn-outline flex items-center justify-center gap-2 text-xs bg-white text-voile-primary hover:shadow-md"
                 >
                   <.icon name="hero-link" class="size-4 opacity-75 hover:opacity-100" />
                   <span>{gettext("Login passwordless")}</span>
                 </.button>
-              </div>
-              <div class="mt-4 text-center w-full">
-                <%= if @paus_sso_enabled do %>
-                  <.button
-                    phx-click="paus_auth"
-                    class="gradient-btn-outline w-full flex items-center justify-center gap-2 text-sm bg-white text-voile-primary hover:shadow-md"
-                  >
-                    <img src={~p"/images/unpad_img.svg"} class="inline h-5 w-5" alt="PAuS logo" />
-                    <span>{gettext("Sign in with PAuS ID")}</span>
-                  </.button>
-                <% end %>
               </div>
             </div>
           </div>

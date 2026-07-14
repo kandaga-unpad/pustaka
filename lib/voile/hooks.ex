@@ -149,13 +149,21 @@ defmodule Voile.Hooks do
 
   @impl true
   def handle_call({:unregister_all, owner_module}, _from, state) do
-    Enum.each(state.known_hooks, fn hook_name ->
-      current = get_handlers(hook_name)
-      filtered = Enum.reject(current, &(&1.owner == owner_module))
-      :persistent_term.put({__MODULE__, hook_name}, filtered)
-    end)
+    {active_hooks, _empty_hooks} =
+      Enum.reduce(state.known_hooks, {MapSet.new(), []}, fn hook_name, {active, empty} ->
+        current = get_handlers(hook_name)
+        filtered = Enum.reject(current, &(&1.owner == owner_module))
 
-    {:reply, :ok, state}
+        if filtered == [] do
+          :persistent_term.erase({__MODULE__, hook_name})
+          {active, [hook_name | empty]}
+        else
+          :persistent_term.put({__MODULE__, hook_name}, filtered)
+          {MapSet.put(active, hook_name), empty}
+        end
+      end)
+
+    {:reply, :ok, %{state | known_hooks: active_hooks}}
   end
 
   @impl true
@@ -168,6 +176,15 @@ defmodule Voile.Hooks do
       end)
 
     {:reply, hooks, state}
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    Enum.each(state.known_hooks, fn hook_name ->
+      :persistent_term.erase({__MODULE__, hook_name})
+    end)
+
+    :ok
   end
 
   # ── Private ──────────────────────────────────────────────────────────────────

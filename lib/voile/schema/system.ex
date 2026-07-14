@@ -266,7 +266,14 @@ defmodule Voile.Schema.System do
 
   """
   def delete_setting(%Setting{} = setting) do
-    Repo.delete(setting)
+    case Repo.delete(setting) do
+      {:ok, deleted} ->
+        :persistent_term.erase({__MODULE__, :setting_cache, deleted.name})
+        {:ok, deleted}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -389,7 +396,10 @@ defmodule Voile.Schema.System do
 
   """
   def list_system_logs do
-    Repo.all(SystemLog)
+    SystemLog
+    |> order_by([l], desc: l.inserted_at)
+    |> limit(1_000)
+    |> Repo.all()
   end
 
   @doc """
@@ -483,7 +493,10 @@ defmodule Voile.Schema.System do
 
   """
   def list_collection_logs do
-    Repo.all(CollectionLog)
+    CollectionLog
+    |> order_by([l], desc: l.inserted_at)
+    |> limit(1_000)
+    |> Repo.all()
   end
 
   @doc """
@@ -615,6 +628,7 @@ defmodule Voile.Schema.System do
     UserApiToken
     |> order_by([t], desc: t.inserted_at)
     |> preload(:user)
+    |> limit(500)
     |> Repo.all()
   end
 

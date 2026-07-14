@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.44] - 2026-07-14
+
+### Fixed
+
+- **Critical: OpenObserveSender memory leak (4.5 GB)** — The log shipping GenServer called `Req.post` synchronously inside `handle_cast`, blocking for up to 10 seconds per flush. While blocked, log events piled up in the mailbox and the process heap grew to 4.5 GB without ever shrinking. Rewritten to use async `Task.Supervisor` for HTTP calls, with a 15-second safety timeout, a `flush_ref` to prevent race conditions, a `max_heap_size` of 100 MB as a hard ceiling, truncated `inspect/2` for log report messages (`limit: 50, printable_limit: 10_000`), a buffer cap (1,000 entries), and a circuit breaker that drops logs after 5 consecutive failures.
+- **Critical: MetricsLive tight CPU spin loop** — `send(self(), :update_presence)` fired with no delay, burning 100% CPU as long as any admin had the metrics page open. Changed to `Process.send_after(self(), :update_presence, 5_000)` for 5-second polling. Now also refreshes system metrics on each tick.
+- **Critical: EmailQueue blocking and unbounded** — `job.email_fn.()` ran synchronously inside the GenServer with no timeout; a hanging SMTP/API call permanently stalled the queue. Queue had no size limit — closures capturing member structs and transaction lists accumulated under burst load. Rewritten with async sending via `Task.Supervisor`, 30-second send timeout, max queue cap (`10_000`), proper `clear_queue` timer cancellation, and fixed stale-result handling via `flush_ref`.
+- **Critical: UserPresence ETS memory leak** — `track_user/1` inserted entries keyed by `make_ref()` (unrecoverable), in a `:bag` table (accumulates duplicates), with no cleanup on disconnect. Changed to key by socket PID, `:set` table type (reconnecting overwrites), and `get_connection_stats/0` now lazily deletes dead entries. Counts are now accurate (only alive processes).
+- **delete_setting stale cache** — `delete_setting/1` did not invalidate the `persistent_term` cache, so deleted settings returned stale values until node restart. Now erases the cache entry after successful deletion.
+- **Permission search debounce not cancelling timers** — Rapid typing in the permission management search fired multiple `Process.send_after` messages, each triggering a DB query. Now cancels the previous timer before scheduling a new one.
+- **Reservation notification silently discarded** — `{:reservation_member_notify, _}` broadcasts from `ReservationNotifier.notify_member/1` had no matching `handle_info` clause, so every staff member received and threw away the message. Added a handler in `NotificationHook`.
+
+### Changed
+
+- **Removed `:items` preload from collection list/search queries** — `list_pending_collections_paginated`, `search_collections_for_suggestions`, `search_collections`, `load_collections`, and `list_collections` previously loaded every item (and nested `:node`) of every collection just to call `length/1`. Now uses `attach_collection_counts/1` (single batch `GROUP BY` query) and the `items_count` virtual field. Updated 8+ template references from `length(collection.items)` to `collection.items_count`.
+- **Collapsed Asset Vault `load_stats` from 5 queries to 1** — Replaced 5 separate `COUNT` queries with a single conditional aggregation using `count(...) filter (where ...)`.
+- **Asset Vault `sort_change` no longer rebuilds folder tree** — Added `refresh_list_light/1` that only re-queries the paginated list (5 queries) instead of calling `apply_action` (~14 queries including folder tree + stats).
+- **Inlined `Repo.all |> Repo.preload` into single queries** — Eliminated extra DB round-trips in `get_collection!/1`, `get_collection/1`, `get_item!/1`, `get_item/1`, `get_item_by_code!/1`, `get_item_by_code/1`, `get_item_by_code_or_barcode/1`, `list_collections_paginated`, `list_sets/1`, `list_identifiers/1`, `list_records/1`, `list_letters_paginated/3`.
+- **Added safety limits to unbounded `Repo.all` calls** — `list_fines/0`, `list_requisitions/0`, `list_reservations/0`, `list_transactions/0` (limit 1,000), `list_member_active_transactions/1`, `list_transactions_due_soon/1` (limit 500), `list_system_logs/0`, `list_collection_logs/0` (limit 1,000, now ordered by `inserted_at desc`), `list_all_api_tokens/0` (limit 500), `search_users/1` (limit 100, now ordered by `inserted_at desc`).
+- **LoanReminderScheduler: eliminated N+1 member lookups** — `send_member_reminder/3` and `send_overdue_notification/2` called `Accounts.get_user(member_id)` per member despite `:member` already being preloaded on transactions. Now extracts the member from the first matching transaction.
+- **Added limit to `list_overdue_transactions/0`** — Was unbounded; now defaults to 500.
+- **Visitor check-in is now async** — `submit_check_in` spawned a `Task.Supervisor.async_nolink` for the external API lookup instead of blocking the LiveView up to 5 seconds. All post-lookup logic extracted into `process_check_in/3`.
+- **Labels page logo fetch is now async** — `logo_to_data_uri` runs in a `Task.Supervisor.async_nolink` instead of blocking `mount/3`.
+- **Added timeout to thumbnail-from-URL helper** — `Req.get(url, redirect: true)` had no timeout (could hang 15s). Added `receive_timeout: 10_000, connect_timeout: 5_000`.
+- **DB query removed from HEEx template** — `frontend/items/show.ex` called `Repo.preload(@current_scope.user, :roles)` on every render. Moved to `mount/3`, stored as `@is_staff_or_admin` assign.
+- **N+1 dashboard queries eliminated** — `dashboard/catalog/index.ex` replaced 4 queries per node with 4 total batch `GROUP BY` queries. `analytics/dashboard.ex` replaced N+1 `count_collections(node.id)` with a single grouped query.
+- **Atrium notifications capped** — Three `handle_info` clauses that prepend to `loan_reminders` now cap at 20 entries via `Enum.take`.
+- **SearchAnalytics ETS auto-cleanup** — `cleanup_old_data/1` was never called. Now runs probabilistically (every ~100th insert) in a background process, with a hard cap of 10,000 entries.
+- **Hooks cleanup on terminate** — Added `terminate/2` to erase `persistent_term` entries. `unregister_all` now prunes empty hooks from `known_hooks` and erases their persistent_term entries instead of writing back empty lists.
+- **Holiday cache past-date eviction** — Added `sweep_past_entries/0` that deletes ETS entries with past `%Date{}` keys. Runs probabilistically (1 in 100 lookups).
+- **Circulation filter deduplication** — Extracted filter logic from `list_fines_paginated_with_filters/3` into reusable `apply_fines_status_filter/2`, `apply_fines_type_filter/2`, `apply_fines_search_filter/2` helpers.
+- **Dead code removed** — Deleted `get_library_collections/1` from `glam/library/index.ex` (50-row query with `:items` preload, result never referenced in template).
+- **UI: PAuS ID button prominence** — On login and register pages, the PAuS ID button is now positioned after the "or continue with" divider but styled as the most prominent option (solid gradient, larger size, "Recommended" badge). Google and Passwordless are below in smaller outline style. PAuS ID button also added to the register page (was previously login-only).
+
+### Added
+
+- **Expression indexes migration** — Added indexes for `DATE(event_date)` on `lib_circulation_history`, `COALESCE(read_at, inserted_at)` on `lib_read_on_spots`, `COALESCE(fullname, '')` trigram on `users`, and `DATE(check_in_time)` on `visitor_logs`. These fix full table scans on hot-path queries.
+- **Batch count functions** — Added `Catalog.count_collections_by_unit/0`, `count_items_by_unit/0`, `count_collections_by_status_per_unit/0`, `count_items_by_availability_per_unit/0` for single-query batch counts per node.
+- **EmailQueue configuration** — New options: `email_queue_max_size` (default 10,000), `max_heap_mb` on OpenObserveSender (default 100 MB), `max_buffer_size`/`circuit_threshold`/`circuit_reset_delay` on OpenObserveSender.
+
 ## [0.1.43] - 2026-07-08
 
 ### Security

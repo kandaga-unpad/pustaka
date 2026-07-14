@@ -16,8 +16,20 @@ defmodule VoileWeb.Frontend.Items.Show do
 
   @impl true
   def mount(_params, _session, socket) do
+    is_staff_or_admin =
+      if user = socket.assigns[:current_scope] && socket.assigns[:current_scope].user do
+        user = Repo.preload(user, :roles)
+
+        Enum.any?(user.roles || [], fn role ->
+          role.name in ["super_admin", "admin", "librarian", "staff"]
+        end)
+      else
+        false
+      end
+
     {:ok,
      socket
+     |> assign(:is_staff_or_admin, is_staff_or_admin)
      |> assign(:item, nil)
      |> assign(:loading, false)
      |> assign(:related_items, [])
@@ -86,60 +98,71 @@ defmodule VoileWeb.Frontend.Items.Show do
     current_user = socket.assigns.current_scope && socket.assigns.current_scope.user
     item = socket.assigns.item
 
-    case validate_reservation_request(current_user, item) do
-      {:ok, :valid} ->
-        socket = assign(socket, :reservation_loading, true)
-
-        reservation_attrs = %{
-          notes: String.trim(notes)
-        }
-
-        case Circulation.create_reservation(current_user.id, item.id, nil, reservation_attrs) do
-          {:ok, _reservation} ->
-            {:noreply,
-             socket
-             |> assign(:show_reservation_form, false)
-             |> assign(:reservation_loading, false)
-             |> assign(:reservation_form, to_form(%{notes: ""}, as: :reservation))
-             |> put_flash(
-               :info,
-               gettext(
-                 "Reservation request submitted successfully. The library will contact you soon."
-               )
-             )}
-
-          {:error, reason} when is_binary(reason) ->
-            {:noreply,
-             socket
-             |> assign(:reservation_loading, false)
-             |> put_flash(:error, gettext("Failed to create reservation: ") <> reason)}
-
-          {:error, %Ecto.Changeset{} = changeset} ->
-            errors =
-              changeset.errors
-              |> Enum.map(fn {field, {message, _}} -> "#{field} #{message}" end)
-              |> Enum.join(", ")
-
-            {:noreply,
-             socket
-             |> assign(:reservation_loading, false)
-             |> put_flash(:error, gettext("Failed to create reservation: ") <> errors)}
-
-          {:error, _} ->
-            {:noreply,
-             socket
-             |> assign(:reservation_loading, false)
-             |> put_flash(
-               :error,
-               gettext("Failed to create reservation. Please try again later.")
-             )}
-        end
-
-      {:error, reason} ->
+    cond do
+      socket.assigns[:is_staff_or_admin] ->
         {:noreply,
-         socket
-         |> put_flash(:error, reason)
-         |> assign(:show_reservation_form, false)}
+         put_flash(
+           socket,
+           :error,
+           gettext("Staff and administrators cannot reserve items. Only members can.")
+         )}
+
+      true ->
+        case validate_reservation_request(current_user, item) do
+          {:ok, :valid} ->
+            socket = assign(socket, :reservation_loading, true)
+
+            reservation_attrs = %{
+              notes: String.trim(notes)
+            }
+
+            case Circulation.create_reservation(current_user.id, item.id, nil, reservation_attrs) do
+              {:ok, _reservation} ->
+                {:noreply,
+                 socket
+                 |> assign(:show_reservation_form, false)
+                 |> assign(:reservation_loading, false)
+                 |> assign(:reservation_form, to_form(%{notes: ""}, as: :reservation))
+                 |> put_flash(
+                   :info,
+                   gettext(
+                     "Reservation request submitted successfully. The library will contact you soon."
+                   )
+                 )}
+
+              {:error, reason} when is_binary(reason) ->
+                {:noreply,
+                 socket
+                 |> assign(:reservation_loading, false)
+                 |> put_flash(:error, gettext("Failed to create reservation: ") <> reason)}
+
+              {:error, %Ecto.Changeset{} = changeset} ->
+                errors =
+                  changeset.errors
+                  |> Enum.map(fn {field, {message, _}} -> "#{field} #{message}" end)
+                  |> Enum.join(", ")
+
+                {:noreply,
+                 socket
+                 |> assign(:reservation_loading, false)
+                 |> put_flash(:error, gettext("Failed to create reservation: ") <> errors)}
+
+              {:error, _} ->
+                {:noreply,
+                 socket
+                 |> assign(:reservation_loading, false)
+                 |> put_flash(
+                   :error,
+                   gettext("Failed to create reservation. Please try again later.")
+                 )}
+            end
+
+          {:error, reason} ->
+            {:noreply,
+             socket
+             |> put_flash(:error, reason)
+             |> assign(:show_reservation_form, false)}
+        end
     end
   end
 
@@ -173,23 +196,8 @@ defmodule VoileWeb.Frontend.Items.Show do
     end
   end
 
-  defp validate_reservation_request(user, _item) do
-    # Check if user is staff/admin - they cannot reserve items
-    user = Repo.preload(user, :roles)
-
-    is_staff_or_admin =
-      Enum.any?(user.roles || [], fn role ->
-        role.name in ["super_admin", "admin", "librarian", "staff"]
-      end)
-
-    if is_staff_or_admin do
-      {:error,
-       gettext(
-         "Staff and administrators cannot reserve items. Only members can make reservations."
-       )}
-    else
-      {:ok, :valid}
-    end
+  defp validate_reservation_request(_user, _item) do
+    {:ok, :valid}
   end
 
   @impl true
@@ -554,13 +562,7 @@ defmodule VoileWeb.Frontend.Items.Show do
                       <div class="space-y-3">
                         <%= if @item.availability == "available" do %>
                           <%= if @current_scope && @current_scope.user do %>
-                            <% user = Repo.preload(@current_scope.user, :roles)
-
-                            is_staff_or_admin =
-                              Enum.any?(user.roles || [], fn role ->
-                                role.name in ["super_admin", "admin", "librarian", "staff"]
-                              end) %>
-                            <%= if is_staff_or_admin do %>
+                            <%= if @is_staff_or_admin do %>
                               <div class="w-full px-4 py-2 border border-voile-muted dark:border-voile-dark text-center text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-not-allowed">
                                 {gettext("Staff cannot reserve items")}
                               </div>

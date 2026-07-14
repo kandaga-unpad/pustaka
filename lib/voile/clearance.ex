@@ -409,8 +409,8 @@ defmodule Voile.Clearance do
       |> limit(^per_page)
       |> offset(^offset)
       |> select([l, _u], l)
+      |> preload(member: :node)
       |> Repo.all()
-      |> Repo.preload(member: :node)
 
     {letters, total, total_pages}
   end

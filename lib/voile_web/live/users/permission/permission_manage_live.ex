@@ -16,6 +16,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
         socket
         |> assign(page_title: gettext("Permission Management"))
         |> assign(searching: false)
+        |> assign(search_timer_ref: nil)
         |> assign(current_path: "/manage/settings/permissions")
         |> assign(
           :is_super_admin,
@@ -59,10 +60,14 @@ defmodule VoileWeb.Users.Permission.ManageLive do
       socket
       |> assign(searching: true)
 
-    # Debounce search
-    Process.send_after(self(), {:perform_search, query}, 300)
+    # Cancel any pending search timer before scheduling a new one
+    if socket.assigns[:search_timer_ref] do
+      Process.cancel_timer(socket.assigns[:search_timer_ref])
+    end
 
-    {:noreply, socket}
+    timer_ref = Process.send_after(self(), {:perform_search, query}, 300)
+
+    {:noreply, assign(socket, :search_timer_ref, timer_ref)}
   end
 
   @impl true

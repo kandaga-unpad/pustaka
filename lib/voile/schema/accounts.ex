@@ -1383,7 +1383,10 @@ defmodule Voile.Schema.Accounts do
           from(u in q, where: u.user_type_id == ^mt)
       end
 
-    Repo.all(q)
+    q
+    |> order_by([u], desc: u.inserted_at)
+    |> limit(100)
+    |> Repo.all()
   end
 
   @doc """

@@ -700,8 +700,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     message =
       "📚 Reminder: \"#{collection_title}\" (#{item_code}) is due in #{days_until_due} day(s) on #{FormatIndonesiaTime.format_full_indonesian_date(due_date)}"
 
-    # Add to reminders list and show badge
-    reminders = [data | socket.assigns.loan_reminders]
+    # Add to reminders list (capped at 20 to prevent unbounded growth)
+    reminders = Enum.take([data | socket.assigns.loan_reminders], 20)
 
     {:noreply,
      socket
@@ -722,8 +722,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     message =
       "⚠️ Overdue: \"#{collection_title}\" (#{item_code}) was due on #{FormatIndonesiaTime.format_full_indonesian_date(due_date)} and is now #{days_overdue} day(s) overdue!"
 
-    # Add to reminders list and show badge
-    reminders = [data | socket.assigns.loan_reminders]
+    # Add to reminders list (capped at 20 to prevent unbounded growth)
+    reminders = Enum.take([data | socket.assigns.loan_reminders], 20)
 
     {:noreply,
      socket
@@ -762,8 +762,8 @@ defmodule VoileWeb.Frontend.Atrium.Index do
     message =
       "📬 Library Notice: Please remember to return \"#{collection_title}\" (#{item_code}) by #{FormatIndonesiaTime.format_full_indonesian_date(due_date)} (#{days_until_due} day(s) remaining)"
 
-    # Add to reminders list and show badge
-    reminders = [data | socket.assigns.loan_reminders]
+    # Add to reminders list (capped at 20 to prevent unbounded growth)
+    reminders = Enum.take([data | socket.assigns.loan_reminders], 20)
 
     {:noreply,
      socket

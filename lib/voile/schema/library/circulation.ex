@@ -320,6 +320,7 @@ defmodule Voile.Schema.Library.Circulation do
       :waived_by,
       item: [:collection]
     ])
+    |> limit(1_000)
     |> Repo.all()
   end
 
@@ -350,8 +351,9 @@ defmodule Voile.Schema.Library.Circulation do
   def list_fines_paginated_with_filters(page \\ 1, per_page \\ 10, filters \\ %{}) do
     offset = (page - 1) * per_page
 
-    query =
-      from f in Fine,
+    # Data query with preloads
+    data_query =
+      from(f in Fine,
         join: m in assoc(f, :member),
         preload: [
           :transaction,
@@ -360,76 +362,52 @@ defmodule Voile.Schema.Library.Circulation do
           member: m,
           item: [:collection]
         ]
-
-    # Apply status filter
-    query =
-      case Map.get(filters, :status, "all") do
-        "all" -> query
-        status -> where(query, [f, _m], f.fine_status == ^status)
-      end
-
-    # Apply type filter
-    query =
-      case Map.get(filters, :type, "all") do
-        "all" -> query
-        type -> where(query, [f, _m], f.fine_type == ^type)
-      end
-
-    # Apply text search filter (member name only)
-    query =
-      case Map.get(filters, :search, "") do
-        "" ->
-          query
-
-        search ->
-          search_pattern = "%#{search}%"
-          where(query, [_f, m], ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern))
-      end
-
-    # Add pagination and ordering
-    query =
-      query
+      )
+      |> apply_fines_status_filter(filters)
+      |> apply_fines_type_filter(filters)
+      |> apply_fines_search_filter(filters)
       |> order_by([f], desc: f.inserted_at, desc: f.id)
       |> offset(^offset)
       |> limit(^per_page)
 
-    fines = Repo.all(query)
+    fines = Repo.all(data_query)
 
-    # Count total with same filters for pagination
-    count_query = from f in Fine, join: m in assoc(f, :member)
-
-    # Apply same filters for count
+    # Count query — same filters, no preloads
     count_query =
-      case Map.get(filters, :status, "all") do
-        "all" -> count_query
-        status -> where(count_query, [f, _m], f.fine_status == ^status)
-      end
-
-    count_query =
-      case Map.get(filters, :type, "all") do
-        "all" -> count_query
-        type -> where(count_query, [f, _m], f.fine_type == ^type)
-      end
-
-    count_query =
-      case Map.get(filters, :search, "") do
-        "" ->
-          count_query
-
-        search ->
-          search_pattern = "%#{search}%"
-
-          where(
-            count_query,
-            [_f, m],
-            ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern)
-          )
-      end
+      from(f in Fine, join: m in assoc(f, :member))
+      |> apply_fines_status_filter(filters)
+      |> apply_fines_type_filter(filters)
+      |> apply_fines_search_filter(filters)
 
     total_count = Repo.aggregate(count_query, :count, :id)
     total_pages = div(total_count + per_page - 1, per_page)
 
     {fines, total_pages, total_count}
+  end
+
+  defp apply_fines_status_filter(query, filters) do
+    case Map.get(filters, :status, "all") do
+      "all" -> query
+      status -> where(query, [f, _m], f.fine_status == ^status)
+    end
+  end
+
+  defp apply_fines_type_filter(query, filters) do
+    case Map.get(filters, :type, "all") do
+      "all" -> query
+      type -> where(query, [f, _m], f.fine_type == ^type)
+    end
+  end
+
+  defp apply_fines_search_filter(query, filters) do
+    case Map.get(filters, :search, "") do
+      "" ->
+        query
+
+      search ->
+        search_pattern = "%#{search}%"
+        where(query, [_f, m], ilike(fragment("COALESCE(?, '')", m.fullname), ^search_pattern))
+    end
   end
 
   @doc """
@@ -645,6 +623,7 @@ defmodule Voile.Schema.Library.Circulation do
   def list_requisitions do
     Requisition
     |> preload([:requested_by, :assigned_to, :unit])
+    |> limit(1_000)
     |> Repo.all()
   end
 
@@ -847,6 +826,7 @@ defmodule Voile.Schema.Library.Circulation do
   def list_reservations do
     Reservation
     |> preload([{:item, [:collection]}, :member, :collection, :processed_by])
+    |> limit(1_000)
     |> Repo.all()
   end
 
@@ -1069,6 +1049,7 @@ defmodule Voile.Schema.Library.Circulation do
   def list_transactions do
     Transaction
     |> preload([:member, :librarian, item: [:collection]])
+    |> limit(1_000)
     |> Repo.all()
   end
 
@@ -1616,6 +1597,7 @@ defmodule Voile.Schema.Library.Circulation do
       collection: []
     )
     |> order_by([t], desc: t.transaction_date)
+    |> limit(500)
     |> Repo.all()
   end
 
@@ -1653,11 +1635,12 @@ defmodule Voile.Schema.Library.Circulation do
   @doc """
   Gets overdue transactions.
   """
-  def list_overdue_transactions do
+  def list_overdue_transactions(limit \\ 500) do
     now = DateTime.utc_now()
 
     Transaction
     |> where([t], t.status == "active" and t.due_date < ^now)
+    |> limit(^limit)
     |> preload(
       member: [],
       librarian: [],
@@ -1678,6 +1661,7 @@ defmodule Voile.Schema.Library.Circulation do
     |> where([t], t.status == "active" and t.due_date <= ^due_date)
     |> preload(member: [], librarian: [], item: [:collection], collection: [])
     |> order_by([t], t.due_date)
+    |> limit(500)
     |> Repo.all()
   end
 

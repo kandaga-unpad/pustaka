@@ -102,18 +102,24 @@ defmodule Voile.Analytics.Dashboard do
   Get collection count per node with node details.
   """
   def get_node_collection_counts do
+    counts =
+      from(c in Collection,
+        group_by: c.unit_id,
+        select: {c.unit_id, count(c.id)}
+      )
+      |> Repo.all()
+      |> Map.new()
+
     nodes = Voile.Schema.System.list_nodes()
 
     Enum.map(nodes, fn node ->
-      collection_count = Voile.Schema.Catalog.count_collections(node.id)
-
       %{
         id: node.id,
         name: node.name,
         abbr: node.abbr,
         image: node.image,
         description: node.description,
-        collection_count: collection_count,
+        collection_count: Map.get(counts, node.id, 0),
         color: pick_node_color(node.id)
       }
     end)

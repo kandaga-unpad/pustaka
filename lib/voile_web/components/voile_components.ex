@@ -228,10 +228,10 @@ defmodule VoileWeb.VoileComponents do
                     </div>
                   <% end %>
 
-                  <%= if length(collection.items || []) > 0 do %>
+                  <%= if (collection.items_count || 0) > 0 do %>
                     <div class="flex items-center gap-1">
                       <.icon name="hero-document-duplicate" class="w-3 h-3" />
-                      <span>{length(collection.items)} items</span>
+                      <span>{collection.items_count} items</span>
                     </div>
                   <% end %>
                 </div>
@@ -411,8 +411,8 @@ defmodule VoileWeb.VoileComponents do
                   <span>• {collection.mst_creator.creator_name}</span>
                 <% end %>
 
-                <%= if length(collection.items || []) > 0 do %>
-                  <span>• {length(collection.items)} items</span>
+                <%= if (collection.items_count || 0) > 0 do %>
+                  <span>• {collection.items_count} items</span>
                 <% end %>
               </div>
             </div>
@@ -516,11 +516,11 @@ defmodule VoileWeb.VoileComponents do
             </div>
           <% end %>
 
-          <%= if length(@collection.items) > 0 do %>
+          <%= if (@collection.items_count || 0) > 0 do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-document-duplicate" class="w-3 h-3" />
               <span>
-                {length(@collection.items)} {if length(@collection.items) == 1,
+                {@collection.items_count} {if @collection.items_count == 1,
                   do: "item",
                   else: "items"}
               </span>
@@ -1082,10 +1082,10 @@ defmodule VoileWeb.VoileComponents do
               </div>
             <% end %>
 
-            <%= if length(@collection.items || []) > 0 do %>
+            <%= if (@collection.items_count || 0) > 0 do %>
               <div class="flex items-center gap-1">
                 <.icon name="hero-document-duplicate" class="w-3 h-3" />
-                <span>{length(@collection.items)} items</span>
+                <span>{@collection.items_count} items</span>
               </div>
             <% end %>
           </div>

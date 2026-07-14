@@ -85,9 +85,10 @@ defmodule Voile.OaiPmh do
         where: c.status == "published",
         order_by: [asc: c.id],
         offset: ^offset,
-        limit: ^(limit + 1)
+        limit: ^(limit + 1),
+        preload: [:resource_class, :node]
 
-    sets = Repo.all(query) |> Repo.preload([:resource_class, :node])
+    sets = Repo.all(query)
     has_more = length(sets) > limit
     sets = Enum.take(sets, limit)
 
@@ -126,7 +127,7 @@ defmodule Voile.OaiPmh do
       limit = 100
 
       query = build_items_query(from_date, until_date, set_spec, offset, limit)
-      items = Repo.all(query) |> Repo.preload(:collection)
+      items = query |> preload(:collection) |> Repo.all()
       has_more = length(items) > limit
       items = Enum.take(items, limit)
 
@@ -172,7 +173,18 @@ defmodule Voile.OaiPmh do
       limit = 50
 
       query = build_items_query(from_date, until_date, set_spec, offset, limit)
-      items = Repo.all(query) |> preload_collection_metadata()
+
+      items =
+        query
+        |> preload([
+          :node,
+          collection: [
+            :mst_creator,
+            collection_fields: [metadata_properties: :vocabulary]
+          ]
+        ])
+        |> Repo.all()
+
       has_more = length(items) > limit
       items = Enum.take(items, limit)
 

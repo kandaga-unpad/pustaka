@@ -48,11 +48,10 @@ defmodule Voile.Task.Catalog.Collection do
         :resource_class,
         :mst_creator,
         :node,
-        :collection_fields,
-        items: [:node]
+        :collection_fields
       ])
 
-    collections = Repo.all(query)
+    collections = Repo.all(query) |> Voile.Schema.Catalog.attach_collection_counts()
 
     # Calculate total pages
     total_count = Repo.aggregate(base_query, :count, :id)

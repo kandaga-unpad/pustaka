@@ -58,12 +58,15 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
     authorize!(socket, "items.read")
 
     raw_logo_url = Voile.Schema.System.get_setting_value("app_logo_url", nil)
-    app_logo_url = logo_to_data_uri(raw_logo_url)
+
+    if connected?(socket) and raw_logo_url != nil do
+      Task.Supervisor.async_nolink(Voile.TaskSupervisor, fn -> logo_to_data_uri(raw_logo_url) end)
+    end
 
     {:ok,
      socket
      |> assign(:page_title, gettext("Print Item Labels"))
-     |> assign(:app_logo_url, app_logo_url)
+     |> assign(:app_logo_url, raw_logo_url)
      |> assign(:selected_items, [])
      |> assign(:selected_item_data, %{})
      |> assign(:search, "")
@@ -84,6 +87,17 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Labels do
 
   @impl true
   def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({ref, data_uri}, socket) when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+    {:noreply, assign(socket, :app_logo_url, data_uri)}
+  end
+
+  @impl true
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
     {:noreply, socket}
   end
 
