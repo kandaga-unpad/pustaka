@@ -26,15 +26,16 @@ defmodule Voile.Schema.Catalog do
 
   """
   def list_collections do
-    Repo.all(Collection)
-    |> Repo.preload([
+    Collection
+    |> preload([
       :resource_class,
       :resource_template,
       :mst_creator,
       :node,
-      :collection_fields,
-      :items
+      :collection_fields
     ])
+    |> Repo.all()
+    |> attach_collection_counts()
   end
 
   @doc """
@@ -134,13 +135,14 @@ defmodule Voile.Schema.Catalog do
     # :collection_fields (metadata) are intentionally excluded — the list only
     # exposes counts for items/attachments; full data lives on the show endpoint.
     collections =
-      Repo.all(query)
-      |> Repo.preload([
+      query
+      |> preload([
         :resource_class,
         :mst_creator,
         :node,
         :created_by
       ])
+      |> Repo.all()
       |> attach_collection_counts()
 
     # Count query without preloads for better performance
@@ -493,8 +495,8 @@ defmodule Voile.Schema.Catalog do
   """
   def get_collection!(id) do
     Collection
+    |> preload(^collection_preloads())
     |> Repo.get!(id)
-    |> Repo.preload(collection_preloads())
   end
 
   @doc """
@@ -506,11 +508,8 @@ defmodule Voile.Schema.Catalog do
   """
   def get_collection(id) do
     Collection
+    |> preload(^collection_preloads())
     |> Repo.get(id)
-    |> case do
-      nil -> nil
-      collection -> Repo.preload(collection, collection_preloads())
-    end
   end
 
   defp collection_preloads do
@@ -744,12 +743,12 @@ defmodule Voile.Schema.Catalog do
         :mst_creator,
         :node,
         :collection_fields,
-        :items,
         :created_by,
         :updated_by
       ]
     )
     |> Repo.all()
+    |> attach_collection_counts()
   end
 
   @doc """
@@ -796,7 +795,6 @@ defmodule Voile.Schema.Catalog do
           :mst_creator,
           :node,
           :collection_fields,
-          :items,
           :created_by,
           :updated_by
         ]
@@ -850,9 +848,8 @@ defmodule Voile.Schema.Catalog do
       |> limit(^per_page)
       |> offset(^offset)
 
-    collections = Repo.all(query)
+    collections = Repo.all(query) |> attach_collection_counts()
 
-    # Count query with same filters (ordering irrelevant for counts)
     count_query =
       from c in Collection,
         where: c.status in ["pending", "draft"],
@@ -1508,15 +1505,14 @@ defmodule Voile.Schema.Catalog do
   """
   def get_item!(id) do
     Item
+    |> preload(^item_preloads())
     |> Repo.get!(id)
-    |> Repo.preload(item_preloads())
   end
 
   def get_item(id) do
-    case Repo.get(Item, id) do
-      nil -> nil
-      item -> Repo.preload(item, item_preloads())
-    end
+    Item
+    |> preload(^item_preloads())
+    |> Repo.get(id)
   end
 
   defp item_preloads do
@@ -1535,11 +1531,8 @@ defmodule Voile.Schema.Catalog do
   """
   def get_item_by_code!(item_code) when is_binary(item_code) do
     Item
+    |> preload([:node, collection: [:mst_creator]])
     |> Repo.get_by!(item_code: item_code)
-    |> Repo.preload([
-      :node,
-      collection: [:mst_creator]
-    ])
   end
 
   @doc """
@@ -1547,11 +1540,8 @@ defmodule Voile.Schema.Catalog do
   """
   def get_item_by_code(item_code) when is_binary(item_code) do
     Item
+    |> preload([:node, collection: [:mst_creator]])
     |> Repo.get_by(item_code: item_code)
-    |> case do
-      nil -> nil
-      item -> Repo.preload(item, [:node, collection: [:mst_creator]])
-    end
   end
 
   @doc """
@@ -1574,11 +1564,8 @@ defmodule Voile.Schema.Catalog do
       [i],
       i.item_code == ^identifier or i.barcode == ^identifier or i.legacy_item_code == ^identifier
     )
+    |> preload([:node, collection: [:mst_creator]])
     |> Repo.one()
-    |> case do
-      nil -> nil
-      item -> Repo.preload(item, [:node, collection: [:mst_creator]])
-    end
   end
 
   @doc """
@@ -1941,6 +1928,64 @@ defmodule Voile.Schema.Catalog do
     )
     |> Repo.all()
     |> Map.new()
+  end
+
+  @doc """
+  Batch count collections grouped by unit_id. Returns %{unit_id => count}.
+  """
+  def count_collections_by_unit do
+    from(c in Collection,
+      group_by: c.unit_id,
+      select: {c.unit_id, count(c.id)}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  @doc """
+  Batch count items grouped by unit_id. Returns %{unit_id => count}.
+  """
+  def count_items_by_unit do
+    from(i in Item,
+      group_by: i.unit_id,
+      select: {i.unit_id, count(i.id)}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  @doc """
+  Batch count collections by status, grouped per unit.
+  Returns %{unit_id => %{status => count}}.
+  """
+  def count_collections_by_status_per_unit do
+    from(c in Collection,
+      group_by: [c.unit_id, c.status],
+      select: {c.unit_id, c.status, count(c.id)}
+    )
+    |> Repo.all()
+    |> Enum.group_by(
+      fn {unit_id, _status, _count} -> unit_id end,
+      fn {_unit_id, status, count} -> {status, count} end
+    )
+    |> Map.new(fn {_unit_id, pairs} -> Map.new(pairs) end)
+  end
+
+  @doc """
+  Batch count items by availability, grouped per unit.
+  Returns %{unit_id => %{availability => count}}.
+  """
+  def count_items_by_availability_per_unit do
+    from(i in Item,
+      group_by: [i.unit_id, i.availability],
+      select: {i.unit_id, i.availability, count(i.id)}
+    )
+    |> Repo.all()
+    |> Enum.group_by(
+      fn {unit_id, _avail, _count} -> unit_id end,
+      fn {_unit_id, avail, count} -> {avail, count} end
+    )
+    |> Map.new(fn {_unit_id, pairs} -> Map.new(pairs) end)
   end
 
   def count_items_by_collection(collection_id) do

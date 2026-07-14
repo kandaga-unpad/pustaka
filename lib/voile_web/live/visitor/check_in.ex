@@ -214,106 +214,30 @@ defmodule VoileWeb.Visitor.CheckIn do
 
   @impl true
   def handle_event("submit_check_in", %{"identifier" => identifier} = _params, socket) do
-    %{
-      selected_origin: origin,
-      selected_location: location,
-      selected_node: node_id,
-      ip_address: ip_address,
-      user_agent: user_agent,
-      visit_purpose: visit_purpose
-    } = socket.assigns
-
     identifier = String.trim(identifier)
 
     if identifier == "" do
       {:noreply, assign(socket, :error_message, "Please enter your identifier")}
     else
-      # Gather visitor info (name, gender, study program)
-      visitor_info = lookup_visitor_information(identifier)
-      visitor_name = visitor_info.fullname
-      gender = visitor_info.gender
-      study_program = visitor_info.study_program
-
-      # Derive origin from identifier prefix (always takes precedence over auto-filled node selection)
-      prefix = String.slice(identifier, 0, 3)
-
-      derived_origin =
-        case Integer.parse(prefix) do
-          {int_prefix, ""} ->
-            case get_node_by_id(int_prefix) do
-              nil -> ""
-              node when is_map(node) -> node[:namaFakultas] || node[:singkatan] || ""
-            end
-
-          _ ->
-            ""
-        end
-
-      # Identifier-derived origin takes precedence; fall back to user-selected origin only when
-      # the identifier prefix yields nothing (e.g. non-numeric / guest identifiers)
-      origin =
-        if derived_origin != "",
-          do: derived_origin,
-          else: if(is_nil(origin), do: "", else: origin)
-
-      # build additional data map
-      base_add = if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
-      extra_add = %{}
-      extra_add = if gender, do: Map.put(extra_add, "gender", gender), else: extra_add
-
-      extra_add =
-        if study_program, do: Map.put(extra_add, "study_program", study_program), else: extra_add
-
-      additional_data = Map.merge(base_add, extra_add)
-
-      attrs = %{
-        "visitor_identifier" => identifier,
-        "visitor_name" => visitor_name,
-        "visitor_origin" => origin,
-        "location_id" => location.id,
-        "node_id" => node_id,
-        "ip_address" => ip_address,
-        "user_agent" => user_agent,
-        "additional_data" => additional_data
+      check_in_context = %{
+        identifier: identifier,
+        origin: socket.assigns.selected_origin,
+        location: socket.assigns.selected_location,
+        node_id: socket.assigns.selected_node,
+        ip_address: socket.assigns.ip_address,
+        user_agent: socket.assigns.user_agent,
+        visit_purpose: socket.assigns.visit_purpose
       }
 
-      case System.create_visitor_log(attrs) do
-        {:ok, visitor_log} ->
-          visitor_name = visitor_log.visitor_name || identifier
+      Task.Supervisor.async_nolink(Voile.TaskSupervisor, fn ->
+        lookup_visitor_information(identifier)
+      end)
 
-          socket =
-            socket
-            |> assign(:show_success_modal, true)
-            |> assign(:visitor_name, visitor_name)
-            |> assign(:visitor_identifier, "")
-            |> assign(:visit_purpose, "")
-            |> assign(:error_message, nil)
-            |> assign(:gender, gender)
-            |> assign(:study_program, study_program)
-
-          # Let active plugins inject post-check-in panels (e.g. locker offer).
-          # If no plugin is registered this is a no-op and auto_close_ms stays 1000.
-          hook_payload = %{
-            panels: [],
-            auto_close_ms: 1_000,
-            node_id: node_id,
-            location_id:
-              socket.assigns[:selected_location] && socket.assigns.selected_location.id,
-            visitor_log: visitor_log,
-            visitor_name: visitor_name,
-            visitor_identifier: identifier
-          }
-
-          hook_result = Voile.Hooks.run_filter(:visitor_check_in_panels, hook_payload)
-          socket = assign(socket, :check_in_panels, hook_result.panels)
-
-          Process.send_after(self(), :close_modal, hook_result.auto_close_ms)
-
-          {:noreply, socket}
-
-        {:error, _changeset} ->
-          {:noreply, assign(socket, :error_message, "Failed to check in. Please try again.")}
-      end
+      {:noreply,
+       socket
+       |> assign(:checking_in, true)
+       |> assign(:error_message, nil)
+       |> assign(:check_in_context, check_in_context)}
     end
   end
 
@@ -418,6 +342,25 @@ defmodule VoileWeb.Visitor.CheckIn do
   end
 
   @impl true
+  def handle_info({ref, visitor_info}, socket) when is_reference(ref) do
+    Process.demonitor(ref, [:flush])
+
+    case socket.assigns[:check_in_context] do
+      nil ->
+        {:noreply, socket}
+
+      ctx ->
+        process_check_in(socket, ctx, visitor_info)
+    end
+  end
+
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:checking_in, false)
+     |> assign(:error_message, "Failed to look up visitor information. Please try again.")}
+  end
+
   def handle_info(:close_modal, socket) do
     socket =
       socket
@@ -457,6 +400,100 @@ defmodule VoileWeb.Visitor.CheckIn do
       "Other University",
       "Other"
     ]
+  end
+
+  defp process_check_in(socket, ctx, visitor_info) do
+    %{
+      identifier: identifier,
+      origin: origin,
+      location: location,
+      node_id: node_id,
+      ip_address: ip_address,
+      user_agent: user_agent,
+      visit_purpose: visit_purpose
+    } = ctx
+
+    visitor_name = visitor_info.fullname
+    gender = visitor_info.gender
+    study_program = visitor_info.study_program
+
+    prefix = String.slice(identifier, 0, 3)
+
+    derived_origin =
+      case Integer.parse(prefix) do
+        {int_prefix, ""} ->
+          case get_node_by_id(int_prefix) do
+            nil -> ""
+            node when is_map(node) -> node[:namaFakultas] || node[:singkatan] || ""
+          end
+
+        _ ->
+          ""
+      end
+
+    origin =
+      if derived_origin != "",
+        do: derived_origin,
+        else: if(is_nil(origin), do: "", else: origin)
+
+    base_add = if(visit_purpose != "", do: %{"visit_purpose" => visit_purpose}, else: %{})
+    extra_add = %{}
+    extra_add = if gender, do: Map.put(extra_add, "gender", gender), else: extra_add
+
+    extra_add =
+      if study_program, do: Map.put(extra_add, "study_program", study_program), else: extra_add
+
+    additional_data = Map.merge(base_add, extra_add)
+
+    attrs = %{
+      "visitor_identifier" => identifier,
+      "visitor_name" => visitor_name,
+      "visitor_origin" => origin,
+      "location_id" => location.id,
+      "node_id" => node_id,
+      "ip_address" => ip_address,
+      "user_agent" => user_agent,
+      "additional_data" => additional_data
+    }
+
+    case System.create_visitor_log(attrs) do
+      {:ok, visitor_log} ->
+        visitor_name = visitor_log.visitor_name || identifier
+
+        socket =
+          socket
+          |> assign(:checking_in, false)
+          |> assign(:show_success_modal, true)
+          |> assign(:visitor_name, visitor_name)
+          |> assign(:visitor_identifier, "")
+          |> assign(:visit_purpose, "")
+          |> assign(:error_message, nil)
+          |> assign(:gender, gender)
+          |> assign(:study_program, study_program)
+
+        hook_payload = %{
+          panels: [],
+          auto_close_ms: 1_000,
+          node_id: node_id,
+          location_id: socket.assigns[:selected_location] && socket.assigns.selected_location.id,
+          visitor_log: visitor_log,
+          visitor_name: visitor_name,
+          visitor_identifier: identifier
+        }
+
+        hook_result = Voile.Hooks.run_filter(:visitor_check_in_panels, hook_payload)
+        socket = assign(socket, :check_in_panels, hook_result.panels)
+
+        Process.send_after(self(), :close_modal, hook_result.auto_close_ms)
+
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply,
+         socket
+         |> assign(:checking_in, false)
+         |> assign(:error_message, "Failed to check in. Please try again.")}
+    end
   end
 
   defp get_ip_address(nil), do: nil

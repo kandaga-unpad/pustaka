@@ -356,7 +356,7 @@ defmodule VoileWeb.SearchController do
               %{
                 creator_name: collection.mst_creator.creator_name
               },
-          items_count: length(collection.items || [])
+          items_count: collection.items_count || 0
         }
       end)
 
@@ -412,7 +412,7 @@ defmodule VoileWeb.SearchController do
         status: collection.status,
         access_level: collection.access_level,
         creator: collection.mst_creator && collection.mst_creator.creator_name,
-        items_count: length(collection.items || [])
+        items_count: collection.items_count || 0
       }
     end)
   end

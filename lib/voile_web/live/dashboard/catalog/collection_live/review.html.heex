@@ -1050,9 +1050,9 @@
                       {collection.title}
                     </p>
 
-                    <%= if collection.items && length(collection.items) > 0 do %>
+                    <%= if (collection.items_count || 0) > 0 do %>
                       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {length(collection.items)} {if length(collection.items) == 1,
+                        {collection.items_count} {if collection.items_count == 1,
                           do: gettext("item"),
                           else: gettext("items")}
                       </p>

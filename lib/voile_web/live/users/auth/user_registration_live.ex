@@ -82,6 +82,7 @@ defmodule VoileWeb.UserRegistrationLive do
                 </.button>
               </div>
             </.form>
+
             <div class="my-6 flex items-center gap-3">
               <hr class="flex-1 border-voile-muted animate-fade-in" />
               <span class="text-sm text-voile-muted animate-fade-in">
@@ -89,13 +90,27 @@ defmodule VoileWeb.UserRegistrationLive do
               </span>
               <hr class="flex-1 border-voile-muted animate-fade-in" />
             </div>
+
+            <%= if @paus_sso_enabled do %>
+              <.button
+                phx-click="paus_auth"
+                class="gradient-btn w-full flex items-center justify-center gap-3 py-3.5 text-base font-semibold shadow-lg ring-2 ring-voile-primary/30 hover:shadow-xl transition-shadow"
+              >
+                <img src={~p"/images/unpad_img.svg"} class="inline h-6 w-6" alt="PAuS logo" />
+                <span>{gettext("Continue with PAuS ID")}</span>
+                <span class="ml-1 text-[10px] font-bold uppercase tracking-wide bg-white/25 px-2 py-0.5 rounded-full">
+                  {gettext("Recommended")}
+                </span>
+              </.button>
+            <% end %>
+
             <.button
               phx-click="google_auth"
-              class="gradient-btn-outline w-full flex items-center justify-center gap-2 bg-white text-voile-primary hover:shadow-md"
+              class="gradient-btn-outline w-full flex items-center justify-center gap-2 text-sm bg-white text-voile-primary hover:shadow-md mt-3"
             >
               <img
                 src={~p"/images/google_img.png"}
-                class="inline h-5 w-5 mr-2"
+                class="inline h-5 w-5"
                 alt="Google logo"
               />
               <span>{gettext("Continue with Google")}</span>
@@ -123,6 +138,10 @@ defmodule VoileWeb.UserRegistrationLive do
         socket
         |> assign(trigger_submit: false, check_errors: false)
         |> assign(app_name: Voile.Schema.System.get_setting_value("app_name", "Voile"))
+        |> assign(
+          paus_sso_enabled:
+            Voile.Schema.System.get_setting_value("sso_paus_enabled", "false") == "true"
+        )
         |> assign_form(changeset)
 
       {:ok, socket, temporary_assigns: [form: nil]}
@@ -196,6 +215,10 @@ defmodule VoileWeb.UserRegistrationLive do
 
   def handle_event("google_auth", _params, socket) do
     {:noreply, redirect(socket, to: "/auth/google")}
+  end
+
+  def handle_event("paus_auth", _params, socket) do
+    {:noreply, redirect(socket, to: "/auth/paus")}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

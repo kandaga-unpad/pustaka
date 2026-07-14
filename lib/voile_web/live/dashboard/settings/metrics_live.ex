@@ -34,8 +34,16 @@ defmodule VoileWeb.Dashboard.Settings.MetricsLive do
 
   def handle_info(:update_presence, socket) do
     connection_stats = VoileWeb.UserPresence.get_connection_stats()
-    send(self(), :update_presence)
-    {:noreply, assign(socket, :connection_stats, connection_stats)}
+    system_metrics = get_system_metrics()
+
+    Process.send_after(self(), :update_presence, 5_000)
+
+    socket =
+      socket
+      |> assign(:connection_stats, connection_stats)
+      |> assign(:system_metrics, system_metrics)
+
+    {:noreply, socket}
   end
 
   def handle_info(_message, socket) do

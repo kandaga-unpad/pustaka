@@ -14,9 +14,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
 
-    # preview collection list (limited)
-    preview_collections = get_library_collections(user)
-
     # global aggregates
     total_collections = get_library_total_collections(user)
     total_items = get_library_total_items(user)
@@ -25,7 +22,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
     socket =
       socket
       |> assign(:page_title, "Library Dashboard")
-      |> assign(:library_collections, preview_collections)
       |> assign(:total_collections, total_collections)
       |> assign(:total_items, total_items)
       |> assign(:published_collections, published_collections)
@@ -343,26 +339,6 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
       quick_return_predicted_fine={@quick_return_predicted_fine}
     />
     """
-  end
-
-  defp get_library_collections(user) do
-    base_q =
-      from(c in Collection,
-        join: rc in assoc(c, :resource_class),
-        where: rc.glam_type == "Library",
-        order_by: [desc: c.inserted_at],
-        limit: 50,
-        preload: [:resource_class, :items]
-      )
-
-    q =
-      if Authorization.is_super_admin?(user) do
-        base_q
-      else
-        from(c in base_q, where: c.unit_id == ^user.node_id)
-      end
-
-    Repo.all(q)
   end
 
   defp get_library_total_collections(user) do

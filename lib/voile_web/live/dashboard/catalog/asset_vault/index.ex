@@ -577,7 +577,7 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
       |> assign(:sort_dir, new_dir)
       |> assign(:page, 1)
 
-    {:noreply, apply_action(socket, :index, %{})}
+    {:noreply, refresh_list_light(socket)}
   end
 
   # ---------------------------------------------------------------------------
@@ -587,6 +587,37 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   # Refresh the current list view (re-runs apply_action with current socket state)
   defp refresh_list(socket) do
     apply_action(socket, :index, %{})
+  end
+
+  # Light refresh — only re-queries the paginated list + preloads.
+  # Skips folder tree, root folders, and stats (saves ~9 queries).
+  defp refresh_list_light(socket) do
+    filters = %{
+      access_level: socket.assigns.filter_access_level,
+      file_type: socket.assigns.filter_file_type,
+      attachable_type: socket.assigns.filter_attachable_type
+    }
+
+    {attachments, total_pages} =
+      list_attachments_paginated(
+        socket.assigns.page,
+        @per_page,
+        socket.assigns.search,
+        filters,
+        socket.assigns.current_folder_id,
+        socket.assigns.sort_by,
+        socket.assigns.sort_dir
+      )
+
+    attachments =
+      Repo.preload(attachments, [:allowed_roles, :allowed_users, :access_settings_updated_by])
+
+    socket
+    |> stream(:attachments, attachments, reset: true)
+    |> assign(:attachments_list, attachments)
+    |> assign(:total_pages, total_pages)
+    |> assign(:attachments_empty?, attachments == [])
+    |> assign(:attachments_count, length(attachments))
   end
 
   defp list_attachments_paginated(
@@ -727,25 +758,22 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
   # ---------------------------------------------------------------------------
 
   defp load_stats do
-    base =
-      from a in Attachment,
-        where:
-          a.attachable_type in ["asset_vault", "collection"] and a.attachable_type != "folder"
-
-    total = Repo.aggregate(base, :count, :id)
-
-    images = Repo.aggregate(from(a in base, where: a.file_type == "image"), :count, :id)
-    videos = Repo.aggregate(from(a in base, where: a.file_type == "video"), :count, :id)
-    documents = Repo.aggregate(from(a in base, where: a.file_type == "document"), :count, :id)
-
-    other =
-      Repo.aggregate(
-        from(a in base, where: a.file_type not in ["image", "video", "document"]),
-        :count,
-        :id
-      )
-
-    %{total: total, images: images, videos: videos, documents: documents, other: other}
+    from(a in Attachment,
+      where: a.attachable_type in ["asset_vault", "collection"] and a.attachable_type != "folder",
+      group_by: fragment("1"),
+      select: %{
+        total: count(a.id),
+        images: count(a.id) |> filter(a.file_type == "image"),
+        videos: count(a.id) |> filter(a.file_type == "video"),
+        documents: count(a.id) |> filter(a.file_type == "document"),
+        other: count(a.id) |> filter(a.file_type not in ["image", "video", "document"])
+      }
+    )
+    |> Repo.one()
+    |> case do
+      nil -> %{total: 0, images: 0, videos: 0, documents: 0, other: 0}
+      stats -> stats
+    end
   end
 
   # ---------------------------------------------------------------------------

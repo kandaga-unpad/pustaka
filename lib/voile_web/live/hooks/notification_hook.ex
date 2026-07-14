@@ -44,6 +44,10 @@ defmodule VoileWeb.Live.Hooks.NotificationHook do
             {:update_notifications, notifications}, socket ->
               {:halt, assign(socket, :notifications, notifications)}
 
+            {:reservation_member_notify, notification_data}, socket ->
+              notifications = Enum.take([notification_data | socket.assigns.notifications], 10)
+              {:halt, assign(socket, :notifications, notifications)}
+
             _msg, socket ->
               {:cont, socket}
           end)

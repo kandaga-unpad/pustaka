@@ -8,22 +8,26 @@ defmodule Voile.Notifications.EmailQueue do
   Features:
   - Rate limiting: Configurable delay between emails
   - Retry logic: Failed emails are retried up to N times
-  - Priority queue: Support for urgent emails
-  - Statistics: Track sent, failed, and queued emails
+  - Bounded queue: Max queue size with backpressure (drops when full)
+  - Async sending: Email functions run in a supervised Task, never blocking the GenServer
+  - Statistics: Track sent, failed, retried, and dropped emails
 
   Configuration:
   - config :voile, :email_queue_delay, 2000  # milliseconds between emails (default: 2 seconds)
-  - config :voile, :email_queue_max_retries, 3  # maximum retry attempts
+  - config :voile, :email_queue_max_retries, 3  # maximum retry attempts (default: 3)
+  - config :voile, :email_queue_max_size, 10_000  # max buffered jobs before dropping (default: 10_000)
   """
 
   use GenServer
   require Logger
 
-  # 2 seconds between emails
   @default_delay 2000
   @default_max_retries 3
+  @default_max_queue_size 10_000
   # 1 minute before retry
   @retry_delay 60_000
+  # Timeout for the email-sending Task
+  @send_timeout_ms 30_000
 
   # Client API
 
@@ -85,58 +89,85 @@ defmodule Voile.Notifications.EmailQueue do
 
   @impl true
   def init(_opts) do
+    Logger.info("Email queue started with delay: #{get_delay()}ms")
+
     state = %{
       queue: :queue.new(),
       processing: false,
       paused: false,
+      current_job: nil,
+      current_ref: nil,
+      retry_timers: [],
       stats: %{
         sent: 0,
         failed: 0,
-        queued: 0,
-        retried: 0
+        retried: 0,
+        dropped: 0
       }
     }
 
-    Logger.info("Email queue started with delay: #{get_delay()}ms")
     {:ok, state}
   end
 
   @impl true
   def handle_cast({:enqueue, email_fn, priority, metadata}, state) do
-    job = %{
-      id: generate_job_id(),
-      email_fn: email_fn,
-      priority: priority,
-      metadata: metadata,
-      retries: 0,
-      max_retries: get_max_retries(),
-      enqueued_at: DateTime.utc_now()
-    }
+    current_size = :queue.len(state.queue)
+    max_size = get_max_queue_size()
 
-    new_queue = enqueue_job(state.queue, job)
-    new_stats = update_stats(state.stats, :queued, 1)
+    if current_size >= max_size do
+      Logger.warning("Email queue full (#{current_size}/#{max_size}), dropping email")
 
-    Logger.debug(
-      "Email queued: #{job.id} (priority: #{priority}, queue size: #{:queue.len(new_queue)})"
-    )
+      {:noreply, %{state | stats: update_stats(state.stats, :dropped, 1)}}
+    else
+      job = %{
+        id: generate_job_id(),
+        email_fn: email_fn,
+        priority: priority,
+        metadata: metadata,
+        retries: 0,
+        max_retries: get_max_retries(),
+        enqueued_at: DateTime.utc_now()
+      }
 
-    # Start processing if not already processing
-    new_state = %{state | queue: new_queue, stats: new_stats}
-    new_state = maybe_start_processing(new_state)
+      new_queue = enqueue_job(state.queue, job)
 
-    {:noreply, new_state}
+      Logger.debug(
+        "Email queued: #{job.id} (priority: #{priority}, queue size: #{:queue.len(new_queue)})"
+      )
+
+      new_state = %{state | queue: new_queue}
+      new_state = maybe_start_processing(new_state)
+
+      {:noreply, new_state}
+    end
   end
 
   @impl true
   def handle_call(:stats, _from, state) do
-    stats = Map.put(state.stats, :queue_size, :queue.len(state.queue))
+    stats =
+      state.stats
+      |> Map.put(:queue_size, :queue.len(state.queue))
+      |> Map.put(:paused, state.paused)
+
     {:reply, stats, state}
   end
 
   @impl true
   def handle_call(:clear_queue, _from, state) do
-    new_state = %{state | queue: :queue.new(), processing: false}
+    # Cancel all pending retry timers to prevent race condition
+    Enum.each(state.retry_timers, &Process.cancel_timer/1)
+
     Logger.warning("Email queue cleared")
+
+    new_state = %{
+      state
+      | queue: :queue.new(),
+        processing: false,
+        current_job: nil,
+        current_ref: nil,
+        retry_timers: []
+    }
+
     {:reply, :ok, new_state}
   end
 
@@ -154,61 +185,89 @@ defmodule Voile.Notifications.EmailQueue do
     {:reply, :ok, new_state}
   end
 
+  # Process next email from the queue — spawns a Task (non-blocking)
   @impl true
   def handle_info(:process_next, state) do
     if state.paused do
-      # If paused, just mark as not processing
       {:noreply, %{state | processing: false}}
     else
       case :queue.out(state.queue) do
         {{:value, job}, new_queue} ->
-          # Process the job
-          result = process_job(job, state.stats)
+          ref = make_ref()
+          spawn_send_task(job, ref)
 
-          case result do
-            {:ok, new_stats} ->
-              # Job succeeded, schedule next processing
-              schedule_next_processing()
-              {:noreply, %{state | queue: new_queue, stats: new_stats, processing: true}}
+          Logger.info(
+            "Processing email job: #{job.id} (attempt #{job.retries + 1}/#{job.max_retries + 1})"
+          )
 
-            {:retry, updated_job, new_stats} ->
-              # Job failed but should be retried - schedule retry after delay
-              Process.send_after(self(), {:retry_job, updated_job}, @retry_delay)
-              schedule_next_processing()
-              {:noreply, %{state | queue: new_queue, stats: new_stats, processing: true}}
+          # Safety timeout in case the Task hangs
+          Process.send_after(self(), {:email_timeout, ref}, @send_timeout_ms)
 
-            {:failed, new_stats} ->
-              # Job failed permanently, move to next
-              schedule_next_processing()
-              {:noreply, %{state | queue: new_queue, stats: new_stats, processing: true}}
-          end
+          {:noreply,
+           %{state | queue: new_queue, processing: true, current_job: job, current_ref: ref}}
 
         {:empty, _} ->
-          # Queue is empty, stop processing
           {:noreply, %{state | processing: false}}
       end
     end
   end
 
+  # Email Task completed successfully
+  @impl true
+  def handle_info({:email_result, ref, result}, %{current_ref: ref} = state) do
+    job = state.current_job
+
+    state = %{state | current_job: nil, current_ref: nil}
+
+    case result do
+      :ok ->
+        Logger.info("Email sent successfully: #{job.id}")
+        new_stats = update_stats(state.stats, :sent, 1)
+        schedule_next_processing()
+        {:noreply, %{state | stats: new_stats}}
+
+      {:error, reason} ->
+        Logger.error("Email failed: #{job.id}, reason: #{inspect(reason)}")
+        handle_job_failure(state, job, reason)
+    end
+  end
+
+  # Stale result from a previous job (after timeout or clear)
+  def handle_info({:email_result, _stale_ref, _result}, state), do: {:noreply, state}
+
+  # Email Task timed out
+  @impl true
+  def handle_info({:email_timeout, ref}, %{current_ref: ref} = state) do
+    job = state.current_job
+    Logger.warning("Email timed out after #{@send_timeout_ms}ms: #{job.id}")
+
+    state = %{state | current_job: nil, current_ref: nil}
+    handle_job_failure(state, job, :timeout)
+  end
+
+  # Stale timeout
+  def handle_info({:email_timeout, _stale_ref}, state), do: {:noreply, state}
+
+  # Retry job re-enters the queue
   @impl true
   def handle_info({:retry_job, job}, state) do
-    # Add the job back to the queue
     new_queue = enqueue_job(state.queue, job)
     new_state = %{state | queue: new_queue}
     new_state = maybe_start_processing(new_state)
     {:noreply, new_state}
   end
 
+  @impl true
+  def handle_info(_msg, state), do: {:noreply, state}
+
   # Private Functions
 
   defp enqueue_job(queue, job) do
-    # Simple FIFO for now, could implement priority later
     :queue.in(job, queue)
   end
 
   defp maybe_start_processing(state) do
     if not state.processing and not state.paused and :queue.len(state.queue) > 0 do
-      # Start immediately
       schedule_next_processing(0)
       %{state | processing: true}
     else
@@ -221,55 +280,51 @@ defmodule Voile.Notifications.EmailQueue do
     Process.send_after(self(), :process_next, delay)
   end
 
-  defp process_job(job, stats) do
-    Logger.info(
-      "Processing email job: #{job.id} (attempt #{job.retries + 1}/#{job.max_retries + 1})"
-    )
+  defp spawn_send_task(job, ref) do
+    email_fn = job.email_fn
 
-    try do
-      case job.email_fn.() do
-        {:ok, _result} ->
-          Logger.info("Email sent successfully: #{job.id}")
-          new_stats = update_stats(stats, :sent, 1)
-          {:ok, new_stats}
+    Task.Supervisor.start_child(Voile.TaskSupervisor, fn ->
+      result =
+        try do
+          case email_fn.() do
+            {:ok, _result} -> :ok
+            {:error, reason} -> {:error, reason}
+            other -> {:error, other}
+          end
+        rescue
+          error ->
+            {:error, Exception.message(error)}
+        catch
+          kind, reason ->
+            {:error, {kind, reason}}
+        end
 
-        {:error, reason} ->
-          Logger.error("Email failed: #{job.id}, reason: #{inspect(reason)}")
-          handle_job_failure(job, stats, reason)
-
-        other ->
-          Logger.warning("Email function returned unexpected result: #{inspect(other)}")
-          handle_job_failure(job, stats, other)
-      end
-    rescue
-      error ->
-        Logger.error("Email job crashed: #{job.id}, error: #{inspect(error)}")
-        handle_job_failure(job, stats, error)
-    end
+      send(__MODULE__, {:email_result, ref, result})
+    end)
   end
 
-  defp handle_job_failure(job, stats, reason) do
+  defp handle_job_failure(state, job, reason) do
     if job.retries < job.max_retries do
-      # Retry the job
       updated_job = %{job | retries: job.retries + 1}
-      new_stats = update_stats(stats, :retried, 1)
+      new_stats = update_stats(state.stats, :retried, 1)
 
       Logger.info(
-        "Scheduling retry for job: #{job.id} (attempt #{updated_job.retries + 1}/#{job.max_retries + 1})"
+        "Scheduling retry for job: #{job.id} (attempt #{updated_job.retries + 1}/#{updated_job.max_retries + 1})"
       )
 
-      # Schedule retry after a delay
-      Process.send_after(self(), {:retry_job, updated_job}, @retry_delay)
+      timer_ref = Process.send_after(self(), {:retry_job, updated_job}, @retry_delay)
 
-      {:retry, updated_job, new_stats}
+      schedule_next_processing()
+
+      {:noreply, %{state | stats: new_stats, retry_timers: [timer_ref | state.retry_timers]}}
     else
-      # Max retries exceeded
       Logger.error(
         "Email permanently failed after #{job.retries} retries: #{job.id}, reason: #{inspect(reason)}"
       )
 
-      new_stats = update_stats(stats, :failed, 1)
-      {:failed, new_stats}
+      new_stats = update_stats(state.stats, :failed, 1)
+      schedule_next_processing()
+      {:noreply, %{state | stats: new_stats}}
     end
   end
 
@@ -287,5 +342,9 @@ defmodule Voile.Notifications.EmailQueue do
 
   defp get_max_retries do
     Application.get_env(:voile, :email_queue_max_retries, @default_max_retries)
+  end
+
+  defp get_max_queue_size do
+    Application.get_env(:voile, :email_queue_max_size, @default_max_queue_size)
   end
 end

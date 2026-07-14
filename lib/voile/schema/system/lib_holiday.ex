@@ -45,6 +45,9 @@ defmodule Voile.Schema.System.LibHoliday do
   defp cached_lookup(key, compute_fn) do
     ensure_cache_table()
 
+    # Occasionally sweep past-date entries (1 in 100 lookups)
+    if :rand.uniform(100) == 1, do: sweep_past_entries()
+
     case :ets.lookup(@cache_table, key) do
       [{^key, value, timestamp}] ->
         # Check if cache is still valid
@@ -69,6 +72,31 @@ defmodule Voile.Schema.System.LibHoliday do
   def clear_cache do
     if :ets.whereis(@cache_table) != :undefined do
       :ets.delete_all_objects(@cache_table)
+    end
+  end
+
+  # Delete cache entries whose key contains a %Date{} that is in the past.
+  defp sweep_past_entries do
+    today = Date.utc_today()
+
+    try do
+      :ets.tab2list(@cache_table)
+      |> Enum.each(fn {key, _value, _ts} ->
+        key
+        |> Tuple.to_list()
+        |> Enum.find(&match?(%Date{}, &1))
+        |> case do
+          %Date{} = date ->
+            if Date.compare(date, today) == :lt do
+              :ets.delete(@cache_table, key)
+            end
+
+          _ ->
+            :ok
+        end
+      end)
+    rescue
+      _ -> :ok
     end
   end
 

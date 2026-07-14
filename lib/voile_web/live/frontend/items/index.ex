@@ -15,7 +15,7 @@ defmodule VoileWeb.Frontend.Items.Index do
     {:ok,
      socket
      |> assign(:page_title, gettext("Browse Items"))
-     |> assign(:items, [])
+     |> assign(:items_count, 0)
      |> assign(:loading, false)
      |> assign(:current_page, 1)
      |> assign(:total_pages, 1)
@@ -71,7 +71,7 @@ defmodule VoileWeb.Frontend.Items.Index do
 
     {:noreply,
      socket
-     |> assign(:items, items)
+     |> assign(:items_count, length(items))
      |> assign(:total_pages, total_pages)
      |> assign(:loading, false)
      |> stream(:items, items, reset: true)}
@@ -282,14 +282,14 @@ defmodule VoileWeb.Frontend.Items.Index do
             <!-- Results Header -->
             <div class="mb-6">
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                {gettext("Showing")} {length(@items)} {gettext("items")}
+                {gettext("Showing")} {@items_count} {gettext("items")}
                 <%= if @search_query != "" do %>
                   {gettext("for")} "<strong><%= @search_query %></strong>"
                 <% end %>
               </p>
             </div>
             <!-- Items List/Grid -->
-            <%= if length(@items) > 0 do %>
+            <%= if @items_count > 0 do %>
               <div class="bg-white dark:bg-gray-800 shadow-sm border border-voile-light dark:border-voile-dark rounded-lg divide-y divide-voile-light dark:divide-voile-dark mb-8">
                 <div
                   :for={{id, item} <- @streams.items}

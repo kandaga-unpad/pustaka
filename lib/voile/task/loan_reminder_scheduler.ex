@@ -128,60 +128,74 @@ defmodule Voile.Task.LoanReminderScheduler do
   end
 
   defp send_member_reminder(member_id, transactions, days_before_due) do
-    case Voile.Schema.Accounts.get_user(member_id) do
-      nil ->
-        Logger.warning("Member not found: #{member_id}")
+    # Member is already preloaded on transactions — avoid redundant DB lookup
+    member =
+      transactions
+      |> Enum.find(&(&1.member_id == member_id))
+      |> case do
+        %{member: m} when not is_nil(m) -> m
+        _ -> Voile.Schema.Accounts.get_user(member_id)
+      end
 
-      member ->
-        # Queue email instead of sending immediately
-        EmailQueue.enqueue(
-          fn -> LoanReminderEmail.send_reminder_email(member, transactions, days_before_due) end,
-          metadata: %{
-            member_id: member_id,
-            type: :reminder,
-            days_before_due: days_before_due,
-            transaction_count: length(transactions)
-          }
-        )
+    if is_nil(member) do
+      Logger.warning("Member not found: #{member_id}")
+    else
+      # Queue email instead of sending immediately
+      EmailQueue.enqueue(
+        fn -> LoanReminderEmail.send_reminder_email(member, transactions, days_before_due) end,
+        metadata: %{
+          member_id: member_id,
+          type: :reminder,
+          days_before_due: days_before_due,
+          transaction_count: length(transactions)
+        }
+      )
 
-        Logger.info(
-          "Reminder email queued for member #{member_id} for #{length(transactions)} items"
-        )
+      Logger.info(
+        "Reminder email queued for member #{member_id} for #{length(transactions)} items"
+      )
 
-        # Broadcast PubSub notifications immediately (no delay needed)
-        Enum.each(transactions, fn transaction ->
-          LoanReminderNotifier.broadcast_loan_reminder(transaction, days_before_due)
-        end)
+      # Broadcast PubSub notifications immediately (no delay needed)
+      Enum.each(transactions, fn transaction ->
+        LoanReminderNotifier.broadcast_loan_reminder(transaction, days_before_due)
+      end)
     end
   end
 
   defp send_overdue_notification(member_id, transactions) do
-    case Voile.Schema.Accounts.get_user(member_id) do
-      nil ->
-        Logger.warning("Member not found: #{member_id}")
+    # Member is already preloaded on transactions — avoid redundant DB lookup
+    member =
+      transactions
+      |> Enum.find(&(&1.member_id == member_id))
+      |> case do
+        %{member: m} when not is_nil(m) -> m
+        _ -> Voile.Schema.Accounts.get_user(member_id)
+      end
 
-      member ->
-        # Queue overdue email instead of sending immediately
-        EmailQueue.enqueue(
-          fn -> LoanReminderEmail.send_overdue_email(member, transactions) end,
-          # Overdue emails are high priority
-          priority: :high,
-          metadata: %{
-            member_id: member_id,
-            type: :overdue,
-            transaction_count: length(transactions)
-          }
-        )
+    if is_nil(member) do
+      Logger.warning("Member not found: #{member_id}")
+    else
+      # Queue overdue email instead of sending immediately
+      EmailQueue.enqueue(
+        fn -> LoanReminderEmail.send_overdue_email(member, transactions) end,
+        # Overdue emails are high priority
+        priority: :high,
+        metadata: %{
+          member_id: member_id,
+          type: :overdue,
+          transaction_count: length(transactions)
+        }
+      )
 
-        Logger.info(
-          "Overdue email queued for member #{member_id} for #{length(transactions)} items"
-        )
+      Logger.info(
+        "Overdue email queued for member #{member_id} for #{length(transactions)} items"
+      )
 
-        # Broadcast PubSub notifications immediately
-        Enum.each(transactions, fn transaction ->
-          days_overdue = Voile.Schema.Library.Transaction.days_overdue(transaction)
-          LoanReminderNotifier.broadcast_overdue_notification(transaction, days_overdue)
-        end)
+      # Broadcast PubSub notifications immediately
+      Enum.each(transactions, fn transaction ->
+        days_overdue = Voile.Schema.Library.Transaction.days_overdue(transaction)
+        LoanReminderNotifier.broadcast_overdue_notification(transaction, days_overdue)
+      end)
     end
   end
 

@@ -499,17 +499,22 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       end)
 
     # Assign the placeholder nodes first so the template can render spinners per node,
-    # then fetch counts and update the assigns.
+    # then populate counts and update the assigns.
     socket = assign(socket, :count_all_nodes, count_all_nodes)
 
-    # Fetch counts for nodes and update entries (synchronously here; can be async later)
+    # Batch-fetch all per-node counts in 4 queries instead of 4 queries per node
+    collections_by_unit = Catalog.count_collections_by_unit()
+    items_by_unit = Catalog.count_items_by_unit()
+    status_by_unit = Catalog.count_collections_by_status_per_unit()
+    availability_by_unit = Catalog.count_items_by_availability_per_unit()
+
     count_all_nodes =
       Enum.map(count_all_nodes, fn node ->
         node
-        |> Map.put(:count_collections, Catalog.count_collections(node.id))
-        |> Map.put(:count_items, Catalog.count_items(node.id))
-        |> Map.put(:collection_status_counts, Catalog.count_collections_by_status(node.id))
-        |> Map.put(:item_availability_counts, Catalog.count_items_by_availability(node.id))
+        |> Map.put(:count_collections, Map.get(collections_by_unit, node.id, 0))
+        |> Map.put(:count_items, Map.get(items_by_unit, node.id, 0))
+        |> Map.put(:collection_status_counts, Map.get(status_by_unit, node.id, %{}))
+        |> Map.put(:item_availability_counts, Map.get(availability_by_unit, node.id, %{}))
       end)
 
     socket =

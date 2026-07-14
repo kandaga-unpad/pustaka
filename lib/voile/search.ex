@@ -27,7 +27,7 @@ defmodule Voile.Search.Collections do
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
         where: c.status == "published",
-        preload: [resource_class: rc, mst_creator: creator, collection_fields: [], items: []]
+        preload: [resource_class: rc, mst_creator: creator, collection_fields: []]
 
     # Add search conditions
     search_query =
@@ -57,6 +57,7 @@ defmodule Voile.Search.Collections do
     )
     |> limit(^limit)
     |> Repo.all()
+    |> Voile.Schema.Catalog.attach_collection_counts()
   end
 
   @doc """
@@ -125,7 +126,7 @@ defmodule Voile.Search.Collections do
         left_join: node_join in assoc(c, :node),
         left_join: created_by_user in assoc(c, :created_by),
         left_join: updated_by_user in assoc(c, :updated_by),
-        preload: [resource_class: rc, mst_creator: creator, collection_fields: [], items: []]
+        preload: [resource_class: rc, mst_creator: creator, collection_fields: []]
 
     # Apply filters
     filtered_query =
@@ -173,6 +174,7 @@ defmodule Voile.Search.Collections do
       |> limit(^per_page)
       |> offset(^((page - 1) * per_page))
       |> Repo.all()
+      |> Voile.Schema.Catalog.attach_collection_counts()
 
     %{
       results: results,

@@ -1131,7 +1131,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormCollectionHelper do
       {:noreply, put_flash(socket, :error, "Please provide a valid URL")}
     else
       # Fetch the image from URL
-      case Req.get(url, redirect: true) do
+      case Req.get(url, redirect: true, receive_timeout: 10_000, connect_timeout: 5_000) do
         {:ok, %{status: 200, body: body, headers: headers}} ->
           # Check if it's an image
           content_type =
