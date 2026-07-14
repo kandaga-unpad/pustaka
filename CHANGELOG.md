@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.45] - 2026-07-14
+
+### Fixed
+
+- **Catalog dashboard crash: `Map.new` argument error** — `count_collections_by_status_per_unit/0` and `count_items_by_availability_per_unit/0` returned `%{unit_id => %{status => count}}` but the `Map.new/2` callback returned a map instead of a `{key, value}` tuple, causing `(ArgumentError) argument error` on every `/manage/catalog` page load. Fixed callback to return `{unit_id, Map.new(pairs)}`.
+- **Asset Vault crash: `GROUP BY` on aggregate** — `load_stats/0` used `group_by: fragment("1")` which PostgreSQL rejects (`aggregate functions are not allowed in GROUP BY`). Removed the `group_by` clause — the query now correctly returns a single aggregated row.
+
 ## [0.1.44] - 2026-07-14
 
 ### Fixed
