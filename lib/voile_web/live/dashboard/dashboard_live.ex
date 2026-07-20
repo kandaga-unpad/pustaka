@@ -298,6 +298,13 @@ defmodule VoileWeb.DashboardLive do
   def handle_info({:perform_search, query}, socket) do
     Logger.debug("Performing search for: #{inspect(query)}")
 
+    # Record search for analytics
+    user_id =
+      socket.assigns[:current_scope] && socket.assigns.current_scope.user &&
+        socket.assigns.current_scope.user.id
+
+    SearchAnalytics.record_search(query, user_id, %{source: "dashboard"})
+
     # Perform universal search with limited results for dashboard widget
     results = Search.universal_search(query, %{collections_per_page: 3, items_per_page: 2})
 

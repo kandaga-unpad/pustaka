@@ -51,11 +51,17 @@ defmodule Voile.Migration.LeftoverItemImporter do
       # Get item CSV files (filtered by unit_id if provided)
       item_files = get_item_files_for_unit(unit_id)
 
+      IO.puts("🗂️ Building item index from #{length(item_files)} CSV files...")
+
+      # Pre-build index: item_code -> {row, unit_id} for O(1) lookup
+      item_index = build_item_index(item_files)
+      IO.puts("📇 Index built: #{map_size(item_index)} items indexed")
+
       # Process each item_code
       {stats, inserted_item_ids} =
         item_codes
         |> Enum.reduce({%{inserted: 0, skipped: 0, not_found: 0}, []}, fn item_code, {acc, ids} ->
-          case find_and_import_item(item_code, item_files, cache) do
+          case find_and_import_item(item_code, item_index, cache) do
             {:inserted, item_id} -> {%{acc | inserted: acc.inserted + 1}, [item_id | ids]}
             :skipped -> {%{acc | skipped: acc.skipped + 1}, ids}
             :not_found -> {%{acc | not_found: acc.not_found + 1}, ids}
@@ -101,10 +107,14 @@ defmodule Voile.Migration.LeftoverItemImporter do
     |> Enum.reject(&(&1 == ""))
   end
 
-  defp find_and_import_item(item_code, item_files, cache) do
-    # Search for the item_code in all item CSV files
-    case find_row_by_item_code(item_code, item_files) do
-      {:ok, {row, unit_id}} ->
+  defp find_and_import_item(item_code, item_index, cache) do
+    # Lookup in pre-built index (O(1) instead of O(N×M) row scan)
+    case Map.get(item_index, item_code) do
+      nil ->
+        IO.puts("❓ Not found in CSVs: #{item_code}")
+        :not_found
+
+      {row, unit_id} ->
         # Found the row, now try to import it
         case prepare_item_data_for_leftover(row, cache, unit_id) do
           {:ok, item_data} ->
@@ -138,31 +148,25 @@ defmodule Voile.Migration.LeftoverItemImporter do
             IO.puts("⚠️ Skipped #{item_code}: #{inspect(reason)}")
             :skipped
         end
-
-      :not_found ->
-        IO.puts("❓ Not found in CSVs: #{item_code}")
-        :not_found
     end
   end
 
-  defp find_row_by_item_code(item_code, item_files) do
-    Enum.find_value(item_files, :not_found, fn file_path ->
+  defp build_item_index(item_files) do
+    item_files
+    |> Enum.reduce(%{}, fn file_path, acc ->
       unit_id = extract_unit_id_from_filename(file_path)
 
-      result =
-        File.stream!(file_path)
-        |> CSVParser.parse_stream()
-        # Skip header
-        |> Stream.drop(1)
-        |> Enum.find(fn row ->
-          # Assuming item_code is the 5th column (0-indexed: 4)
-          length(row) >= 5 && Enum.at(row, 4) == item_code
-        end)
-
-      case result do
-        nil -> nil
-        row -> {:ok, {row, unit_id}}
-      end
+      File.stream!(file_path)
+      |> CSVParser.parse_stream()
+      |> Stream.drop(1)
+      |> Enum.reduce(acc, fn row, acc2 ->
+        if length(row) >= 5 do
+          code = Enum.at(row, 4)
+          if code && code != "", do: Map.put(acc2, code, {row, unit_id}), else: acc2
+        else
+          acc2
+        end
+      end)
     end)
   end
 

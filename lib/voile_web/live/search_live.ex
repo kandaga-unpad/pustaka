@@ -7,6 +7,7 @@ defmodule VoileWeb.SearchLive do
 
   alias Voile.Schema.Search
   alias Voile.Schema.Accounts
+  alias Voile.Analytics.SearchAnalytics
 
   @impl true
   def mount(_params, _session, socket) do
@@ -82,6 +83,13 @@ defmodule VoileWeb.SearchLive do
 
   @impl true
   def handle_info({:perform_search, query, search_type, page}, socket) do
+    # Record search for analytics
+    user_id =
+      socket.assigns[:current_scope] && socket.assigns.current_scope.user &&
+        socket.assigns.current_scope.user.id
+
+    SearchAnalytics.record_search(query, user_id, %{type: search_type, source: "search_live"})
+
     results =
       case search_type do
         "collections" -> Search.search_collections(query, %{page: page})

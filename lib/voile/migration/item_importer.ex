@@ -89,17 +89,22 @@ defmodule Voile.Migration.ItemImporter do
     # Build collection_id to collection data mapping
     collection_map = build_collection_map()
 
+    # Pre-load existing legacy_item_code values to prevent duplicates on delta imports
+    existing_legacy_codes = build_existing_legacy_codes()
+
     IO.puts("✅ Cache initialized:")
     IO.puts("  - Biblio mappings (composite key): #{map_size(biblio_map)}")
     IO.puts("  - Unit mappings: #{map_size(unit_map)}")
     IO.puts("  - Resource class mappings: #{map_size(resource_class_map)}")
     IO.puts("  - Collection mappings: #{map_size(collection_map)}")
+    IO.puts("  - Existing legacy codes: #{MapSet.size(existing_legacy_codes)}")
 
     %{
       biblio_map: biblio_map,
       unit_map: unit_map,
       resource_class_map: resource_class_map,
-      collection_map: collection_map
+      collection_map: collection_map,
+      existing_legacy_codes: existing_legacy_codes
     }
   end
 
@@ -120,8 +125,26 @@ defmodule Voile.Migration.ItemImporter do
     :ets.insert(stats_ref, {:skipped_biblio_ids, []})
     :ets.insert(stats_ref, {:sample_errors, []})
 
-    # Create state tracking ETS table for biblio indices and times
+    # Create state tracking ETS table for collection indices and times
     state_ref = :ets.new(:item_state, [:set, :public])
+
+    # Pre-load existing item counts per collection from DB
+    # This ensures delta imports continue from the correct index,
+    # avoiding item_code collisions with previously imported items.
+    existing_counts =
+      from(i in Item,
+        group_by: i.collection_id,
+        select: {i.collection_id, count(i.id)}
+      )
+      |> Repo.all()
+
+    Enum.each(existing_counts, fn {collection_id, count} ->
+      :ets.insert(state_ref, {{:coll_index, collection_id}, count})
+    end)
+
+    if length(existing_counts) > 0 do
+      IO.puts("📊 Pre-loaded item counts for #{length(existing_counts)} collections from DB")
+    end
 
     try do
       File.stream!(file_path)
@@ -277,7 +300,8 @@ defmodule Voile.Migration.ItemImporter do
            biblio_map: biblio_map,
            unit_map: unit_map,
            resource_class_map: resource_class_map,
-           collection_map: collection_map
+           collection_map: collection_map,
+           existing_legacy_codes: existing_legacy_codes
          } = _cache,
          state_ref,
          unit_id
@@ -286,88 +310,94 @@ defmodule Voile.Migration.ItemImporter do
     id = Ecto.UUID.generate()
     biblio_id_int = parse_int(biblio_id)
 
-    # Use composite key (unit_id, old_biblio_id) to lookup collection
-    case Map.fetch(biblio_map, {unit_id, biblio_id_int}) do
-      {:ok, coll_id} ->
-        # coll_id should already be binary
-        collection_id = coll_id
+    # Skip if this item was already imported (delta overlap protection)
+    if MapSet.member?(existing_legacy_codes, item_code) do
+      {:error, {:already_exists, item_code}}
+    else
+      # Use composite key (unit_id, old_biblio_id) to lookup collection
+      case Map.fetch(biblio_map, {unit_id, biblio_id_int}) do
+        {:ok, coll_id} ->
+          # coll_id should already be binary
+          collection_id = coll_id
 
-        # Get and increment index for this biblio_id using ETS
-        index =
-          case :ets.lookup(state_ref, {:biblio_index, biblio_id_int}) do
-            [{_key, current_index}] ->
-              new_index = current_index + 1
-              :ets.insert(state_ref, {{:biblio_index, biblio_id_int}, new_index})
-              new_index
+          # Get and increment index for this collection using ETS
+          # Keyed by collection_id so delta imports continue from DB count
+          index =
+            case :ets.lookup(state_ref, {:coll_index, collection_id}) do
+              [{_key, current_index}] ->
+                new_index = current_index + 1
+                :ets.insert(state_ref, {{:coll_index, collection_id}, new_index})
+                new_index
 
-            [] ->
-              :ets.insert(state_ref, {{:biblio_index, biblio_id_int}, 1})
-              1
-          end
+              [] ->
+                :ets.insert(state_ref, {{:coll_index, collection_id}, 1})
+                1
+            end
 
-        # Get or create time_identifier for this biblio_id using ETS
-        time_identifier =
-          case :ets.lookup(state_ref, {:biblio_time, biblio_id_int}) do
-            [{_key, existing_time}] ->
-              existing_time
+          # Get or create time_identifier for this collection using ETS
+          time_identifier =
+            case :ets.lookup(state_ref, {:coll_time, collection_id}) do
+              [{_key, existing_time}] ->
+                existing_time
 
-            [] ->
-              new_time = System.system_time(:second)
-              :ets.insert(state_ref, {{:biblio_time, biblio_id_int}, new_time})
-              new_time
-          end
+              [] ->
+                new_time = System.system_time(:second)
+                :ets.insert(state_ref, {{:coll_time, collection_id}, new_time})
+                new_time
+            end
 
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-        # Get collection and unit data for code generation
-        collection_data = Map.get(collection_map, collection_id, %{})
-        unit_data = Map.get(unit_map, unit_id, %{abbr: "UNK"})
+          # Get collection and unit data for code generation
+          collection_data = Map.get(collection_map, collection_id, %{})
+          unit_data = Map.get(unit_map, unit_id, %{abbr: "UNK"})
 
-        resource_class_data =
-          Map.get(resource_class_map, collection_data[:type_id], %{local_name: "UNK"})
+          resource_class_data =
+            Map.get(resource_class_map, collection_data[:type_id], %{local_name: "UNK"})
 
-        # Generate codes using ItemHelper format
-        final_item_code =
-          ItemHelper.generate_item_code(
-            unit_data.abbr,
-            resource_class_data.local_name,
-            collection_id,
-            time_identifier,
-            to_string(index)
-          )
+          # Generate codes using ItemHelper format
+          final_item_code =
+            ItemHelper.generate_item_code(
+              unit_data.abbr,
+              resource_class_data.local_name,
+              collection_id,
+              time_identifier,
+              to_string(index)
+            )
 
-        final_inventory_code =
-          ItemHelper.generate_inventory_code(
-            unit_data.abbr,
-            resource_class_data.local_name,
-            collection_id,
-            index
-          )
+          final_inventory_code =
+            ItemHelper.generate_inventory_code(
+              unit_data.abbr,
+              resource_class_data.local_name,
+              collection_id,
+              index
+            )
 
-        # Generate barcode from final_item_code
-        # Format: kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001
-        # Barcode: c47e6d008b3a001 (last UUID segment + sequence)
-        barcode = generate_barcode_from_item_code(final_item_code)
+          # Generate barcode from final_item_code
+          # Format: kandaga-book-9c195395-d002-4c2a-8bfb-c47e6d008b3a-1761276668-001
+          # Barcode: c47e6d008b3a001 (last UUID segment + sequence)
+          barcode = generate_barcode_from_item_code(final_item_code)
 
-        {:ok,
-         %{
-           id: id,
-           collection_id: collection_id,
-           item_code: final_item_code,
-           legacy_item_code: item_code,
-           inventory_code: final_inventory_code,
-           barcode: barcode,
-           location: unit_data.name,
-           status: "active",
-           condition: "good",
-           availability: "available",
-           unit_id: unit_id,
-           inserted_at: parse_datetime(input_date) || now,
-           updated_at: parse_datetime(last_update) || now
-         }}
+          {:ok,
+           %{
+             id: id,
+             collection_id: collection_id,
+             item_code: final_item_code,
+             legacy_item_code: item_code,
+             inventory_code: final_inventory_code,
+             barcode: barcode,
+             location: unit_data.name,
+             status: "active",
+             condition: "good",
+             availability: "available",
+             unit_id: unit_id,
+             inserted_at: parse_datetime(input_date) || now,
+             updated_at: parse_datetime(last_update) || now
+           }}
 
-      :error ->
-        {:error, {:missing_biblio_id, {unit_id, biblio_id_int}}}
+        :error ->
+          {:error, {:missing_biblio_id, {unit_id, biblio_id_int}}}
+      end
     end
   end
 
@@ -394,6 +424,12 @@ defmodule Voile.Migration.ItemImporter do
           end
       end
     end)
+  end
+
+  defp build_existing_legacy_codes do
+    from(i in Item, where: not is_nil(i.legacy_item_code), select: i.legacy_item_code)
+    |> Repo.all()
+    |> MapSet.new()
   end
 
   defp build_unit_map do

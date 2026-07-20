@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.46] - 2026-07-20
+
+### Fixed
+
+- **OAuth users missing expiry dates** — PAuS and other OAuth users weren't getting `expiry_date` set based on their member type's `membership_period_days`. Now calculates and sets expiry date during OAuth user creation by fetching the member type and adding the period days to the registration date, matching the onboarding flow behavior.
+
+### Changed
+
+- **Migration import creator naming** — Changed default creator name from "Unknown Creator" to "System Import" across fine, item, and loan history importers for clearer audit trail.
+- **Item import performance** — Optimized item import with pre-built index (O(1) lookup instead of O(N×M) row scan) and delta import support that tracks existing legacy codes to prevent duplicates.
+- **Search analytics** — Added search recording for analytics in both dashboard and public search LiveViews to track user search behavior.
+
 ## [0.1.45] - 2026-07-14
 
 ### Fixed

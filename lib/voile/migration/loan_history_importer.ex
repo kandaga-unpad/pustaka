@@ -404,13 +404,13 @@ defmodule Voile.Migration.LoanHistoryImporter do
 
   defp get_or_create_default_creator do
     # Try to find existing default creator first
-    case Repo.get_by(Creator, creator_name: "Unknown Creator") do
+    case Repo.get_by(Creator, creator_name: "System Import") do
       nil ->
         # Create default creator
         {:ok, creator} =
           %Creator{}
           |> Creator.changeset(%{
-            creator_name: "Unknown Creator",
+            creator_name: "System Import",
             creator_contact: "unknown@voile.app",
             affiliation: "Unknown",
             type: "Organization"
