@@ -875,3 +875,470 @@
     }
   }
 }
+
+/* =========================================================================
+   VOILE DASHBOARD REDESIGN v2 — additive tokens & primitives
+   Source of truth: plans/dashboard-redesign.md
+   These tokens do NOT replace the existing `--color-voile-*` set; they extend
+   the system with the surface scale, GLAM type colors, typography primitives,
+   and motion tokens defined in the new design system.
+   ========================================================================= */
+
+@theme {
+  /* GLAM type colors (first-class brand tokens) */
+  --color-glam-gallery: oklch(68% 0.18 15);
+  --color-glam-gallery-soft: oklch(92% 0.04 15);
+  --color-glam-library: oklch(55% 0.18 245);
+  --color-glam-library-soft: oklch(94% 0.03 245);
+  --color-glam-archive: oklch(70% 0.15 75);
+  --color-glam-archive-soft: oklch(94% 0.04 75);
+  --color-glam-museum: oklch(58% 0.12 165);
+  --color-glam-museum-soft: oklch(93% 0.03 165);
+
+  /* Surface scale — light (subtle amethyst tint on every step) */
+  --color-surface-1-light: oklch(99.5% 0.005 295);
+  --color-surface-2-light: oklch(98% 0.008 295);
+  --color-surface-3-light: oklch(96% 0.012 295);
+  --color-surface-4-light: oklch(94% 0.015 295);
+  --color-surface-5-light: oklch(90% 0.018 295);
+
+  /* Surface scale — dark (deep amethyst-charcoal) */
+  --color-surface-1-dark: oklch(15% 0.015 280);
+  --color-surface-2-dark: oklch(18% 0.018 280);
+  --color-surface-3-dark: oklch(22% 0.020 280);
+  --color-surface-4-dark: oklch(28% 0.015 280);
+  --color-surface-5-dark: oklch(35% 0.010 280);
+
+  /* Text tokens */
+  --color-text-primary-light: oklch(20% 0.02 280);
+  --color-text-secondary-light: oklch(45% 0.02 280);
+  --color-text-tertiary-light: oklch(60% 0.015 280);
+  --color-text-primary-dark: oklch(96% 0.01 280);
+  --color-text-secondary-dark: oklch(75% 0.015 280);
+  --color-text-tertiary-dark: oklch(55% 0.02 280);
+
+  /* Motion easings */
+  --ease-immediate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shadows (brand-aware) */
+  --shadow-xs: 0 1px 2px 0 oklch(0% 0 0 / 0.04);
+  --shadow-sm: 0 2px 4px -1px oklch(0% 0 0 / 0.06), 0 1px 2px -1px oklch(0% 0 0 / 0.04);
+  --shadow-md: 0 6px 12px -4px oklch(0% 0 0 / 0.08), 0 4px 6px -4px oklch(0% 0 0 / 0.04);
+  --shadow-lg: 0 16px 32px -8px oklch(0% 0 0 / 0.12), 0 8px 16px -8px oklch(0% 0 0 / 0.06);
+  --shadow-xl: 0 32px 64px -16px oklch(0% 0 0 / 0.16);
+  --shadow-brand: 0 12px 28px -8px oklch(52% 0.20 295 / 0.32);
+
+  /* Layout tokens */
+  --layout-sidebar-w: 264px;
+  --layout-sidebar-collapsed-w: 80px;
+  --layout-content-max: 1440px;
+  --layout-gutter: 24px;
+  --layout-header-h: 64px;
+  --layout-bottom-nav-h: 64px;
+}
+
+/* In dark mode, GLAM colors brighten slightly so they pop on dark surfaces */
+:where([data-theme="dark"], [data-theme="dark"] *) {
+  --color-glam-gallery: oklch(72% 0.18 15);
+  --color-glam-library: oklch(60% 0.18 245);
+  --color-glam-archive: oklch(76% 0.15 75);
+  --color-glam-museum: oklch(64% 0.12 165);
+}
+
+/* ---------- Semantic surface / text utilities ---------- */
+@layer utilities {
+  .surface-page {
+    background-color: var(--color-surface-1-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .surface-page {
+    background-color: var(--color-surface-1-dark);
+  }
+
+  .surface-card {
+    background-color: var(--color-surface-2-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .surface-card {
+    background-color: var(--color-surface-2-dark);
+  }
+
+  .surface-raised {
+    background-color: var(--color-surface-3-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .surface-raised {
+    background-color: var(--color-surface-3-dark);
+  }
+
+  .surface-overlay {
+    background-color: color-mix(in oklab, var(--color-surface-3-light) 95%, transparent);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .surface-overlay {
+    background-color: color-mix(in oklab, var(--color-surface-3-dark) 95%, transparent);
+  }
+
+  .surface-sidebar {
+    background-color: var(--color-surface-2-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .surface-sidebar {
+    background-color: color-mix(in oklab, var(--color-surface-1-dark) 70%, var(--color-voile-primary) 8%);
+  }
+
+  .border-subtle {
+    border-color: var(--color-surface-4-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .border-subtle {
+    border-color: var(--color-surface-4-dark);
+  }
+
+  .text-primary {
+    color: var(--color-text-primary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .text-primary {
+    color: var(--color-text-primary-dark);
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .text-secondary {
+    color: var(--color-text-secondary-dark);
+  }
+
+  .text-tertiary {
+    color: var(--color-text-tertiary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .text-tertiary {
+    color: var(--color-text-tertiary-dark);
+  }
+
+  /* GLAM type color utility classes */
+  .text-glam-gallery { color: var(--color-glam-gallery); }
+  .text-glam-library { color: var(--color-glam-library); }
+  .text-glam-archive { color: var(--color-glam-archive); }
+  .text-glam-museum  { color: var(--color-glam-museum); }
+  .bg-glam-gallery { background-color: var(--color-glam-gallery); }
+  .bg-glam-library { background-color: var(--color-glam-library); }
+  .bg-glam-archive { background-color: var(--color-glam-archive); }
+  .bg-glam-museum  { background-color: var(--color-glam-museum); }
+  .bg-glam-gallery-soft { background-color: var(--color-glam-gallery-soft); }
+  .bg-glam-library-soft { background-color: var(--color-glam-library-soft); }
+  .bg-glam-archive-soft { background-color: var(--color-glam-archive-soft); }
+  .bg-glam-museum-soft  { background-color: var(--color-glam-museum-soft); }
+  .border-glam-gallery { border-color: var(--color-glam-gallery); }
+  .border-glam-library { border-color: var(--color-glam-library); }
+  .border-glam-archive { border-color: var(--color-glam-archive); }
+  .border-glam-museum  { border-color: var(--color-glam-museum); }
+
+  /* Functional soft surfaces (10% alpha on surface-2) for badges / icon chips */
+  .bg-tone-brand-soft {
+    background-color: color-mix(in oklab, var(--color-voile-primary) 12%, var(--color-surface-2-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-tone-brand-soft {
+    background-color: color-mix(in oklab, var(--color-voile-primary) 22%, var(--color-surface-2-dark));
+  }
+  .bg-tone-info-soft {
+    background-color: color-mix(in oklab, var(--color-voile-info) 14%, var(--color-surface-2-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-tone-info-soft {
+    background-color: color-mix(in oklab, var(--color-voile-info) 24%, var(--color-surface-2-dark));
+  }
+  .bg-tone-success-soft {
+    background-color: color-mix(in oklab, var(--color-voile-success) 14%, var(--color-surface-2-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-tone-success-soft {
+    background-color: color-mix(in oklab, var(--color-voile-success) 22%, var(--color-surface-2-dark));
+  }
+  .bg-tone-warning-soft {
+    background-color: color-mix(in oklab, var(--color-voile-warning) 16%, var(--color-surface-2-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-tone-warning-soft {
+    background-color: color-mix(in oklab, var(--color-voile-warning) 22%, var(--color-surface-2-dark));
+  }
+  .bg-tone-error-soft {
+    background-color: color-mix(in oklab, var(--color-voile-error) 12%, var(--color-surface-2-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .bg-tone-error-soft {
+    background-color: color-mix(in oklab, var(--color-voile-error) 22%, var(--color-surface-2-dark));
+  }
+}
+
+/* ---------- Typography primitives ---------- */
+@layer components {
+  .t-display {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .t-h1 {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .t-h2 {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  .t-h3 {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .t-h4 {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .t-label {
+    font-family: "Noto Sans", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .t-mono {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    line-height: 1.25;
+  }
+  .t-stat {
+    font-family: "Kanit", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Skeleton shimmer for loading states */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-2-light) 0%,
+      var(--color-surface-3-light) 50%,
+      var(--color-surface-2-light) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s infinite;
+    border-radius: 6px;
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-2-dark) 0%,
+      var(--color-surface-3-dark) 50%,
+      var(--color-surface-2-dark) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Enter/exit animations for new DOM nodes */
+  .animate-enter {
+    animation: enter 220ms var(--ease-enter) forwards;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Redesign shell layout ---------- */
+@layer components {
+  .rd-shell {
+    display: flex;
+    min-height: 100dvh;
+    background-color: var(--color-surface-1-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-shell {
+    background-color: var(--color-surface-1-dark);
+  }
+
+  .rd-sidebar {
+    width: var(--layout-sidebar-w);
+    flex-shrink: 0;
+    border-right: 1px solid var(--color-surface-4-light);
+    background-color: var(--color-surface-2-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar {
+    border-right-color: var(--color-surface-4-dark);
+    background-color: color-mix(in oklab, var(--color-surface-1-dark) 70%, var(--color-voile-primary) 6%);
+  }
+
+  .rd-main {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .rd-topbar {
+    height: var(--layout-header-h);
+    border-bottom: 1px solid var(--color-surface-4-light);
+    background-color: color-mix(in oklab, var(--color-surface-1-light) 80%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-topbar {
+    border-bottom-color: var(--color-surface-4-dark);
+    background-color: color-mix(in oklab, var(--color-surface-1-dark) 80%, transparent);
+  }
+
+  .rd-content {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .rd-bottom-nav {
+    height: var(--layout-bottom-nav-h);
+    border-top: 1px solid var(--color-surface-4-light);
+    background-color: var(--color-surface-2-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-bottom-nav {
+    border-top-color: var(--color-surface-4-dark);
+    background-color: var(--color-surface-1-dark);
+  }
+
+  .rd-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--color-text-secondary-light);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
+    position: relative;
+  }
+  .rd-nav-link:hover {
+    background-color: var(--color-surface-3-light);
+    color: var(--color-text-primary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link {
+    color: var(--color-text-secondary-dark);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link:hover {
+    background-color: var(--color-surface-3-dark);
+    color: var(--color-text-primary-dark);
+  }
+
+  .rd-nav-link-active {
+    background-color: color-mix(in oklab, var(--color-voile-primary) 10%, var(--color-surface-2-light));
+    color: var(--color-voile-primary);
+    font-weight: 600;
+  }
+  .rd-nav-link-active::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background-color: var(--color-voile-primary);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link-active {
+    background-color: color-mix(in oklab, var(--color-voile-primary) 18%, var(--color-surface-2-dark));
+  }
+
+  .rd-card {
+    background-color: var(--color-surface-2-light);
+    border: 1px solid var(--color-surface-4-light);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 180ms var(--ease-smooth),
+                border-color 180ms var(--ease-smooth),
+                background-color 180ms var(--ease-smooth);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-card {
+    background-color: var(--color-surface-2-dark);
+    border-color: var(--color-surface-4-dark);
+  }
+
+  .rd-card-hover:hover {
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in oklab, var(--color-voile-primary) 25%, var(--color-surface-4-light));
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-card-hover:hover {
+    border-color: color-mix(in oklab, var(--color-voile-primary) 30%, var(--color-surface-4-dark));
+  }
+
+  .rd-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 1px solid var(--color-surface-4-light);
+    background-color: var(--color-surface-2-light);
+    color: var(--color-text-secondary-light);
+    transition: all 180ms var(--ease-smooth);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-chip {
+    border-color: var(--color-surface-4-dark);
+    background-color: var(--color-surface-2-dark);
+    color: var(--color-text-secondary-dark);
+  }
+
+  /* Command palette */
+  .rd-cmd-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: color-mix(in oklab, oklch(0% 0 0) 50%, transparent);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1100;
+  }
+  .rd-cmd-panel {
+    position: fixed;
+    top: 12vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100vw - 32px));
+    max-height: 70vh;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--color-surface-4-light);
+    background-color: var(--color-surface-2-light);
+    box-shadow: var(--shadow-xl);
+    z-index: 1101;
+    display: flex;
+    flex-direction: column;
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-cmd-panel {
+    border-color: var(--color-surface-4-dark);
+    background-color: var(--color-surface-2-dark);
+  }
+}
+
+/* Honoring reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

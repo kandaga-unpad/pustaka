@@ -37,6 +37,7 @@ import SearchFocus from "./hooks/search_focus";
 import { SearchPanel } from "./hooks/search_panel_hook";
 import SearchResultsLoading from "./hooks/search_results_loading";
 import DragDrop from "./hooks/sortable";
+import CommandPalette from "./hooks/command_palette";
 
 // LocaleSwitcher Hook for current path and locale link rewriting
 const LocaleSwitcher = {
@@ -396,6 +397,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     Turnstile: TurnstileHook,
     EbookReader,
     PasswordToggle,
+    CommandPalette,
     ...colocatedHooks,
   },
 });

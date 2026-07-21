@@ -12,6 +12,8 @@ defmodule VoileWeb.Layouts do
   alias Phoenix.LiveView.JS
   alias Voile.Schema.System
 
+  import VoileWeb.RedesignComponents
+
   embed_templates "layouts/*"
 
   @doc """

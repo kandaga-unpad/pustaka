@@ -96,6 +96,16 @@ defmodule VoileWeb do
     end
   end
 
+  def live_view_redesign do
+    quote do
+      use Phoenix.LiveView,
+        layout: {VoileWeb.Layouts, :redesign}
+
+      unquote(html_helpers())
+      import VoileWeb.RedesignComponents
+    end
+  end
+
   def live_component do
     quote do
       use Phoenix.LiveComponent
