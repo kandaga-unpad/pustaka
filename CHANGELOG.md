@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.48] - 2026-07-23
+
+### Added
+
+- **Review activity banner** on `/manage/catalog/collections/review` — shows aggregate stats from `collection_logs`: active reviewers, collections approved, edits requested, total actions (all-time). Super admins see a collapsible per-reviewer table (name, approved, edits, total, sorted by activity); regular users see only their own stats. Collapsible via "Per reviewer" toggle button.
+- **GLAM metadata seed SQL** (`priv/repo/seeds/glam_metadata_seed_inserts.sql`) — 24 vocabularies + 353 properties with production ID offset (+1 for custom vocab at ID 5). Ready to paste in DBeaver.
+- **Pagination on vocabulary and template-property pages** — wired `Metadata.list_metadata_page/3` with `<.voile_pagination>` on both metaresource controller index pages.
+- **Full Indonesian (id) locale** — 140 new translation strings across all dashboard surfaces (greetings, card titles, sidebar sections, GLAM eyebrows, error messages, metrics labels).
+- **JetBrains Mono** font loading for codes/IDs/timestamps.
+- **"Front page" (`/`) navigation links** in sidebar and topbar.
+- **User dropdown menus** (sidebar + topbar) showing user info, node, profile settings, logout.
+- **Visitor statistics section** on GLAM hub (today, 30-day, unique, avg/day), node-scoped.
+- **Node badge** for non-super-admin users on the dashboard page header.
+- **Empty-state placeholders** on all master-data list pages.
+- **Full-width collection modals** (`<.modal full>`).
+- **Sticky footer** — content area is now a flex column; footer sits at viewport bottom on short pages, scrolls naturally on tall pages.
+
+### Changed
+
+- **Sidebar logo** reads from `app_logo_url` system setting (both sidebar and mobile topbar).
+- **Footer restored** to the original two-column layout (© + "Powered by Curatorian Developer" + "Built with ♥ using Voile"), adapted to v2 tokens.
+- **Flash z-index** raised to 1000 (above the topbar at 100).
+- **Home sidebar item** uses exact-match active state.
+- **Pagination auto-hides** when `total_pages ≤ 1`.
+- **All 31 paginate handlers** clamp page numbers (`|> max(1)`) to prevent negative-OFFSET crashes.
+- **Command palette backdrop** now closes correctly (consolidated open/close state).
+- **Brand colors** fully respect DB-stored values from `/manage/settings/apps`.
+- **Sidebar hierarchy** mirrors the actual router (Catalog, GLAM, Members, Visitors, Master, Metaresource, Settings — all collapsible with accurate child paths).
+
+### Fixed
+
+- **`Stats.get_member_stats/1` crash** for non-super-admin users — User schema uses `node_id`, not `unit_id`.
+- **Catalog submenu broken links** — `asset-vault`, `transfers`, `stock_opname` paths corrected to match router.
+- **`voile_button` solid variant** ignored `:tone` — now uses `tone_solid_bg(tone)`.
+- **Pagination crash** on empty data (page=0 → negative OFFSET).
+- **Flash blocked by topbar** — z-50 raised to z-1000.
+- **Breadcrumb KeyError** on pages without `:breadcrumb` — layout fallback added.
+- **`live_view_dashboard` macro** missing `handle_mount_errors` import.
+- **Collection modal** — added `full` attr for full-screen rendering.
+- **`JS.toggle` API misuse** in user menu dropdown — fixed to use `display:` option.
+
+---
+
 ## [0.1.47] - 2026-07-23
 
 ### Summary
