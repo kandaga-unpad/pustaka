@@ -1,6 +1,6 @@
 # Voile Dashboard Redesign — Design & Brand Guide
 
-> **Status:** Draft v1.0 · **Owner:** Frontend / UX · **Target surface:** `/manage/*` (the staff dashboard)
+> **Status:** Draft v1.1 — under active implementation · **Owner:** Frontend / UX · **Target surface:** `/manage/*` (the staff dashboard)
 >
 > **Scope:** A complete rethinking of the dashboard layout, brand system, and component library
 > used by every authenticated staff LiveView under `/manage`.
@@ -8,6 +8,31 @@
 This document is the single source of truth for the new Voile dashboard. It defines the **brand**
 (who we are), the **design system** (the visual language), the **layout architecture** (how pages
 are structured), and a **migration plan** (how we get there without a big-bang rewrite).
+
+> **Live showcase:** the v2 design system is mounted at **`/manage/redesign-test`** — a tabbed
+> kitchen-sink showing every token, primitive, and layout for visual review. The Foundations tab
+> reads live brand colors from `SystemSetting` so it reflects whatever the super-admin picked at
+> `/manage/settings/apps`.
+
+## Current implementation status
+
+The redesign is **not** greenfield — Phase 0 (Foundation) and Phase 1 (Shell) are substantially
+built. These v2 artifacts already ship alongside the legacy surfaces:
+
+| Artifact | Path | Status |
+|----------|------|--------|
+| v2 component module | `lib/voile_web/components/redesign_components.ex` | ✅ sidebar, topbar, bottom nav, footer, command palette, stat card, GLAM strip, section card, metric row, activity feed, empty state, button, page header |
+| v2 layout | `lib/voile_web/components/layouts/redesign.html.heex` | ✅ shell: sidebar + topbar + bottom nav + lite footer + command palette |
+| `live_view_redesign` macro | `lib/voile_web.ex:99` | ✅ auto-imports `RedesignComponents`, sets `:redesign` layout |
+| v2 CSS tokens | `assets/css/app.css:879-1344` | ✅ GLAM colors, surface scale, motion, shadows, layout tokens, `t-*` typography, `rd-*` shell classes, skeleton |
+| Command palette JS hook | `assets/js/hooks/command_palette.js` | ✅ registered as `CommandPalette` |
+| Showcase page | `lib/voile_web/live/redesign_test_live.ex` | ✅ tabbed kitchen-sink for visual review |
+| Legacy `/manage` surfaces | `dashboard.html.heex`, `VoileDashboardComponents`, `DashboardLive` | ⏳ Still the live UI at `/manage`; migration is Phase 2+ |
+
+**Open architectural decision:** the two systems coexist without sharing code. Phase 2 must
+choose whether to (a) migrate pages onto the `:redesign` layout + `RedesignComponents`, or
+(b) port the `rd_*` patterns back into the legacy module and replace `dashboard.html.heex` in
+place. Recommendation: option (a) — keep the clean module, route-by-route.
 
 ---
 
@@ -99,7 +124,7 @@ Honest inventory of what's there today and what's wrong with it. This is what we
 | 7 | **Two parallel navigation systems on mobile.** A fixed bottom nav (`dashboard_menu_bar`) *and* a slide-up "More" panel (`dashboard_mobile_menu`) cover overlapping ground, with inconsistent icon/color choices between them. | `voile_dashboard_components.ex:215-265` vs `277-485` |
 | 8 | **Awkward quick-action.** A full-width violet "Start Transaction" button sits between the page title and the stat cards — visually disconnected from anything. | `dashboard_live.ex:44-53` |
 | 9 | **Settings sidebar duplicated three times.** `dashboard_settings_sidebar`, `plugin_settings_sidebar`, and the `master`/`metaresource` sidebar in `dashboard.html.heex` solve the same problem three different ways. | `voile_dashboard_components.ex`, `dashboard.html.heex:94-143` |
-| 10 | **No command palette.** A system this large (60+ routes under `/manage`) is unreachable without 3+ clicks. Power users (librarians especially) want ⌘K. | — |
+| 10 | **No command palette.** A system this large (162 routes under `/manage`) is unreachable without 3+ clicks. Power users (librarians especially) want ⌘K. | — |
 | 11 | **Footer is corporate boilerplate** (`"Powered by Curatorian Developer"`, `"Built with ♥ using Voile"`) sitting on a `bg-gray-800` block that has nothing to do with the brand. | `dashboard.html.heex:154-208` |
 | 12 | **Mobile bottom nav hides content.** The fixed bottom bar eats ~70px of vertical space on every screen and overlaps the footer. | `voile_dashboard_components.ex:216` |
 | 13 | **No empty/loading/error states** for the deferred dashboard data — first paint shows zeros, then jumps to real numbers. | `dashboard_live.ex:204-238` |
@@ -300,6 +325,50 @@ def tone_classes(tone) when tone in ~w(info success warning error)a do
   }
 end
 ```
+
+#### 4.2.5 Dynamic brand colors (database override)
+
+The six `--color-voile-*` tokens are **not** hardcoded — they are overridable per instance from the
+database, so every Voile deployment can carry its own identity. This is the canonical flow:
+
+```
+SystemSetting (settings table, hex strings)
+        │  System.get_setting_value/2  (cached in :persistent_term)
+        ▼
+lib/voile_web/components/layouts/root.html.heex:13-32
+        │  emits an inline <style>:root { --color-voile-primary: <hex>; ... }</style> in <head>
+        ▼
+every var(--color-voile-*) reference in app.css + components resolves to the live value
+```
+
+**Setting keys → CSS variables:**
+
+| `SystemSetting` key | CSS custom property | Seeded default (`priv/repo/seeds/seeds.exs`) | Editable in UI? |
+|---------------------|---------------------|----------------------------------------------|-----------------|
+| `app_main_color`        | `--color-voile-primary`          | `#C166FF` (deep violet)        | ✅ `/manage/settings/apps` |
+| `app_secondary_color`   | `--color-voile-secondary`        | `#A78BFA` (soft lavender)      | ✅ `/manage/settings/apps` |
+| `app_surface_color`     | `--color-voile-surface`          | `#F6F3FF` (light violet)       | ❌ seed/DB only |
+| `app_surface_variant`   | `--color-voile-surface-variant`  | `#EFE9FF`                      | ❌ seed/DB only |
+| `app_surface_dark`      | `--color-voile-surface-dark`     | `#0F0820` (dark mode surface)  | ❌ seed/DB only |
+| `app_accent_color`      | `--color-voile-accent`           | `#C4B5FD`                      | ❌ seed/DB only |
+
+**Rules for working with brand colors:**
+
+1. **Never hardcode a brand color.** No `#C166FF`, no `#9333ea`, no `bg-violet-600`. Always go
+   through `var(--color-voile-*)` or a `tone_*` helper so the super-admin's choice wins.
+2. **Colors are hex end-to-end.** The super-admin picks via a native `<input type="color">`, the
+   hex string is stored verbatim, and re-emitted into the `<style>` block. There is no hex↔oklch
+   conversion — the `oklch` values in `app.css` are only the fallback for an unseeded DB.
+3. **GLAM and functional colors are NOT overridable.** They are semantic (like red for error) and
+   must stay consistent across instances. Only the six `--color-voile-*` tokens are dynamic.
+4. **Cache is invalidated on write.** `System.upsert_setting/2` erases the `:persistent_term` cache,
+   so the new value appears on the next page load. (A live preview on the settings page — Phase 4 —
+   will emit a scoped inline `<style>` so admins see changes before saving.)
+
+> **Known inconsistency to clean up:** four different "default" palettes currently coexist —
+> seeds (`#C166FF`), `app.css` oklch fallbacks, `#9333ea` inline-style fallbacks in legacy
+> templates, and `#1d4ed8`/`#06b6d4` form-input defaults. The DB is the only real source of truth
+> once seeded; the others are defensive fallbacks and should be unified in Phase 5 cleanup.
 
 ### 4.3 Typography
 
@@ -1253,6 +1322,9 @@ independently mergeable and rollback-safe.
 
 ### Phase 0 — Foundation (1 week, no UI changes)
 
+> **Status: ✅ DONE** — all tokens, hooks, and helpers ship in `app.css:879-1344` and
+> `assets/js/hooks/command_palette.js`. The `tone_*` helpers live in `RedesignComponents`.
+
 **Goal:** lay the design-token groundwork without touching any template.
 
 1. **Extend `assets/css/app.css`:**
@@ -1276,6 +1348,12 @@ for opt-in use.
 
 ### Phase 1 — New Shell Layout (1–2 weeks)
 
+> **Status: ✅ DONE (behind a feature flag)** — the shell, sidebar, topbar, bottom nav, command
+> palette, and lite footer are all implemented in `RedesignComponents` + `redesign.html.heex`.
+> They are exposed only at `/manage/redesign-test`; `/manage` itself still uses the legacy
+> `dashboard.html.heex`. The remaining work is making `live_view_redesign` the default for new
+> pages and migrating existing routes onto it.
+
 **Goal:** replace the dashboard chrome (hero + nav_bar + footer) with the new shell
 (sidebar + topbar + bottom nav + lite footer). Every existing page continues to work; only
 the wrapping layout changes.
@@ -1294,6 +1372,14 @@ the wrapping layout changes.
 mobile bottom nav works, theme toggle still works.
 
 ### Phase 2 — Home Dashboard Redesign (1 week)
+
+> **Status: 🟡 IN PROGRESS** — all composition primitives (`glam_strip`, `stat_card_v2`,
+> `metric_row`, `activity_feed`, `section_card`) exist and are demonstrated on the
+> `/manage/redesign-test` Layouts tab. The remaining work is wiring them to live data in
+> `DashboardLive` and replacing the legacy `stat_card` / `stat_row` / `dashboard_search_widget`.
+> **Data note:** `glam_stats` is currently computed only in `VoileWeb.Dashboard.Glam.Index`
+> (`/manage/glam`), NOT in `DashboardLive` — Phase 2 must lift the `get_glam_statistics/1`
+> query so the home page can feed the GLAM strip.
 
 **Goal:** ship the new `/manage` home page.
 
@@ -1462,4 +1548,8 @@ When migrating a template to the new system:
 
 ---
 
-*Last updated: 2026-07-21 · Owner: Frontend / UX · Review cadence: every release*
+*Last updated: 2026-07-22 · Owner: Frontend / UX · Review cadence: every release*
+
+*Changelog: v1.1 (2026-07-22) — reconciled with implemented v2 artifacts, added §4.2.5 dynamic
+brand colors, corrected route count (162), marked Phase 0/1 done and Phase 2 in progress, added
+the `/manage/redesign-test` showcase reference.*

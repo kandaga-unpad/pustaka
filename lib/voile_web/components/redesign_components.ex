@@ -15,7 +15,8 @@ defmodule VoileWeb.RedesignComponents do
   use Phoenix.Component
   use Gettext, backend: VoileWeb.Gettext
 
-  import VoileWeb.CoreComponents, only: [icon: 1, theme_toggle: 1]
+  import VoileWeb.CoreComponents,
+    only: [icon: 1, theme_toggle: 1, modal: 1, input: 1, flash_group: 1, locale_switcher: 1]
 
   alias Phoenix.LiveView.JS
 
@@ -77,17 +78,31 @@ defmodule VoileWeb.RedesignComponents do
 
   def rd_sidebar(assigns) do
     ~H"""
-    <aside class="rd-sidebar hidden lg:flex flex-col w-[var(--layout-sidebar-w)]">
-      <div class="px-5 h-16 flex items-center gap-2.5 border-b border-subtle">
-        <.link navigate="/manage/redesign-test" class="flex items-center gap-2.5">
-          <img src="/images/v.png" alt="Voile" class="w-8 h-8" />
-          <span class="t-h4 text-primary">
+    <aside
+      id="rd-sidebar"
+      class="rd-sidebar hidden lg:flex flex-col"
+      phx-hook="Sidebar"
+    >
+      <div class="rd-sidebar-header">
+        <.link navigate="/manage/redesign-test" class="rd-sidebar-brand">
+          <img src="/images/v.png" alt="Voile" class="rd-sidebar-logo" />
+          <span class="rd-sidebar-brand-text t-h4 text-primary">
             {Voile.Schema.System.get_setting_value("app_name", "Voile")}
           </span>
         </.link>
+        <button
+          type="button"
+          data-rd-sidebar-toggle
+          class="rd-sidebar-toggle"
+          aria-label={gettext("Collapse sidebar")}
+          aria-expanded="true"
+        >
+          <.icon name="hero-chevron-left" class="rd-sidebar-toggle-icon-collapse w-5 h-5" />
+          <.icon name="hero-chevron-right" class="rd-sidebar-toggle-icon-expand w-5 h-5" />
+        </button>
       </div>
 
-      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <nav class="rd-sidebar-nav flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-6">
         <.rd_sidebar_section title={gettext("Workspace")}>
           <%= for item <- workspace_items(@current_path) do %>
             <.rd_sidebar_link item={item} current_path={@current_path} />
@@ -123,8 +138,8 @@ defmodule VoileWeb.RedesignComponents do
 
   defp rd_sidebar_section(assigns) do
     ~H"""
-    <div>
-      <p class="t-label text-tertiary px-3 mb-2">{@title}</p>
+    <div class="rd-sidebar-section">
+      <p class="rd-sidebar-section-title t-label text-tertiary px-3 mb-2">{@title}</p>
       <div class="space-y-0.5">{render_slot(@inner_block)}</div>
     </div>
     """
@@ -137,6 +152,7 @@ defmodule VoileWeb.RedesignComponents do
     ~H"""
     <.link
       navigate={@item.path}
+      title={@item.label}
       class={[
         "rd-nav-link",
         String.starts_with?(@current_path, @item.path) &&
@@ -147,9 +163,11 @@ defmodule VoileWeb.RedesignComponents do
       ]}
     >
       <.icon name={@item.icon} class="w-5 h-5 shrink-0" />
-      <span>{@item.label}</span>
+      <span class="rd-sidebar-label">{@item.label}</span>
       <%= if @item.shortcut do %>
-        <kbd class="ml-auto t-mono text-tertiary hidden xl:inline">{@item.shortcut}</kbd>
+        <kbd class="rd-sidebar-shortcut ml-auto t-mono text-tertiary hidden xl:inline">
+          {@item.shortcut}
+        </kbd>
       <% end %>
     </.link>
     """
@@ -159,22 +177,23 @@ defmodule VoileWeb.RedesignComponents do
 
   defp rd_sidebar_user_card(assigns) do
     ~H"""
-    <div class="border-t border-subtle p-3">
-      <div class="flex items-center gap-3 px-2 py-2">
+    <div class="rd-sidebar-user-card border-t border-subtle p-3">
+      <div class="rd-sidebar-user-row flex items-center gap-3 px-2 py-2">
         <img
           src={user_avatar(@user)}
           alt={gettext("Avatar")}
-          class="w-9 h-9 rounded-full object-cover ring-2 ring-[color:var(--color-surface-4-light)]"
+          class="rd-sidebar-avatar w-9 h-9 rounded-full object-cover ring-2 ring-subtle"
         />
-        <div class="min-w-0 flex-1">
+        <div class="rd-sidebar-user-info min-w-0 flex-1">
           <p class="text-sm font-semibold text-primary truncate">{user_name(@user)}</p>
           <p class="text-xs text-tertiary truncate">{user_role(@user)}</p>
         </div>
         <.link
           href="/users/log_out"
           method="delete"
-          class="p-2 rounded-lg text-tertiary hover:text-voile-error hover:bg-tone-error-soft transition-colors"
+          class="rd-sidebar-logout p-2 rounded-lg text-tertiary hover:text-voile-error hover:bg-tone-error-soft transition-colors"
           aria-label={gettext("Log out")}
+          title={gettext("Log out")}
         >
           <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" />
         </.link>
@@ -414,7 +433,7 @@ defmodule VoileWeb.RedesignComponents do
         <img
           src={user_avatar(@user)}
           alt={gettext("Avatar")}
-          class="w-8 h-8 rounded-full object-cover ring-2 ring-[color:var(--color-surface-4-light)]"
+          class="w-8 h-8 rounded-full object-cover ring-2 ring-subtle"
         />
       </div>
     </header>
@@ -425,11 +444,11 @@ defmodule VoileWeb.RedesignComponents do
   attr :current_path, :string, required: true
 
   defp rd_breadcrumb(assigns) do
+    assigns = assign(assigns, :indexed_items, Enum.with_index(assigns.items))
+
     ~H"""
     <nav aria-label={gettext("Breadcrumb")} class="flex items-center gap-1.5 min-w-0 text-sm">
-      <%= @items |> Enum.with_index() |> Enum.map(fn {item, idx} -> %>
-        <%!-- this is fine because we use render-like map for EEx; Phoenix supports it --%>
-        <% _ = idx %>
+      <%= for {item, idx} <- @indexed_items do %>
         <%= if item.path do %>
           <.link
             navigate={item.path}
@@ -440,10 +459,10 @@ defmodule VoileWeb.RedesignComponents do
         <% else %>
           <span class="text-primary font-semibold truncate">{item.label}</span>
         <% end %>
-        <%= if idx < length(@items) - 1 do %>
+        <%= if idx < length(@indexed_items) - 1 do %>
           <.icon name="hero-chevron-right" class="w-3.5 h-3.5 text-tertiary shrink-0" />
         <% end %>
-      <% end) %>
+      <% end %>
     </nav>
     """
   end
@@ -699,7 +718,11 @@ defmodule VoileWeb.RedesignComponents do
   attr :delta, :integer, default: 0
   attr :href, :string, required: true
 
-  defp rd_glam_tile(assigns) do
+  @doc """
+  Renders a single GLAM type tile (the public version used by `rd_glam_strip`).
+  Drop-in replacement for the legacy `glam_type_card/1`. DRAFT API — stable.
+  """
+  def rd_glam_tile(assigns) do
     %{type: type} = assigns
 
     assigns =
@@ -815,10 +838,7 @@ defmodule VoileWeb.RedesignComponents do
         <span class="text-primary font-semibold t-tabular">{@value}</span>
       </div>
       <%= if @percent do %>
-        <div
-          class="h-1.5 rounded-full overflow-hidden"
-          style="background-color: var(--color-surface-4-light)"
-        >
+        <div class="track-subtle h-1.5 rounded-full overflow-hidden">
           <div
             class={"h-full rounded-full #{tone_solid_bg(@tone)}"}
             style={"width: #{@percent}%; transition: width 600ms var(--ease-smooth)"}
@@ -862,7 +882,7 @@ defmodule VoileWeb.RedesignComponents do
 
   defp rd_activity_item(assigns) do
     ~H"""
-    <div class="flex items-start gap-3 p-2 rounded-lg hover:bg-[color:var(--color-surface-3-light)] transition-colors">
+    <div class="flex items-start gap-3 p-2 rounded-lg hover-surface transition-colors">
       <div class={"shrink-0 w-8 h-8 rounded-lg flex items-center justify-center #{tone_soft_bg(@item.tone)}"}>
         <.icon name={@item.icon} class={"w-4 h-4 #{tone_text(@item.tone)}"} />
       </div>
@@ -1009,7 +1029,7 @@ defmodule VoileWeb.RedesignComponents do
       navigate={@href}
       data-rd-cmd-result
       data-rd-cmd-search={@label}
-      class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[color:var(--color-surface-3-light)] transition-colors"
+      class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover-surface transition-colors"
     >
       <.icon name={@icon} class={"w-5 h-5 #{tone_text(@tone)}"} />
       <span class="text-sm text-primary flex-1">{@label}</span>
@@ -1094,12 +1114,446 @@ defmodule VoileWeb.RedesignComponents do
           "#{tone_soft_bg(tone)} #{tone_text(tone)} hover:brightness-95"
 
         {:outline, tone} ->
-          "border border-subtle #{tone_text(tone)} hover:bg-[color:var(--color-surface-3-light)]"
+          "border border-subtle #{tone_text(tone)} hover-surface"
 
         _ ->
           "bg-voile-primary text-white hover:brightness-110"
       end
 
     "#{base} #{size_class} #{variant_class} #{assigns[:class] || ""}"
+  end
+
+  # ===========================================================================
+  # DRAFT REPLACEMENT COMPONENTS
+  #
+  # Brand-styled successors to legacy VoileDashboardComponents /
+  # CoreComponents. These are scaffolded — the API (attr/slot) is stable and
+  # each renders a v1 using the design tokens — but NONE are adopted by any
+  # real page yet. Review them on the /manage/redesign-test "Legacy" tab.
+  # ===========================================================================
+
+  # ---------- rd_pagination (replaces VoileDashboardComponents.pagination/1, 21 files) ----------
+
+  @doc """
+  Brand-styled pagination. Drop-in replacement for the legacy `pagination/1`.
+
+  ## Modes
+    * **link** — pass `:path`; renders `<.link patch>` (URL built from `:params`).
+    * **button** — omit `:path`; renders `<.button phx-click={event} phx-value-page>`.
+
+  DRAFT — not yet adopted.
+  """
+  attr :page, :integer, required: true
+  attr :total_pages, :integer, required: true
+  attr :path, :string, default: nil
+  attr :event, :string, default: "paginate"
+  attr :params, :map, default: %{}
+
+  def rd_pagination(assigns) do
+    assigns = assign(assigns, :range, rd_pagination_range(assigns.page, assigns.total_pages))
+
+    ~H"""
+    <nav class="flex items-center gap-1" aria-label={gettext("Pagination")}>
+      <.rd_page_button
+        page={@page - 1}
+        disabled={@page <= 1}
+        path={@path}
+        event={@event}
+        params={@params}
+      >
+        <.icon name="hero-chevron-left" class="w-4 h-4" />
+      </.rd_page_button>
+
+      <%= for item <- @range do %>
+        <%= if item == :ellipsis do %>
+          <span class="px-2 text-tertiary t-mono">…</span>
+        <% else %>
+          <.rd_page_button
+            page={item}
+            active={item == @page}
+            path={@path}
+            event={@event}
+            params={@params}
+          >
+            {item}
+          </.rd_page_button>
+        <% end %>
+      <% end %>
+
+      <.rd_page_button
+        page={@page + 1}
+        disabled={@page >= @total_pages}
+        path={@path}
+        event={@event}
+        params={@params}
+      >
+        <.icon name="hero-chevron-right" class="w-4 h-4" />
+      </.rd_page_button>
+    </nav>
+    """
+  end
+
+  attr :page, :integer, required: true
+  attr :active, :boolean, default: false
+  attr :disabled, :boolean, default: false
+  attr :path, :string, default: nil
+  attr :event, :string, default: "paginate"
+  attr :params, :map, default: %{}
+  slot :inner_block, required: true
+
+  defp rd_page_button(assigns) do
+    ~H"""
+    <%= if @disabled do %>
+      <span
+        class="inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg text-tertiary cursor-not-allowed"
+        aria-disabled="true"
+      >
+        {render_slot(@inner_block)}
+      </span>
+    <% else %>
+      <%= if @path do %>
+        <.link
+          patch={rd_page_url(@path, @page, @params)}
+          class={rd_page_class(@active)}
+          aria-label={gettext("Page %{page}", page: @page)}
+          aria-current={@active && "page"}
+        >
+          {render_slot(@inner_block)}
+        </.link>
+      <% else %>
+        <button
+          type="button"
+          phx-click={@event}
+          phx-value-page={@page}
+          class={rd_page_class(@active)}
+          aria-current={@active && "page"}
+        >
+          {render_slot(@inner_block)}
+        </button>
+      <% end %>
+    <% end %>
+    """
+  end
+
+  defp rd_page_class(true),
+    do:
+      "inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg bg-voile-primary text-white font-semibold"
+
+  defp rd_page_class(_),
+    do:
+      "inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg text-secondary hover:text-primary hover:bg-tone-brand-soft transition-colors"
+
+  defp rd_page_url(path, page, params) do
+    query = params |> Map.put("page", page) |> URI.encode_query()
+    "#{path}?#{query}"
+  end
+
+  defp rd_pagination_range(_page, total) when total <= 7, do: Enum.to_list(1..total)
+
+  defp rd_pagination_range(page, total) do
+    cond do
+      page <= 3 -> [1, 2, 3, 4, :ellipsis, total]
+      page >= total - 2 -> [1, :ellipsis, total - 3, total - 2, total - 1, total]
+      true -> [1, :ellipsis, page - 1, page, page + 1, :ellipsis, total]
+    end
+  end
+
+  # ---------- rd_settings_shell (replaces dashboard_settings_sidebar/plugin_settings_sidebar/side_bar_dashboard) ----------
+
+  @doc """
+  Two-pane "sub-nav + content" shell for settings, plugins, master-data and
+  metaresource pages. Replaces `dashboard_settings_sidebar/1` (12 files),
+  `plugin_settings_sidebar/1` (3 files), and the inline master/metaresource
+  sidebars in `dashboard.html.heex`.
+
+  `items` is a list of maps: `%{label: "...", path: "/...", icon: "hero-..."}`
+  (icon optional). DRAFT — not yet adopted.
+  """
+  attr :title, :string, default: nil
+  attr :items, :list, required: true
+  attr :current_path, :string, default: nil
+  slot :inner_block, required: true
+
+  def rd_settings_shell(assigns) do
+    ~H"""
+    <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
+      <aside class="rd-card p-3 h-fit lg:sticky lg:top-20">
+        <%= if @title do %>
+          <p class="t-label text-tertiary px-3 mb-2">{@title}</p>
+        <% end %>
+        <nav class="space-y-0.5">
+          <%= for item <- @items do %>
+            <.link
+              navigate={item.path}
+              class={[
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
+                rd_settings_active?(@current_path, item) &&
+                  "bg-tone-brand-soft text-voile-primary font-semibold",
+                !rd_settings_active?(@current_path, item) &&
+                  "text-secondary hover:text-primary hover:bg-tone-brand-soft"
+              ]}
+            >
+              <%= if item[:icon] do %>
+                <.icon name={item.icon} class="w-4 h-4 shrink-0" />
+              <% end %>
+              <span class="truncate">{item.label}</span>
+            </.link>
+          <% end %>
+        </nav>
+      </aside>
+      <div class="min-w-0">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  defp rd_settings_active?(current_path, %{path: path}) do
+    String.starts_with?(current_path || "", path)
+  end
+
+  # ---------- rd_table (replaces CoreComponents.table) ----------
+
+  @doc """
+  Brand-styled data table. Replaces the core `<.table>` with redesign tokens:
+  brand-tinted header, row hover, optional empty slot, and an actions column.
+
+  Columns use `:let={row}`:
+
+      <:col :let={row} label="Title">{row.title}</:col>
+
+  DRAFT — not yet adopted. (LiveStream support is pending; currently iterates a list.)
+  """
+  attr :id, :string, required: true
+  attr :rows, :any, required: true
+  attr :row_id, :any, default: nil
+
+  slot :col, required: true do
+    attr :label, :string
+  end
+
+  slot :action
+  slot :empty
+
+  def rd_table(assigns) do
+    ~H"""
+    <div class="rd-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-subtle">
+              <th
+                :for={col <- @col}
+                class="t-label text-secondary text-left font-semibold px-4 py-3 whitespace-nowrap"
+              >
+                {col[:label]}
+              </th>
+              <%= if @action do %>
+                <th class="t-label text-secondary text-right font-semibold px-4 py-3"></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody id={@id}>
+            <tr
+              :for={row <- @rows}
+              id={@row_id && @row_id.(row)}
+              class="border-b border-subtle last:border-0 hover-surface transition-colors"
+            >
+              <td :for={col <- @col} class="px-4 py-3 text-primary align-top">
+                {render_slot(col, row)}
+              </td>
+              <%= if @action do %>
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  <%= for action <- @action do %>
+                    {render_slot(action, row)}
+                  <% end %>
+                </td>
+              <% end %>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <%= if @rows == [] && @empty do %>
+        <div class="p-6">{render_slot(@empty)}</div>
+      <% end %>
+    </div>
+    """
+  end
+
+  # ---------- rd_input (brand restyle of CoreComponents.input) ----------
+
+  @doc """
+  Brand restyle wrapper around the core `<.input>`. Forwards the common attrs
+  and adds the `rd-input` class so the redesign focus ring (2px voile-primary,
+  2px offset) applies once the CSS lands. DRAFT — focus-ring CSS pending.
+  """
+  attr :field, Phoenix.HTML.FormField, default: nil
+  attr :name, :any
+  attr :value, :any
+  attr :type, :string, default: "text"
+  attr :label, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def rd_input(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :rd_class,
+        ["rd-input", assigns[:class]] |> Enum.reject(&is_nil/1) |> Enum.join(" ")
+      )
+
+    ~H"""
+    <.input
+      field={@field}
+      name={@name}
+      value={@value}
+      type={@type}
+      label={@label}
+      class={@rd_class}
+      {@rest}
+    />
+    """
+  end
+
+  # ---------- rd_search_insights (replaces search_stats_widget/1) ----------
+
+  @doc """
+  Brand-styled search-insights widget. Replaces `search_stats_widget/1`.
+  `stats` shape: `%{total_searches: n, popular_queries: [{q, count}], recent_activity: [...]}`.
+  DRAFT — not yet adopted.
+  """
+  attr :stats, :map, default: %{}
+  attr :action_path, :string, default: nil
+
+  def rd_search_insights(assigns) do
+    stats = assigns.stats
+
+    assigns =
+      assigns
+      |> assign(:total, stats[:total_searches] || 0)
+      |> assign(:popular, stats[:popular_queries] || [])
+
+    ~H"""
+    <div class="rd-card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="t-h3 text-primary text-lg">{gettext("Search insights")}</h3>
+        <%= if @action_path do %>
+          <.link navigate={@action_path} class="text-sm text-voile-primary hover:underline">
+            {gettext("Analytics")} →
+          </.link>
+        <% end %>
+      </div>
+      <p class="t-stat text-primary text-2xl">{@total}</p>
+      <p class="t-label text-tertiary mt-1">{gettext("Searches today")}</p>
+      <%= if @popular != [] do %>
+        <p class="t-label text-tertiary mt-4 mb-2">{gettext("Popular queries")}</p>
+        <div class="flex flex-wrap gap-1.5">
+          <%= for {query, count} <- Enum.take(@popular, 5) do %>
+            <span class="rd-chip">
+              {query}<span class="text-tertiary t-mono text-[10px]">{count}</span>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  # ---------- rd_modal + rd_confirm_delete (replaces collection_modal/delete_modal) ----------
+
+  @doc """
+  Brand-styled modal shell. Replaces `collection_modal/1`. Wraps the core
+  `<.modal>` with an optional eyebrow + title + body + optional footer.
+  DRAFT — not yet adopted.
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
+  attr :eyebrow, :string, default: nil
+  attr :title, :string, default: nil
+  slot :inner_block, required: true
+  slot :footer
+
+  def rd_modal(assigns) do
+    ~H"""
+    <.modal id={@id} show={@show} on_cancel={@on_cancel}>
+      <%= if @eyebrow do %>
+        <p class="t-label text-voile-primary mb-1">{@eyebrow}</p>
+      <% end %>
+      <%= if @title do %>
+        <h2 class="t-h3 text-primary text-xl mb-3">{@title}</h2>
+      <% end %>
+      <div class="text-secondary text-sm">{render_slot(@inner_block)}</div>
+      <%= if @footer do %>
+        <div class="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-subtle">
+          {render_slot(@footer)}
+        </div>
+      <% end %>
+    </.modal>
+    """
+  end
+
+  @doc """
+  Destructive confirmation modal. Replaces `delete_modal/1` and the ad-hoc
+  delete modals. DRAFT — not yet adopted.
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :title, :string, default: nil
+  attr :confirm_label, :string, default: gettext("Delete")
+  attr :on_cancel, JS, default: %JS{}
+  attr :on_confirm, JS, default: %JS{}
+  slot :inner_block, required: true
+
+  def rd_confirm_delete(assigns) do
+    ~H"""
+    <.rd_modal
+      id={@id}
+      show={@show}
+      on_cancel={@on_cancel}
+      eyebrow={gettext("Destructive action")}
+      title={@title || gettext("Are you sure?")}
+    >
+      <p>{render_slot(@inner_block)}</p>
+      <:footer>
+        <.rd_button tone={:brand} variant={:outline} size={:md} phx-click={@on_cancel}>
+          {gettext("Cancel")}
+        </.rd_button>
+        <.rd_button tone={:error} variant={:solid} size={:md} phx-click={@on_confirm}>
+          <.icon name="hero-trash" class="w-4 h-4" />
+          {@confirm_label}
+        </.rd_button>
+      </:footer>
+    </.rd_modal>
+    """
+  end
+
+  # ---------- rd_flash_group + rd_locale_switcher (brand restyle of core) ----------
+
+  @doc """
+  Brand-styled flash group. Drop-in for the core `<.flash_group>` used at the
+  top of the redesign layout. DRAFT — delegates to core; brand restyle pending.
+  """
+  attr :flash, :map, required: true
+  attr :id, :string, default: "rd-flash-group"
+
+  def rd_flash_group(assigns) do
+    ~H"""
+    <.flash_group flash={@flash} id={@id} />
+    """
+  end
+
+  @doc """
+  Brand-styled locale switcher. Drop-in for the core `<.locale_switcher>`.
+  DRAFT — delegates to core; brand restyle pending.
+  """
+  attr :current_path, :string, default: "/"
+  attr :class, :string, default: nil
+
+  def rd_locale_switcher(assigns) do
+    ~H"""
+    <.locale_switcher current_path={@current_path} class={@class} />
+    """
   end
 end

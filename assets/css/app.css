@@ -993,6 +993,33 @@
     border-color: var(--color-surface-4-dark);
   }
 
+  /* Hover background — dark-aware (use instead of hover:bg-[var(--surface-3-light)]) */
+  .hover-surface {
+    transition: background-color 180ms var(--ease-smooth);
+  }
+  .hover-surface:hover {
+    background-color: var(--color-surface-3-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .hover-surface:hover {
+    background-color: var(--color-surface-3-dark);
+  }
+
+  /* Subtle ring (avatar etc.) — dark-aware */
+  .ring-subtle {
+    box-shadow: 0 0 0 2px var(--color-surface-4-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .ring-subtle {
+    box-shadow: 0 0 0 2px var(--color-surface-4-dark);
+  }
+
+  /* Subtle divider track (progress bars) — dark-aware */
+  .track-subtle {
+    background-color: var(--color-surface-4-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .track-subtle {
+    background-color: var(--color-surface-4-dark);
+  }
+
   .text-primary {
     color: var(--color-text-primary-light);
   }
@@ -1162,7 +1189,8 @@
 @layer components {
   .rd-shell {
     display: flex;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     background-color: var(--color-surface-1-light);
   }
   :where([data-theme="dark"], [data-theme="dark"] *) .rd-shell {
@@ -1174,10 +1202,110 @@
     flex-shrink: 0;
     border-right: 1px solid var(--color-surface-4-light);
     background-color: var(--color-surface-2-light);
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    align-self: flex-start;
+    overflow: hidden;
+    transition: width 180ms var(--ease-smooth);
   }
   :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar {
     border-right-color: var(--color-surface-4-dark);
     background-color: color-mix(in oklab, var(--color-surface-1-dark) 70%, var(--color-voile-primary) 6%);
+  }
+
+  /* Sidebar header (brand + collapse toggle) */
+  .rd-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    height: var(--layout-header-h);
+    padding: 0 0.75rem 0 1.25rem;
+    border-bottom: 1px solid var(--color-surface-4-light);
+    flex-shrink: 0;
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-header {
+    border-bottom-color: var(--color-surface-4-dark);
+  }
+  .rd-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+  }
+  .rd-sidebar-logo {
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+  }
+  .rd-sidebar-brand-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rd-sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    color: var(--color-text-secondary-light);
+    transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
+  }
+  .rd-sidebar-toggle:hover {
+    background-color: var(--color-surface-3-light);
+    color: var(--color-text-primary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-toggle {
+    color: var(--color-text-secondary-dark);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-toggle:hover {
+    background-color: var(--color-surface-3-dark);
+    color: var(--color-text-primary-dark);
+  }
+  /* Only the "collapse" chevron shows when expanded; flip when collapsed. */
+  .rd-sidebar-toggle-icon-expand {
+    display: none;
+  }
+
+  /* Collapsed state (icon rail). Toggled by the Sidebar JS hook. */
+  .rd-sidebar.rd-sidebar-collapsed {
+    width: var(--layout-sidebar-collapsed-w);
+  }
+  .rd-sidebar-collapsed .rd-sidebar-header {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    height: auto;
+    min-height: var(--layout-header-h);
+    padding: 0.625rem 0;
+  }
+  .rd-sidebar-collapsed .rd-sidebar-brand-text,
+  .rd-sidebar-collapsed .rd-sidebar-section-title,
+  .rd-sidebar-collapsed .rd-sidebar-label,
+  .rd-sidebar-collapsed .rd-sidebar-shortcut,
+  .rd-sidebar-collapsed .rd-sidebar-user-info,
+  .rd-sidebar-collapsed .rd-sidebar-logout {
+    display: none;
+  }
+  .rd-sidebar-collapsed .rd-sidebar-user-row {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .rd-sidebar-collapsed .rd-sidebar-toggle-icon-collapse {
+    display: none;
+  }
+  .rd-sidebar-collapsed .rd-sidebar-toggle-icon-expand {
+    display: inline-flex;
+  }
+  .rd-sidebar-collapsed .rd-nav-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .rd-main {
@@ -1185,7 +1313,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
+    height: 100dvh;
   }
 
   .rd-topbar {
