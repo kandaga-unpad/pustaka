@@ -13,6 +13,15 @@ defmodule VoileWeb.PropertyController do
       delete: ["metadata.manage"]
     }
 
+  defp breadcrumb(last) do
+    [
+      %{label: gettext("Manage"), path: "/manage"},
+      %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+      %{label: gettext("Property"), path: "/manage/metaresource/metadata_properties"},
+      %{label: last, path: nil}
+    ]
+  end
+
   def index(conn, params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
     vocabulary_id = Map.get(params, "vocabulary_id", nil)
@@ -28,6 +37,7 @@ defmodule VoileWeb.PropertyController do
       end
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("All")))
     |> assign(:metadata_properties, metadata_properties)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
@@ -39,6 +49,7 @@ defmodule VoileWeb.PropertyController do
     changeset = Metadata.change_property(%Property{})
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("New")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:changeset, changeset)
     |> render(:new)
@@ -61,6 +72,7 @@ defmodule VoileWeb.PropertyController do
     vocabulary_list = Metadata.list_metadata_vocabularies()
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Show")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:property, property)
     |> render(:show)
@@ -71,9 +83,8 @@ defmodule VoileWeb.PropertyController do
     vocabulary_list = Metadata.list_metadata_vocabularies()
     changeset = Metadata.change_property(property)
 
-    dbg(changeset)
-
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Edit")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:property, property)
     |> assign(:changeset, changeset)

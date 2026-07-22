@@ -85,10 +85,10 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
             </div>
           </div>
           <!-- Search Results -->
-          <div class="border rounded max-h-60 overflow-y-auto bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <div class="border rounded max-h-60 overflow-y-auto bg-gray-50 dark:bg-gray-800 border-subtle">
             <div
               :if={Enum.empty?(@properties) && @search_term != ""}
-              class="p-4 text-center text-gray-500 dark:text-gray-400"
+              class="p-4 text-center text-tertiary"
             >
               <%= case {@loading, @search_term, @properties} do %>
                 <% {true, _, _} -> %>
@@ -102,7 +102,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
             <%= for property <- @properties do %>
               <div
-                class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600"
+                class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-subtle"
                 phx-click="add_property"
                 phx-value-id={property.id}
                 phx-target={@myself}
@@ -131,7 +131,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
             <div
               :for={{dom_id, prop} <- @streams.selected_props}
               id={dom_id}
-              class="p-3 border rounded bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex justify-between items-start gap-4"
+              class="p-3 border rounded surface-card border-subtle flex justify-between items-start gap-4"
             >
               <div class="cursor-move pt-1">
                 <.icon
@@ -168,7 +168,7 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.FormComponent do
 
               <button
                 type="button"
-                class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 mt-1"
+                class="text-red-500 hover:text-voile-error dark:hover:text-red-300 mt-1"
                 phx-click="remove_property"
                 phx-value-id={dom_id}
                 phx-target={@myself}

@@ -1,56 +1,76 @@
-<.header>
-  Listing Resource template property
-  <:actions>
-    <.link href={~p"/manage/metaresource/resource_templ_property/new"}>
-      <.button>New Resource template property</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="resource_template_property"
-  rows={@resource_template_property_collection}
-  row_click={&JS.navigate(~p"/manage/metaresource/resource_templ_property/#{&1}")}
+<.voile_page_header
+  eyebrow={gettext("Metaresource")}
+  title={gettext("Template property")}
+  icon="hero-rectangle-group"
+  tone={:brand}
 >
-  <:col :let={resource_template_property} label="Template Name">
-    {resource_template_property.resource_template.label}
-  </:col>
-
-  <:col :let={resource_template_property} label="Property Name">
-    {resource_template_property.property.label}
-  </:col>
-
-  <:col :let={resource_template_property} label="Override label">
-    {resource_template_property.override_label}
-  </:col>
-
-  <:col :let={resource_template_property} label="Position">
-    {resource_template_property.position}
-  </:col>
-
-  <:action :let={resource_template_property}>
-    <div class="sr-only">
-      <.link navigate={
-        ~p"/manage/metaresource/resource_templ_property/#{resource_template_property}"
-      }>
-        Show
-      </.link>
-    </div>
-
-    <.link navigate={
-      ~p"/manage/metaresource/resource_templ_property/#{resource_template_property}/edit"
-    }>
-      Edit
-    </.link>
-  </:action>
-
-  <:action :let={resource_template_property}>
-    <.link
-      href={~p"/manage/metaresource/resource_templ_property/#{resource_template_property}"}
-      method="delete"
-      data-confirm="Are you sure?"
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/metaresource/resource_templ_property/new"}
     >
-      Delete
-    </.link>
-  </:action>
-</.table>
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New Resource template property")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
+
+<.voile_settings_shell
+  title={gettext("Metaresource")}
+  items={voile_metaresource_nav_items()}
+  current_path={@current_path}
+>
+  <.table
+    id="resource_template_property"
+    rows={@resource_template_property_collection}
+    row_click={&JS.navigate(~p"/manage/metaresource/resource_templ_property/#{&1}")}
+  >
+    <:col :let={resource_template_property} label="Template Name">
+      {resource_template_property.resource_template.label}
+    </:col>
+
+    <:col :let={resource_template_property} label="Property Name">
+      {resource_template_property.property.label}
+    </:col>
+
+    <:col :let={resource_template_property} label="Override label">
+      {resource_template_property.override_label}
+    </:col>
+
+    <:col :let={resource_template_property} label="Position">
+      {resource_template_property.position}
+    </:col>
+
+    <:action :let={resource_template_property}>
+      <div class="sr-only">
+        <.link navigate={
+          ~p"/manage/metaresource/resource_templ_property/#{resource_template_property}"
+        }>
+          Show
+        </.link>
+      </div>
+
+      <.link navigate={
+        ~p"/manage/metaresource/resource_templ_property/#{resource_template_property}/edit"
+      }>
+        Edit
+      </.link>
+    </:action>
+
+    <:action :let={resource_template_property}>
+      <.link
+        href={~p"/manage/metaresource/resource_templ_property/#{resource_template_property}"}
+        method="delete"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  <.voile_pagination
+    page={@page}
+    total_pages={@total_pages}
+    path={~p"/manage/metaresource/resource_templ_property"}
+  />
+</.voile_settings_shell>

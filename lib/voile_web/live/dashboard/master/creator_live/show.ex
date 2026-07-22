@@ -28,6 +28,11 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:breadcrumb, [
+       %{label: gettext("Manage"), path: "/manage"},
+       %{label: gettext("Master data"), path: "/manage/master"},
+       %{label: gettext("Creators"), path: nil}
+     ])
      |> assign(:creator, Master.get_creator!(id))}
   end
 

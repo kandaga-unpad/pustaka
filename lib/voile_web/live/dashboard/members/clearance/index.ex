@@ -231,9 +231,9 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
 
   defp clearance_nav(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
+    <div class="surface-card shadow-sm rounded-lg">
       <nav
-        class="flex gap-1 px-4 border-b border-gray-200 dark:border-gray-600"
+        class="flex gap-1 px-4 border-b border-subtle"
         aria-label={gettext("Clearance navigation")}
       >
         <.link
@@ -300,7 +300,7 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 bg-gray-100 dark:bg-gray-800 min-h-screen p-6 rounded-lg">
+    <div class="space-y-6 surface-raised min-h-screen p-6 rounded-lg">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: gettext("Manage"), path: ~p"/manage"},
@@ -312,10 +312,10 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
       <.clearance_nav active={:letters} />
 
       <%!-- Page Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold text-primary">
               {gettext("Clearance Letters")}
             </h1>
             <p class="text-gray-600 dark:text-gray-300 mt-1">
@@ -323,14 +323,14 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
             </p>
           </div>
 
-          <div class="text-sm text-gray-500 dark:text-gray-400">
+          <div class="text-sm text-tertiary">
             {gettext("Total: %{count}", count: @total_count)}
           </div>
         </div>
       </div>
 
       <%!-- Filters --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-4">
+      <div class="surface-card shadow-sm rounded-lg p-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
           <%!-- Search --%>
           <div class="flex-1">
@@ -377,13 +377,13 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
       </div>
 
       <%= if @is_super_admin do %>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 class="text-lg font-semibold text-primary">
                 {gettext("Create Clearance Letter for Next Degree")}
               </h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p class="text-sm text-tertiary mt-1">
                 {gettext(
                   "Select an existing member and provide a new identifier for their next degree clearance letter."
                 )}
@@ -472,27 +472,27 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
       <% end %>
 
       <%!-- Table --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg overflow-hidden">
+      <div class="surface-card shadow-sm rounded-lg overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
             <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                   {gettext("Letter Number")}
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                   {gettext("Member")}
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
+                <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider hidden md:table-cell">
                   {gettext("Node")}
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
+                <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider hidden lg:table-cell">
                   {gettext("Generated At")}
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                   {gettext("Status")}
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-right text-xs font-medium text-tertiary uppercase tracking-wider">
                   {gettext("Actions")}
                 </th>
               </tr>
@@ -500,26 +500,26 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
             <tbody
               id="letters-table"
               phx-update="stream"
-              class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600"
+              class="surface-card divide-y divide-gray-200 dark:divide-gray-600"
             >
               <tr
                 :for={{id, letter} <- @streams.letters}
                 id={id}
                 class="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
-                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                <td class="px-4 py-3 text-sm font-medium text-primary">
                   {letter.letter_number}
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                <td class="px-4 py-3 text-sm text-secondary">
                   <div>{letter.member_snapshot["fullname"]}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <div class="text-xs text-tertiary">
                     {letter.member_snapshot["identifier"]}
                   </div>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
+                <td class="px-4 py-3 text-sm text-tertiary hidden md:table-cell">
                   {letter.member_snapshot["node_name"] || gettext("—")}
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">
+                <td class="px-4 py-3 text-sm text-tertiary hidden lg:table-cell">
                   {FormatIndonesiaTime.format_utc_to_jakarta(letter.generated_at)}
                 </td>
                 <td class="px-4 py-3">
@@ -540,7 +540,7 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
 
           <%!-- Empty state --%>
           <%= if @total_count == 0 do %>
-            <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div class="text-center py-12 text-tertiary">
               <.icon name="hero-document-text" class="w-12 h-12 mx-auto mb-3 opacity-40" />
               <p class="text-sm">{gettext("No clearance letters found.")}</p>
             </div>
@@ -549,8 +549,8 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Index do
 
         <%!-- Pagination --%>
         <%= if @total_pages > 1 do %>
-          <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-600">
-            <div class="text-sm text-gray-700 dark:text-gray-300">
+          <div class="flex items-center justify-between px-4 py-3 border-t border-subtle">
+            <div class="text-sm text-secondary">
               {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
             </div>
 

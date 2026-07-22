@@ -13,14 +13,40 @@ defmodule VoileWeb.ResourceTemplatePropertyController do
       delete: ["metadata.manage"]
     }
 
-  def index(conn, _params) do
-    resource_template_property = Metadata.list_resource_template_property()
-    render(conn, :index, resource_template_property_collection: resource_template_property)
+  defp breadcrumb(last) do
+    [
+      %{label: gettext("Manage"), path: "/manage"},
+      %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+      %{
+        label: gettext("Template property"),
+        path: "/manage/metaresource/resource_templ_property"
+      },
+      %{label: last, path: nil}
+    ]
+  end
+
+  def index(conn, params) do
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = 10
+
+    {resource_template_property, total_pages, _} =
+      Metadata.list_metadata_page(:resource_template_property, page, per_page)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("All")))
+    |> assign(:resource_template_property_collection, resource_template_property)
+    |> assign(:page, page)
+    |> assign(:total_pages, total_pages)
+    |> render(:index)
   end
 
   def new(conn, _params) do
     changeset = Metadata.change_resource_template_property(%ResourceTemplateProperty{})
-    render(conn, :new, changeset: changeset)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("New")))
+    |> assign(:changeset, changeset)
+    |> render(:new)
   end
 
   def create(conn, %{"resource_template_property" => resource_template_property_params}) do
@@ -39,17 +65,22 @@ defmodule VoileWeb.ResourceTemplatePropertyController do
 
   def show(conn, %{"id" => id}) do
     resource_template_property = Metadata.get_resource_template_property!(id)
-    render(conn, :show, resource_template_property: resource_template_property)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Show")))
+    |> assign(:resource_template_property, resource_template_property)
+    |> render(:show)
   end
 
   def edit(conn, %{"id" => id}) do
     resource_template_property = Metadata.get_resource_template_property!(id)
     changeset = Metadata.change_resource_template_property(resource_template_property)
 
-    render(conn, :edit,
-      resource_template_property: resource_template_property,
-      changeset: changeset
-    )
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Edit")))
+    |> assign(:resource_template_property, resource_template_property)
+    |> assign(:changeset, changeset)
+    |> render(:edit)
   end
 
   def update(conn, %{

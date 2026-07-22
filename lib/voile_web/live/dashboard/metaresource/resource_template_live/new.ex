@@ -10,6 +10,12 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.New do
      socket
      |> assign(:resource_template, %ResourceTemplate{})
      |> assign(:page_title, gettext("New Resource Template"))
+     |> assign(:breadcrumb, [
+       %{label: gettext("Manage"), path: "/manage"},
+       %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+       %{label: gettext("Resource template"), path: "/manage/metaresource/resource_template"},
+       %{label: gettext("New"), path: nil}
+     ])
      |> assign(:live_action, :new)}
   end
 

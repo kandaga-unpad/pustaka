@@ -81,16 +81,16 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
   def render(assigns) do
     ~H"""
     <section class="flex flex-col gap-4">
-      <div class="flex flex-col gap-4 p-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
+      <div class="flex flex-col gap-4 p-4 rounded-lg shadow-md surface-card">
         <h1 class="text-2xl font-bold">{gettext("Catalog")}</h1>
 
         <div class="w-full">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="rounded-lg p-4 bg-gray-50 dark:bg-gray-700 shadow flex items-center gap-4">
-              <div class="p-3 rounded-md bg-blue-50 dark:bg-blue-900/30">
+              <div class="p-3 rounded-md bg-tone-info-soft">
                 <!-- GLAM icon small -->
                 <svg
-                  class="h-6 w-6 text-blue-600 dark:text-blue-300"
+                  class="h-6 w-6 text-voile-info"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -116,7 +116,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <%= if is_nil(@count_collections) do %>
                       <span class="inline-flex items-center gap-2">
                         <svg
-                          class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-300"
+                          class="animate-spin h-5 w-5 text-voile-info"
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="none"
@@ -147,7 +147,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <% end %>
                   </div>
 
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <div class="text-xs text-tertiary">
                     {gettext("collections across nodes")}
                   </div>
                 </div>
@@ -173,10 +173,10 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
             </div>
 
             <div class="rounded-lg p-4 bg-gray-50 dark:bg-gray-700 shadow flex items-center gap-4">
-              <div class="p-3 rounded-md bg-green-50 dark:bg-green-900/30">
+              <div class="p-3 rounded-md bg-tone-success-soft">
                 <!-- gallery small icon -->
                 <svg
-                  class="h-6 w-6 text-green-600 dark:text-green-300"
+                  class="h-6 w-6 text-voile-success"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -199,7 +199,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <%= if is_nil(@count_items) do %>
                       <span class="inline-flex items-center gap-2">
                         <svg
-                          class="animate-spin h-5 w-5 text-green-600 dark:text-green-300"
+                          class="animate-spin h-5 w-5 text-voile-success"
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="none"
@@ -230,7 +230,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <% end %>
                   </div>
 
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <div class="text-xs text-tertiary">
                     {gettext("items across nodes")}
                   </div>
                 </div>
@@ -298,7 +298,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <div>
                       <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
-                          <div class="p-1.5 rounded-md bg-gray-100 dark:bg-gray-900">
+                          <div class="p-1.5 rounded-md surface-raised">
                             <svg
                               class="h-4 w-4 text-gray-600 dark:text-gray-300"
                               xmlns="http://www.w3.org/2000/svg"
@@ -371,7 +371,7 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
                     <div>
                       <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
-                          <div class="p-1.5 rounded-md bg-gray-100 dark:bg-gray-900">
+                          <div class="p-1.5 rounded-md surface-raised">
                             <svg
                               class="h-4 w-4 text-gray-600 dark:text-gray-300"
                               xmlns="http://www.w3.org/2000/svg"
@@ -467,6 +467,10 @@ defmodule VoileWeb.Dashboard.Catalog.Index do
       |> assign(:item_availability_counts, nil)
       |> assign(:count_all_nodes, [])
       |> assign(:page_title, gettext("Catalog Dashboard"))
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("Catalog"), path: nil}
+      ])
 
     # Defer loading counts to handle_info so UI mounts fast
     if connected?(socket), do: send(self(), :load_counts)

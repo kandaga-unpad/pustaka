@@ -13,6 +13,15 @@ defmodule VoileWeb.ResourceClassController do
       delete: ["metadata.manage"]
     }
 
+  defp breadcrumb(last) do
+    [
+      %{label: gettext("Manage"), path: "/manage"},
+      %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+      %{label: gettext("Resource class"), path: "/manage/metaresource/resource_class"},
+      %{label: last, path: nil}
+    ]
+  end
+
   def index(conn, _params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(conn.params, "page"))
     search_keyword = Map.get(conn.params, "search", "")
@@ -22,6 +31,7 @@ defmodule VoileWeb.ResourceClassController do
       Metadata.list_resource_classes_paginated(page, per_page, search_keyword)
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("All")))
     |> assign(:resource_class_collection, resource_class_collection)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
@@ -33,6 +43,7 @@ defmodule VoileWeb.ResourceClassController do
     changeset = Metadata.change_resource_class(%ResourceClass{})
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("New")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:changeset, changeset)
     |> render(:new)
@@ -55,6 +66,7 @@ defmodule VoileWeb.ResourceClassController do
     vocabulary_list = Metadata.list_metadata_vocabularies()
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Show")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:resource_class, resource_class)
     |> render(:show)
@@ -66,6 +78,7 @@ defmodule VoileWeb.ResourceClassController do
     changeset = Metadata.change_resource_class(resource_class)
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Edit")))
     |> assign(:vocabulary_list, vocabulary_list)
     |> assign(:resource_class, resource_class)
     |> assign(:changeset, changeset)

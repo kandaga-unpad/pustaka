@@ -160,7 +160,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Submitted do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     current_user = socket.assigns.current_scope.user
     per_page = socket.assigns.per_page
     search = socket.assigns.search

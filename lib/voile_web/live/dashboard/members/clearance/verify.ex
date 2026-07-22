@@ -89,9 +89,9 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Verify do
 
   defp clearance_nav(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
+    <div class="surface-card shadow-sm rounded-lg">
       <nav
-        class="flex gap-1 px-4 border-b border-gray-200 dark:border-gray-600"
+        class="flex gap-1 px-4 border-b border-subtle"
         aria-label={gettext("Clearance navigation")}
       >
         <.link
@@ -144,7 +144,7 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Verify do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 bg-gray-100 dark:bg-gray-800 min-h-screen p-6 rounded-lg">
+    <div class="space-y-6 surface-raised min-h-screen p-6 rounded-lg">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: gettext("Manage"), path: ~p"/manage"},
@@ -157,16 +157,16 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Verify do
       <.clearance_nav active={:verify} />
 
       <%!-- Page header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+      <div class="surface-card shadow-sm rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-primary">
           {gettext("Verify & Revoke Clearance Letters")}
         </h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+        <p class="text-tertiary mt-1 text-sm">
           {gettext("Search a letter by its unique ID, then revoke it if necessary.")}
         </p>
       </div>
 
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6 max-w-xl">
+      <div class="surface-card shadow-sm rounded-lg p-6 max-w-xl">
         <%!-- Search form --%>
         <form phx-submit="verify" id="verify-form" class="flex gap-2">
           <input

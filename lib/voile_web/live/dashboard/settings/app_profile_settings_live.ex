@@ -46,7 +46,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
         |> assign(:current_user, current_user)
         |> assign(:app_logo_preview, System.get_setting_value("app_logo_url", nil))
         |> assign(:node_options, node_options)
-        |> assign(:current_path, "/manage/settings/app_profile")
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Settings"), path: "/manage/settings"},
+          %{label: gettext("Application"), path: nil}
+        ])
         |> allow_upload(:app_logo,
           accept: ~w(.jpg .jpeg .png .webp .svg),
           max_entries: 1,
@@ -62,22 +66,24 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header>
-      <h4>{gettext("App Profile Settings")}</h4>
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("Application profile")}
+      description={gettext("Manage the application profile, branding, and default node.")}
+      icon="hero-cog-6-tooth"
+      tone={:brand}
+    />
 
-      <:subtitle>{gettext("Manage the application profile")}</:subtitle>
-    </.header>
-
-    <div class="flex flex-col md:flex-row gap-4">
-      <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar current_user={@current_user} is_super_admin={@is_super_admin} />
-      </div>
-
-      <div class="w-full bg-white dark:bg-gray-700 p-4 rounded-lg">
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
+      <div class="voile-card p-5">
         <.form for={%{}} phx-submit="save" phx-change="validate">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label class="block text-sm font-medium text-secondary mb-2">
                 {gettext("Application Logo")}
               </label>
               <div phx-drop-target={@uploads.app_logo.ref} class="flex items-center gap-4">
@@ -85,11 +91,11 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                   <%= if @app_logo_preview do %>
                     <img
                       src={@app_logo_preview}
-                      class="w-20 h-20 rounded object-cover border border-gray-200 dark:border-gray-600"
+                      class="w-20 h-20 rounded object-cover border border-subtle"
                       alt={gettext("App logo")}
                     />
                   <% else %>
-                    <div class="w-20 h-20 bg-gray-100 dark:bg-gray-600 rounded flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-500">
+                    <div class="w-20 h-20 surface-raised rounded flex items-center justify-center text-sm text-tertiary border border-gray-200 dark:border-gray-500">
                       {gettext("No logo")}
                     </div>
                   <% end %>
@@ -100,7 +106,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                     <.live_file_input upload={@uploads.app_logo} class="sr-only" />
                     <label
                       for={@uploads.app_logo.ref}
-                      class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                      class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 surface-card hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     >
                       {if @app_logo_preview, do: gettext("Change Logo"), else: gettext("Choose Logo")}
                     </label>
@@ -108,27 +114,27 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                       <button
                         type="button"
                         phx-click="delete_app_logo"
-                        class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded text-sm font-medium text-voile-error surface-card hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
                         {gettext("Remove")}
                       </button>
                     <% end %>
                   </div>
 
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  <p class="text-xs text-tertiary mb-2">
                     {gettext("PNG, JPG, WebP or SVG. Max 10MB.")}
                   </p>
 
                   <div :for={entry <- @uploads.app_logo.entries} class="flex items-center gap-2 mt-2">
                     <.live_img_preview entry={entry} class="w-10 h-10 rounded object-cover border" />
                     <div class="flex-1 min-w-0">
-                      <div class="text-sm text-gray-700 dark:text-gray-300 truncate">
+                      <div class="text-sm text-secondary truncate">
                         {entry.client_name}
                       </div>
 
-                      <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-1">
+                      <div class="w-full surface-raised rounded-full h-1.5 mt-1">
                         <div
-                          class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all"
+                          class="bg-tone-info-soft h-1.5 rounded-full transition-all"
                           style={"width: #{entry.progress}%"}
                         >
                         </div>
@@ -147,7 +153,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
 
                   <p
                     :for={err <- upload_errors(@uploads.app_logo)}
-                    class="mt-2 text-sm text-red-600 dark:text-red-400"
+                    class="mt-2 text-sm text-voile-error"
                   >
                     {error_to_string(err)}
                   </p>
@@ -156,13 +162,13 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
             </div>
 
             <div class="md:col-span-2">
-              <div class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 p-4">
+              <div class="rounded-lg border border-subtle bg-gray-50 dark:bg-gray-800 p-4">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 class="text-lg font-semibold text-primary">
                       {gettext("Contact & Social Settings")}
                     </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-tertiary">
                       {gettext("Used in email templates and public contact pages.")}
                     </p>
                   </div>
@@ -306,7 +312,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
                 options={@node_options}
                 value={System.get_setting_value("default_node_id", "")}
               />
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p class="mt-1 text-xs text-tertiary">
                 {gettext("Fallback location for users without assigned node (e.g., super_admin)")}
               </p>
             </div>
@@ -328,7 +334,7 @@ defmodule VoileWeb.Dashboard.Settings.AppProfileSettingsLive do
           </div>
         </.form>
       </div>
-    </div>
+    </.voile_settings_shell>
     """
   end
 

@@ -1,45 +1,60 @@
-<.header>
-  Listing Metadata properties
-  <:actions>
-    <.link href={~p"/manage/metaresource/metadata_properties/new"}>
-      <.button>New Property</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="metadata_properties"
-  rows={@metadata_properties}
-  row_click={&JS.navigate(~p"/manage/metaresource/metadata_properties/#{&1}")}
+<.voile_page_header
+  eyebrow={gettext("Metaresource")}
+  title={gettext("Property")}
+  icon="hero-squares-2x2"
+  tone={:brand}
 >
-  <:col :let={property} label="Label">{property.label}</:col>
-
-  <:col :let={property} label="Local name">{property.local_name}</:col>
-
-  <:col :let={property} label="Information">{trim_information(property.information, 30)}</:col>
-
-  <:col :let={property} label="Vocabulary">{property.vocabulary.label}</:col>
-
-  <:action :let={property}>
-    <div class="sr-only">
-      <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}"}>Show</.link>
-    </div>
-    <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}/edit"}>Edit</.link>
-  </:action>
-
-  <:action :let={property}>
-    <.link
-      href={~p"/manage/metaresource/metadata_properties/#{property}"}
-      method="delete"
-      data-confirm="Are you sure?"
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/metaresource/metadata_properties/new"}
     >
-      Delete
-    </.link>
-  </:action>
-</.table>
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New Property")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-<.pagination
-  page={@page}
-  total_pages={@total_pages}
-  path={~p"/manage/metaresource/metadata_properties"}
-/>
+<.voile_settings_shell
+  title={gettext("Metaresource")}
+  items={voile_metaresource_nav_items()}
+  current_path={@current_path}
+>
+  <.table
+    id="metadata_properties"
+    rows={@metadata_properties}
+    row_click={&JS.navigate(~p"/manage/metaresource/metadata_properties/#{&1}")}
+  >
+    <:col :let={property} label="Label">{property.label}</:col>
+
+    <:col :let={property} label="Local name">{property.local_name}</:col>
+
+    <:col :let={property} label="Information">{trim_information(property.information, 30)}</:col>
+
+    <:col :let={property} label="Vocabulary">{property.vocabulary.label}</:col>
+
+    <:action :let={property}>
+      <div class="sr-only">
+        <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}"}>Show</.link>
+      </div>
+      <.link navigate={~p"/manage/metaresource/metadata_properties/#{property}/edit"}>Edit</.link>
+    </:action>
+
+    <:action :let={property}>
+      <.link
+        href={~p"/manage/metaresource/metadata_properties/#{property}"}
+        method="delete"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  <br />
+  <.voile_pagination
+    page={@page}
+    total_pages={@total_pages}
+    path={~p"/manage/metaresource/metadata_properties"}
+  />
+</.voile_settings_shell>

@@ -16,6 +16,10 @@ defmodule VoileWeb.Dashboard.Members.Index do
     socket =
       socket
       |> assign(:page_title, gettext("Members Dashboard"))
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("Members"), path: nil}
+      ])
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
 
@@ -115,38 +119,34 @@ defmodule VoileWeb.Dashboard.Members.Index do
 
       <%!-- Quick Stats Overview --%>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <.stat_card
-          title={gettext("Total Members")}
+        <.voile_stat_card
+          label={gettext("Total Members")}
           value={@members_stats.total_members}
           icon="hero-users"
-          color="green"
-          trend="+5%"
+          tone={:success}
         />
-        <.stat_card
-          title={gettext("Active Members")}
+        <.voile_stat_card
+          label={gettext("Active Members")}
           value={@members_stats.active_members}
           icon="hero-user-group"
-          color="blue"
-          trend="+3%"
+          tone={:info}
         />
-        <.stat_card
-          title={gettext("Expiring Soon")}
+        <.voile_stat_card
+          label={gettext("Expiring Soon")}
           value={@members_stats.expiring_soon}
           icon="hero-clock"
-          color="orange"
-          trend="7 days"
+          tone={:warning}
         />
-        <.stat_card
-          title={gettext("Suspended Members")}
+        <.voile_stat_card
+          label={gettext("Suspended Members")}
           value={@members_stats.suspended_members}
           icon="hero-exclamation-triangle"
-          color="red"
-          trend="0%"
+          tone={:error}
         />
       </div>
       <div>
         <div class="my-5 border-t border-gray-300 dark:border-gray-600 pt-5">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 class="text-xl font-semibold text-primary mb-4">
             {gettext("Member Services")}
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -163,11 +163,11 @@ defmodule VoileWeb.Dashboard.Members.Index do
       </div>
 
       <%!-- Recent Activity --%>
-      <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
+      <div class="surface-card rounded-xl p-6 shadow">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <.icon name="hero-clock" class="w-8 h-8 text-gray-600 dark:text-gray-300" />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-xl font-semibold text-primary">
               {gettext("Recent Members")}
             </h2>
           </div>

@@ -7,48 +7,39 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
   @impl true
   def render(assigns) do
     ~H"""
-    <section class="flex flex-col md:flex-row gap-4">
-      <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar
-          current_user={@current_scope.user}
-          current_path={@current_path}
-          is_super_admin={@is_super_admin}
-        />
-      </div>
-      <div class="p-6 w-full">
-        <.link
-          navigate={~p"/manage/settings"}
-          class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-        >
-          {gettext("← Back to Settings")}
-        </.link>
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("API token manager")}
+      description={
+        if @is_admin,
+          do: gettext("Manage all API tokens across the system"),
+          else: gettext("Manage your API tokens")
+      }
+      icon="hero-code-bracket"
+      tone={:brand}
+    >
+      <:actions>
+        <%= if @is_admin do %>
+          <.voile_button tone={:brand} variant={:outline} size={:md} phx-click="create_master_token">
+            {gettext("Create master token")}
+          </.voile_button>
+        <% end %>
+        <.voile_button tone={:brand} variant={:solid} size={:md} phx-click="create_token">
+          {gettext("Create token")}
+        </.voile_button>
+      </:actions>
+    </.voile_page_header>
 
-        <div class="flex flex-col md:flex-wrap justify-between mb-6 mt-4">
-          <div>
-            <h1 class="text-2xl font-bold">{gettext("API Token Manager")}</h1>
-            <p class="text-gray-600 mt-1">
-              <%= if @is_admin do %>
-                {gettext("Manage all API tokens across the system")}
-              <% else %>
-                {gettext("Manage your API tokens")}
-              <% end %>
-            </p>
-          </div>
-          <div class="flex gap-2">
-            <%= if @is_admin do %>
-              <.button phx-click="create_master_token" class="btn btn-cancel">
-                {gettext("Create Master Token")}
-              </.button>
-            <% end %>
-            <.button phx-click="create_token">
-              {gettext("Create Token")}
-            </.button>
-          </div>
-        </div>
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
+      <div class="p-1 w-full">
         
     <!-- Token List -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-          <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div class="surface-card shadow rounded-lg overflow-hidden">
+          <div class="px-4 py-3 border-b border-subtle">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
               {gettext("API Tokens")}
             </h3>
@@ -58,24 +49,24 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                     {gettext("Token")}
                   </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                     {gettext("Status")}
                   </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                     {gettext("Created")}
                   </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                     {gettext("Expires")}
                   </th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 text-right text-xs font-medium text-tertiary uppercase tracking-wider">
                     {gettext("Actions")}
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <%= for token <- @api_tokens do %>
                   <tr
                     class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
@@ -89,7 +80,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                           ...
                         <% end %>
                       </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                      <div class="text-sm text-tertiary truncate max-w-xs">
                         {String.slice(token.description || "No description", 0, 40)}
                         <%= if String.length(token.description || "") > 40 do %>
                           ...
@@ -98,31 +89,31 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                     </td>
                     <td class="px-4 py-4">
                       <%= if token.revoked_at do %>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-tone-error-soft text-voile-error">
                           {gettext("Revoked")}
                         </span>
                       <% else %>
                         <%= if token.expires_at do %>
                           <%= if DateTime.compare(token.expires_at, DateTime.utc_now()) == :gt do %>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-tone-success-soft text-voile-success">
                               {gettext("Active")}
                             </span>
                           <% else %>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-tone-warning-soft text-voile-warning">
                               {gettext("Expired")}
                             </span>
                           <% end %>
                         <% else %>
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-tone-success-soft text-voile-success">
                             {gettext("Active")}
                           </span>
                         <% end %>
                       <% end %>
                     </td>
-                    <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <td class="px-4 py-4 text-sm text-tertiary">
                       {Calendar.strftime(token.inserted_at, "%Y-%m-%d")}
                     </td>
-                    <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <td class="px-4 py-4 text-sm text-tertiary">
                       <%= if token.expires_at do %>
                         {Calendar.strftime(token.expires_at, "%Y-%m-%d")}
                       <% else %>
@@ -134,7 +125,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                         <button
                           phx-click="edit_token"
                           phx-value-token-id={token.id}
-                          class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700"
+                          class="inline-flex items-center px-2 py-1 text-xs font-medium text-voile-info hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700"
                           title={gettext("Edit token")}
                         >
                           <svg
@@ -179,7 +170,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                           <button
                             phx-click="revoke_token"
                             phx-value-token-id={token.id}
-                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-700"
+                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-voile-warning hover:text-yellow-900 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-700"
                             title={gettext("Revoke token")}
                             data-confirm={gettext("Are you sure you want to revoke this token?")}
                           >
@@ -203,7 +194,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                         <button
                           phx-click="delete_token"
                           phx-value-token-id={token.id}
-                          class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded border border-red-200 dark:border-red-700"
+                          class="inline-flex items-center px-2 py-1 text-xs font-medium text-voile-error hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded border border-red-200 dark:border-red-700"
                           title={gettext("Delete token")}
                           data-confirm={
                             gettext("Are you sure you want to permanently delete this token?")
@@ -235,7 +226,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
 
           <%= if Enum.empty?(@api_tokens) do %>
             <div class="text-center py-12">
-              <p class="text-gray-500 dark:text-gray-400">{gettext("No API tokens found.")}</p>
+              <p class="text-tertiary">{gettext("No API tokens found.")}</p>
               <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">
                 <%= if @is_admin do %>
                   {gettext("Create your first token to get started.")}
@@ -270,11 +261,11 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               {gettext("Confirm Token Rotation")}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p class="text-sm text-tertiary mb-4">
               {gettext(
                 "Are you sure you want to rotate this API token? The current token will be invalidated and a new one will be generated."
               )}
-              <strong class="text-red-600 dark:text-red-400">
+              <strong class="text-voile-error">
                 {gettext("Make sure to update any applications using this token.")}
               </strong>
             </p>
@@ -305,7 +296,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
               {gettext("API Token Created")}
             </h3>
             <div class="mb-4">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <p class="text-sm text-secondary mb-2">
                 {gettext(
                   "Your new API token has been created successfully. Copy the token below and save it securely:"
                 )}
@@ -334,7 +325,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                   </button>
                 </div>
               </div>
-              <p class="text-xs text-red-600 dark:text-red-400 mt-2">
+              <p class="text-xs text-voile-error mt-2">
                 <strong>{gettext("Warning:")}</strong>
                 {gettext("This token will only be shown once. Make sure to save it securely!")}
               </p>
@@ -362,7 +353,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             <%= if @selected_token_for_info do %>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="block text-sm font-medium text-secondary">
                     {gettext("Name")}
                   </label>
                   <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -371,7 +362,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="block text-sm font-medium text-secondary">
                     {gettext("Description")}
                   </label>
                   <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -381,7 +372,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
 
                 <%= if @is_admin do %>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label class="block text-sm font-medium text-secondary">
                       {gettext("User")}
                     </label>
                     <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -395,12 +386,12 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                 <% end %>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="block text-sm font-medium text-secondary">
                     {gettext("Scopes")}
                   </label>
                   <div class="mt-1 flex flex-wrap gap-1">
                     <%= for scope <- @selected_token_for_info.scopes do %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-info-soft text-voile-info">
                         {scope}
                       </span>
                     <% end %>
@@ -408,12 +399,12 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="block text-sm font-medium text-secondary">
                     {gettext("Status")}
                   </label>
                   <div class="mt-1">
                     <%= if @selected_token_for_info.revoked_at do %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-error-soft text-voile-error">
                         {gettext("Revoked on %{date}",
                           date:
                             Calendar.strftime(
@@ -425,11 +416,11 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                     <% else %>
                       <%= if @selected_token_for_info.expires_at do %>
                         <%= if DateTime.compare(@selected_token_for_info.expires_at, DateTime.utc_now()) == :gt do %>
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-success-soft text-voile-success">
                             {gettext("Active")}
                           </span>
                         <% else %>
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-warning-soft text-voile-warning">
                             {gettext("Expired on %{date}",
                               date:
                                 Calendar.strftime(
@@ -440,7 +431,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                           </span>
                         <% end %>
                       <% else %>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-success-soft text-voile-success">
                           {gettext("Active (No Expiry)")}
                         </span>
                       <% end %>
@@ -450,7 +441,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label class="block text-sm font-medium text-secondary">
                       {gettext("Created")}
                     </label>
                     <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -458,7 +449,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                     </p>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label class="block text-sm font-medium text-secondary">
                       {gettext("Expires")}
                     </label>
                     <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -472,7 +463,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="block text-sm font-medium text-secondary">
                     {gettext("Last Used")}
                   </label>
                   <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -494,7 +485,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
           </div>
         </.modal>
       </div>
-    </section>
+    </.voile_settings_shell>
     """
   end
 
@@ -515,6 +506,11 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
      |> assign(:current_user, current_user)
      |> assign(:is_admin, is_admin)
      |> assign(:is_super_admin, is_admin)
+     |> assign(:breadcrumb, [
+       %{label: gettext("Manage"), path: "/manage"},
+       %{label: gettext("Settings"), path: "/manage/settings"},
+       %{label: gettext("API manager"), path: nil}
+     ])
      |> assign(:api_tokens, api_tokens)
      |> assign(:show_modal, false)
      |> assign(:selected_token, nil)

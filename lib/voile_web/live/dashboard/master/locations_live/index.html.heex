@@ -1,57 +1,81 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Locations")}
+  icon="hero-map-pin"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/master/locations/new"}
+    >
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New location")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Locations")}
-    <:actions>
-      <.link patch={~p"/manage/master/locations/new"}>
-        <.button>{gettext("New Location")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="locations"
-    rows={@streams.locations}
-    row_item={fn {_id, loc} -> loc end}
-    row_click={fn {_id, location} -> JS.navigate(~p"/manage/master/locations/#{location.id}") end}
-  >
-    <:col :let={loc} label={gettext("Code")}>{loc.location_code}</:col>
-
-    <:col :let={loc} label={gettext("Name")}>{loc.location_name}</:col>
-
-    <:col :let={loc} label={gettext("Place")}>{loc.location_place}</:col>
-
-    <:action :let={loc}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/locations/#{loc.id}"}>{gettext("Show")}</.link>
-      </div>
-      <.link patch={~p"/manage/master/locations/#{loc.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={loc}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: loc.id}) |> hide("##{loc.id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @locations_empty? do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="locations"
+        rows={@streams.locations}
+        row_item={fn {_id, loc} -> loc end}
+        row_click={
+          fn {_id, location} -> JS.navigate(~p"/manage/master/locations/#{location.id}") end
+        }
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="location-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/locations")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.LocationsLive.FormComponent}
-      id={(@location && @location.id) || :new}
-      title={@page_title}
-      action={@live_action}
-      location={@location}
-      patch={~p"/manage/master/locations"}
-    />
-  </.modal>
-</section>
+        <:col :let={loc} label={gettext("Code")}>{loc.location_code}</:col>
+
+        <:col :let={loc} label={gettext("Name")}>{loc.location_name}</:col>
+
+        <:col :let={loc} label={gettext("Place")}>{loc.location_place}</:col>
+
+        <:action :let={loc}>
+          <div class="sr-only">
+            <.link navigate={~p"/manage/master/locations/#{loc.id}"}>{gettext("Show")}</.link>
+          </div>
+          <.link patch={~p"/manage/master/locations/#{loc.id}/edit"}>{gettext("Edit")}</.link>
+        </:action>
+
+        <:action :let={loc}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: loc.id}) |> hide("##{loc.id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="location-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/locations")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.LocationsLive.FormComponent}
+        id={(@location && @location.id) || :new}
+        title={@page_title}
+        action={@live_action}
+        location={@location}
+        patch={~p"/manage/master/locations"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

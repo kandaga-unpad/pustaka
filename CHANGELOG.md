@@ -7,6 +7,121 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.48] - 2026-07-23
+
+### Added
+
+- **Review activity banner** on `/manage/catalog/collections/review` — shows aggregate stats from `collection_logs`: active reviewers, collections approved, edits requested, total actions (all-time). Super admins see a collapsible per-reviewer table (name, approved, edits, total, sorted by activity); regular users see only their own stats. Collapsible via "Per reviewer" toggle button.
+- **GLAM metadata seed SQL** (`priv/repo/seeds/glam_metadata_seed_inserts.sql`) — 24 vocabularies + 353 properties with production ID offset (+1 for custom vocab at ID 5). Ready to paste in DBeaver.
+- **Pagination on vocabulary and template-property pages** — wired `Metadata.list_metadata_page/3` with `<.voile_pagination>` on both metaresource controller index pages.
+- **Full Indonesian (id) locale** — 140 new translation strings across all dashboard surfaces (greetings, card titles, sidebar sections, GLAM eyebrows, error messages, metrics labels).
+- **JetBrains Mono** font loading for codes/IDs/timestamps.
+- **"Front page" (`/`) navigation links** in sidebar and topbar.
+- **User dropdown menus** (sidebar + topbar) showing user info, node, profile settings, logout.
+- **Visitor statistics section** on GLAM hub (today, 30-day, unique, avg/day), node-scoped.
+- **Node badge** for non-super-admin users on the dashboard page header.
+- **Empty-state placeholders** on all master-data list pages.
+- **Full-width collection modals** (`<.modal full>`).
+- **Sticky footer** — content area is now a flex column; footer sits at viewport bottom on short pages, scrolls naturally on tall pages.
+
+### Changed
+
+- **Sidebar logo** reads from `app_logo_url` system setting (both sidebar and mobile topbar).
+- **Footer restored** to the original two-column layout (© + "Powered by Curatorian Developer" + "Built with ♥ using Voile"), adapted to v2 tokens.
+- **Flash z-index** raised to 1000 (above the topbar at 100).
+- **Home sidebar item** uses exact-match active state.
+- **Pagination auto-hides** when `total_pages ≤ 1`.
+- **All 31 paginate handlers** clamp page numbers (`|> max(1)`) to prevent negative-OFFSET crashes.
+- **Command palette backdrop** now closes correctly (consolidated open/close state).
+- **Brand colors** fully respect DB-stored values from `/manage/settings/apps`.
+- **Sidebar hierarchy** mirrors the actual router (Catalog, GLAM, Members, Visitors, Master, Metaresource, Settings — all collapsible with accurate child paths).
+
+### Fixed
+
+- **`Stats.get_member_stats/1` crash** for non-super-admin users — User schema uses `node_id`, not `unit_id`.
+- **Catalog submenu broken links** — `asset-vault`, `transfers`, `stock_opname` paths corrected to match router.
+- **`voile_button` solid variant** ignored `:tone` — now uses `tone_solid_bg(tone)`.
+- **Pagination crash** on empty data (page=0 → negative OFFSET).
+- **Flash blocked by topbar** — z-50 raised to z-1000.
+- **Breadcrumb KeyError** on pages without `:breadcrumb` — layout fallback added.
+- **`live_view_dashboard` macro** missing `handle_mount_errors` import.
+- **Collection modal** — added `full` attr for full-screen rendering.
+- **`JS.toggle` API misuse** in user menu dropdown — fixed to use `display:` option.
+
+---
+
+## [0.1.47] - 2026-07-23
+
+### Summary
+
+Complete dashboard redesign — the entire `/manage/*` staff area has been rebuilt with a new design system, collapsible sidebar navigation, command palette, and unified theming. 169 files changed (+18,531 / −13,084 lines).
+
+### Added
+
+- **Dashboard design system** (`VoileWeb.DashboardComponents`) — 30+ brand-aware components: `voile_page_header`, `voile_stat_card`, `voile_glam_strip`, `voile_section_card`, `voile_metric_row`, `voile_activity_feed`, `voile_action_link`, `voile_button`, `voile_empty_state`, `voile_settings_shell`, `voile_settings_nav`, `voile_pagination`, `voile_command_palette`, `voile_user_menu_panel`, and more. All driven by v2 CSS tokens (GLAM colors, 5-step surface scale, motion, typography primitives).
+- **New dashboard shell** — collapsible sidebar (route-driven hierarchy mirroring the router), sticky topbar (breadcrumb + locale switcher + command palette trigger + user avatar dropdown), mobile bottom navigation, and sticky footer.
+- **Command palette** (⌘K / Ctrl+K) — fuzzy-filters navigation routes and quick actions, with keyboard navigation (↑↓ ⏎ Esc), backdrop-click-to-close, and single-source-of-truth open/close state.
+- **Collapsible sidebar submenus** — every section (Catalog, GLAM, Members, Visitors, Master, Metaresource, Settings) expands to show its children, auto-expanding when you're on a child route. Mirrors the actual router hierarchy.
+- **User dropdown menus** (sidebar + topbar) — shows full name, @username, identifier, node, with links to profile settings and logout.
+- **Dashboard home (`/manage`)** — async-loaded with skeleton placeholders, role-aware node scoping, GLAM strip, stat cards (brand-toned), "Attention Required" feed, quick actions, member overview, catalog snapshot, search insights.
+- **`Voile.Dashboard.Stats` context** — shared glam/catalog/member statistics with node-scoping.
+- **`Voile.Dashboard.Feed` context** — "Attention Required" aggregator (overdue loans, pickup-ready reservations, expiring/expired memberships).
+- **Visitor statistics section** on GLAM hub (today, 30-day, unique, avg/day), node-scoped.
+- **Node badge** for non-super-admin users on the dashboard page header.
+- **Empty-state placeholders** on all master-data list pages ("No data available").
+- **"Front page" (`/`) navigation links** in both sidebar and topbar.
+- **Full-width modal variant** (`<.modal full>`) for collection new/edit/search forms.
+- **`controller_dashboard` macro** — controller analog of `live_view_dashboard` for metaresource controller pages.
+- **GLAM metadata seed SQL** (`priv/repo/seeds/glam_metadata_seed_inserts.sql`) — 24 vocabularies + 353 properties with production ID offset (+1 for custom vocab at ID 5).
+- **JetBrains Mono** font loading for codes/IDs/timestamps.
+- **Complete Indonesian (id) locale** — 140 new translation strings across all dashboard surfaces.
+
+### Changed
+
+- **Entire `/manage/*` migrated** — all 80+ LiveViews + 5 metaresource controllers now render on the new `:dashboard` redesign shell. The legacy `VoileDashboardComponents` module and `dashboard.html.heex` layout are deleted.
+- **Namespace reclaimed** — `RedesignComponents` → `DashboardComponents`, `:live_view_redesign` → `:live_view_dashboard`, `:controller_redesign` → `:controller_dashboard`, `:redesign` layout → `:dashboard`. Component prefix `rd_` → `voile_`, CSS classes `rd-*` → `voile-*`.
+- **~2,350 legacy utility classes** replaced with v2 semantic tokens across all templates: `bg-white dark:bg-gray-700` → `surface-card`, `text-gray-900 dark:text-white` → `text-primary`, colored combos → `tone-soft` / `tone-text`, borders → `border-subtle`.
+- **Brand colors** now fully respect the DB-stored values from `/manage/settings/apps` (no hardcoded overrides).
+- **Sidebar + topbar logo** reads from `app_logo_url` system setting.
+- **Pagination** auto-hides when `total_pages ≤ 1`; all 31 paginate handlers clamp page numbers (`|> max(1)`) to prevent negative-OFFSET crashes.
+- **Footer** restored to the original two-column layout (© + "Powered by" + "Built with ♥ using Voile"), adapted to v2 tokens. Now sticks to viewport bottom on short pages via flex layout.
+- **Flash z-index** raised to 1000 (above the topbar at 100).
+- **Home sidebar item** uses exact-match active state (no longer highlighted on every `/manage/*` route).
+
+### Fixed
+
+- **`Stats.get_member_stats/1` crash** for non-super-admin users — the generic `maybe_filter_by_node` used `unit_id` but the User schema has `node_id`. Fixed with a member-specific filter.
+- **Catalog submenu broken links** — `asset-vault` (was `asset_vault`), `transfers` (was `transfer_requests`), `stock_opname` moved under Catalog (was top-level).
+- **Command palette backdrop-click not closing** — two competing open/close mechanisms (JS hook vs inline script) had desynced `isOpen` state. Consolidated to a single hook-owned flow.
+- **`voile_button` solid variant** ignored `:tone` (always rendered brand-violet). Now uses `tone_solid_bg(tone)`.
+- **Pagination crash on empty data** — `page=0` → `OFFSET -10` → Postgres error. Guarded by `total_pages ≤ 1` check + `max(1)` clamp.
+- **Flash messages blocked by topbar** — flash `z-50` was below topbar `z-index: 100`. Raised to `z-[1000]`.
+- **Breadcrumb `KeyError`** on pages without `:breadcrumb` assign — layout now uses `assigns[:breadcrumb]` fallback.
+- **`live_view_dashboard` macro** was missing `handle_mount_errors` import (parity with legacy macro).
+- **Collection modal `full` attr** — the `<.modal>` component now supports `full: true` for full-width/height rendering.
+- **Sticky footer** — `.voile-content` is now a flex column with the content wrapper `flex-1`, keeping the footer at viewport bottom on short pages.
+
+### Removed
+
+- **Legacy `VoileDashboardComponents` module** — entirely deleted (all functions migrated to v2 equivalents or dropped).
+- **Legacy `dashboard.html.heex` layout** — replaced by the new redesign shell.
+- **`/manage/redesign-test` showcase page** — route, LiveView, tests, and sidebar/command-palette links all removed.
+- **Dead code** — `search_dashboard_live` search widgets, legacy `collection_modal`, `plugin_settings_sidebar`, `stat_card`, `nav_bar`, `dashboard_search_widget`, etc.
+
+---
+
+## [0.1.46] - 2026-07-20
+
+### Fixed
+
+- **OAuth users missing expiry dates** — PAuS and other OAuth users weren't getting `expiry_date` set based on their member type's `membership_period_days`. Now calculates and sets expiry date during OAuth user creation by fetching the member type and adding the period days to the registration date, matching the onboarding flow behavior.
+
+### Changed
+
+- **Migration import creator naming** — Changed default creator name from "Unknown Creator" to "System Import" across fine, item, and loan history importers for clearer audit trail.
+- **Item import performance** — Optimized item import with pre-built index (O(1) lookup instead of O(N×M) row scan) and delta import support that tracks existing legacy codes to prevent duplicates.
+- **Search analytics** — Added search recording for analytics in both dashboard and public search LiveViews to track user search behavior.
+
 ## [0.1.45] - 2026-07-14
 
 ### Fixed

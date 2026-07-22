@@ -5,7 +5,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   alias Voile.Schema.Catalog
   alias Voile.Schema.Master
   alias Voile.Schema.Metadata
+  alias Voile.Schema.System.CollectionLog
 
+  import Ecto.Query
   import Voile.Utils.DateHelper, only: [to_local_time: 1]
 
   @impl true
@@ -65,6 +67,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
         |> assign(:creator_results, [])
         |> assign(:creator_selected_name, "")
         |> assign(:review_resource_classes, Metadata.list_resource_class())
+        |> assign(:review_activity, load_review_activity(current_user))
 
       {:ok, socket}
     end
@@ -132,7 +135,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   # All handle_event/3 clauses grouped together
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     current_user = socket.assigns.current_scope.user
     search_query = socket.assigns.search_query
@@ -728,4 +731,53 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   defp status_badge_class("published"), do: "bg-green-100 text-green-800"
   defp status_badge_class("archived"), do: "bg-red-100 text-red-800"
   defp status_badge_class(_), do: "bg-gray-100 text-gray-800"
+
+  defp load_review_activity(user) do
+    is_super_admin =
+      user
+      |> Repo.preload(:roles)
+      |> Map.get(:roles, [])
+      |> Enum.any?(fn role -> role.name == "super_admin" end)
+
+    if is_super_admin do
+      per_user =
+        from(l in CollectionLog,
+          join: u in assoc(l, :user),
+          group_by: [u.id, u.fullname, u.username],
+          order_by: [desc: count(l.id)],
+          limit: 50,
+          select: %{
+            name: u.fullname,
+            username: u.username,
+            total: count(l.id),
+            approvals: fragment("count(*) FILTER (WHERE action = 'publish')"),
+            edits: fragment("count(*) FILTER (WHERE action = 'update')")
+          }
+        )
+        |> Repo.all()
+
+      %{
+        active_reviewers:
+          from(l in CollectionLog, select: count(l.user_id, :distinct)) |> Repo.one() || 0,
+        total_actions: Repo.aggregate(CollectionLog, :count, :id),
+        approvals:
+          from(l in CollectionLog, where: l.action == "publish") |> Repo.aggregate(:count, :id),
+        edits:
+          from(l in CollectionLog, where: l.action == "update") |> Repo.aggregate(:count, :id),
+        per_user: per_user,
+        scope: :all
+      }
+    else
+      base = from(l in CollectionLog, where: l.user_id == ^user.id)
+
+      %{
+        active_reviewers: from(l in base, select: count(l.user_id, :distinct)) |> Repo.one() || 0,
+        total_actions: base |> Repo.aggregate(:count, :id),
+        approvals: base |> where([l], l.action == "publish") |> Repo.aggregate(:count, :id),
+        edits: base |> where([l], l.action == "update") |> Repo.aggregate(:count, :id),
+        per_user: [],
+        scope: :self
+      }
+    end
+  end
 end

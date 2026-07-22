@@ -26,6 +26,11 @@ defmodule VoileWeb.Dashboard.Master.TopicLive.Edit do
        socket
        |> assign(:topic, topic)
        |> assign(:page_title, gettext("Edit Topic"))
+       |> assign(:breadcrumb, [
+         %{label: gettext("Manage"), path: "/manage"},
+         %{label: gettext("Master data"), path: "/manage/master"},
+         %{label: gettext("Topics"), path: nil}
+       ])
        |> assign(:live_action, :edit)}
     end
   end

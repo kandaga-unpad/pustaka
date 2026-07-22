@@ -7,10 +7,10 @@ defmodule VoileWeb.UserOnboardingLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-3xl px-4 py-12">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="surface-card rounded-lg shadow-lg p-8">
           <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-              <.icon name="hero-user-circle" class="w-10 h-10 text-blue-600 dark:text-blue-400" />
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-tone-info-soft rounded-full mb-4">
+              <.icon name="hero-user-circle" class="w-10 h-10 text-voile-info" />
             </div>
 
             <.header>
@@ -29,13 +29,13 @@ defmodule VoileWeb.UserOnboardingLive do
             class="space-y-6"
           >
             <%= if @user_type == :migrated_with_personal_email do %>
-              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+              <div class="bg-tone-success-soft border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
                 <div class="flex items-start gap-3">
                   <.icon
                     name="hero-check-circle"
-                    class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                    class="w-5 h-5 text-voile-success flex-shrink-0 mt-0.5"
                   />
-                  <div class="text-sm text-green-800 dark:text-green-300">
+                  <div class="text-sm text-voile-success">
                     <p class="font-semibold mb-1">{gettext("Welcome Back!")}</p>
                     <p>
                       {gettext(
@@ -64,13 +64,13 @@ defmodule VoileWeb.UserOnboardingLive do
             <% end %>
 
             <%= if @user_type == :institutional_new_user do %>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                 <div class="flex items-start gap-3">
                   <.icon
                     name="hero-academic-cap"
-                    class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+                    class="w-5 h-5 text-voile-info flex-shrink-0 mt-0.5"
                   />
-                  <div class="text-sm text-blue-800 dark:text-blue-300">
+                  <div class="text-sm text-voile-info">
                     <p class="font-semibold mb-1">{gettext("Institutional Account Detected")}</p>
                     <p>
                       {gettext(
@@ -100,13 +100,13 @@ defmodule VoileWeb.UserOnboardingLive do
             <% end %>
 
             <%= if @user_type == :new_user do %>
-              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+              <div class="bg-tone-success-soft border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
                 <div class="flex items-start gap-3">
                   <.icon
                     name="hero-check-circle"
-                    class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                    class="w-5 h-5 text-voile-success flex-shrink-0 mt-0.5"
                   />
-                  <div class="text-sm text-green-800 dark:text-green-300">
+                  <div class="text-sm text-voile-success">
                     <p class="font-semibold mb-1">{gettext("Welcome to Voile!")}</p>
                     <p>
                       {gettext(
@@ -123,7 +123,7 @@ defmodule VoileWeb.UserOnboardingLive do
                 label={gettext("Email")}
                 readonly
                 disabled
-                class="bg-gray-100 dark:bg-gray-700"
+                class="surface-raised"
               />
             <% end %>
 

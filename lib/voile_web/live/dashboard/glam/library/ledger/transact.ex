@@ -967,72 +967,72 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         </.button>
       </div>
       <%!-- Member Biodata --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+      <div class="surface-card rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4 text-primary">
           {gettext("Member Information")}
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{gettext("Full Name")}</p>
+            <p class="text-sm font-medium text-tertiary">{gettext("Full Name")}</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {@member.fullname || gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p class="text-sm font-medium text-tertiary">
               {gettext("Identifier")}
             </p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {if @member.identifier, do: Decimal.to_string(@member.identifier), else: gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{gettext("Email")}</p>
+            <p class="text-sm font-medium text-tertiary">{gettext("Email")}</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {@member.email || gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p class="text-sm font-medium text-tertiary">
               {gettext("Member Type")}
             </p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {if @member.user_type, do: @member.user_type.name, else: gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{gettext("Phone")}</p>
+            <p class="text-sm font-medium text-tertiary">{gettext("Phone")}</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {@member.phone_number || gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p class="text-sm font-medium text-tertiary">
               {gettext("Unit Location")}
             </p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {if @member.node, do: @member.node.name, else: gettext("N/A")}
             </p>
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p class="text-sm font-medium text-tertiary">
               {gettext("Registration Date")}
             </p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {if @member.registration_date,
                 do: Calendar.strftime(@member.registration_date, "%B %d, %Y"),
                 else: gettext("N/A")}
@@ -1040,11 +1040,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p class="text-sm font-medium text-tertiary">
               {gettext("Expiry Date")}
             </p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {if @member.expiry_date,
                 do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
                 else: gettext("N/A")}
@@ -1052,18 +1052,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           </div>
 
           <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{gettext("Address")}</p>
+            <p class="text-sm font-medium text-tertiary">{gettext("Address")}</p>
 
-            <p class="mt-1 text-base text-gray-900 dark:text-white">
+            <p class="mt-1 text-base text-primary">
               {@member.address || gettext("N/A")}
             </p>
           </div>
         </div>
       </div>
       <%!-- Tabs --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div class="surface-card rounded-lg shadow">
         <%!-- Tab Headers --%>
-        <div class="border-b border-gray-200 dark:border-gray-700">
+        <div class="border-b border-subtle">
           <nav class="flex -mb-px">
             <button
               phx-click="change_tab"
@@ -1071,7 +1071,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "loan",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1084,7 +1084,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "current_loans",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1097,7 +1097,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "reserve",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1110,7 +1110,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "fines",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1123,7 +1123,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "history",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1136,7 +1136,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               class={[
                 "px-6 py-4 text-sm font-medium border-b-2 transition-colors",
                 if(@active_tab == "fine_history",
-                  do: "border-indigo-500 text-indigo-600 dark:text-indigo-400",
+                  do: "border-indigo-500 text-voile-primary",
                   else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )
               ]}
@@ -1201,7 +1201,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     ~H"""
     <div class="space-y-6">
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label class="block text-sm font-medium text-secondary mb-2">
           {gettext("Search Item by Code")}
         </label>
         <form phx-submit="search_item" class="space-y-3">
@@ -1228,7 +1228,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             />
             <label
               for="use-legacy-code"
-              class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+              class="text-sm text-secondary cursor-pointer"
             >
               {gettext("Use Legacy Item Code?")}
             </label>
@@ -1237,18 +1237,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       </div>
 
       <div>
-        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <h3 class="text-lg font-semibold mb-4 text-primary">
           {gettext("Items to Loan")} ({length(@temp_loans)})
         </h3>
 
         <%= if @temp_loans == [] do %>
-          <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div class="text-center py-12 text-tertiary">
             <.icon name="hero-book-open" class="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p>{gettext("No items added yet. Search and add items above.")}</p>
           </div>
         <% else %>
           <div
-            class="overflow-x-auto overflow-y-visible scrollbar-visible border border-gray-200 dark:border-gray-700 rounded-lg"
+            class="overflow-x-auto overflow-y-visible scrollbar-visible border border-subtle rounded-lg"
             style="scrollbar-width: thin;"
           >
             <table class="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
@@ -1285,12 +1285,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <tr
                   :for={loan <- @temp_loans}
                   class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <td class="px-4 py-3 border-r border-gray-200 dark:border-gray-700">
+                  <td class="px-4 py-3 border-r border-subtle">
                     <button
                       phx-click="remove_temp_loan"
                       phx-value-item_id={loan.item.id}
@@ -1301,27 +1301,27 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                   </td>
 
                   <td
-                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-mono"
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-subtle font-mono"
                     title={loan.item.item_code}
                   >
                     {loan.item.item_code}
                   </td>
 
                   <td
-                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 font-medium"
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-subtle font-medium"
                     title={loan.item.collection.title}
                   >
                     {loan.item.collection.title}
                   </td>
 
                   <td
-                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700"
+                    class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-subtle"
                     title={loan.item.node.name}
                   >
                     {loan.item.node.name || "N/A"}
                   </td>
 
-                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 break-words border-r border-subtle whitespace-nowrap">
                     {Calendar.strftime(loan.loan_date, "%B %d, %Y")}
                   </td>
 
@@ -1342,7 +1342,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     ~H"""
     <div>
       <%= if @current_loans == [] do %>
-        <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div class="text-center py-12 text-tertiary">
           <.icon name="hero-inbox" class="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p>{gettext("No active loans for this member.")}</p>
         </div>
@@ -1373,7 +1373,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </tr>
             </thead>
 
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={transaction <- @current_loans}>
                 <td class="px-6 py-4">
                   <%= if @is_super_admin || transaction.item.unit_id == @librarian_node_id do %>
@@ -1394,7 +1394,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       </button>
                     </div>
                   <% else %>
-                    <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
+                    <span class="inline-flex items-center gap-1 surface-raised text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
                       <.icon name="hero-building-library" class="w-4 h-4" />
                       {gettext("Loaned from")} {(transaction.item.node && transaction.item.node.name) ||
                         gettext("another node")}
@@ -1430,7 +1430,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     ~H"""
     <div class="space-y-6">
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label class="block text-sm font-medium text-secondary mb-2">
           {gettext("Search Collection")}
         </label>
         <form phx-submit="search_collection" class="flex gap-2">
@@ -1448,12 +1448,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
       </div>
 
       <div>
-        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <h3 class="text-lg font-semibold mb-4 text-primary">
           {gettext("Temporary Reservations")} ({length(@temp_reservations)})
         </h3>
 
         <%= if @temp_reservations == [] do %>
-          <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div class="text-center py-12 text-tertiary">
             <.icon name="hero-bookmark" class="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p>{gettext("No reservations added yet.")}</p>
           </div>
@@ -1480,7 +1480,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={reservation <- @temp_reservations}>
                   <td class="px-6 py-4">
                     <button
@@ -1522,8 +1522,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         </.button>
       </div>
 
-      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
+      <div class="bg-tone-info-soft rounded-lg p-4">
+        <p class="text-sm font-medium text-voile-info">
           {gettext("Total Unpaid Fines:")}
           <span class="text-lg font-bold">{format_currency(@total_unpaid_fines)}</span>
         </p>
@@ -1531,7 +1531,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
       <div>
         <%= if @unpaid_fines == [] do %>
-          <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div class="text-center py-12 text-tertiary">
             <.icon name="hero-currency-dollar" class="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p>{gettext("No unpaid fines.")}</p>
           </div>
@@ -1570,7 +1570,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={fine <- @unpaid_fines}>
                   <% fine_node_id =
                     (fine.item && fine.item.unit_id) || (fine.transaction && fine.transaction.unit_id) %>
@@ -1598,7 +1598,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                         </button>
                       </div>
                     <% else %>
-                      <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
+                      <span class="inline-flex items-center gap-1 surface-raised text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm">
                         <.icon name="hero-building-library" class="w-4 h-4" />
                         {gettext("Managed by")} {fine_node_name || gettext("another node")}
                       </span>
@@ -1652,7 +1652,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     ~H"""
     <div>
       <%= if @loan_history == [] do %>
-        <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div class="text-center py-12 text-tertiary">
           <.icon name="hero-clock" class="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p>{gettext("No loan history available.")}</p>
         </div>
@@ -1679,7 +1679,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </tr>
             </thead>
 
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={history <- @loan_history}>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {(history.item && history.item.item_code) || gettext("N/A")}
@@ -1719,7 +1719,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
     ~H"""
     <div>
       <%= if @fine_history == [] do %>
-        <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div class="text-center py-12 text-tertiary">
           <.icon name="hero-currency-dollar" class="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p>{gettext("No fine history available.")}</p>
         </div>
@@ -1762,7 +1762,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </tr>
             </thead>
 
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
               <tr :for={fine <- @fine_history}>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                   <span class="capitalize">{String.replace(fine.fine_type, "_", " ")}</span>
@@ -1851,17 +1851,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                       <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {gettext("Selected Item")}
                       </p>
-                      <p class="text-sm text-gray-700 dark:text-gray-300">
+                      <p class="text-sm text-secondary">
                         {[@selected_fine_item.item_code, @selected_fine_item.inventory_code]
                         |> Enum.reject(&is_nil/1)
                         |> Enum.join(" / ")}
                       </p>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                      <p class="text-sm text-secondary">
                         {if @selected_fine_item.collection,
                           do: @selected_fine_item.collection.title,
                           else: gettext("No title")}
                       </p>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                      <p class="text-sm text-secondary">
                         {if @selected_fine_item.node,
                           do: @selected_fine_item.node.name,
                           else: gettext("No node")}
@@ -1871,7 +1871,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                     <button
                       type="button"
                       phx-click="clear_selected_fine_item"
-                      class="text-sm text-red-600 hover:text-red-800 dark:text-red-400"
+                      class="text-sm text-red-600 hover:text-voile-error"
                     >
                       {gettext("Clear")}
                     </button>
@@ -1880,7 +1880,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               <% end %>
 
               <%= if !@selected_fine_item && @fine_item_search_results && @fine_item_search_results != [] do %>
-                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 space-y-2">
+                <div class="rounded-lg border border-subtle surface-card p-3 space-y-2">
                   <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
                     {gettext("Choose an item")}
                   </p>
@@ -1893,7 +1893,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                         class="w-full text-left rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 hover:border-indigo-400 hover:bg-indigo-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-indigo-500 dark:hover:bg-indigo-950"
                       >
                         <div class="font-medium">{item.item_code || item.inventory_code}</div>
-                        <div class="text-gray-600 dark:text-gray-400 text-sm">
+                        <div class="text-secondary text-sm">
                           {item.collection && item.collection.title}
                         </div>
                         <div class="text-gray-500 dark:text-gray-500 text-xs">
@@ -1966,22 +1966,22 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
           <div>
             <h3 class="text-lg font-semibold mb-4">Choose the matching item</h3>
 
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p class="text-sm text-secondary mb-4">
               Multiple active items were found for this legacy item code. Please select the exact item to add to the loan.
             </p>
 
             <div class="space-y-3">
               <div class="grid gap-4">
-                <div class="grid grid-cols-4 gap-4 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                <div class="grid grid-cols-4 gap-4 text-xs uppercase tracking-wider text-tertiary font-medium">
                   <div>{gettext("Thumbnail")}</div>
                   <div>{gettext("Title")}</div>
                   <div>{gettext("Creator")}</div>
                   <div>{gettext("Item Node")}</div>
                 </div>
                 <%= for item <- @modal_data.items do %>
-                  <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
+                  <div class="rounded-lg border border-subtle p-3 bg-white dark:bg-gray-900">
                     <div class="grid grid-cols-[auto_1fr] gap-4 items-start">
-                      <div class="h-16 w-16 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+                      <div class="h-16 w-16 overflow-hidden rounded-md surface-raised">
                         <%= if item.collection.thumbnail && item.collection.thumbnail != "" do %>
                           <img
                             src={item.collection.thumbnail}
@@ -1989,7 +1989,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                             class="h-full w-full object-cover"
                           />
                         <% else %>
-                          <div class="h-full w-full flex items-center justify-center text-gray-500 dark:text-gray-400 text-[10px] uppercase tracking-wider">
+                          <div class="h-full w-full flex items-center justify-center text-tertiary text-[10px] uppercase tracking-wider">
                             No Image
                           </div>
                         <% end %>
@@ -1999,11 +1999,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                         <div class="text-sm text-gray-900 dark:text-gray-100 font-semibold">
                           {item.collection.title}
                         </div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                        <div class="text-sm text-secondary">
                           {(item.collection.mst_creator && item.collection.mst_creator.creator_name) ||
                             "-"}
                         </div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                        <div class="text-sm text-secondary">
                           {if item.node && item.node.name,
                             do: item.node.name,
                             else: to_string(item.unit_id)}
@@ -2045,7 +2045,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             <form phx-submit="confirm_waive_fine" class="space-y-4">
               <input type="hidden" name="fine_id" value={@modal_data.fine.id} />
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-secondary mb-2">
                   {gettext("Reason for waiving (optional)")}
                 </label>
                 <textarea
@@ -2073,16 +2073,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             <h3 class="text-lg font-semibold mb-4">Pay Fine</h3>
 
             <%= if @modal_data.pending_payment do %>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <h4 class="font-semibold text-voile-info mb-2">
                   <.icon name="hero-link" class="w-5 h-5 inline" /> Payment Link Generated
                 </h4>
 
-                <p class="text-sm text-blue-700 dark:text-blue-200 mb-3">
+                <p class="text-sm text-voile-info mb-3">
                   A payment link has been created. Share this link with the member or use it to process online payment.
                 </p>
 
-                <div class="bg-white dark:bg-gray-800 rounded p-3 mb-3">
+                <div class="surface-card rounded p-3 mb-3">
                   <div class="flex items-center gap-2">
                     <input
                       id="payment-link-input"
@@ -2102,14 +2102,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
 
                 <div class="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span class="text-gray-600 dark:text-gray-400">Status:</span>
+                    <span class="text-secondary">Status:</span>
                     <span class="ml-2 font-medium">
                       {String.upcase(@modal_data.pending_payment.status)}
                     </span>
                   </div>
 
                   <div>
-                    <span class="text-gray-600 dark:text-gray-400">Amount:</span>
+                    <span class="text-secondary">Amount:</span>
                     <span class="ml-2 font-medium">
                       {format_currency(@modal_data.pending_payment.amount)}
                     </span>
@@ -2119,7 +2119,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
                 <a
                   href={@modal_data.pending_payment.payment_url}
                   target="_blank"
-                  class="mt-3 inline-block text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                  class="mt-3 inline-block text-sm text-blue-600 hover:text-voile-info"
                 >
                   Open payment page
                   <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4 inline" />
@@ -2128,8 +2128,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
             <% end %>
 
             <%= if !@modal_data.pending_payment do %>
-              <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
-                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+              <div class="bg-tone-warning-soft border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
+                <p class="text-sm text-voile-warning">
                   <.icon name="hero-information-circle" class="w-5 h-5 inline mr-1" />
                   No payment link exists. Generate one for online payment or process cash payment below.
                 </p>
@@ -2193,51 +2193,51 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
         <% @show_modal in ["different_unit_warning", "different_unit_warning_temp"] -> %>
           <div>
             <div class="flex items-center gap-3 mb-4">
-              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-tone-warning-soft">
                 <.icon
                   name="hero-exclamation-triangle"
-                  class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+                  class="w-6 h-6 text-voile-warning"
                 />
               </div>
 
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 class="text-lg font-semibold text-primary">
                 {gettext("Different Unit Location Warning")}
               </h3>
             </div>
 
-            <div class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+            <div class="mb-4 p-4 bg-tone-warning-soft border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p class="text-sm text-voile-warning mb-3">
                 <strong>{gettext("Warning:")}</strong>
                 {gettext("You are trying to add an item from a different unit location.")}
               </p>
 
               <div class="space-y-2 text-sm">
                 <div>
-                  <span class="font-medium text-yellow-900 dark:text-yellow-100">
+                  <span class="font-medium text-voile-warning">
                     {gettext("Current units in loan:")}
                   </span>
-                  <span class="ml-2 text-yellow-800 dark:text-yellow-200">
+                  <span class="ml-2 text-voile-warning">
                     {@modal_data.existing_units}
                   </span>
                 </div>
 
                 <div>
-                  <span class="font-medium text-yellow-900 dark:text-yellow-100">
+                  <span class="font-medium text-voile-warning">
                     {gettext("New item unit:")}
                   </span>
-                  <span class="ml-2 text-yellow-800 dark:text-yellow-200">
+                  <span class="ml-2 text-voile-warning">
                     {@modal_data.item.node.name}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-subtle">
+              <p class="text-sm font-medium text-secondary mb-2">
                 {gettext("Item details:")}
               </p>
 
-              <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <div class="space-y-1 text-sm text-secondary">
                 <div>
                   <span class="font-medium">{gettext("Item Code:")}</span>
                   <span class="ml-2">{@modal_data.item.item_code}</span>
@@ -2250,7 +2250,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Ledger.Transact do
               </div>
             </div>
 
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p class="text-sm text-secondary mb-4">
               {gettext(
                 "Loaning items from different unit locations at the same time may complicate the collection process. Do you want to proceed anyway?"
               )}

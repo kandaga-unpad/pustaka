@@ -81,6 +81,11 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
         |> assign(:collection_properties, [])
         |> assign(:creator, creator)
         |> assign(:node_location, node_location)
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Catalog"), path: "/manage/catalog"},
+          %{label: gettext("Collections"), path: nil}
+        ])
         |> assign(:page, page)
         |> assign(:total_pages, 0)
         |> assign(:search, "")
@@ -639,7 +644,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
 
     search = socket.assigns[:search] || ""

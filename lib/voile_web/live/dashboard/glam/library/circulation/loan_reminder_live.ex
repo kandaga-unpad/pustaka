@@ -73,7 +73,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
 
     socket =
       socket
@@ -166,7 +166,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
           {gettext("Manual Reminder Sending")}
         </h1>
 
-        <p class="mt-2 text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-secondary">
           {gettext("Send manual email reminders to members with active loans")}
         </p>
       </div>
@@ -189,7 +189,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
         </div>
       <% end %>
       <!-- Search and Sort Bar -->
-      <div class="mb-6 bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+      <div class="mb-6 surface-card shadow rounded-lg p-4">
         <div class="flex flex-col md:flex-row gap-4">
           <!-- Search -->
           <div class="flex-1">
@@ -199,7 +199,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                 name="query"
                 value={@search_query}
                 placeholder={gettext("Search name, email, or identifier...")}
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg surface-card text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
               />
             </form>
           </div>
@@ -208,7 +208,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
             <select
               phx-change="sort"
               name="by"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg surface-card text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="due_date" selected={@sort_by == "due_date"}>
                 {gettext("Earliest Due")}
@@ -224,18 +224,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
         </div>
       </div>
       <!-- Members List -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="surface-card shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-subtle">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {gettext("Members with Active Loans")}
-            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+            <span class="text-sm font-normal text-tertiary">
               ({gettext("Total")}: {@total_members})
             </span>
           </h2>
         </div>
 
         <%= if @members_with_loans == [] do %>
-          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+          <div class="p-8 text-center text-tertiary">
             <.icon
               name="hero-check-circle"
               class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500"
@@ -265,7 +265,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <tr
                   :for={member <- @members_with_loans}
                   class="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -276,7 +276,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                         {member.member_name || "Unknown"}
                       </div>
 
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                      <div class="text-sm text-tertiary">
                         {member.member_email}
                       </div>
 
@@ -287,7 +287,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                   </td>
 
                   <td class="px-6 py-4">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-info-soft text-voile-info">
                       {member.active_loan_count} item{if member.active_loan_count > 1, do: "s"}
                     </span>
                   </td>
@@ -296,10 +296,10 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                     <div class={[
                       "text-sm",
                       if(is_overdue?(member.earliest_due_date),
-                        do: "text-red-600 dark:text-red-400 font-semibold",
+                        do: "text-voile-error font-semibold",
                         else:
                           if(is_due_soon?(member.earliest_due_date),
-                            do: "text-yellow-600 dark:text-yellow-400",
+                            do: "text-voile-warning",
                             else: "text-gray-900 dark:text-gray-100"
                           )
                       )
@@ -307,7 +307,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                       {format_due_date(member.earliest_due_date)}
                     </div>
 
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <div class="text-xs text-tertiary">
                       {due_date_status(member.earliest_due_date)}
                     </div>
                   </td>
@@ -316,7 +316,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                     <button
                       phx-click="view_loans"
                       phx-value-member_id={member.member_id}
-                      class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
+                      class="text-voile-info hover:text-blue-900 dark:hover:text-blue-300 mr-4"
                     >
                       {gettext("View")}
                     </button>
@@ -324,7 +324,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                       phx-click="send_reminder"
                       phx-value-member_id={member.member_id}
                       disabled={@sending_reminder}
-                      class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 disabled:opacity-50"
+                      class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-tone-brand-soft dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 disabled:opacity-50"
                     >
                       <%= if @sending_reminder do %>
                         <.icon name="hero-arrow-path" class="animate-spin -ml-0.5 mr-2 h-4 w-4" />
@@ -374,7 +374,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                       :if={@page > 1}
                       phx-click="paginate"
                       phx-value-page={@page - 1}
-                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 surface-card text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       <.icon name="hero-chevron-left" class="h-5 w-5" />
                     </button>
@@ -382,7 +382,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                       :if={@page < @total_pages}
                       phx-click="paginate"
                       phx-value-page={@page + 1}
-                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 surface-card text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
                       <.icon name="hero-chevron-right" class="h-5 w-5" />
                     </button>
@@ -398,8 +398,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
         <div class="fixed inset-0 bg-gray-500/20 dark:bg-gray-900/50 bg-opacity-75 transition-opacity z-50">
           <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-              <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div class="relative transform overflow-hidden rounded-lg surface-card text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
+                <div class="surface-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div class="flex justify-between items-start mb-4">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
                       {gettext("Member's Active Loans")}
@@ -416,7 +416,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                   <div class="mt-4 space-y-4">
                     <div
                       :for={loan <- @selected_member_loans}
-                      class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
+                      class="border border-subtle rounded-lg p-4 bg-gray-50 dark:bg-gray-900"
                     >
                       <div class="flex justify-between items-start">
                         <div class="flex-1">
@@ -424,12 +424,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                             {get_collection_title(loan)}
                           </h4>
 
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p class="text-sm text-secondary mt-1">
                             {gettext("Item Code")}: {loan.item.item_code}
                           </p>
 
                           <%= if location_label = item_location_label(loan.item) do %>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            <p class="text-sm text-tertiary mt-1">
                               {location_label}
                             </p>
                           <% end %>
@@ -439,7 +439,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                               name="hero-calendar"
                               class="h-4 w-4 mr-1 text-gray-400 dark:text-gray-500"
                             />
-                            <span class="text-gray-600 dark:text-gray-400">
+                            <span class="text-secondary">
                               {gettext("Borrowed")}: {format_date(loan.transaction_date)}
                             </span>
                           </div>
@@ -452,11 +452,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                             <span class={[
                               "font-medium",
                               if(is_overdue_loan?(loan),
-                                do: "text-red-600 dark:text-red-400",
+                                do: "text-voile-error",
                                 else:
                                   if(is_due_soon_loan?(loan),
-                                    do: "text-yellow-600 dark:text-yellow-400",
-                                    else: "text-gray-600 dark:text-gray-400"
+                                    do: "text-voile-warning",
+                                    else: "text-secondary"
                                   )
                               )
                             ]}>
@@ -465,7 +465,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                           </div>
 
                           <%= if loan.renewal_count > 0 do %>
-                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="mt-1 text-xs text-tertiary">
                               {gettext("Renewed")}: {loan.renewal_count} {gettext("times")}
                             </div>
                           <% end %>
@@ -473,16 +473,16 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
 
                         <div>
                           <%= if is_overdue_loan?(loan) do %>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-error-soft text-voile-error">
                               {gettext("Overdue")}
                             </span>
                           <% else %>
                             <%= if is_due_soon_loan?(loan) do %>
-                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-warning-soft text-voile-warning">
                                 {gettext("Due Soon")}
                               </span>
                             <% else %>
-                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tone-success-soft text-voile-success">
                                 {gettext("Active")}
                               </span>
                             <% end %>
@@ -498,7 +498,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                     phx-click="send_reminder"
                     phx-value-member_id={@selected_member_id}
                     disabled={@sending_reminder}
-                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-base font-medium text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-tone-brand-soft text-base font-medium text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                   >
                     <%= if @sending_reminder do %>
                       {gettext("Sending...")}
@@ -508,7 +508,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.LoanReminderLive do
                   </button>
                   <button
                     phx-click="close_loans"
-                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 surface-card text-base font-medium text-secondary hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
                   >
                     {gettext("Close")}
                   </button>

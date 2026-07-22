@@ -6,41 +6,39 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
 
   def render(assigns) do
     ~H"""
-    <div class="w-full flex flex-col md:flex-row items-start justify-between my-6">
-      <div class="flex flex-col">
-        <h5>
-          {gettext("Library Holidays & Schedule Management")}
-        </h5>
-        <p class="text-gray-500 text-sm mt-1">
-          {gettext("Manage holidays, weekly schedules, and non-business days for fine calculations")}
-        </p>
-      </div>
-      <div>
-        <.button phx-click="new_holiday" class="primary-btn">
-          <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Holiday")}
-        </.button>
-        <.link
-          navigate={~p"/manage/settings/holidays/import"}
-          class="warning-btn inline-flex items-center"
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("Holidays & schedule")}
+      description={
+        gettext("Manage holidays, weekly schedules, and non-business days for fine calculations")
+      }
+      icon="hero-calendar-days"
+      tone={:brand}
+    >
+      <:actions>
+        <.voile_button tone={:brand} variant={:solid} size={:md} phx-click="new_holiday">
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Add holiday")}
+        </.voile_button>
+        <.voile_button
+          tone={:brand}
+          variant={:outline}
+          size={:md}
+          href={~p"/manage/settings/holidays/import"}
         >
-          <.icon name="hero-arrow-up-tray" class="w-4 h-4 mr-2" /> {gettext("Import Data")}
-        </.link>
-      </div>
-    </div>
+          <.icon name="hero-arrow-up-tray" class="w-4 h-4" /> {gettext("Import")}
+        </.voile_button>
+      </:actions>
+    </.voile_page_header>
 
-    <section class="flex flex-col md:flex-row gap-4">
-      <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar
-          current_user={@current_scope.user}
-          current_path={@current_path}
-          is_super_admin={@is_super_admin}
-        />
-      </div>
-
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
       <div class="space-y-6">
         <!-- Holiday Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-calendar" class="h-8 w-8 text-voile-info" />
@@ -54,7 +52,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
             </div>
           </div>
 
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-flag" class="h-8 w-8 text-voile-success" />
@@ -68,7 +66,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
             </div>
           </div>
 
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-building-library" class="h-8 w-8 text-voile-primary" />
@@ -82,7 +80,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
             </div>
           </div>
 
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-star" class="h-8 w-8 text-voile-warning" />
@@ -114,7 +112,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </div>
         </div>
         <!-- Weekly Schedule Configuration -->
-        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
+        <div class="surface-card shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
               <h3 class="text-lg leading-6 font-medium">{gettext("Weekly Schedule")}</h3>
@@ -128,7 +126,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
               <label class="text-sm font-medium">{gettext("Viewing schedule for")}</label>
               <form phx-change="select_unit">
                 <select
-                  class="border border-gray-300 rounded-md px-2 py-1 bg-white dark:bg-gray-700"
+                  class="border border-gray-300 rounded-md px-2 py-1 surface-card"
                   name="unit_id"
                   disabled={not @is_super_admin}
                   title={
@@ -220,7 +218,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </div>
         </div>
         <!-- Holidays Table -->
-        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
+        <div class="surface-card shadow rounded-lg">
           <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
             <div class="flex items-center justify-between">
               <h3 class="text-lg leading-6 font-medium">{gettext("Holidays List")}</h3>
@@ -349,7 +347,7 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
           </div>
         </div>
       </div>
-    </section>
+    </.voile_settings_shell>
     <!-- Holiday Form Modal -->
     <%= if @show_form do %>
       <.modal id="holiday-form-modal" show={@show_form} on_cancel={JS.push("cancel_form")}>
@@ -445,7 +443,11 @@ defmodule VoileWeb.Dashboard.Settings.HolidayLive do
         |> assign(:is_super_admin, is_super_admin)
         |> assign(:show_form, false)
         |> assign(:form_holiday, nil)
-        |> assign(:current_path, "/manage/settings/holidays")
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Settings"), path: "/manage/settings"},
+          %{label: gettext("Holidays"), path: nil}
+        ])
         |> assign(:form, to_form(LibHolidays.change_holiday(%LibHoliday{})))
         |> assign(:nodes, nodes)
 

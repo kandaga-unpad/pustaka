@@ -8,44 +8,39 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
 
   def render(assigns) do
     ~H"""
-    <div class="w-full flex flex-col md:flex-row items-start justify-between my-6">
-      <div class="flex flex-col">
-        <h5>
-          {gettext("System Nodes / Units Management")}
-        </h5>
-        <p class="text-gray-500 text-sm mt-1">
-          {gettext("Manage library branches, units, and organizational nodes")}
-        </p>
-      </div>
-
-      <%= if @current_scope.user && VoileWeb.Auth.Authorization.is_super_admin?(@current_scope.user) do %>
-        <div>
-          <.button phx-click="new_node" class="primary-btn">
-            <.icon name="hero-plus" class="w-4 h-4 mr-2" /> {gettext("Add Node")}
-          </.button>
-          <.button
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("Nodes / Units")}
+      description={gettext("Manage library branches, units, and organizational nodes")}
+      icon="hero-building-library"
+      tone={:brand}
+    >
+      <:actions>
+        <%= if @current_scope.user && VoileWeb.Auth.Authorization.is_super_admin?(@current_scope.user) do %>
+          <.voile_button tone={:brand} variant={:solid} size={:md} phx-click="new_node">
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("Add node")}
+          </.voile_button>
+          <.voile_button
+            tone={:brand}
+            variant={:outline}
+            size={:md}
             href={~p"/manage/settings/nodes/rules"}
-            class="warning-btn"
           >
-            <.icon name="hero-cog-6-tooth" class="w-4 h-4 mr-2" /> {gettext("Configure Rules")}
-          </.button>
-        </div>
-      <% end %>
-    </div>
+            <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> {gettext("Configure rules")}
+          </.voile_button>
+        <% end %>
+      </:actions>
+    </.voile_page_header>
 
-    <section class="flex flex-col md:flex-row gap-4">
-      <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar
-          current_user={@current_scope.user}
-          current_path={@current_path}
-          is_super_admin={@is_super_admin}
-        />
-      </div>
-
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
       <div class="space-y-6 flex-1">
         <!-- Node Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-building-library" class="h-8 w-8 text-voile-primary" />
@@ -59,7 +54,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
             </div>
           </div>
 
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-photo" class="h-8 w-8 text-voile-success" />
@@ -73,7 +68,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
             </div>
           </div>
 
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+          <div class="surface-card rounded-lg shadow p-6">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <.icon name="hero-check-circle" class="h-8 w-8 text-voile-info" />
@@ -103,8 +98,8 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           </div>
         </div>
         <!-- Nodes Grid -->
-        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
-          <div class="px-4 py-5 border-b border-gray-200 dark:border-gray-600 sm:px-6">
+        <div class="surface-card shadow rounded-lg">
+          <div class="px-4 py-5 border-b border-subtle sm:px-6">
             <h3 class="text-lg leading-6 font-medium">{gettext("Nodes List")}</h3>
 
             <div class="mt-1 text-sm">{gettext("Manage and organize your system nodes")}</div>
@@ -113,7 +108,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           <div class="px-4 py-5 sm:p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <%= for node <- @nodes do %>
-                <div class="relative group bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-voile-primary dark:hover:border-voile-primary transition-all duration-200 overflow-hidden">
+                <div class="relative group bg-gray-50 dark:bg-gray-800 rounded-lg border border-subtle hover:border-voile-primary dark:hover:border-voile-primary transition-all duration-200 overflow-hidden">
                   <!-- Node Image -->
                   <div class="aspect-video bg-gradient-to-br from-voile-primary/10 to-voile-secondary/10 relative overflow-hidden">
                     <%= if node.image do %>
@@ -141,7 +136,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
                   <div class="p-4">
                     <h4 class="text-lg font-semibold mb-2 line-clamp-1">{node.name}</h4>
 
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 min-h-[2.5rem]">
+                    <p class="text-sm text-secondary mb-4 line-clamp-2 min-h-[2.5rem]">
                       {node.description || gettext("No description provided")}
                     </p>
                     <!-- Actions -->
@@ -197,7 +192,7 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
           </div>
         </div>
       </div>
-    </section>
+    </.voile_settings_shell>
     <!-- Node Form Modal -->
     <%= if @show_form do %>
       <.modal id="node-form-modal" show={@show_form} on_cancel={JS.push("cancel_form")}>
@@ -336,7 +331,11 @@ defmodule VoileWeb.Dashboard.Settings.SystemNodeLive do
         |> assign(:show_form, false)
         |> assign(:form_node, nil)
         |> assign(:image_preview, nil)
-        |> assign(:current_path, "/manage/settings/nodes")
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Settings"), path: "/manage/settings"},
+          %{label: gettext("Nodes"), path: nil}
+        ])
         |> assign(:is_super_admin, is_super_admin)
         |> assign(:form, to_form(System.change_node(%Node{})))
         |> allow_upload(:node_image,

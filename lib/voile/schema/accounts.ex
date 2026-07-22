@@ -346,6 +346,23 @@ defmodule Voile.Schema.Accounts do
       |> maybe_put(:gender, attrs[:gender])
       |> maybe_put(:registration_date, attrs[:registration_date])
 
+    # Calculate expiry date based on member type membership_period_days
+    user_attrs =
+      if user_attrs[:user_type_id] do
+        member_type = Repo.get(MemberType, user_attrs[:user_type_id])
+
+        if member_type && is_integer(member_type.membership_period_days) &&
+             member_type.membership_period_days > 0 do
+          registration_date = user_attrs[:registration_date] || Date.utc_today()
+          expiry = Date.add(registration_date, member_type.membership_period_days)
+          Map.put(user_attrs, :expiry_date, expiry)
+        else
+          user_attrs
+        end
+      else
+        user_attrs
+      end
+
     %User{}
     |> User.registration_changeset(user_attrs)
     |> Repo.insert()
@@ -1191,7 +1208,11 @@ defmodule Voile.Schema.Accounts do
       when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
-    UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
+
+    UserNotifier.deliver_reset_password_instructions(
+      user,
+      reset_password_url_fun.(encoded_token)
+    )
   end
 
   @doc """

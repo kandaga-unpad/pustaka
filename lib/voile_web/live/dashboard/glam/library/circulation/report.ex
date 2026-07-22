@@ -21,13 +21,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Circulation Report</h1>
 
-        <p class="mt-2 text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-secondary">
           View circulation statistics and activity (read-only)
         </p>
       </div>
       <%!-- Tabs Navigation --%>
       <div class="mb-6">
-        <div class="border-b border-gray-200 dark:border-gray-600">
+        <div class="border-b border-subtle">
           <nav class="-mb-px flex space-x-8">
             <button
               phx-click="switch_tab"
@@ -184,17 +184,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       <%!-- Detailed Statistics Breakdown --%>
       <.detailed_circulation_stats detailed_stats={@detailed_stats} loading={is_nil(@detailed_stats)} />
       <%!-- Recent Activities Section --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+      <div class="surface-card rounded-lg shadow p-6 mb-8">
+        <h2 class="text-xl font-semibold text-primary mb-4">Recent Activity</h2>
 
         <div class="space-y-4">
           <%= if Enum.empty?(@recent_activities) do %>
-            <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+            <p class="text-tertiary text-center py-8">
               No recent activities to display
             </p>
           <% else %>
             <%= for activity <- @recent_activities do %>
-              <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600 last:border-0">
+              <div class="flex items-center justify-between py-3 border-b border-subtle last:border-0">
                 <div class="flex items-start">
                   <div class="flex items-center justify-center w-10 h-10">
                     <div class={"w-2 h-2 rounded-full #{activity_color(activity.event_type)}"}></div>
@@ -203,7 +203,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                   <div class="ml-4">
                     <p class="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
 
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-tertiary">
                       {format_datetime(activity.event_date)}
                     </p>
                   </div>
@@ -217,8 +217,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
       </div>
       <%!-- Quick Links Section (Super Admin Only) --%>
       <%= if @is_super_admin do %>
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <div class="surface-card rounded-lg shadow p-6">
+          <h2 class="text-xl font-semibold text-primary mb-4">
             Quick Links (Admin)
           </h2>
 
@@ -228,7 +228,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               class="flex items-center p-4 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors"
             >
               <.icon name="hero-document-text" class="w-6 h-6 text-blue-500 mr-3" />
-              <span class="text-sm font-medium text-gray-900 dark:text-white">
+              <span class="text-sm font-medium text-primary">
                 View All Transactions
               </span>
             </.link>
@@ -237,21 +237,21 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
               class="flex items-center p-4 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors"
             >
               <.icon name="hero-bookmark" class="w-6 h-6 text-green-500 mr-3" />
-              <span class="text-sm font-medium text-gray-900 dark:text-white">View Reservations</span>
+              <span class="text-sm font-medium text-primary">View Reservations</span>
             </.link>
             <.link
               navigate="/manage/glam/library/circulation/fines"
               class="flex items-center p-4 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors"
             >
               <.icon name="hero-banknotes" class="w-6 h-6 text-red-500 mr-3" />
-              <span class="text-sm font-medium text-gray-900 dark:text-white">View Fines</span>
+              <span class="text-sm font-medium text-primary">View Fines</span>
             </.link>
             <.link
               navigate="/manage/glam/library/circulation/circulation_history"
               class="flex items-center p-4 bg-gray-50 dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors"
             >
               <.icon name="hero-clock" class="w-6 h-6 text-purple-500 mr-3" />
-              <span class="text-sm font-medium text-gray-900 dark:text-white">View History</span>
+              <span class="text-sm font-medium text-primary">View History</span>
             </.link>
           </div>
         </div>
@@ -278,40 +278,40 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
         </.form>
       </div>
       <%!-- Transactions Table --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
+      <div class="surface-card rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Member
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Item
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Status
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Checkout Date
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Due Date
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+          <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@transactions) do %>
               <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="px-6 py-8 text-center text-tertiary">
                   No transactions found
                 </td>
               </tr>
@@ -323,7 +323,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       {transaction.member.fullname}
                     </div>
 
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-tertiary">
                       {transaction.member.identifier}
                     </div>
                   </td>
@@ -333,7 +333,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       {transaction.item.collection.title}
                     </div>
 
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-tertiary">
                       {transaction.item.item_code}
                     </div>
                   </td>
@@ -344,11 +344,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     </span>
                   </td>
 
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-tertiary">
                     {format_datetime(transaction.transaction_date)}
                   </td>
 
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-tertiary">
                     {format_datetime(transaction.due_date)}
                   </td>
 
@@ -389,40 +389,40 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
         </.form>
       </div>
       <%!-- Reservations Table --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
+      <div class="surface-card rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Member
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Item
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Status
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Reserved On
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Expiry
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+          <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@reservations) do %>
               <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="px-6 py-8 text-center text-tertiary">
                   No reservations found
                 </td>
               </tr>
@@ -434,7 +434,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       {reservation.member.fullname}
                     </div>
 
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-tertiary">
                       {reservation.member.identifier}
                     </div>
                   </td>
@@ -444,7 +444,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       {reservation.item.collection.title}
                     </div>
 
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-tertiary">
                       {reservation.item.item_code}
                     </div>
                   </td>
@@ -455,11 +455,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     </span>
                   </td>
 
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-tertiary">
                     {format_datetime(reservation.reservation_date)}
                   </td>
 
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-tertiary">
                     {format_datetime(reservation.expiry_date)}
                   </td>
 
@@ -500,44 +500,44 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
         </.form>
       </div>
       <%!-- Fines Table --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow overflow-hidden">
+      <div class="surface-card rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Member
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Type
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Amount
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Balance
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Status
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Date
               </th>
 
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+          <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-600">
             <%= if Enum.empty?(@fines) do %>
               <tr>
-                <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="px-6 py-8 text-center text-tertiary">
                   No fines found
                 </td>
               </tr>
@@ -549,7 +549,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                       {fine.member.fullname}
                     </div>
 
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-tertiary">
                       {fine.member.identifier}
                     </div>
                   </td>
@@ -574,7 +574,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
                     </span>
                   </td>
 
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-tertiary">
                     {format_datetime(fine.inserted_at)}
                   </td>
 
@@ -600,19 +600,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
   # Pagination Controls Component
   defp pagination_controls(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-600 sm:px-6 mt-4 rounded-lg shadow">
+    <div class="surface-card px-4 py-3 flex items-center justify-between border-t border-subtle sm:px-6 mt-4 rounded-lg shadow">
       <div class="flex-1 flex justify-between sm:hidden">
         <button
           :if={@page > 1}
           phx-click="prev_page"
-          class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600"
+          class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-secondary surface-card hover:bg-gray-50 dark:hover:bg-gray-600"
         >
           Previous
         </button>
         <button
           :if={@page < @total_pages}
           phx-click="next_page"
-          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600"
+          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-secondary surface-card hover:bg-gray-50 dark:hover:bg-gray-600"
         >
           Next
         </button>
@@ -620,7 +620,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
 
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
-          <p class="text-sm text-gray-700 dark:text-gray-300">
+          <p class="text-sm text-secondary">
             Page <span class="font-medium">{@page}</span>
             of <span class="font-medium">{@total_pages}</span>
           </p>
@@ -631,14 +631,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Report do
             <button
               :if={@page > 1}
               phx-click="prev_page"
-              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600"
+              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 surface-card text-sm font-medium text-tertiary hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               <.icon name="hero-chevron-left" class="h-5 w-5" />
             </button>
             <button
               :if={@page < @total_pages}
               phx-click="next_page"
-              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600"
+              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 surface-card text-sm font-medium text-tertiary hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               <.icon name="hero-chevron-right" class="h-5 w-5" />
             </button>

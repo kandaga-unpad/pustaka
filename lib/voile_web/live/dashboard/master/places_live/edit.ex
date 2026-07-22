@@ -23,6 +23,11 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.Edit do
        socket
        |> assign(:place, place)
        |> assign(:page_title, "Edit Place")
+       |> assign(:breadcrumb, [
+         %{label: gettext("Manage"), path: "/manage"},
+         %{label: gettext("Master data"), path: "/manage/master"},
+         %{label: gettext("Places"), path: nil}
+       ])
        |> assign(:live_action, :edit)}
     end
   end

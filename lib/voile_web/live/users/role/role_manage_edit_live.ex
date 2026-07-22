@@ -172,7 +172,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
 
   @impl true
   def handle_event("paginate_users", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
 
     socket =
       socket
@@ -272,7 +272,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
           <div class="space-y-8">
             <%!-- Role Basic Information --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+              <h3 class="text-lg font-semibold text-primary mb-6">
                 {gettext("Basic Information")}
               </h3>
 
@@ -289,7 +289,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
             <%!-- Permissions Management --%>
             <%= if can?(@current_scope.user, "permissions.manage") do %>
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+                <h3 class="text-lg font-semibold text-primary mb-6">
                   {gettext("Manage Permissions")}
                 </h3>
 
@@ -299,7 +299,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                       Enum.all?(permissions, fn p ->
                         Enum.any?(@role.permissions, &(&1.id == p.id))
                       end) %> <% is_expanded = MapSet.member?(@expanded_resources, resource) %>
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div class="border border-subtle rounded-lg overflow-hidden">
                       <%!-- Resource Header --%>
                       <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800">
                         <div class="flex items-center gap-3 flex-1">
@@ -317,10 +317,10 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                             />
                           </button>
                           <div class="flex-1">
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white capitalize">
+                            <span class="text-sm font-semibold text-primary capitalize">
                               {resource}
                             </span>
-                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                            <span class="ml-2 text-xs text-tertiary">
                               ({Enum.count(permissions, fn p ->
                                 Enum.any?(@role.permissions, &(&1.id == p.id))
                               end)}/{length(permissions)} enabled)
@@ -336,7 +336,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                             "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
                             if(all_enabled?,
                               do: "bg-blue-600",
-                              else: "bg-gray-200 dark:bg-gray-700"
+                              else: "surface-raised"
                             )
                           ]}
                           title={
@@ -356,18 +356,18 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                       </div>
                       <%!-- Expanded Permissions List --%>
                       <%= if is_expanded do %>
-                        <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                        <div class="border-t border-subtle bg-white dark:bg-gray-900">
                           <%= for permission <- permissions do %>
                             <% has_permission? =
                               Enum.any?(@role.permissions, &(&1.id == permission.id)) %>
                             <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                               <div class="flex-1">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                <div class="text-sm font-medium text-primary">
                                   {permission.action}
                                 </div>
 
                                 <%= if permission.description do %>
-                                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  <div class="text-xs text-tertiary mt-0.5">
                                     {permission.description}
                                   </div>
                                 <% end %>
@@ -381,7 +381,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                                   "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500",
                                   if(has_permission?,
                                     do: "bg-green-600",
-                                    else: "bg-gray-200 dark:bg-gray-700"
+                                    else: "surface-raised"
                                   )
                                 ]}
                               >
@@ -406,7 +406,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
             <%= if can?(@current_scope.user, "roles.update") do %>
               <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 class="text-lg font-semibold text-primary">
                     {gettext("Assigned Users")} ({length(@role_users)})
                   </h3>
 
@@ -433,7 +433,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                     <%= if length(@search_results) > 0 do %>
                       <div class="mt-2 space-y-1">
                         <%= for user <- @search_results do %>
-                          <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded">
+                          <div class="flex items-center justify-between p-2 surface-card rounded">
                             <div>
                               <div class="text-sm font-medium">{user.fullname || user.username}</div>
 
@@ -473,11 +473,11 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                           <% end %>
 
                           <div>
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                            <div class="text-sm font-medium text-primary">
                               {user.fullname || user.username}
                             </div>
 
-                            <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                            <div class="text-xs text-tertiary">{user.email}</div>
                           </div>
                         </div>
 
@@ -495,7 +495,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
 
                   <%= if @users_total_pages > 1 do %>
                     <div class="mt-4">
-                      <.pagination
+                      <.voile_pagination
                         page={@users_page}
                         total_pages={@users_total_pages}
                         event="paginate_users"
@@ -503,7 +503,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Edit do
                     </div>
                   <% end %>
                 <% else %>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-tertiary">
                     {gettext("No users assigned to this role.")}
                   </p>
                 <% end %>

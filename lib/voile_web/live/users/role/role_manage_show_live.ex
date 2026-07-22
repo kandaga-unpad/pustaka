@@ -23,7 +23,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
 
   @impl true
   def handle_event("paginate_users", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
 
     socket =
       socket
@@ -51,7 +51,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
       </.header>
 
       <div class="flex gap-4">
-        <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
+        <div class="w-full surface-card p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/members/management/roles"}>
               {gettext("Back to Roles")}
@@ -70,7 +70,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
             <div class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                   {String.capitalize(@role.name)}
                   <%= if @role.is_system_role do %>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-voile-info/10 text-voile-info">
@@ -80,27 +80,27 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                 </h3>
 
                 <%= if @role.description do %>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">{@role.description}</p>
+                  <p class="text-sm text-secondary">{@role.description}</p>
                 <% end %>
               </div>
 
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
+              <div class="border-t border-subtle pt-6">
+                <h4 class="text-base font-medium text-primary mb-4">
                   {gettext("Permissions")} ({length(@role.permissions)})
                 </h4>
 
                 <%= if length(@role.permissions) > 0 do %>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <%= for permission <- @role.permissions do %>
-                      <div class="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div class="flex items-center gap-2 px-3 py-2 bg-tone-success-soft rounded-lg">
                         <.icon name="hero-check-circle" class="w-5 h-5 text-green-600" />
                         <div>
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          <div class="text-sm font-medium text-primary">
                             {permission.name}
                           </div>
 
                           <%= if permission.description do %>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <div class="text-xs text-tertiary">
                               {permission.description}
                             </div>
                           <% end %>
@@ -109,14 +109,14 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                     <% end %>
                   </div>
                 <% else %>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-tertiary">
                     {gettext("No permissions assigned to this role.")}
                   </p>
                 <% end %>
               </div>
 
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">
+              <div class="border-t border-subtle pt-6">
+                <h4 class="text-base font-medium text-primary mb-4">
                   {gettext("Assigned Users")} ({length(@role_users)})
                 </h4>
 
@@ -138,11 +138,11 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                         <% end %>
 
                         <div>
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          <div class="text-sm font-medium text-primary">
                             {user.fullname || user.username}
                           </div>
 
-                          <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                          <div class="text-xs text-tertiary">{user.email}</div>
                         </div>
                       </div>
                     <% end %>
@@ -150,7 +150,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
 
                   <%= if @users_total_pages > 1 do %>
                     <div class="mt-4">
-                      <.pagination
+                      <.voile_pagination
                         page={@users_page}
                         total_pages={@users_total_pages}
                         event="paginate_users"
@@ -158,7 +158,7 @@ defmodule VoileWeb.Users.Role.ManageLive.Show do
                     </div>
                   <% end %>
                 <% else %>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-tertiary">
                     {gettext("No users assigned to this role.")}
                   </p>
                 <% end %>

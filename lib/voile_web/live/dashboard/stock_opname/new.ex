@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
       <div class="mb-6">
         <.link
           navigate={~p"/manage/catalog/stock_opname"}
-          class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
+          class="text-blue-600 hover:text-voile-info dark:hover:text-blue-300 flex items-center gap-2 mb-4"
         >
           <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Sessions
         </.link>
@@ -21,17 +21,17 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
           Create Stock Opname Session
         </h1>
 
-        <p class="text-gray-600 dark:text-gray-400 mt-2">
+        <p class="text-secondary mt-2">
           Set up a new inventory checking session for your collections.
         </p>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <div class="surface-card rounded-lg shadow-sm p-6">
         <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-6">
           <%!-- Title --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Title <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-1">
+              Title <span class="text-voile-error">*</span>
             </label>
             <.input
               field={@form[:title]}
@@ -43,7 +43,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
           </div>
           <%!-- Description --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="block text-sm font-medium text-secondary mb-1">
               Description
             </label>
             <.input
@@ -56,10 +56,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
           </div>
           <%!-- Node Selection --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Nodes/Locations <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-2">
+              Nodes/Locations <span class="text-voile-error">*</span>
             </label>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <p class="text-xs text-tertiary mb-2">
               Select one or more nodes to include in this session
             </p>
 
@@ -77,22 +77,22 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   phx-value-id={node.id}
                   class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
                 />
-                <span class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="text-sm text-secondary">
                   {node.name} ({node.abbr})
                 </span>
               </label>
             </div>
 
-            <p :if={@selected_node_ids == []} class="text-sm text-red-600 dark:text-red-400 mt-1">
+            <p :if={@selected_node_ids == []} class="text-sm text-voile-error mt-1">
               At least one node must be selected
             </p>
           </div>
           <%!-- Collection Types --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Collection Types <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-2">
+              Collection Types <span class="text-voile-error">*</span>
             </label>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <p class="text-xs text-tertiary mb-2">
               Select collection types to include in this session
             </p>
 
@@ -109,21 +109,21 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   phx-click="toggle_collection_type"
                   phx-value-type={value}
                   class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                /> <span class="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+                /> <span class="text-sm text-secondary">{label}</span>
               </label>
             </div>
 
             <p
               :if={@selected_collection_types == []}
-              class="text-sm text-red-600 dark:text-red-400 mt-1"
+              class="text-sm text-voile-error mt-1"
             >
               At least one collection type must be selected
             </p>
           </div>
           <%!-- Scope Type --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Scope <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-2">
+              Scope <span class="text-voile-error">*</span>
             </label>
             <div class="space-y-3">
               <label
@@ -140,16 +140,16 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   class="mt-0.5 border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
                 />
                 <div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{scope_description(value)}</p>
+                  <span class="text-sm font-medium text-secondary">{label}</span>
+                  <p class="text-xs text-tertiary">{scope_description(value)}</p>
                 </div>
               </label>
             </div>
           </div>
           <%!-- Collection Selector (if scope is collection) --%>
           <div :if={@scope_type == "collection"}>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Select Collection <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-1">
+              Select Collection <span class="text-voile-error">*</span>
             </label>
             <div class="relative">
               <.input
@@ -162,7 +162,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
               />
               <div
                 :if={@collection_search_results != []}
-                class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                class="absolute z-10 w-full mt-1 surface-card border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
               >
                 <button
                   :for={collection <- @collection_search_results}
@@ -170,25 +170,25 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   phx-click="select_collection"
                   phx-value-id={collection.id}
                   phx-value-title={collection.title}
-                  class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                  class="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-subtle last:border-b-0"
                 >
                   <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {collection.title}
                   </p>
 
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{collection.collection_code}</p>
+                  <p class="text-xs text-tertiary">{collection.collection_code}</p>
                 </button>
               </div>
             </div>
 
-            <p :if={@selected_collection} class="text-sm text-green-600 dark:text-green-400 mt-1">
+            <p :if={@selected_collection} class="text-sm text-voile-success mt-1">
               Selected: {@selected_collection.title}
             </p>
           </div>
           <%!-- Location Selector (if scope is location) --%>
           <div :if={@scope_type == "location"}>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Select Location <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-1">
+              Select Location <span class="text-voile-error">*</span>
             </label>
             <select
               name="scope_id"
@@ -201,50 +201,50 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                 {location.location_name}
               </option>
             </select>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p class="text-xs text-tertiary mt-1">
               Stock opname will only include items in this specific location
             </p>
           </div>
           <%!-- All Scope Info --%>
           <div
             :if={@scope_type == "all"}
-            class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+            class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4"
           >
             <div class="flex items-center gap-2">
-              <.icon name="hero-information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span class="text-sm font-medium text-blue-900 dark:text-blue-300">
+              <.icon name="hero-information-circle" class="w-5 h-5 text-voile-info" />
+              <span class="text-sm font-medium text-voile-info">
                 Full Node Coverage
               </span>
             </div>
 
-            <p class="text-sm text-blue-700 dark:text-blue-400 mt-2">
+            <p class="text-sm text-voile-info mt-2">
               Stock opname will include all items in the selected nodes and collection types, without location restrictions.
             </p>
           </div>
           <%!-- Expected Item Count --%>
           <div
             :if={@estimated_items > 0}
-            class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
+            class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4"
           >
             <div class="flex items-center gap-2 mb-2">
-              <.icon name="hero-information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span class="text-sm font-medium text-blue-900 dark:text-blue-300">
+              <.icon name="hero-information-circle" class="w-5 h-5 text-voile-info" />
+              <span class="text-sm font-medium text-voile-info">
                 Estimated Items
               </span>
             </div>
 
-            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{@estimated_items}</p>
+            <p class="text-2xl font-bold text-voile-info">{@estimated_items}</p>
 
-            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">
+            <p class="text-xs text-voile-info mt-1">
               Based on selected nodes, collection types, and scope
             </p>
           </div>
           <%!-- Librarian Assignment --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Assign Librarians <span class="text-red-500 dark:text-red-400">*</span>
+            <label class="block text-sm font-medium text-secondary mb-2">
+              Assign Librarians <span class="text-voile-error">*</span>
             </label>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <p class="text-xs text-tertiary mb-2">
               Select librarians who will check items in this session
             </p>
 
@@ -263,21 +263,21 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
                   class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
                 />
                 <div class="flex-1">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span class="text-sm font-medium text-secondary">
                     {user.fullname || user.email}
                   </span>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                  <p class="text-xs text-tertiary">{user.email}</p>
                 </div>
               </label>
             </div>
 
-            <p :if={@selected_librarian_ids == []} class="text-sm text-red-600 dark:text-red-400 mt-1">
+            <p :if={@selected_librarian_ids == []} class="text-sm text-voile-error mt-1">
               At least one librarian must be assigned
             </p>
           </div>
           <%!-- Notes --%>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="block text-sm font-medium text-secondary mb-1">
               Notes
             </label>
             <.input
@@ -289,7 +289,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
             />
           </div>
           <%!-- Actions --%>
-          <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex gap-3 pt-4 border-t border-subtle">
             <button
               type="submit"
               disabled={!@can_submit}
@@ -300,7 +300,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.New do
             </button>
             <.link
               navigate={~p"/manage/catalog/stock_opname"}
-              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
+              class="px-4 py-2 bg-gray-200 hover:surface-raised dark:hover:bg-gray-600 text-secondary font-medium rounded-lg transition-colors"
             >
               Cancel
             </.link>

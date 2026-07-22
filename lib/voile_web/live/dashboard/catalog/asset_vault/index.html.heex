@@ -7,15 +7,15 @@
       <div class="flex items-center gap-2 mb-1">
         <.link
           navigate={~p"/manage/catalog"}
-          class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+          class="text-sm text-voile-info hover:underline flex items-center gap-1"
         >
           <.icon name="hero-arrow-left" class="w-3 h-3" /> Catalog
         </.link>
       </div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+      <h1 class="text-2xl font-bold text-primary flex items-center gap-2">
         <.icon name="hero-archive-box" class="w-6 h-6 text-blue-500" /> Asset Vault
       </h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+      <p class="text-sm text-tertiary mt-0.5">
         Digital Asset Management — browse, organise, and share your files
       </p>
     </div>
@@ -56,14 +56,14 @@
             <.icon name="hero-chevron-right" class="w-3 h-3 text-gray-400 mx-1" />
           <% end %>
           <%= if breadcrumb.id == @current_folder_id do %>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <span class="text-sm font-medium text-tertiary">
               {breadcrumb.name}
             </span>
           <% else %>
             <button
               phx-click="navigate_breadcrumb"
               phx-value-id={breadcrumb.id || ""}
-              class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              class="text-sm font-medium text-voile-info hover:underline"
             >
               {breadcrumb.name}
             </button>
@@ -77,7 +77,7 @@
        Upload Panel (collapsible)
   ───────────────────────────────────────────────────────────────────────── --%>
   <%= if @show_upload_panel do %>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-5 border border-blue-200 dark:border-blue-800">
+    <div class="surface-card rounded-lg shadow-sm p-6 mb-5 border border-blue-200 dark:border-blue-800">
       <form phx-submit="save_attachments" phx-change="validate">
         <div
           phx-drop-target={@uploads.attachments.ref}
@@ -86,17 +86,17 @@
         >
           <div class="text-center flex flex-col items-center gap-2">
             <.icon name="hero-cloud-arrow-up" class="w-12 h-12 text-gray-400 dark:text-gray-500" />
-            <div class="flex text-sm text-gray-600 dark:text-gray-400">
+            <div class="flex text-sm text-secondary">
               <label
                 for={@uploads.attachments.ref}
-                class="relative cursor-pointer font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                class="relative cursor-pointer font-medium text-voile-info hover:text-blue-500 dark:hover:text-blue-300"
               >
                 <span>Choose files</span>
                 <.live_file_input upload={@uploads.attachments} class="sr-only" />
               </label>
               <p class="pl-1">or drag and drop here</p>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
+            <p class="text-xs text-tertiary">
               Any file type · up to 100 MB · max 10 files
             </p>
           </div>
@@ -105,17 +105,17 @@
         <%= if length(@uploads.attachments.entries) > 0 do %>
           <div class="mt-4 space-y-2">
             <%= for entry <- @uploads.attachments.entries do %>
-              <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-600">
+              <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-3 border border-subtle">
                 <.icon name="hero-document" class="w-5 h-5 text-gray-400 shrink-0" />
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p class="text-sm font-medium text-primary truncate">
                     {entry.client_name}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-tertiary">
                     {format_bytes(entry.client_size)} · {entry.client_type}
                   </p>
                   <%!-- Progress bar --%>
-                  <div class="mt-1 h-1 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                  <div class="mt-1 h-1 surface-raised rounded-full overflow-hidden">
                     <div
                       class="h-full bg-blue-500 transition-all"
                       style={"width: #{entry.progress}%"}
@@ -127,14 +127,14 @@
                   type="button"
                   phx-click="cancel_upload"
                   phx-value-ref={entry.ref}
-                  class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 shrink-0"
+                  class="text-red-500 hover:text-voile-error dark:hover:text-red-300 shrink-0"
                   title="Remove"
                 >
                   <.icon name="hero-x-mark" class="w-4 h-4" />
                 </button>
               </div>
               <%= for err <- upload_errors(@uploads.attachments, entry) do %>
-                <p class="text-xs text-red-500 dark:text-red-400 ml-8">
+                <p class="text-xs text-voile-error ml-8">
                   {humanize_upload_error(err)}
                 </p>
               <% end %>
@@ -155,39 +155,39 @@
        Stats strip
   ───────────────────────────────────────────────────────────────────────── --%>
   <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
+    <div class="surface-card rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
       <.icon name="hero-archive-box" class="w-5 h-5 text-blue-500 shrink-0" />
       <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Total Files</p>
-        <p class="text-lg font-bold text-gray-900 dark:text-white">{@stats.total}</p>
+        <p class="text-xs text-tertiary">Total Files</p>
+        <p class="text-lg font-bold text-primary">{@stats.total}</p>
       </div>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
+    <div class="surface-card rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
       <.icon name="hero-photo" class="w-5 h-5 text-green-500 shrink-0" />
       <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Images</p>
-        <p class="text-lg font-bold text-gray-900 dark:text-white">{@stats.images}</p>
+        <p class="text-xs text-tertiary">Images</p>
+        <p class="text-lg font-bold text-primary">{@stats.images}</p>
       </div>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
+    <div class="surface-card rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
       <.icon name="hero-video-camera" class="w-5 h-5 text-purple-500 shrink-0" />
       <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Videos</p>
-        <p class="text-lg font-bold text-gray-900 dark:text-white">{@stats.videos}</p>
+        <p class="text-xs text-tertiary">Videos</p>
+        <p class="text-lg font-bold text-primary">{@stats.videos}</p>
       </div>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
+    <div class="surface-card rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
       <.icon name="hero-document-text" class="w-5 h-5 text-orange-500 shrink-0" />
       <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Documents</p>
-        <p class="text-lg font-bold text-gray-900 dark:text-white">{@stats.documents}</p>
+        <p class="text-xs text-tertiary">Documents</p>
+        <p class="text-lg font-bold text-primary">{@stats.documents}</p>
       </div>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
+    <div class="surface-card rounded-lg shadow-sm px-4 py-3 flex items-center gap-3">
       <.icon name="hero-document" class="w-5 h-5 text-gray-400 shrink-0" />
       <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Other</p>
-        <p class="text-lg font-bold text-gray-900 dark:text-white">{@stats.other}</p>
+        <p class="text-xs text-tertiary">Other</p>
+        <p class="text-lg font-bold text-primary">{@stats.other}</p>
       </div>
     </div>
   </div>
@@ -198,9 +198,9 @@
   <div class="flex gap-5">
     <%!-- ── Sidebar ─────────────────────────────────────────────────────── --%>
     <div class={["w-64 shrink-0", if(@sidebar_collapsed, do: "hidden lg:block", else: "block")]}>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sticky top-4">
+      <div class="surface-card rounded-lg shadow-sm p-4 sticky top-4">
         <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+          <span class="text-sm font-semibold text-secondary flex items-center gap-1">
             <.icon name="hero-folder" class="w-4 h-4 text-blue-500" /> Folders
           </span>
           <button
@@ -220,8 +220,8 @@
             class={[
               "w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2",
               if(@current_folder_id == nil,
-                do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
-                else: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                do: "bg-tone-info-soft text-voile-info",
+                else: "text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
               )
             ]}
           >
@@ -254,16 +254,16 @@
       <%!-- Current folder indicator --%>
       <%= if @current_folder_id do %>
         <% current_folder = Enum.find(@folder_tree_flat, &(&1.id == @current_folder_id)) %>
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 mb-4 flex items-center gap-3">
+        <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 mb-4 flex items-center gap-3">
           <.icon
             name="hero-folder-open"
-            class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0"
+            class="w-5 h-5 text-voile-info shrink-0"
           />
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-blue-900 dark:text-blue-100 truncate">
+            <p class="font-semibold text-voile-info truncate">
               {if current_folder, do: current_folder.file_name, else: "Folder"}
             </p>
-            <p class="text-xs text-blue-700 dark:text-blue-300">
+            <p class="text-xs text-voile-info">
               {if current_folder, do: "#{count_folder_items(@current_folder_id)} items", else: ""}
             </p>
           </div>
@@ -271,7 +271,7 @@
       <% end %>
 
       <%!-- ── Toolbar ────────────────────────────────────────────────────── --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 mb-4">
+      <div class="surface-card rounded-lg shadow-sm p-3 mb-4">
         <div class="flex flex-wrap gap-2 items-center">
           <%!-- Search --%>
           <form phx-submit="search" class="relative flex-1 min-w-[180px]">
@@ -280,7 +280,7 @@
               name="q"
               value={@search}
               placeholder="Search by name, description…"
-              class="input input-bordered input-sm w-full pr-16 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+              class="input input-bordered input-sm w-full pr-16 surface-card border-gray-300 dark:border-gray-600 text-primary"
             />
             <div class="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
               <%= if @search != "" do %>
@@ -301,7 +301,7 @@
 
           <%!-- Sort --%>
           <div class="flex items-center gap-1">
-            <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">Sort:</span>
+            <span class="text-xs text-tertiary hidden sm:inline">Sort:</span>
             <%= for {label, field} <- [{"Date", "inserted_at"}, {"Name", "original_name"}, {"Size", "file_size"}, {"Type", "file_type"}] do %>
               <button
                 phx-click="sort_change"
@@ -310,7 +310,7 @@
                   "btn btn-xs gap-1",
                   if(@sort_by == field,
                     do: "btn-primary",
-                    else: "btn-ghost text-gray-600 dark:text-gray-400"
+                    else: "btn-ghost text-secondary"
                   )
                 ]}
               >
@@ -327,7 +327,7 @@
           </div>
 
           <%!-- View mode --%>
-          <div class="flex items-center gap-0.5 border border-gray-200 dark:border-gray-600 rounded-lg p-0.5">
+          <div class="flex items-center gap-0.5 border border-subtle rounded-lg p-0.5">
             <button
               phx-click="toggle_view_mode"
               phx-value-mode="grid"
@@ -356,7 +356,7 @@
           <select
             name="access_level"
             phx-change="filter_change"
-            class="select select-bordered select-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            class="select select-bordered select-sm surface-card border-gray-300 dark:border-gray-600 text-primary"
           >
             <option value="">All Access</option>
             <option value="public" selected={@filter_access_level == "public"}>Public</option>
@@ -369,7 +369,7 @@
           <select
             name="file_type"
             phx-change="filter_change"
-            class="select select-bordered select-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            class="select select-bordered select-sm surface-card border-gray-300 dark:border-gray-600 text-primary"
           >
             <option value="">All Types</option>
             <option value="image" selected={@filter_file_type == "image"}>Images</option>
@@ -384,7 +384,7 @@
           <%= if @active_filters_count > 0 do %>
             <button
               phx-click="clear_filters"
-              class="btn btn-ghost btn-sm text-gray-500 dark:text-gray-400 gap-1"
+              class="btn btn-ghost btn-sm text-tertiary gap-1"
             >
               <.icon name="hero-x-mark" class="w-3 h-3" /> Clear ({@active_filters_count})
             </button>
@@ -394,7 +394,7 @@
 
       <%!-- ── Bulk Action Bar ─────────────────────────────────────────────── --%>
       <%= if MapSet.size(@selected_ids) > 0 do %>
-        <div class="bg-blue-600 dark:bg-blue-700 text-white rounded-lg px-4 py-2 mb-4 flex items-center justify-between gap-3 shadow">
+        <div class="bg-tone-info-soft text-white rounded-lg px-4 py-2 mb-4 flex items-center justify-between gap-3 shadow">
           <div class="flex items-center gap-3">
             <span class="font-medium text-sm">{MapSet.size(@selected_ids)} selected</span>
             <button
@@ -429,7 +429,7 @@
       <%!-- ── Select-all bar ──────────────────────────────────────────────── --%>
       <%= if not @attachments_empty? do %>
         <div class="flex items-center justify-between mb-2 px-1">
-          <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+          <div class="flex items-center gap-3 text-sm text-tertiary">
             <button phx-click="select_all" class="hover:text-blue-600 dark:hover:text-blue-400">
               Select all files
             </button>
@@ -440,7 +440,7 @@
 
       <%!-- ── Assets (empty state) ───────────────────────────────────────── --%>
       <%= if @attachments_empty? do %>
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-16 text-center">
+        <div class="surface-card rounded-lg shadow-sm p-16 text-center">
           <.icon
             name="hero-photo"
             class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4"
@@ -474,9 +474,9 @@
               class={[
                 "group relative rounded-xl overflow-hidden border transition-all hover:shadow-md cursor-pointer",
                 if(MapSet.member?(@selected_ids, attachment.id),
-                  do: "border-blue-500 ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-900/20",
+                  do: "border-blue-500 ring-2 ring-blue-400 bg-tone-info-soft",
                   else:
-                    "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
+                    "border-subtle surface-card hover:border-gray-300 dark:hover:border-gray-600"
                 )
               ]}
             >
@@ -511,7 +511,7 @@
               >
                 <%= cond do %>
                   <% attachment.attachable_type == "folder" -> %>
-                    <.icon name="hero-folder" class="w-14 h-14 text-blue-400 dark:text-blue-300" />
+                    <.icon name="hero-folder" class="w-14 h-14 text-voile-info" />
                   <% has_thumbnail?(attachment) -> %>
                     <img
                       src={thumbnail_url(attachment)}
@@ -628,9 +628,9 @@
 
           <%!-- ── List View ────────────────────────────────────────────────── --%>
         <% else %>
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div class="surface-card rounded-xl shadow-sm overflow-hidden border border-subtle">
             <%!-- Table header --%>
-            <div class="grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide gap-3">
+            <div class="grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-subtle text-xs font-semibold text-tertiary uppercase tracking-wide gap-3">
               <div class="w-4"></div>
               <div>Name</div>
               <div class="hidden sm:block w-20 text-right">Size</div>
@@ -646,7 +646,7 @@
                 class={[
                   "grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center px-4 py-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group",
                   if(MapSet.member?(@selected_ids, attachment.id),
-                    do: "bg-blue-50 dark:bg-blue-900/20",
+                    do: "bg-tone-info-soft",
                     else: ""
                   )
                 ]}
@@ -666,7 +666,7 @@
 
                 <%!-- Name + icon --%>
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-8 h-8 rounded flex items-center justify-center bg-gray-100 dark:bg-gray-700 shrink-0 overflow-hidden">
+                  <div class="w-8 h-8 rounded flex items-center justify-center surface-raised shrink-0 overflow-hidden">
                     <%= cond do %>
                       <% attachment.attachable_type == "folder" -> %>
                         <.icon name="hero-folder" class="w-5 h-5 text-blue-400" />
@@ -692,7 +692,7 @@
                           else: "open_preview"
                       }
                       phx-value-id={attachment.id}
-                      class="text-sm font-medium text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 text-left block w-full"
+                      class="text-sm font-medium text-primary truncate hover:text-blue-600 dark:hover:text-blue-400 text-left block w-full"
                       title={
                         if attachment.attachable_type == "folder",
                           do: attachment.file_name,
@@ -712,7 +712,7 @@
                 </div>
 
                 <%!-- Size --%>
-                <div class="hidden sm:block w-20 text-right text-xs text-gray-500 dark:text-gray-400">
+                <div class="hidden sm:block w-20 text-right text-xs text-tertiary">
                   <%= if attachment.attachable_type != "folder" do %>
                     {format_file_size(attachment.file_size)}
                   <% end %>
@@ -740,7 +740,7 @@
                     <button
                       phx-click="navigate_folder"
                       phx-value-id={attachment.id}
-                      class="btn btn-xs btn-ghost text-gray-500 dark:text-gray-400"
+                      class="btn btn-xs btn-ghost text-tertiary"
                       title="Open"
                     >
                       <.icon name="hero-folder-open" class="w-3.5 h-3.5" />
@@ -749,7 +749,7 @@
                       <button
                         phx-click="open_rename_modal"
                         phx-value-id={attachment.id}
-                        class="btn btn-xs btn-ghost text-gray-500 dark:text-gray-400"
+                        class="btn btn-xs btn-ghost text-tertiary"
                         title="Rename"
                       >
                         <.icon name="hero-pencil" class="w-3.5 h-3.5" />
@@ -770,7 +770,7 @@
                     <button
                       phx-click="open_preview"
                       phx-value-id={attachment.id}
-                      class="btn btn-xs btn-ghost text-gray-500 dark:text-gray-400"
+                      class="btn btn-xs btn-ghost text-tertiary"
                       title="Preview"
                     >
                       <.icon name="hero-eye" class="w-3.5 h-3.5" />
@@ -778,7 +778,7 @@
                     <.link
                       href={~p"/attachments/#{attachment.id}/download"}
                       target="_blank"
-                      class="btn btn-xs btn-ghost text-gray-500 dark:text-gray-400"
+                      class="btn btn-xs btn-ghost text-tertiary"
                       title="Download"
                     >
                       <.icon name="hero-arrow-down-tray" class="w-3.5 h-3.5" />
@@ -812,7 +812,7 @@
             >
               <.icon name="hero-chevron-left" class="w-4 h-4" />
             </button>
-            <span class="text-sm text-gray-600 dark:text-gray-400">
+            <span class="text-sm text-secondary">
               Page {@page} of {@total_pages}
             </span>
             <button
@@ -847,9 +847,9 @@
       phx-click={JS.hide(to: "#create-folder-modal")}
     >
     </div>
-    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
+    <div class="relative surface-card rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 class="text-lg font-semibold text-primary flex items-center gap-2">
           <.icon name="hero-folder-plus" class="w-5 h-5 text-blue-500" /> New Folder
         </h3>
         <button
@@ -865,7 +865,7 @@
         phx-submit="create_folder"
       >
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-sm font-medium text-secondary mb-1">
             Folder Name
           </label>
           <input
@@ -873,11 +873,11 @@
             type="text"
             name="name"
             placeholder="e.g. Brand Assets"
-            class="input input-bordered w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+            class="input input-bordered w-full surface-card border-gray-300 dark:border-gray-600 text-primary"
             required
           />
           <%= if @current_folder_id do %>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p class="text-xs text-tertiary mt-1">
               Will be created inside the current folder
             </p>
           <% end %>
@@ -908,9 +908,9 @@
   <div class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true" role="dialog">
     <div class="flex items-center justify-center min-h-screen px-4">
       <div class="fixed inset-0 bg-black/50" phx-click="close_rename_modal"></div>
-      <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
+      <div class="relative surface-card rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 class="text-lg font-semibold text-primary flex items-center gap-2">
             <.icon name="hero-pencil" class="w-5 h-5 text-blue-500" /> Rename Folder
           </h3>
           <button phx-click="close_rename_modal" class="btn btn-sm btn-ghost btn-circle">
@@ -919,7 +919,7 @@
         </div>
         <form phx-submit="rename_folder">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label class="block text-sm font-medium text-secondary mb-1">
               New Name
             </label>
             <input
@@ -927,7 +927,7 @@
               name="name"
               value={@rename_folder_name}
               placeholder="Enter new folder name…"
-              class="input input-bordered w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+              class="input input-bordered w-full surface-card border-gray-300 dark:border-gray-600 text-primary"
               required
               autofocus
             />
@@ -951,9 +951,9 @@
   <div class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true" role="dialog">
     <div class="flex items-center justify-center min-h-screen px-4">
       <div class="fixed inset-0 bg-black/50" phx-click="close_move_modal"></div>
-      <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
+      <div class="relative surface-card rounded-xl shadow-2xl w-full max-w-md p-6 z-10">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 class="text-lg font-semibold text-primary flex items-center gap-2">
             <.icon name="hero-arrow-right-circle" class="w-5 h-5 text-blue-500" />
             Move {MapSet.size(@selected_ids)} File(s)
           </h3>
@@ -962,11 +962,11 @@
           </button>
         </div>
 
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p class="text-sm text-secondary mb-4">
           Select destination folder:
         </p>
 
-        <div class="space-y-1 max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-2">
+        <div class="space-y-1 max-h-64 overflow-y-auto border border-subtle rounded-lg p-2">
           <%!-- Root --%>
           <button
             phx-click="move_selected_to"
@@ -995,19 +995,19 @@
   <div class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true" role="dialog">
     <div class="flex items-center justify-center min-h-screen p-4">
       <div class="fixed inset-0 bg-black/70" phx-click="close_preview"></div>
-      <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl z-10 overflow-hidden">
+      <div class="relative surface-card rounded-xl shadow-2xl w-full max-w-3xl z-10 overflow-hidden">
         <%!-- Header --%>
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-subtle">
           <div class="flex items-center gap-3 min-w-0">
             <.icon
               name={file_type_icon(att.file_type)}
               class="w-6 h-6 text-blue-500 shrink-0"
             />
             <div class="min-w-0">
-              <p class="font-semibold text-gray-900 dark:text-white truncate">
+              <p class="font-semibold text-primary truncate">
                 {att.original_name}
               </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
+              <p class="text-xs text-tertiary">
                 {format_file_size(att.file_size)} · {att.mime_type}
               </p>
             </div>
@@ -1050,7 +1050,7 @@
                   name={file_type_icon(att.file_type)}
                   class="w-20 h-20 text-gray-200 dark:text-gray-600 mb-3"
                 />
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-tertiary">
                   Preview not available for this file type
                 </p>
               </div>
@@ -1092,13 +1092,13 @@
         </div>
 
         <%!-- Footer actions --%>
-        <div class="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3">
+        <div class="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-subtle gap-3">
           <%!-- Copy link --%>
           <button
             id={"copy-link-#{att.id}"}
             phx-hook="CopyToClipboard"
             data-copy-value={build_file_url(att.file_path)}
-            class="btn btn-sm btn-ghost gap-2 text-gray-600 dark:text-gray-400"
+            class="btn btn-sm btn-ghost gap-2 text-secondary"
           >
             <.icon name="hero-link" class="w-4 h-4" /> Copy Link
           </button>

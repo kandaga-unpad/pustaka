@@ -171,7 +171,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
   def quick_actions(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 shadow rounded-lg p-6">
+    <div class="surface-card shadow rounded-lg p-6">
       <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Quick Actions</h3>
 
       <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -348,13 +348,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
         <%= if @quick_return_transaction do %>
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Transaction found")}</div>
+            <div class="text-xs text-tertiary">{gettext("Transaction found")}</div>
 
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {@quick_return_transaction.item.item_code}
             </div>
 
-            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <div class="mt-2 text-xs text-tertiary">
               {gettext("Predicted fine")}
             </div>
 
@@ -505,12 +505,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
                 <p class="text-sm text-gray-600 dark:text-gray-300">@{@selected_member.username}</p>
 
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-xs text-tertiary mt-1">
                   {gettext("ID:")} {@selected_member.id}
                 </p>
 
                 <%= if @selected_member.email do %>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-tertiary">
                     {gettext("Email:")} {@selected_member.email}
                   </p>
                 <% end %>
@@ -533,17 +533,17 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                   type="button"
                   phx-click="select_member"
                   phx-value-id={member.id}
-                  class="w-full text-left p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  class="w-full text-left p-3 rounded-lg border border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div class="flex items-center space-x-3">
-                    <div class="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-700 dark:text-gray-200 font-semibold">
+                    <div class="h-10 w-10 rounded-full surface-raised flex items-center justify-center text-gray-700 dark:text-gray-200 font-semibold">
                       {String.first(member.fullname || "?")}
                     </div>
 
                     <div class="flex-1">
                       <p class="font-medium text-gray-900 dark:text-gray-100">{member.fullname}</p>
 
-                      <p class="text-sm text-gray-600 dark:text-gray-400">@{member.username}</p>
+                      <p class="text-sm text-secondary">@{member.username}</p>
                     </div>
                   </div>
                 </button>
@@ -556,7 +556,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           <button
             type="button"
             phx-click="cancel_member_lookup"
-            class="px-4 py-2 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+            class="px-4 py-2 border rounded surface-card text-gray-700 dark:text-gray-200 hover:bg-gray-50"
           >
             {gettext("Close")}
           </button>
@@ -600,7 +600,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         </div>
 
         <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-          <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Predicted fine")}</div>
+          <div class="text-xs text-tertiary">{gettext("Predicted fine")}</div>
 
           <div class="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
             Rp {Decimal.to_string(@predicted_fine || Decimal.new("0"))}
@@ -690,19 +690,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
 
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Recommended")}</div>
+            <div class="text-xs text-tertiary">{gettext("Recommended")}</div>
 
             <div class="mt-1 text-xl font-semibold text-gray-800 dark:text-gray-100">
               {if @recommended_renew_days, do: "#{@recommended_renew_days} days", else: "-"}
             </div>
 
-            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <div class="mt-1 text-xs text-tertiary">
               {gettext("Based on member type")}
             </div>
           </div>
 
           <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <div class="text-xs text-gray-500 dark:text-gray-400">{gettext("Current due date")}</div>
+            <div class="text-xs text-tertiary">{gettext("Current due date")}</div>
 
             <div class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
               {if @transaction && @transaction.due_date,
@@ -710,7 +710,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
                 else: "-"}
             </div>
 
-            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div class="mt-3 text-xs text-tertiary">
               {gettext("Expected new due date")}
             </div>
 
@@ -761,7 +761,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
           </div>
 
           <%= if @current_user && !is_super_admin?(@current_user) do %>
-            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <p class="mt-2 text-xs text-tertiary">
               <.icon name="hero-information-circle" class="w-4 h-4 inline" />
               {gettext(
                 "Only super admins can change the renewal duration. Non-super admins must use the recommended duration."
@@ -833,14 +833,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
     ~H"""
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <%!-- Active Transactions --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-blue-500">
+      <div class="surface-card rounded-lg shadow p-6 border-l-4 border-blue-500">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <.icon name="hero-book-open" class="w-8 h-8 text-blue-500" />
           </div>
 
           <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3 class="text-sm font-medium text-tertiary">
               {gettext("Active Transactions")}
             </h3>
 
@@ -873,14 +873,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
       </div>
 
       <%!-- Overdue Items --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-yellow-500">
+      <div class="surface-card rounded-lg shadow p-6 border-l-4 border-yellow-500">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <.icon name="hero-clock" class="w-8 h-8 text-yellow-500" />
           </div>
 
           <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3 class="text-sm font-medium text-tertiary">
               {gettext("Overdue Items")}
             </h3>
 
@@ -913,14 +913,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
       </div>
 
       <%!-- Active Reservations --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-green-500">
+      <div class="surface-card rounded-lg shadow p-6 border-l-4 border-green-500">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <.icon name="hero-bookmark" class="w-8 h-8 text-green-500" />
           </div>
 
           <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3 class="text-sm font-medium text-tertiary">
               {gettext("Active Reservations")}
             </h3>
 
@@ -953,14 +953,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
       </div>
 
       <%!-- Outstanding Fines --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 border-l-4 border-red-500">
+      <div class="surface-card rounded-lg shadow p-6 border-l-4 border-red-500">
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <.icon name="hero-banknotes" class="w-8 h-8 text-red-500" />
           </div>
 
           <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3 class="text-sm font-medium text-tertiary">
               {gettext("Outstanding Fines")}
             </h3>
 
@@ -1015,7 +1015,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
     ~H"""
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <%!-- Transactions Breakdown --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
           <.icon name="hero-book-open" class="w-5 h-5 text-blue-500 mr-2" />
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Transactions</h3>
@@ -1052,9 +1052,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <div class="space-y-2">
           <%= if @loading || is_nil(@detailed_stats) do %>
             <div class="animate-pulse space-y-2">
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+              <div class="h-4 surface-raised rounded w-full"></div>
+              <div class="h-4 surface-raised rounded w-5/6"></div>
+              <div class="h-4 surface-raised rounded w-4/6"></div>
             </div>
           <% else %>
             <.stat_row
@@ -1091,7 +1091,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         </div>
       </div>
       <%!-- Reservations Breakdown --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
           <.icon name="hero-bookmark" class="w-5 h-5 text-green-500 mr-2" />
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Reservations</h3>
@@ -1128,9 +1128,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <div class="space-y-2">
           <%= if @loading || is_nil(@detailed_stats) do %>
             <div class="animate-pulse space-y-2">
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+              <div class="h-4 surface-raised rounded w-full"></div>
+              <div class="h-4 surface-raised rounded w-5/6"></div>
+              <div class="h-4 surface-raised rounded w-4/6"></div>
             </div>
           <% else %>
             <.stat_row
@@ -1162,7 +1162,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         </div>
       </div>
       <%!-- Fines Breakdown --%>
-      <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
           <.icon name="hero-banknotes" class="w-5 h-5 text-red-500 mr-2" />
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Fines</h3>
@@ -1199,9 +1199,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
         <div class="space-y-2">
           <%= if @loading || is_nil(@detailed_stats) do %>
             <div class="animate-pulse space-y-2">
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
-              <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-4/6"></div>
+              <div class="h-4 surface-raised rounded w-full"></div>
+              <div class="h-4 surface-raised rounded w-5/6"></div>
+              <div class="h-4 surface-raised rounded w-4/6"></div>
             </div>
           <% else %>
             <.stat_row
@@ -1224,24 +1224,24 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
               value={@detailed_stats.fines.waived}
               color="bg-gray-100 text-gray-600 dark:bg-gray-600/50 dark:text-gray-300"
             />
-            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-1">
-              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div class="mt-4 pt-4 border-t border-subtle space-y-1">
+              <div class="flex justify-between text-xs text-tertiary">
                 <span>Total Billed</span>
                 <span class="font-medium text-gray-700 dark:text-gray-200">
                   {format_idr(@detailed_stats.fines.total_amount)}
                 </span>
               </div>
 
-              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div class="flex justify-between text-xs text-tertiary">
                 <span>Total Collected</span>
-                <span class="font-medium text-green-700 dark:text-green-300">
+                <span class="font-medium text-voile-success">
                   {format_idr(@detailed_stats.fines.total_paid)}
                 </span>
               </div>
 
-              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div class="flex justify-between text-xs text-tertiary">
                 <span>Outstanding Balance</span>
-                <span class="font-medium text-red-700 dark:text-red-300">
+                <span class="font-medium text-voile-error">
                   {format_idr(@detailed_stats.fines.outstanding)}
                 </span>
               </div>
@@ -1257,7 +1257,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Components do
   defp stat_row(assigns) do
     ~H"""
     <div class="flex items-center justify-between">
-      <span class="text-sm text-gray-600 dark:text-gray-400">{@label}</span>
+      <span class="text-sm text-secondary">{@label}</span>
       <span class={"text-xs font-semibold px-2 py-0.5 rounded-full #{@color}"}>
         {@value}
       </span>

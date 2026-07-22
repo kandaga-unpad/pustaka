@@ -75,39 +75,46 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
     ~H"""
     <section class="space-y-6 p-6">
       <div class="flex flex-col md:flex-row gap-4">
-        <div class="w-full md:w-auto md:max-w-64">
-          <.plugin_settings_sidebar
-            current_path={@current_path}
-            current_plugin_id={@plugin.plugin_id}
-            is_super_admin={@is_super_admin}
-          />
-        </div>
+        <.voile_settings_nav
+          title={gettext("Plugins")}
+          current_path={@current_path}
+          items={
+            [%{label: gettext("All plugins"), path: "/manage/plugins", icon: "hero-puzzle-piece"}] ++
+              [
+                %{
+                  label: @plugin.name,
+                  path: "/manage/plugins/#{@plugin.plugin_id}/settings",
+                  icon: "hero-cog-6-tooth"
+                }
+              ]
+          }
+        />
 
         <div class="space-y-6 flex-1">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-3xl font-bold text-primary">
                 {@plugin.name} {gettext("Settings")}
               </h1>
-              <p class="text-gray-600 dark:text-gray-400 mt-1">
+              <p class="text-secondary mt-1">
                 {gettext("Configure plugin behavior and options")}
               </p>
             </div>
             <.link
               navigate={~p"/manage/plugins"}
-              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+              class="px-4 py-2 text-sm font-medium text-secondary surface-raised rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
             >
               {gettext("Back to Plugins")}
             </.link>
           </div>
 
-          <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div class="surface-card shadow rounded-lg p-6">
             <%= if @settings_schema == [] do %>
               <div class="text-center py-8">
                 <div class="text-gray-400 dark:text-gray-500 mb-4">
                   <.icon name="hero-cog-6-tooth" class="w-12 h-12 mx-auto" />
                 </div>
-                <p class="text-gray-500 dark:text-gray-400">
+                <p class="text-tertiary">
                   {gettext("This plugin has no configurable settings.")}
                 </p>
               </div>
@@ -121,7 +128,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
                 <div class="space-y-6">
                   <%= for field <- @settings_schema do %>
                     <div class="space-y-1">
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label class="block text-sm font-medium text-secondary">
                         {field.label}
                         <%= if Map.get(field, :required) do %>
                           <span class="text-red-500">*</span>
@@ -129,7 +136,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
                       </label>
 
                       <%= if Map.get(field, :description) do %>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        <p class="text-xs text-tertiary mb-1">
                           {field.description}
                         </p>
                       <% end %>
@@ -154,7 +161,7 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
                               name={"settings[#{field.key}]"}
                               checked={get_form_value(@form, field.key) in [true, "true"]}
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <span class="text-sm text-secondary">
                               {gettext("Enabled")}
                             </span>
                           </label>
@@ -168,21 +175,21 @@ defmodule VoileWeb.Dashboard.Plugins.Settings do
                       <% end %>
 
                       <%= if Map.get(field, :secret) do %>
-                        <p class="text-xs text-amber-600 dark:text-amber-400">
+                        <p class="text-xs text-voile-warning">
                           <.icon name="hero-lock-closed" class="w-3 h-3 inline" />
                           {gettext("Sensitive — stored securely.")}
                         </p>
                       <% end %>
 
                       <%= if @form.errors[field.key] do %>
-                        <p class="text-sm text-red-600 dark:text-red-400">
+                        <p class="text-sm text-voile-error">
                           {@form.errors[field.key]}
                         </p>
                       <% end %>
                     </div>
                   <% end %>
 
-                  <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div class="flex justify-end pt-4 border-t border-subtle">
                     <button
                       type="submit"
                       class="px-6 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700"

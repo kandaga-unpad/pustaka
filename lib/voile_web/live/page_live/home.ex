@@ -250,7 +250,9 @@ defmodule VoileWeb.PageLive.Home do
                 />
                 <div class="flex gap-2">
                   <.link navigate="/collections" class="w-full">
-                    <.button class="w-full dashboard-menu-btn">{gettext("All Collections")}</.button>
+                    <.button class="w-full dashboard-menu-btn">
+                      {gettext("All Collections")}
+                    </.button>
                   </.link>
                   <.button class="w-full default-btn" phx-click={show_modal("advanced-search")}>
                     {gettext("Advanced Search")}

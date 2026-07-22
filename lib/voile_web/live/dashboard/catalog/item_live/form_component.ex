@@ -16,7 +16,7 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
         <:subtitle>{gettext("Use this form to manage item records in your database.")}</:subtitle>
       </.header>
 
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+      <div class="surface-card p-6 rounded-lg shadow-sm">
         <.form
           for={@form}
           id="item-form"
@@ -45,16 +45,16 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               </div>
               <div>
                 <.input field={@form[:collection_id]} type="hidden" />
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300 w-32">
+                <label class="text-xs font-medium text-secondary w-32">
                   {gettext("Collection")}
                 </label>
-                <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                <div class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary truncate">
                   {@collection_data.title || ""}
                 </div>
                 <label class="text-xs text-gray-500 mt-1 block">
                   {gettext("Author")}
                 </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary truncate">
                   {@collection_data.mst_creator.creator_name || ""}
                 </div>
               </div>
@@ -64,10 +64,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               <%= if @editable_identifiers do %>
                 <.input field={@form[:item_code]} type="text" label={gettext("Item code")} />
               <% else %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <label class="text-xs font-medium text-secondary">
                   {gettext("Item code")}
                 </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary truncate">
                   {@form[:item_code].value || ""}
                 </div>
                 <.input field={@form[:item_code]} type="hidden" />
@@ -78,10 +78,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               <%= if @editable_identifiers do %>
                 <.input field={@form[:inventory_code]} type="text" label={gettext("Inventory code")} />
               <% else %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <label class="text-xs font-medium text-secondary">
                   {gettext("Inventory code")}
                 </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary truncate">
                   {@form[:inventory_code].value || ""}
                 </div>
                 <.input field={@form[:inventory_code]} type="hidden" />
@@ -92,10 +92,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
               <%= if @editable_identifiers do %>
                 <.input field={@form[:barcode]} type="text" label={gettext("Barcode")} />
               <% else %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <label class="text-xs font-medium text-secondary">
                   {gettext("Barcode")}
                 </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white truncate">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary truncate">
                   {@form[:barcode].value || ""}
                 </div>
                 <.input field={@form[:barcode]} type="hidden" />
@@ -104,10 +104,10 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.FormComponent do
             <!-- Relations and small selects (grouped on one row when space allows) -->
             <div>
               <%= if assigns[:lock_unit_id] && @lock_unit_id do %>
-                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                <label class="text-xs font-medium text-secondary">
                   {gettext("Unit / Node")}
                 </label>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-gray-900 dark:text-white">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded text-sm text-primary">
                   {case Enum.find(@nodes, fn {_label, id} ->
                           # Handle both string and integer unit_id values
                           to_string(id) == to_string(@form[:unit_id].value)

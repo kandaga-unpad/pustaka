@@ -7,10 +7,10 @@ defmodule VoileWeb.UserPendingConfirmationLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-2xl px-4 py-12">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="surface-card rounded-lg shadow-lg p-8">
           <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 dark:bg-yellow-900 rounded-full mb-4">
-              <.icon name="hero-envelope" class="w-10 h-10 text-yellow-600 dark:text-yellow-400" />
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-tone-warning-soft rounded-full mb-4">
+              <.icon name="hero-envelope" class="w-10 h-10 text-voile-warning" />
             </div>
 
             <div class="text-center">
@@ -24,19 +24,19 @@ defmodule VoileWeb.UserPendingConfirmationLive do
           </div>
 
           <%= if @email do %>
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+            <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
               <div class="flex items-start gap-3">
                 <div class="flex-shrink-0">
-                  <.icon name="hero-envelope-open" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <.icon name="hero-envelope-open" class="w-8 h-8 text-voile-info" />
                 </div>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <p class="text-sm font-medium text-secondary mb-2">
                     {gettext("Confirmation email sent to:")}
                   </p>
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  <p class="text-lg font-semibold text-primary mb-3">
                     {@email}
                   </p>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                  <p class="text-sm text-secondary">
                     {gettext(
                       "Please check your inbox and click the confirmation link to activate your account."
                     )}
@@ -46,10 +46,10 @@ defmodule VoileWeb.UserPendingConfirmationLive do
             </div>
 
             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mb-6">
-              <h3 class="font-semibold text-gray-900 dark:text-white mb-3">
+              <h3 class="font-semibold text-primary mb-3">
                 {gettext("What to do next:")}
               </h3>
-              <ol class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+              <ol class="space-y-3 text-sm text-secondary">
                 <li class="flex items-start gap-3">
                   <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                     1
@@ -86,14 +86,14 @@ defmodule VoileWeb.UserPendingConfirmationLive do
 
               <.link
                 href={~p"/login"}
-                class="block w-full text-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-3 rounded-lg transition-colors"
+                class="block w-full text-center surface-raised hover:bg-gray-200 dark:hover:bg-gray-600 text-secondary font-semibold py-3 rounded-lg transition-colors"
               >
                 {gettext("Return to Login")}
               </.link>
             </div>
           <% else %>
             <div class="text-center">
-              <p class="text-gray-600 dark:text-gray-400 mb-6">
+              <p class="text-secondary mb-6">
                 {gettext("No email address found. Please register or log in.")}
               </p>
               <.link

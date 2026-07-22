@@ -175,20 +175,28 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
     ~H"""
     <section class="space-y-6 p-6">
       <div class="flex flex-col md:flex-row gap-4">
-        <div class="w-full md:w-auto md:max-w-64">
-          <.plugin_settings_sidebar
-            current_path={@current_path}
-            is_super_admin={@is_super_admin}
-          />
-        </div>
+        <.voile_settings_nav
+          title={gettext("Plugins")}
+          current_path={@current_path}
+          items={
+            [%{label: gettext("All plugins"), path: "/manage/plugins", icon: "hero-puzzle-piece"}] ++
+              Enum.map(@plugins, fn p ->
+                %{
+                  label: p.name,
+                  path: "/manage/plugins/#{p.plugin_id}/settings",
+                  icon: "hero-cog-6-tooth"
+                }
+              end)
+          }
+        />
 
         <div class="space-y-6 flex-1">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-3xl font-bold text-primary">
                 {gettext("Plugin Management")}
               </h1>
-              <p class="text-gray-600 dark:text-gray-400 mt-1">
+              <p class="text-secondary mt-1">
                 {gettext("Manage installed plugins and their settings")}
               </p>
             </div>
@@ -196,12 +204,12 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
 
           <%!-- Available (not yet installed) plugins discovered in the VM --%>
           <%= if @available_plugins != [] do %>
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg overflow-hidden">
+            <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-700 rounded-lg overflow-hidden">
               <div class="px-6 py-4 border-b border-blue-200 dark:border-blue-700">
-                <h2 class="text-base font-semibold text-blue-900 dark:text-blue-200">
+                <h2 class="text-base font-semibold text-voile-info">
                   {gettext("Available Plugins")}
                 </h2>
-                <p class="text-sm text-blue-700 dark:text-blue-400 mt-0.5">
+                <p class="text-sm text-voile-info mt-0.5">
                   {gettext("These plugins are loaded but not yet installed.")}
                 </p>
               </div>
@@ -210,13 +218,13 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                   <div class="p-5 flex items-center justify-between">
                     <div>
                       <div class="flex items-center gap-2">
-                        <span class="font-semibold text-gray-900 dark:text-white">{avail.name}</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">v{avail.version}</span>
+                        <span class="font-semibold text-primary">{avail.name}</span>
+                        <span class="text-xs text-tertiary">v{avail.version}</span>
                         <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                           {gettext("NOT INSTALLED")}
                         </span>
                       </div>
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                      <p class="text-sm text-secondary mt-0.5">
                         {avail.description}
                       </p>
                       <p class="text-xs text-gray-400 mt-0.5">
@@ -241,14 +249,14 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
             </div>
           <% end %>
 
-          <div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+          <div class="surface-card shadow rounded-lg overflow-hidden">
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
               <%= for plugin <- @plugins do %>
                 <div class="p-6">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <div class="flex items-center gap-3">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 class="text-lg font-semibold text-primary">
                           {plugin.name}
                         </h3>
                         <span class={[
@@ -257,24 +265,24 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                         ]}>
                           {String.upcase(to_string(plugin.status))}
                         </span>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-sm text-tertiary">
                           v{plugin.version}
                         </span>
                       </div>
-                      <p class="text-gray-600 dark:text-gray-400 mt-1">
+                      <p class="text-secondary mt-1">
                         {plugin.description}
                       </p>
-                      <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div class="flex items-center gap-4 mt-2 text-sm text-tertiary">
                         <span>{gettext("By: %{author}", author: plugin.author)}</span>
                         <span>{gettext("ID: %{id}", id: plugin.plugin_id)}</span>
                         <span class={[
-                          plugin.license_type == "premium" && "text-amber-600 dark:text-amber-400"
+                          plugin.license_type == "premium" && "text-voile-warning"
                         ]}>
                           {plugin.license_type}
                         </span>
                       </div>
                       <%= if plugin.error_message do %>
-                        <div class="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded text-sm text-red-600 dark:text-red-400">
+                        <div class="mt-2 p-2 bg-tone-error-soft rounded text-sm text-voile-error">
                           {plugin.error_message}
                         </div>
                       <% end %>
@@ -284,7 +292,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                       <%= if plugin.status == :active do %>
                         <.link
                           navigate={~p"/manage/plugins/#{plugin.plugin_id}/settings"}
-                          class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                          class="px-3 py-2 text-sm font-medium text-secondary surface-raised rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                         >
                           {gettext("Settings")}
                         </.link>
@@ -292,7 +300,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                           <button
                             phx-click="deactivate"
                             phx-value-module={plugin.module}
-                            class="px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50"
+                            class="px-3 py-2 text-sm font-medium text-voile-warning bg-tone-warning-soft rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50"
                           >
                             {gettext("Deactivate")}
                           </button>
@@ -303,7 +311,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                         <button
                           phx-click="activate"
                           phx-value-module={plugin.module}
-                          class="px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50"
+                          class="px-3 py-2 text-sm font-medium text-voile-success bg-tone-success-soft rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50"
                         >
                           {gettext("Activate")}
                         </button>
@@ -313,7 +321,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                         <button
                           phx-click="activate"
                           phx-value-module={plugin.module}
-                          class="px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50"
+                          class="px-3 py-2 text-sm font-medium text-voile-success bg-tone-success-soft rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50"
                         >
                           {gettext("Reactivate")}
                         </button>
@@ -341,7 +349,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                               "Are you sure you want to uninstall this plugin? Data will be preserved."
                             )
                           }
-                          class="px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50"
+                          class="px-3 py-2 text-sm font-medium text-voile-error bg-tone-error-soft rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50"
                         >
                           {gettext("Uninstall")}
                         </button>
@@ -356,10 +364,10 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
                   <div class="text-gray-400 dark:text-gray-500 mb-4">
                     <.icon name="hero-puzzle-piece" class="w-16 h-16 mx-auto" />
                   </div>
-                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                  <h3 class="text-lg font-medium text-primary">
                     {gettext("No plugins installed")}
                   </h3>
-                  <p class="text-gray-500 dark:text-gray-400 mt-2">
+                  <p class="text-tertiary mt-2">
                     {gettext("Add plugins to your mix.exs dependencies to get started.")}
                   </p>
                 </div>

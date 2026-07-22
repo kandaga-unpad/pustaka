@@ -15,15 +15,15 @@ defmodule VoileWeb.UserSettingsLive do
 
     <div class="flex gap-4">
       <div class="w-full max-w-64">
-        <.dashboard_settings_sidebar
-          current_user={@current_scope.user}
+        <.voile_settings_nav
+          title={gettext("Settings")}
+          items={voile_settings_nav_items()}
           current_path={@current_path}
-          is_super_admin={@is_super_admin}
         />
       </div>
 
       <div class="w-full space-y-12 divide-y">
-        <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
+        <div class="surface-card rounded-lg p-4">
           <.form
             for={@email_form}
             id="email_form"
@@ -43,7 +43,7 @@ defmodule VoileWeb.UserSettingsLive do
           </.form>
         </div>
 
-        <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
+        <div class="surface-card rounded-lg p-4">
           <%= if @can_change_password do %>
             <.form
               for={@password_form}
@@ -110,7 +110,7 @@ defmodule VoileWeb.UserSettingsLive do
           <% end %>
         </div>
 
-        <div class="bg-white dark:bg-gray-700 rounded-lg p-4">
+        <div class="surface-card rounded-lg p-4">
           <h4 class="text-lg font-semibold mb-4">{gettext("Profile & Member Details")}</h4>
 
           <.form

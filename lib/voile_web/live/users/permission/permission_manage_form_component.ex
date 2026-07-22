@@ -33,7 +33,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.FormComponent do
           placeholder={gettext("e.g., collections.create, users.update")}
           phx-debounce="blur"
         />
-        <div class="text-xs text-gray-500 dark:text-gray-400 -mt-2 mb-4">
+        <div class="text-xs text-tertiary -mt-2 mb-4">
           {gettext("Format: resource.action (e.g., collections.create)")}
         </div>
 

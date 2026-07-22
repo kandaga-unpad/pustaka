@@ -73,6 +73,11 @@ defmodule VoileWeb.Dashboard.Catalog.ItemLive.Index do
       socket
       |> stream(:items, items, reset: false)
       |> assign(:page_title, gettext("Listing Items"))
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("Catalog"), path: "/manage/catalog"},
+        %{label: gettext("Items"), path: nil}
+      ])
       |> assign(:page, page)
       |> assign(:search, search)
       |> assign(:total_pages, total_pages)

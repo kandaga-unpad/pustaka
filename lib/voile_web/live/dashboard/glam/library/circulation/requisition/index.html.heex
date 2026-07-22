@@ -25,7 +25,7 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-white dark:bg-gray-700 shadow rounded-lg mb-6">
+  <div class="surface-card shadow rounded-lg mb-6">
     <div class="px-6 py-4 border-b border-voile-light">
       <.form :let={f} for={%{}} phx-change="filter">
         <div class="sm:flex sm:items-center sm:space-x-4">
@@ -79,7 +79,7 @@
       </.form>
     </div>
     <!-- Quick Stats -->
-    <div class="bg-white dark:bg-gray-700 px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
+    <div class="surface-card px-6 py-4 bg-gray-50 grid grid-cols-1 sm:grid-cols-5 gap-4">
       <div class="text-center">
         <div class="text-2xl font-semibold text-voile-info">-</div>
 
@@ -112,7 +112,7 @@
     </div>
   </div>
   <!-- Requisitions Table -->
-  <div class="bg-white dark:bg-gray-700 shadow overflow-hidden sm:rounded-md">
+  <div class="surface-card shadow overflow-hidden sm:rounded-md">
     <.table id="requisitions" rows={@streams.requisitions}>
       <:col :let={{_id, requisition}} label="Title & Author">
         <div>
@@ -254,8 +254,8 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white dark:bg-gray-700 px-4 py-3 border-t border-gray-200 sm:px-6">
-      <.pagination page={@page} total_pages={@total_pages} />
+    <div class="surface-card px-4 py-3 border-t border-gray-200 sm:px-6">
+      <.voile_pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>
 </div>

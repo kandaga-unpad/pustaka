@@ -4,7 +4,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   use Gettext, backend: VoileWeb.Gettext
 
   import VoileWeb.CoreComponents
-  import VoileWeb.VoileDashboardComponents
+  import VoileWeb.DashboardComponents
   import VoileWeb.Components.ImageUpload
 
   # Form Component
@@ -43,11 +43,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
       <% end %>
 
       <%= if @show_header do %>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex items-center gap-3 mb-6">
             <.icon name="hero-user" class="w-8 h-8 text-voile-primary" />
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-2xl font-bold text-primary">
                 {if @action == :new, do: gettext("Add New Member"), else: gettext("Edit Member")}
               </h1>
               <p class="text-gray-600 dark:text-gray-300">
@@ -78,7 +78,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
               <button
                 type="button"
                 phx-click="generate_identifier"
-                class="flex items-center gap-2 text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-300 rounded p-3"
+                class="flex items-center gap-2 text-xs bg-gray-200 hover:surface-raised dark:hover:bg-gray-500 text-secondary rounded p-3"
               >
                 <.icon name="hero-arrow-path" class="w-4 h-4" />
                 {gettext("Generate")}
@@ -125,7 +125,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
         <%= if @is_admin do %>
           <div class="grid grid-cols-1 gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label class="block text-sm font-medium text-secondary mb-2">
                 {gettext("Assign Roles")}
               </label>
               <div class="space-y-2 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,14 +144,14 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
                       </div>
 
                       <%= if role.description do %>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                        <div class="text-sm text-tertiary">{role.description}</div>
                       <% end %>
                     </div>
                   </label>
                 <% end %>
               </div>
 
-              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <p class="mt-2 text-sm text-tertiary">
                 {gettext(
                   "Users can have multiple roles. Role-specific permissions can be managed in the"
                 )}
@@ -251,7 +251,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
           />
         </div>
 
-        <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+        <div class="flex items-center gap-4 pt-6 border-t border-subtle">
           <.button type="submit" class="primary-btn">
             <.icon
               name={if @action == :new, do: "hero-plus", else: "hero-check"}
@@ -291,98 +291,98 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     <div class="space-y-6">
       <%!-- Personal Information --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Personal Information")}
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Full Name")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.fullname || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.fullname || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Username")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.username || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.username || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Member Identifier")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.identifier || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.identifier || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Phone")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.phone_number || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.phone_number || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Birth Date")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {if @member.birth_date,
                 do: Calendar.strftime(@member.birth_date, "%B %d, %Y"),
                 else: "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Address")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.address || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.address || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Organization")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.organization || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.organization || "-"}</p>
           </div>
         </div>
       </div>
 
       <%!-- Membership Information --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Membership Information")}
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Member Type")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {(@member.user_type && @member.user_type.name) || "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Registration Date")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {if @member.registration_date,
                 do: Calendar.strftime(@member.registration_date, "%B %d, %Y"),
                 else: "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Expiry Date")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {if @member.expiry_date,
                 do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
                 else: "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Node")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {(@member.node && @member.node.name) || "-"}
             </p>
           </div>
@@ -391,7 +391,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <%!-- Roles --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{gettext("Roles")}</h3>
+        <h3 class="text-lg font-medium text-primary mb-4">{gettext("Roles")}</h3>
         <div class="space-y-2">
           <%= if @member.roles && @member.roles != [] do %>
             <%= for role <- @member.roles do %>
@@ -401,109 +401,109 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
                     {role.name}
                   </div>
                   <%= if role.description do %>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">{role.description}</div>
+                    <div class="text-sm text-tertiary">{role.description}</div>
                   <% end %>
                 </div>
               </div>
             <% end %>
           <% else %>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No roles assigned")}</p>
+            <p class="text-sm text-tertiary">{gettext("No roles assigned")}</p>
           <% end %>
         </div>
       </div>
 
       <%!-- User Image --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("User Image")}
         </h3>
         <%= if @member.user_image do %>
           <img src={@member.user_image} class="w-32 h-32 rounded-full object-cover" />
         <% else %>
-          <p class="text-sm text-gray-500 dark:text-gray-400">{gettext("No image uploaded")}</p>
+          <p class="text-sm text-tertiary">{gettext("No image uploaded")}</p>
         <% end %>
       </div>
 
       <%!-- Social Media --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Social Media")}
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Twitter")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {if @member.twitter, do: "@#{@member.twitter}", else: "-"}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Facebook")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.facebook || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.facebook || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("LinkedIn")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.linkedin || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.linkedin || "-"}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Instagram")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-sm text-primary">
               {if @member.instagram, do: "@#{@member.instagram}", else: "-"}
             </p>
           </div>
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label class="block text-sm font-medium text-secondary">
               {gettext("Website")}
             </label>
-            <p class="mt-1 text-sm text-gray-900 dark:text-white">{@member.website || "-"}</p>
+            <p class="mt-1 text-sm text-primary">{@member.website || "-"}</p>
           </div>
         </div>
       </div>
 
       <%!-- Groups --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">{gettext("Groups")}</h3>
-        <p class="text-sm text-gray-900 dark:text-white">
+        <h3 class="text-lg font-medium text-primary mb-4">{gettext("Groups")}</h3>
+        <p class="text-sm text-primary">
           {if @member.groups && @member.groups != [], do: Enum.join(@member.groups, ", "), else: "-"}
         </p>
       </div>
 
       <%!-- Statistics Cards --%>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Statistics")}
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <.stat_card
-            title={gettext("Total Loans")}
+          <.voile_stat_card
+            label={gettext("Total Loans")}
             value={@stats.total_loans}
             icon="hero-book-open"
-            color="blue"
+            tone={:info}
           />
-          <.stat_card
-            title={gettext("Active Loans")}
+          <.voile_stat_card
+            label={gettext("Active Loans")}
             value={@stats.active_loans}
             icon="hero-clock"
-            color="orange"
+            tone={:warning}
           />
-          <.stat_card
-            title={gettext("Total Fines")}
+          <.voile_stat_card
+            label={gettext("Total Fines")}
             value={@stats.total_fines}
             icon="hero-currency-dollar"
-            color="red"
+            tone={:error}
           />
-          <.stat_card
-            title={gettext("Overdue Items")}
+          <.voile_stat_card
+            label={gettext("Overdue Items")}
             value={@stats.overdue_items}
             icon="hero-exclamation-triangle"
-            color="red"
+            tone={:error}
           />
         </div>
       </div>
@@ -516,7 +516,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def activity_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Recent Activity")}</h3>
+      <h3 class="text-lg font-medium text-primary">{gettext("Recent Activity")}</h3>
       <p class="text-gray-600 dark:text-gray-300">
         {gettext("Activity history will be displayed here.")}
       </p>
@@ -529,7 +529,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def loans_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Current Loans")}</h3>
+      <h3 class="text-lg font-medium text-primary">{gettext("Current Loans")}</h3>
       <p class="text-gray-600 dark:text-gray-300">
         {gettext("Current loans will be displayed here.")}
       </p>
@@ -542,7 +542,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
   def fines_tab(assigns) do
     ~H"""
     <div class="space-y-4">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white">{gettext("Fines & Payments")}</h3>
+      <h3 class="text-lg font-medium text-primary">{gettext("Fines & Payments")}</h3>
       <p class="text-gray-600 dark:text-gray-300">
         {gettext("Fines and payment history will be displayed here.")}
       </p>
@@ -557,7 +557,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Extend Membership")}
         </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
@@ -567,10 +567,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
 
       <.form for={@form} phx-submit="extend_membership" class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-secondary mb-2">
             {gettext("Current Expiry Date")}
           </label>
-          <p class="text-sm text-gray-900 dark:text-white">
+          <p class="text-sm text-primary">
             {if @member.expiry_date,
               do: Calendar.strftime(@member.expiry_date, "%B %d, %Y"),
               else: gettext("No expiry date set")}
@@ -612,7 +612,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Change Password")}
         </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
@@ -677,7 +677,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">
+        <h3 class="text-lg font-medium text-voile-error mb-4">
           {gettext("Delete Member")}
         </h3>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
@@ -687,33 +687,33 @@ defmodule VoileWeb.Dashboard.Members.Management.Component do
         </p>
       </div>
 
-      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <div class="bg-tone-error-soft border border-red-200 dark:border-red-800 rounded-lg p-6">
         <div class="flex items-start gap-3">
           <.icon
             name="hero-exclamation-triangle"
-            class="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+            class="w-6 h-6 text-voile-error flex-shrink-0 mt-0.5"
           />
           <div>
-            <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+            <h4 class="text-sm font-medium text-voile-error mb-2">
               {gettext("Warning: This action is irreversible")}
             </h4>
-            <p class="text-sm text-red-700 dark:text-red-300 mb-4">
+            <p class="text-sm text-voile-error mb-4">
               {gettext("Deleting this member will permanently remove all their data including:")}
             </p>
-            <ul class="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1 mb-4">
+            <ul class="text-sm text-voile-error list-disc list-inside space-y-1 mb-4">
               <li>{gettext("Account information and login credentials")}</li>
               <li>{gettext("Transaction history and current loans")}</li>
               <li>{gettext("Fine records and payment history")}</li>
               <li>{gettext("Membership and expiry information")}</li>
             </ul>
-            <p class="text-sm font-medium text-red-800 dark:text-red-200">
+            <p class="text-sm font-medium text-voile-error">
               {gettext("Are you sure you want to proceed?")}
             </p>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+      <div class="flex items-center gap-4 pt-6 border-t border-subtle">
         <.button
           type="button"
           phx-click="delete_member_confirm"

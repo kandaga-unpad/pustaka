@@ -1,16 +1,16 @@
 <section class="flex flex-col gap-4">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:items-start">
     <%!-- Left Panel: Search and Selection --%>
-    <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+    <div class="lg:col-span-1 surface-card rounded-xl shadow-md p-4">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 class="text-lg font-semibold text-primary">
           {gettext("Select Items")}
         </h2>
 
         <.back navigate="/manage/catalog/items">{gettext("Back")}</.back>
       </div>
       <%!-- Group by Collection Toggle --%>
-      <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div class="mb-4 p-3 bg-tone-info-soft rounded-lg border border-blue-200 dark:border-blue-800">
         <label class="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -18,11 +18,11 @@
             checked={@group_by_collection}
             class="rounded"
           />
-          <span class="text-sm font-medium text-gray-900 dark:text-white">
+          <span class="text-sm font-medium text-primary">
             {gettext("Group by Collection")}
           </span>
         </label>
-        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 ml-6">
+        <p class="text-xs text-secondary mt-1 ml-6">
           {gettext("Search and select entire collections to print all their items at once")}
         </p>
       </div>
@@ -89,8 +89,8 @@
               </div>
             <% else %>
               <%= if length(@collections) == 50 do %>
-                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
-                  <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
+                <div class="bg-tone-warning-soft border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
+                  <div class="flex items-center gap-2 text-sm text-voile-warning">
                     <.icon name="hero-information-circle" class="w-4 h-4 flex-shrink-0" />
                     <span>
                       {gettext("Showing first 50 results. Refine your search for better results.")}
@@ -106,7 +106,7 @@
                       type="button"
                       phx-click="select_collection"
                       phx-value-collection-id={collection.id}
-                      class="w-full flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-colors text-left"
+                      class="w-full flex items-start gap-3 p-3 rounded-lg border border-subtle hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-colors text-left"
                     >
                       <.icon
                         name="hero-book-open"
@@ -114,7 +114,7 @@
                       />
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between gap-2">
-                          <div class="font-medium text-sm text-gray-900 dark:text-white">
+                          <div class="font-medium text-sm text-primary">
                             {collection.title}
                           </div>
 
@@ -129,7 +129,7 @@
                           <% end %>
                         </div>
 
-                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div class="text-xs text-secondary">
                           {gettext("Code: %{code}", code: collection.collection_code || "N/A")}
                         </div>
 
@@ -158,8 +158,8 @@
               </div>
             <% else %>
               <%= if length(@items) == 50 do %>
-                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
-                  <div class="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
+                <div class="bg-tone-warning-soft border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2">
+                  <div class="flex items-center gap-2 text-sm text-voile-warning">
                     <.icon name="hero-information-circle" class="w-4 h-4 flex-shrink-0" />
                     <span>
                       {gettext("Showing first 50 results. Refine your search for better results.")}
@@ -171,7 +171,7 @@
               <div id="items" phx-update="stream">
                 <%= for {id, item} <- @streams.items || [] do %>
                   <div id={id}>
-                    <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                    <label class="flex items-start gap-3 p-3 rounded-lg border border-subtle hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                       <input
                         type="checkbox"
                         phx-click="toggle_item"
@@ -180,11 +180,11 @@
                         class="mt-1"
                       />
                       <div class="flex-1 min-w-0">
-                        <div class="font-medium text-sm text-gray-900 dark:text-white truncate">
+                        <div class="font-medium text-sm text-primary truncate">
                           {item.collection.title}
                         </div>
 
-                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div class="text-xs text-secondary">
                           {gettext("Code: %{code}", code: item.item_code || "N/A")}
                         </div>
 
@@ -207,8 +207,8 @@
       </div>
     </div>
     <%!-- Right Panel: Label Configuration --%>
-    <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 h-[730px] flex flex-col">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div class="lg:col-span-1 surface-card rounded-xl shadow-md p-4 h-[730px] flex flex-col">
+      <h2 class="text-lg font-semibold text-primary mb-4">
         {gettext("Label Settings")}
       </h2>
 
@@ -220,12 +220,12 @@
       >
         <%!-- Paper Size Select --%>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-secondary mb-2">
             {gettext("Paper Size")}
           </label>
           <select
             name="paper_size"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg surface-card text-primary"
           >
             <option value="default" selected={@paper_size == "default"}>
               {gettext("Default (16.5cm × 20cm)")}
@@ -249,7 +249,7 @@
         </div>
         <%!-- Include Options --%>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-secondary mb-2">
             {gettext("Include on Label")}
           </label>
           <label class="flex items-center gap-2">
@@ -259,7 +259,7 @@
               value="true"
               checked={@include_barcode}
             />
-            <span class="text-sm text-gray-700 dark:text-gray-300">
+            <span class="text-sm text-secondary">
               {gettext("Barcode/QR Code")}
             </span>
           </label>
@@ -269,7 +269,7 @@
               name="include_location"
               value="true"
               checked={@include_location}
-            /> <span class="text-sm text-gray-700 dark:text-gray-300">{gettext("Location")}</span>
+            /> <span class="text-sm text-secondary">{gettext("Location")}</span>
           </label>
           <label class="flex items-center gap-2">
             <input
@@ -278,7 +278,7 @@
               value="true"
               checked={@include_call_number}
             />
-            <span class="text-sm text-gray-700 dark:text-gray-300">{gettext("Call Number")}</span>
+            <span class="text-sm text-secondary">{gettext("Call Number")}</span>
           </label>
           <label class="flex items-center gap-2">
             <input
@@ -287,7 +287,7 @@
               value="true"
               checked={@include_border}
             />
-            <span class="text-sm text-gray-700 dark:text-gray-300">{gettext("Border")}</span>
+            <span class="text-sm text-secondary">{gettext("Border")}</span>
           </label>
         </div>
       </.form>
@@ -307,9 +307,9 @@
     </div>
   </div>
   <%!-- Preview Panel (Full Width Below) --%>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <div class="surface-card rounded-xl shadow-md p-4">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+      <h2 class="text-lg font-semibold text-primary">
         {gettext("Preview")}
         <%= if length(@selected_items) > 0 do %>
           <span class="text-sm font-normal text-gray-500">
@@ -322,7 +322,7 @@
           <button
             type="button"
             phx-click="delete_concept"
-            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg font-medium transition-colors"
+            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-red-100 text-red-700 hover:bg-tone-error-soft dark:text-red-400 dark:hover:bg-red-900/50 rounded-lg font-medium transition-colors"
           >
             <.icon name="hero-trash" class="w-3.5 h-3.5" />
             {gettext("Delete Concept")}
@@ -331,7 +331,7 @@
             <button
               type="button"
               phx-click="restore_concept"
-              class="flex items-center gap-1 text-xs px-3 py-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50 rounded-lg font-medium transition-colors"
+              class="flex items-center gap-1 text-xs px-3 py-1.5 bg-amber-100 text-amber-700 hover:bg-tone-warning-soft dark:text-amber-400 dark:hover:bg-amber-900/50 rounded-lg font-medium transition-colors"
             >
               <.icon name="hero-arrow-path" class="w-3.5 h-3.5" />
               {gettext("Restore (%{count})", count: length(@saved_concept.selected_items))}
@@ -342,7 +342,7 @@
           <button
             type="button"
             phx-click="save_concept"
-            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 rounded-lg font-medium transition-colors"
+            class="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-100 text-green-700 hover:bg-tone-success-soft dark:text-green-400 dark:hover:bg-green-900/50 rounded-lg font-medium transition-colors"
           >
             <.icon name="hero-bookmark" class="w-3.5 h-3.5" />
             {gettext("Save Concept")}

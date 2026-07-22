@@ -10,7 +10,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.TreeComponents do
   def collection_tree_item(assigns) do
     ~H"""
     <div class={"ml-#{@level * 4} border-l-2 border-voile-light pl-4 mb-4"}>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light p-4 hover:shadow-md transition-shadow">
+      <div class="surface-card rounded-lg shadow-sm border border-voile-light p-4 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <%= if @collection.thumbnail do %>

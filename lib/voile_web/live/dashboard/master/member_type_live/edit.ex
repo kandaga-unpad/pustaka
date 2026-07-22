@@ -26,6 +26,11 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Edit do
        socket
        |> assign(:member_type, member_type)
        |> assign(:page_title, gettext("Edit Member Type"))
+       |> assign(:breadcrumb, [
+         %{label: gettext("Manage"), path: "/manage"},
+         %{label: gettext("Master data"), path: "/manage/master"},
+         %{label: gettext("Member types"), path: nil}
+       ])
        |> assign(:live_action, :edit)}
     end
   end

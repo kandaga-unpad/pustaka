@@ -96,7 +96,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
               Read On Spot — {@label}
             </h1>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+            <p class="text-tertiary text-sm mt-1">
               {@total} item(s) recorded
               <%= if @node_id do %>
                 at this node
@@ -105,14 +105,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
           </div>
           <.link
             navigate={~p"/manage/glam/library/read_on_spot/report"}
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg surface-raised text-secondary text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
           >
             <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Report
           </.link>
         </div>
       </div>
       <%!-- Table --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+      <div class="surface-card rounded-lg shadow-sm overflow-hidden">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -145,23 +145,23 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
               <tr class={[
                 "border-t border-gray-100 dark:border-gray-700",
                 if(rem(idx, 2) == 0,
-                  do: "bg-white dark:bg-gray-800",
+                  do: "surface-card",
                   else: "bg-gray-50 dark:bg-gray-700"
                 )
               ]}>
                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">
                   {record.title}
                 </td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden md:table-cell">
+                <td class="px-4 py-3 text-secondary hidden md:table-cell">
                   {record.author || "—"}
                 </td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-4 py-3 text-secondary hidden sm:table-cell">
                   {record.barcode || "—"}
                 </td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-400 hidden sm:table-cell">
+                <td class="px-4 py-3 text-secondary hidden sm:table-cell">
                   {record.location_name}
                 </td>
-                <td class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">
+                <td class="px-4 py-3 text-tertiary text-xs whitespace-nowrap">
                   {Calendar.strftime(
                     FormatIndonesiaTime.shift_to_jakarta(record.read_at || record.inserted_at),
                     "%d %b %H:%M"
@@ -175,14 +175,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
       <%!-- Pagination --%>
       <%= if @total_pages > 1 do %>
         <div class="flex items-center justify-between mt-4">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-tertiary">
             Showing {(@page - 1) * @per_page + 1}–{min(@page * @per_page, @total)} of {@total}
           </p>
           <div class="flex gap-1">
             <%= if @page > 1 do %>
               <.link
                 navigate={detail_path(@type, @date, @node_id, @location_id, @page - 1)}
-                class="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                class="px-3 py-1.5 text-sm rounded-lg surface-raised text-secondary hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 ← Prev
               </.link>
@@ -193,7 +193,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.ReportDetail do
             <%= if @page < @total_pages do %>
               <.link
                 navigate={detail_path(@type, @date, @node_id, @location_id, @page + 1)}
-                class="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                class="px-3 py-1.5 text-sm rounded-lg surface-raised text-secondary hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 Next →
               </.link>

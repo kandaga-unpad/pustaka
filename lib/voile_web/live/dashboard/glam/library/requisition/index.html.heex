@@ -9,15 +9,15 @@
   <div class="sm:flex sm:items-center sm:justify-between my-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Library Requisitions</h1>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      <p class="mt-1 text-sm text-secondary">
         Manage member requests: purchases, interlibrary loans, digitization, and reference queries
       </p>
     </div>
   </div>
 
   <%!-- Filters --%>
-  <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+  <div class="surface-card shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-subtle">
       <.form :let={f} for={%{}} phx-change="filter">
         <div class="flex flex-wrap items-center gap-4">
           <.input
@@ -68,13 +68,13 @@
   </div>
 
   <%!-- Requisitions Table --%>
-  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+  <div class="surface-card shadow overflow-hidden sm:rounded-lg">
     <.table id="requisitions" rows={@streams.requisitions}>
       <:col :let={{_id, req}} label="Title">
         <div>
           <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{req.title}</div>
           <%= if req.author do %>
-            <div class="text-xs text-gray-500 dark:text-gray-400">{req.author}</div>
+            <div class="text-xs text-tertiary">{req.author}</div>
           <% end %>
         </div>
       </:col>
@@ -178,8 +178,8 @@
 
     <%!-- Pagination --%>
     <%= if @total_pages > 1 do %>
-      <div class="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-400">
+      <div class="flex items-center justify-between px-6 py-3 border-t border-subtle">
+        <div class="text-sm text-secondary">
           Page {@page} of {@total_pages}
         </div>
         <div class="flex gap-2">
@@ -210,7 +210,7 @@
 <%!-- Staff Notes Action Modal --%>
 <%= if @action_modal do %>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+    <div class="surface-card rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
         <%= case @action_modal.action do %>
           <% "approve" -> %>
@@ -221,7 +221,7 @@
             Mark as Fulfilled
         <% end %>
       </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <p class="text-sm text-secondary mb-4">
         <%= case @action_modal.action do %>
           <% "approve" -> %>
             Add any notes for the patron before approving.
@@ -250,7 +250,7 @@
           <button
             type="button"
             phx-click="close_action_modal"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+            class="px-4 py-2 text-sm font-medium text-secondary surface-raised rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
           >
             Cancel
           </button>

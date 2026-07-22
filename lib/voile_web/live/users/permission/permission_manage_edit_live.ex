@@ -46,10 +46,10 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
 
       <div class="flex gap-4">
         <div class="w-full max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
+          <.voile_settings_nav
+            title={gettext("Settings")}
+            items={voile_settings_nav_items()}
             current_path={@current_path}
-            is_super_admin={@is_super_admin}
           />
         </div>
 
@@ -63,7 +63,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
           <div class="space-y-8">
             <%!-- Permission Basic Information --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+              <h3 class="text-lg font-semibold text-primary mb-6">
                 {gettext("Basic Information")}
               </h3>
 
@@ -79,15 +79,15 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
             </div>
             <%!-- Roles with this Permission --%>
             <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+              <h3 class="text-lg font-semibold text-primary mb-6">
                 {gettext("Roles with This Permission")}
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                <span class="text-sm font-normal text-tertiary">
                   ({length(@roles)} {gettext("role")}{if length(@roles) != 1, do: gettext("s")})
                 </span>
               </h3>
 
               <%= if @roles == [] do %>
-                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div class="text-center py-8 text-tertiary">
                   <.icon name="hero-shield-exclamation" class="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>{gettext("No roles currently have this permission")}</p>
                 </div>
@@ -98,10 +98,10 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
                       <div class="flex items-center gap-3">
                         <.icon
                           name="hero-shield-check"
-                          class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                          class="w-5 h-5 text-voile-info"
                         />
                         <div>
-                          <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                          <div class="font-medium text-primary flex items-center gap-2">
                             {String.capitalize(role.name)}
                             <%= if role.is_system_role do %>
                               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-primary/10 text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
@@ -111,7 +111,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
                           </div>
 
                           <%= if role.description do %>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                            <div class="text-sm text-tertiary">
                               {role.description}
                             </div>
                           <% end %>
@@ -120,7 +120,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Edit do
 
                       <.link
                         navigate={~p"/manage/settings/roles/#{role.id}"}
-                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                        class="text-sm text-voile-info hover:text-blue-800 dark:hover:text-blue-300"
                       >
                         {gettext("View Role →")}
                       </.link>

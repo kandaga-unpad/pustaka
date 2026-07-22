@@ -31,8 +31,8 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
       ]} />
 
       <%!-- Page Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{gettext("Member Reports")}</h1>
+      <div class="surface-card shadow-sm rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-primary">{gettext("Member Reports")}</h1>
         <p class="text-gray-600 dark:text-gray-300 mt-1">
           {gettext("Comprehensive reports on member activity and status")}
         </p>
@@ -41,7 +41,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
       <%!-- Report Cards --%>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <.link navigate="/manage/members/reports/expiring" class="block">
-          <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div class="surface-card shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4">
               <div class="flex-shrink-0 h-12 w-12">
                 <div class="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
@@ -49,7 +49,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
                 </div>
               </div>
               <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-primary">
                   {gettext("Expiring Memberships")}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
@@ -62,7 +62,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
         </.link>
 
         <.link navigate="/manage/members/reports/overdue" class="block">
-          <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div class="surface-card shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4">
               <div class="flex-shrink-0 h-12 w-12">
                 <div class="h-12 w-12 rounded-lg bg-red-100 flex items-center justify-center">
@@ -70,7 +70,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
                 </div>
               </div>
               <div>
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-primary">
                   {gettext("Overdue Items")}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300">
@@ -82,7 +82,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
           </div>
         </.link>
 
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex items-center gap-4">
             <div class="flex-shrink-0 h-12 w-12">
               <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -90,7 +90,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
               </div>
             </div>
             <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              <h3 class="text-lg font-medium text-primary">
                 {gettext("Active Members")}
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-300">
@@ -103,34 +103,34 @@ defmodule VoileWeb.Dashboard.Members.Reports.Index do
       </div>
 
       <%!-- Quick Stats --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <div class="surface-card shadow-sm rounded-lg p-6">
+        <h3 class="text-lg font-medium text-primary mb-4">
           {gettext("Membership Overview")}
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <.stat_card
-            title={gettext("Total Members")}
+          <.voile_stat_card
+            label={gettext("Total Members")}
             value={@total_members}
             icon="hero-users"
-            color="blue"
+            tone={:info}
           />
-          <.stat_card
-            title={gettext("Active Members")}
+          <.voile_stat_card
+            label={gettext("Active Members")}
             value={@active_members_count}
             icon="hero-user-group"
-            color="green"
+            tone={:success}
           />
-          <.stat_card
-            title={gettext("Suspended Members")}
+          <.voile_stat_card
+            label={gettext("Suspended Members")}
             value={@suspended_members_count}
             icon="hero-exclamation-triangle"
-            color="red"
+            tone={:error}
           />
-          <.stat_card
-            title={gettext("Expired Members")}
+          <.voile_stat_card
+            label={gettext("Expired Members")}
             value={@expired_members_count}
             icon="hero-x-mark"
-            color="orange"
+            tone={:warning}
           />
         </div>
       </div>

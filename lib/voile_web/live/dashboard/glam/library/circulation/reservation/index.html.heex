@@ -13,7 +13,7 @@
         <.back navigate="/manage/glam/library/circulation">Back</.back>
         <div>
           <h1 class="text-2xl font-bold">Library Reservations</h1>
-          <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-0.5 text-sm text-tertiary">
             Manage item reservations and queue system
           </p>
         </div>
@@ -28,33 +28,33 @@
     </div>
   </div>
   <%!-- Stats + Filters card --%>
-  <div class="bg-white dark:bg-gray-800 shadow rounded-xl mb-6 overflow-hidden">
+  <div class="surface-card shadow rounded-xl mb-6 overflow-hidden">
     <%!-- Quick stats --%>
     <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-voile-light border-b border-voile-light">
       <div class="px-5 py-4 text-center">
         <div class="text-2xl font-bold text-amber-500">-</div>
-        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div class="mt-0.5 text-xs font-medium text-tertiary uppercase tracking-wide">
           Pending
         </div>
       </div>
 
       <div class="px-5 py-4 text-center">
         <div class="text-2xl font-bold text-green-600">-</div>
-        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div class="mt-0.5 text-xs font-medium text-tertiary uppercase tracking-wide">
           Available
         </div>
       </div>
 
       <div class="px-5 py-4 text-center">
         <div class="text-2xl font-bold text-blue-600">-</div>
-        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div class="mt-0.5 text-xs font-medium text-tertiary uppercase tracking-wide">
           Picked Up
         </div>
       </div>
 
       <div class="px-5 py-4 text-center">
         <div class="text-2xl font-bold text-red-500">-</div>
-        <div class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <div class="mt-0.5 text-xs font-medium text-tertiary uppercase tracking-wide">
           Expired
         </div>
       </div>
@@ -96,7 +96,7 @@
   </div>
   <%!-- Reservation cards --%>
   <div id="reservations" phx-update="stream" class="space-y-3">
-    <div class="hidden only:flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl shadow">
+    <div class="hidden only:flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500 surface-card rounded-xl shadow">
       <.icon name="hero-bookmark" class="w-12 h-12 mb-3 opacity-40" />
       <p class="text-sm font-medium">No reservations found</p>
     </div>
@@ -104,7 +104,7 @@
     <%= for {id, reservation} <- @streams.reservations do %>
       <div
         id={id}
-        class="bg-white dark:bg-gray-800 shadow rounded-xl overflow-hidden border border-transparent hover:border-voile-light transition-colors"
+        class="surface-card shadow rounded-xl overflow-hidden border border-transparent hover:border-voile-light transition-colors"
       >
         <div class="px-5 py-4">
           <div class="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -128,7 +128,7 @@
                   {if reservation.member, do: reservation.member.fullname, else: "Unknown Member"}
                 </p>
 
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p class="text-xs text-tertiary truncate">
                   {if reservation.member && reservation.member.identifier,
                     do: Decimal.to_string(reservation.member.identifier),
                     else: "-"}
@@ -157,7 +157,7 @@
                   </p>
 
                   <p
-                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    class="text-xs text-tertiary truncate"
                     title={reservation.item.item_code}
                   >
                     {reservation.item.item_code}
@@ -166,7 +166,7 @@
                   <p class="text-sm font-semibold">Collection Reservation</p>
 
                   <p
-                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                    class="text-xs text-tertiary truncate"
                     title={
                       if reservation.collection,
                         do: reservation.collection.title,
@@ -235,7 +235,7 @@
                 </p>
 
                 <%= if reservation.notification_sent do %>
-                  <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-voile-success">
                     <.icon name="hero-check-circle" class="w-3.5 h-3.5" /> Sent
                   </span>
                 <% else %>
@@ -252,7 +252,7 @@
                   </p>
 
                   <p
-                    class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2"
+                    class="text-xs text-tertiary line-clamp-2"
                     title={reservation.notes}
                   >
                     {reservation.notes}
@@ -268,7 +268,7 @@
             <button
               phx-click="mark_available"
               phx-value-id={reservation.id}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:hover:bg-green-900/60 transition-colors"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-800 hover:bg-tone-success-soft dark:text-green-300 dark:hover:bg-green-900/60 transition-colors"
               title="Mark as available for pickup"
             >
               <.icon name="hero-check" class="w-3.5 h-3.5" /> Mark Available
@@ -279,7 +279,7 @@
             <button
               phx-click="fulfill_reservation"
               phx-value-id={reservation.id}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60 transition-colors"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 hover:bg-tone-info-soft dark:text-blue-300 dark:hover:bg-blue-900/60 transition-colors"
               data-confirm="Are you sure you want to fulfill this reservation and check out the item?"
             >
               <.icon name="hero-arrow-right-circle" class="w-3.5 h-3.5" /> Fulfill
@@ -290,7 +290,7 @@
             <button
               phx-click="cancel_reservation"
               phx-value-id={reservation.id}
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60 transition-colors"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-800 hover:bg-tone-error-soft dark:text-red-300 dark:hover:bg-red-900/60 transition-colors"
               data-confirm="Are you sure you want to cancel this reservation?"
             >
               <.icon name="hero-x-mark" class="w-3.5 h-3.5" /> Cancel
@@ -299,7 +299,7 @@
 
           <.link
             navigate={~p"/manage/glam/library/circulation/reservations/#{reservation.id}"}
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60 transition-colors ml-auto"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-800 hover:bg-tone-brand-soft dark:text-indigo-300 dark:hover:bg-indigo-900/60 transition-colors ml-auto"
           >
             <.icon name="hero-eye" class="w-3.5 h-3.5" /> View Details
           </.link>
@@ -309,7 +309,7 @@
   </div>
   <%!-- Pagination --%>
   <div class="mt-6">
-    <.pagination page={@page} total_pages={@total_pages} />
+    <.voile_pagination page={@page} total_pages={@total_pages} />
   </div>
 </div>
 <!-- New Reservation Modal -->

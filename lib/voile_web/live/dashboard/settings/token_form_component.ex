@@ -17,7 +17,7 @@ defmodule VoileWeb.Dashboard.Settings.TokenFormComponent do
           <% end %>
         </h3>
 
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-1 text-sm text-secondary">
           <%= if @action == :create_master do %>
             {gettext(
               "Create a non-expiring master token with full admin privileges. Only super admins can create these."

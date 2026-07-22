@@ -1,58 +1,84 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Publishers")}
+  icon="hero-building-office-2"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/master/publishers/new"}
+    >
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New publisher")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Publishers")}
-    <:actions>
-      <.link patch={~p"/manage/master/publishers/new"}>
-        <.button>{gettext("New Publisher")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="items"
-    rows={@publishers || []}
-    row_click={fn publisher -> JS.navigate(~p"/manage/master/publishers/#{publisher.id}") end}
-  >
-    <:col :let={publisher} label={gettext("Publisher Name")}>{publisher.name}</:col>
-
-    <:col :let={publisher} label={gettext("Address")}>{publisher.address}</:col>
-
-    <:col :let={publisher} label={gettext("City")}>{publisher.city}</:col>
-
-    <:col :let={publisher} label={gettext("Contact")}>{publisher.contact}</:col>
-
-    <:action :let={publisher}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/publishers/#{publisher.id}"}>{gettext("Show")}</.link>
-      </div>
-      <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={publisher}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: publisher.id}) |> hide("##{publisher.id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @publishers == [] do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="items"
+        rows={@publishers || []}
+        row_click={fn publisher -> JS.navigate(~p"/manage/master/publishers/#{publisher.id}") end}
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="publisher-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/publishers")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.PublisherLive.FormComponent}
-      id={@publisher.id || :new}
-      title={@page_title}
-      action={@live_action}
-      publisher={@publisher}
-      patch={~p"/manage/master/publishers"}
-    />
-  </.modal>
-</section>
+        <:col :let={publisher} label={gettext("Publisher Name")}>{publisher.name}</:col>
+
+        <:col :let={publisher} label={gettext("Address")}>{publisher.address}</:col>
+
+        <:col :let={publisher} label={gettext("City")}>{publisher.city}</:col>
+
+        <:col :let={publisher} label={gettext("Contact")}>{publisher.contact}</:col>
+
+        <:action :let={publisher}>
+          <div class="sr-only">
+            <.link navigate={~p"/manage/master/publishers/#{publisher.id}"}>
+              {gettext("Show")}
+            </.link>
+          </div>
+          <.link patch={~p"/manage/master/publishers/#{publisher.id}/edit"}>
+            {gettext("Edit")}
+          </.link>
+        </:action>
+
+        <:action :let={publisher}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: publisher.id}) |> hide("##{publisher.id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="publisher-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/publishers")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.PublisherLive.FormComponent}
+        id={@publisher.id || :new}
+        title={@page_title}
+        action={@live_action}
+        publisher={@publisher}
+        patch={~p"/manage/master/publishers"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

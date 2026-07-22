@@ -814,6 +814,8 @@ defmodule Voile.Schema.Catalog do
         from c in base_query,
           left_join: creator in assoc(c, :mst_creator),
           left_join: node in assoc(c, :node),
+          left_join: created in assoc(c, :created_by),
+          left_join: updated in assoc(c, :updated_by),
           where:
             ilike(c.title, ^like) or
               ilike(c.description, ^like) or
@@ -822,7 +824,9 @@ defmodule Voile.Schema.Catalog do
               ilike(c.status, ^like) or
               ilike(c.access_level, ^like) or
               ilike(creator.creator_name, ^like) or
-              ilike(node.name, ^like)
+              ilike(node.name, ^like) or
+              ilike(created.fullname, ^like) or
+              ilike(updated.fullname, ^like)
       else
         base_query
       end
@@ -862,6 +866,8 @@ defmodule Voile.Schema.Catalog do
         from c in count_query,
           left_join: creator in assoc(c, :mst_creator),
           left_join: node in assoc(c, :node),
+          left_join: created in assoc(c, :created_by),
+          left_join: updated in assoc(c, :updated_by),
           where:
             ilike(c.title, ^like) or
               ilike(c.description, ^like) or
@@ -870,7 +876,9 @@ defmodule Voile.Schema.Catalog do
               ilike(c.status, ^like) or
               ilike(c.access_level, ^like) or
               ilike(creator.creator_name, ^like) or
-              ilike(node.name, ^like)
+              ilike(node.name, ^like) or
+              ilike(created.fullname, ^like) or
+              ilike(updated.fullname, ^like)
       else
         count_query
       end

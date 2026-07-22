@@ -77,24 +77,20 @@ defmodule VoileWeb.Dashboard.Catalog.TransferRequestLive.Show do
     {color_class, icon, label} =
       case status do
         "pending" ->
-          {"bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200", "hero-clock",
-           gettext("Pending")}
+          {"bg-tone-warning-soft text-voile-warning", "hero-clock", gettext("Pending")}
 
         "approved" ->
-          {"bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
-           "hero-check-circle", gettext("Approved")}
+          {"bg-tone-success-soft text-voile-success", "hero-check-circle", gettext("Approved")}
 
         "denied" ->
-          {"bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200", "hero-x-circle",
-           gettext("Denied")}
+          {"bg-tone-error-soft text-voile-error", "hero-x-circle", gettext("Denied")}
 
         "cancelled" ->
-          {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200", "hero-minus-circle",
+          {"surface-raised text-gray-800 dark:text-gray-200", "hero-minus-circle",
            gettext("Cancelled")}
 
         _ ->
-          {"bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200",
-           "hero-question-mark-circle",
+          {"surface-raised text-gray-800 dark:text-gray-200", "hero-question-mark-circle",
            Gettext.gettext(VoileWeb.Gettext, String.capitalize(status))}
       end
 

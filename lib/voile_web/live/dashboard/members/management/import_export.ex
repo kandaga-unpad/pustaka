@@ -157,7 +157,7 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
     <div class="max-w-6xl mx-auto px-4 py-8">
       <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl font-bold text-primary">
             {gettext("Import Members")}
           </h1>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
@@ -178,8 +178,8 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
 
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
         <div class="space-y-6">
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <div class="surface-card rounded-xl border border-subtle p-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-primary">
               {gettext("CSV Upload")}
             </h2>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -203,10 +203,10 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
                 class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center transition-colors hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700/60 cursor-pointer"
               >
                 <.icon name="hero-document-arrow-up" class="mx-auto h-10 w-10 text-gray-400" />
-                <p class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
+                <p class="mt-4 text-sm font-semibold text-primary">
                   {gettext("Drop a CSV file here or click to browse")}
                 </p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-tertiary">
                   {gettext("Accepted format: .csv")}
                 </p>
                 <label class="mt-4 inline-flex cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
@@ -218,7 +218,7 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
               <%= for entry <- @uploads.csv_file.entries do %>
                 <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
                   <p>{entry.client_name}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-tertiary">
                     {gettext("Size: %{size} bytes", size: entry.client_size)}
                   </p>
                 </div>
@@ -250,9 +250,9 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
             </.form>
           </div>
 
-          <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+          <div class="rounded-xl border border-subtle surface-card p-6 shadow-sm">
             <div class="flex items-center justify-between gap-3">
-              <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <h3 class="text-sm font-semibold uppercase tracking-wide text-tertiary">
                 {gettext("CSV headers")}
               </h3>
               <.button
@@ -264,15 +264,15 @@ defmodule VoileWeb.Dashboard.Members.Management.ImportExport do
                 {gettext("Download sample CSV")}
               </.button>
             </div>
-            <div class="mt-3 overflow-x-auto text-sm text-gray-700 dark:text-gray-300">
+            <div class="mt-3 overflow-x-auto text-sm text-secondary">
               <code class="block whitespace-pre-wrap">{Enum.join(@csv_headers, ",")}</code>
             </div>
           </div>
         </div>
 
         <div class="space-y-6">
-          <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <div class="rounded-xl border border-subtle surface-card p-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-primary">
               {gettext("Import summary")}
             </h2>
 

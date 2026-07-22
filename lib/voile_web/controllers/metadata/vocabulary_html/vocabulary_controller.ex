@@ -13,14 +13,37 @@ defmodule VoileWeb.VocabularyController do
       delete: ["metadata.manage"]
     }
 
-  def index(conn, _params) do
-    metadata_vocabularies = Metadata.list_metadata_vocabularies()
-    render(conn, :index, metadata_vocabularies: metadata_vocabularies)
+  defp breadcrumb(last) do
+    [
+      %{label: gettext("Manage"), path: "/manage"},
+      %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+      %{label: gettext("Vocabulary"), path: "/manage/metaresource/metadata_vocabularies"},
+      %{label: last, path: nil}
+    ]
+  end
+
+  def index(conn, params) do
+    page = Voile.Utils.Pagination.parse_page(Map.get(params, "page"))
+    per_page = 10
+
+    {metadata_vocabularies, total_pages, _} =
+      Metadata.list_metadata_page(:vocabulary, page, per_page)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("All")))
+    |> assign(:metadata_vocabularies, metadata_vocabularies)
+    |> assign(:page, page)
+    |> assign(:total_pages, total_pages)
+    |> render(:index)
   end
 
   def new(conn, _params) do
     changeset = Metadata.change_vocabulary(%Vocabulary{})
-    render(conn, :new, changeset: changeset)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("New")))
+    |> assign(:changeset, changeset)
+    |> render(:new)
   end
 
   def create(conn, %{"vocabulary" => vocabulary_params}) do
@@ -37,13 +60,22 @@ defmodule VoileWeb.VocabularyController do
 
   def show(conn, %{"id" => id}) do
     vocabulary = Metadata.get_vocabulary!(id)
-    render(conn, :show, vocabulary: vocabulary)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Show")))
+    |> assign(:vocabulary, vocabulary)
+    |> render(:show)
   end
 
   def edit(conn, %{"id" => id}) do
     vocabulary = Metadata.get_vocabulary!(id)
     changeset = Metadata.change_vocabulary(vocabulary)
-    render(conn, :edit, vocabulary: vocabulary, changeset: changeset)
+
+    conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Edit")))
+    |> assign(:vocabulary, vocabulary)
+    |> assign(:changeset, changeset)
+    |> render(:edit)
   end
 
   def update(conn, %{"id" => id, "vocabulary" => vocabulary_params}) do

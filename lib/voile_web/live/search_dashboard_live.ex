@@ -3,6 +3,7 @@ defmodule VoileWeb.SearchDashboardComponent do
   Component for search dashboard with analytics
   """
   use VoileWeb, :html
+  import VoileWeb.DashboardComponents
 
   attr :search_stats, :map, required: true
   attr :popular_searches, :list, required: true
@@ -31,11 +32,9 @@ defmodule VoileWeb.SearchDashboardComponent do
         </.link>
       </div>
       <!-- Search Statistics Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Search Stats Widget -->
-        <.search_stats_widget stats={@search_stats} />
-        <!-- Quick Search Widget -->
-        <.dashboard_search_widget />
+        <.voile_search_insights stats={@search_stats} action_path="/manage/settings/metrics" />
         <!-- Popular Searches -->
         <div class="bg-white dark:bg-gray-700 rounded-xl p-5">
           <div class="flex items-center gap-3 mb-4">

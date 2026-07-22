@@ -19,7 +19,11 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
 
       socket =
         socket
-        |> assign(:current_path, "/manage/settings/reservation_notifications")
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Settings"), path: "/manage/settings"},
+          %{label: gettext("Reservation notifications"), path: nil}
+        ])
         |> assign(:notifications_enabled, enabled == "true")
         |> assign(:sound_enabled, sound_enabled == "true")
         |> assign(:desktop_enabled, desktop_enabled == "true")
@@ -93,30 +97,29 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header>
-      {gettext("Reservation Notification Settings")}
-      <:subtitle>
-        {gettext(
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("Reservation notifications")}
+      description={
+        gettext(
           "Configure how staff and admins receive notifications when members request reservations"
-        )}
-      </:subtitle>
-    </.header>
+        )
+      }
+      icon="hero-bell"
+      tone={:brand}
+    />
 
-    <section class="flex flex-col md:flex-row gap-4">
-      <div class="w-full md:w-auto md:max-w-64">
-        <.dashboard_settings_sidebar
-          current_user={@current_scope.user}
-          current_path={@current_path}
-          is_super_admin={@is_super_admin}
-        />
-      </div>
-
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
       <div class="flex-1">
-        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
-          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+        <div class="surface-card shadow rounded-lg">
+          <div class="px-6 py-4 border-b border-subtle">
             <h3 class="text-lg font-medium">{gettext("Notification Preferences")}</h3>
 
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-sm text-tertiary">
               {gettext("Control how you want to be notified about new reservation requests")}
             </p>
           </div>
@@ -127,7 +130,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               <div class="flex-1">
                 <h4 class="text-base font-medium">{gettext("Enable Reservation Notifications")}</h4>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-sm text-tertiary mt-1">
                   {gettext(
                     "Receive real-time notifications when members create reservation requests. When disabled, no notification popup will appear but reservations will still be recorded."
                   )}
@@ -150,7 +153,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               </div>
             </div>
 
-            <div class="border-t border-gray-200 dark:border-gray-600 pt-6"></div>
+            <div class="border-t border-subtle pt-6"></div>
             <!-- Sound Notifications -->
             <div class={[
               "flex items-start",
@@ -159,7 +162,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               <div class="flex-1">
                 <h4 class="text-base font-medium">{gettext("Sound Alerts")}</h4>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-sm text-tertiary mt-1">
                   {gettext(
                     "Play a sound when a new reservation notification arrives. Requires notifications to be enabled."
                   )}
@@ -183,7 +186,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               </div>
             </div>
 
-            <div class="border-t border-gray-200 dark:border-gray-600 pt-6"></div>
+            <div class="border-t border-subtle pt-6"></div>
             <!-- Desktop Notifications -->
             <div class={[
               "flex items-start",
@@ -192,7 +195,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
               <div class="flex-1">
                 <h4 class="text-base font-medium">{gettext("Browser Desktop Notifications")}</h4>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p class="text-sm text-tertiary mt-1">
                   {gettext(
                     "Show browser notifications even when you're on a different tab. You'll need to grant permission in your browser. Requires notifications to be enabled."
                   )}
@@ -217,7 +220,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
             </div>
           </div>
 
-          <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
+          <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-subtle">
             <div class="flex items-center gap-2 text-sm">
               <.icon name="hero-information-circle" class="w-5 h-5 text-blue-500" />
               <p class="text-gray-600 dark:text-gray-300">
@@ -229,18 +232,18 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
           </div>
         </div>
         <!-- Information Card -->
-        <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div class="mt-6 bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div class="flex">
             <div class="flex-shrink-0">
               <.icon name="hero-light-bulb" class="w-5 h-5 text-blue-400" />
             </div>
 
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
+              <h3 class="text-sm font-medium text-voile-info">
                 {gettext("About Reservation Notifications")}
               </h3>
 
-              <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
+              <div class="mt-2 text-sm text-voile-info">
                 <ul class="list-disc list-inside space-y-1">
                   <li>{gettext("Notifications appear when members request to reserve items")}</li>
 
@@ -255,7 +258,7 @@ defmodule VoileWeb.Dashboard.Settings.ReservationNotificationLive do
           </div>
         </div>
       </div>
-    </section>
+    </.voile_settings_shell>
     """
   end
 end

@@ -1,206 +1,30 @@
 defmodule VoileWeb.DashboardLive do
+  @moduledoc """
+  The Voile staff dashboard home (`/manage`).
+
+  Phase 2 of the dashboard redesign: this LiveView renders on the `:dashboard`
+  layout and is composed entirely from `DashboardComponents` primitives —
+  `voile_page_header`, `voile_glam_strip`, `voile_stat_card`, `voile_section_card`,
+  `voile_metric_row`, `voile_activity_feed`, `voile_action_link`, and
+  `voile_search_insights`.
+
+  Data is loaded asynchronously after the initial paint so the first connected
+  render shows shimmer skeletons instead of zeros that later jump to real
+  numbers. The composition is role-aware insofar as super admins get an "all
+  nodes" view with a node filter; deeper per-role widget variants
+  (archivist / gallery_curator / museum_curator) are tracked as follow-up work
+  in `plans/dashboard-redesign.md` §8.1.
+  """
+
   use VoileWeb, :live_view_dashboard
+
   require Logger
 
   alias Voile.Analytics.SearchAnalytics
-  alias Voile.Schema.Search
-  alias Voile.Repo
-  alias Voile.Schema.Accounts.User
-  alias Voile.Schema.Catalog.{Collection, Item}
+  alias Voile.Dashboard.{Feed, Stats}
   alias VoileWeb.Auth.Authorization
 
-  import Ecto.Query
-
-  def render(assigns) do
-    ~H"""
-    <section class="space-y-6 p-6">
-      <div class="flex flex-col md:flex-wrap items-center justify-between gap-4">
-        <div class="w-full">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            {gettext("Dashboard")}
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">
-            {gettext("Overview of your GLAM system")}
-          </p>
-        </div>
-        <%= if @is_super_admin do %>
-          <div class="w-full flex justify-end">
-            <.form :let={f} for={%{}} phx-change="select_node">
-              <.input
-                field={f[:node_id]}
-                type="select"
-                options={
-                  [{gettext("All Nodes"), "all"}] ++
-                    Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
-                }
-                value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
-                class="text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
-                label={gettext("Filter by Node")}
-              />
-            </.form>
-          </div>
-        <% end %>
-      </div>
-      <%!-- Quick Actions --%>
-      <div class="w-full">
-        <h5 class="text-center my-3">{gettext("Library Transaction Circulation")}</h5>
-        <.link
-          class="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-violet-600 to-violet-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-violet-800"
-          navigate={~p"/manage/glam/library/ledger"}
-        >
-          {gettext("Start Transaction")}
-        </.link>
-      </div>
-      <%!-- Quick Stats Cards --%>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <.stat_card
-          title={gettext("Total Members")}
-          value={@member_stats.total_members}
-          icon="hero-users"
-          color="blue"
-        />
-        <.stat_card
-          title={gettext("Active Loans")}
-          value={@circulation_stats.active_transactions}
-          icon="hero-book-open"
-          color="green"
-        />
-        <.stat_card
-          title={gettext("Overdue Items")}
-          value={@circulation_stats.overdue_count}
-          icon="hero-exclamation-triangle"
-          color="red"
-        />
-        <.stat_card
-          title={gettext("Collections")}
-          value={@catalog_stats.total_collections}
-          icon="hero-rectangle-stack"
-          color="purple"
-        />
-      </div>
-      <%!-- Member Statistics --%>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-users" class="w-5 h-5 inline mr-2" /> {gettext("Member Overview")}
-          </h3>
-          <div class="space-y-4">
-            <.stat_row
-              label={gettext("Active Members")}
-              value={@member_stats.active_members}
-              color="green"
-            />
-            <.stat_row
-              label={gettext("Suspended Members")}
-              value={@member_stats.suspended_members}
-              color="red"
-            />
-            <.stat_row
-              label={gettext("Expiring Soon (30 days)")}
-              value={@member_stats.expiring_soon}
-              color="orange"
-            />
-            <.stat_row
-              label={gettext("Expired Memberships")}
-              value={@member_stats.expired_members}
-              color="gray"
-            />
-          </div>
-          <%= if @is_super_admin do %>
-            <div class="mt-6 text-center">
-              <.link navigate={~p"/manage/settings/user_dashboard"}>
-                <.button>{gettext("View Detailed Member Statistics &rarr;")}</.button>
-              </.link>
-            </div>
-          <% end %>
-        </div>
-        <%!-- Circulation Statistics --%>
-        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-arrow-path" class="w-5 h-5 inline mr-2" /> {gettext(
-              "Circulation Overview"
-            )}
-          </h3>
-          <div class="space-y-4">
-            <.stat_row
-              label={gettext("Active Transactions")}
-              value={@circulation_stats.active_transactions}
-              color="blue"
-            />
-            <.stat_row
-              label={gettext("Overdue Transactions")}
-              value={@circulation_stats.overdue_count}
-              color="red"
-            />
-            <.stat_row
-              label={gettext("Active Reservations")}
-              value={@circulation_stats.active_reservations}
-              color="purple"
-            />
-            <.stat_row
-              label={gettext("Outstanding Fines")}
-              value={"Rp #{format_currency(@circulation_stats.outstanding_fines)}"}
-              color="orange"
-            />
-          </div>
-        </div>
-      </div>
-      <%!-- Catalog & Search Statistics --%>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            <.icon name="hero-rectangle-stack" class="w-5 h-5 inline mr-2" /> {gettext(
-              "Catalog Overview"
-            )}
-          </h3>
-          <div class="space-y-4">
-            <.stat_row
-              label={gettext("Total Collections")}
-              value={@catalog_stats.total_collections}
-              color="blue"
-            />
-            <.stat_row
-              label={gettext("Published Collections")}
-              value={@catalog_stats.published_collections}
-              color="green"
-            />
-            <.stat_row
-              label={gettext("Total Items")}
-              value={@catalog_stats.total_items}
-              color="purple"
-            />
-            <.stat_row
-              label={gettext("Available Items")}
-              value={@catalog_stats.available_items}
-              color="green"
-            />
-          </div>
-        </div>
-        <%!-- Search Widget --%>
-        <.dashboard_search_widget
-          search_query={@search_query}
-          search_results={@search_results}
-          searching={@searching}
-        />
-      </div>
-      <%!-- Search Statistics Widget --%>
-      <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
-        <.search_stats_widget stats={@search_stats} />
-      </div>
-
-      <%!-- Plugin Dashboard Widgets --%>
-      <%= for widget <- @plugin_widgets do %>
-        <div class="bg-white dark:bg-gray-700 rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {widget.title}
-          </h3>
-          <.live_component module={widget.component} id={to_string(widget.key)} />
-        </div>
-      <% end %>
-    </section>
-    """
-  end
-
+  @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
     is_super_admin = Authorization.is_super_admin?(user)
@@ -208,242 +32,162 @@ defmodule VoileWeb.DashboardLive do
     socket =
       socket
       |> assign(:page_title, gettext("Dashboard"))
+      |> assign(:breadcrumb, [%{label: gettext("Dashboard"), path: nil}])
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
+      |> assign(:greeting, build_greeting(user))
+      |> assign(:dashboard_loading, true)
+      |> assign(:glam_stats, empty_glam_stats())
+      |> assign(:circulation_stats, empty_circulation_stats())
+      |> assign(:catalog_stats, empty_catalog_stats())
+      |> assign(:member_stats, empty_member_stats())
+      |> assign(:attention_items, [])
       |> assign(:search_stats, SearchAnalytics.get_search_stats())
-      |> assign(:search_query, "")
-      |> assign(:search_results, [])
-      |> assign(:searching, false)
+      |> assign_node_context(user, is_super_admin)
 
-    socket =
-      if is_super_admin do
-        nodes = Voile.Schema.System.list_nodes()
-        socket |> assign(:nodes, nodes) |> assign(:selected_node_id, nil)
-      else
-        socket |> assign(:nodes, []) |> assign(:selected_node_id, user.node_id)
-      end
+    # Plugin widgets are cheap (a filter over registered hooks) and render
+    # their own live_components, so they can mount with the page.
+    socket = assign(socket, :plugin_widgets, Voile.Hooks.run_filter(:dashboard_widgets, []))
 
-    # Load statistics
-    socket =
-      socket
-      |> load_member_stats(user)
-      |> load_circulation_stats(user)
-      |> load_catalog_stats(user)
-
-    # Let plugins inject their own widgets
-    plugin_widgets = Voile.Hooks.run_filter(:dashboard_widgets, [])
-    socket = assign(socket, :plugin_widgets, plugin_widgets)
+    # Defer every database-backed stat query to after first paint so the UI
+    # shows skeletons, then fills in.
+    if connected?(socket) do
+      send(self(), {:load_dashboard, socket.assigns.user})
+    end
 
     {:ok, socket}
   end
 
-  def handle_params(_params, _uri, socket) do
-    {:noreply, socket}
-  end
-
+  @impl true
   def handle_event("select_node", %{"node_id" => node_id_str}, socket) do
-    node_id =
-      case node_id_str do
-        nil -> nil
-        "all" -> nil
-        "" -> nil
-        id -> String.to_integer(id)
-      end
+    node_id = parse_node_id(node_id_str)
 
-    socket = assign(socket, :selected_node_id, node_id)
-
-    # Determine user context for stats
-    user = socket.assigns.user
-
-    user_for_stats =
-      if Authorization.is_super_admin?(user) and not is_nil(node_id) do
-        Map.put(user, :node_id, node_id)
+    user =
+      if Authorization.is_super_admin?(socket.assigns.user) and not is_nil(node_id) do
+        Map.put(socket.assigns.user, :node_id, node_id)
       else
-        user
+        socket.assigns.user
       end
 
     socket =
       socket
-      |> load_member_stats(user_for_stats)
-      |> load_circulation_stats(user_for_stats)
-      |> load_catalog_stats(user_for_stats)
+      |> assign(:selected_node_id, node_id)
+      |> assign(:user, user)
+      |> assign(:dashboard_loading, true)
+
+    send(self(), {:load_dashboard, user})
 
     {:noreply, socket}
   end
 
-  def handle_event("search", %{"query" => query}, socket) do
-    query = String.trim(query)
-    Logger.debug("Dashboard search event: query=#{inspect(query)}")
-
-    if query == "" do
-      socket =
-        socket
-        |> assign(:search_query, "")
-        |> assign(:search_results, [])
-        |> assign(:searching, false)
-
-      {:noreply, socket}
-    else
-      send(self(), {:perform_search, query})
-
-      socket =
-        socket
-        |> assign(:search_query, query)
-        |> assign(:searching, true)
-
-      {:noreply, socket}
-    end
+  @impl true
+  def handle_info({:load_dashboard, user}, socket) do
+    {:noreply, load_dashboard(socket, user)}
   end
 
-  def handle_info({:perform_search, query}, socket) do
-    Logger.debug("Performing search for: #{inspect(query)}")
-
-    # Perform universal search with limited results for dashboard widget
-    results = Search.universal_search(query, %{collections_per_page: 3, items_per_page: 2})
-
-    Logger.debug("Search results: #{inspect(results)}")
-
-    # Combine and flatten results for display
-    combined_results =
-      (results.collections.results ++ results.items.results)
-      |> Enum.take(5)
-
-    Logger.debug("Combined results count: #{length(combined_results)}")
-
-    socket =
-      socket
-      |> assign(:search_results, combined_results)
-      |> assign(:searching, false)
-
-    {:noreply, socket}
+  defp load_dashboard(socket, user) do
+    socket
+    |> assign(:glam_stats, Stats.get_glam_statistics(user))
+    |> assign(:circulation_stats, Voile.get_circulation_stats(user.node_id))
+    |> assign(:catalog_stats, Stats.get_catalog_stats(user))
+    |> assign(:member_stats, Stats.get_member_stats(user))
+    |> assign(:attention_items, Feed.attention_items(user))
+    |> assign(:dashboard_loading, false)
   end
 
-  # Private helper functions for loading statistics
+  defp assign_node_context(socket, user, true) do
+    nodes = Voile.Schema.System.list_nodes()
 
-  defp load_member_stats(socket, user) do
-    base_query = from(u in User)
+    socket
+    |> assign(:nodes, nodes)
+    |> assign(:selected_node_id, nil)
+    |> assign(:current_node_id, user.node_id)
+    |> assign(:current_node_name, gettext("All Nodes"))
+  end
 
-    scoped_query =
-      if is_nil(user.node_id) do
-        base_query
-      else
-        from(u in base_query, where: u.node_id == ^user.node_id)
+  defp assign_node_context(socket, user, false) do
+    node_name =
+      Voile.Schema.System.list_nodes()
+      |> Enum.find(fn n -> n.id == user.node_id end)
+      |> case do
+        %{name: name} -> name
+        _ -> gettext("Unknown")
       end
 
-    total_members = Repo.aggregate(scoped_query, :count, :id)
+    socket
+    |> assign(:nodes, [])
+    |> assign(:selected_node_id, user.node_id)
+    |> assign(:current_node_id, user.node_id)
+    |> assign(:current_node_name, node_name)
+  end
 
-    active_members =
-      Repo.aggregate(
-        from(u in scoped_query,
-          where: u.manually_suspended == false or is_nil(u.manually_suspended)
-        ),
-        :count,
-        :id
-      )
+  defp parse_node_id("all"), do: nil
+  defp parse_node_id(""), do: nil
+  defp parse_node_id(nil), do: nil
+  defp parse_node_id(id) when is_binary(id), do: String.to_integer(id)
 
-    suspended_members =
-      Repo.aggregate(
-        from(u in scoped_query, where: u.manually_suspended == true),
-        :count,
-        :id
-      )
+  defp build_greeting(user) do
+    hour = DateTime.utc_now().hour
+    name = user_fullname_first(user)
 
-    # Members expiring in next 30 days
-    thirty_days_from_now = Date.add(Date.utc_today(), 30)
+    salutation =
+      cond do
+        hour < 12 -> gettext("Good morning")
+        hour < 18 -> gettext("Good afternoon")
+        true -> gettext("Good evening")
+      end
 
-    expiring_soon =
-      Repo.aggregate(
-        from(u in scoped_query,
-          where:
-            not is_nil(u.expiry_date) and u.expiry_date <= ^thirty_days_from_now and
-              u.expiry_date >= ^Date.utc_today()
-        ),
-        :count,
-        :id
-      )
+    if name && name != "", do: "#{salutation}, #{name}", else: salutation
+  end
 
-    expired_members =
-      Repo.aggregate(
-        from(u in scoped_query,
-          where: not is_nil(u.expiry_date) and u.expiry_date < ^Date.utc_today()
-        ),
-        :count,
-        :id
-      )
+  defp user_fullname_first(%{fullname: fullname}) when is_binary(fullname) and fullname != "" do
+    fullname |> String.split() |> List.first()
+  end
 
-    member_stats = %{
-      total_members: total_members,
-      active_members: active_members,
-      suspended_members: suspended_members,
-      expiring_soon: expiring_soon,
-      expired_members: expired_members
+  defp user_fullname_first(_), do: nil
+
+  # Empty shapes so the first (skeleton) paint never raises on nil access.
+  defp empty_glam_stats do
+    %{
+      gallery_count: 0,
+      library_count: 0,
+      archive_count: 0,
+      museum_count: 0,
+      gallery_delta: 0,
+      library_delta: 0,
+      archive_delta: 0,
+      museum_delta: 0,
+      total_collections: 0,
+      total_items: 0,
+      total_nodes: 0,
+      resource_classes: 0
+    }
+  end
+
+  defp empty_circulation_stats,
+    do: %{
+      active_transactions: 0,
+      overdue_count: 0,
+      active_reservations: 0,
+      outstanding_fines: 0
     }
 
-    assign(socket, :member_stats, member_stats)
-  end
-
-  defp load_circulation_stats(socket, user) do
-    # Use the shared circulation stats function from the context
-    # This handles all the node filtering and null unit_id logic
-    circulation_stats = Voile.get_circulation_stats(user.node_id)
-
-    assign(socket, :circulation_stats, circulation_stats)
-  end
-
-  defp load_catalog_stats(socket, user) do
-    # Total collections
-    total_collections =
-      if is_nil(user.node_id) do
-        Repo.aggregate(Collection, :count, :id)
-      else
-        Collection
-        |> where([c], c.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Published collections
-    published_collections =
-      if is_nil(user.node_id) do
-        Collection
-        |> where([c], c.status == "published")
-        |> Repo.aggregate(:count, :id)
-      else
-        Collection
-        |> where([c], c.status == "published" and c.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Total items
-    total_items =
-      if is_nil(user.node_id) do
-        Repo.aggregate(Item, :count, :id)
-      else
-        Item
-        |> where([i], i.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    # Available items
-    available_items =
-      if is_nil(user.node_id) do
-        Item
-        |> where([i], i.availability == "available")
-        |> Repo.aggregate(:count, :id)
-      else
-        Item
-        |> where([i], i.availability == "available" and i.unit_id == ^user.node_id)
-        |> Repo.aggregate(:count, :id)
-      end
-
-    catalog_stats = %{
-      total_collections: total_collections,
-      published_collections: published_collections,
-      total_items: total_items,
-      available_items: available_items
+  defp empty_catalog_stats,
+    do: %{
+      total_collections: 0,
+      published_collections: 0,
+      total_items: 0,
+      available_items: 0
     }
 
-    assign(socket, :catalog_stats, catalog_stats)
-  end
+  defp empty_member_stats,
+    do: %{
+      total_members: 0,
+      active_members: 0,
+      suspended_members: 0,
+      expiring_soon: 0,
+      expired_members: 0
+    }
 
   defp format_currency(amount) when is_integer(amount) do
     amount
@@ -457,21 +201,234 @@ defmodule VoileWeb.DashboardLive do
 
   defp format_currency(_amount), do: "0"
 
-  # Stat row component for overview cards
-  defp stat_row(assigns) do
+  @impl true
+  def render(assigns) do
     ~H"""
-    <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{@label}</span>
-      <span class={"text-sm font-semibold #{get_text_color_class(@color)}"}>{@value}</span>
+    <.voile_page_header
+      eyebrow={gettext("Library · Overview")}
+      title={@greeting}
+      description={gettext("Press ⌘K anywhere to jump to a page. Stats are scoped to your node.")}
+      icon="hero-sparkles"
+      tone={:brand}
+    >
+      <:actions>
+        <%= if @is_super_admin do %>
+          <form phx-change="select_node" class="voile-chip">
+            <.icon name="hero-map-pin" class="w-4 h-4 text-tertiary" />
+            <select
+              name="node_id"
+              class="bg-transparent text-sm text-primary outline-none cursor-pointer"
+            >
+              <option value="all">
+                {gettext("All Nodes")}
+              </option>
+              <%= for node <- @nodes || [] do %>
+                <option value={node.id} selected={@selected_node_id == node.id}>
+                  {node.name}
+                </option>
+              <% end %>
+            </select>
+          </form>
+        <% else %>
+          <span class="voile-chip" title={gettext("Your node")}>
+            <.icon name="hero-map-pin" class="w-4 h-4 text-tertiary" />
+            <span class="text-sm text-primary">{@current_node_name}</span>
+          </span>
+        <% end %>
+      </:actions>
+    </.voile_page_header>
+
+    <.voile_glam_strip stats={@glam_stats} />
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
+      <.voile_stat_card
+        label={gettext("Active loans")}
+        value={@circulation_stats.active_transactions}
+        icon="hero-book-open"
+        tone={:success}
+        loading={@dashboard_loading}
+      />
+      <.voile_stat_card
+        label={gettext("Overdue")}
+        value={@circulation_stats.overdue_count}
+        icon="hero-exclamation-triangle"
+        tone={:error}
+        loading={@dashboard_loading}
+      />
+      <.voile_stat_card
+        label={gettext("Reservations")}
+        value={@circulation_stats.active_reservations}
+        icon="hero-bookmark"
+        tone={:info}
+        loading={@dashboard_loading}
+      />
+      <.voile_stat_card
+        label={gettext("Outstanding fines")}
+        value={"Rp #{format_currency(@circulation_stats.outstanding_fines)}"}
+        icon="hero-banknotes"
+        tone={:warning}
+        loading={@dashboard_loading}
+      />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <.voile_section_card
+        title={gettext("Attention required")}
+        icon="hero-bell-alert"
+        tone={:error}
+        action_label={gettext("View all")}
+        action_path="/manage/glam/library/circulation"
+        class="lg:col-span-2"
+      >
+        <%= if @dashboard_loading do %>
+          <.skeleton_feed />
+        <% else %>
+          <.voile_activity_feed
+            items={@attention_items}
+            empty_text={gettext("Nothing needs your attention right now.")}
+          />
+        <% end %>
+      </.voile_section_card>
+
+      <.voile_section_card title={gettext("Quick actions")} icon="hero-bolt" tone={:brand}>
+        <div class="grid grid-cols-1 gap-2">
+          <.voile_action_link
+            icon="hero-banknotes"
+            tone={:brand}
+            label={gettext("Start transaction")}
+            description={gettext("Checkout, return, or renew an item")}
+            href="/manage/glam/library/ledger"
+          />
+          <.voile_action_link
+            icon="hero-user-plus"
+            tone={:info}
+            label={gettext("Add member")}
+            description={gettext("Register a new library member")}
+            href="/manage/members/management/new"
+          />
+          <.voile_action_link
+            icon="hero-document-plus"
+            tone={:success}
+            label={gettext("New collection")}
+            description={gettext("Create a catalog collection")}
+            href="/manage/catalog/collections/new"
+          />
+        </div>
+      </.voile_section_card>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <.voile_section_card
+        title={gettext("Member overview")}
+        icon="hero-user-group"
+        tone={:glam_library}
+        action_label={gettext("Details")}
+        action_path="/manage/settings/user_dashboard"
+      >
+        <%= if @dashboard_loading do %>
+          <.skeleton_metrics />
+        <% else %>
+          <.voile_metric_row
+            label={gettext("Active members")}
+            value={@member_stats.active_members}
+            total={@member_stats.total_members}
+            tone={:success}
+          />
+          <.voile_metric_row
+            label={gettext("Suspended")}
+            value={@member_stats.suspended_members}
+            total={@member_stats.total_members}
+            tone={:error}
+          />
+          <.voile_metric_row
+            label={gettext("Expiring in 30 days")}
+            value={@member_stats.expiring_soon}
+            total={@member_stats.total_members}
+            tone={:warning}
+          />
+          <.voile_metric_row
+            label={gettext("Expired")}
+            value={@member_stats.expired_members}
+            total={@member_stats.total_members}
+            tone={:brand}
+          />
+        <% end %>
+      </.voile_section_card>
+
+      <.voile_section_card
+        title={gettext("Catalog snapshot")}
+        icon="hero-rectangle-stack"
+        tone={:glam_archive}
+        action_label={gettext("Browse")}
+        action_path="/manage/catalog/collections"
+      >
+        <%= if @dashboard_loading do %>
+          <.skeleton_metrics />
+        <% else %>
+          <.voile_metric_row
+            label={gettext("Total collections")}
+            value={@catalog_stats.total_collections}
+            tone={:info}
+          />
+          <.voile_metric_row
+            label={gettext("Published")}
+            value={@catalog_stats.published_collections}
+            total={@catalog_stats.total_collections}
+            tone={:success}
+          />
+          <.voile_metric_row
+            label={gettext("Total items")}
+            value={@catalog_stats.total_items}
+            tone={:brand}
+          />
+          <.voile_metric_row
+            label={gettext("Available")}
+            value={@catalog_stats.available_items}
+            total={@catalog_stats.total_items}
+            tone={:glam_library}
+          />
+        <% end %>
+      </.voile_section_card>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <.voile_search_insights stats={@search_stats} action_path="/manage/settings/metrics" />
+
+      <%= for widget <- @plugin_widgets do %>
+        <.voile_section_card title={widget.title} icon="hero-puzzle-piece" tone={:brand}>
+          <.live_component module={widget.component} id={to_string(widget.key)} />
+        </.voile_section_card>
+      <% end %>
     </div>
     """
   end
 
-  defp get_text_color_class("blue"), do: "text-blue-600 dark:text-blue-400"
-  defp get_text_color_class("green"), do: "text-green-600 dark:text-green-400"
-  defp get_text_color_class("red"), do: "text-red-600 dark:text-red-400"
-  defp get_text_color_class("purple"), do: "text-purple-600 dark:text-purple-400"
-  defp get_text_color_class("orange"), do: "text-orange-600 dark:text-orange-400"
-  defp get_text_color_class("gray"), do: "text-gray-600 dark:text-gray-400"
-  defp get_text_color_class(_), do: "text-gray-600 dark:text-gray-400"
+  defp skeleton_metrics(assigns) do
+    ~H"""
+    <div class="space-y-3">
+      <%= for _ <- 1..4 do %>
+        <div class="flex items-center justify-between py-2">
+          <div class="skeleton h-3 w-1/3"></div>
+          <div class="skeleton h-3 w-10"></div>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
+
+  defp skeleton_feed(assigns) do
+    ~H"""
+    <div class="space-y-2">
+      <%= for _ <- 1..4 do %>
+        <div class="flex items-center gap-3 p-2">
+          <div class="skeleton w-8 h-8 rounded-lg shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="skeleton h-3 w-2/3"></div>
+            <div class="skeleton h-3 w-1/3"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    """
+  end
 end

@@ -50,9 +50,9 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
 
   defp clearance_nav(assigns) do
     ~H"""
-    <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
+    <div class="surface-card shadow-sm rounded-lg">
       <nav
-        class="flex gap-1 px-4 border-b border-gray-200 dark:border-gray-600"
+        class="flex gap-1 px-4 border-b border-subtle"
         aria-label={gettext("Clearance navigation")}
       >
         <.link
@@ -144,7 +144,7 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 bg-gray-100 dark:bg-gray-800 min-h-screen p-6 rounded-lg">
+    <div class="space-y-6 surface-raised min-h-screen p-6 rounded-lg">
       <%!-- Breadcrumb --%>
       <.breadcrumb items={[
         %{label: gettext("Manage"), path: ~p"/manage"},
@@ -157,13 +157,13 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
       <.clearance_nav active={:letters} />
 
       <%!-- Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold text-primary">
               {@letter.letter_number}
             </h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+            <p class="text-tertiary mt-1 text-sm">
               {gettext("Generated on %{date}",
                 date: FormatIndonesiaTime.format_utc_to_jakarta(@letter.generated_at)
               )}
@@ -199,51 +199,51 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <%!-- Member Information --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div class="surface-card shadow-sm rounded-lg p-6">
+          <h2 class="text-lg font-semibold text-primary mb-4">
             {gettext("Member Information")}
           </h2>
 
           <dl class="space-y-3">
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Full Name")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white font-medium">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary font-medium">
                 {@letter.member_snapshot["fullname"]}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Identifier")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary">
                 {@letter.member_snapshot["identifier"]}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Department")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary">
                 {@letter.member_snapshot["department"] || gettext("—")}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Node")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary">
                 {@letter.member_snapshot["node_name"] || gettext("—")}
               </dd>
             </div>
 
             <%= if @letter.member do %>
               <div class="flex flex-col sm:flex-row sm:justify-between">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <dt class="text-sm font-medium text-tertiary">
                   {gettext("Current Member")}
                 </dt>
                 <dd class="mt-1 sm:mt-0 text-sm text-voile-primary">
@@ -260,44 +260,44 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
         </div>
 
         <%!-- Letter Details --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div class="surface-card shadow-sm rounded-lg p-6">
+          <h2 class="text-lg font-semibold text-primary mb-4">
             {gettext("Letter Details")}
           </h2>
 
           <dl class="space-y-3">
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Letter Number")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white font-mono">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary font-mono">
                 {@letter.letter_number}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Sequence Number")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary">
                 {@letter.sequence_number}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Generated At")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-gray-900 dark:text-white">
+              <dd class="mt-1 sm:mt-0 text-sm text-primary">
                 {FormatIndonesiaTime.format_utc_to_jakarta(@letter.generated_at)}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-tertiary">
                 {gettext("Letter UUID")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-xs text-gray-500 dark:text-gray-400 font-mono break-all">
+              <dd class="mt-1 sm:mt-0 text-xs text-tertiary font-mono break-all">
                 {@letter.id}
               </dd>
             </div>
@@ -307,36 +307,36 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
 
       <%!-- Revocation Info --%>
       <%= if @letter.is_revoked do %>
-        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-          <h2 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-4 flex items-center gap-2">
+        <div class="bg-tone-error-soft border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <h2 class="text-lg font-semibold text-voile-error mb-4 flex items-center gap-2">
             <.icon name="hero-x-circle" class="w-5 h-5" />
             {gettext("Revocation Details")}
           </h2>
 
           <dl class="space-y-3">
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-red-700 dark:text-red-400">
+              <dt class="text-sm font-medium text-voile-error">
                 {gettext("Revoked At")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-red-900 dark:text-red-300">
+              <dd class="mt-1 sm:mt-0 text-sm text-voile-error">
                 {FormatIndonesiaTime.format_utc_to_jakarta(@letter.revoked_at)}
               </dd>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between">
-              <dt class="text-sm font-medium text-red-700 dark:text-red-400">
+              <dt class="text-sm font-medium text-voile-error">
                 {gettext("Revoked By")}
               </dt>
-              <dd class="mt-1 sm:mt-0 text-sm text-red-900 dark:text-red-300">
+              <dd class="mt-1 sm:mt-0 text-sm text-voile-error">
                 {if @letter.revoked_by, do: @letter.revoked_by.fullname, else: gettext("—")}
               </dd>
             </div>
 
             <div class="flex flex-col">
-              <dt class="text-sm font-medium text-red-700 dark:text-red-400">
+              <dt class="text-sm font-medium text-voile-error">
                 {gettext("Reason")}
               </dt>
-              <dd class="mt-1 text-sm text-red-900 dark:text-red-300">
+              <dd class="mt-1 text-sm text-voile-error">
                 {@letter.revoke_reason}
               </dd>
             </div>
@@ -344,11 +344,11 @@ defmodule VoileWeb.Dashboard.Members.Clearance.Show do
         </div>
       <% else %>
         <%!-- Revoke action --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <div class="surface-card shadow-sm rounded-lg p-6">
+          <h2 class="text-lg font-semibold text-primary mb-2">
             {gettext("Revoke Letter")}
           </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <p class="text-sm text-tertiary mb-4">
             {gettext("Revoking this letter will invalidate it. This action cannot be undone.")}
           </p>
 

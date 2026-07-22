@@ -8,6 +8,15 @@ defmodule VoileWeb.ResourceTemplateController do
       delete: ["metadata.manage"]
     }
 
+  defp breadcrumb(last) do
+    [
+      %{label: gettext("Manage"), path: "/manage"},
+      %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+      %{label: gettext("Resource template"), path: "/manage/metaresource/resource_template"},
+      %{label: last, path: nil}
+    ]
+  end
+
   def index(conn, _params) do
     page = Voile.Utils.Pagination.parse_page(Map.get(conn.params, "page"))
     per_page = 10
@@ -16,6 +25,7 @@ defmodule VoileWeb.ResourceTemplateController do
       Metadata.list_resource_templates_paginated(page, per_page)
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("All")))
     |> assign(:resource_template_collection, resource_template_collection)
     |> assign(:page, page)
     |> assign(:total_pages, total_pages)
@@ -27,6 +37,7 @@ defmodule VoileWeb.ResourceTemplateController do
       Metadata.get_resource_template!(id) |> Voile.Repo.preload([:owner, :resource_class])
 
     conn
+    |> assign(:breadcrumb, breadcrumb(gettext("Show")))
     |> assign(:resource_template, resource_template)
     |> render(:show)
   end

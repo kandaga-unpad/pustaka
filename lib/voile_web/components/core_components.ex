@@ -51,6 +51,7 @@ defmodule VoileWeb.CoreComponents do
   attr :id, :string, required: true
   attr :show, :boolean, default: false
   attr :on_cancel, JS, default: %JS{}
+  attr :full, :boolean, default: false, doc: "renders full width/height (for large forms)"
   slot :inner_block, required: true
 
   def modal(assigns) do
@@ -76,13 +77,19 @@ defmodule VoileWeb.CoreComponents do
         tabindex="0"
       >
         <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+          <div class={[
+            "w-full",
+            if(@full, do: "h-full p-1 sm:p-2", else: "max-w-3xl p-4 sm:p-6 lg:py-8")
+          ]}>
             <.focus_wrap
               id={"#{@id}-container"}
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-voile-light dark:bg-gray-700 p-14 shadow-lg ring-1 transition"
+              class={[
+                "shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-voile-light dark:bg-gray-700 shadow-lg ring-1 transition",
+                if(@full, do: "min-h-full p-6 sm:p-8 overflow-y-auto", else: "p-14")
+              ]}
             >
               <div class="absolute top-6 right-5">
                 <button

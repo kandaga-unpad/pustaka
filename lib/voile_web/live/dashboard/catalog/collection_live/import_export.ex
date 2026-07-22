@@ -279,10 +279,10 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
       <%!-- Header --%>
       <div class="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl font-bold text-primary">
             Import & Export Collections
           </h1>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-1 text-sm text-tertiary">
             Bulk import collections from CSV or export your catalog for backup / transfer.
           </p>
         </div>
@@ -308,8 +308,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
           <%!-- ── Step 1: Upload --%>
           <%= if @step == :upload do %>
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-5">
-              <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+            <div class="surface-card rounded-lg border border-subtle p-6 space-y-5">
+              <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
                 Upload CSV
               </h2>
 
@@ -325,21 +325,21 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 >
                   <.icon name="hero-document-arrow-up" class="size-10 text-gray-400" />
                   <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <p class="text-sm font-medium text-secondary">
                       Drop a CSV file here, or click to select
                     </p>
                     <p class="text-xs text-gray-400 mt-1">CSV files only, max 5 MB</p>
                   </div>
-                  <label class="cursor-pointer px-4 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <label class="cursor-pointer px-4 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-secondary">
                     Browse <.live_file_input upload={@uploads.csv_file} class="sr-only" />
                   </label>
                 </div>
 
                 <%= for entry <- @uploads.csv_file.entries do %>
-                  <div class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
+                  <div class="flex items-center gap-3 p-3 rounded-lg bg-tone-info-soft border border-blue-200 dark:border-blue-700">
                     <.icon name="hero-document-text" class="size-5 text-blue-500 shrink-0" />
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium truncate text-gray-900 dark:text-white">
+                      <p class="text-sm font-medium truncate text-primary">
                         {entry.client_name}
                       </p>
                       <p class="text-xs text-gray-500">
@@ -368,7 +368,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 <% end %>
 
                 <div class="space-y-1">
-                  <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                  <label class="block text-xs font-medium text-secondary">
                     Import into node <span class="text-red-500">*</span>
                   </label>
                   <%= if @is_super_admin do %>
@@ -376,7 +376,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                       phx-change="set_import_node"
                       name="node_id"
                       id="import-node-select"
-                      class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      class="block w-full rounded-md border border-gray-300 dark:border-gray-600 surface-card text-sm text-primary px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <%= for node <- @nodes do %>
                         <option value={node.id} selected={@import_node_id == node.id}>
@@ -385,7 +385,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                       <% end %>
                     </select>
                   <% else %>
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-subtle bg-gray-50 dark:bg-gray-900 text-sm text-secondary">
                       <.icon name="hero-building-library" class="size-4 text-gray-400 shrink-0" />
                       {Enum.find(@nodes, &(&1.id == @import_node_id))
                       |> then(&if(&1, do: "#{&1.name} (#{&1.abbr})", else: "—"))}
@@ -406,9 +406,9 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
 
           <%!-- ── Step 2: Preview --%>
           <%= if @step == :preview do %>
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+            <div class="surface-card rounded-lg border border-subtle p-6 space-y-4">
               <div class="flex items-center justify-between">
-                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
                   Preview
                 </h2>
                 <div class="flex items-center gap-3">
@@ -424,19 +424,19 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 </div>
               </div>
 
-              <p class="text-sm text-gray-600 dark:text-gray-400">
+              <p class="text-sm text-secondary">
                 Review your data before importing. Only the first 5 rows are shown below.
               </p>
 
-              <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div class="overflow-x-auto rounded-lg border border-subtle">
                 <table class="min-w-full text-xs">
                   <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th class="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <th class="px-3 py-2 text-left font-medium text-tertiary whitespace-nowrap">
                         #
                       </th>
                       <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items", "legacy_item_code"] do %>
-                        <th class="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        <th class="px-3 py-2 text-left font-medium text-tertiary whitespace-nowrap">
                           {col}
                         </th>
                       <% end %>
@@ -448,7 +448,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                         <td class="px-3 py-2 font-mono text-gray-400">{i}</td>
                         <%= for col <- ["title", "creator_name", "resource_class", "status", "access_level", "total_items", "legacy_item_code"] do %>
                           <td
-                            class="px-3 py-2 max-w-[180px] truncate text-gray-900 dark:text-white"
+                            class="px-3 py-2 max-w-[180px] truncate text-primary"
                             title={row[col]}
                           >
                             {row[col] || "—"}
@@ -477,7 +477,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 </button>
                 <button
                   phx-click="back_to_upload"
-                  class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  class="px-4 py-2 text-sm font-medium rounded-md text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   Back
                 </button>
@@ -488,7 +488,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                   <div class="text-xs text-gray-500">
                     Importing {@import_progress} / {@import_total} collections...
                   </div>
-                  <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                  <div class="h-2 rounded-full surface-raised overflow-hidden">
                     <div
                       class="h-full rounded-full bg-blue-600"
                       style={"width: #{if(@import_total > 0, do: div(@import_progress * 100, @import_total), else: 0)}%"}
@@ -520,16 +520,16 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                   }
                 />
                 <div>
-                  <p class="font-semibold text-gray-900 dark:text-white">
+                  <p class="font-semibold text-primary">
                     {successes} {if successes == 1, do: "collection", else: "collections"} imported successfully.
                   </p>
                   <%= if @skipped_count > 0 do %>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                    <p class="text-sm text-secondary mt-0.5">
                       {@skipped_count} {if @skipped_count == 1, do: "row", else: "rows"} skipped — already exists in the catalog.
                     </p>
                   <% end %>
                   <%= if failures != [] do %>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                    <p class="text-sm text-secondary mt-0.5">
                       {length(failures)} {if length(failures) == 1, do: "row", else: "rows"} failed — see details below.
                     </p>
                   <% end %>
@@ -537,12 +537,12 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
               </div>
 
               <%= if failures != [] do %>
-                <div class="rounded-lg border border-red-200 dark:border-red-800 bg-white dark:bg-gray-800 p-4 space-y-2">
-                  <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                <div class="rounded-lg border border-red-200 dark:border-red-800 surface-card p-4 space-y-2">
+                  <p class="text-xs font-semibold text-tertiary uppercase tracking-wide">
                     Failed rows
                   </p>
                   <%= for reason <- failures do %>
-                    <div class="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                    <div class="flex items-start gap-2 text-sm text-voile-error">
                       <.icon name="hero-x-circle" class="size-4 shrink-0 mt-0.5" />
                       <span>{reason}</span>
                     </div>
@@ -559,7 +559,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                 </.link>
                 <button
                   phx-click="back_to_upload"
-                  class="px-4 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  class="px-4 py-2 text-sm font-medium rounded-md text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   Import More
                 </button>
@@ -571,24 +571,24 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
         <%!-- Right: Guide + Export --%>
         <div class="space-y-5">
           <%!-- Export panel --%>
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          <div class="surface-card rounded-lg border border-subtle p-5 space-y-4">
+            <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
               Export
             </h2>
 
-            <p class="text-xs text-gray-500 dark:text-gray-400">
+            <p class="text-xs text-tertiary">
               Download all collections (or filter by node) as a CSV file in the same format used for import.
             </p>
 
             <div class="space-y-3">
               <form phx-change="set_export_node">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                <label class="block text-xs font-medium text-secondary mb-1">
                   Node / Branch
                 </label>
                 <%= if @is_super_admin do %>
                   <select
                     name="node_id"
-                    class="block w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                    class="block w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md surface-card text-primary focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="all" selected={@export_node_id == "all"}>All nodes</option>
                     <%= for node <- @nodes do %>
@@ -601,7 +601,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
                     <% end %>
                   </select>
                 <% else %>
-                  <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                  <div class="flex items-center gap-2 px-3 py-2 rounded-md border border-subtle bg-gray-50 dark:bg-gray-900 text-sm text-secondary">
                     <.icon name="hero-building-library" class="size-4 text-gray-400 shrink-0" />
                     {List.first(@nodes) |> then(&if(&1, do: "#{&1.name} (#{&1.abbr})", else: "—"))}
                   </div>
@@ -611,7 +611,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
               <button
                 phx-click="export_csv"
                 disabled={@export_loading}
-                class="w-full inline-flex justify-center items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-wait"
+                class="w-full inline-flex justify-center items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 surface-card text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-wait"
               >
                 <%= if @export_loading do %>
                   <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Exporting…
@@ -623,13 +623,13 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
           </div>
 
           <%!-- Format guide --%>
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          <div class="surface-card rounded-lg border border-subtle p-5 space-y-4">
+            <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
               CSV Format
             </h2>
 
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Required: <span class="font-medium text-gray-700 dark:text-gray-300">title, description, creator_name, resource_class</span>. All others are optional.
+            <p class="text-xs text-tertiary">
+              Required: <span class="font-medium text-secondary">title, description, creator_name, resource_class</span>. All others are optional.
             </p>
 
             <div class="flex flex-wrap gap-1">
@@ -646,7 +646,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
               <% end %>
             </div>
 
-            <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <div class="text-xs text-tertiary space-y-1">
               <p>
                 <span class="font-medium">status:</span> draft · pending · published · archived
               </p>
@@ -671,7 +671,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
             <a
               href="/sample_collection_import.csv"
               download
-              class="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              class="inline-flex items-center gap-1.5 text-xs text-voile-info hover:underline"
             >
               <.icon name="hero-arrow-down-tray" class="size-3" /> Download sample CSV
             </a>
@@ -1148,8 +1148,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.ImportExport do
   defp step_dot(active) do
     if active,
       do: "px-2 py-0.5 rounded-full bg-blue-600 text-white text-xs",
-      else:
-        "px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs"
+      else: "px-2 py-0.5 rounded-full surface-raised text-tertiary text-xs"
   end
 
   defp upload_error_to_string(:too_large), do: "File is too large (max 5 MB)."

@@ -22,7 +22,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
           {gettext("Library Circulation Dashboard")}
         </h1>
 
-        <p class="mt-2 text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-secondary">
           {gettext("Manage all library circulation activities from this central dashboard.")}
         </p>
       </div>
@@ -66,7 +66,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
       <!-- Navigation Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <.link navigate={~p"/manage/glam/library/circulation/transactions"} class="group">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
+          <div class="surface-card rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
                 <.icon name="hero-arrow-path" class="w-8 h-8 text-blue-600 group-hover:text-blue-700" />
@@ -83,14 +83,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               )}
             </p>
 
-            <div class="mt-4 flex items-center text-sm text-blue-600 group-hover:text-blue-700 dark:text-blue-400  dark:group-hover:text-blue-300">
+            <div class="mt-4 flex items-center text-sm text-blue-600 group-hover:text-voile-info  dark:group-hover:text-blue-300">
               <span>{gettext("Manage Transactions")}</span>
               <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
         <.link navigate={~p"/manage/glam/library/circulation/reservations"} class="group">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
+          <div class="surface-card rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
                 <.icon
@@ -108,19 +108,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               {gettext("Handle item reservations, queue management, and availability notifications.")}
             </p>
 
-            <div class="mt-4 flex items-center text-sm text-green-600 group-hover:text-green-700 dark:text-green-400 dark:group-hover:text-green-300">
+            <div class="mt-4 flex items-center text-sm text-green-600 group-hover:text-voile-success dark:group-hover:text-green-300">
               <span>{gettext("Manage Reservations")}</span>
               <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
         <.link navigate={~p"/manage/glam/library/circulation/requisitions"} class="group">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
+          <div class="surface-card rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
                 <.icon
                   name="hero-document-plus"
-                  class="w-8 h-8 text-purple-600 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300"
+                  class="w-8 h-8 text-purple-600 group-hover:text-voile-primary dark:group-hover:text-purple-300"
                 />
               </div>
 
@@ -135,14 +135,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               )}
             </p>
 
-            <div class="mt-4 flex items-center text-sm text-purple-600 group-hover:text-purple-700 dark:text-purple-400 dark:group-hover:text-purple-300">
+            <div class="mt-4 flex items-center text-sm text-purple-600 group-hover:text-voile-primary dark:group-hover:text-purple-300">
               <span>{gettext("Manage Requisitions")}</span>
               <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
         <.link navigate={~p"/manage/glam/library/circulation/fines"} class="group">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
+          <div class="surface-card rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
                 <.icon name="hero-banknotes" class="w-8 h-8 text-red-600 group-hover:text-red-700" />
@@ -157,19 +157,19 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               {gettext("Manage overdue fines, payments, waivers, and financial transactions.")}
             </p>
 
-            <div class="mt-4 flex items-center text-sm text-red-600 group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300">
+            <div class="mt-4 flex items-center text-sm text-red-600 group-hover:text-voile-error dark:group-hover:text-red-300">
               <span>{gettext("Manage Fines")}</span>
               <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
           </div>
         </.link>
         <.link navigate={~p"/manage/glam/library/circulation/circulation_history"} class="group">
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
+          <div class="surface-card rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
                 <.icon
                   name="hero-clock"
-                  class="w-8 h-8 text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300"
+                  class="w-8 h-8 text-indigo-600 group-hover:text-voile-primary dark:group-hover:text-indigo-300"
                 />
               </div>
 
@@ -182,7 +182,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
               {gettext("View detailed logs and audit trails of all circulation activities.")}
             </p>
 
-            <div class="mt-4 flex items-center text-sm text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300">
+            <div class="mt-4 flex items-center text-sm text-indigo-600 group-hover:text-voile-primary dark:group-hover:text-indigo-300">
               <span>{gettext("View History")}</span>
               <.icon name="hero-arrow-right" class="w-4 h-4 ml-2" />
             </div>
@@ -191,7 +191,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
         <.quick_actions current_user={@current_scope.user} />
       </div>
       <!-- Recent Activity -->
-      <div class="mt-8 bg-white dark:bg-gray-700 rounded-lg shadow">
+      <div class="mt-8 surface-card rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {gettext("Recent Activity")}
@@ -210,7 +210,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                   <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                     <%= if activity.item && activity.item.collection do %>
                       {activity.item.collection.title}
-                      <span class="font-normal text-gray-500 dark:text-gray-400 text-xs">
+                      <span class="font-normal text-tertiary text-xs">
                         ({activity.item.item_code})
                       </span>
                     <% else %>
@@ -219,7 +219,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.Index do
                   </p>
 
                   <%= if activity.item && activity.item.node do %>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p class="text-xs text-tertiary mt-0.5">
                       <.icon name="hero-map-pin" class="w-3 h-3 inline-block mr-0.5" />
                       {activity.item.node.name}
                     </p>
