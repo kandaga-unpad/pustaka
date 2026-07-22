@@ -17,7 +17,11 @@ defmodule VoileWeb.Users.Permission.ManageLive do
         |> assign(page_title: gettext("Permission Management"))
         |> assign(searching: false)
         |> assign(search_timer_ref: nil)
-        |> assign(current_path: "/manage/settings/permissions")
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Settings"), path: "/manage/settings"},
+          %{label: gettext("Permissions"), path: nil}
+        ])
         |> assign(
           :is_super_admin,
           VoileWeb.Auth.Authorization.is_super_admin?(socket.assigns.current_scope.user)
@@ -72,7 +76,7 @@ defmodule VoileWeb.Users.Permission.ManageLive do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = socket.assigns.per_page
 
     {permissions, total_pages, _} = PermissionManager.list_permissions_paginated(page, per_page)
@@ -147,127 +151,129 @@ defmodule VoileWeb.Users.Permission.ManageLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
-      <.header>
-        {gettext("Permission Management")}
-        <:subtitle>{gettext("Manage system permissions and access controls")}</:subtitle>
-
-        <:actions>
-          <%= if can?(@current_scope.user, "permissions.manage") do %>
-            <.link patch={~p"/manage/settings/permissions/new"}>
-              <.button>{gettext("New Permission")}</.button>
-            </.link>
-          <% end %>
-        </:actions>
-      </.header>
-
-      <div class="flex gap-4">
-        <div class="w-full max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
-            current_path={@current_path}
-            is_super_admin={@is_super_admin}
-          />
-        </div>
-
-        <div class="w-full bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
-          <div class="mb-6">
-            <.form for={%{}} phx-change="search" id="search-form">
-              <div class="relative">
-                <.input
-                  type="text"
-                  name="search[query]"
-                  value=""
-                  placeholder={gettext("Search permissions by name, resource, or action...")}
-                  phx-debounce="300"
-                />
-                <%= if @searching do %>
-                  <div class="absolute right-3 top-3">
-                    <svg
-                      class="animate-spin h-5 w-5 text-gray-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      >
-                      </circle>
-
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      >
-                      </path>
-                    </svg>
-                  </div>
-                <% end %>
-              </div>
-            </.form>
-          </div>
-
-          <.table
-            id="permissions"
-            rows={@streams.permissions}
-            row_click={
-              fn {_id, permission} -> JS.navigate(~p"/manage/settings/permissions/#{permission}") end
-            }
+    <.voile_page_header
+      eyebrow={gettext("System · Settings")}
+      title={gettext("Permissions")}
+      description={gettext("Manage system permissions and access controls")}
+      icon="hero-key"
+      tone={:brand}
+    >
+      <:actions>
+        <%= if can?(@current_scope.user, "permissions.manage") do %>
+          <.voile_button
+            tone={:brand}
+            variant={:solid}
+            size={:md}
+            href={~p"/manage/settings/permissions/new"}
           >
-            <:col :let={{_id, permission}} label={gettext("Name")}>
-              <span class="font-medium font-mono text-sm">{permission.name}</span>
-            </:col>
+            <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New permission")}
+          </.voile_button>
+        <% end %>
+      </:actions>
+    </.voile_page_header>
 
-            <:col :let={{_id, permission}} label={gettext("Resource")}>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                {permission.resource}
-              </span>
-            </:col>
+    <.voile_settings_shell
+      title={gettext("Settings")}
+      items={voile_settings_nav_items()}
+      current_path={@current_path}
+    >
+      <div class="w-full voile-card p-6 shadow-sm">
+        <div class="mb-6">
+          <.form for={%{}} phx-change="search" id="search-form">
+            <div class="relative">
+              <.input
+                type="text"
+                name="search[query]"
+                value=""
+                placeholder={gettext("Search permissions by name, resource, or action...")}
+                phx-debounce="300"
+              />
+              <%= if @searching do %>
+                <div class="absolute right-3 top-3">
+                  <svg
+                    class="animate-spin h-5 w-5 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    >
+                    </circle>
 
-            <:col :let={{_id, permission}} label={gettext("Action")}>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                {permission.action}
-              </span>
-            </:col>
-
-            <:col :let={{_id, permission}} label={gettext("Description")}>
-              {permission.description || "-"}
-            </:col>
-
-            <:action :let={{_id, permission}}>
-              <div class="sr-only">
-                <.link navigate={~p"/manage/settings/permissions/#{permission}"}>
-                  {gettext("Show")}
-                </.link>
-              </div>
-
-              <%= if can?(@current_scope.user, "permissions.manage") do %>
-                <.link navigate={~p"/manage/settings/permissions/#{permission}/edit"}>
-                  {gettext("Edit")}
-                </.link>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    >
+                    </path>
+                  </svg>
+                </div>
               <% end %>
-            </:action>
-
-            <:action :let={{id, permission}}>
-              <%= if can?(@current_scope.user, "permissions.manage") do %>
-                <.link
-                  phx-click={JS.push("delete", value: %{id: permission.id}) |> hide("##{id}")}
-                  data-confirm={gettext("Are you sure you want to delete this permission?")}
-                >
-                  {gettext("Delete")}
-                </.link>
-              <% end %>
-            </:action>
-          </.table>
-          <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+            </div>
+          </.form>
         </div>
+
+        <.table
+          id="permissions"
+          rows={@streams.permissions}
+          row_click={
+            fn {_id, permission} -> JS.navigate(~p"/manage/settings/permissions/#{permission}") end
+          }
+        >
+          <:col :let={{_id, permission}} label={gettext("Name")}>
+            <span class="font-medium font-mono text-sm">{permission.name}</span>
+          </:col>
+
+          <:col :let={{_id, permission}} label={gettext("Resource")}>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              {permission.resource}
+            </span>
+          </:col>
+
+          <:col :let={{_id, permission}} label={gettext("Action")}>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              {permission.action}
+            </span>
+          </:col>
+
+          <:col :let={{_id, permission}} label={gettext("Description")}>
+            {permission.description || "-"}
+          </:col>
+
+          <:action :let={{_id, permission}}>
+            <div class="sr-only">
+              <.link navigate={~p"/manage/settings/permissions/#{permission}"}>
+                {gettext("Show")}
+              </.link>
+            </div>
+
+            <%= if can?(@current_scope.user, "permissions.manage") do %>
+              <.link navigate={~p"/manage/settings/permissions/#{permission}/edit"}>
+                {gettext("Edit")}
+              </.link>
+            <% end %>
+          </:action>
+
+          <:action :let={{id, permission}}>
+            <%= if can?(@current_scope.user, "permissions.manage") do %>
+              <.link
+                phx-click={JS.push("delete", value: %{id: permission.id}) |> hide("##{id}")}
+                data-confirm={gettext("Are you sure you want to delete this permission?")}
+              >
+                {gettext("Delete")}
+              </.link>
+            <% end %>
+          </:action>
+        </.table>
+        <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
       </div>
-    </div>
+    </.voile_settings_shell>
 
     <.modal
       :if={@live_action in [:new, :edit]}

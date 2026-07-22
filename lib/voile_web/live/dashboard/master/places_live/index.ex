@@ -27,6 +27,11 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.Index do
       socket =
         socket
         |> assign(:page_title, gettext("Listing Places"))
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Master data"), path: "/manage/master"},
+          %{label: gettext("Places"), path: nil}
+        ])
         |> assign(:live_action, :index)
         |> assign(:places, places)
         |> assign(:page, page)
@@ -74,7 +79,7 @@ defmodule VoileWeb.Dashboard.Master.PlacesLive.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     {places, total_pages, _} = Master.list_mst_places_paginated(page, per_page)
 

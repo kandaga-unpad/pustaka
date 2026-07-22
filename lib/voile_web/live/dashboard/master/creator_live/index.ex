@@ -28,6 +28,11 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Index do
       socket =
         socket
         |> assign(:page_title, gettext("Listing Creators"))
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Master data"), path: "/manage/master"},
+          %{label: gettext("Creators"), path: nil}
+        ])
         |> assign(:live_action, :index)
         |> assign(:creators, creators)
         |> assign(:page, page)
@@ -78,7 +83,7 @@ defmodule VoileWeb.Dashboard.Master.CreatorLive.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     {creators, total_pages, _} = Master.list_mst_creator_paginated(page, per_page)
 

@@ -27,6 +27,11 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Index do
       socket =
         socket
         |> assign(:page_title, gettext("Listing Frequencies"))
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Master data"), path: "/manage/master"},
+          %{label: gettext("Frequencies"), path: nil}
+        ])
         |> assign(:live_action, :index)
         |> assign(:frequencies, frequencies)
         |> assign(:page, page)
@@ -77,7 +82,7 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     {frequencies, total_pages, _} = Master.list_mst_frequency_paginated(page, per_page)
 

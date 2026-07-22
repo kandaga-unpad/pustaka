@@ -1,11 +1,11 @@
 <section class="flex flex-col gap-4">
   <.back navigate={~p"/manage/catalog/items"}>{gettext("Back to items")}</.back>
   <%!-- Hero Section with Collection Info --%>
-  <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-md overflow-hidden">
+  <div class="bg-tone-brand-soft dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-md overflow-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
       <%!-- Collection Thumbnail --%>
       <div class="lg:col-span-1">
-        <div class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-lg">
+        <div class="aspect-[3/4] rounded-lg overflow-hidden surface-raised shadow-lg">
           <%= if @item.collection.thumbnail do %>
             <img
               src={@item.collection.thumbnail}
@@ -64,9 +64,9 @@
             </.link>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-subtle">
             <div>
-              <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <div class="flex items-center gap-2 text-xs text-tertiary mb-1">
                 <.icon name="hero-building-library" class="w-4 h-4" /> {gettext("Library Unit")}
               </div>
 
@@ -76,7 +76,7 @@
             </div>
 
             <div>
-              <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <div class="flex items-center gap-2 text-xs text-tertiary mb-1">
                 <.icon name="hero-user" class="w-4 h-4" /> {gettext("Creator")}
               </div>
 
@@ -92,9 +92,9 @@
   <%!-- Item Details Cards --%>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <%!-- Item Information Card --%>
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="surface-card rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
-        <.icon name="hero-identification" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <.icon name="hero-identification" class="w-5 h-5 text-voile-info" />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           {gettext("Item Information")}
         </h2>
@@ -102,14 +102,14 @@
 
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Item Code")}</span>
+          <span class="text-sm text-tertiary">{gettext("Item Code")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.item_code || "-"}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Inventory Code")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
@@ -118,14 +118,14 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Barcode")}</span>
+          <span class="text-sm text-tertiary">{gettext("Barcode")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.barcode || "-"}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Collection Code")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
@@ -134,14 +134,14 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("RFID Tag")}</span>
+          <span class="text-sm text-tertiary">{gettext("RFID Tag")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
             {@item.rfid_tag || "-"}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Legacy Item Code")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[60%]">
@@ -151,9 +151,9 @@
       </div>
     </div>
     <%!-- Location & Status Card --%>
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="surface-card rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
-        <.icon name="hero-map-pin" class="w-5 h-5 text-green-600 dark:text-green-400" />
+        <.icon name="hero-map-pin" class="w-5 h-5 text-voile-success" />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           {gettext("Location & Availability")}
         </h2>
@@ -161,7 +161,7 @@
 
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Current Location")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -170,7 +170,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Location Details")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -179,7 +179,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Item Status")}</span>
+          <span class="text-sm text-tertiary">{gettext("Item Status")}</span>
           <span class={[
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
             status_badge_class(@item.status)
@@ -189,7 +189,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Condition")}</span>
+          <span class="text-sm text-tertiary">{gettext("Condition")}</span>
           <span class={[
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
             condition_badge_class(@item.condition)
@@ -199,7 +199,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Availability")}</span>
+          <span class="text-sm text-tertiary">{gettext("Availability")}</span>
           <span class={[
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
             availability_badge_class(@item.availability)
@@ -209,7 +209,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Price")}</span>
+          <span class="text-sm text-tertiary">{gettext("Price")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             <%= if @item.price do %>
               {gettext("Rp")} {format_price(@item.price)}
@@ -221,7 +221,7 @@
       </div>
     </div>
     <%!-- Dates & History Card --%>
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="surface-card rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
         <.icon
           name="hero-calendar-days"
@@ -234,7 +234,7 @@
 
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Acquisition Date")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -247,7 +247,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Last Inventory")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -260,7 +260,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Last Circulated")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -273,14 +273,14 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Created")}</span>
+          <span class="text-sm text-tertiary">{gettext("Created")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             {Voile.Utils.DateHelper.display_datetime(@item.inserted_at)}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Last Updated")}</span>
+          <span class="text-sm text-tertiary">{gettext("Last Updated")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             {Voile.Utils.DateHelper.display_datetime(@item.updated_at)}
           </span>
@@ -288,9 +288,9 @@
       </div>
     </div>
     <%!-- Collection Details Card --%>
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <div class="surface-card rounded-xl shadow-md p-6">
       <div class="flex items-center gap-2 mb-4">
-        <.icon name="hero-book-open" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <.icon name="hero-book-open" class="w-5 h-5 text-voile-primary" />
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
           {gettext("Collection Details")}
         </h2>
@@ -298,7 +298,7 @@
 
       <div class="space-y-3">
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Collection Status")}
           </span>
           <span class={[
@@ -310,7 +310,7 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Access Level")}</span>
+          <span class="text-sm text-tertiary">{gettext("Access Level")}</span>
           <span class={[
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
             access_level_badge_class(@item.collection.access_level)
@@ -320,21 +320,21 @@
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Type ID")}</span>
+          <span class="text-sm text-tertiary">{gettext("Type ID")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
             {@item.collection.type_id || "-"}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-sm text-gray-500 dark:text-gray-400">{gettext("Creator Type")}</span>
+          <span class="text-sm text-tertiary">{gettext("Creator Type")}</span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
             {(@item.collection.mst_creator && @item.collection.mst_creator.type) || "-"}
           </span>
         </div>
 
         <div class="flex items-start justify-between py-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">
+          <span class="text-sm text-tertiary">
             {gettext("Creator Affiliation")}
           </span>
           <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -345,14 +345,14 @@
     </div>
   </div>
   <%!-- Action Bar --%>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+  <div class="surface-card rounded-xl shadow-md p-4">
     <div class="flex items-center justify-between">
       <.back navigate={~p"/manage/catalog/items"}>{gettext("Back to items")}</.back>
 
       <div class="flex items-center gap-3 mt-3">
         <.link
           navigate={~p"/manage/catalog/collections/#{@item.collection.id}"}
-          class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+          class="text-sm text-voile-info hover:underline flex items-center gap-1"
         >
           <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> {gettext(
             "View Full Collection"

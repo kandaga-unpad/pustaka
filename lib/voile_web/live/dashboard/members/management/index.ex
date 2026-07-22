@@ -27,6 +27,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
     socket =
       socket
       |> assign(:page_title, "Member Management")
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("Members"), path: "/manage/members"},
+        %{label: gettext("Management"), path: nil}
+      ])
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
       |> assign(:search_query, params["query"] || "")
@@ -305,7 +310,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 bg-gray-100 dark:bg-gray-800 min-h-screen p-6 rounded-lg">
+    <div class="space-y-6 surface-raised min-h-screen p-6 rounded-lg">
       <%= if @live_action in [:new, :edit] do %>
         <.member_form
           form={@form}
@@ -333,10 +338,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
         ]} />
 
         <%!-- Page Header --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-2xl font-bold text-primary">
                 {gettext("Member Management")}
               </h1>
               <p class="text-gray-600 dark:text-gray-300 mt-1">
@@ -374,7 +379,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
         </div>
 
         <%!-- Filters and Search --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="space-y-4">
             <%!-- Search --%>
             <div class="w-full">
@@ -469,13 +474,13 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                   </div>
                   <div class="min-w-0 max-w-[280px]">
                     <div
-                      class="font-medium text-gray-900 dark:text-white truncate"
+                      class="font-medium text-primary truncate"
                       title={member.fullname}
                     >
                       {truncate_text(member.fullname || "-", 32)}
                     </div>
                     <div
-                      class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                      class="text-sm text-tertiary truncate"
                       title={member.email}
                     >
                       {truncate_text(member.email || "-", 40)}
@@ -494,7 +499,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
                 {member.user_type && member.user_type.name}
               </:col>
               <:col :let={member} label={gettext("Identifier")}>
-                <span class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="text-sm text-secondary">
                   {display_identifier(member)}
                 </span>
               </:col>
@@ -535,7 +540,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
           <%!-- Pagination --%>
           <%= if @members.total_pages > 1 do %>
             <div class="flex items-center justify-between mt-6">
-              <div class="text-sm text-gray-700 dark:text-gray-300">
+              <div class="text-sm text-secondary">
                 {gettext("Page %{page} of %{total}",
                   page: @members.page_number,
                   total: @members.total_pages

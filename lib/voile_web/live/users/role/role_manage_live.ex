@@ -101,7 +101,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = socket.assigns.per_page
 
     {roles, total_pages, _} = PermissionManager.list_roles_paginated(page, per_page)
@@ -214,10 +214,10 @@ defmodule VoileWeb.Users.Role.ManageLive do
         ]} />
 
         <%!-- Page Header --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 class="text-2xl font-bold text-primary">
                 {gettext("Role Management")}
               </h1>
               <p class="text-gray-600 dark:text-gray-300 mt-1">
@@ -236,7 +236,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
         </div>
 
         <%!-- Search --%>
-        <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+        <div class="surface-card shadow-sm rounded-lg p-6">
           <div class="flex flex-col items-center justify-center lg:flex-row gap-4 mb-6">
             <div class="flex-1">
               <.form for={%{}} phx-change="search" class="flex gap-2">
@@ -300,7 +300,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
             >
               <:col :let={{_id, role}} label={gettext("Name")}>
                 <div class="flex items-center gap-2">
-                  <span class="font-medium text-gray-900 dark:text-white">{role.name}</span>
+                  <span class="font-medium text-primary">{role.name}</span>
                   <%= if role.is_system_role do %>
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-info/10 text-voile-info">
                       {gettext("System")}
@@ -337,7 +337,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                 <%= if @is_super_admin do %>
                   <.link
                     patch={~p"/manage/members/management/roles/#{role.id}/edit"}
-                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-md transition-colors"
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-tone-info-soft dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-md transition-colors"
                   >
                     <.icon name="hero-pencil" class="w-4 h-4" />
                     <span class="hidden md:inline">{gettext("Edit")}</span>
@@ -350,7 +350,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
                   <.link
                     phx-click={JS.push("delete", value: %{id: role.id}) |> hide("##{id}")}
                     data-confirm={gettext("Are you sure you want to delete this role?")}
-                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-md transition-colors"
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 hover:bg-tone-error-soft dark:text-red-400 dark:hover:bg-red-900/40 rounded-md transition-colors"
                   >
                     <.icon name="hero-trash" class="w-4 h-4" />
                     <span class="hidden md:inline">{gettext("Delete")}</span>
@@ -363,7 +363,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
           <%!-- Pagination --%>
           <%= if @total_pages > 1 do %>
             <div class="flex items-center justify-between mt-6">
-              <div class="text-sm text-gray-700 dark:text-gray-300">
+              <div class="text-sm text-secondary">
                 {gettext("Page %{page} of %{total_pages}", page: @page, total_pages: @total_pages)}
               </div>
 
@@ -412,11 +412,11 @@ defmodule VoileWeb.Users.Role.ManageLive do
         %{label: if(@action == :new, do: gettext("New Role"), else: gettext("Edit Role")), path: nil}
       ]} />
 
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex items-center gap-3 mb-6">
           <.icon name="hero-shield-check" class="w-8 h-8 text-voile-primary" />
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold text-primary">
               {if @action == :new, do: gettext("Add New Role"), else: gettext("Edit Role")}
             </h1>
             <p class="text-gray-600 dark:text-gray-300">
@@ -448,7 +448,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
 
           <%= if @action == :new do %>
             <div class="mt-6">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              <label class="block text-sm font-medium text-secondary mb-4">
                 {gettext("Permissions")}
               </label>
               <div class="space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
@@ -461,12 +461,12 @@ defmodule VoileWeb.Users.Role.ManageLive do
                       class="mt-1 h-4 w-4 text-voile-primary border-gray-300 rounded focus:ring-voile-primary"
                     />
                     <div class="flex-1">
-                      <div class="text-sm font-medium text-gray-900 dark:text-white">
+                      <div class="text-sm font-medium text-primary">
                         {permission.name}
                       </div>
 
                       <%= if permission.description do %>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <div class="text-xs text-tertiary mt-1">
                           {permission.description}
                         </div>
                       <% end %>
@@ -486,7 +486,7 @@ defmodule VoileWeb.Users.Role.ManageLive do
             </div>
           <% end %>
 
-          <div class="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+          <div class="flex items-center gap-4 pt-6 border-t border-subtle">
             <.button type="submit" class="primary-btn">
               <.icon
                 name={if @action == :new, do: "hero-plus", else: "hero-check"}

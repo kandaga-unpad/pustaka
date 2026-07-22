@@ -1,58 +1,80 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Creators")}
+  icon="hero-user"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/master/creators/new"}
+    >
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New creator")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Creators")}
-    <:actions>
-      <.link patch={~p"/manage/master/creators/new"}>
-        <.button>{gettext("New Creator")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="items"
-    rows={@creators}
-    row_click={fn creator -> JS.navigate(~p"/manage/master/creators/#{creator.id}") end}
-  >
-    <:col :let={creator} label={gettext("Creator Name")}>{creator.creator_name}</:col>
-
-    <:col :let={creator} label={gettext("Creator Contact")}>{creator.creator_contact}</:col>
-
-    <:col :let={creator} label={gettext("Type")}>{creator.type}</:col>
-
-    <:col :let={creator} label={gettext("Affiliation")}>{creator.affiliation}</:col>
-
-    <:action :let={creator}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/creators/#{creator.id}"}>{gettext("Show")}</.link>
-      </div>
-      <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={creator}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: creator.id}) |> hide("##{creator.id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @creators == [] do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="items"
+        rows={@creators}
+        row_click={fn creator -> JS.navigate(~p"/manage/master/creators/#{creator.id}") end}
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="creator-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/creators")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.CreatorLive.FormComponent}
-      id={@creator.id || :new}
-      title={@page_title}
-      action={@live_action}
-      creator={@creator}
-      patch={~p"/manage/master/creators"}
-    />
-  </.modal>
-</section>
+        <:col :let={creator} label={gettext("Creator Name")}>{creator.creator_name}</:col>
+
+        <:col :let={creator} label={gettext("Creator Contact")}>{creator.creator_contact}</:col>
+
+        <:col :let={creator} label={gettext("Type")}>{creator.type}</:col>
+
+        <:col :let={creator} label={gettext("Affiliation")}>{creator.affiliation}</:col>
+
+        <:action :let={creator}>
+          <div class="sr-only">
+            <.link navigate={~p"/manage/master/creators/#{creator.id}"}>{gettext("Show")}</.link>
+          </div>
+          <.link patch={~p"/manage/master/creators/#{creator.id}/edit"}>{gettext("Edit")}</.link>
+        </:action>
+
+        <:action :let={creator}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: creator.id}) |> hide("##{creator.id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="creator-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/creators")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.CreatorLive.FormComponent}
+        id={@creator.id || :new}
+        title={@page_title}
+        action={@live_action}
+        creator={@creator}
+        patch={~p"/manage/master/creators"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

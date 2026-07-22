@@ -12,6 +12,11 @@ defmodule VoileWeb.Dashboard.Master.FrequencyLive.Edit do
      socket
      |> assign(:frequency, frequency)
      |> assign(:page_title, gettext("Edit Frequency"))
+     |> assign(:breadcrumb, [
+       %{label: gettext("Manage"), path: "/manage"},
+       %{label: gettext("Master data"), path: "/manage/master"},
+       %{label: gettext("Frequencies"), path: nil}
+     ])
      |> assign(:live_action, :edit)}
   end
 

@@ -1,6 +1,8 @@
 defmodule VoileWeb.VocabularyHTML do
   use VoileWeb, :html
 
+  import VoileWeb.DashboardComponents
+
   embed_templates "*"
 
   @doc """

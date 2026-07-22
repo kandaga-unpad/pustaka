@@ -1,13 +1,8 @@
 defmodule VoileWeb.Dashboard.Glam.Index do
   use VoileWeb, :live_view_dashboard
 
-  alias Voile.Repo
-  alias Voile.Schema.Catalog.Collection
-  alias Voile.Schema.Catalog.Item
-  alias Voile.Schema.Metadata.ResourceClass
+  alias Voile.Dashboard.Stats
   alias VoileWeb.Auth.Authorization
-
-  import Ecto.Query
 
   @impl true
   def mount(_params, _session, socket) do
@@ -18,6 +13,10 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     socket =
       socket
       |> assign(:page_title, gettext("GLAM Dashboard"))
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("GLAM"), path: nil}
+      ])
       |> assign(:user, user)
       |> assign(:is_super_admin, is_super_admin)
 
@@ -33,8 +32,9 @@ defmodule VoileWeb.Dashboard.Glam.Index do
     # compute initial stats scoped by user/node and recent collections
     socket =
       socket
-      |> assign(:glam_stats, get_glam_statistics(user))
-      |> assign(:recent_collections, get_recent_collections(5, user))
+      |> assign(:glam_stats, Stats.get_glam_statistics(user))
+      |> assign(:recent_feed_items, build_recent_feed(Stats.list_recent_collections(5, user)))
+      |> assign(:visitor_stats, load_visitor_stats(user))
 
     {:ok, socket}
   end
@@ -63,8 +63,12 @@ defmodule VoileWeb.Dashboard.Glam.Index do
 
     socket =
       socket
-      |> assign(:glam_stats, get_glam_statistics(user_for_stats))
-      |> assign(:recent_collections, get_recent_collections(5, user_for_stats))
+      |> assign(:glam_stats, Stats.get_glam_statistics(user_for_stats))
+      |> assign(
+        :recent_feed_items,
+        build_recent_feed(Stats.list_recent_collections(5, user_for_stats))
+      )
+      |> assign(:visitor_stats, load_visitor_stats(user_for_stats))
 
     {:noreply, socket}
   end
@@ -72,194 +76,184 @@ defmodule VoileWeb.Dashboard.Glam.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6 px-3 mt-5 md:px-0">
-      <%= if @is_super_admin do %>
-        <div class="mb-4">
-          <.form :let={f} for={%{}} phx-change="select_node">
-            <.input
-              field={f[:node_id]}
-              type="select"
-              options={
-                [{"All Nodes", "all"}] ++
-                  Enum.map(@nodes || [], fn n -> {n.name, to_string(n.id)} end)
-              }
-              value={if @selected_node_id, do: to_string(@selected_node_id), else: "all"}
-              class="block w-64 text-sm border border-voile-muted rounded-md shadow-sm"
-              label={gettext("Filter node")}
-            />
-          </.form>
+    <.voile_page_header
+      eyebrow={gettext("GLAM · Overview")}
+      title={gettext("GLAM Management Dashboard")}
+      description={gettext("Gallery, Library, Archive & Museum — unified collections management")}
+      icon="hero-building-library"
+      tone={:brand}
+    >
+      <:actions>
+        <%= if @is_super_admin do %>
+          <form phx-change="select_node" class="voile-chip">
+            <.icon name="hero-map-pin" class="w-4 h-4 text-tertiary" />
+            <select
+              name="node_id"
+              class="bg-transparent text-sm text-primary outline-none cursor-pointer"
+            >
+              <option value="all">
+                {gettext("All Nodes")}
+              </option>
+              <%= for node <- @nodes || [] do %>
+                <option value={node.id} selected={@selected_node_id == node.id}>
+                  {node.name}
+                </option>
+              <% end %>
+            </select>
+          </form>
+        <% end %>
+      </:actions>
+    </.voile_page_header>
+
+    <.voile_glam_strip stats={@glam_stats} />
+
+    <.voile_section_card
+      title={gettext("Visitor statistics")}
+      icon="hero-chart-bar"
+      tone={:info}
+      action_label={gettext("Details")}
+      action_path="/manage/visitor/statistics"
+      class="mb-6"
+    >
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <p class="t-label text-tertiary">{gettext("Visitors today")}</p>
+          <p class="t-stat text-primary text-3xl">{@visitor_stats.today}</p>
         </div>
-      <% end %>
-      <%!-- Breadcrumb --%>
-      <.breadcrumb items={[
-        %{label: gettext("Manage"), path: ~p"/manage"},
-        %{label: gettext("GLAM"), path: nil}
-      ]} /> <%!-- Page Header --%>
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold mb-2">{gettext("GLAM Management Dashboard")}</h1>
-
-            <p class="text-white text-lg">
-              {gettext("Gallery, Library, Archive & Museum - Unified Collections Management")}
-            </p>
-          </div>
-
-          <div class="hidden md:block">
-            <.icon name="hero-building-library" class="w-24 h-24 opacity-20" />
-          </div>
+        <div>
+          <p class="t-label text-tertiary">{gettext("Visitors (30 days)")}</p>
+          <p class="t-stat text-primary text-3xl">{@visitor_stats.total_30d}</p>
         </div>
-      </div>
-      <%!-- GLAM Type Navigation Cards --%> <.glam_navigation_cards glam_stats={@glam_stats} />
-      <%!-- Quick Stats Overview --%>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <.stat_card
-          title={gettext("Total Collections")}
-          value={@glam_stats.total_collections}
-          icon="hero-rectangle-stack"
-          color="blue"
-          trend="+12%"
-        />
-        <.stat_card
-          title={gettext("Total Items")}
-          value={@glam_stats.total_items}
-          icon="hero-cube"
-          color="green"
-          trend="+8%"
-        />
-        <.stat_card
-          title={gettext("Total Nodes")}
-          value={@glam_stats.total_nodes}
-          icon="hero-map-pin"
-          color="purple"
-        />
-        <.stat_card
-          title={gettext("Resource Classes")}
-          value={@glam_stats.resource_classes}
-          icon="hero-tag"
-          color="orange"
-        />
-      </div>
-      <%!-- Recent Activity --%>
-      <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-3">
-            <.icon name="hero-clock" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              {gettext("Recent Collections")}
-            </h2>
-          </div>
-
-          <.link
-            navigate="/manage/catalog/collections"
-            class="text-sm text-voile-primary hover:text-voile-primary/80 dark:text-voile-primary/60 dark:hover:text-voile-primary/40 font-medium"
-          >
-            {gettext("View All")} →
-          </.link>
+        <div>
+          <p class="t-label text-tertiary">{gettext("Unique (30 days)")}</p>
+          <p class="t-stat text-primary text-3xl">{@visitor_stats.unique_30d}</p>
         </div>
-
-        <div class="space-y-3">
-          <%= for collection <- @recent_collections do %>
-            <.recent_collection_item collection={collection} />
-          <% end %>
+        <div>
+          <p class="t-label text-tertiary">{gettext("Avg / day (30 days)")}</p>
+          <p class="t-stat text-primary text-3xl">{@visitor_stats.avg_per_day}</p>
         </div>
       </div>
+    </.voile_section_card>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
+      <.voile_stat_card
+        label={gettext("Total collections")}
+        value={@glam_stats.total_collections}
+        icon="hero-rectangle-stack"
+        tone={:info}
+      />
+      <.voile_stat_card
+        label={gettext("Total items")}
+        value={@glam_stats.total_items}
+        icon="hero-cube"
+        tone={:success}
+      />
+      <.voile_stat_card
+        label={gettext("Nodes")}
+        value={@glam_stats.total_nodes}
+        icon="hero-map-pin"
+        tone={:brand}
+      />
+      <.voile_stat_card
+        label={gettext("Resource classes")}
+        value={@glam_stats.resource_classes}
+        icon="hero-tag"
+        tone={:warning}
+      />
     </div>
+
+    <.voile_section_card
+      title={gettext("Recent collections")}
+      icon="hero-clock"
+      tone={:brand}
+      action_label={gettext("View all")}
+      action_path="/manage/catalog/collections"
+    >
+      <.voile_activity_feed
+        items={@recent_feed_items}
+        empty_text={gettext("No collections yet.")}
+      />
+    </.voile_section_card>
     """
   end
 
-  # Private helper functions
+  defp build_recent_feed(collections) do
+    Enum.map(collections, &collection_to_feed_item/1)
+  end
 
-  defp get_glam_statistics(user) do
-    gallery_count = count_collections_by_glam("Gallery", user)
-    library_count = count_collections_by_glam("Library", user)
-    archive_count = count_collections_by_glam("Archive", user)
-    museum_count = count_collections_by_glam("Museum", user)
+  defp load_visitor_stats(user) do
+    node_id = user.node_id
+    now = DateTime.utc_now()
 
-    total_collections = gallery_count + library_count + archive_count + museum_count
+    start_of_today =
+      Date.utc_today() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
 
-    total_items =
-      if is_nil(user.node_id) do
-        # Super admin viewing all nodes or no node_id set
-        Repo.aggregate(Item, :count, :id)
-      else
-        # Scoped to specific node
-        Repo.aggregate(
-          from(i in Item, join: c in assoc(i, :collection), where: c.unit_id == ^user.node_id),
-          :count,
-          :id
-        )
-      end
+    start_30d = DateTime.add(now, -30, :day)
 
-    # Count all nodes (no is_active field in the schema)
-    total_nodes = Repo.aggregate(Voile.Schema.System.Node, :count, :id)
+    today =
+      Voile.Schema.System.get_visitor_statistics(
+        from_date: start_of_today,
+        to_date: now,
+        node_id: node_id
+      )
 
-    resource_classes = Repo.aggregate(ResourceClass, :count, :id)
+    last_30d =
+      Voile.Schema.System.get_visitor_statistics(
+        from_date: start_30d,
+        to_date: now,
+        node_id: node_id
+      )
 
     %{
-      gallery: %{
-        count: gallery_count,
-        percentage: calculate_percentage(gallery_count, total_collections)
-      },
-      library: %{
-        count: library_count,
-        percentage: calculate_percentage(library_count, total_collections)
-      },
-      archive: %{
-        count: archive_count,
-        percentage: calculate_percentage(archive_count, total_collections)
-      },
-      museum: %{
-        count: museum_count,
-        percentage: calculate_percentage(museum_count, total_collections)
-      },
-      total_collections: total_collections,
-      total_items: total_items,
-      total_nodes: total_nodes,
-      resource_classes: resource_classes
+      today: today.total_visitors,
+      total_30d: last_30d.total_visitors,
+      unique_30d: last_30d.unique_visitors,
+      avg_per_day: if(last_30d.total_visitors > 0, do: div(last_30d.total_visitors, 30), else: 0)
     }
   end
 
-  defp count_collections_by_glam(glam_type, user) do
-    base =
-      from(c in Collection,
-        join: rc in assoc(c, :resource_class),
-        where: rc.glam_type == ^glam_type
-      )
+  defp collection_to_feed_item(collection) do
+    glam_type =
+      collection.resource_class && collection.resource_class.glam_type
 
-    query =
-      if is_nil(user.node_id) do
-        # No node filter - show all
-        base
-      else
-        # Filter by node
-        from(c in base, where: c.unit_id == ^user.node_id)
-      end
-
-    Repo.aggregate(query, :count, :id)
+    %{
+      icon: glam_icon(glam_type),
+      tone: glam_tone(glam_type),
+      title: collection.title || gettext("Untitled collection"),
+      subtitle:
+        (collection.mst_creator && collection.mst_creator.creator_name) ||
+          glam_label(glam_type),
+      meta: format_date(collection.inserted_at),
+      href: "/manage/catalog/collections/#{collection.id}"
+    }
   end
 
-  defp calculate_percentage(_count, 0), do: 0
-  defp calculate_percentage(count, total), do: Float.round(count / total * 100, 3)
+  defp glam_icon("Gallery"), do: "hero-photo"
+  defp glam_icon("Library"), do: "hero-book-open"
+  defp glam_icon("Archive"), do: "hero-archive-box"
+  defp glam_icon("Museum"), do: "hero-cube"
+  defp glam_icon(_), do: "hero-rectangle-stack"
 
-  defp get_recent_collections(limit, user) do
-    base =
-      from(c in Collection,
-        join: rc in assoc(c, :resource_class),
-        order_by: [desc: c.inserted_at],
-        limit: ^limit,
-        preload: [:resource_class, :mst_creator]
-      )
+  defp glam_tone("Gallery"), do: :glam_gallery
+  defp glam_tone("Library"), do: :glam_library
+  defp glam_tone("Archive"), do: :glam_archive
+  defp glam_tone("Museum"), do: :glam_museum
+  defp glam_tone(_), do: :brand
 
-    query =
-      if is_nil(user.node_id) do
-        # No node filter - show all
-        base
-      else
-        # Filter by node
-        from(c in base, where: c.unit_id == ^user.node_id)
-      end
+  defp glam_label("Gallery"), do: gettext("Gallery")
+  defp glam_label("Library"), do: gettext("Library")
+  defp glam_label("Archive"), do: gettext("Archive")
+  defp glam_label("Museum"), do: gettext("Museum")
+  defp glam_label(_), do: gettext("Collection")
 
-    Repo.all(query)
+  defp format_date(nil), do: nil
+
+  defp format_date(%DateTime{} = dt) do
+    dt
+    |> DateTime.to_date()
+    |> Date.to_string()
   end
+
+  defp format_date(%Date{} = d), do: Date.to_string(d)
+  defp format_date(_), do: nil
 end

@@ -172,7 +172,7 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
 
     filters = %{
       access_level: socket.assigns.filter_access_level,
@@ -1086,8 +1086,8 @@ defmodule VoileWeb.Dashboard.Catalog.AssetVault.Index do
       class={[
         "w-full text-left pr-2 py-1.5 rounded-md text-sm transition-colors flex items-center gap-2",
         if(is_active,
-          do: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium",
-          else: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          do: "bg-tone-info-soft text-voile-info font-medium",
+          else: "text-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
         )
       ]}
     >

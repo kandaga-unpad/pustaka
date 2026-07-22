@@ -1,15 +1,11 @@
-defmodule VoileWeb.RedesignComponents do
+defmodule VoileWeb.DashboardComponents do
   @moduledoc """
-  Components for the Voile dashboard redesign (v2).
+  The Voile dashboard component library.
 
-  These components are the implementation of the design system documented in
-  `plans/dashboard-redesign.md`. They are isolated from the legacy
-  `VoileDashboardComponents` so the redesign can ship behind a dedicated layout
-  and route without touching any existing surface.
-
-  All new dashboard LiveViews should `use VoileWeb, :live_view_redesign` and
-  import nothing from `VoileDashboardComponents`. This module is imported
-  automatically by the `live_view_redesign` macro in `VoileWeb`.
+  These components implement the design system documented in
+  `plans/dashboard-redesign.md`. They are imported automatically by the
+  `live_view_dashboard` / `controller_dashboard` macros in `VoileWeb`, so every
+  `/manage/*` LiveView and the metaresource controllers can use them directly.
   """
 
   use Phoenix.Component
@@ -71,64 +67,79 @@ defmodule VoileWeb.RedesignComponents do
   Renders the persistent desktop sidebar (lg+).
 
   Inside the redesign layout, this is always paired with
-  `<.rd_bottom_nav>` for mobile.
+  `<.voile_bottom_nav>` for mobile.
   """
   attr :current_path, :string, default: "/manage"
   attr :user, :map, default: nil
 
-  def rd_sidebar(assigns) do
+  def voile_sidebar(assigns) do
     ~H"""
     <aside
-      id="rd-sidebar"
-      class="rd-sidebar hidden lg:flex flex-col"
+      id="voile-sidebar"
+      class="voile-sidebar hidden lg:flex flex-col"
       phx-hook="Sidebar"
     >
-      <div class="rd-sidebar-header">
-        <.link navigate="/manage/redesign-test" class="rd-sidebar-brand">
-          <img src="/images/v.png" alt="Voile" class="rd-sidebar-logo" />
-          <span class="rd-sidebar-brand-text t-h4 text-primary">
+      <div class="voile-sidebar-header">
+        <.link navigate="/manage" class="voile-sidebar-brand">
+          <img
+            src={Voile.Schema.System.get_setting_value("app_logo_url", "/images/v.png")}
+            alt={Voile.Schema.System.get_setting_value("app_name", "Voile")}
+            class="voile-sidebar-logo"
+          />
+          <span class="voile-sidebar-brand-text t-h4 text-primary">
             {Voile.Schema.System.get_setting_value("app_name", "Voile")}
           </span>
         </.link>
         <button
           type="button"
-          data-rd-sidebar-toggle
-          class="rd-sidebar-toggle"
+          data-voile-sidebar-toggle
+          class="voile-sidebar-toggle"
           aria-label={gettext("Collapse sidebar")}
           aria-expanded="true"
         >
-          <.icon name="hero-chevron-left" class="rd-sidebar-toggle-icon-collapse w-5 h-5" />
-          <.icon name="hero-chevron-right" class="rd-sidebar-toggle-icon-expand w-5 h-5" />
+          <.icon name="hero-chevron-left" class="voile-sidebar-toggle-icon-collapse w-5 h-5" />
+          <.icon name="hero-chevron-right" class="voile-sidebar-toggle-icon-expand w-5 h-5" />
         </button>
       </div>
 
-      <nav class="rd-sidebar-nav flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-6">
-        <.rd_sidebar_section title={gettext("Workspace")}>
+      <nav class="voile-sidebar-nav flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-6">
+        <.voile_sidebar_section title={gettext("Workspace")}>
           <%= for item <- workspace_items(@current_path) do %>
-            <.rd_sidebar_link item={item} current_path={@current_path} />
+            <.voile_sidebar_link item={item} current_path={@current_path} />
           <% end %>
-        </.rd_sidebar_section>
+        </.voile_sidebar_section>
 
-        <.rd_sidebar_section title={gettext("Collections")}>
+        <.voile_sidebar_section title={gettext("Collections")}>
           <%= for item <- collection_items(@current_path) do %>
-            <.rd_sidebar_link item={item} current_path={@current_path} />
+            <.voile_sidebar_link item={item} current_path={@current_path} />
           <% end %>
-        </.rd_sidebar_section>
+        </.voile_sidebar_section>
 
-        <.rd_sidebar_section title={gettext("People")}>
+        <.voile_sidebar_section title={gettext("People")}>
           <%= for item <- people_items(@current_path) do %>
-            <.rd_sidebar_link item={item} current_path={@current_path} />
+            <.voile_sidebar_link item={item} current_path={@current_path} />
           <% end %>
-        </.rd_sidebar_section>
+        </.voile_sidebar_section>
 
-        <.rd_sidebar_section title={gettext("System")}>
+        <.voile_sidebar_section title={gettext("System")}>
           <%= for item <- system_items(@current_path) do %>
-            <.rd_sidebar_link item={item} current_path={@current_path} />
+            <.voile_sidebar_link item={item} current_path={@current_path} />
           <% end %>
-        </.rd_sidebar_section>
+        </.voile_sidebar_section>
       </nav>
 
-      <.rd_sidebar_user_card user={@user} />
+      <div class="px-3 pb-2">
+        <.link
+          navigate="/"
+          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-secondary hover:text-voile-primary hover:bg-tone-brand-soft transition-colors"
+          title={gettext("Back to front page")}
+        >
+          <.icon name="hero-arrow-left" class="w-4 h-4 shrink-0" />
+          <span>{gettext("Front page")}</span>
+        </.link>
+      </div>
+
+      <.voile_sidebar_user_card user={@user} />
     </aside>
     """
   end
@@ -136,10 +147,10 @@ defmodule VoileWeb.RedesignComponents do
   attr :title, :string, required: true
   slot :inner_block, required: true
 
-  defp rd_sidebar_section(assigns) do
+  defp voile_sidebar_section(assigns) do
     ~H"""
-    <div class="rd-sidebar-section">
-      <p class="rd-sidebar-section-title t-label text-tertiary px-3 mb-2">{@title}</p>
+    <div class="voile-sidebar-section">
+      <p class="voile-sidebar-section-title t-label text-tertiary px-3 mb-2">{@title}</p>
       <div class="space-y-0.5">{render_slot(@inner_block)}</div>
     </div>
     """
@@ -148,24 +159,40 @@ defmodule VoileWeb.RedesignComponents do
   attr :item, :map, required: true
   attr :current_path, :string, required: true
 
-  defp rd_sidebar_link(assigns) do
+  defp voile_sidebar_link(assigns) do
+    ~H"""
+    <%= if @item[:children] do %>
+      <.voile_sidebar_parent item={@item} current_path={@current_path} />
+    <% else %>
+      <.voile_sidebar_leaf item={@item} current_path={@current_path} />
+    <% end %>
+    """
+  end
+
+  # A leaf nav item — never has children. Active when the current path is the
+  # item itself OR a descendant of it (e.g. Catalog stays active on
+  # /manage/catalog/collections). Pass `exact: true` for root-level items like
+  # Home ("/manage") where descendant matching would highlight them on every
+  # /manage/* route.
+  attr :item, :map, required: true
+  attr :current_path, :string, required: true
+  attr :indented, :boolean, default: false
+
+  defp voile_sidebar_leaf(assigns) do
     ~H"""
     <.link
       navigate={@item.path}
       title={@item.label}
       class={[
-        "rd-nav-link",
-        String.starts_with?(@current_path, @item.path) &&
-          @current_path != "/manage/redesign-test" &&
-          "rd-nav-link-active",
-        @current_path == @item.path && @item.path == "/manage/redesign-test" &&
-          "rd-nav-link-active"
+        "voile-nav-link",
+        @indented && "voile-nav-link-child",
+        leaf_active?(@current_path, @item) && "voile-nav-link-active"
       ]}
     >
       <.icon name={@item.icon} class="w-5 h-5 shrink-0" />
-      <span class="rd-sidebar-label">{@item.label}</span>
-      <%= if @item.shortcut do %>
-        <kbd class="rd-sidebar-shortcut ml-auto t-mono text-tertiary hidden xl:inline">
+      <span class="voile-sidebar-label">{@item.label}</span>
+      <%= if @item[:shortcut] do %>
+        <kbd class="voile-sidebar-shortcut ml-auto t-mono text-tertiary hidden xl:inline">
           {@item.shortcut}
         </kbd>
       <% end %>
@@ -173,29 +200,157 @@ defmodule VoileWeb.RedesignComponents do
     """
   end
 
+  defp leaf_active?(current_path, %{path: path, exact: true}),
+    do: current_path == path
+
+  defp leaf_active?(current_path, %{path: path}),
+    do: path_active?(current_path, path)
+
+  # A parent nav item with a collapsible submenu of children. The parent itself
+  # is only "active" (brand bar) when the current path is the parent exactly;
+  # when a child is current the parent stays neutral but auto-expands so the
+  # active child is visible. Expansion is route-driven; the chevron toggles it
+  # client-side (ephemeral — reverts to the route-based state on navigation).
+  attr :item, :map, required: true
+  attr :current_path, :string, required: true
+
+  defp voile_sidebar_parent(assigns) do
+    %{item: item, current_path: current} = assigns
+    exact = current == item.path
+    open = exact or String.starts_with?(current, item.path <> "/")
+
+    assigns =
+      assigns
+      |> assign(:id, nav_id(item.path))
+      |> assign(:exact, exact)
+      |> assign(:open, open)
+
+    ~H"""
+    <div id={@id} class={["voile-nav-group", !@open && "is-collapsed"]}>
+      <div class="voile-nav-parent-row">
+        <.link
+          navigate={@item.path}
+          title={@item.label}
+          class={["voile-nav-link voile-nav-parent-link flex-1", @exact && "voile-nav-link-active"]}
+        >
+          <.icon name={@item.icon} class="w-5 h-5 shrink-0" />
+          <span class="voile-sidebar-label">{@item.label}</span>
+        </.link>
+        <button
+          type="button"
+          class="voile-nav-toggle"
+          aria-label={gettext("Toggle submenu")}
+          aria-expanded={to_string(@open)}
+          phx-click={JS.toggle_class("is-collapsed", to: "#" <> @id)}
+        >
+          <.icon name="hero-chevron-down" class="voile-nav-toggle-icon w-4 h-4" />
+        </button>
+      </div>
+      <div class="voile-nav-children">
+        <%= for child <- @item.children do %>
+          <.voile_sidebar_leaf item={child} current_path={@current_path} indented />
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  # Stable DOM id for a nav path, e.g. "/manage/glam" -> "voile-nav--manage-glam".
+  defp nav_id(path) do
+    "voile-nav-" <> (path |> String.trim_leading("/") |> String.replace("/", "-"))
+  end
+
+  # Current path matches when it is the path exactly or is a descendant of it.
+  defp path_active?(current_path, path) do
+    current_path == path or String.starts_with?(current_path, path <> "/")
+  end
+
   attr :user, :map, default: nil
 
-  defp rd_sidebar_user_card(assigns) do
+  defp voile_sidebar_user_card(assigns) do
     ~H"""
-    <div class="rd-sidebar-user-card border-t border-subtle p-3">
-      <div class="rd-sidebar-user-row flex items-center gap-3 px-2 py-2">
+    <div class="voile-sidebar-user-card relative border-t border-subtle p-3">
+      <button
+        type="button"
+        class="voile-sidebar-user-row flex w-full items-center gap-3 px-2 py-2 rounded-lg hover-surface transition-colors"
+        phx-click={
+          JS.toggle(
+            to: "#voile-user-menu",
+            display: "block"
+          )
+        }
+        aria-haspopup="true"
+        aria-label={gettext("Open user menu")}
+      >
         <img
           src={user_avatar(@user)}
           alt={gettext("Avatar")}
-          class="rd-sidebar-avatar w-9 h-9 rounded-full object-cover ring-2 ring-subtle"
+          class="voile-sidebar-avatar w-9 h-9 rounded-full object-cover ring-2 ring-subtle"
         />
-        <div class="rd-sidebar-user-info min-w-0 flex-1">
+        <div class="voile-sidebar-user-info min-w-0 flex-1 text-left">
           <p class="text-sm font-semibold text-primary truncate">{user_name(@user)}</p>
           <p class="text-xs text-tertiary truncate">{user_role(@user)}</p>
         </div>
+        <.icon name="hero-chevron-up-down" class="w-5 h-5 text-tertiary shrink-0" />
+      </button>
+
+      <.voile_user_menu_panel user={@user} menu_id="voile-user-menu" position={:up} />
+    </div>
+    """
+  end
+
+  # Shared dropdown panel (user info + node + profile/logout buttons).
+  # `position: :up` opens above the trigger (sidebar, anchored left); `:down`
+  # opens below and aligned right (topbar avatar).
+  attr :user, :map, default: nil
+  attr :menu_id, :string, required: true
+  attr :position, :atom, values: [:up, :down], default: :down
+
+  defp voile_user_menu_panel(assigns) do
+    ~H"""
+    <div
+      id={@menu_id}
+      class={[
+        "hidden absolute z-50 voile-card p-2 shadow-lg",
+        if(@position == :up,
+          do: "bottom-full left-3 right-3 mb-2",
+          else: "top-full right-0 mt-2 w-64"
+        )
+      ]}
+      phx-click-away={JS.hide(to: "#" <> @menu_id)}
+    >
+      <div class="px-3 py-2 border-b border-subtle">
+        <p class="text-sm font-semibold text-primary truncate">{user_name(@user)}</p>
+        <p class="text-xs text-tertiary truncate t-mono">@{user_handle(@user)}</p>
+        <p :if={user_identifier(@user)} class="text-xs text-tertiary truncate t-mono mt-0.5">
+          <.icon name="hero-identification" class="w-3.5 h-3.5 inline -mt-0.5" />
+          {user_identifier(@user)}
+        </p>
+      </div>
+
+      <div class="px-3 py-2 border-b border-subtle">
+        <p class="t-label text-tertiary">{gettext("Node")}</p>
+        <p class="text-sm text-secondary truncate">
+          <.icon name="hero-map-pin" class="w-4 h-4 inline -mt-0.5 text-voile-primary" />
+          {user_node_name(@user)}
+        </p>
+      </div>
+
+      <div class="p-1 flex flex-col gap-1">
+        <.link
+          navigate="/manage/settings/user_profile"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-secondary hover:text-primary hover-surface transition-colors"
+        >
+          <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
+          {gettext("Profile settings")}
+        </.link>
         <.link
           href="/users/log_out"
           method="delete"
-          class="rd-sidebar-logout p-2 rounded-lg text-tertiary hover:text-voile-error hover:bg-tone-error-soft transition-colors"
-          aria-label={gettext("Log out")}
-          title={gettext("Log out")}
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-secondary hover:text-voile-error hover:bg-tone-error-soft transition-colors"
         >
-          <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" />
+          <.icon name="hero-arrow-right-on-rectangle" class="w-4 h-4" />
+          {gettext("Log out")}
         </.link>
       </div>
     </div>
@@ -206,6 +361,18 @@ defmodule VoileWeb.RedesignComponents do
   defp user_name(%{username: name}) when is_binary(name), do: name
   defp user_name(_), do: gettext("Guest")
 
+  defp user_handle(%{username: name}) when is_binary(name), do: name
+  defp user_handle(_), do: "—"
+
+  defp user_identifier(%{identifier: identifier})
+       when not is_nil(identifier),
+       do: to_string(identifier)
+
+  defp user_identifier(_), do: nil
+
+  defp user_node_name(%{node: %{name: name}}) when is_binary(name), do: name
+  defp user_node_name(_), do: gettext("Unassigned")
+
   defp user_avatar(%{user_image: url}) when is_binary(url), do: url
   defp user_avatar(_), do: "/images/default_avatar.jpg"
 
@@ -214,13 +381,9 @@ defmodule VoileWeb.RedesignComponents do
 
   defp workspace_items(_current_path) do
     [
-      %{label: gettext("Home"), path: "/manage", icon: "hero-home", shortcut: "G H"},
-      %{
-        label: gettext("Redesign Sample"),
-        path: "/manage/redesign-test",
-        icon: "hero-sparkles",
-        shortcut: nil
-      }
+      # exact: /manage is the root, so descendant matching would highlight Home
+      # on every /manage/* route. Only active on the dashboard home itself.
+      %{label: gettext("Home"), path: "/manage", icon: "hero-home", shortcut: "G H", exact: true}
     ]
   end
 
@@ -230,33 +393,44 @@ defmodule VoileWeb.RedesignComponents do
         label: gettext("Catalog"),
         path: "/manage/catalog",
         icon: "hero-rectangle-stack",
-        shortcut: nil
+        shortcut: nil,
+        children: [
+          %{
+            label: gettext("Collections"),
+            path: "/manage/catalog/collections",
+            icon: "hero-archive-box"
+          },
+          %{label: gettext("Items"), path: "/manage/catalog/items", icon: "hero-cube"},
+          %{label: gettext("Labels"), path: "/manage/catalog/labels", icon: "hero-tag"},
+          %{
+            label: gettext("Asset vault"),
+            path: "/manage/catalog/asset-vault",
+            icon: "hero-lock-closed"
+          },
+          %{
+            label: gettext("Transfers"),
+            path: "/manage/catalog/transfers",
+            icon: "hero-arrows-right-left"
+          },
+          %{
+            label: gettext("Stock opname"),
+            path: "/manage/catalog/stock_opname",
+            icon: "hero-clipboard-document-check"
+          }
+        ]
       },
       %{
         label: gettext("GLAM"),
         path: "/manage/glam",
         icon: "hero-building-library",
-        shortcut: nil
-      },
-      %{
-        label: gettext("Library"),
-        path: "/manage/glam/library",
-        icon: "hero-book-open",
-        shortcut: nil
-      },
-      %{
-        label: gettext("Archive"),
-        path: "/manage/glam/archive",
-        icon: "hero-archive-box",
-        shortcut: nil
-      },
-      %{
-        label: gettext("Gallery"),
-        path: "/manage/glam/gallery",
-        icon: "hero-photo",
-        shortcut: nil
-      },
-      %{label: gettext("Museum"), path: "/manage/glam/museum", icon: "hero-cube", shortcut: nil}
+        shortcut: nil,
+        children: [
+          %{label: gettext("Gallery"), path: "/manage/glam/gallery", icon: "hero-photo"},
+          %{label: gettext("Library"), path: "/manage/glam/library", icon: "hero-book-open"},
+          %{label: gettext("Archive"), path: "/manage/glam/archive", icon: "hero-archive-box"},
+          %{label: gettext("Museum"), path: "/manage/glam/museum", icon: "hero-cube"}
+        ]
+      }
     ]
   end
 
@@ -266,13 +440,35 @@ defmodule VoileWeb.RedesignComponents do
         label: gettext("Members"),
         path: "/manage/members",
         icon: "hero-user-group",
-        shortcut: nil
+        shortcut: nil,
+        children: [
+          %{label: gettext("Management"), path: "/manage/members/management", icon: "hero-users"},
+          %{label: gettext("Reports"), path: "/manage/members/reports", icon: "hero-chart-bar"},
+          %{
+            label: gettext("Clearance"),
+            path: "/manage/members/clearance",
+            icon: "hero-document-check"
+          }
+        ]
       },
       %{
         label: gettext("Visitors"),
         path: "/manage/visitor/statistics",
         icon: "hero-chart-bar",
-        shortcut: nil
+        shortcut: nil,
+        children: [
+          %{
+            label: gettext("Statistics"),
+            path: "/manage/visitor/statistics",
+            icon: "hero-chart-pie"
+          },
+          %{label: gettext("Logs"), path: "/manage/visitor/logs", icon: "hero-list-bullet"},
+          %{
+            label: gettext("Surveys"),
+            path: "/manage/visitor/surveys",
+            icon: "hero-clipboard-document-list"
+          }
+        ]
       }
     ]
   end
@@ -280,24 +476,111 @@ defmodule VoileWeb.RedesignComponents do
   defp system_items(_current_path) do
     [
       %{
-        label: gettext("Plugins"),
-        path: "/manage/plugins",
-        icon: "hero-puzzle-piece",
-        shortcut: nil
+        label: gettext("Master data"),
+        path: "/manage/master",
+        icon: "hero-circle-stack",
+        shortcut: nil,
+        children: [
+          %{label: gettext("Creators"), path: "/manage/master/creators", icon: "hero-user"},
+          %{
+            label: gettext("Publishers"),
+            path: "/manage/master/publishers",
+            icon: "hero-building-office-2"
+          },
+          %{
+            label: gettext("Member types"),
+            path: "/manage/master/member_types",
+            icon: "hero-identification"
+          },
+          %{
+            label: gettext("Frequencies"),
+            path: "/manage/master/frequencies",
+            icon: "hero-calendar-days"
+          },
+          %{label: gettext("Locations"), path: "/manage/master/locations", icon: "hero-map-pin"},
+          %{label: gettext("Places"), path: "/manage/master/places", icon: "hero-map"},
+          %{label: gettext("Topics"), path: "/manage/master/topics", icon: "hero-tag"}
+        ]
+      },
+      %{
+        label: gettext("Metaresource"),
+        path: "/manage/metaresource",
+        icon: "hero-squares-2x2",
+        shortcut: nil,
+        children: [
+          %{
+            label: gettext("Vocabularies"),
+            path: "/manage/metaresource/metadata_vocabularies",
+            icon: "hero-bookmark"
+          },
+          %{
+            label: gettext("Properties"),
+            path: "/manage/metaresource/metadata_properties",
+            icon: "hero-squares-2x2"
+          },
+          %{
+            label: gettext("Resource class"),
+            path: "/manage/metaresource/resource_class",
+            icon: "hero-square-3-stack-3d"
+          },
+          %{
+            label: gettext("Resource template"),
+            path: "/manage/metaresource/resource_template",
+            icon: "hero-document-text"
+          },
+          %{
+            label: gettext("Template properties"),
+            path: "/manage/metaresource/resource_templ_property",
+            icon: "hero-rectangle-group"
+          }
+        ]
       },
       %{
         label: gettext("Settings"),
         path: "/manage/settings",
         icon: "hero-cog-6-tooth",
-        shortcut: nil
+        shortcut: nil,
+        children: [
+          %{
+            label: gettext("Application"),
+            path: "/manage/settings/apps",
+            icon: "hero-cog-6-tooth"
+          },
+          %{label: gettext("Profile"), path: "/manage/settings/user_profile", icon: "hero-user"},
+          %{
+            label: gettext("Permissions"),
+            path: "/manage/settings/permissions",
+            icon: "hero-key"
+          },
+          %{
+            label: gettext("Nodes"),
+            path: "/manage/settings/nodes",
+            icon: "hero-building-library"
+          },
+          %{
+            label: gettext("Holidays"),
+            path: "/manage/settings/holidays",
+            icon: "hero-calendar-days"
+          },
+          %{
+            label: gettext("Reservation notifications"),
+            path: "/manage/settings/reservation_notifications",
+            icon: "hero-bell"
+          },
+          %{
+            label: gettext("API manager"),
+            path: "/manage/settings/api_manager",
+            icon: "hero-code-bracket"
+          },
+          %{label: gettext("Metrics"), path: "/manage/settings/metrics", icon: "hero-chart-bar"}
+        ]
       },
       %{
-        label: gettext("Master Data"),
-        path: "/manage/master",
-        icon: "hero-circle-stack",
+        label: gettext("Plugins"),
+        path: "/manage/plugins",
+        icon: "hero-puzzle-piece",
         shortcut: nil
-      },
-      %{label: gettext("Metadata"), path: "/manage/metaresource", icon: "hero-tag", shortcut: nil}
+      }
     ]
   end
 
@@ -307,28 +590,28 @@ defmodule VoileWeb.RedesignComponents do
   """
   attr :current_path, :string, default: "/manage"
 
-  def rd_bottom_nav(assigns) do
+  def voile_bottom_nav(assigns) do
     ~H"""
-    <nav class="rd-bottom-nav fixed bottom-0 inset-x-0 lg:hidden grid grid-cols-5 z-40">
-      <.rd_bottom_nav_item
+    <nav class="voile-bottom-nav fixed bottom-0 inset-x-0 lg:hidden grid grid-cols-5 z-40">
+      <.voile_bottom_nav_item
         label={gettext("Home")}
         icon="hero-home"
         path="/manage"
         current_path={@current_path}
       />
-      <.rd_bottom_nav_item
+      <.voile_bottom_nav_item
         label={gettext("Catalog")}
         icon="hero-rectangle-stack"
         path="/manage/catalog"
         current_path={@current_path}
       />
-      <.rd_bottom_nav_item
+      <.voile_bottom_nav_item
         label={gettext("GLAM")}
         icon="hero-building-library"
         path="/manage/glam"
         current_path={@current_path}
       />
-      <.rd_bottom_nav_item
+      <.voile_bottom_nav_item
         label={gettext("Members")}
         icon="hero-user-group"
         path="/manage/members"
@@ -352,7 +635,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :path, :string, required: true
   attr :current_path, :string, required: true
 
-  defp rd_bottom_nav_item(assigns) do
+  defp voile_bottom_nav_item(assigns) do
     ~H"""
     <.link
       navigate={@path}
@@ -382,21 +665,25 @@ defmodule VoileWeb.RedesignComponents do
   attr :breadcrumb, :list, default: []
   attr :notification_count, :integer, default: 0
 
-  def rd_topbar(assigns) do
+  def voile_topbar(assigns) do
     ~H"""
-    <header class="rd-topbar px-4 lg:px-8 flex items-center gap-4">
+    <header class="voile-topbar px-4 lg:px-8 flex items-center gap-4">
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <.link navigate="/manage/redesign-test" class="lg:hidden shrink-0">
-          <img src="/images/v.png" alt="Voile" class="w-8 h-8" />
+        <.link navigate="/manage" class="lg:hidden shrink-0">
+          <img
+            src={Voile.Schema.System.get_setting_value("app_logo_url", "/images/v.png")}
+            alt={Voile.Schema.System.get_setting_value("app_name", "Voile")}
+            class="w-8 h-8"
+          />
         </.link>
-        <.rd_breadcrumb items={@breadcrumb} current_path={@current_path} />
+        <.voile_breadcrumb items={@breadcrumb} current_path={@current_path} />
       </div>
 
       <div class="flex items-center gap-2">
         <button
           type="button"
           phx-click={JS.dispatch("voile:open-command-palette")}
-          class="rd-chip hidden md:inline-flex"
+          class="voile-chip hidden md:inline-flex"
           aria-label={gettext("Open command palette")}
         >
           <.icon name="hero-magnifying-glass" class="w-4 h-4" />
@@ -413,6 +700,15 @@ defmodule VoileWeb.RedesignComponents do
           <.icon name="hero-magnifying-glass" class="w-5 h-5" />
         </button>
 
+        <.link
+          navigate="/"
+          class="p-2 rounded-lg text-secondary hover:text-voile-primary hover:bg-tone-brand-soft transition-colors"
+          title={gettext("Back to front page")}
+          aria-label={gettext("Back to front page")}
+        >
+          <.icon name="hero-globe-alt" class="w-5 h-5" />
+        </.link>
+
         <button
           type="button"
           class="relative p-2 rounded-lg text-secondary hover:text-voile-primary hover:bg-tone-brand-soft transition-colors"
@@ -426,15 +722,28 @@ defmodule VoileWeb.RedesignComponents do
           <% end %>
         </button>
 
+        <.voile_locale_switcher current_path={@current_path} />
+
         <div class="hidden sm:block">
           <.theme_toggle />
         </div>
 
-        <img
-          src={user_avatar(@user)}
-          alt={gettext("Avatar")}
-          class="w-8 h-8 rounded-full object-cover ring-2 ring-subtle"
-        />
+        <div class="relative">
+          <button
+            type="button"
+            class="rounded-full ring-2 ring-subtle hover:ring-voile-primary transition-shadow"
+            phx-click={JS.toggle(to: "#voile-topbar-user-menu", display: "block")}
+            aria-haspopup="true"
+            aria-label={gettext("Open user menu")}
+          >
+            <img
+              src={user_avatar(@user)}
+              alt={gettext("Avatar")}
+              class="w-8 h-8 rounded-full object-cover"
+            />
+          </button>
+          <.voile_user_menu_panel user={@user} menu_id="voile-topbar-user-menu" position={:down} />
+        </div>
       </div>
     </header>
     """
@@ -443,7 +752,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :items, :list, required: true
   attr :current_path, :string, required: true
 
-  defp rd_breadcrumb(assigns) do
+  defp voile_breadcrumb(assigns) do
     assigns = assign(assigns, :indexed_items, Enum.with_index(assigns.items))
 
     ~H"""
@@ -468,37 +777,51 @@ defmodule VoileWeb.RedesignComponents do
   end
 
   @doc """
-  Renders the lite footer shown at the bottom of the scrolling content area.
-  Single-line attribution, brand-tinted.
+  Renders the footer shown at the bottom of the scrolling content area.
+  Sticks to the viewport bottom when content is short (via flex-1 on the
+  content wrapper); scrolls naturally when content is tall.
   """
   attr :app_name, :string, default: "Voile"
 
-  def rd_footer(assigns) do
+  def voile_footer(assigns) do
     assigns = assign(assigns, :year, DateTime.utc_now().year)
 
     ~H"""
-    <footer class="border-t border-subtle px-4 lg:px-8 py-4">
-      <div class="max-w-[var(--layout-content-max)] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-tertiary">
-        <p>
-          Manage · {@app_name} · © {@year} Curatorian Developer
-        </p>
-        <div class="flex items-center gap-4">
-          <a
-            href="https://github.com/curatorian"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-voile-primary transition-colors"
-          >
-            Docs ↗
-          </a>
-          <a
-            href="https://github.com/curatorian/voile"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-voile-primary transition-colors"
-          >
-            GitHub ↗
-          </a>
+    <footer class="border-t border-subtle px-4 lg:px-8 py-6 mt-auto">
+      <div class="max-w-[var(--layout-content-max)] mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="text-sm text-secondary text-center md:text-left">
+            <p>
+              © {@year} {@app_name}. {gettext("All rights reserved.")}
+            </p>
+            <p class="mt-1 text-xs text-tertiary">
+              {gettext("Powered by")}
+              <a
+                href="https://github.com/curatorian"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-voile-primary transition-colors"
+              >
+                Curatorian Developer
+              </a>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-6 text-xs text-tertiary">
+            <span>
+              {gettext("Built with")}
+              <span class="text-voile-error mx-0.5">♥</span>
+              {gettext("using")}
+              <a
+                href="https://github.com/curatorian/voile"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-voile-primary transition-colors"
+              >
+                Voile
+              </a>
+            </span>
+          </div>
         </div>
       </div>
     </footer>
@@ -520,7 +843,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :tone, :atom, default: :brand
   slot :actions
 
-  def rd_page_header(assigns) do
+  def voile_page_header(assigns) do
     ~H"""
     <div class="mb-8">
       <%= if @eyebrow do %>
@@ -553,7 +876,7 @@ defmodule VoileWeb.RedesignComponents do
 
   ## Examples
 
-      <.rd_stat_card
+      <.voile_stat_card
         label="Total Members"
         value="1,204"
         icon="hero-users"
@@ -572,10 +895,10 @@ defmodule VoileWeb.RedesignComponents do
   attr :loading, :boolean, default: false
   attr :class, :string, default: nil
 
-  def rd_stat_card(assigns) do
+  def voile_stat_card(assigns) do
     ~H"""
     <div class={[
-      "rd-card rd-card-hover p-5 flex flex-col gap-3",
+      "voile-card voile-card-hover p-5 flex flex-col gap-3",
       @href && "cursor-pointer",
       @class
     ]}>
@@ -600,7 +923,7 @@ defmodule VoileWeb.RedesignComponents do
       <% end %>
 
       <%= if @sparkline && !@loading do %>
-        <.rd_sparkline points={@sparkline} tone={@tone} />
+        <.voile_sparkline points={@sparkline} tone={@tone} />
       <% end %>
 
       <%= if @trend && !@loading do %>
@@ -628,7 +951,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :points, :list, required: true
   attr :tone, :atom, default: :brand
 
-  defp rd_sparkline(assigns) do
+  defp voile_sparkline(assigns) do
     %{points: points} = assigns
 
     assigns =
@@ -682,28 +1005,28 @@ defmodule VoileWeb.RedesignComponents do
   """
   attr :stats, :map, required: true
 
-  def rd_glam_strip(assigns) do
+  def voile_glam_strip(assigns) do
     ~H"""
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
-      <.rd_glam_tile
+      <.voile_glam_tile
         type={:gallery}
         count={@stats[:gallery_count] || 0}
         delta={@stats[:gallery_delta] || 0}
         href="/manage/glam/gallery"
       />
-      <.rd_glam_tile
+      <.voile_glam_tile
         type={:library}
         count={@stats[:library_count] || 0}
         delta={@stats[:library_delta] || 0}
         href="/manage/glam/library"
       />
-      <.rd_glam_tile
+      <.voile_glam_tile
         type={:archive}
         count={@stats[:archive_count] || 0}
         delta={@stats[:archive_delta] || 0}
         href="/manage/glam/archive"
       />
-      <.rd_glam_tile
+      <.voile_glam_tile
         type={:museum}
         count={@stats[:museum_count] || 0}
         delta={@stats[:museum_delta] || 0}
@@ -719,10 +1042,10 @@ defmodule VoileWeb.RedesignComponents do
   attr :href, :string, required: true
 
   @doc """
-  Renders a single GLAM type tile (the public version used by `rd_glam_strip`).
+  Renders a single GLAM type tile (the public version used by `voile_glam_strip`).
   Drop-in replacement for the legacy `glam_type_card/1`. DRAFT API — stable.
   """
-  def rd_glam_tile(assigns) do
+  def voile_glam_tile(assigns) do
     %{type: type} = assigns
 
     assigns =
@@ -732,7 +1055,10 @@ defmodule VoileWeb.RedesignComponents do
       |> assign(:tone, type)
 
     ~H"""
-    <.link navigate={@href} class="rd-card rd-card-hover p-5 group relative overflow-hidden block">
+    <.link
+      navigate={@href}
+      class="voile-card voile-card-hover p-5 group relative overflow-hidden block"
+    >
       <div class={[
         "absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-30 group-hover:opacity-50 transition-opacity",
         tone_soft_bg(@tone)
@@ -786,9 +1112,9 @@ defmodule VoileWeb.RedesignComponents do
   attr :class, :string, default: nil
   slot :inner_block, required: true
 
-  def rd_section_card(assigns) do
+  def voile_section_card(assigns) do
     ~H"""
-    <section class={["rd-card p-5 md:p-6", @class]}>
+    <section class={["voile-card p-5 md:p-6", @class]}>
       <%= if @title do %>
         <div class="flex items-center justify-between gap-2 mb-4">
           <div class="flex items-center gap-2 min-w-0">
@@ -821,7 +1147,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :total, :any, default: nil
   attr :tone, :atom, default: :brand
 
-  def rd_metric_row(assigns) do
+  def voile_metric_row(assigns) do
     assigns =
       with %{total: total, value: value} when is_number(total) and is_number(value) and total > 0 <-
              assigns do
@@ -864,14 +1190,14 @@ defmodule VoileWeb.RedesignComponents do
   attr :items, :list, required: true
   attr :empty_text, :string, default: nil
 
-  def rd_activity_feed(assigns) do
+  def voile_activity_feed(assigns) do
     ~H"""
     <div class="space-y-1">
       <%= if @items == [] && @empty_text do %>
         <p class="text-sm text-tertiary text-center py-6">{@empty_text}</p>
       <% else %>
         <%= for item <- @items do %>
-          <.rd_activity_item item={item} />
+          <.voile_activity_item item={item} />
         <% end %>
       <% end %>
     </div>
@@ -880,7 +1206,7 @@ defmodule VoileWeb.RedesignComponents do
 
   attr :item, :map, required: true
 
-  defp rd_activity_item(assigns) do
+  defp voile_activity_item(assigns) do
     ~H"""
     <div class="flex items-start gap-3 p-2 rounded-lg hover-surface transition-colors">
       <div class={"shrink-0 w-8 h-8 rounded-lg flex items-center justify-center #{tone_soft_bg(@item.tone)}"}>
@@ -911,86 +1237,80 @@ defmodule VoileWeb.RedesignComponents do
   """
   attr :current_path, :string, default: "/manage"
 
-  def rd_command_palette(assigns) do
+  def voile_command_palette(assigns) do
     ~H"""
-    <div id="rd-command-palette" phx-hook="CommandPalette" class="hidden">
-      <div data-rd-cmd-backdrop class="rd-cmd-backdrop"></div>
-      <div data-rd-cmd-panel class="rd-cmd-panel">
+    <div id="voile-command-palette" phx-hook="CommandPalette" class="hidden">
+      <div data-voile-cmd-backdrop class="voile-cmd-backdrop"></div>
+      <div data-voile-cmd-panel class="voile-cmd-panel">
         <div class="flex items-center gap-3 px-4 py-3 border-b border-subtle">
           <.icon name="hero-magnifying-glass" class="w-5 h-5 text-tertiary" />
           <input
             type="text"
-            data-rd-cmd-input
+            data-voile-cmd-input
             placeholder={gettext("Search or jump to…")}
             autocomplete="off"
             class="flex-1 bg-transparent outline-none text-base text-primary placeholder:text-tertiary"
           />
-          <kbd class="t-mono text-xs text-tertiary rd-chip">Esc</kbd>
+          <kbd class="t-mono text-xs text-tertiary voile-chip">Esc</kbd>
         </div>
 
         <div class="overflow-y-auto flex-1 p-2">
-          <.rd_cmd_group title={gettext("Quick actions")}>
-            <.rd_cmd_item
+          <.voile_cmd_group title={gettext("Quick actions")}>
+            <.voile_cmd_item
               icon="hero-plus"
               tone={:brand}
               label={gettext("Start a circulation transaction")}
               href="/manage/glam/library/ledger"
             />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-user-plus"
               tone={:brand}
               label={gettext("Add a new member")}
               href="/manage/members/management/new"
             />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-document-plus"
               tone={:brand}
               label={gettext("Create a new collection")}
               href="/manage/catalog/collections/new"
             />
-          </.rd_cmd_group>
+          </.voile_cmd_group>
 
-          <.rd_cmd_group title={gettext("Navigation")}>
-            <.rd_cmd_item
+          <.voile_cmd_group title={gettext("Navigation")}>
+            <.voile_cmd_item
               icon="hero-home"
               tone={:brand}
               label={gettext("Dashboard Home")}
               meta="G H"
               href="/manage"
             />
-            <.rd_cmd_item
-              icon="hero-sparkles"
-              tone={:brand}
-              label={gettext("Redesign Sample")}
-              href="/manage/redesign-test"
-            />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-rectangle-stack"
               tone={:brand}
               label={gettext("Catalog")}
               href="/manage/catalog"
             />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-building-library"
               tone={:brand}
               label={gettext("GLAM Hub")}
               href="/manage/glam"
             />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-user-group"
               tone={:brand}
               label={gettext("Members")}
               href="/manage/members"
             />
-            <.rd_cmd_item
+            <.voile_cmd_item
               icon="hero-cog-6-tooth"
               tone={:brand}
               label={gettext("Settings")}
               href="/manage/settings"
             />
-          </.rd_cmd_group>
+          </.voile_cmd_group>
 
-          <div data-rd-cmd-empty class="hidden px-4 py-10 text-center text-tertiary text-sm">
+          <div data-voile-cmd-empty class="hidden px-4 py-10 text-center text-tertiary text-sm">
             {gettext("No results found")}
           </div>
         </div>
@@ -1008,9 +1328,9 @@ defmodule VoileWeb.RedesignComponents do
   attr :title, :string, required: true
   slot :inner_block, required: true
 
-  defp rd_cmd_group(assigns) do
+  defp voile_cmd_group(assigns) do
     ~H"""
-    <div data-rd-cmd-group class="mb-2">
+    <div data-voile-cmd-group class="mb-2">
       <p class="t-label text-tertiary px-3 py-1.5">{@title}</p>
       {render_slot(@inner_block)}
     </div>
@@ -1023,12 +1343,12 @@ defmodule VoileWeb.RedesignComponents do
   attr :meta, :string, default: nil
   attr :href, :string, required: true
 
-  defp rd_cmd_item(assigns) do
+  defp voile_cmd_item(assigns) do
     ~H"""
     <.link
       navigate={@href}
-      data-rd-cmd-result
-      data-rd-cmd-search={@label}
+      data-voile-cmd-result
+      data-voile-cmd-search={@label}
       class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover-surface transition-colors"
     >
       <.icon name={@icon} class={"w-5 h-5 #{tone_text(@tone)}"} />
@@ -1049,7 +1369,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :tone, :atom, default: :brand
   slot :actions
 
-  def rd_empty_state(assigns) do
+  def voile_empty_state(assigns) do
     ~H"""
     <div class="text-center py-12 px-6">
       <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 #{tone_soft_bg(@tone)}">
@@ -1067,6 +1387,37 @@ defmodule VoileWeb.RedesignComponents do
   end
 
   @doc """
+  Renders a composite quick-action link: icon chip + label + description +
+  trailing arrow. Used in the "Quick actions" card on the dashboard home.
+  """
+  attr :icon, :string, required: true
+  attr :tone, :atom, required: true
+  attr :label, :string, required: true
+  attr :description, :string, required: true
+  attr :href, :string, required: true
+
+  def voile_action_link(assigns) do
+    ~H"""
+    <.link
+      navigate={@href}
+      class="flex items-center gap-3 p-3 rounded-lg border border-subtle hover-surface transition-colors group"
+    >
+      <div class={"shrink-0 w-9 h-9 rounded-lg flex items-center justify-center #{tone_soft_bg(@tone)}"}>
+        <.icon name={@icon} class={"w-5 h-5 #{tone_text(@tone)}"} />
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-semibold text-primary">{@label}</p>
+        <p class="text-xs text-secondary truncate">{@description}</p>
+      </div>
+      <.icon
+        name="hero-arrow-right"
+        class="w-4 h-4 text-tertiary group-hover:text-voile-primary transition-colors shrink-0"
+      />
+    </.link>
+    """
+  end
+
+  @doc """
   A styled primary button matching the redesign.
   """
   attr :href, :string, default: nil
@@ -1078,7 +1429,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :rest, :global, include: ~w(disabled form name value)
   slot :inner_block, required: true
 
-  def rd_button(assigns) do
+  def voile_button(assigns) do
     assigns = assign(assigns, :classes, button_classes(assigns))
 
     ~H"""
@@ -1107,8 +1458,8 @@ defmodule VoileWeb.RedesignComponents do
 
     variant_class =
       case {assigns[:variant], assigns[:tone]} do
-        {:solid, _} ->
-          "bg-voile-primary text-white hover:brightness-110"
+        {:solid, tone} ->
+          "#{tone_solid_bg(tone)} text-white hover:brightness-110"
 
         {:soft, tone} ->
           "#{tone_soft_bg(tone)} #{tone_text(tone)} hover:brightness-95"
@@ -1129,10 +1480,10 @@ defmodule VoileWeb.RedesignComponents do
   # Brand-styled successors to legacy VoileDashboardComponents /
   # CoreComponents. These are scaffolded — the API (attr/slot) is stable and
   # each renders a v1 using the design tokens — but NONE are adopted by any
-  # real page yet. Review them on the /manage/redesign-test "Legacy" tab.
+  # real page yet. Review them in this module's source.
   # ===========================================================================
 
-  # ---------- rd_pagination (replaces VoileDashboardComponents.pagination/1, 21 files) ----------
+  # ---------- voile_pagination (replaces VoileDashboardComponents.pagination/1, 21 files) ----------
 
   @doc """
   Brand-styled pagination. Drop-in replacement for the legacy `pagination/1`.
@@ -1149,48 +1500,54 @@ defmodule VoileWeb.RedesignComponents do
   attr :event, :string, default: "paginate"
   attr :params, :map, default: %{}
 
-  def rd_pagination(assigns) do
-    assigns = assign(assigns, :range, rd_pagination_range(assigns.page, assigns.total_pages))
+  def voile_pagination(assigns) do
+    # Don't render pagination when there's only one page (or none).
+    # Hides the nav entirely on empty or single-page lists.
+    if assigns.total_pages <= 1 do
+      ~H""
+    else
+      assigns = assign(assigns, :range, voile_pagination_range(assigns.page, assigns.total_pages))
 
-    ~H"""
-    <nav class="flex items-center gap-1" aria-label={gettext("Pagination")}>
-      <.rd_page_button
-        page={@page - 1}
-        disabled={@page <= 1}
-        path={@path}
-        event={@event}
-        params={@params}
-      >
-        <.icon name="hero-chevron-left" class="w-4 h-4" />
-      </.rd_page_button>
+      ~H"""
+      <nav class="flex items-center gap-1" aria-label={gettext("Pagination")}>
+        <.voile_page_button
+          page={@page - 1}
+          disabled={@page <= 1}
+          path={@path}
+          event={@event}
+          params={@params}
+        >
+          <.icon name="hero-chevron-left" class="w-4 h-4" />
+        </.voile_page_button>
 
-      <%= for item <- @range do %>
-        <%= if item == :ellipsis do %>
-          <span class="px-2 text-tertiary t-mono">…</span>
-        <% else %>
-          <.rd_page_button
-            page={item}
-            active={item == @page}
-            path={@path}
-            event={@event}
-            params={@params}
-          >
-            {item}
-          </.rd_page_button>
+        <%= for item <- @range do %>
+          <%= if item == :ellipsis do %>
+            <span class="px-2 text-tertiary t-mono">…</span>
+          <% else %>
+            <.voile_page_button
+              page={item}
+              active={item == @page}
+              path={@path}
+              event={@event}
+              params={@params}
+            >
+              {item}
+            </.voile_page_button>
+          <% end %>
         <% end %>
-      <% end %>
 
-      <.rd_page_button
-        page={@page + 1}
-        disabled={@page >= @total_pages}
-        path={@path}
-        event={@event}
-        params={@params}
-      >
-        <.icon name="hero-chevron-right" class="w-4 h-4" />
-      </.rd_page_button>
-    </nav>
-    """
+        <.voile_page_button
+          page={@page + 1}
+          disabled={@page >= @total_pages}
+          path={@path}
+          event={@event}
+          params={@params}
+        >
+          <.icon name="hero-chevron-right" class="w-4 h-4" />
+        </.voile_page_button>
+      </nav>
+      """
+    end
   end
 
   attr :page, :integer, required: true
@@ -1201,7 +1558,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :params, :map, default: %{}
   slot :inner_block, required: true
 
-  defp rd_page_button(assigns) do
+  defp voile_page_button(assigns) do
     ~H"""
     <%= if @disabled do %>
       <span
@@ -1213,8 +1570,8 @@ defmodule VoileWeb.RedesignComponents do
     <% else %>
       <%= if @path do %>
         <.link
-          patch={rd_page_url(@path, @page, @params)}
-          class={rd_page_class(@active)}
+          patch={voile_page_url(@path, @page, @params)}
+          class={voile_page_class(@active)}
           aria-label={gettext("Page %{page}", page: @page)}
           aria-current={@active && "page"}
         >
@@ -1225,7 +1582,7 @@ defmodule VoileWeb.RedesignComponents do
           type="button"
           phx-click={@event}
           phx-value-page={@page}
-          class={rd_page_class(@active)}
+          class={voile_page_class(@active)}
           aria-current={@active && "page"}
         >
           {render_slot(@inner_block)}
@@ -1235,22 +1592,22 @@ defmodule VoileWeb.RedesignComponents do
     """
   end
 
-  defp rd_page_class(true),
+  defp voile_page_class(true),
     do:
       "inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg bg-voile-primary text-white font-semibold"
 
-  defp rd_page_class(_),
+  defp voile_page_class(_),
     do:
       "inline-flex items-center justify-center min-w-9 h-9 px-2 rounded-lg text-secondary hover:text-primary hover:bg-tone-brand-soft transition-colors"
 
-  defp rd_page_url(path, page, params) do
+  defp voile_page_url(path, page, params) do
     query = params |> Map.put("page", page) |> URI.encode_query()
     "#{path}?#{query}"
   end
 
-  defp rd_pagination_range(_page, total) when total <= 7, do: Enum.to_list(1..total)
+  defp voile_pagination_range(_page, total) when total <= 7, do: Enum.to_list(1..total)
 
-  defp rd_pagination_range(page, total) do
+  defp voile_pagination_range(page, total) do
     cond do
       page <= 3 -> [1, 2, 3, 4, :ellipsis, total]
       page >= total - 2 -> [1, :ellipsis, total - 3, total - 2, total - 1, total]
@@ -1258,49 +1615,27 @@ defmodule VoileWeb.RedesignComponents do
     end
   end
 
-  # ---------- rd_settings_shell (replaces dashboard_settings_sidebar/plugin_settings_sidebar/side_bar_dashboard) ----------
+  # ---------- voile_settings_shell (replaces dashboard_settings_sidebar/plugin_settings_sidebar/side_bar_dashboard) ----------
 
   @doc """
   Two-pane "sub-nav + content" shell for settings, plugins, master-data and
-  metaresource pages. Replaces `dashboard_settings_sidebar/1` (12 files),
-  `plugin_settings_sidebar/1` (3 files), and the inline master/metaresource
-  sidebars in `dashboard.html.heex`.
+  metaresource pages. Replaces `dashboard_settings_sidebar/1`,
+  `plugin_settings_sidebar/1`, and the inline master/metaresource sidebars.
 
   `items` is a list of maps: `%{label: "...", path: "/...", icon: "hero-..."}`
-  (icon optional). DRAFT — not yet adopted.
+  (icon optional). On desktop it renders a sticky left card; on mobile it
+  collapses to a horizontal chip strip so it doesn't push the form below the fold.
+  Use `voile_settings_nav_items/0` for the standard settings menu.
   """
   attr :title, :string, default: nil
   attr :items, :list, required: true
   attr :current_path, :string, default: nil
   slot :inner_block, required: true
 
-  def rd_settings_shell(assigns) do
+  def voile_settings_shell(assigns) do
     ~H"""
     <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
-      <aside class="rd-card p-3 h-fit lg:sticky lg:top-20">
-        <%= if @title do %>
-          <p class="t-label text-tertiary px-3 mb-2">{@title}</p>
-        <% end %>
-        <nav class="space-y-0.5">
-          <%= for item <- @items do %>
-            <.link
-              navigate={item.path}
-              class={[
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
-                rd_settings_active?(@current_path, item) &&
-                  "bg-tone-brand-soft text-voile-primary font-semibold",
-                !rd_settings_active?(@current_path, item) &&
-                  "text-secondary hover:text-primary hover:bg-tone-brand-soft"
-              ]}
-            >
-              <%= if item[:icon] do %>
-                <.icon name={item.icon} class="w-4 h-4 shrink-0" />
-              <% end %>
-              <span class="truncate">{item.label}</span>
-            </.link>
-          <% end %>
-        </nav>
-      </aside>
+      <.voile_settings_nav title={@title} items={@items} current_path={@current_path} />
       <div class="min-w-0">
         {render_slot(@inner_block)}
       </div>
@@ -1308,11 +1643,140 @@ defmodule VoileWeb.RedesignComponents do
     """
   end
 
-  defp rd_settings_active?(current_path, %{path: path}) do
-    String.starts_with?(current_path || "", path)
+  @doc """
+  The sub-navigation list used inside `voile_settings_shell`, or standalone where a
+  page keeps its own layout but still wants the settings/master/plugin nav
+  (e.g. a deep edit page that replaced `<.dashboard_settings_sidebar>`).
+  """
+  attr :title, :string, default: nil
+  attr :items, :list, required: true
+  attr :current_path, :string, default: nil
+
+  def voile_settings_nav(assigns) do
+    ~H"""
+    <aside class="lg:voile-card lg:p-3 lg:h-fit lg:sticky lg:top-20">
+      <%= if @title do %>
+        <p class="t-label text-tertiary px-3 mb-2 hidden lg:block">{@title}</p>
+      <% end %>
+      <nav class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0">
+        <%= for item <- @items do %>
+          <.link
+            navigate={item.path}
+            class={[
+              "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap shrink-0 lg:w-full",
+              voile_settings_active?(@current_path, item) &&
+                "bg-tone-brand-soft text-voile-primary font-semibold",
+              !voile_settings_active?(@current_path, item) &&
+                "text-secondary hover:text-primary hover:bg-tone-brand-soft"
+            ]}
+          >
+            <%= if item[:icon] do %>
+              <.icon name={item.icon} class="w-4 h-4 shrink-0" />
+            <% end %>
+            <span class="truncate">{item.label}</span>
+          </.link>
+        <% end %>
+      </nav>
+    </aside>
+    """
   end
 
-  # ---------- rd_table (replaces CoreComponents.table) ----------
+  defp voile_settings_active?(current_path, %{path: path}) do
+    current = current_path || ""
+    current == path or String.starts_with?(current, path <> "/")
+  end
+
+  @doc """
+  The standard settings sub-navigation menu shared by every `/manage/settings/*`
+  page. Pass to `<.voile_settings_shell items={voile_settings_nav_items()} ...>`.
+  """
+  def voile_settings_nav_items do
+    [
+      %{label: gettext("Application"), path: "/manage/settings/apps", icon: "hero-cog-6-tooth"},
+      %{label: gettext("Profile"), path: "/manage/settings/user_profile", icon: "hero-user"},
+      %{label: gettext("Permissions"), path: "/manage/settings/permissions", icon: "hero-key"},
+      %{label: gettext("Nodes"), path: "/manage/settings/nodes", icon: "hero-building-library"},
+      %{
+        label: gettext("Holidays"),
+        path: "/manage/settings/holidays",
+        icon: "hero-calendar-days"
+      },
+      %{
+        label: gettext("Reservation notifications"),
+        path: "/manage/settings/reservation_notifications",
+        icon: "hero-bell"
+      },
+      %{
+        label: gettext("API manager"),
+        path: "/manage/settings/api_manager",
+        icon: "hero-code-bracket"
+      },
+      %{label: gettext("Metrics"), path: "/manage/settings/metrics", icon: "hero-chart-bar"}
+    ]
+  end
+
+  @doc """
+  The master-data sub-navigation menu shared by every `/manage/master/*` page.
+  Pass to `<.voile_settings_shell items={voile_master_nav_items()} ...>`.
+  """
+  def voile_master_nav_items do
+    [
+      %{label: gettext("Creators"), path: "/manage/master/creators", icon: "hero-user"},
+      %{
+        label: gettext("Publishers"),
+        path: "/manage/master/publishers",
+        icon: "hero-building-office-2"
+      },
+      %{
+        label: gettext("Member types"),
+        path: "/manage/master/member_types",
+        icon: "hero-identification"
+      },
+      %{
+        label: gettext("Frequencies"),
+        path: "/manage/master/frequencies",
+        icon: "hero-calendar-days"
+      },
+      %{label: gettext("Locations"), path: "/manage/master/locations", icon: "hero-map-pin"},
+      %{label: gettext("Places"), path: "/manage/master/places", icon: "hero-map"},
+      %{label: gettext("Topics"), path: "/manage/master/topics", icon: "hero-tag"}
+    ]
+  end
+
+  @doc """
+  The metaresource sub-navigation menu shared by `/manage/metaresource/*` pages.
+  """
+  def voile_metaresource_nav_items do
+    [
+      %{
+        label: gettext("Vocabularies"),
+        path: "/manage/metaresource/metadata_vocabularies",
+        icon: "hero-bookmark"
+      },
+      %{
+        label: gettext("Properties"),
+        path: "/manage/metaresource/metadata_properties",
+        icon: "hero-squares-2x2"
+      },
+      %{
+        label: gettext("Resource class"),
+        path: "/manage/metaresource/resource_class",
+        icon: "hero-square-3-stack-3d"
+      },
+      %{
+        label: gettext("Resource template"),
+        path: "/manage/metaresource/resource_template",
+        icon: "hero-document-text"
+      },
+      %{
+        label: gettext("Template properties"),
+        path: "/manage/metaresource/resource_templ_property",
+        icon: "hero-rectangle-group"
+      }
+    ]
+  end
+
+  # ---------- voile_table (replaces CoreComponents.table) ----------
 
   @doc """
   Brand-styled data table. Replaces the core `<.table>` with redesign tokens:
@@ -1335,9 +1799,9 @@ defmodule VoileWeb.RedesignComponents do
   slot :action
   slot :empty
 
-  def rd_table(assigns) do
+  def voile_table(assigns) do
     ~H"""
-    <div class="rd-card overflow-hidden">
+    <div class="voile-card overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -1380,11 +1844,11 @@ defmodule VoileWeb.RedesignComponents do
     """
   end
 
-  # ---------- rd_input (brand restyle of CoreComponents.input) ----------
+  # ---------- voile_input (brand restyle of CoreComponents.input) ----------
 
   @doc """
   Brand restyle wrapper around the core `<.input>`. Forwards the common attrs
-  and adds the `rd-input` class so the redesign focus ring (2px voile-primary,
+  and adds the `voile-input` class so the redesign focus ring (2px voile-primary,
   2px offset) applies once the CSS lands. DRAFT — focus-ring CSS pending.
   """
   attr :field, Phoenix.HTML.FormField, default: nil
@@ -1395,12 +1859,12 @@ defmodule VoileWeb.RedesignComponents do
   attr :class, :string, default: nil
   attr :rest, :global
 
-  def rd_input(assigns) do
+  def voile_input(assigns) do
     assigns =
       assign(
         assigns,
-        :rd_class,
-        ["rd-input", assigns[:class]] |> Enum.reject(&is_nil/1) |> Enum.join(" ")
+        :voile_class,
+        ["voile-input", assigns[:class]] |> Enum.reject(&is_nil/1) |> Enum.join(" ")
       )
 
     ~H"""
@@ -1410,13 +1874,13 @@ defmodule VoileWeb.RedesignComponents do
       value={@value}
       type={@type}
       label={@label}
-      class={@rd_class}
+      class={@voile_class}
       {@rest}
     />
     """
   end
 
-  # ---------- rd_search_insights (replaces search_stats_widget/1) ----------
+  # ---------- voile_search_insights (replaces search_stats_widget/1) ----------
 
   @doc """
   Brand-styled search-insights widget. Replaces `search_stats_widget/1`.
@@ -1426,7 +1890,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :stats, :map, default: %{}
   attr :action_path, :string, default: nil
 
-  def rd_search_insights(assigns) do
+  def voile_search_insights(assigns) do
     stats = assigns.stats
 
     assigns =
@@ -1435,7 +1899,7 @@ defmodule VoileWeb.RedesignComponents do
       |> assign(:popular, stats[:popular_queries] || [])
 
     ~H"""
-    <div class="rd-card p-5">
+    <div class="voile-card p-5">
       <div class="flex items-center justify-between mb-3">
         <h3 class="t-h3 text-primary text-lg">{gettext("Search insights")}</h3>
         <%= if @action_path do %>
@@ -1450,7 +1914,7 @@ defmodule VoileWeb.RedesignComponents do
         <p class="t-label text-tertiary mt-4 mb-2">{gettext("Popular queries")}</p>
         <div class="flex flex-wrap gap-1.5">
           <%= for {query, count} <- Enum.take(@popular, 5) do %>
-            <span class="rd-chip">
+            <span class="voile-chip">
               {query}<span class="text-tertiary t-mono text-[10px]">{count}</span>
             </span>
           <% end %>
@@ -1460,7 +1924,7 @@ defmodule VoileWeb.RedesignComponents do
     """
   end
 
-  # ---------- rd_modal + rd_confirm_delete (replaces collection_modal/delete_modal) ----------
+  # ---------- voile_modal + voile_confirm_delete (replaces collection_modal/delete_modal) ----------
 
   @doc """
   Brand-styled modal shell. Replaces `collection_modal/1`. Wraps the core
@@ -1475,7 +1939,7 @@ defmodule VoileWeb.RedesignComponents do
   slot :inner_block, required: true
   slot :footer
 
-  def rd_modal(assigns) do
+  def voile_modal(assigns) do
     ~H"""
     <.modal id={@id} show={@show} on_cancel={@on_cancel}>
       <%= if @eyebrow do %>
@@ -1506,9 +1970,9 @@ defmodule VoileWeb.RedesignComponents do
   attr :on_confirm, JS, default: %JS{}
   slot :inner_block, required: true
 
-  def rd_confirm_delete(assigns) do
+  def voile_confirm_delete(assigns) do
     ~H"""
-    <.rd_modal
+    <.voile_modal
       id={@id}
       show={@show}
       on_cancel={@on_cancel}
@@ -1517,28 +1981,28 @@ defmodule VoileWeb.RedesignComponents do
     >
       <p>{render_slot(@inner_block)}</p>
       <:footer>
-        <.rd_button tone={:brand} variant={:outline} size={:md} phx-click={@on_cancel}>
+        <.voile_button tone={:brand} variant={:outline} size={:md} phx-click={@on_cancel}>
           {gettext("Cancel")}
-        </.rd_button>
-        <.rd_button tone={:error} variant={:solid} size={:md} phx-click={@on_confirm}>
+        </.voile_button>
+        <.voile_button tone={:error} variant={:solid} size={:md} phx-click={@on_confirm}>
           <.icon name="hero-trash" class="w-4 h-4" />
           {@confirm_label}
-        </.rd_button>
+        </.voile_button>
       </:footer>
-    </.rd_modal>
+    </.voile_modal>
     """
   end
 
-  # ---------- rd_flash_group + rd_locale_switcher (brand restyle of core) ----------
+  # ---------- voile_flash_group + voile_locale_switcher (brand restyle of core) ----------
 
   @doc """
   Brand-styled flash group. Drop-in for the core `<.flash_group>` used at the
   top of the redesign layout. DRAFT — delegates to core; brand restyle pending.
   """
   attr :flash, :map, required: true
-  attr :id, :string, default: "rd-flash-group"
+  attr :id, :string, default: "voile-flash-group"
 
-  def rd_flash_group(assigns) do
+  def voile_flash_group(assigns) do
     ~H"""
     <.flash_group flash={@flash} id={@id} />
     """
@@ -1551,7 +2015,7 @@ defmodule VoileWeb.RedesignComponents do
   attr :current_path, :string, default: "/"
   attr :class, :string, default: nil
 
-  def rd_locale_switcher(assigns) do
+  def voile_locale_switcher(assigns) do
     ~H"""
     <.locale_switcher current_path={@current_path} class={@class} />
     """

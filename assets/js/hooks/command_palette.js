@@ -1,6 +1,6 @@
 // CommandPalette — global ⌘K / Ctrl+K hook for the Voile redesign.
 // Listens for the keyboard shortcut anywhere on the page, opens/closes
-// the #rd-command-palette element, and handles arrow-key navigation.
+// the #voile-command-palette element, and handles arrow-key navigation.
 
 const CommandPalette = {
   mounted() {
@@ -46,7 +46,7 @@ const CommandPalette = {
     };
 
     this.onResultClick = (e) => {
-      const target = e.target.closest("[data-rd-cmd-result]");
+      const target = e.target.closest("[data-voile-cmd-result]");
       if (!target) return;
       this.close();
     };
@@ -55,11 +55,19 @@ const CommandPalette = {
       if (e.target.dataset.rdCmdBackdrop !== undefined) this.close();
     };
 
-    document.addEventListener("keydown", this.onKeyDown);
+    // Open requests come from the topbar search pill / mobile overflow slot
+    // via `JS.dispatch("voile:open-command-palette")`. The hook owns the
+    // open/close state, so these must route through open() — otherwise the
+    // palette shows but this.isOpen stays false and close() (backdrop click,
+    // Escape) becomes a no-op.
+    this.onOpenRequest = () => this.open();
 
-    this.input = this.el.querySelector("[data-rd-cmd-input]");
-    this.panel = this.el.querySelector("[data-rd-cmd-panel]");
-    this.backdrop = this.el.querySelector("[data-rd-cmd-backdrop]");
+    document.addEventListener("keydown", this.onKeyDown);
+    document.addEventListener("voile:open-command-palette", this.onOpenRequest);
+
+    this.input = this.el.querySelector("[data-voile-cmd-input]");
+    this.panel = this.el.querySelector("[data-voile-cmd-panel]");
+    this.backdrop = this.el.querySelector("[data-voile-cmd-backdrop]");
 
     if (this.input) {
       this.input.addEventListener("input", this.onInput);
@@ -76,6 +84,7 @@ const CommandPalette = {
 
   destroyed() {
     document.removeEventListener("keydown", this.onKeyDown);
+    document.removeEventListener("voile:open-command-palette", this.onOpenRequest);
   },
 
   toggle() {
@@ -103,11 +112,11 @@ const CommandPalette = {
   },
 
   filterResults(query) {
-    const groups = this.el.querySelectorAll("[data-rd-cmd-group]");
+    const groups = this.el.querySelectorAll("[data-voile-cmd-group]");
     let visibleCount = 0;
 
     groups.forEach((group) => {
-      const items = group.querySelectorAll("[data-rd-cmd-result]");
+      const items = group.querySelectorAll("[data-voile-cmd-result]");
       let groupVisible = 0;
 
       items.forEach((item) => {
@@ -123,7 +132,7 @@ const CommandPalette = {
       visibleCount += groupVisible;
     });
 
-    const empty = this.el.querySelector("[data-rd-cmd-empty]");
+    const empty = this.el.querySelector("[data-voile-cmd-empty]");
     if (empty) empty.classList.toggle("hidden", visibleCount !== 0);
   },
 
@@ -138,9 +147,9 @@ const CommandPalette = {
   visibleResults() {
     return Array.from(
       this.el.querySelectorAll(
-        "[data-rd-cmd-result]:not(.hidden)"
+        "[data-voile-cmd-result]:not(.hidden)"
       )
-    ).filter((el) => !el.closest("[data-rd-cmd-group].hidden"));
+    ).filter((el) => !el.closest("[data-voile-cmd-group].hidden"));
   },
 
   getResult(index) {
@@ -152,7 +161,7 @@ const CommandPalette = {
     const results = this.visibleResults();
     results.forEach((el, i) => {
       const selected = i === this.activeIndex;
-      el.classList.toggle("rd-cmd-selected", selected);
+      el.classList.toggle("voile-cmd-selected", selected);
       el.setAttribute("aria-selected", selected ? "true" : "false");
       if (selected) {
         el.scrollIntoView({ block: "nearest" });

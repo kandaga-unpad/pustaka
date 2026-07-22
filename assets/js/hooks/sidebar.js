@@ -7,8 +7,8 @@ const Sidebar = {
   mounted() {
     const el = this.el;
     const STORAGE_KEY = "voile:sidebar";
-    const COLLAPSED_CLASS = "rd-sidebar-collapsed";
-    const toggle = el.querySelector("[data-rd-sidebar-toggle]");
+    const COLLAPSED_CLASS = "voile-sidebar-collapsed";
+    const toggle = el.querySelector("[data-voile-sidebar-toggle]");
 
     // Apply persisted state on first paint (before user interaction).
     try {

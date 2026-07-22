@@ -79,13 +79,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white mt-3">
           Read On Spot — Scan Items
         </h1>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+        <p class="text-tertiary text-sm mt-1">
           Scan or enter item barcodes to record items being read or used in-library.
         </p>
       </div>
       <%!-- Context Selection (Node + Location + optional read_at) --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-5">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+      <div class="surface-card rounded-lg shadow-sm p-4 mb-5">
+        <h2 class="text-sm font-semibold text-secondary mb-3 uppercase tracking-wide">
           Scanning Context
         </h2>
         <form
@@ -98,13 +98,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         >
           <%= if @is_super_admin do %>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
+              <label class="block text-sm font-medium text-secondary my-4">
                 Node / Branch
               </label>
               <select
                 id="node-select"
                 name="node_id"
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">— Select Node —</option>
                 <%= for node <- @nodes do %>
@@ -119,13 +119,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
             </div>
           <% end %>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
+            <label class="block text-sm font-medium text-secondary my-4">
               Room / Location <span class="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <select
               id="location-select"
               name="location_id"
-              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               disabled={@locations == []}
             >
               <option value="">— Select Room —</option>
@@ -147,7 +147,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
           </div>
         </form>
         <div class={if(@is_super_admin, do: "sm:col-span-2 sm:max-w-xs", else: "")}>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 my-4">
+          <label class="block text-sm font-medium text-secondary my-4">
             Time Read
             <span class="text-gray-400 font-normal text-xs">(optional — defaults to now)</span>
           </label>
@@ -157,20 +157,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
             name="read_at"
             value={@read_at_input}
             phx-change="update_read_at"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
       <%!-- Scanner Interface --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-5">
+      <div class="surface-card rounded-lg shadow-sm p-4 mb-5">
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
             Barcode Scanner
           </h2>
           <button
             type="button"
             phx-click="toggle_scanner_mode"
-            class="text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+            class="text-xs px-3 py-1.5 rounded-full surface-raised text-secondary hover:bg-gray-200 dark:hover:bg-gray-600 transition"
           >
             <%= if @scanner_mode == "camera" do %>
               <.icon name="hero-pencil" class="w-3.5 h-3.5 inline mr-1" /> Switch to Manual
@@ -180,12 +180,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
           </button>
         </div>
         <%= if @selected_location_name do %>
-          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 mb-3">
+          <p class="text-xs text-voile-success flex items-center gap-1 mb-3">
             <.icon name="hero-map-pin" class="w-3.5 h-3.5 shrink-0" /> Recording at:
             <strong>{@selected_location_name}</strong>
           </p>
         <% else %>
-          <p class="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-1 mb-3">
+          <p class="text-xs text-voile-warning flex items-center gap-1 mb-3">
             <.icon name="hero-information-circle" class="w-3.5 h-3.5 shrink-0" />
             No room selected — select a room above before scanning.
           </p>
@@ -247,7 +247,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
               placeholder="Enter barcode, item code, or inventory code…"
               phx-keydown="scan_input_keydown"
               autocomplete="off"
-              class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"
@@ -261,7 +261,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         <%= if @scan_error do %>
           <div
             id="scan-error"
-            class="mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center gap-2"
+            class="mt-3 p-3 rounded-lg bg-tone-error-soft border border-red-200 dark:border-red-800 text-voile-error text-sm flex items-center gap-2"
           >
             <.icon name="hero-exclamation-circle" class="w-4 h-4 shrink-0" />
             {@scan_error}
@@ -270,8 +270,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       </div>
       <%!-- Found Items (picker when multiple, auto-confirm when one) --%>
       <%= if @found_items != [] do %>
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-5">
-          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-3">
+        <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-5">
+          <h3 class="text-sm font-semibold text-voile-info mb-3">
             <%= if length(@found_items) == 1 do %>
               Item Found — Confirm to Record
             <% else %>
@@ -280,9 +280,9 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
           </h3>
           <div class="space-y-2">
             <%= for item <- @found_items do %>
-              <div class="bg-white dark:bg-gray-800 rounded-lg p-3 flex items-start justify-between gap-3 shadow-sm">
+              <div class="surface-card rounded-lg p-3 flex items-start justify-between gap-3 shadow-sm">
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-gray-900 dark:text-white text-sm truncate">
+                  <p class="font-medium text-primary text-sm truncate">
                     {if item.collection, do: item.collection.title, else: "Unknown Title"}
                   </p>
                   <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
@@ -318,18 +318,18 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
       <%!-- Scan Summary --%>
       <div class="flex items-center justify-between mb-3">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium">
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-tone-success-soft text-voile-success text-sm font-medium">
             <.icon name="hero-check-circle" class="w-4 h-4 mr-1.5" />
             {@scan_count} recorded this session
           </span>
           <%= if @selected_node_name do %>
-            <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200 text-sm font-medium">
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-tone-brand-soft text-voile-primary text-sm font-medium">
               <.icon name="hero-building-office" class="w-4 h-4 mr-1.5" />
               {@selected_node_name}
             </span>
           <% end %>
           <%= if @selected_location_name do %>
-            <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm font-medium">
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-tone-info-soft text-voile-info text-sm font-medium">
               <.icon name="hero-map-pin" class="w-4 h-4 mr-1.5" />
               {@selected_location_name}
             </span>
@@ -343,8 +343,8 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
         </.link>
       </div>
       <%!-- Recent Records Stream --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+      <div class="surface-card rounded-lg shadow-sm p-4">
+        <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
           Recently Scanned (This Session)
         </h2>
         <div id="scanned-records" phx-update="stream">
@@ -356,11 +356,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Add do
               id={dom_id}
               class="flex items-start gap-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0"
             >
-              <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                <.icon name="hero-book-open" class="w-4 h-4 text-green-700 dark:text-green-300" />
+              <div class="w-8 h-8 rounded-full bg-tone-success-soft flex items-center justify-center shrink-0">
+                <.icon name="hero-book-open" class="w-4 h-4 text-voile-success" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p class="text-sm font-medium text-primary truncate">
                   {record.title}
                 </p>
                 <div class="flex flex-wrap gap-x-3 text-xs text-gray-500 mt-0.5">

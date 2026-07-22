@@ -165,7 +165,7 @@ defmodule VoileWeb.Dashboard.Catalog.Attachment.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 20
     search = socket.assigns[:search] || ""
 

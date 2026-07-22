@@ -42,7 +42,7 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
         />
         <%= if @action == :new do %>
           <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-secondary mb-2">
               {gettext("Permissions")}
             </label>
             <div class="space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -55,12 +55,12 @@ defmodule VoileWeb.Users.Role.ManageLive.FormComponent do
                     class="mt-1"
                   />
                   <div class="flex-1">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    <div class="text-sm font-medium text-primary">
                       {permission.name}
                     </div>
 
                     <%= if permission.description do %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                      <div class="text-xs text-tertiary">
                         {permission.description}
                       </div>
                     <% end %>

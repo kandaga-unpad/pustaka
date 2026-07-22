@@ -1,7 +1,7 @@
 <div class="p-6">
   <div class="flex justify-between items-start mb-6">
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Access Control</h2>
+      <h2 class="text-2xl font-bold text-primary">Manage Access Control</h2>
       <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{@attachment.original_name}</p>
     </div>
     <button phx-click="close" phx-target={@myself} class="btn btn-ghost btn-sm">
@@ -27,7 +27,7 @@
 
   <%!-- Access Level Settings --%>
   <div class="mb-6">
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+    <h3 class="text-lg font-semibold text-primary mb-3">
       Access Level & Embargo
     </h3>
     <.form
@@ -40,7 +40,7 @@
       <div class="space-y-4">
         <div>
           <label class="label">
-            <span class="label-text font-semibold text-gray-900 dark:text-white">
+            <span class="label-text font-semibold text-primary">
               Access Level
             </span>
           </label>
@@ -60,7 +60,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="label">
-              <span class="label-text font-semibold text-gray-900 dark:text-white">
+              <span class="label-text font-semibold text-primary">
                 Embargo Start Date
               </span>
               <span class="label-text-alt text-gray-600 dark:text-gray-300">
@@ -83,7 +83,7 @@
 
           <div>
             <label class="label">
-              <span class="label-text font-semibold text-gray-900 dark:text-white">
+              <span class="label-text font-semibold text-primary">
                 Embargo End Date
               </span>
               <span class="label-text-alt text-gray-600 dark:text-gray-300">
@@ -117,7 +117,7 @@
   <%!-- Role-Based Access (only shown for limited access) --%>
   <%= if @attachment.access_level == "limited" do %>
     <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Role-Based Access</h3>
+      <h3 class="text-lg font-semibold text-primary mb-3">Role-Based Access</h3>
       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
         Select roles that can access this attachment
       </p>
@@ -134,9 +134,9 @@
               phx-target={@myself}
             />
             <span class="label-text">
-              <span class="font-semibold text-gray-900 dark:text-white">{role.name}</span>
+              <span class="font-semibold text-primary">{role.name}</span>
               <%= if role.description do %>
-                <span class="text-xs text-gray-500 dark:text-gray-400 block">
+                <span class="text-xs text-tertiary block">
                   {role.description}
                 </span>
               <% end %>
@@ -165,7 +165,7 @@
 
     <%!-- User-Specific Access --%>
     <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+      <h3 class="text-lg font-semibold text-primary mb-3">
         User-Specific Access
       </h3>
       <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -175,7 +175,7 @@
       <%!-- User Search --%>
       <div class="mb-4">
         <label class="label">
-          <span class="label-text font-semibold text-gray-900 dark:text-white">
+          <span class="label-text font-semibold text-primary">
             Search and Add Users
           </span>
         </label>
@@ -200,10 +200,10 @@
               phx-target={@myself}
             >
               <div>
-                <div class="font-semibold text-sm text-gray-900 dark:text-white">
+                <div class="font-semibold text-sm text-primary">
                   {user.fullname || user.email}
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                <div class="text-xs text-tertiary">{user.email}</div>
               </div>
               <%= if user.id in @allowed_user_ids do %>
                 <span class="badge badge-sm badge-success">Already added</span>
@@ -225,10 +225,10 @@
             class="p-3 flex justify-between items-center hover:bg-base-200"
           >
             <div>
-              <div class="font-semibold text-sm text-gray-900 dark:text-white">
+              <div class="font-semibold text-sm text-primary">
                 {user.fullname || user.email}
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+              <div class="text-xs text-tertiary">{user.email}</div>
             </div>
             <button
               type="button"
@@ -243,7 +243,7 @@
         </div>
       <% else %>
         <div class="text-center p-6 border rounded-lg border-dashed border-gray-300 dark:border-gray-600">
-          <p class="text-sm text-gray-500 dark:text-gray-400">No users added yet</p>
+          <p class="text-sm text-tertiary">No users added yet</p>
         </div>
       <% end %>
     </div>
@@ -251,13 +251,13 @@
 
   <%!-- Access Summary --%>
   <div class="mt-6 p-4 bg-info/10 dark:bg-info/5 rounded-lg border border-info/20 dark:border-info/10">
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+    <h3 class="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
       <.icon name="hero-information-circle" class="w-5 h-5 text-info" /> Access Summary
     </h3>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
       <div>
-        <span class="font-semibold text-gray-900 dark:text-white">Access Level:</span>
+        <span class="font-semibold text-primary">Access Level:</span>
         <span class="ml-2 text-gray-900 dark:text-gray-300">
           {String.capitalize(@access_summary.access_level)}
         </span>
@@ -265,21 +265,21 @@
 
       <%= if @access_summary.is_under_embargo do %>
         <div>
-          <span class="font-semibold text-amber-600 dark:text-amber-400">Under Embargo:</span>
+          <span class="font-semibold text-voile-warning">Under Embargo:</span>
           <span class="ml-2 badge badge-warning badge-sm">Yes</span>
         </div>
       <% end %>
 
       <%= if @access_summary.access_level == "limited" do %>
         <div>
-          <span class="font-semibold text-gray-900 dark:text-white">Allowed Roles:</span>
+          <span class="font-semibold text-primary">Allowed Roles:</span>
           <span class="ml-2 text-gray-900 dark:text-gray-300">
             {length(@access_summary.allowed_roles)}
           </span>
         </div>
 
         <div>
-          <span class="font-semibold text-gray-900 dark:text-white">Allowed Users:</span>
+          <span class="font-semibold text-primary">Allowed Users:</span>
           <span class="ml-2 text-gray-900 dark:text-gray-300">
             {length(@access_summary.allowed_users)}
           </span>
@@ -288,7 +288,7 @@
 
       <%= if @access_summary.last_updated_by do %>
         <div class="md:col-span-2">
-          <span class="font-semibold text-gray-900 dark:text-white">Last Updated:</span>
+          <span class="font-semibold text-primary">Last Updated:</span>
           <span class="ml-2 text-gray-900 dark:text-gray-300">
             {format_datetime(@access_summary.last_updated_at)} by {@access_summary.last_updated_by.fullname ||
               @access_summary.last_updated_by.email}
@@ -299,7 +299,7 @@
   </div>
 
   <%!-- Action Buttons --%>
-  <div class="flex justify-end gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+  <div class="flex justify-end gap-2 mt-6 pt-6 border-t border-subtle">
     <button phx-click="close" phx-target={@myself} class="btn btn-ghost">
       Close
     </button>

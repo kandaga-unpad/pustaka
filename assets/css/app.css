@@ -479,15 +479,6 @@
     color: var(--color-voile-primary);
   }
 
-  .voile-card {
-    @apply flex flex-col items-center rounded-lg shadow-lg p-12 text-justify;
-    background-color: var(--color-voile-neutral);
-  }
-  :where([data-theme="dark"], [data-theme="dark"] *) .voile-card {
-    background-color: var(--color-voile-neutral-dark);
-    color: var(--color-voile-text-dark);
-  }
-
   .default-card {
     @apply w-full rounded-xl p-5 bg-white dark:bg-gray-700;
   }
@@ -547,14 +538,6 @@
 /* Utility styles */
 /* Utility styles (hoisted) */
 @layer utilities {
-  .voile-gradient {
-    background: linear-gradient(
-      to bottom right,
-      var(--color-voile-primary),
-      var(--color-voile-secondary)
-    );
-  }
-
   .gallery-gradient {
     background: linear-gradient(
       to bottom right,
@@ -1187,17 +1170,17 @@
 
 /* ---------- Redesign shell layout ---------- */
 @layer components {
-  .rd-shell {
+  .voile-shell {
     display: flex;
     height: 100dvh;
     overflow: hidden;
     background-color: var(--color-surface-1-light);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-shell {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-shell {
     background-color: var(--color-surface-1-dark);
   }
 
-  .rd-sidebar {
+  .voile-sidebar {
     width: var(--layout-sidebar-w);
     flex-shrink: 0;
     border-right: 1px solid var(--color-surface-4-light);
@@ -1209,13 +1192,13 @@
     overflow: hidden;
     transition: width 180ms var(--ease-smooth);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-sidebar {
     border-right-color: var(--color-surface-4-dark);
     background-color: color-mix(in oklab, var(--color-surface-1-dark) 70%, var(--color-voile-primary) 6%);
   }
 
   /* Sidebar header (brand + collapse toggle) */
-  .rd-sidebar-header {
+  .voile-sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1225,26 +1208,26 @@
     border-bottom: 1px solid var(--color-surface-4-light);
     flex-shrink: 0;
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-header {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-sidebar-header {
     border-bottom-color: var(--color-surface-4-dark);
   }
-  .rd-sidebar-brand {
+  .voile-sidebar-brand {
     display: flex;
     align-items: center;
     gap: 0.625rem;
     min-width: 0;
   }
-  .rd-sidebar-logo {
+  .voile-sidebar-logo {
     width: 2rem;
     height: 2rem;
     flex-shrink: 0;
   }
-  .rd-sidebar-brand-text {
+  .voile-sidebar-brand-text {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .rd-sidebar-toggle {
+  .voile-sidebar-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1255,27 +1238,27 @@
     color: var(--color-text-secondary-light);
     transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
   }
-  .rd-sidebar-toggle:hover {
+  .voile-sidebar-toggle:hover {
     background-color: var(--color-surface-3-light);
     color: var(--color-text-primary-light);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-toggle {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-sidebar-toggle {
     color: var(--color-text-secondary-dark);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-sidebar-toggle:hover {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-sidebar-toggle:hover {
     background-color: var(--color-surface-3-dark);
     color: var(--color-text-primary-dark);
   }
   /* Only the "collapse" chevron shows when expanded; flip when collapsed. */
-  .rd-sidebar-toggle-icon-expand {
+  .voile-sidebar-toggle-icon-expand {
     display: none;
   }
 
   /* Collapsed state (icon rail). Toggled by the Sidebar JS hook. */
-  .rd-sidebar.rd-sidebar-collapsed {
+  .voile-sidebar.voile-sidebar-collapsed {
     width: var(--layout-sidebar-collapsed-w);
   }
-  .rd-sidebar-collapsed .rd-sidebar-header {
+  .voile-sidebar-collapsed .voile-sidebar-header {
     flex-direction: column;
     justify-content: center;
     gap: 0.5rem;
@@ -1283,32 +1266,32 @@
     min-height: var(--layout-header-h);
     padding: 0.625rem 0;
   }
-  .rd-sidebar-collapsed .rd-sidebar-brand-text,
-  .rd-sidebar-collapsed .rd-sidebar-section-title,
-  .rd-sidebar-collapsed .rd-sidebar-label,
-  .rd-sidebar-collapsed .rd-sidebar-shortcut,
-  .rd-sidebar-collapsed .rd-sidebar-user-info,
-  .rd-sidebar-collapsed .rd-sidebar-logout {
+  .voile-sidebar-collapsed .voile-sidebar-brand-text,
+  .voile-sidebar-collapsed .voile-sidebar-section-title,
+  .voile-sidebar-collapsed .voile-sidebar-label,
+  .voile-sidebar-collapsed .voile-sidebar-shortcut,
+  .voile-sidebar-collapsed .voile-sidebar-user-info,
+  .voile-sidebar-collapsed .voile-sidebar-logout {
     display: none;
   }
-  .rd-sidebar-collapsed .rd-sidebar-user-row {
+  .voile-sidebar-collapsed .voile-sidebar-user-row {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
   }
-  .rd-sidebar-collapsed .rd-sidebar-toggle-icon-collapse {
+  .voile-sidebar-collapsed .voile-sidebar-toggle-icon-collapse {
     display: none;
   }
-  .rd-sidebar-collapsed .rd-sidebar-toggle-icon-expand {
+  .voile-sidebar-collapsed .voile-sidebar-toggle-icon-expand {
     display: inline-flex;
   }
-  .rd-sidebar-collapsed .rd-nav-link {
+  .voile-sidebar-collapsed .voile-nav-link {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
   }
 
-  .rd-main {
+  .voile-main {
     flex: 1 1 0%;
     min-width: 0;
     display: flex;
@@ -1316,7 +1299,7 @@
     height: 100dvh;
   }
 
-  .rd-topbar {
+  .voile-topbar {
     height: var(--layout-header-h);
     border-bottom: 1px solid var(--color-surface-4-light);
     background-color: color-mix(in oklab, var(--color-surface-1-light) 80%, transparent);
@@ -1324,30 +1307,32 @@
     -webkit-backdrop-filter: blur(8px);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 40;
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-topbar {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-topbar {
     border-bottom-color: var(--color-surface-4-dark);
     background-color: color-mix(in oklab, var(--color-surface-1-dark) 80%, transparent);
   }
 
-  .rd-content {
+  .voile-content {
     flex: 1 1 0%;
     min-height: 0;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
-  .rd-bottom-nav {
+  .voile-bottom-nav {
     height: var(--layout-bottom-nav-h);
     border-top: 1px solid var(--color-surface-4-light);
     background-color: var(--color-surface-2-light);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-bottom-nav {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-bottom-nav {
     border-top-color: var(--color-surface-4-dark);
     background-color: var(--color-surface-1-dark);
   }
 
-  .rd-nav-link {
+  .voile-nav-link {
     display: flex;
     align-items: center;
     gap: 0.625rem;
@@ -1359,24 +1344,24 @@
     transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
     position: relative;
   }
-  .rd-nav-link:hover {
+  .voile-nav-link:hover {
     background-color: var(--color-surface-3-light);
     color: var(--color-text-primary-light);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-link {
     color: var(--color-text-secondary-dark);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link:hover {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-link:hover {
     background-color: var(--color-surface-3-dark);
     color: var(--color-text-primary-dark);
   }
 
-  .rd-nav-link-active {
+  .voile-nav-link-active {
     background-color: color-mix(in oklab, var(--color-voile-primary) 10%, var(--color-surface-2-light));
     color: var(--color-voile-primary);
     font-weight: 600;
   }
-  .rd-nav-link-active::before {
+  .voile-nav-link-active::before {
     content: "";
     position: absolute;
     left: -1px;
@@ -1386,11 +1371,64 @@
     border-radius: 0 3px 3px 0;
     background-color: var(--color-voile-primary);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-nav-link-active {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-link-active {
     background-color: color-mix(in oklab, var(--color-voile-primary) 18%, var(--color-surface-2-dark));
   }
 
-  .rd-card {
+  /* Collapsible nav hierarchy (parent + children) */
+  .voile-nav-parent-row {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+  }
+  .voile-nav-parent-link { min-width: 0; }
+  .voile-nav-toggle {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    color: var(--color-text-tertiary-light);
+    transition: background-color 180ms var(--ease-smooth), color 180ms var(--ease-smooth);
+  }
+  .voile-nav-toggle:hover {
+    background-color: var(--color-surface-3-light);
+    color: var(--color-text-primary-light);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-toggle {
+    color: var(--color-text-tertiary-dark);
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-toggle:hover {
+    background-color: var(--color-surface-3-dark);
+    color: var(--color-text-primary-dark);
+  }
+  .voile-nav-toggle-icon {
+    transition: transform 180ms var(--ease-smooth);
+  }
+  .voile-nav-group.is-collapsed > .voile-nav-children { display: none; }
+  .voile-nav-group.is-collapsed .voile-nav-toggle-icon { transform: rotate(-90deg); }
+  .voile-nav-children {
+    margin-top: 0.125rem;
+    margin-left: 1.125rem;
+    padding-left: 0.625rem;
+    border-left: 1px solid var(--color-surface-4-light);
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-nav-children {
+    border-left-color: var(--color-surface-4-dark);
+  }
+  .voile-nav-link-child { font-size: 0.8125rem; }
+  /* In the collapsed icon-rail sidebar, hide submenus and toggles */
+  .voile-sidebar-collapsed .voile-nav-children,
+  .voile-sidebar-collapsed .voile-nav-toggle {
+    display: none;
+  }
+
+  .voile-card {
     background-color: var(--color-surface-2-light);
     border: 1px solid var(--color-surface-4-light);
     border-radius: 14px;
@@ -1399,20 +1437,20 @@
                 border-color 180ms var(--ease-smooth),
                 background-color 180ms var(--ease-smooth);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-card {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-card {
     background-color: var(--color-surface-2-dark);
     border-color: var(--color-surface-4-dark);
   }
 
-  .rd-card-hover:hover {
+  .voile-card-hover:hover {
     box-shadow: var(--shadow-md);
     border-color: color-mix(in oklab, var(--color-voile-primary) 25%, var(--color-surface-4-light));
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-card-hover:hover {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-card-hover:hover {
     border-color: color-mix(in oklab, var(--color-voile-primary) 30%, var(--color-surface-4-dark));
   }
 
-  .rd-chip {
+  .voile-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -1425,14 +1463,14 @@
     color: var(--color-text-secondary-light);
     transition: all 180ms var(--ease-smooth);
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-chip {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-chip {
     border-color: var(--color-surface-4-dark);
     background-color: var(--color-surface-2-dark);
     color: var(--color-text-secondary-dark);
   }
 
   /* Command palette */
-  .rd-cmd-backdrop {
+  .voile-cmd-backdrop {
     position: fixed;
     inset: 0;
     background-color: color-mix(in oklab, oklch(0% 0 0) 50%, transparent);
@@ -1440,7 +1478,7 @@
     -webkit-backdrop-filter: blur(4px);
     z-index: 1100;
   }
-  .rd-cmd-panel {
+  .voile-cmd-panel {
     position: fixed;
     top: 12vh;
     left: 50%;
@@ -1456,7 +1494,7 @@
     display: flex;
     flex-direction: column;
   }
-  :where([data-theme="dark"], [data-theme="dark"] *) .rd-cmd-panel {
+  :where([data-theme="dark"], [data-theme="dark"] *) .voile-cmd-panel {
     border-color: var(--color-surface-4-dark);
     background-color: var(--color-surface-2-dark);
   }

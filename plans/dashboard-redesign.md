@@ -16,23 +16,48 @@ are structured), and a **migration plan** (how we get there without a big-bang r
 
 ## Current implementation status
 
-The redesign is **not** greenfield — Phase 0 (Foundation) and Phase 1 (Shell) are substantially
-built. These v2 artifacts already ship alongside the legacy surfaces:
+**The entire `/manage/*` surface now renders on the `:dashboard` shell.** All 80+
+staff LiveViews (dashboard, GLAM, catalog, members, circulation, visitor, stock
+opname, clearance, settings, master, metaresource, plugins, roles/permissions)
+use `:live_view_dashboard`, and the metaresource controllers use
+`:controller_dashboard`. The legacy `VoileDashboardComponents` module, the old
+`dashboard.html.heex` layout, and the redesign showcase have been **deleted**
+(Phase 5) — there is now a single dashboard design system.
 
 | Artifact | Path | Status |
 |----------|------|--------|
-| v2 component module | `lib/voile_web/components/redesign_components.ex` | ✅ sidebar, topbar, bottom nav, footer, command palette, stat card, GLAM strip, section card, metric row, activity feed, empty state, button, page header |
-| v2 layout | `lib/voile_web/components/layouts/redesign.html.heex` | ✅ shell: sidebar + topbar + bottom nav + lite footer + command palette |
-| `live_view_redesign` macro | `lib/voile_web.ex:99` | ✅ auto-imports `RedesignComponents`, sets `:redesign` layout |
-| v2 CSS tokens | `assets/css/app.css:879-1344` | ✅ GLAM colors, surface scale, motion, shadows, layout tokens, `t-*` typography, `rd-*` shell classes, skeleton |
-| Command palette JS hook | `assets/js/hooks/command_palette.js` | ✅ registered as `CommandPalette` |
-| Showcase page | `lib/voile_web/live/redesign_test_live.ex` | ✅ tabbed kitchen-sink for visual review |
-| Legacy `/manage` surfaces | `dashboard.html.heex`, `VoileDashboardComponents`, `DashboardLive` | ⏳ Still the live UI at `/manage`; migration is Phase 2+ |
+| v2 component module | `lib/voile_web/components/redesign_components.ex` | ✅ full primitive set + `rd_settings_shell` + nav helpers (`rd_settings/master/metaresource_nav_items`) |
+| v2 layout | `lib/voile_web/components/layouts/redesign.html.heex` | ✅ shell: sidebar (collapsible hierarchy) + topbar (breadcrumb + locale) + bottom nav + footer + command palette; `assigns[:breadcrumb]` fallback |
+| `live_view_redesign` / `controller_redesign` macros | `lib/voile_web.ex` | ✅ both import `html_helpers` + `RedesignComponents`; `live_view_redesign` also imports `handle_mount_errors` |
+| v2 CSS tokens | `assets/css/app.css` | ✅ GLAM colors, surface scale, motion, shadows, layout tokens, `t-*` typography, `rd-*` classes, skeleton, nav hierarchy |
+| Command palette JS hook | `assets/js/hooks/command_palette.js` | ✅ ⌘K + `voile:open-command-palette` + backdrop-close (single source of truth) |
+| **Dashboard contexts** | `lib/voile/dashboard/{stats,feed}.ex` | ✅ shared stats + attention-feed aggregators |
+| **All `/manage/*` LiveViews** | `lib/voile_web/live/dashboard/**`, `live/users/**` | ✅ on `:redesign` shell (bulk macro swap + `<.pagination>` → `<.rd_pagination>`) |
+| **Metaresource controllers** | `lib/voile_web/controllers/metadata/**` | ✅ on `:controller_redesign` shell |
 
-**Open architectural decision:** the two systems coexist without sharing code. Phase 2 must
-choose whether to (a) migrate pages onto the `:redesign` layout + `RedesignComponents`, or
-(b) port the `rd_*` patterns back into the legacy module and replace `dashboard.html.heex` in
-place. Recommendation: option (a) — keep the clean module, route-by-route.
+**What's left (content-pass + cleanup, not layout adoption):**
+- **Content token lift — done.** Two broad passes swapped ~2,350 legacy
+  utility-class occurrences across all dashboard templates to v2 semantic tokens:
+  - ** neutrals:** `bg-white dark:bg-gray-700/800` → `surface-card`,
+    `bg-gray-200/300 dark:bg-gray-600/700/800` → `surface-raised`,
+    `text-gray-900 dark:text-white` → `text-primary`,
+    `text-gray-600/700 dark:text-gray-300/400` → `text-secondary`,
+    `text-gray-500 dark:text-gray-400` → `text-tertiary`,
+    `border-gray-200 dark:border-gray-600/700` → `border-subtle`.
+  - ** colored:** every `bg-{blue,green,red,yellow,amber,purple,violet,indigo,teal}-N
+    dark:bg-…-N` → `bg-tone-{info,success,error,warning,brand}-soft`, and the matching
+    `text-{color}-N dark:text-…-N` → `text-voile-{info,success,error,warning,primary}`
+    (blue/teal→info, green→success, red→error, yellow/amber→warning,
+    purple/violet/indigo→brand).
+  These are color-only swaps (no layout impact) so the whole dashboard now reads
+  on the v2 token system in both light and dark mode.
+- **Still legacy-styled (per-page judgment, deferred):** ~22 gradient hero/button
+  banners (`from-indigo-500 to-purple-600 …`) — heterogeneous (heroes, tints,
+  buttons, badges), need individual design calls; form `<.input>` restyle;
+  list-page filter bars & table wrappers; the 2 plugin pages'
+  `plugin_settings_sidebar`; metaresource controller `new`/`edit`/`show` templates.
+- A handful of hubs still fall back to `page_title` for the topbar breadcrumb
+  (members/catalog hubs now have real breadcrumbs; the rest follow as needed).
 
 ---
 
@@ -1373,13 +1398,30 @@ mobile bottom nav works, theme toggle still works.
 
 ### Phase 2 — Home Dashboard Redesign (1 week)
 
-> **Status: 🟡 IN PROGRESS** — all composition primitives (`glam_strip`, `stat_card_v2`,
-> `metric_row`, `activity_feed`, `section_card`) exist and are demonstrated on the
-> `/manage/redesign-test` Layouts tab. The remaining work is wiring them to live data in
-> `DashboardLive` and replacing the legacy `stat_card` / `stat_row` / `dashboard_search_widget`.
-> **Data note:** `glam_stats` is currently computed only in `VoileWeb.Dashboard.Glam.Index`
-> (`/manage/glam`), NOT in `DashboardLive` — Phase 2 must lift the `get_glam_statistics/1`
-> query so the home page can feed the GLAM strip.
+> **Status: ✅ DONE** — `/manage` (`DashboardLive`) now renders on the `:redesign`
+> layout and is composed entirely from v2 primitives (`rd_page_header`,
+> `rd_glam_strip`, `rd_stat_card`, `rd_section_card`, `rd_metric_row`,
+> `rd_activity_feed`, `rd_action_link`, `rd_search_insights`). All
+> database-backed stats load asynchronously after first paint so the initial
+> render shows shimmer skeletons instead of zeros. The legacy `stat_card`,
+> `stat_row`, `dashboard_search_widget`, and `search_stats_widget` are no longer
+> used on the home page.
+>
+> **New contexts:** `Voile.Dashboard.Stats` (lifted `get_glam_statistics/1`,
+> `list_recent_collections/2`, `get_catalog_stats/1`, `get_member_stats/1` out
+> of `Glam.Index` / `DashboardLive` so both surfaces share one implementation)
+> and `Voile.Dashboard.Feed` (`attention_items/1` aggregates overdue loans,
+> pickup-ready reservations, and expiring/expired memberships into the uniform
+> `rd_activity_feed` shape).
+>
+> **Promoted primitive:** `rd_action_link` moved from `redesign_test_live.ex`
+> into `RedesignComponents` for reuse by the home page's Quick Actions card.
+>
+> **Follow-ups (out of Phase 2 scope):** deeper per-role composition variants
+> (archivist / gallery_curator / museum_curator widgets per §8.1); real trend
+> deltas + sparklines on the stat cards (currently omitted rather than faked);
+> the GLAM tiles' `*_delta` "this week" counts are `0` until trend tracking is
+> wired.
 
 **Goal:** ship the new `/manage` home page.
 
@@ -1398,37 +1440,150 @@ museum_curator / super_admin roles; data is correct; loading states show.
 
 ### Phase 3 — Catalog, GLAM & Members pages (2 weeks)
 
+> **Status: ✅ LAYOUT-ADOPTED (content restyle deferred)** — every `/manage/glam/*`,
+> `/manage/catalog/collections`, `/manage/catalog/items`, and
+> `/manage/members/management` route now renders on the `:redesign` shell
+> (sidebar + topbar + command palette + footer) via `use VoileWeb, :live_view_redesign`.
+> All 7 LiveViews assign `:breadcrumb`; the list pages swapped `<.pagination>` →
+> `<.rd_pagination>`. The GLAM hub + 4 type pages got a full v2 restyle
+> (`rd_page_header`, `rd_glam_strip`, `rd_stat_card`, `rd_action_link`,
+> `rd_activity_feed`). The library hub kept its quick-checkout/return modals
+> working through the macro switch.
+>
+> **Component fix:** `rd_button`'s solid variant now respects its `:tone`
+> (previously always rendered brand-violet) — `tone_solid_bg(tone)`.
+>
+> **What's deferred to a Phase 3.5 content pass:**
+> - The catalog & members list pages still use their bespoke inline filter
+>   forms and legacy `bg-white dark:bg-gray-700` card markup inside the new
+>   shell. The shell is unified; the inner content styling is not yet on-token.
+> - `collection_modal` (used 3× by collections) is kept legacy-styled via an
+>   explicit `import VoileWeb.VoileDashboardComponents, only: [collection_modal: 1]`
+>   — migrates to `<.rd_modal>` in the content pass.
+> - Members management renders a duplicate inline `<.breadcrumb>` (the topbar
+>   now shows it too) — cosmetic cleanup pending.
+> - The canonical `rd_filter_bar` / `rd_table` list-pattern primitives are
+>   scaffolded but not yet adopted by the list pages.
+
 **Goal:** bring the three highest-traffic areas under the new system.
 
-1. Migrate `/manage/glam` and all 4 GLAM type index pages.
+1. Migrate `/manage/glam` and all 4 GLAM type index pages. ✅
 2. Migrate `/manage/catalog/collections` and `/manage/catalog/items` to the canonical list
-   page pattern.
-3. Migrate `/manage/members` to the canonical pattern.
-4. Standardize the filter bar pattern.
+   page pattern. 🟡 (layout + pagination done; content/filter restyle pending)
+3. Migrate `/manage/members` to the canonical pattern. 🟡 (layout done; content pending)
+4. Standardize the filter bar pattern. ⏳ (deferred)
 
 **Verification:** each migrated page passes a visual diff vs. the design spec.
 
 ### Phase 4 — Settings, Master & Metaresource (1 week)
 
+> **Status: ✅ PHASE 4 COMPLETE (small follow-ups deferred)** — the entire
+> settings / master / metaresource area renders on the `:redesign` shell.
+>
+> **Settings** (9 LiveViews): hub, app/branding, metrics, nodes, node loan rules,
+> holidays, reservation notifications, API token manager, permissions — all use
+> `<.rd_settings_shell items={rd_settings_nav_items()} current_path={@current_path}>`
+> + `<.rd_page_header>`. Permissions swapped `<.pagination>` → `<.rd_pagination>`.
+>
+> **Master data** (15 LiveViews): hub + 7 list pages (creators, publishers, member
+> types, frequencies, locations, places, topics) + 7 detail/edit pages — all use
+> `<.rd_settings_shell items={rd_master_nav_items()}>`. List pages swapped to
+> `<.rd_pagination>`. The legacy layout-injected `@master_menu` sidebar is no
+> longer used by these routes.
+>
+> **Metaresource** (3 LiveViews + 5 controllers): the hub + resource_template
+> new/edit LiveViews + the 5 controller areas (vocabularies, properties,
+> resource_class, resource_template, resource_template_property) all render on
+> the redesign shell. Controllers use the new `controller_redesign` macro
+> (`layouts: [html: {VoileWeb.Layouts, :redesign}]`); their HTML modules
+> `import VoileWeb.RedesignComponents` so the index templates wrap in
+> `<.rd_settings_shell items={rd_metaresource_nav_items()}>`.
+>
+> **Infrastructure added this phase:**
+> - `controller_redesign` macro in `voile_web.ex` (controller analog of
+>   `live_view_redesign`). `@current_path` is already provided to controllers by
+>   the `GetCurrentPath` plug in the `:browser` pipeline.
+> - `rd_settings_nav_items/0`, `rd_master_nav_items/0`, `rd_metaresource_nav_items/0`
+>   shared menu helpers.
+> - `rd_settings_shell` solidified (active-matching fix, responsive chip-strip on mobile).
+> - `live_view_redesign` now imports `handle_mount_errors` (parity with legacy).
+> - Layout safety fix: `assigns[:breadcrumb] || ...` so any page/controller that
+>   forgets the assign falls back instead of raising `KeyError`.
+>
+> **Deferred (small follow-ups, not blocking):**
+> - **Roles** (`/manage/settings/roles/*`) — `Users.Role.ManageLive`, doesn't use
+>   `dashboard_settings_sidebar`; same pattern as permissions.
+> - `holiday_import_live` — standalone import flow.
+> - **Branding live preview** on `/manage/settings/apps`.
+> - Inner form/card content still uses legacy `bg-white dark:bg-gray-700` tokens
+>   inside the new shell (content-pass work, same as catalog/members list pages).
+> - Controller `new`/`edit`/`show` templates still legacy-styled (only `index`
+>   templates were wrapped in the shell this phase).
+
 **Goal:** unify the settings / master / metaresource / plugins areas under the two-pane
 "sub-nav + content" pattern.
 
 1. Refactor `dashboard_settings_sidebar`, `plugin_settings_sidebar`, and the in-content
-   sidebars from `dashboard.html.heex` into a single `<.settings_shell>` component.
-2. Migrate the branding settings page to include the live preview.
-3. Migrate master-data and metaresource index pages.
+   sidebars from `dashboard.html.heex` into a single `<.settings_shell>` component. ✅
+2. Migrate the branding settings page to include the live preview. ⏳ (deferred)
+3. Migrate master-data and metaresource index pages. ✅
 
-**Verification:** all settings/master/metaresource routes work; branding preview renders.
+**Verification:** all settings/master/metaresource routes work; branding preview renders. 🟡 (routes work; preview deferred)
 
 ### Phase 5 — Cleanup & documentation (1 week)
 
+> **Status: ✅ DEAD CODE DELETED + NAMESPACE RECLAIMED.** The legacy
+> `VoileDashboardComponents` module, the old `layouts/dashboard.html.heex`, the
+> `/manage/redesign-test` showcase (+ its tests + route + sidebar/command-palette
+> links), and the dead `search_dashboard_live` widgets are all gone. The v2
+> system reclaimed the canonical names:
+>
+> | Was | Now |
+> |-----|-----|
+> | `VoileWeb.RedesignComponents` | `VoileWeb.DashboardComponents` |
+> | `use VoileWeb, :live_view_redesign` (101 files) | `use VoileWeb, :live_view_dashboard` |
+> | `use VoileWeb, :controller_redesign` (5 files) | `use VoileWeb, :controller_dashboard` |
+> | `layouts/redesign.html.heex` / `:redesign` layout | `layouts/dashboard.html.heex` / `:dashboard` |
+>
+> `members_navigation_cards` stays in `CoreComponents` (it was never in the
+> legacy module). The component function prefix is `voile_` and the CSS class
+> prefix is `voile-` (e.g. `voile_stat_card`, `voile_settings_shell`,
+> `voile-card`, `voile-nav-link`) — collision-safe (unlike dropping the prefix
+> entirely, which would hit core `input`/`table`/`modal`/`pagination`).
+> The dead legacy `.voile-card` / `.voile-gradient` CSS rules were removed to
+> free those names. Data-attrs/IDs (`data-voile-cmd-*`, `voile-command-palette`)
+> and the JS hooks were renamed in lockstep.
+>
+> **Still open (non-blocking polish):** branding live-preview on
+> `/manage/settings/apps`; the per-page visual content-pass (gradient banners,
+> form `<.input>` restyle, filter bars); docs (`docs/architecture/design-system.md`)
+> + visual regression baseline.
+
 1. **Remove deprecated components:** `nav_bar/1`, `dashboard_menu_bar/1`,
-   `dashboard_mobile_menu/1`, `dashboard_search_widget/1`, old `stat_card/1`.
-2. **Update `docs/features/glam/dashboard-guide.md`** with the new design system.
-3. **Add a new `docs/architecture/design-system.md`** capturing the tokens, primitives,
+   `dashboard_mobile_menu/1`, `dashboard_search_widget/1`, old `stat_card/1`,
+   and the legacy `VoileDashboardComponents` module + `layouts/dashboard.html.heex`
+   once every `/manage/*` route has migrated. ✅ DONE
+2. **Reclaim the canonical namespace (rename off "redesign").** Once the legacy
+   names above are freed, the v2 system *becomes* the dashboard — "redesign" no
+   longer means anything. Mechanical, grep-driven rename:
+
+   | Now | → Phase 5 target |
+   |-----|------------------|
+   | `VoileWeb.RedesignComponents` | `VoileWeb.DashboardComponents` |
+   | `:redesign` layout (`layouts/redesign.html.heex`) | `:dashboard` |
+   | `live_view_redesign` macro (`voile_web.ex`) | `live_view_dashboard` |
+   | `rd_stat_card`, `rd_section_card`, `rd_metric_row`, … | drop `rd_` prefix (`stat_card`, `section_card`, …) |
+   | `rd-shell`, `rd-card`, `rd-cmd-*`, `rd-chip` CSS classes | `dashboard-shell`, `dashboard-card`, `cmd-*`, `chip` (matches §6.2) |
+   | `/manage/redesign-test` route + `RedesignTestLive` | delete (showcase no longer needed) or move to a dev sandbox |
+
+   Do this **only after** step 1 — renaming earlier collides with the legacy
+   `VoileDashboardComponents` module, `:dashboard` layout, and `live_view_dashboard`
+   macro that the un-migrated routes still use.
+3. **Update `docs/features/glam/dashboard-guide.md`** with the new design system.
+4. **Add a new `docs/architecture/design-system.md`** capturing the tokens, primitives,
    and patterns as the canonical reference.
-4. **Run `mix precommit` and the full test suite** one final time.
-5. **Visual regression baseline:** capture screenshots of the key pages for future diffing.
+5. **Run `mix precommit` and the full test suite** one final time.
+6. **Visual regression baseline:** capture screenshots of the key pages for future diffing.
 
 ### Out of scope (deliberately)
 

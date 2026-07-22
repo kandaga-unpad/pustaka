@@ -1,49 +1,66 @@
-<.header>
-  Listing Resource class
-  <:actions>
-    <.link href={~p"/manage/metaresource/resource_class/new"}>
-      <.button>New Resource class</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="resource_class"
-  rows={@resource_class_collection}
-  row_click={&JS.navigate(~p"/manage/metaresource/resource_class/#{&1}")}
+<.voile_page_header
+  eyebrow={gettext("Metaresource")}
+  title={gettext("Resource class")}
+  icon="hero-square-3-stack-3d"
+  tone={:brand}
 >
-  <:col :let={resource_class} label="Label">{resource_class.label}</:col>
-
-  <:col :let={resource_class} label="Local name">{resource_class.local_name}</:col>
-
-  <:col :let={resource_class} label="Information">
-    {trim_information(resource_class.information, 30)}
-  </:col>
-
-  <:col :let={resource_class} label="Vocabulary">{resource_class.vocabulary.label}</:col>
-
-  <:col :let={resource_class} label="GLAM Type">{resource_class.glam_type}</:col>
-
-  <:action :let={resource_class}>
-    <div class="sr-only">
-      <.link navigate={~p"/manage/metaresource/resource_class/#{resource_class}"}>Show</.link>
-    </div>
-    <.link navigate={~p"/manage/metaresource/resource_class/#{resource_class}/edit"}>Edit</.link>
-  </:action>
-
-  <:action :let={resource_class}>
-    <.link
-      href={~p"/manage/metaresource/resource_class/#{resource_class}"}
-      method="delete"
-      data-confirm="Are you sure?"
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/metaresource/resource_class/new"}
     >
-      Delete
-    </.link>
-  </:action>
-</.table>
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New resource class")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-<.pagination
-  page={@page}
-  total_pages={@total_pages}
-  path={~p"/manage/metaresource/resource_class"}
-/>
+<.voile_settings_shell
+  title={gettext("Metaresource")}
+  items={voile_metaresource_nav_items()}
+  current_path={@current_path}
+>
+  <.table
+    id="resource_class"
+    rows={@resource_class_collection}
+    row_click={&JS.navigate(~p"/manage/metaresource/resource_class/#{&1}")}
+  >
+    <:col :let={resource_class} label="Label">{resource_class.label}</:col>
+
+    <:col :let={resource_class} label="Local name">{resource_class.local_name}</:col>
+
+    <:col :let={resource_class} label="Information">
+      {trim_information(resource_class.information, 30)}
+    </:col>
+
+    <:col :let={resource_class} label="Vocabulary">{resource_class.vocabulary.label}</:col>
+
+    <:col :let={resource_class} label="GLAM Type">{resource_class.glam_type}</:col>
+
+    <:action :let={resource_class}>
+      <div class="sr-only">
+        <.link navigate={~p"/manage/metaresource/resource_class/#{resource_class}"}>Show</.link>
+      </div>
+      <.link navigate={~p"/manage/metaresource/resource_class/#{resource_class}/edit"}>
+        Edit
+      </.link>
+    </:action>
+
+    <:action :let={resource_class}>
+      <.link
+        href={~p"/manage/metaresource/resource_class/#{resource_class}"}
+        method="delete"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  <br />
+  <.voile_pagination
+    page={@page}
+    total_pages={@total_pages}
+    path={~p"/manage/metaresource/resource_class"}
+  />
+</.voile_settings_shell>

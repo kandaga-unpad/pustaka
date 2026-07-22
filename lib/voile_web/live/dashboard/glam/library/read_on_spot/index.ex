@@ -42,14 +42,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Index do
         <div class="flex items-start justify-between mt-3">
           <div>
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Read On Spot</h1>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+            <p class="text-tertiary text-sm mt-1">
               Track items that are being read or referenced in-library.
             </p>
           </div>
           <div class="flex gap-2">
             <.link
               navigate={~p"/manage/glam/library/read_on_spot/report"}
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg surface-raised text-secondary text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
             >
               <.icon name="hero-chart-bar" class="w-4 h-4" /> Report
             </.link>
@@ -64,23 +64,23 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Index do
       </div>
       <%!-- Stats Cards --%>
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
-          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Today</p>
-          <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{@count_today}</p>
+        <div class="surface-card rounded-xl shadow-sm p-5">
+          <p class="text-xs text-tertiary uppercase tracking-wide mb-1">Today</p>
+          <p class="text-3xl font-bold text-voile-info">{@count_today}</p>
           <p class="text-xs text-gray-400 mt-1">items scanned</p>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
-          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+        <div class="surface-card rounded-xl shadow-sm p-5">
+          <p class="text-xs text-tertiary uppercase tracking-wide mb-1">
             This Month
           </p>
-          <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{@count_month}</p>
+          <p class="text-3xl font-bold text-voile-primary">{@count_month}</p>
           <p class="text-xs text-gray-400 mt-1">items scanned</p>
         </div>
       </div>
       <%!-- Recent Records --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+      <div class="surface-card rounded-lg shadow-sm p-4">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide">
             Recent Activity
           </h2>
           <.link
@@ -99,11 +99,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Index do
               id={dom_id}
               class="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0"
             >
-              <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                <.icon name="hero-book-open" class="w-4 h-4 text-blue-700 dark:text-blue-300" />
+              <div class="w-9 h-9 rounded-full bg-tone-info-soft flex items-center justify-center shrink-0">
+                <.icon name="hero-book-open" class="w-4 h-4 text-voile-info" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p class="text-sm font-medium text-primary truncate">
                   {if record.item && record.item.collection,
                     do: record.item.collection.title,
                     else: "Unknown Title"}

@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.46"
+  @version "0.1.47"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -156,9 +156,9 @@ defmodule Voile.MixProject do
         "run priv/repo/seeds/seeds.exs",
         "run priv/repo/seeds/metadata_resource_class.exs",
         "run priv/repo/seeds/authorization_seeds_runner.exs",
+        "run priv/repo/seeds/glam_metadata_seeds.exs",
         "run priv/repo/seeds/metadata_properties.exs",
-        "run priv/repo/seeds/master.exs",
-        "run priv/repo/seeds/glams.exs"
+        "run priv/repo/seeds/master.exs"
       ],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],

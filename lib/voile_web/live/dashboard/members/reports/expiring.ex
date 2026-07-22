@@ -34,30 +34,30 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
       ]} />
 
       <%!-- Page Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold text-primary">
               {gettext("Expiring Memberships")}
             </h1>
             <p class="text-gray-600 dark:text-gray-300 mt-1">
               {gettext("Members whose memberships will expire soon")}
             </p>
           </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">
+          <div class="text-sm text-tertiary">
             {gettext("Total: %{count}", count: @total_count)}
           </div>
         </div>
       </div>
 
       <%!-- Members List --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg overflow-hidden">
+      <div class="surface-card shadow-sm rounded-lg overflow-hidden">
         <%= if @total_count == 0 do %>
           <div class="p-8 text-center">
             <div class="flex justify-center mb-4">
               <.icon name="hero-check-circle" class="w-12 h-12 text-green-500" />
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 class="text-lg font-medium text-primary mb-2">
               {gettext("No Expiring Memberships")}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
@@ -81,8 +81,8 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
                     </div>
                   </div>
                   <div>
-                    <div class="font-medium text-gray-900 dark:text-white">{member.fullname}</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">{member.email}</div>
+                    <div class="font-medium text-primary">{member.fullname}</div>
+                    <div class="text-sm text-tertiary">{member.email}</div>
                   </div>
                 </div>
               </:col>
@@ -127,8 +127,8 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
 
           <%!-- Pagination --%>
           <%= if @total_pages > 1 do %>
-            <div class="border-t border-gray-200 dark:border-gray-600 p-4">
-              <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+            <div class="border-t border-subtle p-4">
+              <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
             </div>
           <% end %>
         <% end %>
@@ -141,7 +141,7 @@ defmodule VoileWeb.Dashboard.Members.Reports.Expiring do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = socket.assigns.per_page
 
     socket = load_expiring_members(socket, page, per_page)

@@ -132,7 +132,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.Review do
   # All handle_event/3 clauses grouped together
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     current_user = socket.assigns.current_scope.user
     search_query = socket.assigns.search_query

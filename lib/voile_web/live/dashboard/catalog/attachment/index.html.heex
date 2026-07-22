@@ -1,14 +1,14 @@
 <div class="container mx-auto px-4 py-6">
   <%!-- Header --%>
   <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Attachment Management</h1>
+    <h1 class="text-3xl font-bold text-primary">Attachment Management</h1>
 
     <p class="text-gray-600 dark:text-gray-300 mt-2">
       Manage file attachments and access control
     </p>
   </div>
   <%!-- Search and Filter Bar --%>
-  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-4 mb-6">
+  <div class="surface-card rounded-lg shadow-sm p-4 mb-6">
     <div class="flex flex-col lg:flex-row gap-4">
       <%!-- Search --%>
       <div class="flex-1">
@@ -98,13 +98,13 @@
   </div>
   <%!-- Stats Cards --%>
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+    <div class="stat surface-card rounded-lg shadow-sm">
       <div class="stat-title">Total Attachments</div>
 
       <div class="stat-value text-primary">{@attachments_count}</div>
     </div>
 
-    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+    <div class="stat surface-card rounded-lg shadow-sm">
       <div class="stat-title">Public</div>
 
       <div class="stat-value text-success">
@@ -112,7 +112,7 @@
       </div>
     </div>
 
-    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+    <div class="stat surface-card rounded-lg shadow-sm">
       <div class="stat-title">Limited</div>
 
       <div class="stat-value text-warning">
@@ -120,7 +120,7 @@
       </div>
     </div>
 
-    <div class="stat bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+    <div class="stat surface-card rounded-lg shadow-sm">
       <div class="stat-title">Restricted</div>
 
       <div class="stat-value text-error">
@@ -130,13 +130,13 @@
   </div>
   <%!-- Attachments List --%>
   <%= if @attachments_empty? do %>
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm p-12 text-center">
+    <div class="surface-card rounded-lg shadow-sm p-12 text-center">
       <.icon name="hero-document" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+      <h3 class="text-lg font-semibold text-secondary mb-2">
         No attachments found
       </h3>
 
-      <p class="text-gray-500 dark:text-gray-400">
+      <p class="text-tertiary">
         <%= if @search != "" or @active_filters_count > 0 do %>
           Try adjusting your search or filters
         <% else %>
@@ -145,7 +145,7 @@
       </p>
     </div>
   <% else %>
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-sm overflow-hidden">
+    <div class="surface-card rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="table table-zebra">
           <thead>
@@ -180,14 +180,14 @@
                     <img
                       src={attachment.file_path}
                       alt="Thumbnail"
-                      class="w-10 h-10 object-cover rounded-md border border-gray-200 dark:border-gray-600"
+                      class="w-10 h-10 object-cover rounded-md border border-subtle"
                     />
                   </div>
 
                   <div>
                     <div class="font-semibold text-sm">{attachment.original_name}</div>
 
-                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                    <div class="text-xs text-tertiary truncate max-w-xs">
                       {attachment.file_name}
                     </div>
                   </div>
@@ -205,7 +205,7 @@
                   {String.capitalize(attachment.access_level)}
                 </span>
                 <%= if attachment.access_level == "limited" do %>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <div class="text-xs text-tertiary mt-1">
                     {length(attachment.allowed_roles)} roles, {length(attachment.allowed_users)} users
                   </div>
                 <% end %>
@@ -217,7 +217,7 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">Window</div>
 
-                      <div class="text-gray-500 dark:text-gray-400">
+                      <div class="text-tertiary">
                         {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")} - {Calendar.strftime(
                           attachment.embargo_end_date,
                           "%m/%d/%y"
@@ -228,7 +228,7 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">After</div>
 
-                      <div class="text-gray-500 dark:text-gray-400">
+                      <div class="text-tertiary">
                         {Calendar.strftime(attachment.embargo_start_date, "%m/%d/%y")}
                       </div>
                     </div>
@@ -236,7 +236,7 @@
                     <div class="text-xs">
                       <div class="text-amber-600 font-semibold">Until</div>
 
-                      <div class="text-gray-500 dark:text-gray-400">
+                      <div class="text-tertiary">
                         {Calendar.strftime(attachment.embargo_end_date, "%m/%d/%y")}
                       </div>
                     </div>
@@ -261,7 +261,7 @@
                         attachment.access_settings_updated_by.email}
                     </div>
 
-                    <div class="text-gray-500 dark:text-gray-400">
+                    <div class="text-tertiary">
                       {format_datetime(attachment.access_settings_updated_at)}
                     </div>
                   </div>
@@ -303,7 +303,7 @@
       </div>
       <%!-- Pagination --%>
       <%= if @total_pages > 1 do %>
-        <div class="flex justify-center items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-600">
+        <div class="flex justify-center items-center gap-2 p-4 border-t border-subtle">
           <button
             phx-click="paginate"
             phx-value-page={max(@page - 1, 1)}

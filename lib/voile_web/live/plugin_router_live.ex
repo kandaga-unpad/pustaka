@@ -50,13 +50,18 @@ defmodule VoileWeb.PluginRouterLive do
     ~H"""
     <section class="space-y-6 p-6">
       <div class="flex flex-col md:flex-row gap-4">
-        <div class="w-full md:w-auto md:max-w-64">
-          <.plugin_settings_sidebar
-            current_path={@current_path}
-            current_plugin_id={@plugin_record.plugin_id}
-            is_super_admin={@plugin_auth.is_super_admin}
-          />
-        </div>
+        <.voile_settings_nav
+          title={gettext("Plugins")}
+          current_path={@current_path}
+          items={[
+            %{label: gettext("All plugins"), path: "/manage/plugins", icon: "hero-puzzle-piece"},
+            %{
+              label: @plugin_record.name,
+              path: "/manage/plugins/#{@plugin_record.plugin_id}/settings",
+              icon: "hero-cog-6-tooth"
+            }
+          ]}
+        />
 
         <div class="flex-1 min-w-0">
           {live_render(@socket, @plugin_live_view,

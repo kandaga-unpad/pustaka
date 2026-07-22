@@ -272,10 +272,10 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
     <div class="space-y-6">
       <!-- Header -->
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-2xl font-bold text-primary">
           {gettext("Visitor Check-In Logs")}
         </h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p class="text-sm text-secondary mt-1">
           {gettext("Detailed logs of all visitor check-ins")}
         </p>
       </div>
@@ -285,21 +285,21 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       </div>
       
     <!-- Filters -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Filters")}</h2>
+          <h2 class="text-lg font-semibold text-primary">{gettext("Filters")}</h2>
           <div class="flex items-center gap-2">
             <a
               href={@export_url}
               id="export-csv-btn"
-              class="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg flex items-center"
+              class="px-3 py-1.5 text-sm bg-green-600 hover:bg-tone-success-soft dark:hover:bg-green-600 text-white rounded-lg flex items-center"
             >
               <.icon name="hero-arrow-down-tray" class="w-4 h-4 mr-1" /> {gettext("Export CSV")}
             </a>
             <button
               type="button"
               phx-click="refresh"
-              class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
+              class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-tone-info-soft dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
             >
               <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
             </button>
@@ -311,7 +311,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           <%= if @is_super_admin do %>
             <form phx-change="filter_node">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-secondary mb-1">
                   {gettext("Location/Faculty")}
                 </label>
                 <select
@@ -331,10 +331,10 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
             </form>
           <% else %>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("Location/Faculty")}
               </label>
-              <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600">
+              <div class="w-full px-3 py-2 surface-raised text-secondary rounded-lg border border-gray-300 dark:border-gray-600">
                 {Enum.find(@nodes, fn n -> n.id == @selected_node_id end)
                 |> then(fn n -> n && n.name end) || gettext("Your Location")}
               </div>
@@ -344,7 +344,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
     <!-- Room/Location Filter -->
           <form phx-change="filter_location">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("Room/Location")}
               </label>
               <select
@@ -366,7 +366,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
 
           <form phx-change="update_from_date">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("From Date")}
               </label>
               <input
@@ -380,7 +380,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
 
           <form phx-change="update_to_date">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("To Date")}
               </label>
               <input
@@ -394,7 +394,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
 
           <form phx-change="search" phx-submit="search">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("Search")}
               </label>
               <input
@@ -411,26 +411,26 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       
     <!-- Results Info -->
       <div class="flex items-center justify-between">
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-sm text-secondary">
           {gettext("Showing %{count} of %{total} total visitor logs",
             count: length(@logs),
             total: format_number(@total_count)
           )}
         </p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-sm text-secondary">
           {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
         </p>
       </div>
       
     <!-- Logs Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div class="surface-card rounded-lg shadow overflow-hidden">
         <%= if @logs == [] do %>
           <div class="p-12 text-center">
             <.icon
               name="hero-clipboard-document-list"
               class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
             />
-            <p class="text-lg text-gray-600 dark:text-gray-400">{gettext("No visitor logs found")}</p>
+            <p class="text-lg text-secondary">{gettext("No visitor logs found")}</p>
             <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
               {gettext("Try adjusting your filters or date range")}
             </p>
@@ -469,35 +469,35 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody class="surface-card divide-y divide-gray-200 dark:divide-gray-700">
                 <tr :for={log <- @logs} class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {log.check_in_time
                     |> FormatIndonesiaTime.shift_to_jakarta()
                     |> Calendar.strftime("%d/%m/%Y %H:%M WIB")}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary">
                     {log.visitor_identifier}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {log.visitor_name || "-"}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {get_in(log.additional_data || %{}, ["gender"]) || "-"}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {get_in(log.additional_data || %{}, ["study_program"]) || "-"}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {log.visitor_origin || "-"}
                   </td>
-                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 text-sm text-primary">
                     {get_in(log.additional_data, ["visit_purpose"]) || "-"}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {log.location && log.location.location_name}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary">
                     {log.node && log.node.name}
                   </td>
                 </tr>
@@ -509,12 +509,12 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       
     <!-- Pagination -->
       <%= if @total_pages > 1 do %>
-        <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow px-6 py-3">
+        <div class="flex items-center justify-between surface-card rounded-lg shadow px-6 py-3">
           <button
             type="button"
             phx-click="prev_page"
             disabled={@page == 1}
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 text-sm font-medium text-secondary surface-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <.icon name="hero-chevron-left" class="w-4 h-4 inline" /> {gettext("Previous")}
           </button>
@@ -522,7 +522,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           <div class="flex items-center gap-2">
             <%= for page_num <- page_numbers(@page, @total_pages) do %>
               <%= if page_num == :ellipsis do %>
-                <span class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">...</span>
+                <span class="px-3 py-2 text-sm text-tertiary">...</span>
               <% else %>
                 <button
                   type="button"
@@ -533,7 +533,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
                     if(page_num == @page,
                       do: "bg-blue-600 text-white dark:bg-blue-700",
                       else:
-                        "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                        "text-secondary surface-card border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                     )
                   ]}
                 >
@@ -547,7 +547,7 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
             type="button"
             phx-click="next_page"
             disabled={@page == @total_pages}
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 text-sm font-medium text-secondary surface-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {gettext("Next")} <.icon name="hero-chevron-right" class="w-4 h-4 inline" />
           </button>

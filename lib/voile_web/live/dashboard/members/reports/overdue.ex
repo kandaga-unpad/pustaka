@@ -34,30 +34,30 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
       ]} />
 
       <%!-- Page Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 class="text-2xl font-bold text-primary">
               {gettext("Overdue Items")}
             </h1>
             <p class="text-gray-600 dark:text-gray-300 mt-1">
               {gettext("Members with overdue library items")}
             </p>
           </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">
+          <div class="text-sm text-tertiary">
             {gettext("Total: %{count}", count: @overdue_items |> length())}
           </div>
         </div>
       </div>
 
       <%!-- Overdue Items List --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg overflow-hidden">
+      <div class="surface-card shadow-sm rounded-lg overflow-hidden">
         <%= if Enum.empty?(@overdue_items) do %>
           <div class="p-8 text-center">
             <div class="flex justify-center mb-4">
               <.icon name="hero-check-circle" class="w-12 h-12 text-green-500" />
             </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 class="text-lg font-medium text-primary mb-2">
               {gettext("No Overdue Items")}
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
@@ -80,18 +80,18 @@ defmodule VoileWeb.Dashboard.Members.Reports.Overdue do
                     </div>
                   </div>
                   <div>
-                    <div class="font-medium text-gray-900 dark:text-white">
+                    <div class="font-medium text-primary">
                       {item.member.fullname}
                     </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">{item.member.email}</div>
+                    <div class="text-sm text-tertiary">{item.member.email}</div>
                   </div>
                 </div>
               </:col>
 
               <:col :let={item} label={gettext("Item")}>
                 <div>
-                  <div class="font-medium text-gray-900 dark:text-white">{item.item.title}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <div class="font-medium text-primary">{item.item.title}</div>
+                  <div class="text-sm text-tertiary">
                     {gettext("Loan Date: %{date}",
                       date: Calendar.strftime(item.loan_date, "%b %d, %Y")
                     )}

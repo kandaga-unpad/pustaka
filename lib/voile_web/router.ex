@@ -187,8 +187,6 @@ defmodule VoileWeb.Router do
       scope "/manage" do
         live "/", DashboardLive, :index
 
-        live "/redesign-test", RedesignTestLive, :index
-
         # Visitor statistics (staff/admin)
         scope "/visitor" do
           live "/statistics", Dashboard.Visitor.Statistics, :index

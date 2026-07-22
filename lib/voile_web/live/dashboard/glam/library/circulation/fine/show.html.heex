@@ -38,7 +38,7 @@
               <.icon name="hero-ellipsis-horizontal" class="w-4 h-4" /> More Actions
             </summary>
 
-            <div class="dropdown-content bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-voile-light mt-2 w-48">
+            <div class="dropdown-content surface-card rounded-lg shadow-lg border border-voile-light mt-2 w-48">
               <div class="p-4">
                 <h4 class="text-sm font-medium mb-3">Partial Payment</h4>
 
@@ -70,7 +70,7 @@
   </div>
   <!-- Fine Summary Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+    <div class="surface-card rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-error/20 rounded-full flex items-center justify-center">
@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+    <div class="surface-card rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-success/20 rounded-full flex items-center justify-center">
@@ -102,7 +102,7 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6">
+    <div class="surface-card rounded-lg shadow p-6">
       <div class="flex items-center">
         <div class="flex-shrink-0">
           <div class="w-8 h-8 bg-voile-warning/20 rounded-full flex items-center justify-center">
@@ -347,7 +347,7 @@
       <% end %>
       <!-- Processing Staff -->
       <%= if @fine.processed_by do %>
-        <div class="bg-white dark:bg-gray-700 shadow rounded-lg">
+        <div class="surface-card shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium">Processed By</h3>
           </div>

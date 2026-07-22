@@ -1,58 +1,80 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Member types")}
+  icon="hero-identification"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/master/member_types/new"}
+    >
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New member type")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Member Types")}
-    <:actions>
-      <.link patch={~p"/manage/master/member_types/new"}>
-        <.button>{gettext("New Member Type")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="member-types"
-    rows={@streams.member_types}
-    row_click={fn {_id, mt} -> JS.navigate(~p"/manage/master/member_types/#{mt.id}") end}
-  >
-    <:col :let={{_id, mt}} label={gettext("Name")}>{mt.name}</:col>
-
-    <:col :let={{_id, mt}} label={gettext("Slug")}>{mt.slug}</:col>
-
-    <:col :let={{_id, mt}} label={gettext("Max Items")}>{mt.max_items}</:col>
-
-    <:col :let={{_id, mt}} label={gettext("Max Days")}>{mt.max_days}</:col>
-
-    <:action :let={{_id, mt}}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/member_types/#{mt.id}"}>{gettext("Show")}</.link>
-      </div>
-      <.link patch={~p"/manage/master/member_types/#{mt.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={{id, mt}}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: mt.id}) |> hide("##{id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @member_types_empty? do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="member-types"
+        rows={@streams.member_types}
+        row_click={fn {_id, mt} -> JS.navigate(~p"/manage/master/member_types/#{mt.id}") end}
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="member-type-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/member_types")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent}
-      id={(@member_type && @member_type.id) || :new}
-      title={@page_title}
-      action={@live_action}
-      member_type={@member_type}
-      patch={~p"/manage/master/member_types"}
-    />
-  </.modal>
-</section>
+        <:col :let={{_id, mt}} label={gettext("Name")}>{mt.name}</:col>
+
+        <:col :let={{_id, mt}} label={gettext("Slug")}>{mt.slug}</:col>
+
+        <:col :let={{_id, mt}} label={gettext("Max Items")}>{mt.max_items}</:col>
+
+        <:col :let={{_id, mt}} label={gettext("Max Days")}>{mt.max_days}</:col>
+
+        <:action :let={{_id, mt}}>
+          <div class="sr-only">
+            <.link navigate={~p"/manage/master/member_types/#{mt.id}"}>{gettext("Show")}</.link>
+          </div>
+          <.link patch={~p"/manage/master/member_types/#{mt.id}/edit"}>{gettext("Edit")}</.link>
+        </:action>
+
+        <:action :let={{id, mt}}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: mt.id}) |> hide("##{id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="member-type-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/member_types")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.MemberTypeLive.FormComponent}
+        id={(@member_type && @member_type.id) || :new}
+        title={@page_title}
+        action={@live_action}
+        member_type={@member_type}
+        patch={~p"/manage/master/member_types"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

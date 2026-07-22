@@ -20,7 +20,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Librarian Work Reports
             </h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p class="text-sm text-secondary mt-1">
               View and manage librarian completion status for each stock opname session
             </p>
           </div>
@@ -30,12 +30,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
       <%!-- Sessions List --%>
       <div class="space-y-4">
         <%= if @sessions == [] do %>
-          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+          <div class="surface-card rounded-lg shadow-sm p-8 text-center">
             <.icon name="hero-inbox" class="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-            <p class="text-gray-600 dark:text-gray-400">No stock opname sessions found.</p>
+            <p class="text-secondary">No stock opname sessions found.</p>
           </div>
         <% else %>
-          <div :for={session <- @sessions} class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div :for={session <- @sessions} class="surface-card rounded-lg shadow-sm">
             <%!-- Session Header --%>
             <button
               type="button"
@@ -50,7 +50,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                   </h3>
                   <.session_status_badge status={session.status} />
                 </div>
-                <div class="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex items-center gap-4 mt-2 text-sm text-secondary">
                   <span>Code: {session.session_code}</span>
                   <span>{session.checked_items} / {session.total_items} items checked</span>
                   <span>
@@ -71,10 +71,10 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
             <%!-- Librarian Details (Expandable) --%>
             <div
               :if={@expanded_sessions[session.id]}
-              class="border-t border-gray-200 dark:border-gray-700"
+              class="border-t border-subtle"
             >
               <%= if session.librarian_assignments == [] do %>
-                <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <div class="px-6 py-8 text-center text-tertiary">
                   <.icon name="hero-user-group" class="w-12 h-12 mx-auto mb-2 text-gray-400" />
                   <p>No librarians assigned to this session.</p>
                 </div>
@@ -83,22 +83,22 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                   <table class="w-full">
                     <thead class="bg-gray-50 dark:bg-gray-700/50">
                       <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                           Librarian
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                           Items Checked
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                           Status
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                           Started At
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-tertiary uppercase tracking-wider">
                           Completed At
                         </th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-right text-xs font-medium text-tertiary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -110,8 +110,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                       >
                         <td class="px-6 py-4">
                           <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                              <span class="text-blue-600 dark:text-blue-300 font-semibold text-sm">
+                            <div class="w-10 h-10 rounded-full bg-tone-info-soft flex items-center justify-center">
+                              <span class="text-voile-info font-semibold text-sm">
                                 {String.first(report.user.email)}
                               </span>
                             </div>
@@ -120,7 +120,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                                 {report.user.email}
                               </p>
                               <%= if report.assignment.notes do %>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <p class="text-xs text-tertiary mt-1">
                                   Note: {report.assignment.notes}
                                 </p>
                               <% end %>
@@ -131,7 +131,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                           <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                             {report.items_checked}
                           </span>
-                          <span class="text-sm text-gray-500 dark:text-gray-400">
+                          <span class="text-sm text-tertiary">
                             items
                           </span>
                         </td>
@@ -139,7 +139,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                           <.work_status_badge status={report.assignment.work_status} />
                         </td>
                         <td class="px-6 py-4">
-                          <span class="text-sm text-gray-600 dark:text-gray-400">
+                          <span class="text-sm text-secondary">
                             <%= if report.assignment.started_at do %>
                               {FormatIndonesiaTime.format_utc_to_jakarta(report.assignment.started_at)}
                             <% else %>
@@ -148,7 +148,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
                           </span>
                         </td>
                         <td class="px-6 py-4">
-                          <span class="text-sm text-gray-600 dark:text-gray-400">
+                          <span class="text-sm text-secondary">
                             <%= if report.assignment.completed_at do %>
                               {FormatIndonesiaTime.format_utc_to_jakarta(
                                 report.assignment.completed_at
@@ -210,8 +210,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Report do
             <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
           </button>
 
-          <span class="px-6 py-2 text-gray-700 dark:text-gray-300 font-semibold">
-            Page <span class="text-blue-600 dark:text-blue-400">{@page}</span> of {@total_pages}
+          <span class="px-6 py-2 text-secondary font-semibold">
+            Page <span class="text-voile-info">{@page}</span> of {@total_pages}
           </span>
 
           <button

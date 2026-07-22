@@ -64,6 +64,9 @@ defmodule VoileWeb do
 
   def controller_dashboard do
     quote do
+      # The dashboard shell (@current_path for sidebar/topbar/command palette)
+      # is already assigned to the conn by GetCurrentPath in the :browser
+      # pipeline, so controllers only need the layout swap here.
       use Phoenix.Controller,
         formats: [:html, :json],
         layouts: [html: {VoileWeb.Layouts, :dashboard}]
@@ -93,16 +96,8 @@ defmodule VoileWeb do
 
       # Import helper to wrap mount with error handling
       import VoileWeb.Live.AuthHooks, only: [handle_mount_errors: 1]
-    end
-  end
 
-  def live_view_redesign do
-    quote do
-      use Phoenix.LiveView,
-        layout: {VoileWeb.Layouts, :redesign}
-
-      unquote(html_helpers())
-      import VoileWeb.RedesignComponents
+      import VoileWeb.DashboardComponents
     end
   end
 
@@ -136,7 +131,6 @@ defmodule VoileWeb do
       import Phoenix.HTML
       # Core UI components
       import VoileWeb.CoreComponents
-      import VoileWeb.VoileDashboardComponents
 
       # Authorization helpers for LiveViews (only authorize functions)
       import VoileWeb.Auth.LiveHelpers,

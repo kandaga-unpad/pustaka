@@ -13,7 +13,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
               Stock Opname
             </h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mt-1 text-sm text-secondary">
               Manage and monitor inventory checking sessions
             </p>
           </div>
@@ -39,12 +39,12 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
         <%!-- Filters --%>
         <div class="bg-white/80 dark:bg-gray-800 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-6 mb-8">
           <div class="flex items-center gap-2 mb-4">
-            <.icon name="hero-funnel" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <.icon name="hero-funnel" class="w-5 h-5 text-secondary" />
             <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filter Sessions</h2>
           </div>
           <form phx-change="filter" phx-submit="filter" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label class="block text-sm font-semibold text-secondary mb-2">
                 Status
               </label>
               <select
@@ -64,7 +64,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label class="block text-sm font-semibold text-secondary mb-2">
                 From Date
               </label>
               <input
@@ -76,7 +76,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label class="block text-sm font-semibold text-secondary mb-2">
                 To Date
               </label>
               <input
@@ -91,7 +91,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
               <button
                 type="button"
                 phx-click="clear_filters"
-                class="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow"
+                class="w-full px-4 py-2.5 surface-raised hover:bg-gray-200 dark:hover:bg-gray-600 text-secondary font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow"
               >
                 <span class="inline-flex items-center gap-2">
                   <.icon name="hero-x-mark" class="w-4 h-4" /> Clear Filters
@@ -106,13 +106,13 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             :for={session <- @sessions}
             class="bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden group"
           >
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
+            <div class="bg-tone-brand-soft px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
                     <.icon
                       name="hero-clipboard-document-list"
-                      class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                      class="w-6 h-6 text-voile-info"
                     />
                     <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                       {session.title}
@@ -121,7 +121,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
                   </div>
 
                   <div class="flex items-center gap-4 text-sm">
-                    <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                    <span class="inline-flex items-center gap-1.5 text-secondary">
                       <.icon name="hero-hashtag" class="w-4 h-4" />
                       <span class="font-mono font-semibold">{session.session_code}</span>
                     </span>
@@ -129,7 +129,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
 
                   <p
                     :if={session.description}
-                    class="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2"
+                    class="text-sm text-secondary mt-2 line-clamp-2"
                   >
                     {session.description}
                   </p>
@@ -140,16 +140,16 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             <div class="p-6">
               <%!-- Progress Bar --%>
               <div class="mb-6">
-                <div class="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <div class="flex justify-between text-sm font-semibold text-secondary mb-2">
                   <span class="flex items-center gap-1.5">
                     <.icon name="hero-chart-bar" class="w-4 h-4" /> Progress
                   </span>
-                  <span class="text-blue-600 dark:text-blue-400">
+                  <span class="text-voile-info">
                     {session.checked_items} / {session.total_items} items
                   </span>
                 </div>
 
-                <div class="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden shadow-inner">
+                <div class="relative w-full surface-raised rounded-full h-3 overflow-hidden shadow-inner">
                   <div
                     class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out shadow-sm"
                     style={"width: #{calculate_progress(session)}%"}
@@ -161,46 +161,46 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
               <%!-- Statistics --%>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 text-center border border-blue-200/50 dark:border-blue-700/50 shadow-sm">
-                  <p class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 mb-1">
+                  <p class="text-3xl font-extrabold text-voile-info mb-1">
                     {session.checked_items}
                   </p>
-                  <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                  <p class="text-xs font-semibold text-voile-info uppercase tracking-wide">
                     Checked
                   </p>
                 </div>
 
                 <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl p-4 text-center border border-red-200/50 dark:border-red-700/50 shadow-sm">
-                  <p class="text-3xl font-extrabold text-red-600 dark:text-red-400 mb-1">
+                  <p class="text-3xl font-extrabold text-voile-error mb-1">
                     {session.missing_items}
                   </p>
-                  <p class="text-xs font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide">
+                  <p class="text-xs font-semibold text-voile-error uppercase tracking-wide">
                     Missing
                   </p>
                 </div>
 
                 <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl p-4 text-center border border-amber-200/50 dark:border-amber-700/50 shadow-sm">
-                  <p class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mb-1">
+                  <p class="text-3xl font-extrabold text-voile-warning mb-1">
                     {session.items_with_changes}
                   </p>
-                  <p class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+                  <p class="text-xs font-semibold text-voile-warning uppercase tracking-wide">
                     Changes
                   </p>
                 </div>
 
                 <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-xl p-4 text-center border border-gray-200/50 dark:border-gray-600/50 shadow-sm">
-                  <p class="text-3xl font-extrabold text-gray-600 dark:text-gray-400 mb-1">
+                  <p class="text-3xl font-extrabold text-secondary mb-1">
                     {session.total_items - session.checked_items}
                   </p>
-                  <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                  <p class="text-xs font-semibold text-secondary uppercase tracking-wide">
                     Pending
                   </p>
                 </div>
               </div>
               <%!-- Metadata --%>
               <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-6 border border-gray-200/50 dark:border-gray-700/50">
-                <div class="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
+                <div class="flex flex-wrap gap-4 text-xs text-secondary">
                   <div class="flex items-center gap-1.5">
-                    <.icon name="hero-user-circle" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <.icon name="hero-user-circle" class="w-4 h-4 text-tertiary" />
                     <span>
                       Created by
                       <span class="font-semibold text-gray-900 dark:text-gray-200">
@@ -210,7 +210,7 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
                   </div>
 
                   <div class="flex items-center gap-1.5">
-                    <.icon name="hero-calendar" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <.icon name="hero-calendar" class="w-4 h-4 text-tertiary" />
                     <span>{format_date(session.inserted_at)}</span>
                   </div>
 
@@ -292,18 +292,18 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
           </div>
           <%!-- Empty State --%>
           <div :if={@sessions == []} class="text-center py-16">
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl p-12 max-w-md mx-auto border border-blue-200/50 dark:border-blue-700/50 shadow-sm">
-              <div class="bg-white dark:bg-gray-800 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-md">
+            <div class="bg-tone-brand-soft rounded-3xl p-12 max-w-md mx-auto border border-blue-200/50 dark:border-blue-700/50 shadow-sm">
+              <div class="surface-card rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-md">
                 <.icon
                   name="hero-document-magnifying-glass"
-                  class="w-10 h-10 text-blue-600 dark:text-blue-400"
+                  class="w-10 h-10 text-voile-info"
                 />
               </div>
               <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                 No Stock Opname Sessions
               </h3>
 
-              <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+              <p class="text-secondary mb-6 leading-relaxed">
                 {if @can_create,
                   do: "Create your first stock opname session to start inventory checking.",
                   else: "No sessions have been assigned to you yet."}
@@ -330,8 +330,8 @@ defmodule VoileWeb.Dashboard.StockOpnameLive.Index do
             >
               <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
             </button>
-            <span class="px-6 py-2 text-gray-700 dark:text-gray-300 font-semibold">
-              Page <span class="text-blue-600 dark:text-blue-400">{@page}</span> of {@total_pages}
+            <span class="px-6 py-2 text-secondary font-semibold">
+              Page <span class="text-voile-info">{@page}</span> of {@total_pages}
             </span>
             <button
               :if={@page < @total_pages}

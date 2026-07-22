@@ -1,42 +1,64 @@
-<.header>
-  Listing Metadata vocabularies
-  <:actions>
-    <.link href={~p"/manage/metaresource/metadata_vocabularies/new"}>
-      <.button>New Vocabulary</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="metadata_vocabularies"
-  rows={@metadata_vocabularies}
-  row_click={&JS.navigate(~p"/manage/metaresource/metadata_vocabularies/#{&1}")}
+<.voile_page_header
+  eyebrow={gettext("Metaresource")}
+  title={gettext("Vocabulary")}
+  icon="hero-bookmark"
+  tone={:brand}
 >
-  <:col :let={vocabulary} label="Label">{vocabulary.label}</:col>
-
-  <:col :let={vocabulary} label="Prefix">{vocabulary.prefix}</:col>
-
-  <:col :let={vocabulary} label="Namespace url">{vocabulary.namespace_url}</:col>
-
-  <:col :let={vocabulary} label="Information">{vocabulary.information}</:col>
-
-  <:action :let={vocabulary}>
-    <div class="sr-only">
-      <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}>Show</.link>
-    </div>
-
-    <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}/edit"}>
-      Edit
-    </.link>
-  </:action>
-
-  <:action :let={vocabulary}>
-    <.link
-      href={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}
-      method="delete"
-      data-confirm="Are you sure?"
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/metaresource/metadata_vocabularies/new"}
     >
-      Delete
-    </.link>
-  </:action>
-</.table>
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New Vocabulary")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
+
+<.voile_settings_shell
+  title={gettext("Metaresource")}
+  items={voile_metaresource_nav_items()}
+  current_path={@current_path}
+>
+  <.table
+    id="metadata_vocabularies"
+    rows={@metadata_vocabularies}
+    row_click={&JS.navigate(~p"/manage/metaresource/metadata_vocabularies/#{&1}")}
+  >
+    <:col :let={vocabulary} label="Label">{vocabulary.label}</:col>
+
+    <:col :let={vocabulary} label="Prefix">{vocabulary.prefix}</:col>
+
+    <:col :let={vocabulary} label="Namespace url">{vocabulary.namespace_url}</:col>
+
+    <:col :let={vocabulary} label="Information">{vocabulary.information}</:col>
+
+    <:action :let={vocabulary}>
+      <div class="sr-only">
+        <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}>
+          Show
+        </.link>
+      </div>
+
+      <.link navigate={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}/edit"}>
+        Edit
+      </.link>
+    </:action>
+
+    <:action :let={vocabulary}>
+      <.link
+        href={~p"/manage/metaresource/metadata_vocabularies/#{vocabulary}"}
+        method="delete"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  <.voile_pagination
+    page={@page}
+    total_pages={@total_pages}
+    path={~p"/manage/metaresource/metadata_vocabularies"}
+  />
+</.voile_settings_shell>

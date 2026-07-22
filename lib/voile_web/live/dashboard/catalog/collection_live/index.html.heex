@@ -1,5 +1,5 @@
 <section class="flex flex-col gap-4">
-  <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md">
+  <div class="surface-card p-4 rounded-xl shadow-md">
     <.back navigate="/manage/catalog">{gettext("Back")}</.back>
 
     <div class="flex flex-col gap-3 sm:gap-4 mb-4">
@@ -11,7 +11,7 @@
               <%= if Authorization.is_super_admin?(@current_scope.user) do %>
                 <.link>
                   <.button
-                    class="neutral-btn bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
+                    class="neutral-btn surface-raised text-secondary text-sm sm:text-base py-2 px-3 sm:py-2 sm:px-4"
                     navigate={~p"/manage/catalog/collections/import"}
                   >
                     Import / Export
@@ -38,9 +38,9 @@
           <% end %>
 
           <%= if @active_filters_count > 0 do %>
-            <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
+            <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 bg-tone-brand-soft rounded-full">
               <.icon name="hero-funnel" class="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600" />
-              <span class="text-xs sm:text-sm text-indigo-700 dark:text-indigo-300">
+              <span class="text-xs sm:text-sm text-voile-primary">
                 {@active_filters_count} {if @active_filters_count == 1,
                   do: gettext("filter"),
                   else: gettext("filters")}
@@ -154,16 +154,16 @@
       </.form>
     </div>
     <%!-- Comprehensive Filter Panel --%>
-    <div class="mb-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div class="mb-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-subtle">
       <%!-- Role-based filter notice for staff --%>
       <%= if @is_staff and not Voile.Schema.Catalog.is_user_admin?(@current_user) do %>
-        <div class="mb-3 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md">
+        <div class="mb-3 p-2 sm:p-3 bg-tone-info-soft border border-blue-200 dark:border-blue-700 rounded-md">
           <div class="flex items-start gap-2">
             <.icon
               name="hero-information-circle"
-              class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-voile-info mt-0.5 flex-shrink-0"
             />
-            <div class="text-xs sm:text-sm text-blue-800 dark:text-blue-300">
+            <div class="text-xs sm:text-sm text-voile-info">
               <p class="font-medium mb-1">{gettext("Viewing collections based on your role")}</p>
 
               <p class="text-xs">
@@ -180,9 +180,9 @@
         <div class="flex items-center gap-2">
           <.icon
             name="hero-funnel"
-            class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400"
+            class="w-4 h-4 sm:w-5 sm:h-5 text-secondary"
           />
-          <h3 class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h3 class="text-xs sm:text-sm font-semibold text-secondary">
             Filter Collections
           </h3>
         </div>
@@ -204,7 +204,7 @@
             <button
               type="button"
               phx-click="clear_filters"
-              class="text-xs px-2 sm:px-3 py-1.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 transition-colors touch-manipulation"
+              class="text-xs px-2 sm:px-3 py-1.5 rounded-md surface-raised text-secondary hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 transition-colors touch-manipulation"
             >
               <.icon name="hero-x-mark" class="w-3 h-3 inline mr-1" />
               <span class="hidden sm:inline">Clear All Filters</span><span class="sm:hidden">Clear</span>
@@ -221,7 +221,7 @@
       >
         <%!-- Status Filter --%>
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-secondary mb-1">
             Status
           </label>
           <select
@@ -242,7 +242,7 @@
         </div>
         <%!-- Access Level Filter --%>
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-secondary mb-1">
             Access Level
           </label>
           <select
@@ -261,7 +261,7 @@
         </div>
         <%!-- GLAM Type Filter --%>
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-secondary mb-1">
             GLAM Type
           </label>
           <select
@@ -283,7 +283,7 @@
 
         <%!-- Node/Location Filter - Admin users can select any location, staff see their assigned location --%>
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-secondary mb-1">
             Location/Node
           </label>
           <%= if Voile.Schema.Catalog.is_user_admin?(@current_user) do %>
@@ -302,12 +302,12 @@
           <% else %>
             <%!-- Non-admin: Show their assigned location as read-only --%>
             <%= if @user_node_id do %>
-              <div class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+              <div class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md surface-raised text-secondary cursor-not-allowed">
                 {Enum.find(@node_location, fn n -> n.id == @user_node_id end)
                 |> then(fn n -> if n, do: n.name, else: "Not assigned" end)}
               </div>
             <% else %>
-              <div class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+              <div class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md surface-raised text-secondary cursor-not-allowed">
                 No location assigned
               </div>
             <% end %>
@@ -316,17 +316,17 @@
       </.form>
       <%!-- Active Filters Display --%>
       <%= if @active_filters_count > 0 do %>
-        <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="mt-3 pt-3 border-t border-subtle">
           <div class="flex flex-wrap gap-2">
             <%= if @filter_status != "" do %>
-              <span class="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 text-xs rounded-full">
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-tone-brand-soft text-voile-primary text-xs rounded-full">
                 <span class="font-medium">Status:</span>
                 <span class="capitalize">{@filter_status}</span>
               </span>
             <% end %>
 
             <%= if @filter_access_level != "" do %>
-              <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs rounded-full">
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-tone-success-soft text-voile-success text-xs rounded-full">
                 <span class="font-medium">Access:</span>
                 <span class="capitalize">{@filter_access_level}</span>
               </span>
@@ -339,7 +339,7 @@
             <% end %>
 
             <%= if @filter_node_id != "" do %>
-              <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-tone-info-soft text-voile-info text-xs rounded-full">
                 <span class="font-medium">Location:</span>
                 <span>
                   {Enum.find(@node_location, fn n -> to_string(n.id) == @filter_node_id end)
@@ -546,19 +546,19 @@
                 <td class="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">
                   <%= case collection.status do %>
                     <% "draft" -> %>
-                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 capitalize">
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full surface-raised capitalize">
                         {gettext("Draft")}
                       </span>
                     <% "pending" -> %>
-                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-yellow-100 dark:bg-yellow-600 capitalize">
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-tone-warning-soft capitalize">
                         {gettext("Pending")}
                       </span>
                     <% "published" -> %>
-                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-600 capitalize">
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-tone-success-soft capitalize">
                         {gettext("Published")}
                       </span>
                     <% _ -> %>
-                      <span class="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-600 capitalize">
+                      <span class="inline-flex px-2 py-1 text-xs rounded-full surface-raised capitalize">
                         {collection.status || "-"}
                       </span>
                   <% end %>
@@ -609,11 +609,12 @@
           </tbody>
         </table>
       </div>
-      <.pagination page={@page} total_pages={@total_pages} event="paginate" />
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
     <% end %>
 
-    <.collection_modal
+    <.modal
       :if={@live_action in [:new, :edit]}
+      full
       id="collection-modal"
       show
       on_cancel={JS.patch(~p"/manage/catalog/collections")}
@@ -637,16 +638,17 @@
         external_book={@external_book}
         external_collection_fields={@external_collection_fields}
       />
-    </.collection_modal>
+    </.modal>
 
     <%!-- Collection Search Modal --%>
-    <.collection_modal
+    <.modal
       :if={@live_action == :search_collection}
+      full
       id="search-collection-modal"
       show
       on_cancel={JS.patch(~p"/manage/catalog/collections")}
     >
-      <div class="flex flex-col h-full ">
+      <div class="flex flex-col min-h-screen">
         <div class="flex-shrink-0">
           <.header>
             {gettext("Search Existing Collection")}
@@ -702,9 +704,9 @@
         <%!-- Loading Indicator --%>
         <%= if @collection_search_loading do %>
           <div class="mt-6 py-8 text-center">
-            <div class="inline-flex items-center gap-3 px-6 py-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
+            <div class="inline-flex items-center gap-3 px-6 py-3 bg-tone-brand-soft rounded-full">
               <.icon name="hero-arrow-path" class="w-6 h-6 text-indigo-500 animate-spin" />
-              <span class="text-indigo-700 dark:text-indigo-300 font-medium">
+              <span class="text-voile-primary font-medium">
                 {gettext("Searching collections and external sources...")}
               </span>
             </div>
@@ -718,17 +720,17 @@
             <%= if @collection_search_results == [] do %>
               <div class="flex-shrink-0">
                 <div class="text-center py-8">
-                  <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 max-w-md mx-auto">
+                  <div class="bg-tone-brand-soft rounded-2xl p-8 max-w-md mx-auto">
                     <.icon
                       name="hero-magnifying-glass"
                       class="w-16 h-16 mx-auto text-indigo-400 mb-4"
                     />
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 class="text-lg font-semibold text-primary mb-2">
                       {gettext("No Collections Found")}
                     </h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    <p class="text-secondary mb-4 text-sm">
                       {gettext("We couldn't find any collections matching ")}
-                      <span class="font-semibold text-indigo-600 dark:text-indigo-400">
+                      <span class="font-semibold text-voile-primary">
                         "{@collection_search_query}"
                       </span>
                     </p>
@@ -744,20 +746,20 @@
                 </div>
               </div>
             <% else %>
-              <div class="flex-shrink-0 flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex-shrink-0 flex items-center justify-between mb-3 pb-2 border-b border-subtle">
                 <div>
-                  <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                  <h3 class="text-base font-semibold text-primary">
                     {length(@collection_search_results)} {if length(@collection_search_results) ==
                                                                1,
                                                              do: gettext("Collection Found"),
                                                              else: gettext("Collections Found")}
                   </h3>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p class="text-xs text-tertiary mt-0.5">
                     {gettext("Internal collections - select one to add an item")}
                   </p>
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  <p class="text-sm text-tertiary mb-2">
                     {gettext("No Collection match ?")}
                   </p>
                   <.link
@@ -781,7 +783,7 @@
                     patch={~p"/manage/catalog/collections/add-item/#{collection.id}"}
                     class="group block"
                   >
-                    <div class="h-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg transition-all flex flex-row">
+                    <div class="h-full border border-subtle rounded-xl overflow-hidden surface-card hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg transition-all flex flex-row">
                       <%!-- Thumbnail --%>
                       <div class="relative h-full w-20 sm:w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden flex-shrink-0 flex items-center justify-center object-cover">
                         <%= if collection.thumbnail do %>
@@ -801,13 +803,13 @@
                       <%!-- Collection Info --%>
                       <div class="p-3 flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <h4 class="text-sm font-medium text-primary truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {collection.title}
                           </h4>
 
                           <%!-- Author --%>
                           <%= if collection.mst_creator do %>
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                            <p class="text-xs text-secondary mt-0.5 truncate">
                               <.icon name="hero-user" class="w-3 h-3 inline mr-1" />
                               {collection.mst_creator.creator_name}
                             </p>
@@ -835,13 +837,13 @@
                               <span class={[
                                 "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium",
                                 collection.status == "published" &&
-                                  "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+                                  "bg-tone-success-soft text-voile-success",
                                 collection.status == "draft" &&
-                                  "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+                                  "surface-raised text-secondary",
                                 collection.status == "pending" &&
-                                  "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+                                  "bg-tone-warning-soft text-voile-warning",
                                 collection.status == "archived" &&
-                                  "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                                  "bg-tone-error-soft text-voile-error"
                               ]}>
                                 <.icon name="hero-shield-check" class="w-3 h-3" />
                                 {String.capitalize(collection.status)}
@@ -850,7 +852,7 @@
 
                             <%!-- Items Count Badge --%>
                             <% item_count = length(collection.items || []) %>
-                            <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full font-medium">
+                            <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-tone-info-soft text-voile-info rounded-full font-medium">
                               <.icon name="hero-rectangle-stack" class="w-3 h-3" />
                               {item_count} {if item_count == 1,
                                 do: gettext("item"),
@@ -860,7 +862,7 @@
                             <%!-- Node Location Badge --%>
                             <%= if collection.node do %>
                               <span
-                                class="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full font-medium"
+                                class="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-tone-brand-soft text-voile-primary rounded-full font-medium"
                                 title={collection.node.name}
                               >
                                 <.icon name="hero-map-pin" class="w-3 h-3" />
@@ -888,8 +890,8 @@
 
             <%!-- External Book Results - Below Internal Results --%>
             <%= if @external_book_loading do %>
-              <div class="flex-shrink-0 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-2 py-3 text-sm text-gray-500 dark:text-gray-400">
+              <div class="flex-shrink-0 mt-4 pt-4 border-t border-subtle">
+                <div class="flex items-center gap-2 py-3 text-sm text-tertiary">
                   <span class="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin">
                   </span>
                   {gettext("Searching external sources…")}
@@ -897,23 +899,23 @@
               </div>
             <% end %>
             <%= if @external_book_performed do %>
-              <div class="flex-shrink-0 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex-shrink-0 mt-4 pt-4 border-t border-subtle">
                 <%= if @external_book_results == [] do %>
                   <div class="text-center py-4">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-tertiary">
                       {gettext("No external books found for \"{query}\"",
                         query: @collection_search_query
                       )}
                     </p>
                   </div>
                 <% else %>
-                  <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <div class="flex items-center justify-between mb-3 pb-2 border-b border-subtle">
                     <div>
-                      <h4 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <h4 class="text-base font-semibold text-primary flex items-center gap-2">
                         <.icon name="hero-globe-alt" class="w-4 h-4 text-blue-500" />
                         {gettext("External Sources")}
                       </h4>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p class="text-xs text-tertiary mt-0.5">
                         {length(@external_book_results)} {gettext(
                           "books from OpenLibrary, Google Books & OpenAlex"
                         )}
@@ -928,12 +930,12 @@
                     <div class="space-y-2 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-2">
                       <div
                         :for={book <- @external_book_results}
-                        class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer group"
+                        class="flex items-start p-3 border border-subtle rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer group"
                         phx-click="select_external_book"
                         phx-value-book={Jason.encode!(book)}
                       >
                         <%!-- Thumbnail --%>
-                        <div class="relative w-12 h-16 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                        <div class="relative w-12 h-16 surface-raised rounded overflow-hidden flex-shrink-0">
                           <%= if book.thumbnail do %>
                             <img
                               src={book.thumbnail}
@@ -950,7 +952,7 @@
                         <%!-- Book Info --%>
                         <div class="ml-3 flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-1">
-                            <h5 class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <h5 class="text-sm font-medium text-primary truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {book.title}
                             </h5>
                             <%!-- Source Badge --%>
@@ -980,7 +982,7 @@
                               <% end %>
                             </span>
                           </div>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          <p class="text-xs text-tertiary truncate">
                             <%= if book.authors && book.authors != [] do %>
                               {Enum.join(book.authors, ", ")}
                               <%= if book.published_date do %>
@@ -1006,7 +1008,7 @@
                       </div>
                     </div>
                   </div>
-                  <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">
+                  <p class="text-xs text-center text-tertiary mt-3">
                     {gettext("Click a book to create a new collection with prefilled data")}
                   </p>
                 <% end %>
@@ -1019,15 +1021,15 @@
         <%= if not @collection_search_performed and not @collection_search_loading do %>
           <div class="flex-1 flex items-center justify-center">
             <div class="text-center py-16 px-8">
-              <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-12 max-w-md mx-auto">
+              <div class="bg-tone-brand-soft rounded-2xl p-12 max-w-md mx-auto">
                 <.icon
                   name="hero-magnifying-glass"
                   class="w-20 h-20 mx-auto text-indigo-400 mb-6"
                 />
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                <h3 class="text-xl font-semibold text-primary mb-3">
                   {gettext("Find Your Collection")}
                 </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-8 text-base leading-relaxed">
+                <p class="text-secondary mb-8 text-base leading-relaxed">
                   {gettext(
                     "Start typing above to search for an existing collection to add new item to the collection, or create a brand new collection if there is no collection exist."
                   )}
@@ -1045,11 +1047,12 @@
           </div>
         <% end %>
       </div>
-    </.collection_modal>
+    </.modal>
 
     <%!-- Item Form Modal --%>
-    <.collection_modal
+    <.modal
       :if={@live_action == :add_item_to_collection}
+      full
       id="item-form-modal"
       show
       on_cancel={JS.patch(~p"/manage/catalog/collections/search")}
@@ -1069,7 +1072,7 @@
         current_user={@current_user}
         patch={~p"/manage/catalog/collections/search"}
       />
-    </.collection_modal>
+    </.modal>
 
     <%!-- confirm-close removed: it caused modal reopen issues; closing now performs a direct patch --%>
   </div>

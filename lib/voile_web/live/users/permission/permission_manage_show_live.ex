@@ -35,14 +35,14 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
 
       <div class="flex gap-4">
         <div class="w-full max-w-64">
-          <.dashboard_settings_sidebar
-            current_user={@current_scope.user}
+          <.voile_settings_nav
+            title={gettext("Settings")}
+            items={voile_settings_nav_items()}
             current_path={@current_path}
-            is_super_admin={@is_super_admin}
           />
         </div>
 
-        <div class="w-full bg-white dark:bg-gray-700 p-6 rounded-lg">
+        <div class="w-full surface-card p-6 rounded-lg">
           <div class="flex items-center justify-between mb-4">
             <.back navigate={~p"/manage/settings/permissions"}>
               {gettext("Back to Permissions")}
@@ -61,23 +61,23 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
           <div class="bg-white dark:bg-gray-900 shadow-xl rounded-xl p-8">
             <div class="space-y-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 class="text-lg font-semibold text-primary mb-4">
                   {gettext("Permission Information")}
                 </h3>
 
                 <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Name")}
                     </dt>
 
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+                    <dd class="mt-1 text-sm text-primary font-mono">
                       {@permission.name}
                     </dd>
                   </div>
 
                   <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Resource")}
                     </dt>
 
@@ -89,7 +89,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
                   </div>
 
                   <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Action")}
                     </dt>
 
@@ -101,47 +101,47 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
                   </div>
 
                   <div class="sm:col-span-2">
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Description")}
                     </dt>
 
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    <dd class="mt-1 text-sm text-primary">
                       {@permission.description || gettext("No description provided")}
                     </dd>
                   </div>
 
                   <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Created At")}
                     </dt>
 
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    <dd class="mt-1 text-sm text-primary">
                       {Calendar.strftime(@permission.inserted_at, "%B %d, %Y %I:%M %p")}
                     </dd>
                   </div>
 
                   <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <dt class="text-sm font-medium text-tertiary">
                       {gettext("Updated At")}
                     </dt>
 
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    <dd class="mt-1 text-sm text-primary">
                       {Calendar.strftime(@permission.updated_at, "%B %d, %Y %I:%M %p")}
                     </dd>
                   </div>
                 </dl>
               </div>
 
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h4 class="text-md font-semibold text-gray-900 dark:text-white mb-4">
+              <div class="border-t border-subtle pt-6">
+                <h4 class="text-md font-semibold text-primary mb-4">
                   {gettext("Roles with This Permission")}
-                  <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  <span class="text-sm font-normal text-tertiary">
                     ({length(@roles)} {gettext("role")}{if length(@roles) != 1, do: gettext("s")})
                   </span>
                 </h4>
 
                 <%= if @roles == [] do %>
-                  <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div class="text-center py-8 text-tertiary">
                     <.icon name="hero-shield-exclamation" class="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>{gettext("No roles currently have this permission")}</p>
                   </div>
@@ -152,10 +152,10 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
                         <div class="flex items-center gap-3">
                           <.icon
                             name="hero-shield-check"
-                            class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                            class="w-5 h-5 text-voile-info"
                           />
                           <div>
-                            <div class="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            <div class="font-medium text-primary flex items-center gap-2">
                               {String.capitalize(role.name)}
                               <%= if role.is_system_role do %>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-voile-primary/10 text-voile-primary dark:bg-voile-primary/30 dark:text-voile-primary">
@@ -165,7 +165,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
                             </div>
 
                             <%= if role.description do %>
-                              <div class="text-sm text-gray-500 dark:text-gray-400">
+                              <div class="text-sm text-tertiary">
                                 {role.description}
                               </div>
                             <% end %>
@@ -174,7 +174,7 @@ defmodule VoileWeb.Users.Permission.ManageLive.Show do
 
                         <.link
                           navigate={~p"/manage/settings/roles/#{role.id}"}
-                          class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                          class="text-sm text-voile-info hover:text-blue-800 dark:hover:text-blue-300"
                         >
                           {gettext("View Role →")}
                         </.link>

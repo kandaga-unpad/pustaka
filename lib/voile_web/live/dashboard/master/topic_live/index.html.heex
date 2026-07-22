@@ -1,56 +1,73 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Topics")}
+  icon="hero-tag"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button tone={:brand} variant={:solid} size={:md} href={~p"/manage/master/topics/new"}>
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New topic")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Topics")}
-    <:actions>
-      <.link patch={~p"/manage/master/topics/new"}>
-        <.button>{gettext("New Topic")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="topics"
-    rows={@topics || []}
-    row_click={fn topic -> JS.navigate(~p"/manage/master/topics/#{topic.id}") end}
-  >
-    <:col :let={t} label={gettext("Name")}>{t.name}</:col>
-
-    <:col :let={t} label={gettext("Type")}>{t.type}</:col>
-
-    <:col :let={t} label={gettext("Description")}>{t.description}</:col>
-
-    <:action :let={t}>
-      <div class="sr-only">
-        <.link navigate={~p"/manage/master/topics/#{t.id}"}>{gettext("Show")}</.link>
-      </div>
-      <.link patch={~p"/manage/master/topics/#{t.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={t}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: t.id}) |> hide("##{t.id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @topics == [] do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="topics"
+        rows={@topics || []}
+        row_click={fn topic -> JS.navigate(~p"/manage/master/topics/#{topic.id}") end}
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="topic-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/topics")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.TopicLive.FormComponent}
-      id={(@topic && @topic.id) || :new}
-      title={@page_title}
-      action={@live_action}
-      topic={@topic}
-      patch={~p"/manage/master/topics"}
-    />
-  </.modal>
-</section>
+        <:col :let={t} label={gettext("Name")}>{t.name}</:col>
+
+        <:col :let={t} label={gettext("Type")}>{t.type}</:col>
+
+        <:col :let={t} label={gettext("Description")}>{t.description}</:col>
+
+        <:action :let={t}>
+          <div class="sr-only">
+            <.link navigate={~p"/manage/master/topics/#{t.id}"}>{gettext("Show")}</.link>
+          </div>
+          <.link patch={~p"/manage/master/topics/#{t.id}/edit"}>{gettext("Edit")}</.link>
+        </:action>
+
+        <:action :let={t}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: t.id}) |> hide("##{t.id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="topic-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/topics")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.TopicLive.FormComponent}
+        id={(@topic && @topic.id) || :new}
+        title={@page_title}
+        action={@live_action}
+        topic={@topic}
+        patch={~p"/manage/master/topics"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

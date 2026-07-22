@@ -12,6 +12,12 @@ defmodule VoileWeb.Dashboard.MetaResource.ResourceTemplateLive.Edit do
      socket
      |> assign(:resource_template, resource_template)
      |> assign(:page_title, gettext("Edit Resource Template"))
+     |> assign(:breadcrumb, [
+       %{label: gettext("Manage"), path: "/manage"},
+       %{label: gettext("Metaresource"), path: "/manage/metaresource"},
+       %{label: gettext("Resource template"), path: "/manage/metaresource/resource_template"},
+       %{label: gettext("Edit"), path: nil}
+     ])
      |> assign(:live_action, :edit)}
   end
 

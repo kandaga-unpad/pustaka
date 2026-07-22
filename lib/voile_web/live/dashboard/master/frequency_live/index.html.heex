@@ -1,53 +1,75 @@
-<section class="flex flex-col gap-4">
-  <.back navigate="/manage/master">{gettext("Kembali")}</.back>
+<.voile_page_header
+  eyebrow={gettext("Master data")}
+  title={gettext("Frequencies")}
+  icon="hero-calendar-days"
+  tone={:brand}
+>
+  <:actions>
+    <.voile_button
+      tone={:brand}
+      variant={:solid}
+      size={:md}
+      href={~p"/manage/master/frequencies/new"}
+    >
+      <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New frequency")}
+    </.voile_button>
+  </:actions>
+</.voile_page_header>
 
-  <.header>
-    {gettext("Listing Frequencies")}
-    <:actions>
-      <.link patch={~p"/manage/master/frequencies/new"}>
-        <.button>{gettext("New Frequency")}</.button>
-      </.link>
-    </:actions>
-  </.header>
-
-  <.table
-    id="frequencies"
-    rows={@frequencies || []}
-    row_click={fn f -> JS.navigate(~p"/manage/master/frequencies/#{f.id}") end}
-  >
-    <:col :let={f} label={gettext("Frequency")}>{f.frequency}</:col>
-
-    <:col :let={f} label={gettext("Increment")}>{f.time_increment}</:col>
-
-    <:col :let={f} label={gettext("Unit")}>{f.time_unit}</:col>
-
-    <:action :let={f}>
-      <.link patch={~p"/manage/master/frequencies/#{f.id}/edit"}>{gettext("Edit")}</.link>
-    </:action>
-
-    <:action :let={f}>
-      <.link
-        phx-click={JS.push("delete", value: %{id: f.id}) |> hide("##{f.id}")}
-        data-confirm={gettext("Are you sure?")}
+<.voile_settings_shell
+  title={gettext("Master data")}
+  items={voile_master_nav_items()}
+  current_path={@current_path}
+>
+  <section class="flex flex-col gap-4">
+    <%= if @frequencies == [] do %>
+      <.voile_empty_state
+        icon="hero-inbox"
+        title={gettext("No data available")}
+        description={gettext("There are no records yet. Create one to get started.")}
+        tone={:info}
+      />
+    <% else %>
+      <.table
+        id="frequencies"
+        rows={@frequencies || []}
+        row_click={fn f -> JS.navigate(~p"/manage/master/frequencies/#{f.id}") end}
       >
-        {gettext("Delete")}
-      </.link>
-    </:action>
-  </.table>
-  <.pagination page={@page} total_pages={@total_pages} event="paginate" />
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="frequency-modal"
-    show
-    on_cancel={JS.patch(~p"/manage/master/frequencies")}
-  >
-    <.live_component
-      module={VoileWeb.Dashboard.Master.FrequencyLive.FormComponent}
-      id={(@frequency && @frequency.id) || :new}
-      title={@page_title}
-      action={@live_action}
-      frequency={@frequency}
-      patch={~p"/manage/master/frequencies"}
-    />
-  </.modal>
-</section>
+        <:col :let={f} label={gettext("Frequency")}>{f.frequency}</:col>
+
+        <:col :let={f} label={gettext("Increment")}>{f.time_increment}</:col>
+
+        <:col :let={f} label={gettext("Unit")}>{f.time_unit}</:col>
+
+        <:action :let={f}>
+          <.link patch={~p"/manage/master/frequencies/#{f.id}/edit"}>{gettext("Edit")}</.link>
+        </:action>
+
+        <:action :let={f}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: f.id}) |> hide("##{f.id}")}
+            data-confirm={gettext("Are you sure?")}
+          >
+            {gettext("Delete")}
+          </.link>
+        </:action>
+      </.table>
+      <.voile_pagination page={@page} total_pages={@total_pages} event="paginate" />
+    <% end %>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="frequency-modal"
+      show
+      on_cancel={JS.patch(~p"/manage/master/frequencies")}
+    >
+      <.live_component
+        module={VoileWeb.Dashboard.Master.FrequencyLive.FormComponent}
+        id={(@frequency && @frequency.id) || :new}
+        title={@page_title}
+        action={@live_action}
+        frequency={@frequency}
+        patch={~p"/manage/master/frequencies"}
+      />
+    </.modal>
+  </section>
+</.voile_settings_shell>

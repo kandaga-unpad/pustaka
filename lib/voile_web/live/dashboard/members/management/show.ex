@@ -481,7 +481,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       <.breadcrumb items={@breadcrumb_items} />
 
       <%!-- Member Header --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg p-6">
+      <div class="surface-card shadow-sm rounded-lg p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div class="flex-shrink-0 h-16 w-16">
@@ -500,9 +500,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
               <% end %>
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{@member.fullname}</h1>
+              <h1 class="text-2xl font-bold text-primary">{@member.fullname}</h1>
               <p class="text-gray-600 dark:text-gray-300">{@member.email}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">@{@member.username}</p>
+              <p class="text-sm text-tertiary">@{@member.username}</p>
             </div>
           </div>
 
@@ -539,8 +539,8 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
       </div>
 
       <%!-- Tabs --%>
-      <div class="bg-white dark:bg-gray-700 shadow-sm rounded-lg">
-        <div class="border-b border-gray-200 dark:border-gray-600">
+      <div class="surface-card shadow-sm rounded-lg">
+        <div class="border-b border-subtle">
           <nav class="flex flex-wrap gap-2 text-sm">
             <.tab_button
               active={@active_tab == "overview"}
@@ -657,9 +657,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
         id="suspend-modal"
       >
-        <div class="relative top-20 mx-auto w-full max-w-lg p-5 border shadow-lg rounded-md bg-white dark:bg-gray-700">
+        <div class="relative top-20 mx-auto w-full max-w-lg p-5 border shadow-lg rounded-md surface-card">
           <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <h3 class="text-lg font-medium text-primary mb-4">
               {gettext("Suspend Member")}
             </h3>
             <.form for={@suspend_form} phx-submit="confirm_suspend" class="space-y-4">
@@ -772,7 +772,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
   defp assign_password_form_if_needed(socket) do
     if socket.assigns.active_tab == "change_password" do
-      assign(socket, :password_form, to_form(%{"new_password" => "", "confirm_password" => ""}))
+      assign(
+        socket,
+        :password_form,
+        to_form(%{"new_password" => "", "confirm_password" => ""})
+      )
     else
       socket
     end

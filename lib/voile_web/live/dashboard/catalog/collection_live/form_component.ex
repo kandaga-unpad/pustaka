@@ -275,7 +275,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <label class="block text-sm font-medium mb-2 label">
                 {gettext("Collection Location (Your Unit)")}
               </label>
-              <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md surface-raised text-secondary">
                 {Enum.find(@node_list, fn n -> n.id == @current_scope.user.node_id end)
                 |> then(fn n -> if n, do: n.name, else: gettext("Unknown") end)}
               </div>
@@ -407,7 +407,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             />
           <% else %>
             <input type="hidden" name={@form[:status].name} value={@form[:status].value || "pending"} />
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p class="text-sm text-secondary mb-4">
               <strong>{gettext("Note:")}</strong>
               {gettext(
                 "Click \"Save Collection\" to submit for review (pending), or \"Save as Draft\" to save without submitting."
@@ -543,7 +543,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                         {col_field[:label].value}
                       </h6>
 
-                      <div class="flex flex-col w-full bg-gray-100 dark:bg-gray-600 p-4 rounded-b-xl mb-4">
+                      <div class="flex flex-col w-full surface-raised p-4 rounded-b-xl mb-4">
                         <p class="text-gray-500 dark:text-white italic pb-4">
                           <% mp = Map.get(col_field.data, :metadata_properties) %> {cond do
                             col_field[:information].value not in [nil, ""] ->
@@ -670,7 +670,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
               <% else %>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 my-10">
                   <.inputs_for :let={item_field} field={@form[:items]}>
-                    <div class="bg-gray-200 dark:bg-gray-600 rounded-lg p-5">
+                    <div class="surface-raised rounded-lg p-5">
                       <div class="w-full flex items-center gap-3 mt-2">
                         <%= if item_field[:id].value != nil do %>
                           <.button
@@ -780,7 +780,7 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
                           <label class="block text-sm font-medium mb-2 label">
                             {gettext("Unit Location")}
                           </label>
-                          <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                          <div class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md surface-raised text-secondary">
                             {Enum.find(@node_list, fn n -> n.id == item_field[:unit_id].value end)
                             |> then(fn n -> if n, do: n.name, else: gettext("Unknown") end)}
                           </div>

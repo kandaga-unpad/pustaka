@@ -28,8 +28,14 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
       socket =
         socket
         |> assign(:page_title, gettext("Listing Member Types"))
+        |> assign(:breadcrumb, [
+          %{label: gettext("Manage"), path: "/manage"},
+          %{label: gettext("Master data"), path: "/manage/master"},
+          %{label: gettext("Member types"), path: nil}
+        ])
         |> assign(:live_action, :index)
         |> stream(:member_types, member_types)
+        |> assign(:member_types_empty?, member_types == [])
         |> assign(:page, page)
         |> assign(:total_pages, total_pages)
 
@@ -78,7 +84,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 10
     {member_types, total_pages, _} = Master.list_mst_member_types_paginated(page, per_page)
 
@@ -86,6 +92,7 @@ defmodule VoileWeb.Dashboard.Master.MemberTypeLive.Index do
       socket
       # reset the stream with the new page of member_types
       |> stream(:member_types, member_types, reset: true)
+      |> assign(:member_types_empty?, member_types == [])
       |> assign(:page, page)
       |> assign(:total_pages, total_pages)
 

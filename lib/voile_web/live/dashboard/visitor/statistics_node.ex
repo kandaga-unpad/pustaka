@@ -144,10 +144,10 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
     ~H"""
     <div class="space-y-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-2xl font-bold text-primary">
           {gettext("Location/Faculty Monthly Visitor Summary")}
         </h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p class="text-sm text-secondary mt-1">
           {gettext("Monthly visitor totals by location for the selected year.")}
         </p>
       </div>
@@ -156,13 +156,13 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
         <.back navigate="/manage/visitor/statistics">{gettext("Back to Visitor Statistics")}</.back>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{gettext("Filters")}</h2>
+          <h2 class="text-lg font-semibold text-primary">{gettext("Filters")}</h2>
           <button
             type="button"
             phx-click="refresh"
-            class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
+            class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-tone-info-soft dark:hover:bg-blue-600 text-white rounded-lg flex items-center"
           >
             <.icon name="hero-arrow-path" class="w-4 h-4 mr-1" /> {gettext("Refresh")}
           </button>
@@ -172,7 +172,7 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
           <%= if @is_super_admin do %>
             <form phx-change="filter_node">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-secondary mb-1">
                   {gettext("Location/Faculty")}
                 </label>
                 <select
@@ -192,10 +192,10 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
             </form>
           <% else %>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("Location/Faculty")}
               </label>
-              <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600">
+              <div class="w-full px-3 py-2 surface-raised text-secondary rounded-lg border border-gray-300 dark:border-gray-600">
                 {Enum.find(@nodes, fn node -> node.id == @selected_node_id end)
                 |> then(fn node -> node && node.name end) || gettext("Your Location")}
               </div>
@@ -204,7 +204,7 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
 
           <form phx-change="update_year">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 {gettext("Year")}
               </label>
               <input
@@ -220,20 +220,20 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
         </div>
       </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="surface-card rounded-lg shadow p-6">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
           <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-xl font-semibold text-primary">
               {gettext("Monthly Visitor Totals")}
             </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
+            <p class="text-sm text-secondary">
               {gettext("Year %{year}", year: @selected_year)}
             </p>
           </div>
 
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 px-4 py-3">
-            <div class="text-sm text-gray-500 dark:text-gray-400">{gettext("Total visitors")}</div>
-            <div class="text-3xl font-bold text-green-600 dark:text-green-400">
+          <div class="rounded-lg border border-subtle bg-gray-50 dark:bg-gray-700 px-4 py-3">
+            <div class="text-sm text-tertiary">{gettext("Total visitors")}</div>
+            <div class="text-3xl font-bold text-voile-success">
               {format_number(@year_total)}
             </div>
           </div>
@@ -241,7 +241,7 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
 
         <div class="overflow-x-auto">
           <table class="min-w-full text-left text-sm text-gray-700 dark:text-gray-200">
-            <thead class="border-b border-gray-200 dark:border-gray-700">
+            <thead class="border-b border-subtle">
               <tr>
                 <th class="px-3 py-3 font-medium">{gettext("Location")}</th>
                 <th class="px-3 py-3 font-medium">Jan</th>
@@ -261,8 +261,8 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
             </thead>
             <tbody>
               <%= for stats <- @node_monthly_stats do %>
-                <tr class="border-b border-gray-200 dark:border-gray-700">
-                  <td class="px-3 py-3 font-medium text-gray-900 dark:text-white">
+                <tr class="border-b border-subtle">
+                  <td class="px-3 py-3 font-medium text-primary">
                     {stats.node_name}
                   </td>
                   <%= for month <- 1..12 do %>
@@ -273,7 +273,7 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
               <% end %>
             </tbody>
             <tfoot>
-              <tr class="border-t border-gray-200 dark:border-gray-700 font-semibold bg-gray-50 dark:bg-gray-900">
+              <tr class="border-t border-subtle font-semibold bg-gray-50 dark:bg-gray-900">
                 <td class="px-3 py-3">{gettext("Total")}</td>
                 <%= for month <- 1..12 do %>
                   <td class="px-3 py-3">{format_number(Map.get(@total_monthly_counts, month, 0))}</td>
@@ -287,7 +287,7 @@ defmodule VoileWeb.Dashboard.Visitor.StatisticsNode do
         <%= if @node_monthly_stats == [] do %>
           <div class="mt-6 p-6 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
             <.icon name="hero-users" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
-            <p class="text-gray-600 dark:text-gray-400">
+            <p class="text-secondary">
               {gettext("No visitor data found for the selected filters.")}
             </p>
           </div>

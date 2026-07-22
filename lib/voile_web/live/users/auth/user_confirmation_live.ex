@@ -7,10 +7,10 @@ defmodule VoileWeb.UserConfirmationLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-2xl px-4 py-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <div class="surface-card rounded-lg shadow-lg p-8">
           <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
-              <.icon name="hero-envelope" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-tone-info-soft rounded-full mb-4">
+              <.icon name="hero-envelope" class="w-8 h-8 text-voile-info" />
             </div>
             <div class="text-center">
               <.header>
@@ -23,20 +23,20 @@ defmodule VoileWeb.UserConfirmationLive do
           </div>
 
           <%= if @user do %>
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+            <div class="bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
               <div class="flex items-start gap-3">
                 <div class="flex-shrink-0">
-                  <.icon name="hero-user-circle" class="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                  <.icon name="hero-user-circle" class="w-10 h-10 text-voile-info" />
                 </div>
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <p class="text-sm font-medium text-secondary mb-1">
                     {gettext("Confirming account for:")}
                   </p>
-                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p class="text-lg font-semibold text-primary">
                     {@user.email}
                   </p>
                   <%= if @user.fullname do %>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p class="text-sm text-secondary mt-1">
                       {@user.fullname}
                     </p>
                   <% end %>
@@ -49,25 +49,25 @@ defmodule VoileWeb.UserConfirmationLive do
 
               <div class="space-y-4">
                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                  <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <ul class="space-y-2 text-sm text-secondary">
                     <li class="flex items-start gap-2">
                       <.icon
                         name="hero-check-circle"
-                        class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                        class="w-5 h-5 text-voile-success flex-shrink-0 mt-0.5"
                       />
                       <span>{gettext("Access to all platform features")}</span>
                     </li>
                     <li class="flex items-start gap-2">
                       <.icon
                         name="hero-check-circle"
-                        class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                        class="w-5 h-5 text-voile-success flex-shrink-0 mt-0.5"
                       />
                       <span>{gettext("Secure your account with email verification")}</span>
                     </li>
                     <li class="flex items-start gap-2">
                       <.icon
                         name="hero-check-circle"
-                        class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
+                        class="w-5 h-5 text-voile-success flex-shrink-0 mt-0.5"
                       />
                       <span>{gettext("Receive important notifications and updates")}</span>
                     </li>
@@ -84,19 +84,19 @@ defmodule VoileWeb.UserConfirmationLive do
               </div>
             </.form>
           <% else %>
-            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
+            <div class="bg-tone-error-soft border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
               <div class="flex items-start gap-3">
                 <div class="flex-shrink-0">
                   <.icon
                     name="hero-exclamation-triangle"
-                    class="w-6 h-6 text-red-600 dark:text-red-400"
+                    class="w-6 h-6 text-voile-error"
                   />
                 </div>
                 <div class="flex-1">
-                  <p class="font-medium text-red-800 dark:text-red-300 mb-1">
+                  <p class="font-medium text-voile-error mb-1">
                     {gettext("Invalid Confirmation Link")}
                   </p>
-                  <p class="text-sm text-red-700 dark:text-red-400">
+                  <p class="text-sm text-voile-error">
                     {gettext(
                       "This confirmation link is invalid or has expired. Please request a new confirmation email."
                     )}
@@ -113,21 +113,21 @@ defmodule VoileWeb.UserConfirmationLive do
             </.link>
           <% end %>
 
-          <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+          <div class="mt-8 pt-6 border-t border-subtle">
+            <p class="text-center text-sm text-secondary">
               {gettext("Already confirmed your account?")}
               <.link
                 href={~p"/login"}
-                class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                class="text-voile-info hover:underline font-medium"
               >
                 {gettext("Sign in")}
               </.link>
             </p>
-            <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <p class="text-center text-sm text-secondary mt-2">
               {gettext("Don't have an account?")}
               <.link
                 href={~p"/register"}
-                class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                class="text-voile-info hover:underline font-medium"
               >
                 {gettext("Register")}
               </.link>

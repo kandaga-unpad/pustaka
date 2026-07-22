@@ -75,20 +75,20 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
           %{label: "Report", path: nil}
         ]} />
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white mt-3">Read On Spot — Report</h1>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+        <p class="text-tertiary text-sm mt-1">
           In-library item usage statistics by location.
         </p>
       </div>
       <%!-- Filters --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-5">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
+      <div class="surface-card rounded-lg shadow-sm p-4 mb-5">
+        <h2 class="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
           Filters
         </h2>
         <.form for={@filter_form} id="report-filter-form" phx-change="apply_filters">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <%!-- Report type toggle --%>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 Report Type
               </label>
               <div class="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
@@ -100,8 +100,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                     "flex-1 px-3 py-2 text-sm font-medium transition",
                     if(@report_type == "daily",
                       do: "bg-blue-600 text-white",
-                      else:
-                        "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      else: "surface-card text-secondary hover:bg-gray-50 dark:hover:bg-gray-600"
                     )
                   ]}
                 >
@@ -115,8 +114,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                     "flex-1 px-3 py-2 text-sm font-medium border-l border-gray-300 dark:border-gray-600 transition",
                     if(@report_type == "monthly",
                       do: "bg-blue-600 text-white",
-                      else:
-                        "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      else: "surface-card text-secondary hover:bg-gray-50 dark:hover:bg-gray-600"
                     )
                   ]}
                 >
@@ -127,13 +125,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
             <%!-- Node filter (super_admin only) --%>
             <%= if @is_super_admin do %>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-secondary mb-1">
                   Node / Branch
                 </label>
                 <select
                   id="report-node-select"
                   name="node_id"
-                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Nodes</option>
                   <%= for node <- @nodes do %>
@@ -149,13 +147,13 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
             <% end %>
             <%!-- Location filter --%>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 Location
               </label>
               <select
                 id="report-location-select"
                 name="location_id"
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 disabled={@locations == []}
               >
                 <option value="">All Locations</option>
@@ -171,7 +169,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
             </div>
             <%!-- Date From --%>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 <%= if @report_type == "daily" do %>
                   From Date
                 <% else %>
@@ -183,12 +181,12 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 id="date-from"
                 name="date_from"
                 value={date_input_value(@date_from, @report_type)}
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <%!-- Date To --%>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-secondary mb-1">
                 <%= if @report_type == "daily" do %>
                   To Date
                 <% else %>
@@ -200,14 +198,14 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 id="date-to"
                 name="date_to"
                 value={date_input_value(@date_to, @report_type)}
-                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 dark:border-gray-600 surface-card text-primary px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
         </.form>
       </div>
       <%!-- Report Table --%>
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+      <div class="surface-card rounded-lg shadow-sm overflow-hidden">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -240,22 +238,22 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
               <tr class={[
                 "border-t border-gray-100 dark:border-gray-700 cursor-pointer group",
                 if(rem(idx, 2) == 0,
-                  do: "bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20",
+                  do: "surface-card hover:bg-blue-50 dark:hover:bg-blue-900/20",
                   else: "bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 )
               ]}>
                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">
                   {format_period(row, @report_type)}
                 </td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{row.node_name}</td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{row.location_name}</td>
-                <td class="px-4 py-3 text-right font-semibold text-blue-700 dark:text-blue-400">
+                <td class="px-4 py-3 text-secondary">{row.node_name}</td>
+                <td class="px-4 py-3 text-secondary">{row.location_name}</td>
+                <td class="px-4 py-3 text-right font-semibold text-voile-info">
                   {row.count}
                 </td>
                 <td class="px-4 py-3 text-right">
                   <.link
                     navigate={detail_path(row, @report_type)}
-                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition"
+                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-voile-info dark:hover:text-blue-200 transition"
                   >
                     Detail <.icon name="hero-arrow-right" class="w-3 h-3" />
                   </.link>
@@ -264,7 +262,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
             <% end %>
           </tbody>
           <%= if @report_data != [] do %>
-            <tfoot class="bg-gray-50 dark:bg-gray-700 border-t-2 border-gray-200 dark:border-gray-600">
+            <tfoot class="bg-gray-50 dark:bg-gray-700 border-t-2 border-subtle">
               <tr>
                 <td
                   colspan="3"
@@ -272,7 +270,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 >
                   Total (this page)
                 </td>
-                <td class="px-4 py-2 text-right font-bold text-blue-700 dark:text-blue-400">
+                <td class="px-4 py-2 text-right font-bold text-voile-info">
                   {Enum.sum(Enum.map(@report_data, & &1.count))}
                 </td>
                 <td></td>
@@ -284,7 +282,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
       <%!-- Pagination --%>
       <%= if @report_total_pages > 1 do %>
         <div class="flex items-center justify-between mt-4">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-tertiary">
             Showing {@report_page * @per_page - @per_page + 1}–{min(
               @report_page * @per_page,
               @report_total
@@ -296,7 +294,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 type="button"
                 phx-click="report_page"
                 phx-value-page={@report_page - 1}
-                class="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                class="px-3 py-1.5 text-sm rounded-lg surface-raised text-secondary hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 ← Prev
               </button>
@@ -309,7 +307,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.ReadOnSpotLive.Report do
                 type="button"
                 phx-click="report_page"
                 phx-value-page={@report_page + 1}
-                class="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                class="px-3 py-1.5 text-sm rounded-lg surface-raised text-secondary hover:bg-gray-200 dark:hover:bg-gray-600 transition"
               >
                 Next →
               </button>

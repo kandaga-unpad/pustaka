@@ -22,6 +22,11 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
     socket =
       socket
       |> assign(:page_title, "Library Dashboard")
+      |> assign(:breadcrumb, [
+        %{label: gettext("Manage"), path: "/manage"},
+        %{label: gettext("GLAM"), path: "/manage/glam"},
+        %{label: gettext("Library"), path: nil}
+      ])
       |> assign(:total_collections, total_collections)
       |> assign(:total_items, total_items)
       |> assign(:published_collections, published_collections)
@@ -39,295 +44,151 @@ defmodule VoileWeb.Dashboard.Glam.Library.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="space-y-6">
-      <%!-- Breadcrumb --%>
-      <.breadcrumb items={[
-        %{label: gettext("Manage"), path: ~p"/manage"},
-        %{label: gettext("GLAM"), path: ~p"/manage/glam"},
-        %{label: gettext("Library"), path: nil}
-      ]} /> <%!-- Page Header --%>
-      <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl p-8 text-white shadow-lg">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold mb-2">{gettext("Library Management")}</h1>
-
-            <p class="text-white text-lg">
-              {gettext("Manage library collections, circulation, and items")}
-            </p>
-          </div>
-
-          <div class="hidden md:block">
-            <.icon name="hero-book-open" class="w-24 h-24 opacity-20" />
-          </div>
-        </div>
-      </div>
-      <%!-- Quick Actions --%>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <.link
-          navigate="/manage/catalog/collections?glam_type=Library"
-          class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
+    <.voile_page_header
+      eyebrow={gettext("GLAM · Library")}
+      title={gettext("Library Management")}
+      description={gettext("Manage library collections, circulation, and items")}
+      icon="hero-book-open"
+      tone={:glam_library}
+    >
+      <:actions>
+        <.voile_button
+          href="/manage/catalog/collections/new"
+          tone={:glam_library}
+          variant={:solid}
+          size={:md}
         >
-          <div class="flex items-center gap-4">
-            <div class="p-3 rounded-lg bg-voile-info/10 dark:bg-voile-info/30">
-              <.icon
-                name="hero-rectangle-stack"
-                class="w-6 h-6 text-voile-info dark:text-voile-info/60"
-              />
-            </div>
+          <.icon name="hero-plus" class="w-4 h-4" /> {gettext("New collection")}
+        </.voile_button>
+      </:actions>
+    </.voile_page_header>
 
-            <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">
-                {gettext("View Collections")}
-              </h3>
-
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                {gettext("Browse all library collections")}
-              </p>
-            </div>
-          </div>
-        </.link>
-        <.link
-          navigate="/manage/catalog/collections/new"
-          class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-center gap-4">
-            <div class="p-3 rounded-lg bg-voile-success/10 dark:bg-voile-success/30">
-              <.icon
-                name="hero-plus-circle"
-                class="w-6 h-6 text-voile-success dark:text-voile-success/60"
-              />
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("New Collection")}</h3>
-
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                {gettext("Create a new library collection")}
-              </p>
-            </div>
-          </div>
-        </.link>
-        <.link
-          navigate="/manage/catalog/items?glam_type=Library"
-          class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-center gap-4">
-            <div class="p-3 rounded-lg bg-voile-info/10 dark:bg-voile-info/30">
-              <.icon name="hero-cube" class="w-6 h-6 text-voile-info dark:text-voile-info/60" />
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 dark:text-white">{gettext("View Items")}</h3>
-
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                {gettext("Browse all library items")}
-              </p>
-            </div>
-          </div>
-        </.link>
-      </div>
-      <%!-- Statistics --%>
-      <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          {gettext("Library Statistics")}
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-voile-info dark:text-voile-info/60">
-              {@total_collections}
-            </div>
-
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {gettext("Total Collections")}
-            </div>
-          </div>
-
-          <div class="text-center">
-            <div class="text-2xl font-bold text-voile-info dark:text-voile-info/60">
-              {@total_items}
-            </div>
-
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Total Items")}</div>
-          </div>
-
-          <div class="text-center">
-            <div class="text-2xl font-bold text-voile-primary dark:text-voile-primary/60">
-              {@published_collections}
-            </div>
-
-            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{gettext("Published")}</div>
-          </div>
-        </div>
-      </div>
-      <%!-- Library Operationals --%>
-      <div class="bg-white dark:bg-gray-700 rounded-xl p-6 shadow">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          {gettext("Library Operations")}
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <%= if Authorization.is_super_admin?(@user) do %>
-            <.link
-              navigate="/manage/glam/library/circulation"
-              class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-            >
-              <div class="flex items-center justify-center gap-4 w-full h-full">
-                <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                  <.icon
-                    name="hero-arrow-path"
-                    class="w-6 h-6 text-yellow-600 dark:text-yellow-400"
-                  />
-                </div>
-
-                <div>
-                  <h5 class="font-semibold text-gray-900 dark:text-white">
-                    {gettext("Manage Circulations")}
-                  </h5>
-
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {gettext("View and manage book circulations")}
-                  </p>
-                </div>
-              </div>
-            </.link>
-          <% end %>
-
-          <.link
-            navigate="/manage/glam/library/circulation/report"
-            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="flex items-center justify-center gap-4 w-full h-full">
-              <div class="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <.icon
-                  name="hero-chart-bar"
-                  class="w-6 h-6 text-purple-600 dark:text-purple-400"
-                />
-              </div>
-
-              <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">
-                  {gettext("Circulation Report")}
-                </h5>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {gettext("View circulation statistics and activity")}
-                </p>
-              </div>
-            </div>
-          </.link>
-          <.link
-            navigate="/manage/glam/library/ledger"
-            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="flex items-center justify-center gap-4 w-full h-full">
-              <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <.icon
-                  name="hero-document-arrow-down"
-                  class="w-6 h-6 text-green-600 dark:text-green-400"
-                />
-              </div>
-
-              <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">
-                  {gettext("Start Transaction")}
-                </h5>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {gettext("Start a new transaction or return a book")}
-                </p>
-              </div>
-            </div>
-          </.link>
-          <.link
-            navigate="/manage/glam/library/read_on_spot"
-            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="flex items-center justify-center gap-4 w-full h-full">
-              <div class="p-3 rounded-lg bg-teal-100 dark:bg-teal-900/30">
-                <.icon
-                  name="hero-eye"
-                  class="w-6 h-6 text-teal-600 dark:text-teal-400"
-                />
-              </div>
-
-              <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">
-                  {gettext("Read On Spot")}
-                </h5>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {gettext("Track items read or used in-library")}
-                </p>
-              </div>
-            </div>
-          </.link>
-
-          <.link
-            navigate="/manage/glam/library/circulation/loan_reminders"
-            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="flex items-center justify-center gap-4 w-full h-full">
-              <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/30">
-                <.icon
-                  name="hero-book-open"
-                  class="w-6 h-6 text-green-600 dark:text-green-400"
-                />
-              </div>
-
-              <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">
-                  {gettext("Loan Reminders")}
-                </h5>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {gettext("View and manage loan reminders for library items")}
-                </p>
-              </div>
-            </div>
-          </.link>
-          <.link
-            navigate="/manage/glam/library/requisitions"
-            class="bg-gray-200 dark:bg-gray-600 rounded-xl p-6 shadow hover:shadow-lg transition-shadow"
-          >
-            <div class="flex items-center justify-center gap-4 w-full h-full">
-              <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <.icon
-                  name="hero-clipboard-document-list"
-                  class="w-6 h-6 text-blue-600 dark:text-blue-400"
-                />
-              </div>
-
-              <div>
-                <h5 class="font-semibold text-gray-900 dark:text-white">
-                  {gettext("Requisitions")}
-                </h5>
-
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {gettext("Manage book and resource acquisition requests")}
-                </p>
-              </div>
-            </div>
-          </.link>
-        </div>
-        <%!-- Quick Actions (full width) --%>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <button phx-click="show_quick_checkout" class="w-full btn btn-success p-5 rounded-lg">
-            <span class="flex items-center justify-center gap-2">
-              <.icon name="hero-arrow-right-circle" class="w-6 h-6" />
-              <span>{gettext("Quick Checkout")}</span>
-            </span>
-          </button>
-          <button phx-click="show_quick_return" class="w-full btn btn-warning p-5 rounded-lg">
-            <span class="flex items-center justify-center gap-2">
-              <.icon name="hero-arrow-left-circle" class="w-6 h-6" />
-              <span>{gettext("Quick Return")}</span>
-            </span>
-          </button>
-        </div>
-      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
+      <.voile_stat_card
+        label={gettext("Total collections")}
+        value={@total_collections}
+        icon="hero-rectangle-stack"
+        tone={:glam_library}
+      />
+      <.voile_stat_card
+        label={gettext("Total items")}
+        value={@total_items}
+        icon="hero-cube"
+        tone={:glam_library}
+      />
+      <.voile_stat_card
+        label={gettext("Published")}
+        value={@published_collections}
+        icon="hero-check-badge"
+        tone={:success}
+      />
     </div>
-    <!-- Quick Modals (re-use circulation components) -->
+
+    <.voile_section_card title={gettext("Quick checkout / return")} icon="hero-bolt" tone={:brand}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <.voile_button
+          tone={:success}
+          variant={:solid}
+          size={:lg}
+          phx-click="show_quick_checkout"
+          class="w-full"
+        >
+          <.icon name="hero-arrow-right-circle" class="w-5 h-5" />
+          <span>{gettext("Quick checkout")}</span>
+        </.voile_button>
+        <.voile_button
+          tone={:warning}
+          variant={:solid}
+          size={:lg}
+          phx-click="show_quick_return"
+          class="w-full"
+        >
+          <.icon name="hero-arrow-left-circle" class="w-5 h-5" />
+          <span>{gettext("Quick return")}</span>
+        </.voile_button>
+      </div>
+    </.voile_section_card>
+
+    <.voile_section_card
+      title={gettext("Quick actions")}
+      icon="hero-rectangle-group"
+      tone={:glam_library}
+    >
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <.voile_action_link
+          icon="hero-rectangle-stack"
+          tone={:glam_library}
+          label={gettext("View collections")}
+          description={gettext("Browse all library collections")}
+          href="/manage/catalog/collections?glam_type=Library"
+        />
+        <.voile_action_link
+          icon="hero-plus-circle"
+          tone={:success}
+          label={gettext("New collection")}
+          description={gettext("Create a new library collection")}
+          href="/manage/catalog/collections/new"
+        />
+        <.voile_action_link
+          icon="hero-cube"
+          tone={:info}
+          label={gettext("View items")}
+          description={gettext("Browse all library items")}
+          href="/manage/catalog/items?glam_type=Library"
+        />
+      </div>
+    </.voile_section_card>
+
+    <.voile_section_card title={gettext("Library operations")} icon="hero-cog-6-tooth" tone={:brand}>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <%= if Authorization.is_super_admin?(@user) do %>
+          <.voile_action_link
+            icon="hero-arrow-path"
+            tone={:warning}
+            label={gettext("Manage circulations")}
+            description={gettext("View and manage book circulations")}
+            href="/manage/glam/library/circulation"
+          />
+        <% end %>
+        <.voile_action_link
+          icon="hero-chart-bar"
+          tone={:brand}
+          label={gettext("Circulation report")}
+          description={gettext("View circulation statistics and activity")}
+          href="/manage/glam/library/circulation/report"
+        />
+        <.voile_action_link
+          icon="hero-document-arrow-down"
+          tone={:success}
+          label={gettext("Start transaction")}
+          description={gettext("Start a new transaction or return a book")}
+          href="/manage/glam/library/ledger"
+        />
+        <.voile_action_link
+          icon="hero-eye"
+          tone={:info}
+          label={gettext("Read on spot")}
+          description={gettext("Track items read or used in-library")}
+          href="/manage/glam/library/read_on_spot"
+        />
+        <.voile_action_link
+          icon="hero-book-open"
+          tone={:success}
+          label={gettext("Loan reminders")}
+          description={gettext("View and manage loan reminders for library items")}
+          href="/manage/glam/library/circulation/loan_reminders"
+        />
+        <.voile_action_link
+          icon="hero-clipboard-document-list"
+          tone={:info}
+          label={gettext("Requisitions")}
+          description={gettext("Manage book and resource acquisition requests")}
+          href="/manage/glam/library/requisitions"
+        />
+      </div>
+    </.voile_section_card>
+
+    <%!-- Quick Modals (re-use circulation components) --%>
     <.quick_checkout_modal
       quick_checkout_visible={@quick_checkout_visible}
       checkout_form={@checkout_form}

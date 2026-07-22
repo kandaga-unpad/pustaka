@@ -137,7 +137,7 @@ defmodule VoileWeb.Dashboard.Glam.Library.Circulation.CirculationHistory.Index d
 
   @impl true
   def handle_event("paginate", %{"page" => page}, socket) do
-    page = String.to_integer(page)
+    page = String.to_integer(page) |> max(1)
     per_page = 20
     is_super_admin = socket.assigns.is_super_admin
     node_id = socket.assigns.node_id

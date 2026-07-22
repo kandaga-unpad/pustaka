@@ -27,8 +27,8 @@
     </div>
   </div>
   <!-- Filters -->
-  <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+  <div class="surface-card shadow rounded-lg mb-6">
+    <div class="px-6 py-4 border-b border-subtle">
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
           <label class="block text-sm font-medium mb-1">
@@ -162,7 +162,7 @@
     </div>
   </div>
   <!-- History Table -->
-  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+  <div class="surface-card shadow overflow-hidden sm:rounded-md">
     <.table id="history" rows={@streams.history}>
       <:col :let={{_id, entry}} label={gettext("Event")}>
         <div class="flex items-center">
@@ -173,7 +173,7 @@
               {entry.event_type |> String.replace("_", " ") |> String.capitalize()}
             </div>
 
-            <div class="text-xs text-gray-500 dark:text-gray-400">
+            <div class="text-xs text-tertiary">
               {format_datetime(entry.event_date)}
             </div>
           </div>
@@ -185,11 +185,11 @@
           <%= if entry.member do %>
             <div class="text-sm font-medium">{entry.member.fullname}</div>
 
-            <div class="text-sm text-gray-500 dark:text-gray-400">
+            <div class="text-sm text-tertiary">
               {gettext("ID:")} {entry.member_id}
             </div>
           <% else %>
-            <div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+            <div class="text-sm text-tertiary">-</div>
           <% end %>
         </div>
       </:col>
@@ -200,12 +200,12 @@
             <div class="text-sm font-medium">{entry.item.item_code}</div>
 
             <%= if entry.item.collection do %>
-              <div class="text-sm text-gray-500 dark:text-gray-400">
+              <div class="text-sm text-tertiary">
                 {entry.item.collection.title}
               </div>
             <% end %>
           <% else %>
-            <div class="text-sm text-gray-500 dark:text-gray-400">-</div>
+            <div class="text-sm text-tertiary">-</div>
           <% end %>
         </div>
       </:col>
@@ -221,15 +221,15 @@
           <%= if entry.processed_by do %>
             <div class="text-sm font-medium">{entry.processed_by.fullname}</div>
 
-            <div class="text-sm text-gray-500 dark:text-gray-400">{gettext("Staff")}</div>
+            <div class="text-sm text-tertiary">{gettext("Staff")}</div>
           <% else %>
-            <div class="text-sm text-gray-500 dark:text-gray-400">{gettext("System")}</div>
+            <div class="text-sm text-tertiary">{gettext("System")}</div>
           <% end %>
         </div>
       </:col>
 
       <:col :let={{_id, entry}} label={gettext("IP Address")}>
-        <div class="text-sm text-gray-500 dark:text-gray-400 font-mono">
+        <div class="text-sm text-tertiary font-mono">
           {entry.ip_address || "-"}
         </div>
       </:col>
@@ -266,8 +266,8 @@
       </:action>
     </.table>
     <!-- Pagination -->
-    <div class="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
-      <.pagination page={@page} total_pages={@total_pages} />
+    <div class="surface-card px-4 py-3 border-t border-subtle sm:px-6">
+      <.voile_pagination page={@page} total_pages={@total_pages} />
     </div>
   </div>
 </div>

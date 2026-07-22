@@ -11,13 +11,13 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
       <div class="space-y-6">
         <!-- Tabs -->
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg">
-          <div class="border-b border-gray-200 dark:border-gray-700">
+          <div class="border-b border-subtle">
             <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
               <button
                 phx-click="switch_tab"
                 phx-value-tab="upload"
                 phx-target={@myself}
-                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "upload", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
+                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "upload", do: "border-indigo-500 text-voile-primary", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
               >
                 {gettext("Upload Files")}
               </button>
@@ -25,7 +25,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                 phx-click="switch_tab"
                 phx-value-tab="asset_vault"
                 phx-target={@myself}
-                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "asset_vault", do: "border-indigo-500 text-indigo-600 dark:text-indigo-400", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
+                class={"whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm #{if @tab == "asset_vault", do: "border-indigo-500 text-voile-primary", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"}"}
               >
                 {gettext("Choose from Asset Vault (%{count})", count: length(@asset_vault_files))}
               </button>
@@ -36,7 +36,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           <%= if @tab == "upload" do %>
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-primary">
                   {gettext("Upload Files")}
                 </h3>
 
@@ -166,10 +166,10 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
           <%= if @tab == "asset_vault" do %>
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 class="text-lg font-medium text-primary">
                   {gettext("Choose from Asset Vault")}
                 </h3>
-                <span class="text-sm text-gray-500 dark:text-gray-400">
+                <span class="text-sm text-tertiary">
                   {gettext("Select existing files to attach to this %{entity}",
                     entity: @entity.__struct__ |> Module.split() |> List.last() |> String.downcase()
                   )}
@@ -191,26 +191,26 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
                       d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                     />
                   </svg>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                  <h3 class="mt-2 text-sm font-medium text-primary">
                     {gettext("No files in asset vault")}
                   </h3>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p class="mt-1 text-sm text-tertiary">
                     {gettext("Upload files first to build your asset vault.")}
                   </p>
                 </div>
               <% else %>
                 <div class="space-y-3 max-h-96 overflow-y-auto">
                   <%= for attachment <- @asset_vault_files do %>
-                    <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
+                    <div class="flex items-center justify-between p-4 border border-subtle rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150">
                       <div class="flex items-center space-x-4">
                         <!-- File Type Icon -->
                         <div class="flex-shrink-0">{file_type_icon(attachment.file_type)}</div>
 
                         <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          <p class="text-sm font-medium text-primary truncate">
                             {attachment.original_name || attachment.file_name}
                           </p>
-                          <p class="text-sm text-gray-500 dark:text-gray-400">
+                          <p class="text-sm text-tertiary">
                             {format_bytes(attachment.file_size)} •
                             <span class="capitalize">{attachment.file_type}</span>
                             <%= if attachment.inserted_at do %>
@@ -245,7 +245,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
         <!-- Existing Attachments -->
         <div class="bg-white dark:bg-gray-600 shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 class="text-lg font-medium text-primary">
               {gettext("Attachments")}
             </h3>
 
@@ -296,7 +296,7 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
 
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        <p class="text-sm font-medium text-primary truncate">
                           {attachment.original_name}
                         </p>
 
