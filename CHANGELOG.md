@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.49] - 2026-09-03
+
+### Added
+
+- **Librarian membership extension** — Librarians can now extend memberships for themselves and other members via the "Extend Membership" tab on member detail pages. Previously, this was restricted to super admins only.
+
+---
+
 ## [0.1.48] - 2026-07-23
 
 ### Added

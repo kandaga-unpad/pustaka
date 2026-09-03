@@ -92,3 +92,6 @@ npm-debug.log
 # Mark some file in plans as ignored
 /plans/assesment-of-voile.md
 /plans/security-audit.md
+
+# Ignore Command Code Taste
+.commandcode

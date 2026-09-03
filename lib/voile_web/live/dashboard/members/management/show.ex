@@ -558,7 +558,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 {gettext("Edit Member")}
               </.tab_button>
             <% end %>
-            <%= if can?(@current_scope.user, "users.update") do %>
+            <%= if can?(@current_scope.user, "users.update") or @is_librarian do %>
               <.tab_button
                 active={@active_tab == "extend"}
                 phx-click="change_tab"
@@ -829,9 +829,11 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     admin_update_tabs =
       if can?(user, "users.update"), do: ["extend", "change_password"], else: []
 
+    librarian_extend_tabs = if is_librarian, do: ["extend"], else: []
+
     delete_tabs = if is_super_admin, do: ["delete"], else: []
 
-    base_tabs ++ edit_tabs ++ admin_update_tabs ++ delete_tabs
+    base_tabs ++ edit_tabs ++ admin_update_tabs ++ librarian_extend_tabs ++ delete_tabs
   end
 
   defp prepare_user_params(params) do
