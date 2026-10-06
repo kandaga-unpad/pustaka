@@ -1,7 +1,7 @@
 defmodule Voile.MixProject do
   use Mix.Project
 
-  @version "0.1.49"
+  @version "0.1.50"
   @source_url "https://github.com/curatorian/voile"
 
   def project do
@@ -99,7 +99,7 @@ defmodule Voile.MixProject do
       {:bandit, "~> 1.10"},
       {:barlix, "~> 0.6.0"},
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:dns_cluster, "~> 0.2.0"},
+      {:dns_cluster, "~> 0.3.1"},
       {:ecto_sql, "~> 3.13"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
@@ -107,7 +107,6 @@ defmodule Voile.MixProject do
       {:finch, "~> 0.21"},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 1.0"},
-      {:hackney, "~> 1.20"},
       {:hammer, "~> 7.2"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
@@ -127,14 +126,14 @@ defmodule Voile.MixProject do
       {:phoenix_ecto, "~> 4.7"},
       {:phoenix_html, "~> 4.3"},
       {:phoenix_live_reload, "~> 1.6", only: :dev},
-      {:phoenix_live_view, "~> 1.1.22"},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_live_view, "~> 1.2"},
+      {:phoenix_live_dashboard, "~> 0.9.1"},
       {:phoenix_swagger, "~> 0.8"},
       {:phoenix_turnstile, "~> 1.0"},
       {:postgrex, "~> 0.22"},
       {:qr_code, "~> 3.2.0"},
       {:swoosh, "~> 1.21"},
-      {:req, "~> 0.5"},
+      {:req, "~> 0.7"},
       {:tailwind, "~> 0.4", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -142,7 +141,7 @@ defmodule Voile.MixProject do
       {:xml_builder, "~> 2.2"},
 
       # Voile Plugin
-      {:voile_locker_luggage, "~> 0.2.2"},
+      {:voile_locker_luggage, "~> 0.2.3"},
 
       # OpenTelemetry for Monitoring
       {:opentelemetry, "~> 1.7"},
