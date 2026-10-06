@@ -36,8 +36,7 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
       current_path={@current_path}
     >
       <div class="p-1 w-full">
-        
-    <!-- Token List -->
+        <!-- Token List -->
         <div class="surface-card shadow rounded-lg overflow-hidden">
           <div class="px-4 py-3 border-b border-subtle">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -237,8 +236,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             </div>
           <% end %>
         </div>
-        
-    <!-- Create/Edit Token Modal -->
+
+        <!-- Create/Edit Token Modal -->
         <.modal :if={@show_modal} id="token-modal" show on_cancel={JS.push("close_modal")}>
           <.live_component
             module={VoileWeb.Dashboard.Settings.TokenFormComponent}
@@ -249,8 +248,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             action={@modal_action}
           />
         </.modal>
-        
-    <!-- Rotate Confirmation Modal -->
+
+        <!-- Rotate Confirmation Modal -->
         <.modal
           :if={@show_rotate_confirm}
           id="rotate-confirm-modal"
@@ -283,8 +282,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             </div>
           </div>
         </.modal>
-        
-    <!-- Token Details Modal -->
+
+        <!-- Token Details Modal -->
         <.modal
           :if={@show_token_details}
           id="token-details-modal"
@@ -337,8 +336,8 @@ defmodule VoileWeb.Dashboard.Settings.ApiManager do
             </div>
           </div>
         </.modal>
-        
-    <!-- Token Info Modal -->
+
+        <!-- Token Info Modal -->
         <.modal
           :if={@show_token_info}
           id="token-info-modal"

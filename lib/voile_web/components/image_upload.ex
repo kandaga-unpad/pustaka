@@ -316,8 +316,8 @@ defmodule VoileWeb.Components.ImageUpload do
           </div>
         <% end %>
       <% end %>
-      
-    <!-- Upload Progress -->
+
+      <!-- Upload Progress -->
       <%= for entry <- @uploads[@upload_name].entries do %>
         <div class="bg-voile-info/5 dark:bg-voile-info/10 border border-voile-info/20 rounded-lg p-4">
           <div class="flex items-center space-x-4">
@@ -381,8 +381,8 @@ defmodule VoileWeb.Components.ImageUpload do
           </div>
         </div>
       <% end %>
-      
-    <!-- Selected Image Display -->
+
+      <!-- Selected Image Display -->
       <%= if @form[@field].value != nil and @form[@field].value != "" do %>
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
           <div class="flex items-start space-x-6">

@@ -47,8 +47,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
           <.icon name="hero-information-circle" class="w-5 h-5 inline-block mr-1" /> Info
         </button>
       </div>
-      
-    <!-- Tab Content -->
+
+      <!-- Tab Content -->
       <div class="p-4">
         <!-- Number Mode Tab -->
         <div class="keyboard-content" data-content="number">
@@ -94,8 +94,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
             </div>
           </div>
         </div>
-        
-    <!-- Keyboard Mode Tab -->
+
+        <!-- Keyboard Mode Tab -->
         <div class="keyboard-content hidden" data-content="keyboard">
           <div class="space-y-2">
             <!-- First letter row (QWERTY) -->
@@ -111,8 +111,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
               <.key_button value={if @shift_active, do: "O", else: "o"} target={@target} />
               <.key_button value={if @shift_active, do: "P", else: "p"} target={@target} />
             </div>
-            
-    <!-- Second letter row (ASDFGH) with apostrophe -->
+
+            <!-- Second letter row (ASDFGH) with apostrophe -->
             <div class="grid grid-cols-10 gap-2">
               <.key_button value={if @shift_active, do: "A", else: "a"} target={@target} />
               <.key_button value={if @shift_active, do: "S", else: "s"} target={@target} />
@@ -125,8 +125,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
               <.key_button value={if @shift_active, do: "L", else: "l"} target={@target} />
               <.key_button value="'" target={@target} />
             </div>
-            
-    <!-- Third letter row (ZXCVBN) with comma, dot, hyphen -->
+
+            <!-- Third letter row (ZXCVBN) with comma, dot, hyphen -->
             <div class="grid grid-cols-10 gap-2">
               <.key_button value={if @shift_active, do: "Z", else: "z"} target={@target} />
               <.key_button value={if @shift_active, do: "X", else: "x"} target={@target} />
@@ -139,8 +139,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
               <.key_button value="." target={@target} />
               <.key_button value="-" target={@target} />
             </div>
-            
-    <!-- Control buttons row: Shift | Clear | Space | Delete (full width) -->
+
+            <!-- Control buttons row: Shift | Clear | Space | Delete (full width) -->
             <div class="grid grid-cols-4 gap-2">
               <button
                 type="button"
@@ -185,8 +185,8 @@ defmodule VoileWeb.Components.VirtualKeyboard do
             </div>
           </div>
         </div>
-        
-    <!-- Information Mode Tab -->
+
+        <!-- Information Mode Tab -->
         <div class="keyboard-content hidden" data-content="info">
           <div class="space-y-4 text-gray-700 dark:text-gray-300">
             <div class="text-center">

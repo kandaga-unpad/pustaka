@@ -647,8 +647,8 @@ defmodule VoileWeb.Visitor.CheckOut do
               <.icon name="hero-arrow-path" class="w-4 h-4 mr-2" /> {gettext("Change Location")}
             </button>
           </div>
-          
-    <!-- Two Column Layout -->
+
+          <!-- Two Column Layout -->
           <div class="flex flex-col lg:flex-row gap-6">
             <!-- Check-out Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -700,8 +700,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </button>
               </form>
             </div>
-            
-    <!-- Survey Form -->
+
+            <!-- Survey Form -->
             <div class="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <div class="mb-4">
                 <h3 class="text-2xl font-semibold text-purple-600 dark:text-purple-400 mb-2">
@@ -831,8 +831,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                   {gettext("Submit Feedback")}
                 </button>
               </form>
-              
-    <!-- Thank You Note -->
+
+              <!-- Thank You Note -->
               <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div class="flex items-start gap-3">
                   <div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
@@ -868,8 +868,8 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         <% end %>
       </div>
-      
-    <!-- Check-Out Success Modal -->
+
+      <!-- Check-Out Success Modal -->
       <%= if @show_success_modal do %>
         <div
           class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -882,8 +882,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 <.icon name="hero-check-circle" class="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            
-    <!-- Goodbye Message -->
+
+            <!-- Goodbye Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
                 {gettext("Thank You, %{name}!", name: @visitor_name)}
@@ -905,8 +905,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </p>
               </div>
             </div>
-            
-    <!-- Close Button -->
+
+            <!-- Close Button -->
             <button
               type="button"
               phx-click="close_modal"
@@ -917,8 +917,8 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         </div>
       <% end %>
-      
-    <!-- Survey Success Modal -->
+
+      <!-- Survey Success Modal -->
       <%= if @show_survey_success do %>
         <div
           class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -931,8 +931,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 <.icon name="hero-heart" class="w-12 h-12 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
-            
-    <!-- Thank You Message -->
+
+            <!-- Thank You Message -->
             <div class="text-center space-y-4">
               <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
                 {gettext("Thank You for Your Feedback!")}
@@ -948,8 +948,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </p>
               </div>
             </div>
-            
-    <!-- Close Button -->
+
+            <!-- Close Button -->
             <button
               type="button"
               phx-click="close_survey_success"
@@ -960,8 +960,8 @@ defmodule VoileWeb.Visitor.CheckOut do
           </div>
         </div>
       <% end %>
-      
-    <!-- Footer -->
+
+      <!-- Footer -->
       <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
         <div class="max-w-7xl mx-auto px-4 py-3">
           <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -988,8 +988,8 @@ defmodule VoileWeb.Visitor.CheckOut do
                 </span>
               </div>
             </div>
-            
-    <!-- Software Info -->
+
+            <!-- Software Info -->
             <div class="flex items-center gap-3 text-center md:text-right">
               <div class="text-xs text-gray-600 dark:text-gray-400">
                 <div class="font-semibold">{@app_name}</div>

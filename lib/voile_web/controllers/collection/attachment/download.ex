@@ -48,68 +48,14 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
 
             _ ->
               # Fallback: proxy the remote resource through the app. This
-              # preserves authorization but consumes server bandwidth. Use
-              # streaming to avoid buffering the entire file in memory.
-              # We use hackney directly for chunked streaming.
+              # preserves authorization but consumes server bandwidth. Finch
+              # streams the response so the file never buffers fully in memory.
               #
-              # SSRF protection: validate the URL before fetching and never
-              # follow redirects (a redirect can point to internal services
-              # such as the cloud metadata endpoint).
+              # SSRF protection: validate the URL before fetching; Finch does
+              # not follow redirects (a redirect could point at internal
+              # services such as the cloud metadata endpoint).
               if safe_remote_url?(fp) do
-                case :hackney.request(:get, fp, [], :stream, [
-                       {:recv_timeout, 120_000},
-                       {:follow_redirect, false}
-                     ]) do
-                  {:ok, status, headers, client_ref}
-                  when status in 200..299 ->
-                    # Determine content type
-                    content_type =
-                      case MIME.from_path(attachment.file_name) do
-                        "application/octet-stream" ->
-                          # Try to get from response headers
-                          get_resp_header_value(headers, "content-type") ||
-                            "application/octet-stream"
-
-                        ct ->
-                          ct
-                      end
-
-                    conn =
-                      conn
-                      |> put_resp_content_type(content_type)
-                      |> put_resp_header(
-                        "content-disposition",
-                        ~s[attachment; filename="#{attachment.original_name}"]
-                      )
-
-                    case Plug.Conn.send_chunked(conn, status) do
-                      %Plug.Conn{} = chunked_conn ->
-                        # send_chunked returns the connection; stream from it
-                        stream_hackney_body(chunked_conn, client_ref)
-                    end
-
-                  {:ok, status, _headers, client_ref} when status in 300..399 ->
-                    :hackney.close(client_ref)
-
-                    conn
-                    |> put_status(:forbidden)
-                    |> put_resp_content_type("text/plain")
-                    |> send_resp(403, "Remote file redirected; refusing to follow")
-
-                  {:ok, status, _headers, client_ref} ->
-                    :hackney.close(client_ref)
-
-                    conn
-                    |> put_status(502)
-                    |> put_resp_content_type("text/plain")
-                    |> send_resp(502, "Remote file returned status #{status}")
-
-                  {:error, _reason} ->
-                    conn
-                    |> put_status(502)
-                    |> put_resp_content_type("text/plain")
-                    |> send_resp(502, "Failed to fetch remote file")
-                end
+                proxy_remote_file(conn, attachment, fp)
               else
                 conn
                 |> put_status(:forbidden)
@@ -136,7 +82,6 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
   end
 
   defp get_resp_header_value(headers, key) do
-    # Headers from hackney are always a list of {key, value} tuples.
     headers
     |> Enum.find_value(fn
       {k, v} when is_binary(k) -> if String.downcase(k) == String.downcase(key), do: v
@@ -144,19 +89,97 @@ defmodule VoileWeb.Collection.AttachmentController.Download do
     end)
   end
 
-  defp stream_hackney_body(conn, client_ref) do
-    case :hackney.stream_body(client_ref) do
-      {:ok, chunk} when is_binary(chunk) ->
-        case Plug.Conn.chunk(conn, chunk) do
-          {:ok, conn} -> stream_hackney_body(conn, client_ref)
-          {:error, _} -> conn
-        end
+  # Streams a remote attachment through Finch to the client. Finch delivers
+  # the response in order (status → headers → data × N → trailers) and aborts
+  # the stream with {:error, _, acc}; the final response for non-streamed
+  # outcomes is emitted after the stream returns.
+  defp proxy_remote_file(conn, attachment, fp) do
+    request = Finch.build(:get, fp)
 
-      :done ->
-        conn
+    case Finch.stream(
+           request,
+           Voile.Finch,
+           %{conn: conn, attachment: attachment, status: nil, mode: :head},
+           fn
+             {:status, status}, acc ->
+               %{acc | status: status, mode: mode_for_status(status)}
 
-      {:error, _reason} ->
+             {:headers, headers}, %{mode: :proxy} = acc ->
+               start_chunked_response(acc, headers)
+
+             {:data, chunk}, %{mode: :proxy} = acc ->
+               stream_chunk(acc, chunk)
+
+             _event, acc ->
+               acc
+           end,
+           receive_timeout: 120_000
+         ) do
+      {:ok, %{conn: conn_chunked, mode: :proxy}} ->
+        conn_chunked
+
+      {:ok, %{conn: conn, mode: :refuse}} ->
         conn
+        |> put_status(:forbidden)
+        |> put_resp_content_type("text/plain")
+        |> send_resp(403, "Remote file redirected; refusing to follow redirect")
+
+      {:ok, %{conn: conn, status: status}} ->
+        conn
+        |> put_status(502)
+        |> put_resp_content_type("text/plain")
+        |> send_resp(502, "Remote file returned status #{status}")
+
+      {:error, _error, %{conn: conn_chunked, mode: :proxy}} ->
+        # Chunked response already started — the client has half the file;
+        # there is nothing meaningful left to signal.
+        conn_chunked
+
+      {:error, _error, %{conn: conn}} ->
+        conn
+        |> put_status(502)
+        |> put_resp_content_type("text/plain")
+        |> send_resp(502, "Failed to fetch remote file")
+    end
+  end
+
+  defp mode_for_status(status) do
+    cond do
+      status in 200..299 -> :proxy
+      status in 300..399 -> :refuse
+      true -> :failed
+    end
+  end
+
+  defp start_chunked_response(
+         %{conn: conn, attachment: attachment, status: status} = acc,
+         headers
+       ) do
+    content_type =
+      case MIME.from_path(attachment.file_name) do
+        "application/octet-stream" ->
+          # Try to get from response headers
+          get_resp_header_value(headers, "content-type") || "application/octet-stream"
+
+        ct ->
+          ct
+      end
+
+    resp =
+      conn
+      |> put_resp_content_type(content_type)
+      |> put_resp_header(
+        "content-disposition",
+        ~s[attachment; filename="#{attachment.original_name}"]
+      )
+
+    %{acc | conn: Plug.Conn.send_chunked(resp, status)}
+  end
+
+  defp stream_chunk(%{conn: conn} = acc, chunk) do
+    case Plug.Conn.chunk(conn, chunk) do
+      {:ok, chunked} -> %{acc | conn: chunked}
+      {:error, errored} -> %{acc | conn: errored, mode: :aborted}
     end
   end
 
