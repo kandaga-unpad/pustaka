@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.50] - 2026-10-05
+
+### Added
+
+- **Plugin sub-navigation in the sidebar** — every plugin page (`/manage/plugins/<plugin_id>/...`) now lists the plugin's own `nav()` entries (e.g. Overview / Lockers / Sessions / Node Config for locker_luggage) between "All plugins" and the page Settings link, so plugin pages are discoverable from the sidebar instead of hand-typed URLs.
+
+### Fixed
+
+- **Accurate plugin router errors** — `PluginRouterLive` mount failures now log the exact failing step to production logs, and a *route mismatch* (requesting a path the plugin does not define) shows "This page does not exist for this plugin." instead of the misleading "Plugin not found or not active." — this resolved the prod debug where `/manage/plugins/locker_luggage/locker` (missing the "s" in the real `/lockers` route) looked like an activation failure.
+- Sidebar sub-nav highlight: only the longest-matching item is highlighted (previously "All plugins" stayed highlighted on every plugin page).
+- **Deploy scripts: version-agnostic static mounts** — `scripts/` hardcoded the release app directory at `/app/lib/voile-0.1.0/...` (stale since the version left 0.1.0, meaning that uploads volume bound to a directory the release never contains). Every container run now resolves the app directory from the actual image being started (rollback images included), with a mix.exs fallback.
+
+### Housekeeping
+
+- Refreshed gettext extraction (default.pot + en/id .po): 12 previously unextracted strings pulled in, line references updated, new plugin-router string translated for the `id` locale.
+
+---
+
 ## [0.1.49] - 2026-09-03
 
 ### Added

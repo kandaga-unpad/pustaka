@@ -42,6 +42,19 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Resolve the app directory of the release image (layout: /app/lib/voile-<version>/)
+# so the static volume mounts never go stale when the version changes.
+resolve_app_lib_dir() {
+    local img="$1" dir
+    dir="$(podman run --rm --entrypoint sh "$img" -c 'ls -d /app/lib/voile-* 2>/dev/null | head -1' 2>/dev/null || true)"
+
+    if [ -z "$dir" ]; then
+        dir="/app/lib/voile-$(grep -m1 -E '^  @version "' "$PROJECT_ROOT/mix.exs" | cut -d '"' -f2)"
+    fi
+
+    echo "$dir"
+}
+
 print_help() {
     echo -e "${GREEN}Voile Management Script${NC}"
     echo ""
@@ -245,6 +258,7 @@ case "$1" in
         podman tag "$TARGET_IMAGE" voile:latest
 
         print_status "Starting container with rollback image..."
+        APP_LIB_DIR="$(resolve_app_lib_dir voile:latest)"
         podman run -d \
             --name "$APP_CONTAINER" \
             --pod "$POD_NAME" \
@@ -254,7 +268,7 @@ case "$1" in
             -e DATABASE_HOST=localhost \
             -e DATABASE_PORT=5432 \
             -v /data/voile/uploads:/app/priv/static/uploads:Z \
-            -v /data/voile/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z \
+            -v /data/voile/uploads:${APP_LIB_DIR}/priv/static/uploads:Z \
             -v /data/voile/images:/app/priv/static/images:Z \
             -v /data/voile/sfx:/app/priv/static/sfx:Z \
             voile:latest

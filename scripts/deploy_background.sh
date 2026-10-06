@@ -46,6 +46,19 @@ log_warning() {
     log "${YELLOW}[WARNING]${NC} $1"
 }
 
+# Resolve the app directory of the release image (layout: /app/lib/voile-<version>/)
+# so the static volume mounts never go stale when the version changes.
+resolve_app_lib_dir() {
+    local img="$1" dir
+    dir="$(podman run --rm --entrypoint sh "$img" -c 'ls -d /app/lib/voile-* 2>/dev/null | head -1' 2>/dev/null || true)"
+
+    if [ -z "$dir" ]; then
+        dir="/app/lib/voile-$(grep -m1 -E '^  @version "' "$PROJECT_ROOT/mix.exs" | cut -d '"' -f2)"
+    fi
+
+    echo "$dir"
+}
+
 # Main deployment function
 deploy() {
     # Change to project root
@@ -144,6 +157,8 @@ deploy() {
 
     # Start application
     log_status "Starting Voile application..."
+    APP_LIB_DIR="$(resolve_app_lib_dir voile:latest)"
+    log_status "Release app directory: $APP_LIB_DIR"
     podman run -d \
         --name "$APP_CONTAINER" \
         --pod "$POD_NAME" \
@@ -153,7 +168,7 @@ deploy() {
         -e DATABASE_HOST=localhost \
         -e DATABASE_PORT="$DB_PORT" \
         -v "$DATA_DIR/uploads:/app/priv/static/uploads:Z" \
-        -v "$DATA_DIR/uploads:/app/lib/voile-0.1.0/priv/static/uploads:Z" \
+        -v "$DATA_DIR/uploads:${APP_LIB_DIR}/priv/static/uploads:Z" \
         -v "$DATA_DIR/images:/app/priv/static/images:Z" \
         -v "$DATA_DIR/sfx:/app/priv/static/sfx:Z" \
         voile:latest 2>&1 | tee -a "$LOG_FILE"

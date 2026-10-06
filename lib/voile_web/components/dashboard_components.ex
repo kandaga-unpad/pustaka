@@ -1653,6 +1653,18 @@ defmodule VoileWeb.DashboardComponents do
   attr :current_path, :string, default: nil
 
   def voile_settings_nav(assigns) do
+    active_path =
+      assigns.items
+      |> Enum.filter(&voile_settings_active?(assigns[:current_path], &1))
+      |> Enum.sort_by(&String.length(Map.get(&1, :path, "")), :desc)
+      |> List.first()
+      |> case do
+        nil -> nil
+        item -> item.path
+      end
+
+    assigns = assign(assigns, :active_path, active_path)
+
     ~H"""
     <aside class="lg:voile-card lg:p-3 lg:h-fit lg:sticky lg:top-20">
       <%= if @title do %>
@@ -1664,9 +1676,8 @@ defmodule VoileWeb.DashboardComponents do
             navigate={item.path}
             class={[
               "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap shrink-0 lg:w-full",
-              voile_settings_active?(@current_path, item) &&
-                "bg-tone-brand-soft text-voile-primary font-semibold",
-              !voile_settings_active?(@current_path, item) &&
+              item.path == @active_path && "bg-tone-brand-soft text-voile-primary font-semibold",
+              item.path != @active_path &&
                 "text-secondary hover:text-primary hover:bg-tone-brand-soft"
             ]}
           >
