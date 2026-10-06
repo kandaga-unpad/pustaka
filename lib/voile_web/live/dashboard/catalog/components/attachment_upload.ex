@@ -31,8 +31,8 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
               </button>
             </nav>
           </div>
-          
-    <!-- Upload Tab Content -->
+
+          <!-- Upload Tab Content -->
           <%= if @tab == "upload" do %>
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
@@ -161,8 +161,8 @@ defmodule VoileWeb.Dashboard.Catalog.Components.AttachmentUpload do
               </form>
             </div>
           <% end %>
-          
-    <!-- Asset Vault Tab Content -->
+
+          <!-- Asset Vault Tab Content -->
           <%= if @tab == "asset_vault" do %>
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">

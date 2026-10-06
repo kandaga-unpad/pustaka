@@ -315,8 +315,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_main_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Elixir</strong></span>
                   </li>
 
@@ -324,8 +323,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_main_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Phoenix</strong></span>
                   </li>
 
@@ -333,8 +331,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_main_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Erlang (BEAM VM)</strong></span>
                   </li>
 
@@ -342,8 +339,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_main_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>PostgreSQL</strong></span>
                   </li>
                 </ul>
@@ -362,8 +358,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_secondary_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Phoenix LiveView</strong></span>
                   </li>
 
@@ -371,8 +366,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_secondary_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Tailwind CSS</strong></span>
                   </li>
 
@@ -380,8 +374,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_secondary_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Real-time Interactivity</strong></span>
                   </li>
 
@@ -389,8 +382,7 @@ defmodule VoileWeb.PageLive.About do
                     <span
                       class="w-2 h-2 rounded-full"
                       style={"background-color: #{@app_secondary_color};"}
-                    >
-                    </span>
+                    ></span>
                     <span><strong>Responsive Design</strong></span>
                   </li>
                 </ul>

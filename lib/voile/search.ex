@@ -26,8 +26,14 @@ defmodule Voile.Search.Collections do
       from c in Collection,
         left_join: rc in assoc(c, :resource_class),
         left_join: creator in assoc(c, :mst_creator),
+        left_join: node_join in assoc(c, :node),
         where: c.status == "published",
-        preload: [resource_class: rc, mst_creator: creator, collection_fields: []]
+        preload: [
+          resource_class: rc,
+          mst_creator: creator,
+          node: node_join,
+          collection_fields: []
+        ]
 
     # Add search conditions
     search_query =
@@ -126,7 +132,12 @@ defmodule Voile.Search.Collections do
         left_join: node_join in assoc(c, :node),
         left_join: created_by_user in assoc(c, :created_by),
         left_join: updated_by_user in assoc(c, :updated_by),
-        preload: [resource_class: rc, mst_creator: creator, collection_fields: []]
+        preload: [
+          resource_class: rc,
+          mst_creator: creator,
+          node: node_join,
+          collection_fields: []
+        ]
 
     # Apply filters
     filtered_query =

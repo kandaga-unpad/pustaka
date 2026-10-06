@@ -25,13 +25,28 @@ defmodule VoileWeb.PluginRouterLive do
         |> assign(:plugin_live_view, live_view)
         |> assign(:plugin_action, action)
         |> assign(:plugin_path, path)
+        |> assign(:plugin_nav_items, plugin_nav_items(module, plugin_id))
         |> assign(:current_path, "/manage/plugins/#{plugin_id}#{path}")
         |> assign(:page_title, record.name)
         |> assign(:plugin_auth, build_plugin_auth(socket))
 
       {:ok, socket}
     else
-      _ ->
+      {:error, :no_matching_route} ->
+        Logger.info(
+          "[PluginRouter] Plugin #{plugin_id} is active but has no route for path #{path}"
+        )
+
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("This page does not exist for this plugin."))
+         |> push_navigate(to: ~p"/manage")}
+
+      reason ->
+        Logger.warning(
+          "[PluginRouter] Cannot mount plugin #{plugin_id} for path #{path}: #{inspect(reason)}"
+        )
+
         {:ok,
          socket
          |> put_flash(:error, gettext("Plugin not found or not active."))
@@ -53,14 +68,17 @@ defmodule VoileWeb.PluginRouterLive do
         <.voile_settings_nav
           title={gettext("Plugins")}
           current_path={@current_path}
-          items={[
-            %{label: gettext("All plugins"), path: "/manage/plugins", icon: "hero-puzzle-piece"},
-            %{
-              label: @plugin_record.name,
-              path: "/manage/plugins/#{@plugin_record.plugin_id}/settings",
-              icon: "hero-cog-6-tooth"
-            }
-          ]}
+          items={
+            [%{label: gettext("All plugins"), path: "/manage/plugins", icon: "hero-puzzle-piece"}] ++
+              @plugin_nav_items ++
+              [
+                %{
+                  label: @plugin_record.name,
+                  path: "/manage/plugins/#{@plugin_record.plugin_id}/settings",
+                  icon: "hero-cog-6-tooth"
+                }
+              ]
+          }
         />
 
         <div class="flex-1 min-w-0">
@@ -79,6 +97,20 @@ defmodule VoileWeb.PluginRouterLive do
       </div>
     </section>
     """
+  end
+
+  defp plugin_nav_items(module, plugin_id) do
+    if function_exported?(module, :nav, 0) do
+      Enum.map(module.nav(), fn entry ->
+        %{
+          label: entry.label,
+          path: "/manage/plugins/#{plugin_id}#{entry.path}",
+          icon: Map.get(entry, :icon)
+        }
+      end)
+    else
+      []
+    end
   end
 
   defp find_plugin_record(plugin_id) do

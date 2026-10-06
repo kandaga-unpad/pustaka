@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.50] - 2026-10-05
+
+### Security
+
+- **Removed `hackney` from the dependency tree** — `hackney` 1.25.0 carried CVE-2026-47071 (HIGH: SOCKS5 TLS-upgrade ignores caller timeouts → indefinite process block), CVE-2026-47076 (MEDIUM: SSRF allowlist bypass via percent-encoded host), CVE-2026-47075 (MEDIUM: CR/LF injection in query params) and one LOW. The only direct call site (`AttachmentController.Download`, the remote-file proxy fallback) now streams through the already-present `Finch` pool with identical semantics: SSRF-validated URL, redirects never followed (verified a 302 surfaces as 3xx with no body), 120s `receive_timeout`. The AWS SDK's default `AWS.HTTPClient.Hackney` is never reached — `s3.ex` overrides `http_client` with the app's Req-based adapter — so the removal has no impact on the `aws` package even though upstream docs target hackney 1.x.
+- **Phoenix LiveView 1.1.22 → 1.2.12** — picks up the open-redirect fix (CVE-2026-64941) and the URL scheme-validation bypass fix from the 1.2 line.
+- **Req 0.5.17 → 0.7.4** — includes Req 0.6 security fixes (form-multipart header injection `GHSA-px9f-whj3-246m`; decompression-bomb hardening `GHSA-655f-mp8p-96gv` — archive/compressed response decoding is now opt-in). Verified the app's Req usage (timeouts, `redirect:`, `compressed: false`, AWS/PAUS/Gmail/Open-Alex flows) is unaffected.
+
+### Added
+
+- **Plugin sub-navigation in the sidebar** — every plugin page (`/manage/plugins/<plugin_id>/...`) now lists the plugin's own `nav()` entries (e.g. Overview / Lockers / Sessions / Node Config for locker_luggage) between "All plugins" and the page Settings link, so plugin pages are discoverable from the sidebar instead of hand-typed URLs.
+
+### Fixed
+
+- **Accurate plugin router errors** — `PluginRouterLive` mount failures now log the exact failing step to production logs, and a *route mismatch* (requesting a path the plugin does not define) shows "This page does not exist for this plugin." instead of the misleading "Plugin not found or not active." — this resolved the prod debug where `/manage/plugins/locker_luggage/locker` (missing the "s" in the real `/lockers` route) looked like an activation failure.
+- Sidebar sub-nav highlight: only the longest-matching item is highlighted (previously "All plugins" stayed highlighted on every plugin page).
+- **Deploy scripts: version-agnostic static mounts** — `scripts/` hardcoded the release app directory at `/app/lib/voile-0.1.0/...` (stale since the version left 0.1.0, meaning that uploads volume bound to a directory the release never contains). Every container run now resolves the app directory from the actual image being started (rollback images included), with a mix.exs fallback.
+- **Search results 500 crash (`/search` + `/search/advanced`)** — the redesigned collection card reads `collection.node.name`, but `Voile.Search.Collections` only joined `:node` for filtering and never preloaded it, so any search that returned results crashed rendering with a `KeyError` on the `NotLoaded` association. Both search functions now preload `:node` (already preloading `:mst_creator`/`:resource_class`), and the shared `collection_card` guards its association-dependent rows with a `preload_loaded?` helper so a missing preload hides the row instead of crashing the whole page.
+
+### Housekeeping
+
+- **Full dependency refresh** — every dependency re-synced to the latest release permitted by the requirements; constraints raised where they lagged (`phoenix_live_view ~> 1.2`, `phoenix_live_dashboard ~> 0.9.1`, `dns_cluster ~> 0.3.1`, `req ~> 0.7`) and the direct `hackney ~> 1.20` pin dropped entirely. Highlights: phoenix 1.8.15, bandit 1.12.5, ecto_sql/ecto 3.14, finch 0.24.0, mint 1.11, plug 1.20.3, swoosh 1.28.1, tzdata 1.2.2, html_sanitize_ex 1.5.5, decimal 3.1.1. Pruned stale/unused packages: `mdex` (5 unfixed advisories, unused), the `prom_ex`/`telemetry_metrics_prometheus_core` set (no config references), and hackney's support chain (certifi/idna/parse_trans/mimerl/metrics). `mix hex.audit` now reports zero retired or advisory-flagged packages.
+- CoreComponents `.button` accepts the `type` global attribute (LiveView 1.2 stricter component-attr validation).
+- Full test-suite comparison against the previous lock: the failure set is identical (253 pre-existing fixture/schema failures) — the update introduces no regressions.
+- Refreshed gettext extraction (default.pot + en/id .po): 12 previously unextracted strings pulled in, line references updated, new plugin-router string translated for the `id` locale.
+
+---
+
 ## [0.1.49] - 2026-09-03
 
 ### Added

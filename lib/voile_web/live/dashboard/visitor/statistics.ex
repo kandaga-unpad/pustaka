@@ -313,8 +313,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
       <div class="mb-4">
         <.back navigate="/manage/glam">{gettext("Back to GLAM")}</.back>
       </div>
-      
-    <!-- Quick Links -->
+
+      <!-- Quick Links -->
       <div class="surface-card rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold text-primary mb-4">
           {gettext("Quick Links")}
@@ -381,8 +381,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </.link>
         </div>
       </div>
-      
-    <!-- Filters -->
+
+      <!-- Filters -->
       <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-primary">{gettext("Filters")}</h2>
@@ -475,8 +475,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
             </div>
           </form>
         </div>
-        
-    <!-- Selected Filter Display -->
+
+        <!-- Selected Filter Display -->
         <%= if @selected_node_id do %>
           <div class="mt-4 p-3 bg-tone-info-soft border border-blue-200 dark:border-blue-800 rounded-lg">
             <p class="text-sm text-voile-info">
@@ -489,8 +489,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         <% end %>
       </div>
-      
-    <!-- Today's Visitors -->
+
+      <!-- Today's Visitors -->
       <%= if @today_stats do %>
         <div class="surface-card rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-primary mb-4">
@@ -568,8 +568,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
-    <!-- This Month's Visitors -->
+
+      <!-- This Month's Visitors -->
       <%= if @month_stats do %>
         <div class="surface-card rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-primary mb-4">
@@ -647,8 +647,8 @@ defmodule VoileWeb.Dashboard.Visitor.Statistics do
           </div>
         </div>
       <% end %>
-      
-    <!-- Yearly Statistics -->
+
+      <!-- Yearly Statistics -->
       <%= if @year_stats do %>
         <div class="surface-card rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold text-primary mb-4">

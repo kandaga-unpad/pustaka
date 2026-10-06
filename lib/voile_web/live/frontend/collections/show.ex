@@ -393,8 +393,8 @@ defmodule VoileWeb.Frontend.Collections.Show do
                             </div>
                           </div>
                         <% end %>
-                        
-    <!-- Children Collections -->
+
+                        <!-- Children Collections -->
                         <%= if length(@collection.children || []) > 0 do %>
                           <div>
                             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
@@ -452,8 +452,8 @@ defmodule VoileWeb.Frontend.Collections.Show do
                       </div>
                     </div>
                   <% end %>
-                  
-    <!-- Items Section -->
+
+                  <!-- Items Section -->
                   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-voile-light dark:border-voile-dark">
                     <div class="px-6 py-4 border-b border-voile-light dark:border-voile-dark">
                       <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">

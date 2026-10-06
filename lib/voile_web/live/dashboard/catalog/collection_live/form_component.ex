@@ -180,8 +180,8 @@ defmodule VoileWeb.Dashboard.Catalog.CollectionLive.FormComponent do
             prompt={gettext("Select Collection Type")}
             required_value={true}
           />
-          
-    <!-- Hierarchical Fields - Searchable Parent Collection -->
+
+          <!-- Hierarchical Fields - Searchable Parent Collection -->
           <div class="mb-4">
             <label class="block text-sm font-medium mb-2 label">
               {gettext("Parent Collection (Optional)")}

@@ -283,8 +283,8 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
       <div class="mb-4">
         <.back navigate="/manage/visitor/statistics">{gettext("Back to Statistics")}</.back>
       </div>
-      
-    <!-- Filters -->
+
+      <!-- Filters -->
       <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-primary">{gettext("Filters")}</h2>
@@ -340,8 +340,8 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
               </div>
             </div>
           <% end %>
-          
-    <!-- Room/Location Filter -->
+
+          <!-- Room/Location Filter -->
           <form phx-change="filter_location">
             <div>
               <label class="block text-sm font-medium text-secondary mb-1">
@@ -408,8 +408,8 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           </form>
         </div>
       </div>
-      
-    <!-- Results Info -->
+
+      <!-- Results Info -->
       <div class="flex items-center justify-between">
         <p class="text-sm text-secondary">
           {gettext("Showing %{count} of %{total} total visitor logs",
@@ -421,8 +421,8 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
         </p>
       </div>
-      
-    <!-- Logs Table -->
+
+      <!-- Logs Table -->
       <div class="surface-card rounded-lg shadow overflow-hidden">
         <%= if @logs == [] do %>
           <div class="p-12 text-center">
@@ -506,8 +506,8 @@ defmodule VoileWeb.Dashboard.Visitor.Logs do
           </div>
         <% end %>
       </div>
-      
-    <!-- Pagination -->
+
+      <!-- Pagination -->
       <%= if @total_pages > 1 do %>
         <div class="flex items-center justify-between surface-card rounded-lg shadow px-6 py-3">
           <button

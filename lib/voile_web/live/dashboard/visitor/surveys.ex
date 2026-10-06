@@ -306,8 +306,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
       <div class="mb-4">
         <.back navigate="/manage/visitor/statistics">{gettext("Back to Statistics")}</.back>
       </div>
-      
-    <!-- Statistics Summary -->
+
+      <!-- Statistics Summary -->
       <%= if @stats do %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="surface-card rounded-lg shadow p-6">
@@ -360,8 +360,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           </div>
         </div>
       <% end %>
-      
-    <!-- Filters -->
+
+      <!-- Filters -->
       <div class="surface-card rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-primary">{gettext("Filters")}</h2>
@@ -408,8 +408,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
               </div>
             </div>
           <% end %>
-          
-    <!-- Room/Location Filter -->
+
+          <!-- Room/Location Filter -->
           <form phx-change="filter_location">
             <div>
               <label class="block text-sm font-medium text-secondary mb-1">
@@ -431,8 +431,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
               </select>
             </div>
           </form>
-          
-    <!-- Rating Filter -->
+
+          <!-- Rating Filter -->
           <form phx-change="filter_rating">
             <div>
               <label class="block text-sm font-medium text-secondary mb-1">
@@ -481,8 +481,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           </form>
         </div>
       </div>
-      
-    <!-- Results Info -->
+
+      <!-- Results Info -->
       <div class="flex items-center justify-between">
         <p class="text-sm text-secondary">
           {gettext("Showing %{count} of %{total} total survey responses",
@@ -494,8 +494,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           {gettext("Page %{page} of %{total}", page: @page, total: @total_pages)}
         </p>
       </div>
-      
-    <!-- Surveys Table -->
+
+      <!-- Surveys Table -->
       <div class="surface-card rounded-lg shadow overflow-hidden">
         <%= if @surveys == [] do %>
           <div class="p-12 text-center">
@@ -573,8 +573,8 @@ defmodule VoileWeb.Dashboard.Visitor.Surveys do
           </div>
         <% end %>
       </div>
-      
-    <!-- Pagination -->
+
+      <!-- Pagination -->
       <%= if @total_pages > 1 do %>
         <div class="flex items-center justify-between surface-card rounded-lg shadow px-6 py-3">
           <button
