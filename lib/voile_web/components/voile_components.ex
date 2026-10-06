@@ -499,14 +499,14 @@ defmodule VoileWeb.VoileComponents do
             </div>
           <% end %>
 
-          <%= if @collection.mst_creator do %>
+          <%= if preload_loaded?(@collection.mst_creator) do %>
             <div class="flex items-center gap-1">
               <.icon name="hero-user" class="w-3 h-3" />
               <span>{@collection.mst_creator.creator_name}</span>
             </div>
           <% end %>
 
-          <%= if @collection.node do %>
+          <%= if preload_loaded?(@collection.node) do %>
             <div class="flex items-center">
               <.icon
                 name="hero-building-library-solid"
@@ -534,7 +534,7 @@ defmodule VoileWeb.VoileComponents do
           {String.capitalize(@collection.status || "Unknown")}
         </span>
 
-        <%= if @collection.resource_class do %>
+        <%= if preload_loaded?(@collection.resource_class) do %>
           <span class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
             {@collection.resource_class.label}
           </span>
@@ -1276,6 +1276,13 @@ defmodule VoileWeb.VoileComponents do
 
   def condition_badge_class(_),
     do: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+
+  # Guards shared-card assigns against schema changes: `nil` hides the row,
+  # and an unloaded association (consumers not preloading) hides it too
+  # instead of crashing the render.
+  defp preload_loaded?(%Ecto.Association.NotLoaded{}), do: false
+  defp preload_loaded?(nil), do: false
+  defp preload_loaded?(_value), do: true
 
   defp call_number_or_classification(collection) do
     get_collection_field_value(collection, ["callNumber", "CallNumber", "noPanggil", "no_panggil"]) ||
