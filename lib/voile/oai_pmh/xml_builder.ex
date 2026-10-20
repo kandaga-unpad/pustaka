@@ -38,7 +38,7 @@ defmodule Voile.OaiPmh.XmlBuilder do
       end
 
     element(
-      :OAI_PMH,
+      :"OAI-PMH",
       namespaces,
       [
         element(:responseDate, response_date),
@@ -57,7 +57,7 @@ defmodule Voile.OaiPmh.XmlBuilder do
     response_date = DateTime.utc_now() |> DateTime.to_iso8601()
 
     element(
-      :OAI_PMH,
+      :"OAI-PMH",
       %{
         xmlns: @oai_namespace,
         "xmlns:xsi": @xsi_namespace,

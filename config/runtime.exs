@@ -224,9 +224,11 @@ if config_env() == :prod do
   # OAI-PMH Configuration
   # Repository identifier - should be your domain name
   # Used to construct OAI identifiers like: oai:your-domain.com:item:123
-  # Admin email is read from database setting 'app_contact_email'
+  # Admin email is read from database setting 'app_contact_email' with this
+  # configurable fallback (used when the setting is missing or a placeholder).
   config :voile,
-    oai_pmh_repository_id: System.get_env("OAI_REPOSITORY_ID") || host
+    oai_pmh_repository_id: System.get_env("OAI_REPOSITORY_ID") || host,
+    oai_pmh_admin_email: System.get_env("OAI_ADMIN_EMAIL") || "chrisnaadhip@gmail.com"
 end
 
 # Voile Monitoring — runs in all environments (dev + prod)

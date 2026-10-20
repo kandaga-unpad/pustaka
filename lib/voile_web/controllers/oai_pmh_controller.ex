@@ -153,8 +153,9 @@ defmodule VoileWeb.OaiPmhController do
     resumption_token = params["resumptionToken"]
 
     cond do
-      # If resumptionToken is present, it should be the only argument besides verb
-      resumption_token && map_size(params) > 2 ->
+      # If resumptionToken is present, allow metadataPrefix to accompany it
+      # (legacy harvesters send both); any other extra argument is rejected.
+      resumption_token && map_size(params) > 3 ->
         send_error(
           conn,
           "badArgument",
@@ -174,8 +175,10 @@ defmodule VoileWeb.OaiPmhController do
         )
 
       true ->
+        # metadataPrefix is only sent on the first page; a token-only request
+        # reuses the prefix (and filters) stored behind the resumption token.
         opts = [
-          metadata_prefix: metadata_prefix || resumption_token,
+          metadata_prefix: metadata_prefix,
           from: from,
           until: until_param,
           set: set,
@@ -183,6 +186,19 @@ defmodule VoileWeb.OaiPmhController do
         ]
 
         case OaiPmh.list_identifiers(opts) do
+          {:ok, result} ->
+            request_params =
+              %{}
+              |> maybe_put(:metadataPrefix, metadata_prefix)
+              |> maybe_put(:from, from)
+              |> maybe_put(:until, until_param)
+              |> maybe_put(:set, set)
+              |> maybe_put(:resumptionToken, resumption_token)
+
+            xml =
+              XmlBuilder.build_response("ListIdentifiers", request_params, result, base_url)
+
+            send_xml_response(conn, xml)
           {:ok, result} ->
             request_params =
               %{}
@@ -227,8 +243,9 @@ defmodule VoileWeb.OaiPmhController do
     resumption_token = params["resumptionToken"]
 
     cond do
-      # If resumptionToken is present, it should be the only argument besides verb
-      resumption_token && map_size(params) > 2 ->
+      # If resumptionToken is present, allow metadataPrefix to accompany it
+      # (legacy harvesters send both); any other extra argument is rejected.
+      resumption_token && map_size(params) > 3 ->
         send_error(
           conn,
           "badArgument",
@@ -248,8 +265,10 @@ defmodule VoileWeb.OaiPmhController do
         )
 
       true ->
+        # metadataPrefix is only sent on the first page; a token-only request
+        # reuses the prefix (and filters) stored behind the resumption token.
         opts = [
-          metadata_prefix: metadata_prefix || resumption_token,
+          metadata_prefix: metadata_prefix,
           from: from,
           until: until_param,
           set: set,

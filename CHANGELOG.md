@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.51] - 2026-10-19
+
+### Fixed
+
+- **OAI-PMH 2.0 spec compliance (harvester-blocking)** — `lib/voile/oai_pmh/xml_builder.ex` emitted the response root as `OAI_PMH` (underscore); the official `OAI-PMH.xsd` rejects it because the schema declares `OAI-PMH` (dashed) as the only valid root instance. Confirmed by validating the live production Identify response against the official schema set (fails with "no matching global declaration"). The root is now `OAI-PMH` in both success and error responses, so `api/oai` responses validate against the official schema (identified via the 14-Okt harvester probe deviation, now resolved).
+- **Token-only resumption** — a `ListRecords`/`ListIdentifiers` continuation request carrying only `resumptionToken` (no `metadataPrefix`) previously stuffed the raw token value into `metadataPrefix` and failed with `cannotDisseminateFormat`, so harvesters stopped at page 1. Resumption tokens now carry `metadataPrefix` plus the original `from`/`until`/`set` arguments; a token-only request reuses them exactly as the issuing request specified. For legacy harvesters that still send `metadataPrefix` alongside the token, that combination is tolerated (any other extra argument is still rejected as `badArgument`).
+
+### Added
+
+- **`items` and `collections` harvesting sets** — record granularity is now selectable via `set`: `items` (default; item-level records as before), `collections` (collection-level records, one per bibliographic record, via `ListRecords`/`ListIdentifiers set=collections`), and `collection:<CODE>` (items of one collection, unchanged). Collection-level identifiers are `oai:<repository>:collection:<CODE>` and resolve in `GetRecord`. Both virtual sets plus the per-collection setSpec values are documented in `ListSets` (`items | collections | collection:<COLLECTION_CODE>`).
+
+### Fixed
+
+- **oai_dc payload correctness** — literal `NULL` never reaches the output: placeholder values (`NULL`, `null`, `NONE`, `N/A`, `\N`, blank, per the biblio importer's null-value pattern) are dropped from every field, so `dc:relation` no longer contains `NULL` rows. Mapping completeness: `dc:type` from the collection's resource class (e.g. "Book"), `dc:rights` from the collection `access_level`, `dc:language` (including the `languageType` biblio field), `dc:source` (the parent `collection:<CODE>` link — this link moved out of `dc:relation`), and `dc:contributor` for additional creators beyond the primary creator.
+- **Mixed record granularity** — records previously mixed collection- and item-level metadata (two titles, interleaved dates, foreign publishers from re-imported field batches appended onto the same collection). Item-level records now carry exactly one `dc:title` (the record's own authoritative `collections.title`) and one `dc:date` (first date field in insertion order, i.e. the original import batch); collection-level metadata remains harvestable under the new `set=collections`.
+- **ListRecords ordering & earliestDatestamp** — records were ordered by item UUID (random in time); harvest flows now order by `updated_at` ascending, matching the datestamp source so incremental from/until harvests are chronological. `Identify/earliestDatestamp` was computed from `min(items.inserted_at)`, which on production resolves to a corrupted `0006-01-16T...` value (a back-dated imported row); it now derives from `min(items.updated_at)` so the advertised earliest datestamp is truthful for from/until filtering (dev: `1980-01-04T00:13:13Z`).
+- **Identify contact fallback** — when the `app_contact_email` setting is missing or a placeholder (`some.one@contact.com`), `adminEmail` now falls back to the configurable `oai_pmh_admin_email` (`OAI_ADMIN_EMAIL` env, default the developer contact) instead of exposing a placeholder.
+
+---
+
 ## [0.1.50] - 2026-10-05
 
 ### Security

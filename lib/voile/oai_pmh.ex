@@ -24,6 +24,9 @@ defmodule Voile.OaiPmh do
   @deleted_record "transient"
   @earliest_datestamp "2024-01-01T00:00:00Z"
 
+  # Placeholder contacts observed in harvested environments; never expose them.
+  @placeholder_admin_emails ["some.one@contact.com", "admin@voile.example.com"]
+
   # Metadata format specifications
   @metadata_formats %{
     "oai_dc" => %{
@@ -62,9 +65,23 @@ defmodule Voile.OaiPmh do
   """
   def list_metadata_formats(identifier \\ nil) do
     if identifier do
-      case get_record_by_identifier(identifier) do
-        {:ok, _record} -> {:ok, Map.values(@metadata_formats)}
-        error -> error
+      case resolve_record_target(identifier) do
+        {:ok, {:item, item_id}} ->
+          if Repo.get(Item, item_id) do
+            {:ok, Map.values(@metadata_formats)}
+          else
+            {:error, :id_does_not_exist}
+          end
+
+        {:ok, {:collection, collection_code}} ->
+          if Repo.get_by(Collection, collection_code: collection_code) do
+            {:ok, Map.values(@metadata_formats)}
+          else
+            {:error, :id_does_not_exist}
+          end
+
+        {:error, _} ->
+          {:error, :id_does_not_exist}
       end
     else
       {:ok, Map.values(@metadata_formats)}
@@ -77,7 +94,9 @@ defmodule Voile.OaiPmh do
   Supports resumption tokens for pagination.
   """
   def list_sets(resumption_token \\ nil) do
-    {offset, cursor} = decode_resumption_token(resumption_token)
+    token = decode_resumption_token(resumption_token)
+    offset = token.offset
+    cursor = token.cursor
     limit = 100
 
     query =
@@ -92,21 +111,54 @@ defmodule Voile.OaiPmh do
     has_more = length(sets) > limit
     sets = Enum.take(sets, limit)
 
-    result = %{
-      sets: Enum.map(sets, &format_set/1)
-    }
+    sets =
+      if cursor == 0 do
+        [documented_set("items"), documented_set("collections")] ++ Enum.map(sets, &format_set/1)
+      else
+        Enum.map(sets, &format_set/1)
+      end
+
+    result = %{sets: sets}
 
     if has_more do
-      new_token = encode_resumption_token(offset + limit, cursor + 1)
+      new_token = encode_resumption_token(offset + limit, cursor + 1, nil, nil, nil, nil)
 
       result
       |> Map.put(:resumption_token, new_token)
       |> Map.put(:cursor, cursor)
-      |> Map.put(:complete_list_size, count_total_sets())
+      |> Map.put(:complete_list_size, count_total_sets() + 2)
     else
       result
     end
     |> then(&{:ok, &1})
+  end
+
+  # Virtual top-level sets so consumers can harvest each record granularity.
+  @doc false
+  def documented_set_spec_values do
+    "items | collections | collection:<COLLECTION_CODE>"
+  end
+
+  defp documented_set("items") do
+    %{
+      set_spec: "items",
+      set_name: "Items (item-level records)",
+      set_description:
+        "All item-level records. This is the default set harvested when no set " <>
+          "argument is given. Documented setSpec values: #{documented_set_spec_values()}"
+    }
+  end
+
+  defp documented_set("collections") do
+    %{
+      set_spec: "collections",
+      set_name: "Collections (collection-level records)",
+      set_description:
+        "All collection-level records, one per bibliographic record. Harvest this set " <>
+          "with ListRecords/ListIdentifiers set=collections and GetRecord with identifier " <>
+          "oai:<repository>:collection:<COLLECTION_CODE>. " <>
+          "Documented setSpec values: #{documented_set_spec_values()}"
+    }
   end
 
   @doc """
@@ -115,39 +167,58 @@ defmodule Voile.OaiPmh do
   Supports selective harvesting by date and set.
   """
   def list_identifiers(opts \\ []) do
-    metadata_prefix = Keyword.get(opts, :metadata_prefix)
-    from_date = Keyword.get(opts, :from)
-    until_date = Keyword.get(opts, :until)
-    set_spec = Keyword.get(opts, :set)
-    resumption_token = Keyword.get(opts, :resumption_token)
+    token = decode_resumption_token(Keyword.get(opts, :resumption_token))
+
+    metadata_prefix = Keyword.get(opts, :metadata_prefix) || token.metadata_prefix
+    from_date = Keyword.get(opts, :from) || token.from
+    until_date = Keyword.get(opts, :until) || token.until
+    set_spec = Keyword.get(opts, :set) || token.set
 
     with :ok <- validate_metadata_prefix(metadata_prefix),
          :ok <- validate_dates(from_date, until_date) do
-      {offset, cursor} = decode_resumption_token(resumption_token)
+      offset = token.offset
+      cursor = token.cursor
       limit = 100
 
-      query = build_items_query(from_date, until_date, set_spec, offset, limit)
-      items = query |> preload(:collection) |> Repo.all()
-      has_more = length(items) > limit
-      items = Enum.take(items, limit)
+      if set_spec == "collections" do
+        query = build_collections_query(from_date, until_date, offset, limit)
+        collections = Repo.all(query)
+        has_more = length(collections) > limit
+        collections = Enum.take(collections, limit)
 
-      result = %{
-        identifiers: Enum.map(items, &format_identifier/1)
-      }
+        result = %{identifiers: Enum.map(collections, &format_collection_identifier/1)}
 
-      result =
-        if has_more do
-          new_token = encode_resumption_token(offset + limit, cursor + 1)
+        paginate_result(
+          result,
+          has_more,
+          offset,
+          cursor,
+          limit,
+          metadata_prefix,
+          from_date,
+          until_date,
+          set_spec
+        )
+      else
+        query = build_items_query(from_date, until_date, set_spec, offset, limit)
+        items = query |> preload(:collection) |> Repo.all()
+        has_more = length(items) > limit
+        items = Enum.take(items, limit)
 
-          result
-          |> Map.put(:resumption_token, new_token)
-          |> Map.put(:cursor, cursor)
-          |> Map.put(:complete_list_size, count_total_items(from_date, until_date, set_spec))
-        else
-          result
-        end
+        result = %{identifiers: Enum.map(items, &format_identifier/1)}
 
-      {:ok, result}
+        paginate_result(
+          result,
+          has_more,
+          offset,
+          cursor,
+          limit,
+          metadata_prefix,
+          from_date,
+          until_date,
+          set_spec
+        )
+      end
     end
     |> case do
       {:ok, _} = success -> success
@@ -157,54 +228,84 @@ defmodule Voile.OaiPmh do
 
   @doc """
   Handles the ListRecords verb.
-  Returns full metadata records for items.
+  Returns full metadata records for items (default or set=items / set=collection:<CODE>)
+  and for collections (set=collections).
   Supports selective harvesting by date and set.
   """
   def list_records(opts \\ []) do
-    metadata_prefix = Keyword.get(opts, :metadata_prefix)
-    from_date = Keyword.get(opts, :from)
-    until_date = Keyword.get(opts, :until)
-    set_spec = Keyword.get(opts, :set)
-    resumption_token = Keyword.get(opts, :resumption_token)
+    token = decode_resumption_token(Keyword.get(opts, :resumption_token))
+
+    metadata_prefix = Keyword.get(opts, :metadata_prefix) || token.metadata_prefix
+    from_date = Keyword.get(opts, :from) || token.from
+    until_date = Keyword.get(opts, :until) || token.until
+    set_spec = Keyword.get(opts, :set) || token.set
 
     with :ok <- validate_metadata_prefix(metadata_prefix),
          :ok <- validate_dates(from_date, until_date) do
-      {offset, cursor} = decode_resumption_token(resumption_token)
+      offset = token.offset
+      cursor = token.cursor
       limit = 50
 
-      query = build_items_query(from_date, until_date, set_spec, offset, limit)
+      if set_spec == "collections" do
+        query = build_collections_query(from_date, until_date, offset, limit)
 
-      items =
-        query
-        |> preload([
-          :node,
-          collection: [
+        collections =
+          query
+          |> preload([
             :mst_creator,
+            :resource_class,
             collection_fields: [metadata_properties: :vocabulary]
-          ]
-        ])
-        |> Repo.all()
+          ])
+          |> Repo.all()
 
-      has_more = length(items) > limit
-      items = Enum.take(items, limit)
+        has_more = length(collections) > limit
+        collections = Enum.take(collections, limit)
 
-      result = %{
-        records: Enum.map(items, &format_record(&1, metadata_prefix))
-      }
+        result = %{records: Enum.map(collections, &format_collection_record(&1, metadata_prefix))}
 
-      result =
-        if has_more do
-          new_token = encode_resumption_token(offset + limit, cursor + 1)
+        paginate_result(
+          result,
+          has_more,
+          offset,
+          cursor,
+          limit,
+          metadata_prefix,
+          from_date,
+          until_date,
+          set_spec
+        )
+      else
+        query = build_items_query(from_date, until_date, set_spec, offset, limit)
 
-          result
-          |> Map.put(:resumption_token, new_token)
-          |> Map.put(:cursor, cursor)
-          |> Map.put(:complete_list_size, count_total_items(from_date, until_date, set_spec))
-        else
-          result
-        end
+        items =
+          query
+          |> preload([
+            :node,
+            collection: [
+              :mst_creator,
+              :resource_class,
+              collection_fields: [metadata_properties: :vocabulary]
+            ]
+          ])
+          |> Repo.all()
 
-      {:ok, result}
+        has_more = length(items) > limit
+        items = Enum.take(items, limit)
+
+        result = %{records: Enum.map(items, &format_record(&1, metadata_prefix))}
+
+        paginate_result(
+          result,
+          has_more,
+          offset,
+          cursor,
+          limit,
+          metadata_prefix,
+          from_date,
+          until_date,
+          set_spec
+        )
+      end
     end
     |> case do
       {:ok, _} = success -> success
@@ -218,9 +319,34 @@ defmodule Voile.OaiPmh do
   """
   def get_record(identifier, metadata_prefix) do
     with :ok <- validate_metadata_prefix(metadata_prefix),
-         {:ok, item} <- get_record_by_identifier(identifier) do
-      item = preload_collection_metadata([item]) |> List.first()
-      {:ok, format_record(item, metadata_prefix)}
+         {:ok, target} <- resolve_record_target(identifier) do
+      case target do
+        {:item, item_id} ->
+          case Repo.get(Item, item_id) do
+            nil ->
+              {:error, :id_does_not_exist}
+
+            item ->
+              item = preload_collection_metadata([item]) |> List.first()
+              {:ok, format_record(item, metadata_prefix)}
+          end
+
+        {:collection, collection_code} ->
+          case Repo.get_by(Collection, collection_code: collection_code) do
+            nil ->
+              {:error, :id_does_not_exist}
+
+            collection ->
+              collection =
+                Repo.preload(collection, [
+                  :mst_creator,
+                  :resource_class,
+                  collection_fields: [metadata_properties: :vocabulary]
+                ])
+
+              {:ok, format_collection_record(collection, metadata_prefix)}
+          end
+      end
     end
     |> case do
       {:ok, _} = success -> success
@@ -231,15 +357,22 @@ defmodule Voile.OaiPmh do
   # Private Functions
 
   defp admin_emails do
-    # Get admin email from system settings
-    email = System.get_setting_value("app_contact_email", "admin@voile.example.com")
-    [email]
+    email = System.get_setting_value("app_contact_email", nil)
+    fallback = Application.get_env(:voile, :oai_pmh_admin_email, "chrisnaadhip@gmail.com")
+
+    if is_binary(email) and email != "" and email not in @placeholder_admin_emails do
+      [email]
+    else
+      [fallback]
+    end
   end
 
   defp earliest_datestamp do
+    # Must mirror the datestamp source (item.updated_at) so from/until filtering
+    # never excludes records the earliestDatestamp claims are available.
     query =
       from i in Item,
-        select: min(i.inserted_at),
+        select: min(i.updated_at),
         limit: 1
 
     case Repo.one(query) do
@@ -287,7 +420,7 @@ defmodule Voile.OaiPmh do
         join: c in Collection,
         on: i.collection_id == c.id,
         where: c.status == "published",
-        order_by: [asc: i.id],
+        order_by: [asc: i.updated_at],
         offset: ^offset,
         limit: ^(limit + 1)
 
@@ -317,7 +450,41 @@ defmodule Voile.OaiPmh do
       where: i.updated_at >= ^from_datetime and i.updated_at <= ^until_datetime
   end
 
+  defp build_collections_query(from_date, until_date, offset, limit) do
+    query =
+      from c in Collection,
+        where: c.status == "published",
+        order_by: [asc: c.updated_at],
+        offset: ^offset,
+        limit: ^(limit + 1)
+
+    apply_collection_date_filters(query, from_date, until_date)
+  end
+
+  defp apply_collection_date_filters(query, nil, nil), do: query
+
+  defp apply_collection_date_filters(query, from_date, until_date) do
+    from_datetime = parse_datetime(from_date)
+    until_datetime = parse_datetime(until_date)
+
+    case {from_datetime, until_datetime} do
+      {nil, nil} ->
+        query
+
+      {%DateTime{} = from_dt, nil} ->
+        from c in query, where: c.updated_at >= ^from_dt
+
+      {nil, %DateTime{} = until_dt} ->
+        from c in query, where: c.updated_at <= ^until_dt
+
+      {%DateTime{} = from_dt, %DateTime{} = until_dt} ->
+        from c in query, where: c.updated_at >= ^from_dt and c.updated_at <= ^until_dt
+    end
+  end
+
   defp apply_set_filter(query, nil), do: query
+
+  defp apply_set_filter(query, "items"), do: query
 
   defp apply_set_filter(query, set_spec) do
     # Extract collection code from set_spec (format: "collection:CODE")
@@ -339,25 +506,128 @@ defmodule Voile.OaiPmh do
     Repo.one(query)
   end
 
+  defp count_total_collections(from_date, until_date) do
+    query =
+      from c in Collection,
+        where: c.status == "published",
+        select: count(c.id)
+
+    query = apply_collection_date_filters(query, from_date, until_date)
+
+    Repo.one(query)
+  end
+
+  defp paginate_result(result, false, _offset, _cursor, _limit, _prefix, _from, _until, _spec),
+    do: {:ok, result}
+
+  defp paginate_result(result, true, offset, cursor, limit, metadata_prefix, from, until, spec) do
+    new_token =
+      encode_resumption_token(offset + limit, cursor + 1, metadata_prefix, from, until, spec)
+
+    complete_list_size =
+      if spec == "collections",
+        do: count_total_collections(from, until),
+        else: count_total_items(from, until, spec)
+
+    {:ok,
+     result
+     |> Map.put(:resumption_token, new_token)
+     |> Map.put(:cursor, cursor)
+     |> Map.put(:complete_list_size, complete_list_size)}
+  end
+
   defp format_identifier(item) do
     %{
       identifier: build_oai_identifier(item.id),
       datestamp: format_datetime(item.updated_at),
-      set_specs: ["collection:#{item.collection.collection_code}"],
+      set_specs: item_set_specs(item),
       status: if(item.status == "active", do: nil, else: "deleted")
     }
   end
 
   defp format_record(item, metadata_prefix) do
-    %{
-      header: %{
+    status = if(item.status == "active", do: nil, else: "deleted")
+
+    header =
+      %{
         identifier: build_oai_identifier(item.id),
         datestamp: format_datetime(item.updated_at),
-        set_specs: ["collection:#{item.collection.collection_code}"]
-      },
+        set_specs: item_set_specs(item)
+      }
+      |> then(fn header ->
+        if status, do: Map.put(header, :status, status), else: header
+      end)
+
+    %{
+      header: header,
       metadata: format_metadata(item, metadata_prefix),
       metadata_prefix: metadata_prefix
     }
+  end
+
+  defp item_set_specs(item) do
+    ["items", "collection:#{item.collection.collection_code}"]
+  end
+
+  defp build_collection_identifier(collection_code) do
+    "oai:#{repository_identifier()}:collection:#{collection_code}"
+  end
+
+  defp format_collection_identifier(collection) do
+    %{
+      identifier: build_collection_identifier(collection.collection_code),
+      datestamp: format_datetime(collection.updated_at),
+      set_specs: ["collections"]
+    }
+  end
+
+  defp format_collection_record(collection, metadata_prefix) do
+    %{
+      header: %{
+        identifier: build_collection_identifier(collection.collection_code),
+        datestamp: format_datetime(collection.updated_at),
+        set_specs: ["collections"]
+      },
+      metadata: format_collection_metadata(collection, metadata_prefix),
+      metadata_prefix: metadata_prefix
+    }
+  end
+
+  defp format_collection_metadata(collection, _metadata_prefix) do
+    dc =
+      %{
+        title: List.wrap(collection.title),
+        description: List.wrap(collection.description)
+      }
+      |> put_non_nullish(:rights, collection.access_level)
+
+    dc =
+      case collection.mst_creator do
+        %{creator_name: name} when is_binary(name) and name != "" ->
+          Map.put(dc, :creator, [name])
+
+        _ ->
+          dc
+      end
+
+    dc =
+      case collection.resource_class do
+        %{label: label} when is_binary(label) and label != "" ->
+          Map.put(dc, :type, [label])
+
+        _ ->
+          dc
+      end
+
+    dc = put_non_nullish(dc, :source, "collection:#{collection.collection_code}")
+
+    dc
+    |> drop_null_and_empty_values()
+    |> normalize_title(collection)
+  end
+
+  defp put_non_nullish(map, key, value) do
+    if nullish_value?(value), do: map, else: Map.put(map, key, [String.trim(to_string(value))])
   end
 
   # MARC21 Helper Functions
@@ -642,30 +912,42 @@ defmodule Voile.OaiPmh do
   end
 
   defp format_metadata(item, "oai_dc") do
-    # Start with item-level metadata
-    base_metadata = %{
-      identifier: [item.item_code, item.inventory_code, item.barcode] |> Enum.reject(&is_nil/1),
-      relation: ["collection:#{item.collection.collection_code}"],
-      coverage: [item.location]
-    }
+    collection = item.collection
 
-    # Add collection's primary creator from mst_creator
     base_metadata =
-      if item.collection.mst_creator do
-        Map.put(base_metadata, :creator, [item.collection.mst_creator.creator_name])
-      else
-        base_metadata
+      %{
+        identifier: [item.item_code, item.inventory_code, item.barcode] |> Enum.reject(&is_nil/1),
+        coverage: List.wrap(item.location)
+      }
+      |> put_non_nullish(:source, "collection:#{collection.collection_code}")
+
+    base_metadata =
+      case collection.resource_class do
+        %{label: label} when is_binary(label) and label != "" ->
+          Map.put(base_metadata, :type, [String.trim(label)])
+
+        _ ->
+          base_metadata
       end
 
-    # Extract metadata from collection fields (includes additional creators)
-    field_metadata = extract_dublin_core_from_collection_fields(item.collection)
+    base_metadata = put_non_nullish(base_metadata, :rights, collection.access_level)
 
-    # Merge base and field metadata, concatenating arrays for same keys
-    Map.merge(base_metadata, field_metadata, fn _k, v1, v2 ->
-      List.wrap(v1) ++ List.wrap(v2)
-    end)
-    |> Enum.reject(fn {_k, v} -> v == [] || v == [nil] end)
-    |> Map.new()
+    base_metadata =
+      case collection.mst_creator do
+        %{creator_name: name} when is_binary(name) and name != "" ->
+          Map.put(base_metadata, :creator, [String.trim(name)])
+
+        _ ->
+          base_metadata
+      end
+
+    field_metadata = extract_dublin_core_from_collection_fields(collection)
+
+    merge_metadata(base_metadata, field_metadata)
+    |> drop_null_and_empty_values()
+    |> normalize_title(collection)
+    |> normalize_date()
+    |> split_creators()
   end
 
   defp format_metadata(item, "marc21") do
@@ -682,17 +964,98 @@ defmodule Voile.OaiPmh do
     marc_record
   end
 
+  defp merge_metadata(base, fields) do
+    Map.merge(base, fields, fn _k, v1, v2 ->
+      Enum.uniq(List.wrap(v1) ++ List.wrap(v2))
+    end)
+  end
+
+  # Keep exactly one title: the item's own record title (its parent collection's
+  # authoritative title column), falling back to the first harvested title field.
+  defp normalize_title(metadata, collection) do
+    title =
+      if nullish_value?(collection.title) do
+        case metadata[:title] do
+          values when is_list(values) and values != [] -> [List.first(values)]
+          _ -> nil
+        end
+      else
+        [String.trim(collection.title)]
+      end
+
+    case title do
+      nil -> metadata
+      t -> Map.put(metadata, :title, t)
+    end
+  end
+
+  # Keep exactly one dc:date (the record's publication year); drop the rest.
+  defp normalize_date(metadata) do
+    case metadata[:date] do
+      values when is_list(values) and values != [] ->
+        Map.put(metadata, :date, [List.first(values)])
+
+      _ ->
+        metadata
+    end
+  end
+
+  # Primary creator stays dc:creator (first); the rest become dc:contributor.
+  defp split_creators(metadata) do
+    case metadata[:creator] do
+      [primary | rest] when rest != [] ->
+        metadata
+        |> Map.put(:creator, [primary])
+        |> Map.update(:contributor, rest, fn existing ->
+          Enum.uniq(List.wrap(existing) ++ rest)
+        end)
+
+      _ ->
+        metadata
+    end
+  end
+
+  defp drop_null_and_empty_values(metadata) do
+    metadata
+    |> Enum.map(fn {key, values} -> {key, List.wrap(values)} end)
+    |> Enum.map(fn {key, values} ->
+      {key, values |> Enum.reject(&nullish_value?/1) |> Enum.map(&String.trim(&1))}
+    end)
+    |> Enum.reject(fn {_key, values} -> values == [] end)
+    |> Map.new()
+  end
+
+  defp nullish_value?(nil), do: true
+
+  defp nullish_value?(value) when is_binary(value) do
+    trimmed = String.trim(value)
+
+    trimmed == "" or
+      trimmed in [
+        "\\N",
+        "NULL",
+        "null",
+        "None",
+        "NONE",
+        "none",
+        "N/A",
+        "n/a"
+      ]
+  end
+
+  defp nullish_value?(_), do: false
+
   defp build_oai_identifier(item_id) do
     "oai:#{repository_identifier()}:item:#{item_id}"
   end
 
-  defp get_record_by_identifier(identifier) do
+  defp resolve_record_target(identifier) do
     case parse_oai_identifier(identifier) do
-      {:ok, item_id} ->
-        case Repo.get(Item, item_id) do
-          nil -> {:error, :id_does_not_exist}
-          item -> {:ok, item}
-        end
+      {:ok, {:item, item_id}} ->
+        {:ok, {:item, item_id}}
+
+      {:ok, {:collection, collection_code}} ->
+        {:ok, {:collection, collection_code}}
 
       {:error, _} ->
         {:error, :id_does_not_exist}
@@ -700,19 +1063,38 @@ defmodule Voile.OaiPmh do
   end
 
   defp parse_oai_identifier("oai:" <> rest) do
-    # Find the last occurrence of ":item:" to handle repository IDs containing colons
-    case String.split(rest, ":item:") do
-      [repo_part, item_id] ->
-        # Verify the repo part ends with the expected repo identifier
-        expected_repo = repository_identifier()
+    # Find the last occurrence of ":item:" / ":collection:" to handle
+    # repository IDs containing colons
+    expected_repo = repository_identifier()
 
-        if String.ends_with?(repo_part, expected_repo) do
-          {:ok, item_id}
-        else
-          {:error, :invalid_format}
+    cond do
+      String.contains?(rest, ":item:") ->
+        case String.split(rest, ":item:") do
+          [repo_part, item_id] ->
+            if String.ends_with?(repo_part, expected_repo) do
+              {:ok, {:item, item_id}}
+            else
+              {:error, :invalid_format}
+            end
+
+          _ ->
+            {:error, :invalid_format}
         end
 
-      _ ->
+      String.contains?(rest, ":collection:") ->
+        case String.split(rest, ":collection:") do
+          [repo_part, collection_code] ->
+            if String.ends_with?(repo_part, expected_repo) and collection_code != "" do
+              {:ok, {:collection, collection_code}}
+            else
+              {:error, :invalid_format}
+            end
+
+          _ ->
+            {:error, :invalid_format}
+        end
+
+      true ->
         {:error, :invalid_format}
     end
   end
@@ -763,6 +1145,9 @@ defmodule Voile.OaiPmh do
 
   defp extract_dublin_core_from_collection_fields(collection) do
     collection.collection_fields
+    # Harvest in field insertion order so "first value" choices (dc:date)
+    # reflect the original import, not unordered UUID primary keys.
+    |> Enum.sort_by(& &1.inserted_at, {:asc, DateTime})
     |> Enum.reduce(%{}, fn field, acc ->
       case map_collection_field_to_dublin_core(field) do
         {dc_field, value} when not is_nil(value) and value != "" ->
@@ -848,6 +1233,7 @@ defmodule Voile.OaiPmh do
         {_prefix, "keywords"} -> :subject
         {_prefix, "classification"} -> :subject
         {_prefix, "language"} -> :language
+        {_prefix, "languageType"} -> :language
         {_prefix, "identifier"} -> :identifier
         {_prefix, "isbn"} -> :identifier
         {_prefix, "issn"} -> :identifier
@@ -894,39 +1280,48 @@ defmodule Voile.OaiPmh do
 
   @token_expiry_minutes 60
 
-  defp encode_resumption_token(offset, cursor) do
-    token_data = %{
+  # Tokens carry the metadataPrefix plus any selective-harvest arguments so a
+  # request carrying only resumptionToken (no metadataPrefix) can continue the
+  # list exactly as the original request specified (OAI-PMH spec 3.1.5.3).
+  defp encode_resumption_token(offset, cursor, metadata_prefix, from, until, set_spec) do
+    %{
       offset: offset,
       cursor: cursor,
       timestamp: :erlang.system_time(:second)
     }
-
-    token_data
+    |> maybe_put_token_value(:metadataPrefix, metadata_prefix)
+    |> maybe_put_token_value(:from, from)
+    |> maybe_put_token_value(:until, until)
+    |> maybe_put_token_value(:set, set_spec)
     |> Jason.encode!()
     |> Base.url_encode64(padding: false)
   end
 
-  defp decode_resumption_token(nil), do: {0, 0}
+  defp maybe_put_token_value(token_data, _key, nil), do: token_data
+  defp maybe_put_token_value(token_data, key, value), do: Map.put(token_data, key, value)
+
+  defp decode_resumption_token(nil), do: fresh_token()
 
   defp decode_resumption_token(token) when is_binary(token) do
-    case Base.url_decode64(token, padding: false) do
-      {:ok, json} ->
-        case Jason.decode(json) do
-          {:ok, %{"offset" => offset, "cursor" => cursor, "timestamp" => timestamp}} ->
-            if token_expired?(timestamp) do
-              {0, 0}
-            else
-              {offset, cursor}
-            end
-
-          _ ->
-            {0, 0}
-        end
-
-      _ ->
-        {0, 0}
+    with {:ok, json} <- Base.url_decode64(token, padding: false),
+         {:ok, data} <- Jason.decode(json),
+         true <- token_expired?(data["timestamp"] || 0) == false,
+         offset when is_integer(offset) <- data["offset"] do
+      %{
+        offset: offset,
+        cursor: data["cursor"] || 0,
+        metadata_prefix: data["metadataPrefix"],
+        from: data["from"],
+        until: data["until"],
+        set: data["set"]
+      }
+    else
+      _ -> fresh_token()
     end
   end
+
+  defp fresh_token,
+    do: %{offset: 0, cursor: 0, metadata_prefix: nil, from: nil, until: nil, set: nil}
 
   defp token_expired?(timestamp) do
     now = :erlang.system_time(:second)
