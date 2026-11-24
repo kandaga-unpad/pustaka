@@ -52,7 +52,7 @@ const CommandPalette = {
     };
 
     this.onBackdropClick = (e) => {
-      if (e.target.dataset.rdCmdBackdrop !== undefined) this.close();
+      if (e.target === this.backdrop) this.close();
     };
 
     // Open requests come from the topbar search pill / mobile overflow slot
@@ -120,7 +120,7 @@ const CommandPalette = {
       let groupVisible = 0;
 
       items.forEach((item) => {
-        const text = (item.dataset.rdCmdSearch || item.textContent || "")
+        const text = (item.dataset.voileCmdSearch || item.textContent || "")
           .toLowerCase()
           .trim();
         const match = !query || text.includes(query);

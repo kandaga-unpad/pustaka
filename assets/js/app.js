@@ -38,6 +38,7 @@ import { SearchPanel } from "./hooks/search_panel_hook";
 import SearchResultsLoading from "./hooks/search_results_loading";
 import DragDrop from "./hooks/sortable";
 import CommandPalette from "./hooks/command_palette";
+import DashboardMobileNav from "./hooks/dashboard_mobile_nav";
 import Sidebar from "./hooks/sidebar";
 
 // LocaleSwitcher Hook for current path and locale link rewriting
@@ -399,6 +400,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     EbookReader,
     PasswordToggle,
     CommandPalette,
+    DashboardMobileNav,
     Sidebar,
     ...colocatedHooks,
   },

@@ -619,7 +619,7 @@ defmodule Voile.OaiPmh do
           dc
       end
 
-    dc = put_non_nullish(dc, :source, "collection:#{collection.collection_code}")
+    dc = put_non_nullish(dc, :relation, "collection:#{collection.collection_code}")
 
     dc
     |> drop_null_and_empty_values()
@@ -919,7 +919,7 @@ defmodule Voile.OaiPmh do
         identifier: [item.item_code, item.inventory_code, item.barcode] |> Enum.reject(&is_nil/1),
         coverage: List.wrap(item.location)
       }
-      |> put_non_nullish(:source, "collection:#{collection.collection_code}")
+      |> put_non_nullish(:relation, "collection:#{collection.collection_code}")
 
     base_metadata =
       case collection.resource_class do
@@ -1150,8 +1150,15 @@ defmodule Voile.OaiPmh do
     |> Enum.sort_by(& &1.inserted_at, {:asc, DateTime})
     |> Enum.reduce(%{}, fn field, acc ->
       case map_collection_field_to_dublin_core(field) do
-        {dc_field, value} when not is_nil(value) and value != "" ->
-          Map.update(acc, dc_field, [value], fn existing -> existing ++ [value] end)
+        {dc_field, values} when dc_field != nil and values != nil and values != "" ->
+          values
+          |> List.wrap()
+          |> Enum.reject(&nullish_value?/1)
+          |> Enum.reduce(acc, fn value, acc ->
+            Map.update(acc, dc_field, [String.trim(value)], fn existing ->
+              existing ++ [String.trim(value)]
+            end)
+          end)
 
         _ ->
           acc
@@ -1210,11 +1217,17 @@ defmodule Voile.OaiPmh do
         {"bibo", "issn"} -> :identifier
         {"bibo", "doi"} -> :identifier
         {"bibo", "author"} -> :creator
+        {"bibo", "authorList"} -> {:contributor, split_person_list(field.value)}
         {"bibo", "editor"} -> :contributor
+        {"bibo", "editorList"} -> {:contributor, split_person_list(field.value)}
+        {"bibo", "contributorList"} -> {:contributor, split_person_list(field.value)}
+        {"bibo", "translator"} -> :contributor
+        {"bibo", "director"} -> :contributor
         {"bibo", "abstract"} -> :description
         {"bibo", "pages"} -> :format
         {"bibo", "volume"} -> :relation
         {"bibo", "issue"} -> :relation
+        {"bibo", "translationOf"} -> :relation
         # FOAF (Friend of a Friend) mapping
         {"foaf", "name"} -> :creator
         {"foaf", "title"} -> :title
@@ -1244,16 +1257,49 @@ defmodule Voile.OaiPmh do
         {_prefix, "edition"} -> :relation
         {_prefix, "seriesTitle"} -> :relation
         {_prefix, "location"} -> :coverage
+        {"kandaga_book", "glam_keywords"} -> {:subject, keyword_list(field.value)}
+        {"kandaga_book", "glam_creator"} -> :creator
+        {"kandaga_book", "glam_location"} -> :coverage
+        {"kandaga_book", "glam_publication_date"} -> :date
+        {"kandaga_book", "glam_type"} -> :type
+        {"kandaga_book", "glam_institution"} -> :source
         # Unmapped fields
         _ -> nil
       end
 
-    if dc_field do
-      {dc_field, field.value}
-    else
-      nil
+    case dc_field do
+      nil ->
+        nil
+
+      # Arms that already prepared a multi-valued list (e.g. bibo person lists)
+      {dc_key, values} when is_list(values) ->
+        {dc_key, values}
+
+      _ ->
+        {dc_field, field.value}
     end
   end
+
+  # A person list field (bibo author/editor/contributor lists) holds one
+  # person per line; commas are kept intact because "Last, First" is common.
+  defp split_person_list(value) when is_binary(value) do
+    value
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  defp split_person_list(value), do: List.wrap(value)
+
+  # Keyword fields store comma-separated subject terms.
+  defp keyword_list(value) when is_binary(value) do
+    value
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  defp keyword_list(value), do: List.wrap(value)
 
   defp parse_datetime(nil), do: nil
 

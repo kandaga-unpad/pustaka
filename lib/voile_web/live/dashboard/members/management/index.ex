@@ -598,7 +598,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       {:noreply, assign(socket, form: to_form(changeset))}
     else
       disallowed =
-        disabled_role_ids(socket.assigns.current_scope.user, socket.assigns.available_roles)
+        Authorization.disallowed_role_ids(
+          socket.assigns.current_scope.user,
+          socket.assigns.available_roles
+        )
 
       normalized_role_ids = normalize_role_ids(role_ids)
 
@@ -659,7 +662,10 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       {:noreply, assign(socket, form: to_form(changeset))}
     else
       disallowed =
-        disabled_role_ids(socket.assigns.current_scope.user, socket.assigns.available_roles)
+        Authorization.disallowed_role_ids(
+          socket.assigns.current_scope.user,
+          socket.assigns.available_roles
+        )
 
       normalized_role_ids = normalize_role_ids(role_ids)
 
@@ -815,7 +821,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       if socket.assigns.is_super_admin, do: Repo.all(from(n in Node, order_by: n.name)), else: []
 
     available_roles = VoileWeb.Auth.PermissionManager.list_roles()
-    disabled_role_ids = disabled_role_ids(current_user, available_roles)
+    disabled_role_ids = Authorization.disallowed_role_ids(current_user, available_roles)
 
     socket
     |> assign(:member_types, member_types)
@@ -894,40 +900,6 @@ defmodule VoileWeb.Dashboard.Members.Management.Index do
       id when is_binary(id) -> String.to_integer(id)
     end)
   end
-
-  defp disabled_role_ids(user, roles) do
-    if Authorization.is_super_admin?(user) do
-      []
-    else
-      max_rank = current_user_role_rank(user)
-
-      roles
-      |> Enum.filter(fn role -> role_rank(role) >= max_rank end)
-      |> Enum.map(& &1.id)
-    end
-  end
-
-  defp current_user_role_rank(user) do
-    user = Repo.preload(user, :roles)
-
-    user.roles
-    |> Enum.map(&role_rank/1)
-    |> Enum.max(fn -> 0 end)
-  end
-
-  defp role_rank(%{name: name}), do: role_rank(name)
-
-  defp role_rank(name) when is_binary(name) do
-    case String.downcase(name) do
-      "super_admin" -> 4
-      "admin" -> 3
-      "librarian" -> 2
-      "staff" -> 1
-      _ -> 0
-    end
-  end
-
-  defp role_rank(_), do: 0
 
   defp build_members_export_csv(socket) do
     rows = Repo.all(build_members_query(socket))

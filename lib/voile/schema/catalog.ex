@@ -69,12 +69,13 @@ defmodule Voile.Schema.Catalog do
     # The last block is 12 characters
 
     query =
-      from c in Collection,
+      from(c in Collection,
         where: fragment("LOWER(RIGHT(id::text, 12)) = ?", ^String.downcase(prefix))
+      )
 
     query =
       if exclude_id do
-        from c in query, where: c.id != ^exclude_id
+        from(c in query, where: c.id != ^exclude_id)
       else
         query
       end
@@ -121,8 +122,9 @@ defmodule Voile.Schema.Catalog do
     offset = (page - 1) * per_page
 
     base_query =
-      from c in Collection,
+      from(c in Collection,
         order_by: [desc: c.inserted_at, desc: c.id]
+      )
 
     query =
       base_query
@@ -147,8 +149,9 @@ defmodule Voile.Schema.Catalog do
 
     # Count query without preloads for better performance
     count_query =
-      from c in Collection,
+      from(c in Collection,
         select: count(c.id)
+      )
 
     total_count =
       count_query
@@ -204,7 +207,7 @@ defmodule Voile.Schema.Catalog do
   defp maybe_search_collections(query, search) when is_binary(search) and search != "" do
     {like, title_like} = build_search_patterns(search)
 
-    from c in query,
+    from(c in query,
       as: :collection,
       left_join: creator in assoc(c, :mst_creator),
       as: :mst_creator,
@@ -219,6 +222,7 @@ defmodule Voile.Schema.Catalog do
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
           ilike(rc.label, ^like)
+    )
   end
 
   defp maybe_search_collections(query, _), do: query
@@ -229,7 +233,7 @@ defmodule Voile.Schema.Catalog do
        when is_binary(search) and search != "" do
     {like, title_like} = build_search_patterns(search)
 
-    from c in query,
+    from(c in query,
       left_join: creator in assoc(c, :mst_creator),
       as: :mst_creator,
       left_join: node in assoc(c, :node),
@@ -243,6 +247,7 @@ defmodule Voile.Schema.Catalog do
           ilike(creator.creator_name, ^like) or
           ilike(node.name, ^like) or
           ilike(rc.label, ^like)
+    )
   end
 
   defp maybe_search_collections_for_count(query, _), do: query
@@ -295,14 +300,14 @@ defmodule Voile.Schema.Catalog do
   defp filter_by_status(query, ""), do: query
 
   defp filter_by_status(query, status) when is_binary(status) do
-    from c in query, where: c.status == ^status
+    from(c in query, where: c.status == ^status)
   end
 
   defp filter_by_access_level(query, nil), do: query
   defp filter_by_access_level(query, ""), do: query
 
   defp filter_by_access_level(query, access_level) when is_binary(access_level) do
-    from c in query, where: c.access_level == ^access_level
+    from(c in query, where: c.access_level == ^access_level)
   end
 
   defp filter_by_glam_type(query, nil), do: query
@@ -330,13 +335,13 @@ defmodule Voile.Schema.Catalog do
 
   defp filter_by_node(query, node_id) when is_binary(node_id) do
     case Integer.parse(node_id) do
-      {id, ""} -> from c in query, where: c.unit_id == ^id
+      {id, ""} -> from(c in query, where: c.unit_id == ^id)
       _ -> query
     end
   end
 
   defp filter_by_node(query, node_id) when is_integer(node_id) do
-    from c in query, where: c.unit_id == ^node_id
+    from(c in query, where: c.unit_id == ^node_id)
   end
 
   @doc """
@@ -466,13 +471,14 @@ defmodule Voile.Schema.Catalog do
         false ->
           # If roles not preloaded, check via database query
           Voile.Repo.exists?(
-            from ur in Voile.Schema.Accounts.UserRoleAssignment,
+            from(ur in Voile.Schema.Accounts.UserRoleAssignment,
               join: r in assoc(ur, :role),
               where:
                 ur.user_id == ^user.id and
                   (is_nil(ur.expires_at) or ur.expires_at > ^DateTime.utc_now()) and
                   (fragment("LOWER(?)", r.name) in ^admin_groups or
                      fragment("LOWER(?) LIKE '%admin%'", r.name))
+            )
           )
       end
 
@@ -549,8 +555,8 @@ defmodule Voile.Schema.Catalog do
     result =
       %Collection{}
       |> Collection.changeset(enriched_attrs)
-      |> Ecto.Changeset.put_change(:created_by_id, user_id)
-      |> Ecto.Changeset.put_change(:updated_by_id, user_id)
+      |> put_audit_field(:created_by_id, user_id)
+      |> put_audit_field(:updated_by_id, user_id)
       |> Repo.insert()
 
     case result do
@@ -613,7 +619,7 @@ defmodule Voile.Schema.Catalog do
     result =
       collection
       |> Collection.changeset(attrs)
-      |> Ecto.Changeset.put_change(:updated_by_id, user_id)
+      |> put_audit_field(:updated_by_id, user_id)
       |> Repo.update()
 
     case result do
@@ -788,7 +794,7 @@ defmodule Voile.Schema.Catalog do
 
     # Build base query without ordering; we will apply sort_order below
     base_query =
-      from c in Collection,
+      from(c in Collection,
         where: c.status in ["pending", "draft"],
         preload: [
           :resource_class,
@@ -798,12 +804,13 @@ defmodule Voile.Schema.Catalog do
           :created_by,
           :updated_by
         ]
+      )
 
     # Apply sorting direction (asc = oldest first, desc = newest first)
     base_query =
       case sort_order do
-        "desc" -> from c in base_query, order_by: [desc: c.inserted_at]
-        _ -> from c in base_query, order_by: [asc: c.inserted_at]
+        "desc" -> from(c in base_query, order_by: [desc: c.inserted_at])
+        _ -> from(c in base_query, order_by: [asc: c.inserted_at])
       end
 
     # Apply search
@@ -811,7 +818,7 @@ defmodule Voile.Schema.Catalog do
       if is_binary(search_query) and search_query != "" do
         like = "%" <> search_query <> "%"
 
-        from c in base_query,
+        from(c in base_query,
           left_join: creator in assoc(c, :mst_creator),
           left_join: node in assoc(c, :node),
           left_join: created in assoc(c, :created_by),
@@ -827,6 +834,7 @@ defmodule Voile.Schema.Catalog do
               ilike(node.name, ^like) or
               ilike(created.fullname, ^like) or
               ilike(updated.fullname, ^like)
+        )
       else
         base_query
       end
@@ -834,7 +842,7 @@ defmodule Voile.Schema.Catalog do
     # Apply status filter
     query =
       if is_binary(filter_status) and filter_status != "" do
-        from c in query, where: c.status == ^filter_status
+        from(c in query, where: c.status == ^filter_status)
       else
         query
       end
@@ -842,7 +850,7 @@ defmodule Voile.Schema.Catalog do
     # Apply node filter for non-super_admin
     query =
       if node_id do
-        from c in query, where: c.unit_id == ^node_id
+        from(c in query, where: c.unit_id == ^node_id)
       else
         query
       end
@@ -855,15 +863,16 @@ defmodule Voile.Schema.Catalog do
     collections = Repo.all(query) |> attach_collection_counts()
 
     count_query =
-      from c in Collection,
+      from(c in Collection,
         where: c.status in ["pending", "draft"],
         select: count(c.id)
+      )
 
     count_query =
       if is_binary(search_query) and search_query != "" do
         like = "%" <> search_query <> "%"
 
-        from c in count_query,
+        from(c in count_query,
           left_join: creator in assoc(c, :mst_creator),
           left_join: node in assoc(c, :node),
           left_join: created in assoc(c, :created_by),
@@ -879,20 +888,21 @@ defmodule Voile.Schema.Catalog do
               ilike(node.name, ^like) or
               ilike(created.fullname, ^like) or
               ilike(updated.fullname, ^like)
+        )
       else
         count_query
       end
 
     count_query =
       if is_binary(filter_status) and filter_status != "" do
-        from c in count_query, where: c.status == ^filter_status
+        from(c in count_query, where: c.status == ^filter_status)
       else
         count_query
       end
 
     count_query =
       if node_id do
-        from c in count_query, where: c.unit_id == ^node_id
+        from(c in count_query, where: c.unit_id == ^node_id)
       else
         count_query
       end
@@ -1134,7 +1144,7 @@ defmodule Voile.Schema.Catalog do
     offset = (page - 1) * per_page
 
     query =
-      from c in Collection,
+      from(c in Collection,
         where: c.created_by_id == ^user.id,
         order_by: [desc: c.inserted_at],
         limit: ^per_page,
@@ -1148,13 +1158,14 @@ defmodule Voile.Schema.Catalog do
           :created_by,
           :updated_by
         ]
+      )
 
     # Apply status filter if provided
     query =
       case status do
-        "draft" -> from c in query, where: c.status == "draft"
-        "pending" -> from c in query, where: c.status == "pending"
-        "published" -> from c in query, where: c.status == "published"
+        "draft" -> from(c in query, where: c.status == "draft")
+        "pending" -> from(c in query, where: c.status == "pending")
+        "published" -> from(c in query, where: c.status == "published")
         _ -> query
       end
 
@@ -1163,7 +1174,7 @@ defmodule Voile.Schema.Catalog do
       if search && search != "" do
         search_term = "%#{search}%"
 
-        from c in query,
+        from(c in query,
           left_join: creator in assoc(c, :mst_creator),
           left_join: rc in assoc(c, :resource_class),
           where:
@@ -1171,6 +1182,7 @@ defmodule Voile.Schema.Catalog do
               ilike(c.description, ^search_term) or
               ilike(creator.creator_name, ^search_term) or
               ilike(rc.label, ^search_term)
+        )
       else
         query
       end
@@ -1179,16 +1191,17 @@ defmodule Voile.Schema.Catalog do
 
     # Count query with same filters
     count_query =
-      from c in Collection,
+      from(c in Collection,
         where: c.created_by_id == ^user.id,
         select: count(c.id)
+      )
 
     # Apply status filter to count query
     count_query =
       case status do
-        "draft" -> from c in count_query, where: c.status == "draft"
-        "pending" -> from c in count_query, where: c.status == "pending"
-        "published" -> from c in count_query, where: c.status == "published"
+        "draft" -> from(c in count_query, where: c.status == "draft")
+        "pending" -> from(c in count_query, where: c.status == "pending")
+        "published" -> from(c in count_query, where: c.status == "published")
         _ -> count_query
       end
 
@@ -1196,7 +1209,7 @@ defmodule Voile.Schema.Catalog do
       if search && search != "" do
         search_term = "%#{search}%"
 
-        from c in Collection,
+        from(c in Collection,
           where: c.created_by_id == ^user.id,
           left_join: creator in assoc(c, :mst_creator),
           left_join: rc in assoc(c, :resource_class),
@@ -1206,6 +1219,7 @@ defmodule Voile.Schema.Catalog do
               ilike(creator.creator_name, ^search_term) or
               ilike(rc.label, ^search_term),
           select: count(c.id)
+        )
       else
         count_query
       end
@@ -1309,12 +1323,13 @@ defmodule Voile.Schema.Catalog do
     # Use a more efficient approach - get limited collections and build the tree in memory
     all_collections =
       Repo.all(
-        from c in Collection,
+        from(c in Collection,
           # Only include collections that have a parent (i.e. exclude root collections)
           where: not is_nil(c.parent_id),
           preload: [:mst_creator, :resource_class],
           order_by: [desc: c.updated_at, asc: c.title],
           limit: ^limit
+        )
       )
 
     # Build a map of parent_id -> children for quick lookup
@@ -1355,10 +1370,11 @@ defmodule Voile.Schema.Catalog do
   """
   def list_root_collections do
     Repo.all(
-      from c in Collection,
+      from(c in Collection,
         where: is_nil(c.parent_id),
         preload: [:mst_creator, :resource_class],
         order_by: [asc: c.sort_order, asc: c.title]
+      )
     )
   end
 
@@ -1373,10 +1389,11 @@ defmodule Voile.Schema.Catalog do
   """
   def list_children_collections(parent_id) do
     Repo.all(
-      from c in Collection,
+      from(c in Collection,
         where: c.parent_id == ^parent_id,
         preload: [:mst_creator, :resource_class],
         order_by: [asc: c.sort_order, asc: c.title]
+      )
     )
   end
 
@@ -1391,14 +1408,15 @@ defmodule Voile.Schema.Catalog do
   """
   def list_potential_parent_collections(collection_id \\ nil) do
     query =
-      from c in Collection,
+      from(c in Collection,
         preload: [:mst_creator, :resource_class],
         order_by: [asc: c.title],
         limit: 50
+      )
 
     query =
       if collection_id do
-        from c in query, where: c.id != ^collection_id
+        from(c in query, where: c.id != ^collection_id)
       else
         query
       end
@@ -1420,15 +1438,16 @@ defmodule Voile.Schema.Catalog do
     search_pattern = "%#{search_term}%"
 
     query =
-      from c in Collection,
+      from(c in Collection,
         where: ilike(c.title, ^search_pattern),
         preload: [:mst_creator, :resource_class],
         order_by: [asc: c.title],
         limit: ^limit
+      )
 
     query =
       if collection_id do
-        from c in query, where: c.id != ^collection_id
+        from(c in query, where: c.id != ^collection_id)
       else
         query
       end
@@ -1592,8 +1611,9 @@ defmodule Voile.Schema.Catalog do
 
     # Build the base query for items
     base_query =
-      from i in Item,
+      from(i in Item,
         order_by: [desc: i.inserted_at, desc: i.id]
+      )
 
     # Apply search and filters
     query =
@@ -1631,7 +1651,7 @@ defmodule Voile.Schema.Catalog do
     search = String.trim(search)
     like = "%#{search}%"
 
-    from i in query,
+    from(i in query,
       as: :item,
       where:
         ilike(i.item_code, ^like) or
@@ -1640,10 +1660,12 @@ defmodule Voile.Schema.Catalog do
           ilike(i.legacy_item_code, ^like) or
           ilike(i.location, ^like) or
           exists(
-            from c in Collection,
+            from(c in Collection,
               where: c.id == parent_as(:item).collection_id and ilike(c.title, ^like),
               select: 1
+            )
           )
+    )
   end
 
   defp maybe_search_items(query, _), do: query
@@ -1660,10 +1682,10 @@ defmodule Voile.Schema.Catalog do
 
       {:node_id, node_id}, q when is_binary(node_id) ->
         node_id = String.to_integer(node_id)
-        from i in q, where: i.unit_id == ^node_id
+        from(i in q, where: i.unit_id == ^node_id)
 
       {:node_id, node_id}, q when is_integer(node_id) ->
-        from i in q, where: i.unit_id == ^node_id
+        from(i in q, where: i.unit_id == ^node_id)
 
       {:status, nil}, q ->
         q
@@ -1672,7 +1694,7 @@ defmodule Voile.Schema.Catalog do
         q
 
       {:status, status}, q ->
-        from i in q, where: i.status == ^status
+        from(i in q, where: i.status == ^status)
 
       {:availability, nil}, q ->
         q
@@ -1681,7 +1703,7 @@ defmodule Voile.Schema.Catalog do
         q
 
       {:availability, availability}, q ->
-        from i in q, where: i.availability == ^availability
+        from(i in q, where: i.availability == ^availability)
 
       {:condition, nil}, q ->
         q
@@ -1690,7 +1712,7 @@ defmodule Voile.Schema.Catalog do
         q
 
       {:condition, condition}, q ->
-        from i in q, where: i.condition == ^condition
+        from(i in q, where: i.condition == ^condition)
 
       {:location_id, nil}, q ->
         q
@@ -1700,10 +1722,10 @@ defmodule Voile.Schema.Catalog do
 
       {:location_id, location_id}, q when is_binary(location_id) ->
         location_id = String.to_integer(location_id)
-        from i in q, where: i.item_location_id == ^location_id
+        from(i in q, where: i.item_location_id == ^location_id)
 
       {:location_id, location_id}, q when is_integer(location_id) ->
-        from i in q, where: i.item_location_id == ^location_id
+        from(i in q, where: i.item_location_id == ^location_id)
 
       _, q ->
         q
@@ -2017,12 +2039,13 @@ defmodule Voile.Schema.Catalog do
     offset = (page - 1) * per_page
 
     query =
-      from i in Item,
+      from(i in Item,
         where: i.availability == "available" and i.status == "active",
         preload: [:collection, :node],
         order_by: [desc: i.inserted_at, desc: i.id],
         limit: ^per_page,
         offset: ^offset
+      )
 
     items = Repo.all(query)
 
@@ -2173,11 +2196,12 @@ defmodule Voile.Schema.Catalog do
       |> where([i], i.status == "active")
 
     query =
-      from [i, c] in base_query,
+      from([i, c] in base_query,
         preload: [:collection, :node],
         order_by: [desc: i.inserted_at, desc: i.id],
         limit: ^per_page,
         offset: ^offset
+      )
 
     items = Repo.all(query)
 
@@ -2565,9 +2589,10 @@ defmodule Voile.Schema.Catalog do
     query =
       case file_type do
         "image" ->
-          from a in query,
+          from(a in query,
             where:
               a.file_type == "image" and a.mime_type in ["image/jpeg", "image/png", "image/webp"]
+          )
 
         _ ->
           query
@@ -2860,15 +2885,16 @@ defmodule Voile.Schema.Catalog do
     item_id = parse_item_id(code)
 
     query =
-      from i in Item,
+      from(i in Item,
         where:
           i.barcode == ^code or i.item_code == ^code or i.inventory_code == ^code or
             i.legacy_item_code == ^code,
         preload: [:collection, :node]
+      )
 
     query =
       if item_id do
-        from i in query, or_where: i.id == ^item_id
+        from(i in query, or_where: i.id == ^item_id)
       else
         query
       end
@@ -2917,19 +2943,19 @@ defmodule Voile.Schema.Catalog do
   defp apply_transfer_filters(query, filters) do
     Enum.reduce(filters, query, fn
       {:status, status}, q when not is_nil(status) ->
-        from tr in q, where: tr.status == ^status
+        from(tr in q, where: tr.status == ^status)
 
       {:to_node_id, node_id}, q when not is_nil(node_id) ->
-        from tr in q, where: tr.to_node_id == ^node_id
+        from(tr in q, where: tr.to_node_id == ^node_id)
 
       {:from_node_id, node_id}, q when not is_nil(node_id) ->
-        from tr in q, where: tr.from_node_id == ^node_id
+        from(tr in q, where: tr.from_node_id == ^node_id)
 
       {:requested_by_id, user_id}, q when not is_nil(user_id) ->
-        from tr in q, where: tr.requested_by_id == ^user_id
+        from(tr in q, where: tr.requested_by_id == ^user_id)
 
       {:item_id, item_id}, q when not is_nil(item_id) ->
-        from tr in q, where: tr.item_id == ^item_id
+        from(tr in q, where: tr.item_id == ^item_id)
 
       _, q ->
         q
@@ -3056,5 +3082,224 @@ defmodule Voile.Schema.Catalog do
   """
   def list_transfer_history_for_item(item_id) do
     list_transfer_requests(%{item_id: item_id})
+  end
+
+  # Private helper functions
+
+  # Conditionally sets an audit field (created_by_id or updated_by_id) on a changeset.
+  # Rule: explicit user_id argument wins, then honor what's already in the changeset,
+  # finally fall back to nil.
+  defp put_audit_field(changeset, field, user_id)
+       when field in [:created_by_id, :updated_by_id] do
+    cond do
+      # Explicit user_id provided (even if nil) - use it
+      user_id != nil ->
+        Ecto.Changeset.put_change(changeset, field, user_id)
+
+      # No explicit user_id, keep what the changeset already has from attrs
+      true ->
+        changeset
+    end
+  end
+
+  # ===========================================================================
+  # DIGITAL COLLECTIONS - collections that carry readable digital files
+  # (attachments) for the public DigitalCollections API. A collection counts as
+  # digital when it has at least one non-embargoed "collection" attachment.
+  # "document" file types (PDFs etc.) are the default interest; the file_type
+  # filter can be overridden or disabled with "all".
+  # ===========================================================================
+
+  @digital_default_file_type "document"
+  @digital_collection_attachable_type "collection"
+
+  @doc """
+  Lists published collections that carry digital attachments, paginated.
+
+  A collection is "digital" when it has at least one non-embargoed attachment
+  with `attachable_type == "collection"` matching the file-type filter
+  (default: documents — PDFs and similar; `file_type: "all"` disables it).
+
+  Supported filters:
+
+    - `:search` — ilike match on title, collection_code, creator name
+    - `:unit_id` — organizing node (faculty)
+    - `:file_type` — attachment file_type ("document" by default, "all" disables)
+    - `:access_level` — attachment access level ("public", "limited", "restricted")
+
+  Returns `{collections, total_pages, total_count}`. Each collection is
+  preloaded with `:digital_attachments` (the matching, ordered attachments).
+  """
+  def list_digital_collections_paginated(page \\ 1, per_page \\ 10, search \\ nil, filters \\ %{}) do
+    offset = (page - 1) * per_page
+
+    # Shared base (filters + search) so the count matches the listed rows.
+    base =
+      digital_collections_query(filters)
+      |> digital_collections_search(search)
+
+    collections =
+      base
+      |> order_by([c], desc: c.inserted_at, desc: c.id)
+      |> limit(^per_page)
+      |> offset(^offset)
+      |> preload([:resource_class, :mst_creator, :node])
+      |> Repo.all()
+      |> attach_digital_attachments(filters)
+
+    total_count =
+      base
+      |> select([c], count(c.id, :distinct))
+      |> Repo.one() || 0
+
+    total_pages = max(ceil(total_count / per_page), 1)
+
+    {collections, total_pages, total_count}
+  end
+
+  @doc """
+  Returns a single published digital collection with its digital attachments
+  and metadata, or nil when the collection does not exist, is not published,
+  or carries no digital attachments matching the default file-type filter.
+  """
+  def get_digital_collection(id) when is_binary(id) do
+    filters = %{file_type: @digital_default_file_type}
+
+    from(c in Collection,
+      as: :collection,
+      where: c.id == ^id and c.status == "published",
+      distinct: true,
+      limit: 1
+    )
+    |> digital_collections_join(filters)
+    |> preload([
+      :resource_class,
+      :mst_creator,
+      :node,
+      collection_fields: [metadata_properties: :vocabulary]
+    ])
+    |> Repo.one()
+    |> case do
+      nil ->
+        nil
+
+      %Collection{} = collection ->
+        [with_attachments] = attach_digital_attachments([collection], filters)
+        with_attachments
+    end
+  end
+
+  # Base query for digital collections: published collections joined to their
+  # digital attachments. The join doubles as the existence check.
+  defp digital_collections_query(filters) do
+    from(c in Collection, as: :collection, where: c.status == "published", distinct: true)
+    |> apply_digital_unit_filter(filters)
+    |> digital_collections_join(filters)
+  end
+
+  defp apply_digital_unit_filter(query, filters) do
+    case parse_int_filter(filters[:unit_id]) do
+      nil -> query
+      unit_id -> where(query, [collection: c], c.unit_id == ^unit_id)
+    end
+  end
+
+  defp parse_int_filter(nil), do: nil
+  defp parse_int_filter(value) when is_integer(value), do: value
+
+  defp parse_int_filter(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {parsed, ""} -> parsed
+      _ -> nil
+    end
+  end
+
+  defp parse_int_filter(_), do: nil
+
+  # Inner join on the collection's non-embargoed digital attachments. The join
+  # conditions double as the "is this collection digital?" existence check.
+  defp digital_collections_join(query, filters) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    on_condition =
+      dynamic(
+        [collection: c, attachment: a],
+        a.attachable_id == c.id and ^digital_attachment_conditions(filters, now)
+      )
+
+    join(query, :inner, [c], a in Attachment, on: ^on_condition, as: :attachment)
+  end
+
+  # Conditions applied to the attachment side of the digital-collections query.
+  # Uses a named binding so the same dynamic composes in both the collection
+  # join and the batched attachment fetch.
+  defp digital_attachment_conditions(filters, now) do
+    conditions =
+      dynamic(
+        [attachment: a],
+        a.attachable_type == ^@digital_collection_attachable_type and
+          (is_nil(a.embargo_start_date) or a.embargo_start_date <= ^now) and
+          (is_nil(a.embargo_end_date) or a.embargo_end_date >= ^now)
+      )
+
+    conditions =
+      case digital_file_type(filters) do
+        nil -> conditions
+        file_type -> dynamic([attachment: a], ^conditions and a.file_type == ^file_type)
+      end
+
+    case filters[:access_level] do
+      level when is_binary(level) and level != "" and level != "all" ->
+        dynamic([attachment: a], ^conditions and a.access_level == ^level)
+
+      _ ->
+        conditions
+    end
+  end
+
+  defp digital_file_type(filters) do
+    case filters[:file_type] do
+      "all" -> nil
+      type when is_binary(type) and type != "" -> type
+      _ -> @digital_default_file_type
+    end
+  end
+
+  defp digital_collections_search(query, search) when is_binary(search) and search != "" do
+    pattern = "%#{search}%"
+
+    # NOTE: no `distinct` here — the base query already sets it and Ecto
+    # rejects a second distinct expression.
+    from [c, a] in query,
+      left_join: cr in assoc(c, :mst_creator),
+      where:
+        ilike(c.title, ^pattern) or
+          ilike(c.collection_code, ^pattern) or
+          ilike(fragment("COALESCE(?, '')", cr.creator_name), ^pattern)
+  end
+
+  defp digital_collections_search(query, _), do: query
+
+  # Attaches the matching digital attachments to each collection in one batched
+  # query (no N+1), ordered primary-first then by sort_order.
+  defp attach_digital_attachments(collections, _filters) when collections == [], do: collections
+
+  defp attach_digital_attachments(collections, filters) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    attachments_by_collection =
+      from(a in Attachment, as: :attachment)
+      # NOTE: the `in` filter and the pinned dynamic must stay in separate
+      # `where` calls — Ecto cannot merge `x in ^ids and ^dynamic` in one go.
+      |> where([attachment: a], a.attachable_id in ^Enum.map(collections, & &1.id))
+      |> where([attachment: a], ^digital_attachment_conditions(filters, now))
+      |> order_by([attachment: a], desc: a.is_primary, asc: a.sort_order, asc: a.inserted_at)
+      |> Repo.all()
+      |> Enum.group_by(& &1.attachable_id)
+
+    Enum.map(collections, fn collection ->
+      attachments = Map.get(attachments_by_collection, collection.id, [])
+      Map.put(collection, :digital_attachments, attachments)
+    end)
   end
 end

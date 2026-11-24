@@ -829,6 +829,72 @@ end
 
 ---
 
+## Localization (i18n)
+
+Voile plugins are translated with the same [Gettext](https://hexdocs.pm/gettext) setup the core app uses — you only ship standard `.po` files; Voile handles locale switching.
+
+### 1. Create the plugin Gettext backend
+
+Add one file to your plugin project:
+
+```elixir
+# lib/voile_my_plugin/gettext.ex
+defmodule VoileMyPlugin.Gettext do
+  use Voile.Plugin.Gettext, otp_app: :voile_my_plugin
+end
+```
+
+### 2. Ship the translation files
+
+Use the standard Gettext directory layout inside your plugin's `priv/`:
+
+```
+priv/gettext/
+├── default.pot
+├── id/LC_MESSAGES/default.po
+└── en/LC_MESSAGES/default.po
+```
+
+Generate and merge them from your plugin project root (requires `gettext` in your plugin's deps):
+
+```bash
+mix gettext.extract --merge
+```
+
+### 3. Use it in your LiveViews and components
+
+```elixir
+defmodule VoileMyPlugin.Web.IndexLive do
+  use VoileWeb, :live_view_dashboard
+  use Gettext, backend: VoileMyPlugin.Gettext
+
+  def render(assigns) do
+    ~H"""
+    <h1>{gettext("Lockers")}</h1>
+    """
+  end
+end
+```
+
+### How it works
+
+Voile discovers your backend by convention (`<YourPluginModule>.Gettext`) on activation, registers it, and keeps its locale in sync whenever the site locale switches (via the locale plug / LiveView hook). Deactivating or uninstalling the plugin unregisters the backend automatically. Untranslated strings fall back to the msgid, exactly like core Gettext.
+
+### Supported locales and proposing new ones
+
+Voile currently supports `id` (Indonesian, default) — fill empty `msgstr` entries accordingly.
+
+!!! note "Proposing a new locale"
+    A plugin may ship `.po` files for a locale Voile doesn't support yet (e.g. `jp`).
+    Until the locale is added, those files are simply ignored — a warning is logged at
+    activation. To propose a locale, mark your pull request clearly (e.g. "proposes
+    locale: jp"). Once the Voile maintainers add the locale centrally (`.po`/`.pot`
+    dirs under `priv/gettext/` plus `locale_name/1` and `locale_flag/1` entries in
+    `VoileWeb.Utils.Locale`), your plugin's translations become live with no code
+    changes on your side.
+
+---
+
 ## Installation
 
 ### Important: Deployment Requirements

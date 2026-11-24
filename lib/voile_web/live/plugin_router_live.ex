@@ -90,7 +90,8 @@ defmodule VoileWeb.PluginRouterLive do
               "action" => to_string(@plugin_action),
               "is_super_admin" => @plugin_auth.is_super_admin,
               "is_node_admin" => @plugin_auth.is_node_admin,
-              "user_node_id" => @plugin_auth.user_node_id
+              "user_node_id" => @plugin_auth.user_node_id,
+              "locale" => @locale
             }
           )}
         </div>

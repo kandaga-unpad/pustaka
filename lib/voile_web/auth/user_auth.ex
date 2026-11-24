@@ -3,6 +3,7 @@ defmodule VoileWeb.UserAuth do
 
   import Plug.Conn
   import Phoenix.Controller
+  import Bitwise
 
   alias Voile.Schema.Accounts
   alias Voile.Schema.Accounts.Scope
@@ -26,6 +27,18 @@ defmodule VoileWeb.UserAuth do
   # the reissuing of tokens completely.
   @session_reissue_age_in_days 7
 
+  # Trusted proxy IP ranges (configure per environment)
+  # For now, trust common reverse proxy patterns
+  @trusted_proxies [
+    # Docker default bridge
+    {172, 17, 0, 0, 16},
+    # Private networks
+    {10, 0, 0, 0, 8},
+    {192, 168, 0, 0, 16},
+    # Localhost
+    {127, 0, 0, 1, 32}
+  ]
+
   @doc """
   Logs the user in.
 
@@ -44,12 +57,7 @@ defmodule VoileWeb.UserAuth do
       user_return_to = get_session(conn, :user_return_to)
 
       # Update last_login and last_login_ip
-      ip =
-        case Tuple.to_list(conn.remote_ip) do
-          [a, b, c, d] -> Enum.join([a, b, c, d], ".")
-          _ -> nil
-        end
-
+      ip = get_client_ip(conn)
       Accounts.update_user_login(user, %{last_login: DateTime.utc_now(), last_login_ip: ip})
 
       conn
@@ -647,4 +655,91 @@ defmodule VoileWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  # Private helper to extract client IP address
+  # Handles both IPv4 and IPv6, checks X-Forwarded-For when behind trusted proxy
+  defp get_client_ip(conn) do
+    # Check if request is from a trusted proxy
+    if is_trusted_proxy?(conn.remote_ip) do
+      # Try to get real client IP from headers
+      case get_forwarded_ip(conn) do
+        nil -> format_ip(conn.remote_ip)
+        ip -> ip
+      end
+    else
+      # Direct connection, use remote_ip
+      format_ip(conn.remote_ip)
+    end
+    # Truncate to 45 chars (standard IPv6 max)
+    |> String.slice(0, 45)
+  end
+
+  defp is_trusted_proxy?(remote_ip) do
+    Enum.any?(@trusted_proxies, fn {a, b, c, d, mask} ->
+      ip_in_range?(remote_ip, {a, b, c, d}, mask)
+    end)
+  end
+
+  defp ip_in_range?({a, b, c, d}, {pa, pb, pc, pd}, mask) do
+    # IPv4 check
+    ip_int = a <<< 24 ||| b <<< 16 ||| c <<< 8 ||| d
+    prefix_int = pa <<< 24 ||| pb <<< 16 ||| pc <<< 8 ||| pd
+    mask_int = bnot(0) <<< (32 - mask)
+    (ip_int &&& mask_int) == (prefix_int &&& mask_int)
+  end
+
+  defp ip_in_range?(_ip, _prefix, _mask), do: false
+
+  defp get_forwarded_ip(conn) do
+    # Check X-Forwarded-For header
+    case get_req_header(conn, "x-forwarded-for") do
+      [forwarded | _] ->
+        # Get first (client) IP from comma-separated list
+        forwarded
+        |> String.split(",", trim: true)
+        |> List.first()
+        |> String.trim()
+        |> parse_ip_string()
+
+      [] ->
+        # Try Forwarded header (RFC 7239)
+        case get_req_header(conn, "forwarded") do
+          [forwarded | _] ->
+            # Extract IP from "for=" parameter
+            case Regex.run(~r/for=([^;,]+)/, forwarded) do
+              [_, ip_str] ->
+                ip_str
+                |> String.trim_leading("\"")
+                |> String.trim_trailing("\"")
+                |> parse_ip_string()
+
+              _ ->
+                nil
+            end
+
+          [] ->
+            nil
+        end
+    end
+  end
+
+  defp parse_ip_string(ip_str) when is_binary(ip_str) do
+    # Try parsing as IPv4 or IPv6
+    case :inet.parse_address(String.to_charlist(ip_str)) do
+      {:ok, ip_tuple} -> format_ip(ip_tuple)
+      {:error, _} -> nil
+    end
+  end
+
+  defp parse_ip_string(_), do: nil
+
+  defp format_ip(ip_tuple) when is_tuple(ip_tuple) do
+    # Use :inet.ntoa which handles both IPv4 and IPv6
+    case :inet.ntoa(ip_tuple) do
+      {:error, _} -> nil
+      charlist -> List.to_string(charlist)
+    end
+  end
+
+  defp format_ip(_), do: nil
 end

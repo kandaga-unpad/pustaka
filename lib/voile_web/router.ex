@@ -547,6 +547,12 @@ defmodule VoileWeb.Router do
           API.V1.CollectionTypes.CollectionTypeApiController,
           :details
 
+      get "/digital-collections", API.V1.DigitalCollections.DigitalCollectionApiController, :index
+
+      get "/digital-collections/:id",
+          API.V1.DigitalCollections.DigitalCollectionApiController,
+          :show
+
       get "/units", API.V1.Unit.UnitApiController, :index
 
       resources "/tokens", API.V1.UserApiTokenController,

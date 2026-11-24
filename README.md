@@ -60,7 +60,7 @@ VOILE is more than just a library management system, it’s a digital sanctuary 
 
 ## Developer
 
-- [@chrisnaadhi](https://www.github.com/chrisnaadhi)
+- [Chrisna Adhi Pranoto](https://www.github.com/nethricia)
 
 ## License
 

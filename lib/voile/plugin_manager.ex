@@ -69,12 +69,17 @@ defmodule Voile.PluginManager do
   Scans all started OTP applications, derives the likely root module name by
   camelising the app atom (e.g. `:voile_locker_luggage` → `VoileLockerLuggage`),
   tries to load it, and keeps those that implement the Voile.Plugin contract.
-  Filters out modules already recorded in the database.
+  Filters out modules already recorded in the database as installed, active,
+  inactive, or errored — a plugin marked :uninstalled remains discoverable so
+  it can be reinstalled.
   """
   def discover_available do
     installed =
       try do
-        Plugins.list_plugins() |> Enum.map(& &1.module) |> MapSet.new()
+        Plugins.list_plugins()
+        |> Enum.reject(&(&1.status == :uninstalled))
+        |> Enum.map(& &1.module)
+        |> MapSet.new()
       rescue
         _ -> MapSet.new()
       end
@@ -125,6 +130,30 @@ defmodule Voile.PluginManager do
       function_exported?(module, :routes, 0)
   rescue
     _ -> false
+  end
+
+  defp to_module(module_str) do
+    {:ok, String.to_existing_atom(module_str)}
+  rescue
+    ArgumentError -> {:error, :module_not_loaded}
+  end
+
+  defp safe_metadata(module) when is_atom(module) do
+    {:ok, module.metadata()}
+  rescue
+    e -> {:error, Exception.message(e)}
+  end
+
+  defp record_error_status(module_str, reason) do
+    Logger.error("[PluginManager] Failed for #{module_str}: #{inspect(reason)}")
+
+    with {:ok, module} <- to_module(module_str),
+         {:ok, meta} <- safe_metadata(module) do
+      Plugins.update_plugin_status(meta.id, :error, error_message: inspect(reason))
+      :ets.insert(@ets_table, {module, :error})
+    end
+  rescue
+    e -> Logger.error("[PluginManager] Failed to record error status: #{Exception.message(e)}")
   end
 
   # ── Public API — Writes (go through GenServer) ───────────────────────────────
@@ -206,6 +235,7 @@ defmodule Voile.PluginManager do
           case safe_callback(module, :on_activate, []) do
             :ok ->
               register_hooks(module)
+              register_plugin_gettext(module)
               Logger.info("[PluginManager] Reactivated: #{inspect(module)}")
 
             {:error, reason} ->
@@ -236,50 +266,55 @@ defmodule Voile.PluginManager do
 
   @impl true
   def handle_call({:install, module_str}, _from, state) do
-    module = String.to_existing_atom(module_str)
+    case to_module(module_str) do
+      {:error, _} = error ->
+        {:reply, error, state}
 
-    with :ok <- validate_plugin(module),
-         :ok <- check_not_installed(module),
-         :ok <- safe_callback(module, :on_install, []) do
-      meta = module.metadata()
-
-      Plugins.upsert_plugin(%{
-        module: Atom.to_string(module),
-        plugin_id: meta.id,
-        name: meta.name,
-        version: meta.version,
-        author: Map.get(meta, :author, ""),
-        description: Map.get(meta, :description, ""),
-        license_type: to_string(meta.license_type),
-        status: :installed,
-        installed_at: DateTime.utc_now() |> DateTime.truncate(:second)
-      })
-
-      :ets.insert(@ets_table, {module, :installed})
-      Logger.info("[PluginManager] Installed: #{inspect(module)}")
-      {:reply, :ok, state}
-    else
-      {:error, reason} = error ->
-        try do
-          meta = module.metadata()
-
+      {:ok, module} ->
+        with :ok <- validate_plugin(module),
+             :ok <- check_not_installed(module),
+             :ok <- safe_callback(module, :on_install, []),
+             {:ok, meta} <- safe_metadata(module) do
           Plugins.upsert_plugin(%{
             module: Atom.to_string(module),
             plugin_id: meta.id,
             name: meta.name,
             version: meta.version,
-            status: :error,
-            error_message: inspect(reason)
+            author: Map.get(meta, :author, ""),
+            description: Map.get(meta, :description, ""),
+            license_type: to_string(meta.license_type),
+            status: :installed,
+            installed_at: DateTime.utc_now() |> DateTime.truncate(:second)
           })
 
-          :ets.insert(@ets_table, {module, :error})
-        rescue
-          _ -> :ok
+          :ets.insert(@ets_table, {module, :installed})
+          Logger.info("[PluginManager] Installed: #{inspect(module)}")
+          {:reply, :ok, state}
+        else
+          {:error, reason} = error ->
+            try do
+              {:ok, meta} = safe_metadata(module)
+
+              Plugins.upsert_plugin(%{
+                module: Atom.to_string(module),
+                plugin_id: meta.id,
+                name: meta.name,
+                version: meta.version,
+                status: :error,
+                error_message: inspect(reason)
+              })
+
+              :ets.insert(@ets_table, {module, :error})
+            rescue
+              _ -> :ok
+            end
+
+            Logger.error(
+              "[PluginManager] Install failed for #{inspect(module)}: #{inspect(reason)}"
+            )
+
+            {:reply, error, state}
         end
-
-        Logger.error("[PluginManager] Install failed for #{inspect(module)}: #{inspect(reason)}")
-
-        {:reply, error, state}
     end
   end
 
@@ -287,22 +322,21 @@ defmodule Voile.PluginManager do
 
   @impl true
   def handle_call({:activate, module_str}, _from, state) do
-    module = String.to_existing_atom(module_str)
-
-    with :ok <- validate_plugin(module),
+    with {:ok, module} <- to_module(module_str),
+         :ok <- validate_plugin(module),
          :ok <- check_installed_or_inactive(module),
-         :ok <- safe_callback(module, :on_activate, []) do
-      register_hooks(module)
-      meta = module.metadata()
+         :ok <- safe_callback(module, :on_activate, []),
+         {:ok, meta} <- safe_metadata(module) do
       Plugins.update_plugin_status(meta.id, :active)
       :ets.insert(@ets_table, {module, :active})
+      register_hooks(module)
+      register_plugin_gettext(module)
 
       Logger.info("[PluginManager] Activated: #{inspect(module)}")
       {:reply, :ok, state}
     else
       {:error, reason} = error ->
-        Logger.error("[PluginManager] Activate failed for #{inspect(module)}: #{inspect(reason)}")
-
+        record_error_status(module_str, reason)
         {:reply, error, state}
     end
   end
@@ -311,12 +345,12 @@ defmodule Voile.PluginManager do
 
   @impl true
   def handle_call({:deactivate, module_str}, _from, state) do
-    module = String.to_existing_atom(module_str)
-
-    with :ok <- check_active(module),
-         :ok <- safe_callback(module, :on_deactivate, []) do
+    with {:ok, module} <- to_module(module_str),
+         :ok <- check_active(module),
+         :ok <- safe_callback(module, :on_deactivate, []),
+         {:ok, meta} <- safe_metadata(module) do
       Hooks.unregister_all(module)
-      meta = module.metadata()
+      VoileWeb.Utils.Locale.unregister_plugin_gettext(module)
       Plugins.update_plugin_status(meta.id, :inactive)
       :ets.insert(@ets_table, {module, :inactive})
 
@@ -332,42 +366,57 @@ defmodule Voile.PluginManager do
 
   @impl true
   def handle_call({:uninstall, module_str, opts}, _from, state) do
-    module = String.to_existing_atom(module_str)
-    remove_data = Keyword.get(opts, :remove_data, false)
+    case to_module(module_str) do
+      {:error, :module_not_loaded} ->
+        Logger.warning(
+          "[PluginManager] Cannot uninstall #{module_str}: the plugin module is not loaded. " <>
+            "The plugin OTP app may have been removed from the deployment."
+        )
 
-    # Deactivate hooks first
-    Hooks.unregister_all(module)
+        {:reply, {:error, :module_not_loaded}, state}
 
-    # Optionally destroy data
-    if remove_data do
-      case safe_callback(module, :on_uninstall, []) do
-        :ok ->
-          :ok
+      {:ok, module} ->
+        with {:ok, meta} <- safe_metadata(module) do
+          remove_data = Keyword.get(opts, :remove_data, false)
 
-        {:error, reason} ->
-          Logger.error(
-            "[PluginManager] on_uninstall error for #{inspect(module)}: #{inspect(reason)}"
+          # Deactivate hooks (and gettext sync) first, whether or not data is removed
+          Hooks.unregister_all(module)
+          VoileWeb.Utils.Locale.unregister_plugin_gettext(module)
+
+          if remove_data do
+            case safe_callback(module, :on_uninstall, []) do
+              :ok ->
+                :ok
+
+              {:error, reason} ->
+                Logger.error(
+                  "[PluginManager] on_uninstall error for #{inspect(module)}: #{inspect(reason)}"
+                )
+            end
+          end
+
+          Plugins.update_plugin_status(meta.id, :uninstalled)
+          :ets.insert(@ets_table, {module, :uninstalled})
+
+          Logger.info(
+            "[PluginManager] Uninstalled: #{inspect(module)} (data removed: #{remove_data})"
           )
-      end
+
+          {:reply, :ok, state}
+        else
+          {:error, _reason} = error ->
+            {:reply, error, state}
+        end
     end
-
-    meta = module.metadata()
-    Plugins.update_plugin_status(meta.id, :uninstalled)
-    :ets.insert(@ets_table, {module, :uninstalled})
-
-    Logger.info("[PluginManager] Uninstalled: #{inspect(module)} (data removed: #{remove_data})")
-
-    {:reply, :ok, state}
   end
 
   # ── Update ───────────────────────────────────────────────────────────────────
 
   @impl true
   def handle_call({:update, module_str}, _from, state) do
-    module = String.to_existing_atom(module_str)
-
-    with :ok <- validate_plugin(module) do
-      meta = module.metadata()
+    with {:ok, module} <- to_module(module_str),
+         :ok <- validate_plugin(module),
+         {:ok, meta} <- safe_metadata(module) do
       record = Plugins.get_plugin_by_plugin_id(meta.id)
       old_version = if record, do: record.version, else: "0.0.0"
       new_version = meta.version
@@ -457,5 +506,20 @@ defmodule Voile.PluginManager do
     |> Enum.each(fn {hook_name, handler} ->
       Hooks.register(hook_name, handler, owner: module)
     end)
+  end
+
+  # Registers the plugin's `<Module>.Gettext` backend, if the plugin ships one,
+  # so its locale follows the application locale.
+  defp register_plugin_gettext(module) do
+    backend = Module.concat([module, "Gettext"])
+
+    if Voile.Plugin.Gettext.plugin_backend?(backend) do
+      VoileWeb.Utils.Locale.register_plugin_gettext(module, backend)
+    end
+  rescue
+    e ->
+      Logger.error(
+        "[PluginManager] Failed to register Gettext for #{inspect(module)}: #{inspect(e)}"
+      )
   end
 end

@@ -13,7 +13,7 @@ defmodule Voile.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      compilers: [:phoenix_live_view] ++ Mix.compilers() ++ [:phoenix_swagger],
+      compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       name: "Voile",
       description: description(),
@@ -30,33 +30,15 @@ defmodule Voile.MixProject do
 
   defp package do
     [
-      name: "voile",
       licenses: ["Apache-2.0"],
-      links: %{
-        "GitHub" => @source_url,
-        "Documentation" => "https://hexdocs.pm/voile"
-      },
-      maintainers: ["Chrisna Adhi Pranoto"],
-      files: ~w(
-        lib
-        priv/gettext
-        priv/repo/migrations
-        priv/static/assets
-        priv/static/css
-        priv/static/images
-        priv/static/sfx
-        priv/static/xsl
-        priv/static/favicon.ico
-        priv/static/robots.txt
-        priv/static/swagger.json
-        priv/templates
-        assets
-        config
-        mix.exs
-        README.md
-        LICENSE
-        CHANGELOG.md
-      )
+      links: %{"GitHub" => @source_url},
+      maintainers: ["Curatorian"],
+      files: ~w(lib priv/gettext priv/repo priv/templates
+           priv/static/images priv/static/sfx priv/static/xsl
+           priv/static/favicon.ico priv/static/robots.txt
+           priv/static/oai-demo.html priv/static/oai-viewer.html
+           priv/static/swagger.json
+           assets config mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
@@ -139,7 +121,6 @@ defmodule Voile.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:tzdata, "~> 1.1"},
       {:xml_builder, "~> 2.2"},
-
       # Voile Plugin
       {:voile_locker_luggage, "~> 0.2.3"},
 
@@ -167,7 +148,13 @@ defmodule Voile.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      setup: [
+        "deps.get",
+        "ecto.setup",
+        "assets.setup",
+        "assets.build",
+        "phx.swagger.generate"
+      ],
       "ecto.setup": [
         "ecto.create",
         "ecto.migrate",

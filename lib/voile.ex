@@ -752,6 +752,9 @@ defmodule Voile do
   defdelegate get_detailed_circulation_stats(node_id \\ nil, opts \\ []),
     to: Voile.Schema.Library.Circulation
 
+  defdelegate get_usability_stats(node_id \\ nil, opts \\ []),
+    to: Voile.Schema.Library.Circulation
+
   defdelegate count_active_transactions(node_id), to: Voile.Schema.Library.Circulation
   defdelegate count_overdue_transactions(node_id), to: Voile.Schema.Library.Circulation
   defdelegate count_active_reservations(node_id), to: Voile.Schema.Library.Circulation

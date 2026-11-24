@@ -208,14 +208,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     user_params = prepare_user_params(user_params)
 
     # Extract and store role_ids for form state
-    role_ids =
-      user_params
-      |> Map.get("role_ids", [])
-      |> Enum.reject(&(&1 == ""))
-      |> Enum.map(fn
-        id when is_integer(id) -> id
-        id when is_binary(id) -> String.to_integer(id)
-      end)
+    role_ids = normalize_role_ids(Map.get(user_params, "role_ids", []))
 
     changeset = User.changeset(socket.assigns.member, user_params)
 
@@ -229,29 +222,47 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     user_params = prepare_user_params(user_params)
 
     # Extract role_ids from params
-    role_ids = Map.get(user_params, "role_ids", [])
+    normalized_role_ids = normalize_role_ids(Map.get(user_params, "role_ids", []))
 
-    case Accounts.admin_update_user(socket.assigns.member, user_params) do
-      {:ok, user} ->
-        # Update role assignments
-        update_user_roles(user, role_ids, socket.assigns.current_scope.user.id)
+    disallowed =
+      Authorization.disallowed_role_ids(
+        socket.assigns.current_scope.user,
+        socket.assigns.available_roles
+      )
 
-        # Refetch the member with updated data
-        member =
-          Repo.get!(User, user.id)
-          |> Repo.preload([:user_type, :node, :transactions, :fines, :roles])
+    if Enum.any?(normalized_role_ids, &(&1 in disallowed)) do
+      changeset = User.changeset(socket.assigns.member, user_params)
 
-        socket =
-          socket
-          |> assign(:member, member)
-          |> assign(:selected_role_ids, role_ids)
-          |> assign(:active_tab, "overview")
-          |> put_flash(:info, "Member updated successfully")
+      {:noreply,
+       socket
+       |> put_flash(
+         :error,
+         gettext("You cannot assign roles that are equal or higher than your own.")
+       )
+       |> assign(edit_form: to_form(changeset))}
+    else
+      case Accounts.admin_update_user(socket.assigns.member, user_params) do
+        {:ok, user} ->
+          # Update role assignments
+          update_user_roles(user, normalized_role_ids, socket.assigns.current_scope.user.id)
 
-        {:noreply, socket}
+          # Refetch the member with updated data
+          member =
+            Repo.get!(User, user.id)
+            |> Repo.preload([:user_type, :node, :transactions, :fines, :roles])
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, edit_form: to_form(changeset))}
+          socket =
+            socket
+            |> assign(:member, member)
+            |> assign(:selected_role_ids, normalized_role_ids)
+            |> assign(:active_tab, "overview")
+            |> put_flash(:info, "Member updated successfully")
+
+          {:noreply, socket}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, edit_form: to_form(changeset))}
+      end
     end
   end
 
@@ -621,6 +632,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
                 nodes={@nodes}
                 member_types={@member_types}
                 available_roles={@available_roles}
+                disabled_role_ids={@disabled_role_ids}
                 selected_role_ids={@selected_role_ids}
                 is_super_admin={@is_super_admin}
                 is_admin={can?(@current_scope.user, "users.update")}
@@ -743,6 +755,9 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
 
     available_roles = VoileWeb.Auth.PermissionManager.list_roles()
 
+    disabled_role_ids =
+      Authorization.disallowed_role_ids(socket.assigns.current_scope.user, available_roles)
+
     selected_role_ids =
       socket.assigns.member
       |> Map.get(:roles, [])
@@ -752,6 +767,7 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     |> assign(:member_types, member_types)
     |> assign(:nodes, nodes)
     |> assign(:available_roles, available_roles)
+    |> assign(:disabled_role_ids, disabled_role_ids)
     |> assign(:selected_role_ids, selected_role_ids)
   end
 
@@ -856,31 +872,46 @@ defmodule VoileWeb.Dashboard.Members.Management.Show do
     Map.put(params, "groups", groups)
   end
 
+  defp normalize_role_ids(role_ids) do
+    role_ids
+    |> List.wrap()
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.map(fn
+      id when is_integer(id) -> id
+      id when is_binary(id) -> String.to_integer(id)
+    end)
+  end
+
   # Helper to update user roles
   defp update_user_roles(user, role_ids, assigned_by_id) do
     alias VoileWeb.Auth.Authorization
+
+    disallowed =
+      Authorization.disallowed_role_ids(
+        Repo.get!(User, assigned_by_id),
+        VoileWeb.Auth.PermissionManager.list_roles()
+      )
 
     # Get current role IDs
     current_role_ids =
       user
       |> Repo.preload(:roles)
-      |> Map.get(:roles, [])
+      |> Map.get(:roles)
       |> Enum.map(& &1.id)
       |> MapSet.new()
 
-    # Convert role_ids to integers and create set
-    new_role_ids =
-      role_ids
-      |> Enum.reject(&(&1 == ""))
-      |> Enum.map(fn
-        id when is_integer(id) -> id
-        id when is_binary(id) -> String.to_integer(id)
-      end)
-      |> MapSet.new()
+    new_role_ids = normalize_role_ids(role_ids) |> MapSet.new()
 
-    # Determine roles to add and remove
-    roles_to_add = MapSet.difference(new_role_ids, current_role_ids)
-    roles_to_remove = MapSet.difference(current_role_ids, new_role_ids)
+    # Never touch roles that are equal or higher than the acting user's own rank
+    roles_to_add =
+      new_role_ids
+      |> MapSet.difference(current_role_ids)
+      |> Enum.reject(&(&1 in disallowed))
+
+    roles_to_remove =
+      current_role_ids
+      |> MapSet.difference(new_role_ids)
+      |> Enum.reject(&(&1 in disallowed))
 
     # Add new roles
     add_results =

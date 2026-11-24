@@ -90,6 +90,7 @@ defmodule VoileWeb do
   def live_view_dashboard do
     quote do
       use Phoenix.LiveView,
+        on_mount: [{VoileWeb.Live.Hooks.LocaleHook, :set_locale}],
         layout: {VoileWeb.Layouts, :dashboard}
 
       unquote(html_helpers())

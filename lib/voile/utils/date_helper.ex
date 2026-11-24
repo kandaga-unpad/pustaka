@@ -198,10 +198,6 @@ defmodule Voile.Utils.DateHelper do
 
   # Private helper functions
 
-  defp apply_format(dt, format) when is_binary(format) do
-    Calendar.strftime(dt, format)
-  end
-
   defp apply_format(dt, :indonesian) do
     day_name = get_indonesian_day_name(dt)
     month_name = get_indonesian_month_name(dt)
@@ -224,21 +220,96 @@ defmodule Voile.Utils.DateHelper do
     apply_format(dt, Atom.to_string(country_code))
   end
 
-  defp apply_format(dt, country_code) do
+  defp apply_format(dt, country_code) when is_binary(country_code) do
     case String.upcase(country_code) do
-      "US" -> format_us(dt)
-      "GB" -> format_gb(dt)
-      "DE" -> format_de(dt)
-      "FR" -> format_fr(dt)
-      "JP" -> format_jp(dt)
-      "CN" -> format_cn(dt)
-      "KR" -> format_kr(dt)
-      "ID" -> format_id(dt)
-      "BR" -> format_br(dt)
-      "AU" -> format_au(dt)
-      "CA" -> format_ca(dt)
-      "IN" -> format_in(dt)
-      _ -> DateTime.to_iso8601(dt)
+      "US" ->
+        format_us(dt)
+
+      "GB" ->
+        format_gb(dt)
+
+      "DE" ->
+        format_de(dt)
+
+      "FR" ->
+        format_fr(dt)
+
+      "JP" ->
+        format_jp(dt)
+
+      "CN" ->
+        format_cn(dt)
+
+      "KR" ->
+        format_kr(dt)
+
+      "ID" ->
+        format_id(dt)
+
+      "BR" ->
+        format_br(dt)
+
+      "AU" ->
+        format_au(dt)
+
+      "CA" ->
+        format_ca(dt)
+
+      "IN" ->
+        format_in(dt)
+
+      # If it's not a country code, treat it as a strftime format
+      _ ->
+        if String.contains?(country_code, "%") do
+          Calendar.strftime(dt, country_code)
+        else
+          DateTime.to_iso8601(dt)
+        end
+    end
+  end
+
+  # Apply format specifically for Date structs (no time component)
+  defp apply_date_format(date, format) when is_binary(format) do
+    Calendar.strftime(date, format)
+  end
+
+  defp apply_date_format(date, :indonesian) do
+    day_name = get_indonesian_day_name_from_date(date)
+    month_name = get_indonesian_month_name_from_date(date)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, :indonesian_short) do
+    day_name = get_indonesian_day_name_from_date(date, :short)
+    month_name = get_indonesian_month_name_from_date(date, :short)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, :indonesian_date) do
+    day_name = get_indonesian_day_name_from_date(date)
+    month_name = get_indonesian_month_name_from_date(date)
+    "#{day_name}, #{date.day} #{month_name} #{date.year}"
+  end
+
+  defp apply_date_format(date, country_code) when is_atom(country_code) do
+    apply_date_format(date, Atom.to_string(country_code))
+  end
+
+  defp apply_date_format(date, country_code) do
+    case String.upcase(country_code) do
+      "US" -> Calendar.strftime(date, "%m/%d/%Y")
+      "GB" -> Calendar.strftime(date, "%d/%m/%Y")
+      "DE" -> Calendar.strftime(date, "%d.%m.%Y")
+      "FR" -> Calendar.strftime(date, "%d/%m/%Y")
+      "JP" -> Calendar.strftime(date, "%Y/%m/%d")
+      "CN" -> Calendar.strftime(date, "%Y年%m月%d日")
+      "KR" -> Calendar.strftime(date, "%Y-%m-%d")
+      "ID" -> Calendar.strftime(date, "%d/%m/%Y")
+      "BR" -> Calendar.strftime(date, "%d/%m/%Y")
+      "AU" -> Calendar.strftime(date, "%d/%m/%Y")
+      "CA" -> Calendar.strftime(date, "%Y-%m-%d")
+      "IN" -> Calendar.strftime(date, "%d-%m-%Y")
+      _ -> Date.to_iso8601(date)
     end
   end
 

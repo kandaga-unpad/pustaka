@@ -131,11 +131,11 @@ defmodule VoileWeb.DashboardComponents do
       <div class="px-3 pb-2">
         <.link
           navigate="/"
-          class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-secondary hover:text-voile-primary hover:bg-tone-brand-soft transition-colors"
+          class="voile-nav-link"
           title={gettext("Back to front page")}
         >
-          <.icon name="hero-arrow-left" class="w-4 h-4 shrink-0" />
-          <span>{gettext("Front page")}</span>
+          <.icon name="hero-arrow-left" class="w-5 h-5 shrink-0" />
+          <span class="voile-sidebar-label">{gettext("Front page")}</span>
         </.link>
       </div>
 
@@ -158,11 +158,13 @@ defmodule VoileWeb.DashboardComponents do
 
   attr :item, :map, required: true
   attr :current_path, :string, required: true
+  attr :indented, :boolean, default: false
+  attr :id_prefix, :string, default: "voile-nav"
 
   defp voile_sidebar_link(assigns) do
     ~H"""
     <%= if @item[:children] do %>
-      <.voile_sidebar_parent item={@item} current_path={@current_path} />
+      <.voile_sidebar_parent item={@item} current_path={@current_path} id_prefix={@id_prefix} />
     <% else %>
       <.voile_sidebar_leaf item={@item} current_path={@current_path} />
     <% end %>
@@ -191,11 +193,6 @@ defmodule VoileWeb.DashboardComponents do
     >
       <.icon name={@item.icon} class="w-5 h-5 shrink-0" />
       <span class="voile-sidebar-label">{@item.label}</span>
-      <%= if @item[:shortcut] do %>
-        <kbd class="voile-sidebar-shortcut ml-auto t-mono text-tertiary hidden xl:inline">
-          {@item.shortcut}
-        </kbd>
-      <% end %>
     </.link>
     """
   end
@@ -213,6 +210,7 @@ defmodule VoileWeb.DashboardComponents do
   # client-side (ephemeral — reverts to the route-based state on navigation).
   attr :item, :map, required: true
   attr :current_path, :string, required: true
+  attr :id_prefix, :string, default: "voile-nav"
 
   defp voile_sidebar_parent(assigns) do
     %{item: item, current_path: current} = assigns
@@ -221,7 +219,7 @@ defmodule VoileWeb.DashboardComponents do
 
     assigns =
       assigns
-      |> assign(:id, nav_id(item.path))
+      |> assign(:id, nav_id(assigns.id_prefix, item.path))
       |> assign(:exact, exact)
       |> assign(:open, open)
 
@@ -256,8 +254,9 @@ defmodule VoileWeb.DashboardComponents do
   end
 
   # Stable DOM id for a nav path, e.g. "/manage/glam" -> "voile-nav--manage-glam".
-  defp nav_id(path) do
-    "voile-nav-" <> (path |> String.trim_leading("/") |> String.replace("/", "-"))
+  # The prefix namespaces per surface (sidebar vs mobile drawer) so ids stay unique.
+  defp nav_id(prefix, path) do
+    prefix <> "-" <> (path |> String.trim_leading("/") |> String.replace("/", "-"))
   end
 
   # Current path matches when it is the path exactly or is a descendant of it.
@@ -379,21 +378,22 @@ defmodule VoileWeb.DashboardComponents do
   defp user_role(%{user_type: %{name: name}}), do: name
   defp user_role(_), do: gettext("Staff")
 
-  defp workspace_items(_current_path) do
+  # Public so the mobile drawer and command palette can consume the same
+  # navigation tree as the sidebar.
+  def workspace_items(_current_path) do
     [
       # exact: /manage is the root, so descendant matching would highlight Home
       # on every /manage/* route. Only active on the dashboard home itself.
-      %{label: gettext("Home"), path: "/manage", icon: "hero-home", shortcut: "G H", exact: true}
+      %{label: gettext("Home"), path: "/manage", icon: "hero-home", exact: true}
     ]
   end
 
-  defp collection_items(_current_path) do
+  def collection_items(_current_path) do
     [
       %{
         label: gettext("Catalog"),
         path: "/manage/catalog",
         icon: "hero-rectangle-stack",
-        shortcut: nil,
         children: [
           %{
             label: gettext("Collections"),
@@ -423,7 +423,6 @@ defmodule VoileWeb.DashboardComponents do
         label: gettext("GLAM"),
         path: "/manage/glam",
         icon: "hero-building-library",
-        shortcut: nil,
         children: [
           %{label: gettext("Gallery"), path: "/manage/glam/gallery", icon: "hero-photo"},
           %{label: gettext("Library"), path: "/manage/glam/library", icon: "hero-book-open"},
@@ -434,13 +433,12 @@ defmodule VoileWeb.DashboardComponents do
     ]
   end
 
-  defp people_items(_current_path) do
+  def people_items(_current_path) do
     [
       %{
         label: gettext("Members"),
         path: "/manage/members",
         icon: "hero-user-group",
-        shortcut: nil,
         children: [
           %{label: gettext("Management"), path: "/manage/members/management", icon: "hero-users"},
           %{label: gettext("Reports"), path: "/manage/members/reports", icon: "hero-chart-bar"},
@@ -455,7 +453,6 @@ defmodule VoileWeb.DashboardComponents do
         label: gettext("Visitors"),
         path: "/manage/visitor/statistics",
         icon: "hero-chart-bar",
-        shortcut: nil,
         children: [
           %{
             label: gettext("Statistics"),
@@ -473,13 +470,12 @@ defmodule VoileWeb.DashboardComponents do
     ]
   end
 
-  defp system_items(_current_path) do
+  def system_items(_current_path) do
     [
       %{
         label: gettext("Master data"),
         path: "/manage/master",
         icon: "hero-circle-stack",
-        shortcut: nil,
         children: [
           %{label: gettext("Creators"), path: "/manage/master/creators", icon: "hero-user"},
           %{
@@ -506,7 +502,6 @@ defmodule VoileWeb.DashboardComponents do
         label: gettext("Metaresource"),
         path: "/manage/metaresource",
         icon: "hero-squares-2x2",
-        shortcut: nil,
         children: [
           %{
             label: gettext("Vocabularies"),
@@ -539,7 +534,6 @@ defmodule VoileWeb.DashboardComponents do
         label: gettext("Settings"),
         path: "/manage/settings",
         icon: "hero-cog-6-tooth",
-        shortcut: nil,
         children: [
           %{
             label: gettext("Application"),
@@ -578,9 +572,21 @@ defmodule VoileWeb.DashboardComponents do
       %{
         label: gettext("Plugins"),
         path: "/manage/plugins",
-        icon: "hero-puzzle-piece",
-        shortcut: nil
+        icon: "hero-puzzle-piece"
       }
+    ]
+  end
+
+  @doc """
+  The full dashboard navigation tree as titled sections, shared by the
+  sidebar, the mobile drawer, and the command palette.
+  """
+  def voile_dashboard_nav_sections do
+    [
+      {gettext("Workspace"), workspace_items(nil)},
+      {gettext("Collections"), collection_items(nil)},
+      {gettext("People"), people_items(nil)},
+      {gettext("System"), system_items(nil)}
     ]
   end
 
@@ -619,9 +625,10 @@ defmodule VoileWeb.DashboardComponents do
       />
       <button
         type="button"
-        phx-click={JS.dispatch("voile:open-command-palette")}
+        phx-click={JS.dispatch("voile:open-dashboard-nav")}
+        data-voile-bottom-nav-more
         class="flex flex-col items-center justify-center gap-1 py-2 text-secondary hover:text-voile-primary transition-colors"
-        aria-label={gettext("Open command palette")}
+        aria-label={gettext("Open menu")}
       >
         <.icon name="hero-squares-2x2" class="w-6 h-6" />
         <span class="text-[11px] font-medium">{gettext("More")}</span>
@@ -653,6 +660,93 @@ defmodule VoileWeb.DashboardComponents do
       <.icon name={@icon} class="w-6 h-6" />
       <span class="text-[11px] font-medium">{@label}</span>
     </.link>
+    """
+  end
+
+  @doc """
+  Renders the left slide-in navigation drawer for mobile/tablet (below lg).
+
+  Opened by the bottom-nav "More" button via `JS.dispatch("voile:open-dashboard-nav")`;
+  the `DashboardMobileNav` hook owns open/close (backdrop click, Escape, close
+  button, and any navigation link). Navigation tree is shared with the sidebar.
+  """
+  attr :current_path, :string, default: "/manage"
+
+  def voile_mobile_drawer(assigns) do
+    assigns = assign_new(assigns, :nav_sections, fn -> voile_dashboard_nav_sections() end)
+
+    ~H"""
+    <div id="voile-mobile-drawer" phx-hook="DashboardMobileNav" class="lg:hidden">
+      <div
+        data-voile-drawer-backdrop
+        class="hidden fixed inset-0 z-50 bg-black/40 opacity-0 pointer-events-none transition-opacity duration-200"
+        aria-hidden="true"
+      >
+      </div>
+
+      <aside
+        data-voile-drawer-panel
+        class="hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] -translate-x-full transition-transform duration-200 surface-sidebar border-r border-subtle flex flex-col focus:outline-none"
+        role="dialog"
+        aria-modal="true"
+        aria-label={gettext("Dashboard menu")}
+        tabindex="-1"
+      >
+        <div class="flex items-center justify-between gap-3 px-4 h-14 border-b border-subtle shrink-0">
+          <.link navigate="/manage" class="flex items-center gap-2.5 min-w-0">
+            <img
+              src={Voile.Schema.System.get_setting_value("app_logo_url", "/images/v.png")}
+              alt={Voile.Schema.System.get_setting_value("app_name", "Voile")}
+              class="w-8 h-8 shrink-0"
+            />
+            <span class="t-h4 text-primary truncate">
+              {Voile.Schema.System.get_setting_value("app_name", "Voile")}
+            </span>
+          </.link>
+
+          <button
+            type="button"
+            data-voile-drawer-close
+            class="p-2 rounded-lg text-secondary hover:text-primary hover-surface transition-colors"
+            aria-label={gettext("Close menu")}
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+        </div>
+
+        <nav class="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-6">
+          <%= for {section_title, items} <- @nav_sections do %>
+            <.voile_sidebar_section title={section_title}>
+              <%= for item <- items do %>
+                <.voile_sidebar_link
+                  item={item}
+                  current_path={@current_path}
+                  id_prefix="voile-drawer-nav"
+                />
+              <% end %>
+            </.voile_sidebar_section>
+          <% end %>
+        </nav>
+
+        <div class="shrink-0 border-t border-subtle px-4 py-3 flex items-center justify-between gap-3">
+          <.link
+            navigate="/"
+            class="flex items-center gap-2 text-sm text-secondary hover:text-voile-primary transition-colors"
+          >
+            <.icon name="hero-globe-alt" class="w-4 h-4" />
+            <span>{gettext("Front page")}</span>
+          </.link>
+
+          <div class="flex items-center gap-1">
+            <.theme_toggle />
+            <.voile_locale_switcher
+              id="voile-mobile-drawer-locale-switcher"
+              current_path={@current_path}
+            />
+          </div>
+        </div>
+      </aside>
+    </div>
     """
   end
 
@@ -1277,37 +1371,17 @@ defmodule VoileWeb.DashboardComponents do
           </.voile_cmd_group>
 
           <.voile_cmd_group title={gettext("Navigation")}>
-            <.voile_cmd_item
-              icon="hero-home"
-              tone={:brand}
-              label={gettext("Dashboard Home")}
-              meta="G H"
-              href="/manage"
-            />
-            <.voile_cmd_item
-              icon="hero-rectangle-stack"
-              tone={:brand}
-              label={gettext("Catalog")}
-              href="/manage/catalog"
-            />
-            <.voile_cmd_item
-              icon="hero-building-library"
-              tone={:brand}
-              label={gettext("GLAM Hub")}
-              href="/manage/glam"
-            />
-            <.voile_cmd_item
-              icon="hero-user-group"
-              tone={:brand}
-              label={gettext("Members")}
-              href="/manage/members"
-            />
-            <.voile_cmd_item
-              icon="hero-cog-6-tooth"
-              tone={:brand}
-              label={gettext("Settings")}
-              href="/manage/settings"
-            />
+            <%= for {section_title, items} <- voile_dashboard_nav_sections() do %>
+              <%= for item <- flatten_nav_items(items) do %>
+                <.voile_cmd_item
+                  icon={item.icon}
+                  tone={:brand}
+                  label={item.label}
+                  href={item.path}
+                  search_context={"#{section_title} #{item.label}"}
+                />
+              <% end %>
+            <% end %>
           </.voile_cmd_group>
 
           <div data-voile-cmd-empty class="hidden px-4 py-10 text-center text-tertiary text-sm">
@@ -1342,13 +1416,14 @@ defmodule VoileWeb.DashboardComponents do
   attr :label, :string, required: true
   attr :meta, :string, default: nil
   attr :href, :string, required: true
+  attr :search_context, :string, default: nil
 
   defp voile_cmd_item(assigns) do
     ~H"""
     <.link
       navigate={@href}
       data-voile-cmd-result
-      data-voile-cmd-search={@label}
+      data-voile-cmd-search={@search_context || @label}
       class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover-surface transition-colors"
     >
       <.icon name={@icon} class={"w-5 h-5 #{tone_text(@tone)}"} />
@@ -1358,6 +1433,15 @@ defmodule VoileWeb.DashboardComponents do
       <% end %>
     </.link>
     """
+  end
+
+  # Parents followed by their children, in tree order — used to flatten the
+  # navigation tree for the command palette.
+  defp flatten_nav_items(items) do
+    Enum.flat_map(items, fn
+      %{children: children} = item -> [item | children]
+      item -> [item]
+    end)
   end
 
   @doc """
@@ -2023,12 +2107,13 @@ defmodule VoileWeb.DashboardComponents do
   Brand-styled locale switcher. Drop-in for the core `<.locale_switcher>`.
   DRAFT — delegates to core; brand restyle pending.
   """
+  attr :id, :string, default: "locale-switcher"
   attr :current_path, :string, default: "/"
   attr :class, :string, default: nil
 
   def voile_locale_switcher(assigns) do
     ~H"""
-    <.locale_switcher current_path={@current_path} class={@class} />
+    <.locale_switcher id={@id} current_path={@current_path} class={@class} />
     """
   end
 end

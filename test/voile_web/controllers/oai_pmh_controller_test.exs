@@ -318,9 +318,11 @@ defmodule VoileWeb.OaiPmhControllerTest do
       refute body =~ ">NULL<"
       assert length(Regex.scan(~r/<dc:date[ >]/, body)) == 1
 
-      # Relation keeps meaningful values; the collection link moved to dc:source
+      # Collection link restored to dc:relation (round 3); dc:source is emitted
+      # only from genuine source-record fields
       assert body =~ ~r/<dc:relation xmlns="#{@dc_ns}">Cet\.2<\/dc:relation>/
-      assert body =~ "<dc:source xmlns=\"#{@dc_ns}\">collection:TEST001</dc:source>"
+      assert body =~ ~r/<dc:relation xmlns="#{@dc_ns}">collection:TEST001<\/dc:relation>/
+      refute body =~ "<dc:source"
 
       # Newly mapped zero-coverage fields
       assert body =~ "<dc:type xmlns=\"#{@dc_ns}\">Book</dc:type>"
@@ -421,6 +423,51 @@ defmodule VoileWeb.OaiPmhControllerTest do
       assert body =~ "<metadata>"
       assert body =~ "<dc:title xmlns=\"#{@dc_ns}\">#{collection1.title}</dc:title>"
       assert body =~ "<dc:identifier xmlns=\"#{@dc_ns}\">#{item1.item_code}</dc:identifier>"
+    end
+
+    test "emits all restored oai_dc elements on GetRecord for a field-bearing fixture record", %{
+      conn: conn,
+      item1: item1,
+      collection1: collection1
+    } do
+      add_collection_field(collection1, "subject", "Library Science", "dcterms")
+      add_collection_field(collection1, "abstract", "A fixture abstract", "dcterms")
+      add_collection_field(collection1, "publisher", "Fixture Press", "dcterms")
+      add_collection_field(collection1, "publishedYear", "2007", "kandaga_book")
+      add_collection_field(collection1, "collation", "xv, 120 hlm., 21 cm", "kandaga_book")
+      add_collection_field(collection1, "language", "en", "dcterms")
+      add_collection_field(collection1, "authorList", "Editor Person B\nEditor Person C", "bibo")
+
+      _genuine_source =
+        add_collection_field(collection1, "source", "Derived From Record", "dcterms")
+
+      identifier = "oai:voile.example.com:item:#{item1.id}"
+
+      conn =
+        get(conn, ~p"/api/oai?verb=GetRecord&identifier=#{identifier}&metadataPrefix=oai_dc")
+
+      body = response(conn, 200)
+
+      for restored <- [
+            {"dc:subject", "Library Science"},
+            {"dc:description", "A fixture abstract"},
+            {"dc:publisher", "Fixture Press"},
+            {"dc:date", "2007"},
+            {"dc:format", "xv, 120 hlm., 21 cm"},
+            {"dc:language", "en"},
+            {"dc:contributor", "Editor Person B"},
+            {"dc:contributor", "Editor Person C"}
+          ] do
+        {element, content} = restored
+        assert body =~ ~r/<#{element} xmlns="#{@dc_ns}">#{Regex.escape(content)}<\/#{element}>/
+      end
+
+      # Empty-element rule: fields without values never appear
+      refute body =~ ">NULL<"
+
+      # Collection link lives in dc:relation; the genuine source field feeds dc:source
+      assert body =~ ~r/<dc:relation xmlns="#{@dc_ns}">collection:TEST001<\/dc:relation>/
+      assert body =~ ~r/<dc:source xmlns="#{@dc_ns}">Derived From Record<\/dc:source>/
     end
 
     test "returns error without identifier", %{conn: conn} do

@@ -434,6 +434,63 @@ defmodule VoileWeb.Auth.Authorization do
 
   def is_librarian?(nil), do: false
 
+  @doc """
+  Rank for built-in system roles. Higher rank means more privilege.
+
+  Roles that are not in this table (e.g. custom roles) rank 0.
+
+  ## Examples
+
+      iex> role_rank("super_admin")
+      4
+
+      iex> role_rank(%Role{name: "admin"})
+      3
+  """
+  def role_rank(%{name: name}), do: role_rank(name)
+
+  def role_rank(name) when is_binary(name) do
+    case String.downcase(name) do
+      "super_admin" -> 4
+      "admin" -> 3
+      "librarian" -> 2
+      "staff" -> 1
+      _ -> 0
+    end
+  end
+
+  @doc """
+  Returns the IDs of roles the given user is not allowed to manage
+  (neither assign nor revoke).
+
+  A user can never manage roles ranked at or above their own highest role;
+  super admins can manage every role.
+
+  ## Examples
+
+      iex> disallowed_role_ids(admin_user, Repo.all(Role))
+      [super_admin_role_id]
+
+      iex> disallowed_role_ids(super_admin_user, Repo.all(Role))
+      []
+  """
+  def disallowed_role_ids(user, roles) do
+    if is_super_admin?(user) do
+      []
+    else
+      max_rank =
+        user
+        |> Repo.preload(:roles)
+        |> Map.get(:roles)
+        |> Enum.map(&role_rank/1)
+        |> Enum.max(fn -> 0 end)
+
+      roles
+      |> Enum.filter(fn role -> role_rank(role) >= max_rank end)
+      |> Enum.map(& &1.id)
+    end
+  end
+
   # Private functions
 
   defp has_explicit_permission?(user_id, permission_name, scope) do
@@ -445,14 +502,18 @@ defmodule VoileWeb.Auth.Authorization do
         on: up.permission_id == p.id,
         where: up.user_id == ^user_id,
         where: p.name == ^permission_name,
-        where: up.scope_type == ^scope_type,
         where: is_nil(up.expires_at) or up.expires_at > ^DateTime.utc_now()
 
     query =
       if scope_id do
-        from [up, p] in query, where: up.scope_id == ^scope_id or up.scope_type == "global"
+        from [up, p] in query,
+          where:
+            up.scope_type == "global" or
+              (up.scope_type == ^scope_type and up.scope_id == ^scope_id)
       else
-        from [up, p] in query, where: is_nil(up.scope_id) or up.scope_type == "global"
+        from [up, p] in query,
+          where:
+            up.scope_type == "global" or (up.scope_type == ^scope_type and is_nil(up.scope_id))
       end
 
     Repo.exists?(query)
@@ -467,17 +528,21 @@ defmodule VoileWeb.Auth.Authorization do
         on: up.permission_id == p.id,
         where: up.user_id == ^user_id,
         where: p.name == ^permission_name,
-        where: up.scope_type == ^scope_type,
         where: is_nil(up.expires_at) or up.expires_at > ^DateTime.utc_now(),
         select: up.granted,
-        order_by: [desc: up.inserted_at],
+        order_by: [desc: up.assigned_at],
         limit: 1
 
     query =
       if scope_id do
-        from [up, p] in query, where: up.scope_id == ^scope_id or up.scope_type == "global"
+        from [up, p] in query,
+          where:
+            up.scope_type == "global" or
+              (up.scope_type == ^scope_type and up.scope_id == ^scope_id)
       else
-        from [up, p] in query, where: is_nil(up.scope_id) or up.scope_type == "global"
+        from [up, p] in query,
+          where:
+            up.scope_type == "global" or (up.scope_type == ^scope_type and is_nil(up.scope_id))
       end
 
     Repo.one(query) || false

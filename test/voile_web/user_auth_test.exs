@@ -2,7 +2,7 @@ defmodule VoileWeb.UserAuthTest do
   use VoileWeb.ConnCase, async: true
 
   alias Phoenix.LiveView
-  alias Voile.Accounts
+  alias Voile.Schema.Accounts
   alias VoileWeb.UserAuth
   import Voile.AccountsFixtures
 
@@ -43,6 +43,63 @@ defmodule VoileWeb.UserAuthTest do
       assert %{value: signed_token, max_age: max_age} = conn.resp_cookies[@remember_me_cookie]
       assert signed_token != get_session(conn, :user_token)
       assert max_age == 5_184_000
+    end
+
+    test "captures IPv4 address directly", %{conn: conn, user: user} do
+      conn = %{conn | remote_ip: {203, 0, 113, 42}}
+      UserAuth.log_in_user(conn, user)
+
+      # Reload user to check last_login_ip
+      updated_user = Accounts.get_user!(user.id)
+      assert updated_user.last_login_ip == "203.0.113.42"
+    end
+
+    test "captures IPv6 address directly", %{conn: conn, user: user} do
+      # IPv6 address: 2001:db8::1
+      conn = %{conn | remote_ip: {0x2001, 0x0DB8, 0, 0, 0, 0, 0, 1}}
+      UserAuth.log_in_user(conn, user)
+
+      updated_user = Accounts.get_user!(user.id)
+      assert updated_user.last_login_ip == "2001:db8::1"
+    end
+
+    test "extracts client IP from X-Forwarded-For when behind trusted proxy", %{
+      conn: conn,
+      user: user
+    } do
+      # Request from trusted proxy (Docker bridge)
+      conn = %{conn | remote_ip: {172, 17, 0, 1}}
+      conn = put_req_header(conn, "x-forwarded-for", "198.51.100.50, 172.17.0.1")
+
+      UserAuth.log_in_user(conn, user)
+
+      updated_user = Accounts.get_user!(user.id)
+      # Should extract the first (client) IP
+      assert updated_user.last_login_ip == "198.51.100.50"
+    end
+
+    test "ignores X-Forwarded-For from untrusted source", %{conn: conn, user: user} do
+      # Direct connection from public IP
+      conn = %{conn | remote_ip: {203, 0, 113, 50}}
+      # Attacker trying to spoof headers
+      conn = put_req_header(conn, "x-forwarded-for", "10.0.0.1")
+
+      UserAuth.log_in_user(conn, user)
+
+      updated_user = Accounts.get_user!(user.id)
+      # Should use remote_ip, not the spoofed header
+      assert updated_user.last_login_ip == "203.0.113.50"
+    end
+
+    test "truncates long IPv6 addresses to 45 chars", %{conn: conn, user: user} do
+      # Very long IPv6 address
+      conn = %{conn | remote_ip: {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}}
+
+      UserAuth.log_in_user(conn, user)
+
+      updated_user = Accounts.get_user!(user.id)
+      # Should be truncated to 45 chars
+      assert String.length(updated_user.last_login_ip) <= 45
     end
   end
 

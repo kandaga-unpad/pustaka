@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.55] - 2026-11-23
+
+### Added
+
+- **Usability tab in Circulation Report** — new "Usability/Pemanfaatan" tab on `/manage/glam/library/circulation/report` showing circulation usage rankings per node and year+month period (defaults to the current month): most loaned titles (grouped by collection), most active members (fullname + NPM/ID), and most frequent visitors (name + scanned ID). Backed by `Voile.get_usability_stats/2` (loan/visit aggregates with node + period scoping, top-50 per ranking, 5 rows per page with independent pagination per list), a shared node/year/month filter row extracted from the Overview tab, and summary cards (total loans, unique borrowers, library visits). All new UI strings are gettext-translated (id locale filled).
+
+- **Dashboard mobile navigation drawer** — the bottom-nav "More" button on `/manage/*` now opens a left slide-in drawer with the full navigation tree (same sections/children as the sidebar, collapsible groups, active highlighting) plus Front page, theme toggle, and locale switcher in its footer, instead of opening the search palette. New `voile_mobile_drawer` component + `DashboardMobileNav` hook; drawer closes on backdrop click, Esc, the close button, and after following any link.
+
+- **Digital Collections API (v1)** — new read-only endpoints for the Kandaga "Koleksi E-Book" integration: `GET /api/v1/digital-collections` (list/search/filter published collections that carry digital attachments — `search`, `unit_id`, `file_type` (default `document`), `access_level`, `page`/`limit`) and `GET /api/v1/digital-collections/:id` (full attachment list + metadata). Responses expose ACL-respecting relative paths only (`reader_url` → voile's e-book reader, `download_url` → the access-controlled download endpoint); raw storage URLs are never returned, drafts/embargoed files are excluded. Same token auth as the rest of `/api/v1`. Added 9 controller tests.
+
+### Fixed
+
+- **Command palette closes on outside click** — the backdrop-click handler compared the wrong dataset key (`rdCmdBackdrop` vs the actual `data-voile-cmd-backdrop`), so clicking outside the palette only closed via Esc. Backdrop clicks now close it. Also fixed the same wrong key in the search filter (`rdCmdSearch` → `voileCmdSearch`), and the palette's Navigation group is now generated from the full dashboard nav tree (~40 menu paths) instead of 5 hardcoded links.
+- **Collapsed sidebar no longer shows the clipped "Front page" text** — the bottom "Front page" link now uses the `voile-sidebar-label` class (hidden in the collapsed icon rail, tooltip remains), matching the other nav links.
+
+- **Silenced the `~~~` deprecation warning** — the trusted-proxy CIDR check in `UserAuth` now uses `Bitwise.bnot/1` instead of the deprecated `~~~` operator (identical semantics), so `mix compile` is warning-free.
+
+- **Swagger JSON no longer regenerated on every compile** — `[:phoenix_swagger]` was removed from the project `compilers` (it regenerated `priv/static/swagger.json` on every `mix compile` and `mix phx.server`, with no staleness tracking). Generate on demand with `mix phx.swagger.generate` — now also part of `mix setup` so fresh clones get the file for the dev SwaggerUI at `/api/swagger`.
+
+- **Dashboard greeting follows local clock** — the `/manage` greeting was computed from UTC hours, so it said "Good morning" at 16:31 WIB. It now uses Asia/Jakarta time with four buckets: morning ≤12:00, afternoon ≤15:00, evening ≤15:01–19:00, night 19:01–23:59 (id translations: pagi/siang/sore/malam). Also removed the decorative non-functional "G H" shortcut hint from the sidebar Home item (no chord handler ever implemented it).
+
+---
+
+## [0.1.54] - 2026-10-20
+
+### Fixed
+
+- **Audit field preservation in create/update_collection** — `create_collection/2` and `update_collection/3` no longer overwrite valid `created_by_id`/`updated_by_id` values from attrs when `user_id` argument is nil. Added `put_audit_field/3` helper that only applies explicit user_id when non-nil, preserving changeset values from attrs otherwise. Fixes integration bug where downstream callers (Atrium, CSV imports) passed audit fields in attrs but had them nullified by default nil user_id argument. Explicit user_id still overrides attrs (backward compatible). Added 5 tests covering all scenarios.
+
+- **Login IP capture for IPv6 and reverse proxies** — `log_in_user/3` now correctly captures client IP for IPv6 connections (previously recorded nil due to 4-tuple-only logic) and extracts real client IP from X-Forwarded-For/Forwarded headers when behind trusted reverse proxies. Added configurable trusted proxy ranges (Docker bridge, private networks, localhost) with header spoofing protection—headers only trusted from configured proxies. Uses `:inet.ntoa/1` for proper IPv4/IPv6 formatting, truncates to 45 chars. Added 5 tests: IPv4 direct, IPv6 direct, trusted proxy header extraction, untrusted header rejection, truncation.
+
+---
+
+## [0.1.52] - 2026-10-20
+
+### Fixed
+
+- **oai_dc element restoration (round 3 of the OAI-PMH interop loop)** — the round-2 mapper rewrite left record payloads silent on several Dublin Core elements. Fixed:
+  - `dc:relation` — the parent collection link moved back to `dc:relation` (was relocated to `dc:source` in round 2). `dc:relation` was 10/10 in the 14-Okt pre-rework harvest and 0/50 in the 20-Okt round-2 harvest; collection linkage is a "reference to a related resource", so it belongs here. `dc:source` is emitted only when a genuine source-record field exists (`dcterms:source`, `foaf:homepage`, Kandaga GLAM `glam_institution` holdings).
+  - New field mappings for data that existed in `collection_fields` but was never mapped: `bibo:authorList`/`editorList`/`contributorList` (newline-separated person lists → `dc:contributor`, split per person, commas preserved for "Last, First" names), `bibo:translator`/`director` (→ `dc:contributor`), `bibo:translationOf` (→ `dc:relation`), and the Kandaga GLAM import family `glam_keywords` (→ `dc:subject`, comma-split), `glam_creator` (→ `dc:creator`), `glam_location` (→ `dc:coverage`), `glam_publication_date`/`glam_created_date` (→ `dc:date`), `glam_type` (→ `dc:type`), `glam_institution` (→ `dc:source`).
+  - `dc:subject`, `dc:description`, `dc:publisher`, `dc:date` (one per record), `dc:format`, `dc:language` and `dc:contributor` were verified against dev/prod data to already be emitted wherever data exists — the round-2 "dropped elements" harvest sample hit only collections with zero `collection_fields` rows (empty-element rule working as specified). Elements remain absent only for records with no underlying data; nothing renders empty placeholders or `NULL`.
+- GetRecord oai_dc spot-check on a freshly harvested gallery object now emits 11 of 15 elements (all the ones that record's fields support) and validates against the official OAI-PMH 2.0 schema set (archived `wrapper.xsd` composite).
+
+### Added
+
+- **Plugin localization (i18n)** — plugins can now localize their UI with just translation files: they ship standard Gettext `.po` files under `priv/gettext/<locale>/LC_MESSAGES/` in their own app plus a one-line backend module (`use Voile.Plugin.Gettext, otp_app: :<plugin_app>`). Voile discovers the backend by convention (`<PluginModule>.Gettext`) on plugin activation and reactivation, registers it in a lightweight `:persistent_term` registry, and keeps its locale in sync whenever the site locale switches; deactivating or uninstalling the plugin unregisters it. Locales are restricted to the site's supported set (`id`, `en`); a plugin proposing a new locale ships the `.po` files in its PR and the locale becomes live once added centrally to voile (`priv/gettext/` + `locale_name/1`/`locale_flag/1`). Because Gettext 1.0 stores locales per process, dashboard LiveViews now auto-attach the locale hook (`VoileWeb.live_view_dashboard` injects `on_mount`), and `PluginRouterLive` passes the resolved locale through `live_render` child sessions so nested plugin LiveViews render translated.
+
+---
+
 ## [0.1.51] - 2026-10-19
 
 ### Fixed
@@ -905,10 +954,10 @@ management system built with Elixir and Phoenix LiveView.
 [0.1.31]: https://github.com/curatorian/voile/compare/v0.1.30...v0.1.31
 [0.1.30]: https://github.com/curatorian/voile/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/curatorian/voile/compare/v0.1.28...v0.1.29
+[0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/curatorian/voile/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/curatorian/voile/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/curatorian/voile/compare/v0.1.24...v0.1.25
-[0.1.28]: https://github.com/curatorian/voile/compare/v0.1.27...v0.1.28
 [0.1.24]: https://github.com/curatorian/voile/compare/v0.1.23...v0.1.24
 [0.1.23]: https://github.com/curatorian/voile/compare/v0.1.22...v0.1.23
 [0.1.19]: https://github.com/curatorian/voile/compare/v0.1.18...v0.1.19

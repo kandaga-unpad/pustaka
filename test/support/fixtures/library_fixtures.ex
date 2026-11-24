@@ -251,7 +251,8 @@ defmodule Voile.LibraryFixtures do
             status: "active",
             availability: "available",
             condition: "good",
-            collection_id: collection.id
+            collection_id: collection.id,
+            unit_id: collection.unit_id
           })
           |> Repo.insert()
 

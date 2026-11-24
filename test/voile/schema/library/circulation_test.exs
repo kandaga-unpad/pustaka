@@ -435,10 +435,10 @@ defmodule Voile.Schema.Library.CirculationTest do
       item = fine_fixture().item
       librarian = user_fixture()
 
-      # Make sure item is available and has a unit_id
+      # Item should already have unit_id from fixture, just make sure it's available
       item =
         Repo.get!(Item, item.id)
-        |> Ecto.Changeset.change(availability: "available", unit_id: 1)
+        |> Ecto.Changeset.change(availability: "available")
         |> Repo.update!()
 
       assert {:ok, transaction} =
@@ -744,6 +744,256 @@ defmodule Voile.Schema.Library.CirculationTest do
       assert Map.has_key?(result, :renewed)
       assert Map.has_key?(result, :failed)
       assert Map.has_key?(result, :total)
+    end
+  end
+
+  # Usability stats tests
+  describe "get_usability_stats/2" do
+    alias Voile.Schema.Catalog.Collection
+    alias Voile.Schema.Master.{Creator, Location}
+    alias Voile.Schema.Metadata.ResourceClass
+    alias Voile.Schema.System.VisitorLog
+    alias Voile.SystemFixtures
+
+    test "ranks collections, members, and visitors for the requested period and node" do
+      %{node_a: node_a} = usability_context()
+
+      stats = Circulation.get_usability_stats(node_a.id, year: 2026, month: 11)
+
+      assert stats.summary == %{total_loans: 4, unique_borrowers: 2, total_visits: 3}
+
+      assert [
+               %{title: "Usability Collection X", loan_count: 3},
+               %{title: "Usability Collection Y", loan_count: 1}
+             ] = stats.top_collections
+
+      assert [
+               %{fullname: "Usability Member A", loan_count: 3},
+               %{fullname: "Usability Member B", loan_count: 1}
+             ] = stats.top_members
+
+      assert [
+               %{identifier: "2110001", visit_count: 2, name: "Usability Member A"},
+               %{identifier: "2110002", visit_count: 1}
+             ] = stats.top_visitors
+    end
+
+    test "excludes loans and visits outside the requested period" do
+      %{node_a: node_a} = usability_context()
+
+      october = Circulation.get_usability_stats(node_a.id, year: 2026, month: 10)
+
+      assert october.summary.total_loans == 1
+      assert october.summary.unique_borrowers == 1
+      assert october.summary.total_visits == 0
+      assert [%{title: "Usability Collection Y", loan_count: 1}] = october.top_collections
+      assert october.top_visitors == []
+
+      december = Circulation.get_usability_stats(node_a.id, year: 2026, month: 12)
+
+      assert december.summary.total_loans == 0
+      assert december.summary.total_visits == 1
+      assert december.top_collections == []
+      assert december.top_members == []
+      assert [%{identifier: "2199999", visit_count: 1}] = december.top_visitors
+    end
+
+    test "scopes stats to the given node" do
+      %{node_b: node_b} = usability_context()
+
+      stats = Circulation.get_usability_stats(node_b.id, year: 2026, month: 11)
+
+      assert stats.summary == %{total_loans: 1, unique_borrowers: 1, total_visits: 1}
+      assert [%{title: "Usability Collection Z", loan_count: 1}] = stats.top_collections
+      assert [%{identifier: "2199998", visit_count: 1}] = stats.top_visitors
+    end
+
+    test "caps each ranking at the :limit option" do
+      %{node_a: node_a} = usability_context()
+
+      stats = Circulation.get_usability_stats(node_a.id, year: 2026, month: 11, limit: 1)
+
+      assert length(stats.top_collections) == 1
+      assert length(stats.top_members) == 1
+      assert length(stats.top_visitors) == 1
+      assert hd(stats.top_collections).title == "Usability Collection X"
+    end
+
+    test "covers all nodes when node_id is nil" do
+      _context = usability_context()
+
+      stats = Circulation.get_usability_stats(nil, year: 2026, month: 11)
+
+      assert stats.summary.total_loans >= 4
+      assert stats.summary.total_visits >= 4
+    end
+
+    # -- Fixtures -------------------------------------------------------------
+
+    defp usability_context do
+      # Ensure shared fixture entities (creator, resource class, node) exist
+      _ = transaction_fixture()
+
+      creator = Repo.one!(from c in Creator, limit: 1)
+      resource_class = Repo.one!(from r in ResourceClass, limit: 1)
+
+      node_a = SystemFixtures.node_fixture()
+      node_b = SystemFixtures.node_fixture()
+
+      location_a = usability_location(node_a.id)
+      location_b = usability_location(node_b.id)
+
+      member_a = usability_member("Usability Member A", "2110001")
+      member_b = usability_member("Usability Member B", "2110002")
+      librarian = usability_member("Usability Librarian", "1990001")
+
+      col_x =
+        usability_collection("Usability Collection X", node_a.id, creator, resource_class.id)
+
+      col_y =
+        usability_collection("Usability Collection Y", node_a.id, creator, resource_class.id)
+
+      col_z =
+        usability_collection("Usability Collection Z", node_b.id, creator, resource_class.id)
+
+      item_x1 = usability_item(col_x)
+      item_x2 = usability_item(col_x)
+      item_y1 = usability_item(col_y)
+      item_z1 = usability_item(col_z)
+
+      # November 2026 loans on node A: member A borrows X twice and Y once,
+      # member B borrows X once
+      usability_loan(member_a, item_x1, librarian, usability_dt(2026, 11, 5))
+      usability_loan(member_a, item_x2, librarian, usability_dt(2026, 11, 12))
+      usability_loan(member_a, item_y1, librarian, usability_dt(2026, 11, 20))
+      usability_loan(member_b, item_x1, librarian, usability_dt(2026, 11, 25))
+
+      # October 2026 loan on node A (outside the November window)
+      usability_loan(member_b, item_y1, librarian, usability_dt(2026, 10, 10))
+
+      # November 2026 loan on node B
+      usability_loan(member_b, item_z1, librarian, usability_dt(2026, 11, 8))
+
+      # Visits: two check-ins for v1 and one for v2 on node A, one in December
+      # (excluded from November), and one on node B
+      usability_visit(
+        "2110001",
+        "Usability Member A",
+        node_a.id,
+        location_a.id,
+        usability_dt(2026, 11, 3, 9)
+      )
+
+      usability_visit(
+        "2110001",
+        "Usability Member A",
+        node_a.id,
+        location_a.id,
+        usability_dt(2026, 11, 10, 9)
+      )
+
+      usability_visit(
+        "2110002",
+        "Usability Member B",
+        node_a.id,
+        location_a.id,
+        usability_dt(2026, 11, 15, 9)
+      )
+
+      usability_visit(
+        "2199999",
+        "December Visitor",
+        node_a.id,
+        location_a.id,
+        usability_dt(2026, 12, 1, 9)
+      )
+
+      usability_visit(
+        "2199998",
+        "Node B Visitor",
+        node_b.id,
+        location_b.id,
+        usability_dt(2026, 11, 9, 9)
+      )
+
+      %{node_a: node_a, node_b: node_b}
+    end
+
+    defp usability_member(fullname, identifier) do
+      user_fixture()
+      |> Ecto.Changeset.change(fullname: fullname, identifier: Decimal.new(identifier))
+      |> Repo.update!()
+    end
+
+    defp usability_collection(title, node_id, creator, type_id) do
+      {:ok, collection} =
+        %Collection{}
+        |> Collection.changeset(%{
+          title: title,
+          description: "Usability test collection",
+          status: "published",
+          access_level: "public",
+          thumbnail: "test-thumbnail.jpg",
+          collection_code: "USAB-COLL-#{System.unique_integer([:positive])}",
+          creator_id: creator.id,
+          type_id: type_id,
+          unit_id: node_id
+        })
+        |> Repo.insert()
+
+      collection
+    end
+
+    defp usability_item(collection) do
+      {:ok, item} =
+        %Item{}
+        |> Item.changeset(%{
+          item_code: "USAB-#{System.unique_integer([:positive])}",
+          inventory_code: "INV-#{System.unique_integer([:positive])}",
+          barcode: "USAB-BAR-#{System.unique_integer([:positive])}",
+          location: "Test Library - Shelf A1",
+          status: "active",
+          availability: "available",
+          condition: "good",
+          collection_id: collection.id,
+          unit_id: collection.unit_id
+        })
+        |> Repo.insert()
+
+      item
+    end
+
+    defp usability_loan(member, item, librarian, at) do
+      transaction_fixture(%{
+        member_id: member.id,
+        item_id: item.id,
+        librarian_id: librarian.id,
+        transaction_date: at
+      })
+    end
+
+    defp usability_location(node_id) do
+      Repo.insert!(%Location{
+        location_code: "USAB-LOC-#{System.unique_integer([:positive])}",
+        location_name: "Usability Test Location",
+        location_type: "library",
+        node_id: node_id
+      })
+    end
+
+    defp usability_visit(identifier, name, node_id, location_id, at) do
+      Repo.insert!(%VisitorLog{
+        visitor_identifier: identifier,
+        visitor_name: name,
+        visitor_origin: "Usability Test Origin",
+        check_in_time: at,
+        location_id: location_id,
+        node_id: node_id
+      })
+    end
+
+    defp usability_dt(year, month, day, hour \\ 10) do
+      DateTime.new!(Date.new!(year, month, day), Time.new!(hour, 0, 0), "Etc/UTC")
     end
   end
 end

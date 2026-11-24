@@ -16,7 +16,7 @@ defmodule Voile.Schema.Library.Circulation do
     Transaction
   }
 
-  alias Voile.Schema.System.LibHoliday
+  alias Voile.Schema.System.{LibHoliday, VisitorLog}
 
   alias Client.Xendit
 
@@ -3897,5 +3897,143 @@ defmodule Voile.Schema.Library.Circulation do
 
   defp decimal_to_int(%Decimal{} = d) do
     d |> Decimal.to_float() |> trunc()
+  end
+
+  # ===========================================================================
+  # USABILITY STATS - usage rankings for the circulation report Usability tab
+  # ===========================================================================
+
+  @usability_default_limit 50
+
+  @doc """
+  Returns circulation usage ("usability") statistics for a given node and period.
+
+  If `node_id` is nil, stats cover all nodes. Opts:
+
+    - `:year` / `:month` — restrict to the given period (nil = unbounded)
+    - `:limit` — maximum rows per ranking (default #{@usability_default_limit})
+
+  Returns:
+
+      %{
+        summary: %{total_loans: n, unique_borrowers: n, total_visits: n},
+        top_collections: [%{collection_id, title, loan_count}],
+        top_members: [%{member_id, fullname, identifier, loan_count}],
+        top_visitors: [%{identifier, name, origin, visit_count, last_visit}]
+      }
+  """
+  def get_usability_stats(node_id \\ nil, opts \\ []) do
+    date_range = date_range_from_opts(opts)
+    limit = Keyword.get(opts, :limit, @usability_default_limit)
+
+    loans = usability_loans_query(node_id, date_range)
+    visits = usability_visits_query(node_id, date_range)
+
+    %{
+      summary: %{
+        total_loans: Repo.aggregate(loans, :count, :id),
+        unique_borrowers: usability_unique_borrower_count(loans),
+        total_visits: Repo.aggregate(visits, :count, :id)
+      },
+      top_collections:
+        loans |> usability_top_collections_query() |> usability_ranking_rows(limit),
+      top_members: loans |> usability_top_members_query() |> usability_ranking_rows(limit),
+      top_visitors: visits |> usability_top_visitors_query() |> usability_ranking_rows(limit)
+    }
+  end
+
+  defp usability_loans_query(node_id, date_range) do
+    query =
+      from t in Transaction,
+        join: i in assoc(t, :item),
+        where: t.transaction_type == "loan"
+
+    query =
+      if node_id do
+        where(query, [t, i], i.unit_id == ^node_id)
+      else
+        query
+      end
+
+    usability_period_filter(query, date_range, :transaction_date)
+  end
+
+  defp usability_visits_query(node_id, date_range) do
+    query = from(l in VisitorLog)
+
+    query =
+      if node_id do
+        where(query, [l], l.node_id == ^node_id)
+      else
+        query
+      end
+
+    usability_period_filter(query, date_range, :check_in_time)
+  end
+
+  # Applies a period (start/end datetime) filter to `field` on the query's first binding.
+  defp usability_period_filter(query, nil, _field), do: query
+
+  defp usability_period_filter(query, {start_dt, end_dt}, field) do
+    where(
+      query,
+      [q],
+      field(q, ^field) >= ^start_dt and field(q, ^field) <= ^end_dt
+    )
+  end
+
+  defp usability_unique_borrower_count(loans_query) do
+    loans_query
+    |> select([t, _i], count(t.member_id, :distinct))
+    |> Repo.one()
+    |> case do
+      nil -> 0
+      count -> count
+    end
+  end
+
+  defp usability_top_collections_query(loans_query) do
+    from t in loans_query,
+      join: i2 in assoc(t, :item),
+      join: c in assoc(i2, :collection),
+      group_by: [c.id, c.title],
+      select: %{
+        collection_id: c.id,
+        title: c.title,
+        loan_count: count(t.id)
+      },
+      order_by: [desc: count(t.id), asc: c.title]
+  end
+
+  defp usability_top_members_query(loans_query) do
+    from t in loans_query,
+      join: m in assoc(t, :member),
+      group_by: [m.id, m.fullname, m.identifier],
+      select: %{
+        member_id: m.id,
+        fullname: m.fullname,
+        identifier: m.identifier,
+        loan_count: count(t.id)
+      },
+      order_by: [desc: count(t.id), asc: m.fullname]
+  end
+
+  defp usability_top_visitors_query(visits_query) do
+    from l in visits_query,
+      group_by: l.visitor_identifier,
+      select: %{
+        identifier: l.visitor_identifier,
+        name: max(l.visitor_name),
+        origin: max(l.visitor_origin),
+        visit_count: count(l.id),
+        last_visit: max(l.check_in_time)
+      },
+      order_by: [desc: count(l.id), asc: l.visitor_identifier]
+  end
+
+  defp usability_ranking_rows(grouped_query, limit) do
+    grouped_query
+    |> limit(^limit)
+    |> Repo.all()
   end
 end

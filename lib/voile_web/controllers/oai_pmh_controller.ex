@@ -199,6 +199,7 @@ defmodule VoileWeb.OaiPmhController do
               XmlBuilder.build_response("ListIdentifiers", request_params, result, base_url)
 
             send_xml_response(conn, xml)
+
           {:ok, result} ->
             request_params =
               %{}

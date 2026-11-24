@@ -183,7 +183,7 @@ defmodule VoileWeb.Dashboard.Plugins.Index do
               Enum.map(@plugins, fn p ->
                 %{
                   label: p.name,
-                  path: "/manage/plugins/#{p.plugin_id}/settings",
+                  path: "/manage/plugins/#{p.plugin_id}",
                   icon: "hero-cog-6-tooth"
                 }
               end)

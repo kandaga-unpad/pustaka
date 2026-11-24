@@ -37,7 +37,7 @@ For the fastest setup, run these commands:
 
 ```bash
 # Clone the repository
-git clone https://github.com/chrisnaadhi/voile.git
+git clone https://github.com/curatorian/voile.git
 cd voile
 
 # Install dependencies

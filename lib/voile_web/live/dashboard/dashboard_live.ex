@@ -127,14 +127,19 @@ defmodule VoileWeb.DashboardLive do
   defp parse_node_id(id) when is_binary(id), do: String.to_integer(id)
 
   defp build_greeting(user) do
-    hour = DateTime.utc_now().hour
+    local_time =
+      DateTime.utc_now()
+      |> VoileWeb.Utils.FormatIndonesiaTime.shift_to_jakarta()
+      |> DateTime.to_time()
+
     name = user_fullname_first(user)
 
     salutation =
       cond do
-        hour < 12 -> gettext("Good morning")
-        hour < 18 -> gettext("Good afternoon")
-        true -> gettext("Good evening")
+        Time.compare(local_time, ~T[12:00:00]) != :gt -> gettext("Good morning")
+        Time.compare(local_time, ~T[15:00:00]) != :gt -> gettext("Good afternoon")
+        Time.compare(local_time, ~T[19:00:00]) != :gt -> gettext("Good evening")
+        true -> gettext("Good night")
       end
 
     if name && name != "", do: "#{salutation}, #{name}", else: salutation

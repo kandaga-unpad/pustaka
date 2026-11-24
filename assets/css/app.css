@@ -1269,7 +1269,6 @@
   .voile-sidebar-collapsed .voile-sidebar-brand-text,
   .voile-sidebar-collapsed .voile-sidebar-section-title,
   .voile-sidebar-collapsed .voile-sidebar-label,
-  .voile-sidebar-collapsed .voile-sidebar-shortcut,
   .voile-sidebar-collapsed .voile-sidebar-user-info,
   .voile-sidebar-collapsed .voile-sidebar-logout {
     display: none;

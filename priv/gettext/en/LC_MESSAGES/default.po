@@ -25,7 +25,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1544
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:496
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:249
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:65
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:64
 #: lib/voile_web/live/frontend/items/show.ex:559
 #, elixir-autogen, elixir-format
 msgid "Actions"
@@ -36,14 +36,14 @@ msgstr ""
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:294
 #: lib/voile_web/live/dashboard/members/clearance/show.ex:182
 #: lib/voile_web/live/dashboard/members/management/index.ex:431
-#: lib/voile_web/live/dashboard/members/management/index.ex:985
-#: lib/voile_web/live/dashboard/members/management/show.ex:804
+#: lib/voile_web/live/dashboard/members/management/index.ex:957
+#: lib/voile_web/live/dashboard/members/management/show.ex:820
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:292
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:389
 #: lib/voile_web/live/dashboard/settings/setting_live.ex:179
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:99
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:108
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:420
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:98
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:107
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:419
 #: lib/voile_web/live/users/manage/dashboard.ex:244
 #, elixir-autogen, elixir-format
 msgid "Active"
@@ -74,8 +74,8 @@ msgstr ""
 
 ## Messages
 #: lib/voile_web/components/core_components.ex:134
-#: lib/voile_web/components/dashboard_components.ex:1980
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:598
+#: lib/voile_web/components/dashboard_components.ex:2075
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:600
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:456
 #: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:56
 #: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:51
@@ -114,7 +114,7 @@ msgid "Browse Collections"
 msgstr ""
 
 #: lib/voile_web/components/core_components.ex:192
-#: lib/voile_web/components/dashboard_components.ex:1985
+#: lib/voile_web/components/dashboard_components.ex:2080
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:69
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:112
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:789
@@ -140,12 +140,12 @@ msgstr ""
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:600
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:651
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:734
-#: lib/voile_web/live/dashboard/members/management/show.ex:683
+#: lib/voile_web/live/dashboard/members/management/show.ex:695
 #: lib/voile_web/live/dashboard/metaresource/resource_template_live/form_component.ex:193
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:150
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:398
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:305
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:274
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:273
 #: lib/voile_web/live/dashboard/settings/token_form_component.ex:106
 #: lib/voile_web/live/frontend/atrium/index.ex:2557
 #: lib/voile_web/live/frontend/items/show.ex:802
@@ -157,9 +157,8 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:393
-#: lib/voile_web/components/dashboard_components.ex:603
-#: lib/voile_web/components/dashboard_components.ex:1290
+#: lib/voile_web/components/dashboard_components.ex:394
+#: lib/voile_web/components/dashboard_components.ex:609
 #: lib/voile_web/live/dashboard/catalog/collection_live/index.ex:86
 #: lib/voile_web/live/dashboard/catalog/index.ex:85
 #: lib/voile_web/live/dashboard/catalog/index.ex:472
@@ -190,6 +189,7 @@ msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:112
 #: lib/voile_web/components/dashboard_components.ex:399
+#: lib/voile_web/components/dashboard_components.ex:587
 #: lib/voile_web/components/layouts.ex:332
 #: lib/voile_web/components/layouts.ex:488
 #: lib/voile_web/components/layouts.ex:624
@@ -232,10 +232,10 @@ msgid "Date"
 msgstr ""
 
 #: lib/voile_web/components/core_components.ex:135
-#: lib/voile_web/components/dashboard_components.ex:1968
+#: lib/voile_web/components/dashboard_components.ex:2063
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:62
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:105
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:602
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:604
 #: lib/voile_web/live/dashboard/catalog/components/attachment_upload.ex:399
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:460
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/index.html.heex:177
@@ -248,7 +248,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:51
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:322
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:165
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:217
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:216
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:269
 #: lib/voile_web/live/users/role/role_manage_live.ex:356
 #, elixir-autogen, elixir-format
@@ -264,7 +264,7 @@ msgstr ""
 #: lib/voile_web/controllers/metadata/resource_class_html/resource_class_controller.ex:81
 #: lib/voile_web/controllers/metadata/resource_template_property_html/resource_template_property_controller.ex:80
 #: lib/voile_web/controllers/metadata/vocabulary_html/vocabulary_controller.ex:75
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:587
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:589
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:439
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:447
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:62
@@ -275,11 +275,11 @@ msgstr ""
 #: lib/voile_web/live/dashboard/master/places_live/index.html.heex:39
 #: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:53
 #: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:43
-#: lib/voile_web/live/dashboard/members/management/show.ex:534
+#: lib/voile_web/live/dashboard/members/management/show.ex:545
 #: lib/voile_web/live/dashboard/metaresource/resource_template_live/edit.ex:19
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:303
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:153
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:145
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:144
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:258
 #: lib/voile_web/live/users/role/role_manage_live.ex:343
 #, elixir-autogen, elixir-format
@@ -313,8 +313,8 @@ msgid "Hello, %{name}!"
 msgstr ""
 
 ## Navigation
-#: lib/voile_web/components/dashboard_components.ex:386
-#: lib/voile_web/components/dashboard_components.ex:597
+#: lib/voile_web/components/dashboard_components.ex:387
+#: lib/voile_web/components/dashboard_components.ex:603
 #: lib/voile_web/components/layouts.ex:320
 #: lib/voile_web/components/layouts.ex:486
 #: lib/voile_web/components/layouts.ex:622
@@ -355,7 +355,7 @@ msgstr ""
 msgid "Loading nodes..."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:353
+#: lib/voile_web/components/dashboard_components.ex:352
 #: lib/voile_web/components/layouts.ex:232
 #: lib/voile_web/components/layouts.ex:250
 #: lib/voile_web/components/layouts.ex:599
@@ -375,7 +375,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/master/topic_live/form_component.ex:16
 #: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:33
 #: lib/voile_web/live/dashboard/members/clearance/verify.ex:221
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:357
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:356
 #: lib/voile_web/live/dashboard/visitor/logs.ex:450
 #: lib/voile_web/live/frontend/atrium/clearance/verify.ex:179
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:229
@@ -422,7 +422,7 @@ msgstr ""
 msgid "No new additions this week"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1314
+#: lib/voile_web/components/dashboard_components.ex:1388
 #: lib/voile_web/controllers/search_html/advanced.html.heex:734
 #: lib/voile_web/controllers/search_html/index.html.heex:480
 #, elixir-autogen, elixir-format
@@ -515,8 +515,8 @@ msgstr ""
 #: lib/voile_web/live/dashboard/members/management/index.ex:436
 #: lib/voile_web/live/dashboard/members/management/index.ex:506
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:246
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:56
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:403
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:55
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:402
 #: lib/voile_web/live/frontend/atrium/clearance/index.html.heex:25
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:25
 #, elixir-autogen, elixir-format
@@ -587,7 +587,7 @@ msgstr ""
 
 #: lib/voile_web/components/core_components.ex:99
 #: lib/voile_web/components/core_components.ex:251
-#: lib/voile_web/components/dashboard_components.ex:1321
+#: lib/voile_web/components/dashboard_components.ex:1395
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr ""
@@ -624,7 +624,7 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:143
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:145
 #, elixir-autogen, elixir-format
 msgid "Clear search"
 msgstr ""
@@ -639,7 +639,7 @@ msgstr ""
 msgid "Listing Collections"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:149
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:151
 #: lib/voile_web/live/dashboard/catalog/item_live/index.html.heex:117
 #, elixir-autogen, elixir-format
 msgid "Press / to search"
@@ -651,7 +651,7 @@ msgstr ""
 msgid "Results"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:126
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:128
 #, elixir-autogen, elixir-format
 msgid "Search collections by title, description, code, status, creator, location, or resource class..."
 msgstr ""
@@ -661,12 +661,12 @@ msgstr ""
 msgid "Tree View"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:167
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:169
 #, elixir-autogen, elixir-format
 msgid "Viewing collections based on your role"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:170
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:172
 #, elixir-autogen, elixir-format
 msgid "You are currently viewing collections filtered by your assigned location and collection type. This ensures you see only the collections relevant to your responsibilities."
 msgstr ""
@@ -686,7 +686,7 @@ msgstr ""
 msgid "Accessible & responsive"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:795
+#: lib/voile_web/components/dashboard_components.ex:889
 #: lib/voile_web/components/layouts.ex:432
 #, elixir-autogen, elixir-format
 msgid "All rights reserved."
@@ -699,8 +699,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/components/components.ex:561
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:513
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:335
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:482
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:334
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:481
 #: lib/voile_web/live/frontend/atrium/index.ex:2350
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Close"
@@ -783,6 +783,8 @@ msgstr ""
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:140
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:220
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:255
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:304
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:315
 #, elixir-autogen, elixir-format
 msgid "Loans"
 msgstr ""
@@ -820,6 +822,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:183
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:251
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:314
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:484
 #: lib/voile_web/live/dashboard/members/management/index.ex:458
 #: lib/voile_web/live/dashboard/members/management/show.ex:56
@@ -866,7 +869,7 @@ msgstr ""
 msgid "No members with active loans"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:252
+#: lib/voile_web/live/dashboard/dashboard_live.ex:257
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:477
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1929
 #: lib/voile_web/live/dashboard/members/reports/overdue.ex:33
@@ -877,6 +880,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1243
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:512
 #: lib/voile_web/live/dashboard/glam/library/circulation/loan_reminder_live.ex:366
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:436
 #, elixir-autogen, elixir-format
 msgid "Page"
 msgstr ""
@@ -886,7 +890,7 @@ msgstr ""
 msgid "Passwordless and social auth"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:798
+#: lib/voile_web/components/dashboard_components.ex:892
 #: lib/voile_web/components/layouts.ex:435
 #, elixir-autogen, elixir-format
 msgid "Powered by"
@@ -936,8 +940,8 @@ msgstr ""
 msgid "Renewed"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:690
-#: lib/voile_web/components/dashboard_components.ex:698
+#: lib/voile_web/components/dashboard_components.ex:784
+#: lib/voile_web/components/dashboard_components.ex:792
 #: lib/voile_web/components/layouts.ex:344
 #: lib/voile_web/controllers/error_html/404.html.heex:99
 #: lib/voile_web/controllers/error_html/404.html.heex:101
@@ -1127,7 +1131,7 @@ msgid "Back to home"
 msgstr ""
 
 #: lib/voile_web/controllers/error_html/404.html.heex:107
-#: lib/voile_web/live/dashboard/dashboard_live.ex:362
+#: lib/voile_web/live/dashboard/dashboard_live.ex:367
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr ""
@@ -1331,8 +1335,8 @@ msgstr ""
 msgid "Any Unit"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:430
-#: lib/voile_web/components/dashboard_components.ex:1096
+#: lib/voile_web/components/dashboard_components.ex:429
+#: lib/voile_web/components/dashboard_components.ex:1190
 #: lib/voile_web/controllers/search_html/advanced.html.heex:138
 #: lib/voile_web/controllers/search_html/index.html.heex:210
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:26
@@ -1398,7 +1402,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:616
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:644
-#: lib/voile_web/live/dashboard/members/management/show.ex:576
+#: lib/voile_web/live/dashboard/members/management/show.ex:587
 #: lib/voile_web/live/frontend/atrium/index.ex:1282
 #: lib/voile_web/live/frontend/atrium/index.ex:1321
 #: lib/voile_web/live/users/user_settings_live.ex:84
@@ -1577,7 +1581,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:236
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:383
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:216
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:366
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:365
 #: lib/voile_web/live/dashboard/settings/token_form_component.ex:48
 #: lib/voile_web/live/frontend/atrium/fine_detail/show.html.heex:153
 #: lib/voile_web/live/frontend/atrium/requisition/new.html.heex:119
@@ -1592,7 +1596,7 @@ msgid "Description"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:179
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:550
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:552
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:201
 #, elixir-autogen, elixir-format
 msgid "Draft"
@@ -1768,8 +1772,8 @@ msgstr ""
 msgid "GLAM Type"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:428
-#: lib/voile_web/components/dashboard_components.ex:1094
+#: lib/voile_web/components/dashboard_components.ex:427
+#: lib/voile_web/components/dashboard_components.ex:1188
 #: lib/voile_web/controllers/search_html/advanced.html.heex:124
 #: lib/voile_web/controllers/search_html/index.html.heex:189
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:26
@@ -1835,8 +1839,8 @@ msgstr ""
 msgid "Late returns may result in fines"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:429
-#: lib/voile_web/components/dashboard_components.ex:1095
+#: lib/voile_web/components/dashboard_components.ex:428
+#: lib/voile_web/components/dashboard_components.ex:1189
 #: lib/voile_web/controllers/search_html/advanced.html.heex:131
 #: lib/voile_web/controllers/search_html/index.html.heex:168
 #: lib/voile_web/live/dashboard/glam/index.ex:244
@@ -1917,8 +1921,8 @@ msgstr ""
 msgid "Minimum Sort Order"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:431
-#: lib/voile_web/components/dashboard_components.ex:1097
+#: lib/voile_web/components/dashboard_components.ex:430
+#: lib/voile_web/components/dashboard_components.ex:1191
 #: lib/voile_web/controllers/search_html/advanced.html.heex:145
 #: lib/voile_web/controllers/search_html/index.html.heex:230
 #: lib/voile_web/live/dashboard/glam/index.ex:246
@@ -2050,7 +2054,7 @@ msgid "Payment will be processed by Xendit (secure payment gateway)"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:186
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:554
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:556
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:200
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/index.ex:110
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/index.html.heex:35
@@ -2137,10 +2141,10 @@ msgid "Public"
 msgstr ""
 
 #: lib/voile_web/controllers/search_html/advanced.html.heex:193
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:558
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:560
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:202
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:136
-#: lib/voile_web/live/dashboard/dashboard_live.ex:374
+#: lib/voile_web/live/dashboard/dashboard_live.ex:379
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:72
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:72
 #: lib/voile_web/live/dashboard/glam/library/index.ex:80
@@ -2327,6 +2331,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/form_component.ex:284
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:356
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:45
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:303
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1271
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1363
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1470
@@ -2618,7 +2623,7 @@ msgstr ""
 msgid "Advanced Cataloging & Metadata Management"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:454
+#: lib/voile_web/live/page_live/about.ex:446
 #: lib/voile_web/live/page_live/ebook.ex:310
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Back to Home"
@@ -2634,7 +2639,7 @@ msgstr ""
 msgid "Built with Modern Technology"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:357
+#: lib/voile_web/live/page_live/about.ex:353
 #, elixir-autogen, elixir-format
 msgid "Client"
 msgstr ""
@@ -2649,7 +2654,7 @@ msgstr ""
 msgid "Designed for growth, handling increasing data loads ideal for academic libraries and cultural institutions."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:405
+#: lib/voile_web/live/page_live/about.ex:397
 #, elixir-autogen, elixir-format
 msgid "Developer"
 msgstr ""
@@ -2669,7 +2674,7 @@ msgstr ""
 msgid "Efficiently manage diverse collections with sophisticated indexing, metadata tagging, and categorization tools."
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:443
+#: lib/voile_web/live/page_live/about.ex:435
 #, elixir-autogen, elixir-format
 msgid "Explore our collections and discover the future of digital library management"
 msgstr ""
@@ -2679,17 +2684,17 @@ msgstr ""
 msgid "GLAM Integration"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:469
+#: lib/voile_web/live/page_live/about.ex:461
 #, elixir-autogen, elixir-format
 msgid "Get Started"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:427
+#: lib/voile_web/live/page_live/about.ex:419
 #, elixir-autogen, elixir-format
 msgid "GitHub"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:462
+#: lib/voile_web/live/page_live/about.ex:454
 #, elixir-autogen, elixir-format
 msgid "Go to Your Atrium"
 msgstr ""
@@ -2724,7 +2729,7 @@ msgstr ""
 msgid "Powerful tools for modern library management"
 msgstr ""
 
-#: lib/voile_web/live/page_live/about.ex:439
+#: lib/voile_web/live/page_live/about.ex:431
 #, elixir-autogen, elixir-format
 msgid "Ready to Experience the Magic?"
 msgstr ""
@@ -3302,24 +3307,24 @@ msgstr ""
 msgid "chrisnaadhi"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1063
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1064
 #, elixir-autogen, elixir-format
 msgid "Add Item to %{title}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:754
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:756
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Collection Found"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:755
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:757
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Collections Found"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:741
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:771
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1041
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:743
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:773
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1042
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:266
 #, elixir-autogen, elixir-format
 msgid "Create New Collection"
@@ -3333,13 +3338,13 @@ msgstr ""
 msgid "Error Details"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1030
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1031
 #, elixir-autogen, elixir-format
 msgid "Find Your Collection"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:423
-#: lib/voile_web/components/dashboard_components.ex:609
+#: lib/voile_web/components/dashboard_components.ex:615
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:25
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:25
 #: lib/voile_web/live/dashboard/glam/index.ex:18
@@ -3362,7 +3367,7 @@ msgstr ""
 msgid "Include these details when contacting support."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:627
+#: lib/voile_web/components/dashboard_components.ex:634
 #, elixir-autogen, elixir-format
 msgid "More"
 msgstr ""
@@ -3416,23 +3421,22 @@ msgstr ""
 msgid "Review"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:654
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:656
 #, elixir-autogen, elixir-format
 msgid "Search Existing Collection"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:677
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:679
 #, elixir-autogen, elixir-format
 msgid "Search by title, description, or code..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:656
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:658
 #, elixir-autogen, elixir-format
 msgid "Search for an existing collection to add an item to, or create a new collection if none match."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:539
-#: lib/voile_web/components/dashboard_components.ex:1308
+#: lib/voile_web/components/dashboard_components.ex:534
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:279
 #: lib/voile_web/live/dashboard/members/clearance/settings.ex:201
 #: lib/voile_web/live/dashboard/members/clearance/settings.ex:217
@@ -3455,7 +3459,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:18
 #: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:431
 #: lib/voile_web/live/dashboard/settings/token_api_manager.ex:34
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:511
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:510
 #: lib/voile_web/live/users/permission/permission_manage_edit_live.ex:50
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:22
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:176
@@ -3465,7 +3469,7 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1033
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1034
 #, elixir-autogen, elixir-format
 msgid "Start typing above to search for an existing collection to add new item to the collection, or create a brand new collection if there is no collection exist."
 msgstr ""
@@ -3483,7 +3487,7 @@ msgstr ""
 msgid "Transfers"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:732
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:734
 #, elixir-autogen, elixir-format
 msgid "We couldn't find any collections matching "
 msgstr ""
@@ -3721,7 +3725,7 @@ msgstr ""
 msgid "Creator:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:532
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:534
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:275
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1071
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:72
@@ -3751,7 +3755,7 @@ msgid "Delete Property"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:320
-#: lib/voile_web/live/dashboard/dashboard_live.ex:325
+#: lib/voile_web/live/dashboard/dashboard_live.ex:330
 #: lib/voile_web/live/dashboard/glam/index.ex:114
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:8
 #, elixir-autogen, elixir-format
@@ -4011,13 +4015,14 @@ msgstr ""
 msgid "No thumbnail available"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:332
+#: lib/voile_web/components/dashboard_components.ex:331
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:287
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1078
 #: lib/voile_web/live/dashboard/catalog/collection_live/show.html.heex:311
 #: lib/voile_web/live/dashboard/catalog/collection_live/submitted.html.heex:327
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/show.html.heex:116
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:107
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:223
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:487
 #: lib/voile_web/live/dashboard/members/clearance/show.ex:237
 #: lib/voile_web/live/dashboard/members/management/index.ex:410
@@ -4423,7 +4428,7 @@ msgstr ""
 msgid "in draft"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:858
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:860
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:517
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:613
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:1142
@@ -4432,7 +4437,7 @@ msgstr ""
 msgid "item"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:859
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:861
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:518
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:520
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:614
@@ -4759,10 +4764,11 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/transfer_request_live/index.html.heex:63
 #: lib/voile_web/live/dashboard/dashboard_live.ex:105
-#: lib/voile_web/live/dashboard/dashboard_live.ex:223
+#: lib/voile_web/live/dashboard/dashboard_live.ex:228
 #: lib/voile_web/live/dashboard/glam/index.ex:95
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:115
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:37
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:219
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:363
 #: lib/voile_web/live/dashboard/members/index.ex:85
 #: lib/voile_web/live/dashboard/members/management/index.ex:407
@@ -4948,7 +4954,7 @@ msgstr ""
 msgid "Availability:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:385
+#: lib/voile_web/live/dashboard/dashboard_live.ex:390
 #: lib/voile_web/live/frontend/collections/index.ex:342
 #, elixir-autogen, elixir-format
 msgid "Available"
@@ -5482,8 +5488,8 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:276
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/show.html.heex:102
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:59
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:445
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:58
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:444
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Created"
 msgstr ""
@@ -5495,7 +5501,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1092
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:532
-#: lib/voile_web/live/dashboard/members/management/show.ex:600
+#: lib/voile_web/live/dashboard/members/management/show.ex:611
 #, elixir-autogen, elixir-format
 msgid "Current Loans"
 msgstr ""
@@ -5760,12 +5766,12 @@ msgstr ""
 msgid "Expected new due date"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:350
+#: lib/voile_web/live/dashboard/dashboard_live.ex:355
 #: lib/voile_web/live/dashboard/glam/library/ledger/index.ex:385
 #: lib/voile_web/live/dashboard/members/management/index.ex:433
-#: lib/voile_web/live/dashboard/members/management/index.ex:982
-#: lib/voile_web/live/dashboard/members/management/show.ex:801
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:103
+#: lib/voile_web/live/dashboard/members/management/index.ex:954
+#: lib/voile_web/live/dashboard/members/management/show.ex:817
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:102
 #: lib/voile_web/live/frontend/atrium/index.ex:1731
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Expired"
@@ -6025,6 +6031,7 @@ msgid "Fine not found."
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:160
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:890
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:1118
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Fines"
@@ -6511,7 +6518,7 @@ msgstr ""
 #: lib/voile_web/live/dashboard/settings/setting_live.ex:42
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:335
 #: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:430
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:510
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:509
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:21
 #: lib/voile_web/live/users/role/role_manage_edit_live.ex:253
 #: lib/voile_web/live/users/role/role_manage_live.ex:210
@@ -6600,7 +6607,7 @@ msgstr ""
 msgid "Manage your account email address and password settings"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:445
+#: lib/voile_web/components/dashboard_components.ex:443
 #: lib/voile_web/live/dashboard/members/management/index.ex:33
 #: lib/voile_web/live/dashboard/members/management/index.ex:337
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:40
@@ -6680,9 +6687,8 @@ msgstr ""
 msgid "Member type not assigned - contact library"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:440
-#: lib/voile_web/components/dashboard_components.ex:615
-#: lib/voile_web/components/dashboard_components.ex:1302
+#: lib/voile_web/components/dashboard_components.ex:439
+#: lib/voile_web/components/dashboard_components.ex:621
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:307
 #: lib/voile_web/live/dashboard/members/clearance/settings.ex:215
 #: lib/voile_web/live/dashboard/members/clearance/show.ex:151
@@ -6713,6 +6719,7 @@ msgstr ""
 msgid "Monitor search activity and trends"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:246
 #: lib/voile_web/live/dashboard/visitor/statistics.ex:449
 #, elixir-autogen, elixir-format
 msgid "Month"
@@ -6768,9 +6775,9 @@ msgid "Need Help?"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/catalog/item_live/show.html.heex:270
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:120
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:459
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:473
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:119
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:458
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:472
 #: lib/voile_web/live/users/manage/dashboard.ex:301
 #, elixir-autogen, elixir-format
 msgid "Never"
@@ -7212,8 +7219,8 @@ msgstr ""
 msgid "Permission updated successfully"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:551
-#: lib/voile_web/components/dashboard_components.ex:1697
+#: lib/voile_web/components/dashboard_components.ex:545
+#: lib/voile_web/components/dashboard_components.ex:1792
 #: lib/voile_web/live/dashboard/settings/setting_live.ex:200
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:23
 #: lib/voile_web/live/users/permission/permission_manage_live.ex:156
@@ -7623,8 +7630,9 @@ msgstr ""
 msgid "Reservation unavailable"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:259
+#: lib/voile_web/live/dashboard/dashboard_live.ex:264
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:103
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:889
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Reservations"
 msgstr ""
@@ -8066,7 +8074,7 @@ msgstr ""
 msgid "Sort By"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:380
+#: lib/voile_web/components/dashboard_components.ex:379
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:224
 #, elixir-autogen, elixir-format
 msgid "Staff"
@@ -8102,7 +8110,7 @@ msgstr ""
 msgid "Start typing to see matching members"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:461
+#: lib/voile_web/components/dashboard_components.ex:458
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:481
 #: lib/voile_web/live/frontend/collections/show.ex:604
 #, elixir-autogen, elixir-format
@@ -8149,6 +8157,7 @@ msgid "Suspended Members"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:124
+#: lib/voile_web/components/dashboard_components.ex:589
 #: lib/voile_web/live/dashboard/glam/library/circulation/circulation_history/index.html.heex:226
 #: lib/voile_web/live/dashboard/settings/metrics_live.ex:293
 #: lib/voile_web/live/users/permission/permission_manage_edit_live.ex:108
@@ -8397,6 +8406,7 @@ msgid "Transaction found"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/circulation/index.ex:76
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:888
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Transactions"
 msgstr ""
@@ -8775,7 +8785,7 @@ msgid "Waived"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/library/ledger/transact.ex:2210
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:329
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:328
 #, elixir-autogen, elixir-format
 msgid "Warning:"
 msgstr ""
@@ -8816,6 +8826,7 @@ msgstr ""
 msgid "What to do next:"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:235
 #: lib/voile_web/live/dashboard/visitor/statistics.ex:465
 #: lib/voile_web/live/dashboard/visitor/statistics_node.ex:208
 #: lib/voile_web/live/dashboard/visitor/statistics_node.ex:259
@@ -9074,12 +9085,12 @@ msgstr ""
 msgid "30"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:296
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:295
 #, elixir-autogen, elixir-format
 msgid "API Token Created"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:350
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:349
 #, elixir-autogen, elixir-format
 msgid "API Token Details"
 msgstr ""
@@ -9089,7 +9100,7 @@ msgstr ""
 msgid "API Token Manager"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:44
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:43
 #, elixir-autogen, elixir-format
 msgid "API Tokens"
 msgstr ""
@@ -9134,7 +9145,7 @@ msgstr ""
 msgid "Account information and login credentials"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:435
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:434
 #, elixir-autogen, elixir-format
 msgid "Active (No Expiry)"
 msgstr ""
@@ -9149,7 +9160,7 @@ msgstr ""
 msgid "Active Rule Source:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:593
+#: lib/voile_web/live/dashboard/members/management/show.ex:604
 #, elixir-autogen, elixir-format
 msgid "Activity History"
 msgstr ""
@@ -9298,7 +9309,7 @@ msgstr ""
 msgid "Are you sure you want to delete this node? This action cannot be undone."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:200
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:199
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Are you sure you want to permanently delete this token?"
 msgstr ""
@@ -9308,12 +9319,12 @@ msgstr ""
 msgid "Are you sure you want to proceed?"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:175
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:174
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Are you sure you want to revoke this token?"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:265
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:264
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to rotate this API token? The current token will be invalidated and a new one will be generated."
 msgstr ""
@@ -9463,7 +9474,7 @@ msgstr ""
 msgid "Confirm New Password"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:262
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:261
 #, elixir-autogen, elixir-format
 msgid "Confirm Token Rotation"
 msgstr ""
@@ -9483,7 +9494,7 @@ msgstr ""
 msgid "Control how you want to be notified about new reservation requests"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:322
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:321
 #, elixir-autogen, elixir-format
 msgid "Copy to clipboard"
 msgstr ""
@@ -9524,12 +9535,12 @@ msgstr ""
 msgid "Create a non-expiring master token with full admin privileges. Only super admins can create these."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:234
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:233
 #, elixir-autogen, elixir-format
 msgid "Create your first token to get started with the API."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:232
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:231
 #, elixir-autogen, elixir-format
 msgid "Create your first token to get started."
 msgstr ""
@@ -9641,7 +9652,7 @@ msgid "Default Node/Location for Items"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:681
-#: lib/voile_web/live/dashboard/members/management/show.ex:585
+#: lib/voile_web/live/dashboard/members/management/show.ex:596
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Delete Member"
 msgstr ""
@@ -9651,7 +9662,7 @@ msgstr ""
 msgid "Delete Member Permanently"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:198
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:197
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Delete token"
 msgstr ""
@@ -9721,7 +9732,7 @@ msgid "Edit Location"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:51
-#: lib/voile_web/live/dashboard/members/management/show.ex:558
+#: lib/voile_web/live/dashboard/members/management/show.ex:569
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit Member"
 msgstr ""
@@ -9783,7 +9794,7 @@ msgstr ""
 msgid "Edit publisher"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:129
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:128
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit token"
 msgstr ""
@@ -9838,13 +9849,13 @@ msgstr ""
 msgid "Expired Members"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:424
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:423
 #, elixir-autogen, elixir-format
 msgid "Expired on %{date}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:62
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:453
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:61
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:452
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Expires"
 msgstr ""
@@ -9868,7 +9879,7 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:561
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:593
-#: lib/voile_web/live/dashboard/members/management/show.ex:567
+#: lib/voile_web/live/dashboard/members/management/show.ex:578
 #, elixir-autogen, elixir-format
 msgid "Extend Membership"
 msgstr ""
@@ -9893,7 +9904,7 @@ msgstr ""
 msgid "Failed to delete node"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:642
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:641
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to delete token"
 msgstr ""
@@ -9903,12 +9914,12 @@ msgstr ""
 msgid "Failed to remove application logo"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:628
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:627
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to revoke token"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:580
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:579
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Failed to rotate token"
 msgstr ""
@@ -10004,7 +10015,7 @@ msgid "Fine records and payment history"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:545
-#: lib/voile_web/live/dashboard/members/management/show.ex:607
+#: lib/voile_web/live/dashboard/members/management/show.ex:618
 #, elixir-autogen, elixir-format
 msgid "Fines & Payments"
 msgstr ""
@@ -10124,7 +10135,7 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:467
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:466
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Last Used"
 msgstr ""
@@ -10220,7 +10231,7 @@ msgstr ""
 msgid "Main Color"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:269
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:268
 #, elixir-autogen, elixir-format
 msgid "Make sure to update any applications using this token."
 msgstr ""
@@ -10373,7 +10384,7 @@ msgstr ""
 msgid "Member Type Rules"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/index.ex:686
+#: lib/voile_web/live/dashboard/members/management/index.ex:692
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member created successfully"
 msgstr ""
@@ -10393,7 +10404,7 @@ msgstr ""
 msgid "Member type updated successfully."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/index.ex:625
+#: lib/voile_web/live/dashboard/members/management/index.ex:628
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member updated successfully"
 msgstr ""
@@ -10499,7 +10510,7 @@ msgstr ""
 msgid "New Topic"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:229
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:228
 #, elixir-autogen, elixir-format
 msgid "No API tokens found."
 msgstr ""
@@ -10519,7 +10530,7 @@ msgstr ""
 msgid "No app logo to delete"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:369
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:368
 #, elixir-autogen, elixir-format, fuzzy
 msgid "No description"
 msgstr ""
@@ -10685,8 +10696,9 @@ msgstr ""
 msgid "Optional description for this token"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:887
 #: lib/voile_web/live/dashboard/master/master_live.ex:20
-#: lib/voile_web/live/dashboard/members/management/show.ex:550
+#: lib/voile_web/live/dashboard/members/management/show.ex:561
 #: lib/voile_web/live/dashboard/metaresource/metaresource_live.ex:23
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Overview"
@@ -10817,7 +10829,7 @@ msgstr ""
 msgid "Remove Picture"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:446
+#: lib/voile_web/components/dashboard_components.ex:444
 #: lib/voile_web/live/dashboard/members/reports/expiring.ex:32
 #: lib/voile_web/live/dashboard/members/reports/index.ex:30
 #: lib/voile_web/live/dashboard/members/reports/overdue.ex:32
@@ -10840,24 +10852,24 @@ msgstr ""
 msgid "Reset to Defaults"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:191
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:190
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Revoke"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:174
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:173
 #, elixir-autogen, elixir-format
 msgid "Revoke token"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/clearance/index.ex:290
 #: lib/voile_web/live/dashboard/members/clearance/show.ex:177
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:93
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:92
 #, elixir-autogen, elixir-format
 msgid "Revoked"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:408
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:407
 #, elixir-autogen, elixir-format
 msgid "Revoked on %{date}"
 msgstr ""
@@ -10872,17 +10884,17 @@ msgstr ""
 msgid "Roles"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:167
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:166
 #, elixir-autogen, elixir-format
 msgid "Rotate"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:281
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:280
 #, elixir-autogen, elixir-format
 msgid "Rotate Token"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:151
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:150
 #, elixir-autogen, elixir-format
 msgid "Rotate token"
 msgstr ""
@@ -10954,7 +10966,7 @@ msgstr ""
 msgid "Schedulers"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:390
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:389
 #: lib/voile_web/live/dashboard/settings/token_form_component.ex:56
 #, elixir-autogen, elixir-format
 msgid "Scopes"
@@ -11046,15 +11058,15 @@ msgstr ""
 msgid "Storage Mode"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:524
+#: lib/voile_web/live/dashboard/members/management/show.ex:535
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Suspend"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:338
+#: lib/voile_web/live/dashboard/dashboard_live.ex:343
 #: lib/voile_web/live/dashboard/members/management/index.ex:432
-#: lib/voile_web/live/dashboard/members/management/index.ex:979
-#: lib/voile_web/live/dashboard/members/management/show.ex:798
+#: lib/voile_web/live/dashboard/members/management/index.ex:951
+#: lib/voile_web/live/dashboard/members/management/show.ex:814
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Suspended"
 msgstr ""
@@ -11115,7 +11127,7 @@ msgstr ""
 msgid "This is where the token management interface will be implemented."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:330
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:329
 #, elixir-autogen, elixir-format
 msgid "This token will only be shown once. Make sure to save it securely!"
 msgstr ""
@@ -11135,7 +11147,7 @@ msgstr ""
 msgid "Time Unit"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:53
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:52
 #, elixir-autogen, elixir-format
 msgid "Token"
 msgstr ""
@@ -11145,12 +11157,12 @@ msgstr ""
 msgid "Token Name"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:638
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:637
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Token deleted successfully"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:624
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:623
 #, elixir-autogen, elixir-format
 msgid "Token revoked successfully"
 msgstr ""
@@ -11180,6 +11192,7 @@ msgstr ""
 msgid "Total Holidays"
 msgstr ""
 
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:278
 #: lib/voile_web/live/dashboard/members/management/management_component.ex:485
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Total Loans"
@@ -11212,17 +11225,17 @@ msgstr ""
 msgid "Unit (optional)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:382
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:381
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Unknown User"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:360
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:359
 #, elixir-autogen, elixir-format
 msgid "Unnamed Token"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:520
+#: lib/voile_web/live/dashboard/members/management/show.ex:531
 #, elixir-autogen, elixir-format
 msgid "Unsuspend"
 msgstr ""
@@ -11291,7 +11304,7 @@ msgid "Use this form to manage publishers records in your database."
 msgstr ""
 
 #: lib/voile_web/live/dashboard/settings/setting_live.ex:196
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:376
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:375
 #, elixir-autogen, elixir-format, fuzzy
 msgid "User"
 msgstr ""
@@ -11372,7 +11385,7 @@ msgstr ""
 msgid "Your changes will be applied to the application profile."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:300
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:299
 #, elixir-autogen, elixir-format
 msgid "Your new API token has been created successfully. Copy the token below and save it securely:"
 msgstr ""
@@ -11412,7 +11425,7 @@ msgstr ""
 msgid "updated"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:763
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:765
 #, elixir-autogen
 msgid "No Collection match ?"
 msgstr ""
@@ -11496,12 +11509,12 @@ msgstr ""
 msgid "Clear selection"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1012
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:1013
 #, elixir-autogen, elixir-format
 msgid "Click a book to create a new collection with prefilled data"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:877
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:879
 #, elixir-autogen, elixir-format
 msgid "Click to add item"
 msgstr ""
@@ -11539,7 +11552,7 @@ msgstr ""
 msgid "Export CSV"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:916
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:917
 #, elixir-autogen, elixir-format
 msgid "External Sources"
 msgstr ""
@@ -11570,7 +11583,7 @@ msgstr ""
 msgid "Failed to update: %{reason}"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:758
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:760
 #, elixir-autogen, elixir-format
 msgid "Internal collections - select one to add an item"
 msgstr ""
@@ -11585,12 +11598,12 @@ msgstr ""
 msgid "Newest first"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:729
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:731
 #, elixir-autogen, elixir-format, fuzzy
 msgid "No Collections Found"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:906
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:907
 #, elixir-autogen, elixir-format
 msgid "No external books found for \"{query}\""
 msgstr ""
@@ -11636,7 +11649,7 @@ msgstr ""
 msgid "Plugin is already at the latest version."
 msgstr ""
 
-#: lib/voile_web/live/plugin_router_live.ex:51
+#: lib/voile_web/live/plugin_router_live.ex:52
 #, elixir-autogen, elixir-format
 msgid "Plugin not found or not active."
 msgstr ""
@@ -11666,7 +11679,7 @@ msgstr ""
 msgid "Reactivate"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:670
+#: lib/voile_web/live/dashboard/members/management/show.ex:682
 #, elixir-autogen, elixir-format
 msgid "Reason for suspension"
 msgstr ""
@@ -11681,12 +11694,12 @@ msgstr ""
 msgid "Search by title, custodian, node..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:710
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:712
 #, elixir-autogen, elixir-format
 msgid "Searching collections and external sources..."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:897
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:898
 #, elixir-autogen, elixir-format
 msgid "Searching external sources…"
 msgstr ""
@@ -11721,18 +11734,18 @@ msgstr ""
 msgid "Specific Location"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:663
-#: lib/voile_web/live/dashboard/members/management/show.ex:680
+#: lib/voile_web/live/dashboard/members/management/show.ex:675
+#: lib/voile_web/live/dashboard/members/management/show.ex:692
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Suspend Member"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:676
+#: lib/voile_web/live/dashboard/members/management/show.ex:688
 #, elixir-autogen, elixir-format
 msgid "Suspension Ends At (optional)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/show.ex:669
+#: lib/voile_web/live/dashboard/members/management/show.ex:681
 #, elixir-autogen, elixir-format
 msgid "Suspension Reason"
 msgstr ""
@@ -11772,7 +11785,7 @@ msgstr ""
 msgid "You are about to reject %{count} collection(s). This will send them back to draft status. The custodians will be able to see your feedback and make corrections."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:919
+#: lib/voile_web/live/dashboard/catalog/collection_live/index.html.heex:920
 #, elixir-autogen, elixir-format
 msgid "books from OpenLibrary, Google Books & OpenAlex"
 msgstr ""
@@ -11892,10 +11905,10 @@ msgstr ""
 msgid "Plugin installed successfully."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:579
+#: lib/voile_web/components/dashboard_components.ex:573
 #: lib/voile_web/live/dashboard/plugins/index.ex:179
 #: lib/voile_web/live/dashboard/plugins/settings.ex:79
-#: lib/voile_web/live/plugin_router_live.ex:68
+#: lib/voile_web/live/plugin_router_live.ex:69
 #, elixir-autogen, elixir-format
 msgid "Plugins"
 msgstr ""
@@ -12704,7 +12717,7 @@ msgstr ""
 msgid "Node / Faculty"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/index.ex:990
+#: lib/voile_web/live/dashboard/members/management/index.ex:962
 #, elixir-autogen, elixir-format
 msgid "Not Verified"
 msgstr ""
@@ -13011,7 +13024,7 @@ msgid "VALID"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/index.ex:511
-#: lib/voile_web/live/dashboard/members/management/index.ex:990
+#: lib/voile_web/live/dashboard/members/management/index.ex:962
 #, elixir-autogen, elixir-format
 msgid "Verified"
 msgstr ""
@@ -13622,13 +13635,14 @@ msgid "Upload a CSV file to bulk-import holiday entries. Duplicate rows are skip
 msgstr ""
 
 #: lib/voile_web/live/dashboard/members/management/index.ex:595
-#: lib/voile_web/live/dashboard/members/management/index.ex:656
+#: lib/voile_web/live/dashboard/members/management/index.ex:659
 #, elixir-autogen, elixir-format
 msgid "You cannot assign a member type higher than your own."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/members/management/index.ex:614
-#: lib/voile_web/live/dashboard/members/management/index.ex:675
+#: lib/voile_web/live/dashboard/members/management/index.ex:617
+#: lib/voile_web/live/dashboard/members/management/index.ex:681
+#: lib/voile_web/live/dashboard/members/management/show.ex:240
 #, elixir-autogen, elixir-format
 msgid "You cannot assign roles that are equal or higher than your own."
 msgstr ""
@@ -13685,9 +13699,9 @@ msgstr ""
 msgid "%{member} · overdue %{n} days"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:571
-#: lib/voile_web/components/dashboard_components.ex:1710
-#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:512
+#: lib/voile_web/components/dashboard_components.ex:565
+#: lib/voile_web/components/dashboard_components.ex:1805
+#: lib/voile_web/live/dashboard/settings/token_api_manager.ex:511
 #, elixir-autogen, elixir-format
 msgid "API manager"
 msgstr ""
@@ -13697,17 +13711,17 @@ msgstr ""
 msgid "API token manager"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:245
+#: lib/voile_web/live/dashboard/dashboard_live.ex:250
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Active loans"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:332
+#: lib/voile_web/live/dashboard/dashboard_live.ex:337
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Active members"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1268
+#: lib/voile_web/components/dashboard_components.ex:1362
 #, elixir-autogen, elixir-format
 msgid "Add a new member"
 msgstr ""
@@ -13717,7 +13731,7 @@ msgstr ""
 msgid "Add holiday"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:305
+#: lib/voile_web/live/dashboard/dashboard_live.ex:310
 #, elixir-autogen, elixir-format
 msgid "Add member"
 msgstr ""
@@ -13734,18 +13748,18 @@ msgstr ""
 
 #: lib/voile_web/live/dashboard/plugins/index.ex:182
 #: lib/voile_web/live/dashboard/plugins/settings.ex:82
-#: lib/voile_web/live/plugin_router_live.ex:71
+#: lib/voile_web/live/plugin_router_live.ex:72
 #, elixir-autogen, elixir-format, fuzzy
 msgid "All plugins"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1907
+#: lib/voile_web/components/dashboard_components.ex:2002
 #, elixir-autogen, elixir-format
 msgid "Analytics"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:545
-#: lib/voile_web/components/dashboard_components.ex:1695
+#: lib/voile_web/components/dashboard_components.ex:539
+#: lib/voile_web/components/dashboard_components.ex:1790
 #: lib/voile_web/live/dashboard/settings/app_profile_settings_live.ex:52
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Application"
@@ -13776,7 +13790,7 @@ msgstr ""
 msgid "Atom"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:276
+#: lib/voile_web/live/dashboard/dashboard_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "Attention required"
 msgstr ""
@@ -13786,8 +13800,8 @@ msgstr ""
 msgid "Authenticated"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:287
-#: lib/voile_web/components/dashboard_components.ex:741
+#: lib/voile_web/components/dashboard_components.ex:286
+#: lib/voile_web/components/dashboard_components.ex:835
 #, elixir-autogen, elixir-format
 msgid "Avatar"
 msgstr ""
@@ -13807,12 +13821,12 @@ msgstr ""
 msgid "Books, journals & academic resources"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:759
+#: lib/voile_web/components/dashboard_components.ex:853
 #, elixir-autogen, elixir-format
 msgid "Breadcrumb"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:359
+#: lib/voile_web/live/dashboard/dashboard_live.ex:364
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Catalog snapshot"
 msgstr ""
@@ -13822,7 +13836,7 @@ msgstr ""
 msgid "Check your spelling or try different keywords"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:299
+#: lib/voile_web/live/dashboard/dashboard_live.ex:304
 #, elixir-autogen, elixir-format
 msgid "Checkout, return, or renew an item"
 msgstr ""
@@ -13832,7 +13846,7 @@ msgstr ""
 msgid "Circulation report"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:448
+#: lib/voile_web/components/dashboard_components.ex:446
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Clearance"
 msgstr ""
@@ -13862,12 +13876,12 @@ msgstr ""
 msgid "Continue with PAuS ID"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:313
+#: lib/voile_web/live/dashboard/dashboard_live.ex:318
 #, elixir-autogen, elixir-format
 msgid "Create a catalog collection"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1274
+#: lib/voile_web/components/dashboard_components.ex:1368
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Create a new collection"
 msgstr ""
@@ -13882,8 +13896,8 @@ msgstr ""
 msgid "Create token"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:484
-#: lib/voile_web/components/dashboard_components.ex:1724
+#: lib/voile_web/components/dashboard_components.ex:480
+#: lib/voile_web/components/dashboard_components.ex:1819
 #: lib/voile_web/live/dashboard/master/creator_live/index.ex:34
 #: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:3
 #: lib/voile_web/live/dashboard/master/creator_live/show.ex:34
@@ -13891,12 +13905,7 @@ msgstr ""
 msgid "Creators"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1283
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Dashboard Home"
-msgstr ""
-
-#: lib/voile_web/components/dashboard_components.ex:1979
+#: lib/voile_web/components/dashboard_components.ex:2074
 #, elixir-autogen, elixir-format
 msgid "Destructive action"
 msgstr ""
@@ -13916,13 +13925,13 @@ msgstr ""
 msgid "Expires:"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:344
+#: lib/voile_web/live/dashboard/dashboard_live.ex:349
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Expiring in 30 days"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:496
-#: lib/voile_web/components/dashboard_components.ex:1736
+#: lib/voile_web/components/dashboard_components.ex:492
+#: lib/voile_web/components/dashboard_components.ex:1831
 #: lib/voile_web/live/dashboard/master/frequency_live/edit.ex:18
 #: lib/voile_web/live/dashboard/master/frequency_live/index.ex:33
 #: lib/voile_web/live/dashboard/master/frequency_live/index.html.heex:3
@@ -13938,11 +13947,6 @@ msgstr ""
 #: lib/voile_web/live/dashboard/settings/metrics_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "GC Words Reclaimed"
-msgstr ""
-
-#: lib/voile_web/components/dashboard_components.ex:1296
-#, elixir-autogen, elixir-format, fuzzy
-msgid "GLAM Hub"
 msgstr ""
 
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:40
@@ -13975,22 +13979,22 @@ msgstr ""
 msgid "Gallery, Library, Archive & Museum — unified collections management"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:136
+#: lib/voile_web/live/dashboard/dashboard_live.ex:140
 #, elixir-autogen, elixir-format
 msgid "Good afternoon"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:137
+#: lib/voile_web/live/dashboard/dashboard_live.ex:141
 #, elixir-autogen, elixir-format
 msgid "Good evening"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:135
+#: lib/voile_web/live/dashboard/dashboard_live.ex:139
 #, elixir-autogen, elixir-format
 msgid "Good morning"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:362
+#: lib/voile_web/components/dashboard_components.ex:361
 #, elixir-autogen, elixir-format
 msgid "Guest"
 msgstr ""
@@ -14000,8 +14004,8 @@ msgstr ""
 msgid "Historical documents & records"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:561
-#: lib/voile_web/components/dashboard_components.ex:1700
+#: lib/voile_web/components/dashboard_components.ex:555
+#: lib/voile_web/components/dashboard_components.ex:1795
 #: lib/voile_web/live/dashboard/settings/holiday_live.ex:449
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Holidays"
@@ -14032,7 +14036,7 @@ msgstr ""
 msgid "Library operations"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:208
+#: lib/voile_web/live/dashboard/dashboard_live.ex:213
 #, elixir-autogen, elixir-format
 msgid "Library · Overview"
 msgstr ""
@@ -14047,8 +14051,8 @@ msgstr ""
 msgid "Loan rules"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:500
-#: lib/voile_web/components/dashboard_components.ex:1740
+#: lib/voile_web/components/dashboard_components.ex:496
+#: lib/voile_web/components/dashboard_components.ex:1835
 #: lib/voile_web/live/dashboard/master/locations_live/edit.ex:18
 #: lib/voile_web/live/dashboard/master/locations_live/index.ex:30
 #: lib/voile_web/live/dashboard/master/locations_live/index.html.heex:3
@@ -14061,7 +14065,7 @@ msgstr ""
 msgid "Logged in"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:465
+#: lib/voile_web/components/dashboard_components.ex:462
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Logs"
 msgstr ""
@@ -14086,7 +14090,7 @@ msgstr ""
 msgid "Manage the metadata schemas, vocabularies, and resource templates that describe catalog items."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:479
+#: lib/voile_web/components/dashboard_components.ex:476
 #: lib/voile_web/live/dashboard/master/creator_live/index.ex:33
 #: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:2
 #: lib/voile_web/live/dashboard/master/creator_live/index.html.heex:20
@@ -14124,13 +14128,13 @@ msgstr ""
 msgid "Master data"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:322
+#: lib/voile_web/live/dashboard/dashboard_live.ex:327
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Member overview"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:491
-#: lib/voile_web/components/dashboard_components.ex:1731
+#: lib/voile_web/components/dashboard_components.ex:487
+#: lib/voile_web/components/dashboard_components.ex:1826
 #: lib/voile_web/live/dashboard/master/member_type_live/edit.ex:32
 #: lib/voile_web/live/dashboard/master/member_type_live/index.ex:34
 #: lib/voile_web/live/dashboard/master/member_type_live/index.html.heex:3
@@ -14148,7 +14152,7 @@ msgstr ""
 msgid "Memory Usage Details"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:506
+#: lib/voile_web/components/dashboard_components.ex:502
 #: lib/voile_web/controllers/metadata/property_html/index.html.heex:2
 #: lib/voile_web/controllers/metadata/property_html/index.html.heex:20
 #: lib/voile_web/controllers/metadata/property_html/property_controller.ex:19
@@ -14175,8 +14179,8 @@ msgstr ""
 msgid "Metaresource"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:575
-#: lib/voile_web/components/dashboard_components.ex:1714
+#: lib/voile_web/components/dashboard_components.ex:569
+#: lib/voile_web/components/dashboard_components.ex:1809
 #: lib/voile_web/live/dashboard/settings/metrics_live.ex:27
 #, elixir-autogen, elixir-format
 msgid "Metrics"
@@ -14187,7 +14191,7 @@ msgstr ""
 msgid "My Reservations"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1279
+#: lib/voile_web/components/dashboard_components.ex:1373
 #, elixir-autogen, elixir-format
 msgid "Navigation"
 msgstr ""
@@ -14221,7 +14225,7 @@ msgstr ""
 msgid "New Vocabulary"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:312
+#: lib/voile_web/live/dashboard/dashboard_live.ex:317
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:53
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:91
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:53
@@ -14299,8 +14303,8 @@ msgstr ""
 msgid "Node loan rules"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:556
-#: lib/voile_web/components/dashboard_components.ex:1698
+#: lib/voile_web/components/dashboard_components.ex:550
+#: lib/voile_web/components/dashboard_components.ex:1793
 #: lib/voile_web/live/dashboard/glam/index.ex:152
 #: lib/voile_web/live/dashboard/settings/system_node_live.ex:337
 #: lib/voile_web/live/dashboard/settings/system_node_rules_live.ex:432
@@ -14318,12 +14322,12 @@ msgstr ""
 msgid "Nothing matched"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:288
+#: lib/voile_web/live/dashboard/dashboard_live.ex:293
 #, elixir-autogen, elixir-format
 msgid "Nothing needs your attention right now."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:715
+#: lib/voile_web/components/dashboard_components.ex:809
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Notifications"
 msgstr ""
@@ -14333,14 +14337,13 @@ msgstr ""
 msgid "Notify members or release the hold"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:624
-#: lib/voile_web/components/dashboard_components.ex:687
+#: lib/voile_web/components/dashboard_components.ex:781
 #, elixir-autogen, elixir-format
 msgid "Open command palette"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:283
-#: lib/voile_web/components/dashboard_components.ex:737
+#: lib/voile_web/components/dashboard_components.ex:282
+#: lib/voile_web/components/dashboard_components.ex:831
 #, elixir-autogen, elixir-format
 msgid "Open user menu"
 msgstr ""
@@ -14350,22 +14353,23 @@ msgstr ""
 msgid "Output (bytes)"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:266
+#: lib/voile_web/live/dashboard/dashboard_live.ex:271
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Outstanding fines"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1575
+#: lib/voile_web/components/dashboard_components.ex:1659
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Page %{page}"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1512
+#: lib/voile_web/components/dashboard_components.ex:1596
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Pagination"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:118
+#: lib/voile_web/components/dashboard_components.ex:588
 #, elixir-autogen, elixir-format
 msgid "People"
 msgstr ""
@@ -14385,8 +14389,8 @@ msgstr ""
 msgid "Picked Up"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:501
-#: lib/voile_web/components/dashboard_components.ex:1741
+#: lib/voile_web/components/dashboard_components.ex:497
+#: lib/voile_web/components/dashboard_components.ex:1836
 #: lib/voile_web/live/dashboard/master/places_live/edit.ex:29
 #: lib/voile_web/live/dashboard/master/places_live/index.ex:33
 #: lib/voile_web/live/dashboard/master/places_live/index.html.heex:3
@@ -14394,12 +14398,12 @@ msgstr ""
 msgid "Places"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1914
+#: lib/voile_web/components/dashboard_components.ex:2009
 #, elixir-autogen, elixir-format
 msgid "Popular queries"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:210
+#: lib/voile_web/live/dashboard/dashboard_live.ex:215
 #, elixir-autogen, elixir-format
 msgid "Press ⌘K anywhere to jump to a page. Stats are scoped to your node."
 msgstr ""
@@ -14409,19 +14413,19 @@ msgstr ""
 msgid "Processes"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:549
-#: lib/voile_web/components/dashboard_components.ex:1696
+#: lib/voile_web/components/dashboard_components.ex:543
+#: lib/voile_web/components/dashboard_components.ex:1791
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Profile"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:345
+#: lib/voile_web/components/dashboard_components.ex:344
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Profile settings"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:517
-#: lib/voile_web/components/dashboard_components.ex:1757
+#: lib/voile_web/components/dashboard_components.ex:512
+#: lib/voile_web/components/dashboard_components.ex:1852
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Properties"
 msgstr ""
@@ -14432,8 +14436,8 @@ msgstr ""
 msgid "Property"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:486
-#: lib/voile_web/components/dashboard_components.ex:1726
+#: lib/voile_web/components/dashboard_components.ex:482
+#: lib/voile_web/components/dashboard_components.ex:1821
 #: lib/voile_web/live/dashboard/master/publisher_live/index.ex:33
 #: lib/voile_web/live/dashboard/master/publisher_live/index.html.heex:3
 #: lib/voile_web/live/dashboard/master/publisher_live/show.ex:34
@@ -14441,8 +14445,8 @@ msgstr ""
 msgid "Publishers"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1258
-#: lib/voile_web/live/dashboard/dashboard_live.ex:293
+#: lib/voile_web/components/dashboard_components.ex:1352
+#: lib/voile_web/live/dashboard/dashboard_live.ex:298
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:79
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:79
 #: lib/voile_web/live/dashboard/glam/library/index.ex:113
@@ -14506,13 +14510,13 @@ msgstr ""
 msgid "Reductions"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:306
+#: lib/voile_web/live/dashboard/dashboard_live.ex:311
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Register a new library member"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:566
-#: lib/voile_web/components/dashboard_components.ex:1705
+#: lib/voile_web/components/dashboard_components.ex:560
+#: lib/voile_web/components/dashboard_components.ex:1800
 #: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:25
 #: lib/voile_web/live/dashboard/settings/reservation_notification_live.ex:102
 #, elixir-autogen, elixir-format, fuzzy
@@ -14524,8 +14528,8 @@ msgstr ""
 msgid "Reserved:"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:522
-#: lib/voile_web/components/dashboard_components.ex:1762
+#: lib/voile_web/components/dashboard_components.ex:517
+#: lib/voile_web/components/dashboard_components.ex:1857
 #: lib/voile_web/controllers/metadata/resource_class_html/index.html.heex:3
 #: lib/voile_web/controllers/metadata/resource_class_html/resource_class_controller.ex:20
 #, elixir-autogen, elixir-format, fuzzy
@@ -14537,8 +14541,8 @@ msgstr ""
 msgid "Resource classes"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:527
-#: lib/voile_web/components/dashboard_components.ex:1767
+#: lib/voile_web/components/dashboard_components.ex:522
+#: lib/voile_web/components/dashboard_components.ex:1862
 #: lib/voile_web/controllers/metadata/resource_template_html/index.html.heex:3
 #: lib/voile_web/controllers/metadata/resource_template_html/resource_template_controller.ex:15
 #: lib/voile_web/live/dashboard/metaresource/resource_template_live/edit.ex:18
@@ -14562,12 +14566,12 @@ msgstr ""
 msgid "Run Queue Length"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1904
+#: lib/voile_web/components/dashboard_components.ex:1999
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Search insights"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1250
+#: lib/voile_web/components/dashboard_components.ex:1344
 #, elixir-autogen, elixir-format
 msgid "Search or jump to…"
 msgstr ""
@@ -14577,7 +14581,7 @@ msgstr ""
 msgid "Search through our digital catalog — books, documents, artworks, and historical archives from libraries, galleries, archives, and museums."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1912
+#: lib/voile_web/components/dashboard_components.ex:2007
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Searches today"
 msgstr ""
@@ -14587,12 +14591,12 @@ msgstr ""
 msgid "Staff and administrators cannot reserve items. Only members can."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1262
+#: lib/voile_web/components/dashboard_components.ex:1356
 #, elixir-autogen, elixir-format
 msgid "Start a circulation transaction"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:298
+#: lib/voile_web/live/dashboard/dashboard_live.ex:303
 #: lib/voile_web/live/dashboard/glam/library/index.ex:163
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Start transaction"
@@ -14608,7 +14612,7 @@ msgstr ""
 msgid "Super admin access required for plugin management."
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:467
+#: lib/voile_web/components/dashboard_components.ex:464
 #, elixir-autogen, elixir-format
 msgid "Surveys"
 msgstr ""
@@ -14637,8 +14641,8 @@ msgstr ""
 msgid "System · Settings"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:532
-#: lib/voile_web/components/dashboard_components.ex:1772
+#: lib/voile_web/components/dashboard_components.ex:527
+#: lib/voile_web/components/dashboard_components.ex:1867
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Template properties"
 msgstr ""
@@ -14649,13 +14653,13 @@ msgstr ""
 msgid "Template property"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:242
+#: lib/voile_web/components/dashboard_components.ex:240
 #, elixir-autogen, elixir-format
 msgid "Toggle submenu"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:502
-#: lib/voile_web/components/dashboard_components.ex:1742
+#: lib/voile_web/components/dashboard_components.ex:498
+#: lib/voile_web/components/dashboard_components.ex:1837
 #: lib/voile_web/live/dashboard/master/topic_live/edit.ex:32
 #: lib/voile_web/live/dashboard/master/topic_live/index.ex:33
 #: lib/voile_web/live/dashboard/master/topic_live/index.html.heex:3
@@ -14680,7 +14684,7 @@ msgstr ""
 msgid "Total Processes"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:369
+#: lib/voile_web/live/dashboard/dashboard_live.ex:374
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:60
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:60
 #: lib/voile_web/live/dashboard/glam/index.ex:140
@@ -14690,7 +14694,7 @@ msgstr ""
 msgid "Total collections"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:380
+#: lib/voile_web/live/dashboard/dashboard_live.ex:385
 #: lib/voile_web/live/dashboard/glam/archive/index.ex:66
 #: lib/voile_web/live/dashboard/glam/gallery/index.ex:66
 #: lib/voile_web/live/dashboard/glam/index.ex:146
@@ -14710,7 +14714,7 @@ msgstr ""
 msgid "Try searching: books, manuscripts, paintings, historical documents"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:374
+#: lib/voile_web/components/dashboard_components.ex:373
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Unassigned"
 msgstr ""
@@ -14740,7 +14744,7 @@ msgstr ""
 msgid "Use broader or more general search terms"
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:279
+#: lib/voile_web/live/dashboard/dashboard_live.ex:284
 #: lib/voile_web/live/dashboard/glam/index.ex:169
 #, elixir-autogen, elixir-format, fuzzy
 msgid "View all"
@@ -14767,7 +14771,7 @@ msgstr ""
 msgid "Visitor statistics"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:455
+#: lib/voile_web/components/dashboard_components.ex:453
 #: lib/voile_web/live/dashboard/settings/metrics_live.ex:224
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Visitors"
@@ -14783,8 +14787,8 @@ msgstr ""
 msgid "Visitors today"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:512
-#: lib/voile_web/components/dashboard_components.ex:1752
+#: lib/voile_web/components/dashboard_components.ex:507
+#: lib/voile_web/components/dashboard_components.ex:1847
 #, elixir-autogen, elixir-format
 msgid "Vocabularies"
 msgstr ""
@@ -14796,6 +14800,7 @@ msgid "Vocabulary"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:106
+#: lib/voile_web/components/dashboard_components.ex:586
 #, elixir-autogen, elixir-format
 msgid "Workspace"
 msgstr ""
@@ -14825,17 +14830,17 @@ msgstr ""
 msgid "Your item is ready! Please visit the library to pick it up."
 msgstr ""
 
-#: lib/voile_web/live/dashboard/dashboard_live.ex:233
+#: lib/voile_web/live/dashboard/dashboard_live.ex:238
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Your node"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1319
+#: lib/voile_web/components/dashboard_components.ex:1393
 #, elixir-autogen, elixir-format
 msgid "navigate"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1087
+#: lib/voile_web/components/dashboard_components.ex:1181
 #, elixir-autogen, elixir-format
 msgid "no change"
 msgstr ""
@@ -14847,25 +14852,25 @@ msgid_plural "results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/voile_web/components/dashboard_components.ex:1320
+#: lib/voile_web/components/dashboard_components.ex:1394
 #, elixir-autogen, elixir-format, fuzzy
 msgid "select"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:1081
-#: lib/voile_web/components/dashboard_components.ex:1084
+#: lib/voile_web/components/dashboard_components.ex:1175
+#: lib/voile_web/components/dashboard_components.ex:1178
 #, elixir-autogen, elixir-format
 msgid "this week"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:135
-#: lib/voile_web/components/dashboard_components.ex:706
-#: lib/voile_web/components/dashboard_components.ex:707
+#: lib/voile_web/components/dashboard_components.ex:800
+#: lib/voile_web/components/dashboard_components.ex:801
 #, elixir-autogen, elixir-format
 msgid "Back to front page"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:812
+#: lib/voile_web/components/dashboard_components.ex:906
 #, elixir-autogen, elixir-format
 msgid "Built with"
 msgstr ""
@@ -14876,6 +14881,7 @@ msgid "Edits"
 msgstr ""
 
 #: lib/voile_web/components/dashboard_components.ex:138
+#: lib/voile_web/components/dashboard_components.ex:737
 #, elixir-autogen, elixir-format
 msgid "Front page"
 msgstr ""
@@ -14901,7 +14907,7 @@ msgstr ""
 msgid "There are no records yet. Create one to get started."
 msgstr ""
 
-#: lib/voile_web/live/plugin_router_live.ex:41
+#: lib/voile_web/live/plugin_router_live.ex:42
 #, elixir-autogen, elixir-format
 msgid "This page does not exist for this plugin."
 msgstr ""
@@ -14931,7 +14937,7 @@ msgstr ""
 msgid "total actions"
 msgstr ""
 
-#: lib/voile_web/components/dashboard_components.ex:814
+#: lib/voile_web/components/dashboard_components.ex:908
 #, elixir-autogen, elixir-format
 msgid "using"
 msgstr ""
@@ -14939,4 +14945,75 @@ msgstr ""
 #: lib/voile_web/live/dashboard/catalog/collection_live/review.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "your activity · all time"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:292
+#, elixir-autogen, elixir-format
+msgid "Library Visits"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:313
+#, elixir-autogen, elixir-format
+msgid "Most Active Members"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:324
+#, elixir-autogen, elixir-format
+msgid "Most Frequent Visitors"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:302
+#, elixir-autogen, elixir-format
+msgid "Most Loaned Titles"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:305
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:316
+#, elixir-autogen, elixir-format
+msgid "No loans recorded for this period"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:327
+#, elixir-autogen, elixir-format
+msgid "No visits recorded for this period"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:285
+#, elixir-autogen, elixir-format
+msgid "Unique Borrowers"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:891
+#, elixir-autogen, elixir-format
+msgid "Usability"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:325
+#, elixir-autogen, elixir-format
+msgid "Visitor"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/glam/library/circulation/report.ex:326
+#, elixir-autogen, elixir-format
+msgid "Visits"
+msgstr ""
+
+#: lib/voile_web/components/dashboard_components.ex:711
+#, elixir-autogen, elixir-format
+msgid "Close menu"
+msgstr ""
+
+#: lib/voile_web/components/dashboard_components.ex:692
+#, elixir-autogen, elixir-format
+msgid "Dashboard menu"
+msgstr ""
+
+#: lib/voile_web/components/dashboard_components.ex:631
+#, elixir-autogen, elixir-format
+msgid "Open menu"
+msgstr ""
+
+#: lib/voile_web/live/dashboard/dashboard_live.ex:142
+#, elixir-autogen, elixir-format
+msgid "Good night"
 msgstr ""

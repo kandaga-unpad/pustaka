@@ -105,6 +105,112 @@ defmodule Voile.CatalogTest do
       assert updated_item.availability == "available"
     end
 
+    test "create_collection/2 with created_by_id in attrs and no user_id keeps the attrs value" do
+      creator = Voile.MasterFixtures.creator_fixture()
+      resource_class = Voile.MetadataFixtures.resource_class_fixture()
+      node = Voile.SystemFixtures.node_fixture()
+      user = Voile.AccountsFixtures.user_fixture()
+
+      attrs = %{
+        collection_code: "test_code",
+        status: "draft",
+        description: "test description",
+        title: "test title",
+        thumbnail: "test thumbnail",
+        access_level: "public",
+        creator_id: creator.id,
+        type_id: resource_class.id,
+        unit_id: node.id,
+        created_by_id: user.id,
+        updated_by_id: user.id
+      }
+
+      # Call without explicit user_id - should keep attrs values
+      assert {:ok, %Collection{} = collection} = Catalog.create_collection(attrs)
+      assert collection.created_by_id == user.id
+      assert collection.updated_by_id == user.id
+    end
+
+    test "create_collection/2 with explicit user_id overrides attrs" do
+      creator = Voile.MasterFixtures.creator_fixture()
+      resource_class = Voile.MetadataFixtures.resource_class_fixture()
+      node = Voile.SystemFixtures.node_fixture()
+      user1 = Voile.AccountsFixtures.user_fixture()
+      user2 = Voile.AccountsFixtures.user_fixture()
+
+      attrs = %{
+        collection_code: "test_code2",
+        status: "draft",
+        description: "test description",
+        title: "test title",
+        thumbnail: "test thumbnail",
+        access_level: "public",
+        creator_id: creator.id,
+        type_id: resource_class.id,
+        unit_id: node.id,
+        created_by_id: user1.id
+      }
+
+      # Explicit user_id should override attrs
+      assert {:ok, %Collection{} = collection} = Catalog.create_collection(attrs, user2.id)
+      assert collection.created_by_id == user2.id
+      assert collection.updated_by_id == user2.id
+    end
+
+    test "create_collection/2 with no ids results in nil audit fields" do
+      creator = Voile.MasterFixtures.creator_fixture()
+      resource_class = Voile.MetadataFixtures.resource_class_fixture()
+      node = Voile.SystemFixtures.node_fixture()
+
+      attrs = %{
+        collection_code: "test_code3",
+        status: "draft",
+        description: "test description",
+        title: "test title",
+        thumbnail: "test thumbnail",
+        access_level: "public",
+        creator_id: creator.id,
+        type_id: resource_class.id,
+        unit_id: node.id
+      }
+
+      # No user_id in attrs or arg - should be nil
+      assert {:ok, %Collection{} = collection} = Catalog.create_collection(attrs)
+      assert collection.created_by_id == nil
+      assert collection.updated_by_id == nil
+    end
+
+    test "update_collection/3 with updated_by_id in attrs and no user_id keeps the attrs value" do
+      collection = collection_fixture()
+      user = Voile.AccountsFixtures.user_fixture()
+
+      attrs = %{
+        title: "updated title",
+        updated_by_id: user.id
+      }
+
+      # Call without explicit user_id - should keep attrs value
+      assert {:ok, %Collection{} = updated} = Catalog.update_collection(collection, attrs)
+      assert updated.updated_by_id == user.id
+    end
+
+    test "update_collection/3 with explicit user_id overrides attrs" do
+      collection = collection_fixture()
+      user1 = Voile.AccountsFixtures.user_fixture()
+      user2 = Voile.AccountsFixtures.user_fixture()
+
+      attrs = %{
+        title: "updated title",
+        updated_by_id: user1.id
+      }
+
+      # Explicit user_id should override attrs
+      assert {:ok, %Collection{} = updated} =
+               Catalog.update_collection(collection, attrs, user2.id)
+
+      assert updated.updated_by_id == user2.id
+    end
+
     test "list_pending_collections_paginated/7 honors sort_order parameter" do
       c1 = collection_fixture(%{status: "pending"})
 
